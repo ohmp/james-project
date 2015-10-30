@@ -46,7 +46,8 @@ public class KafkaMessagingTest {
         kafkaPublisher = new KafkaPublisher("127.0.0.1", 9092);
         kafkaPublisher.init();
         messageReceiver = mock(MessageReceiver.class);
-        KafkaMessageConsumer kafkaMessageConsumer = new KafkaMessageConsumer(messageReceiver, "localhost", "0123456789", 2);
+        KafkaMessageConsumer kafkaMessageConsumer = new KafkaMessageConsumer("localhost", "0123456789", 2);
+        kafkaMessageConsumer.setMessageReceiver(messageReceiver);
         kafkaMessageConsumer.init(TOPIC);
         Thread.sleep(5000);
     }

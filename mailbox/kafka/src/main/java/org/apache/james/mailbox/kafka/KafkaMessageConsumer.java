@@ -23,6 +23,7 @@ import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
+import org.apache.james.mailbox.store.publisher.MessageConsumer;
 import org.apache.james.mailbox.store.publisher.MessageReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class KafkaMessageConsumer {
+public class KafkaMessageConsumer implements MessageConsumer {
 
     private class Consumer implements Runnable {
 
@@ -60,19 +61,26 @@ public class KafkaMessageConsumer {
 
     private final ConsumerConnector consumer;
     private final int numberOfTread;
-    private final MessageReceiver messageReceiver;
+    private MessageReceiver messageReceiver;
     private ExecutorService executor;
     private boolean isInitialized;
 
 
-    public KafkaMessageConsumer(MessageReceiver messageReceiver,
-                                String zookeeperConnectionString,
+    public KafkaMessageConsumer(String zookeeperConnectionString,
                                 String groupId,
                                 int numberOfThread) {
         this.consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(zookeeperConnectionString, groupId));
         this.numberOfTread = numberOfThread;
         this.isInitialized = false;
-        this.messageReceiver = messageReceiver;
+    }
+
+    @Override
+    public void setMessageReceiver(MessageReceiver messageReceiver) {
+        if (!isInitialized) {
+            this.messageReceiver = messageReceiver;
+        } else {
+            throw new RuntimeException("Can not change the MessageReceiver of a running KafkaMessageConsumer");
+        }
     }
 
     @PreDestroy
@@ -85,10 +93,10 @@ public class KafkaMessageConsumer {
     @PostConstruct
     public void init(String topic) {
         if(!isInitialized) {
+            this.isInitialized = true;
             List<KafkaStream<byte[], byte[]>> streams = getKafkaStreams(topic);
             executor = Executors.newFixedThreadPool(numberOfTread);
             startConsuming(streams);
-            this.isInitialized = true;
         } else {
             LOG.warn("This Kafka Message Receiver was already launched.");
         }
