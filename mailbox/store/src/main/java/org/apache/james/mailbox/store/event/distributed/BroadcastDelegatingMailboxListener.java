@@ -40,7 +40,7 @@ public class BroadcastDelegatingMailboxListener implements DistributedDelegating
     private final MailboxListenerRegistry mailboxListenerRegistry;
     private final Publisher publisher;
     private final EventSerializer eventSerializer;
-    private Topic globalTopic;
+    private final Topic globalTopic;
 
     public BroadcastDelegatingMailboxListener(Publisher publisher,
                                               MessageConsumer messageConsumer,
