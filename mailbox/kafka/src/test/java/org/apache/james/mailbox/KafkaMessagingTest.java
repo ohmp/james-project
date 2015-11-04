@@ -43,14 +43,14 @@ public class KafkaMessagingTest {
     @Before
     public void setUp() throws Exception {
         kafka = new LocalKafka();
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         kafkaPublisher = new KafkaPublisher("127.0.0.1", 9092);
         kafkaPublisher.init();
         messageReceiver = mock(MessageReceiver.class);
         KafkaMessageConsumer kafkaMessageConsumer = new KafkaMessageConsumer("localhost", "0123456789", 2);
         kafkaMessageConsumer.setMessageReceiver(messageReceiver);
         kafkaMessageConsumer.init(TOPIC);
-        Thread.sleep(5000);
+        Thread.sleep(10000);
     }
 
     @After
@@ -61,7 +61,7 @@ public class KafkaMessagingTest {
     @Test
     public void testSomething() throws Exception {
         kafkaPublisher.publish(TOPIC, MESSAGE);
-        Thread.sleep(10000L);
+        Thread.sleep(20000L);
         verify(messageReceiver).receiveSerializedEvent(MESSAGE);
         verifyNoMoreInteractions(messageReceiver);
     }
