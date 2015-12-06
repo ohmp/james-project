@@ -28,6 +28,7 @@ import org.apache.james.managesieve.api.AuthenticationRequiredException;
 import org.apache.james.managesieve.api.ManageSieveError;
 import org.apache.james.managesieve.api.ManageSieveRuntimeException;
 import org.apache.james.managesieve.api.Session;
+import org.apache.james.managesieve.api.SessionTerminatedException;
 import org.apache.james.managesieve.api.SieveParser;
 import org.apache.james.managesieve.api.SyntaxException;
 import org.apache.james.managesieve.api.commands.CoreCommands;
@@ -191,6 +192,11 @@ public class CoreProcessor implements CoreCommands {
         } else {
             return "NO UNAUTHENTICATE command must be issued in authenticated state";
         }
+    }
+
+    @Override
+    public void logout() throws SessionTerminatedException {
+        throw new SessionTerminatedException();
     }
 
     protected void authenticationCheck(Session session) throws AuthenticationRequiredException {
