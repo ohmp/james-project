@@ -107,7 +107,8 @@ public class CoreProcessor implements CoreCommands {
     public String getScript(Session session, String name) throws AuthenticationRequiredException, ScriptNotFoundException, StorageException {
         authenticationCheck(session);
         try {
-            return IOUtils.toString(sieveRepository.getScript(session.getUser(), name), "UTF-8");
+            String scriptContent = IOUtils.toString(sieveRepository.getScript(session.getUser(), name), "UTF-8");
+            return "{" + scriptContent.length() + "}" + "\r\n" + scriptContent;
         } catch (UserNotFoundException ex) {
             throw new ManageSieveRuntimeException(ex);
         } catch (IOException ex) {
