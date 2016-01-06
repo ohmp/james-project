@@ -65,7 +65,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@Ignore("MAILET-96")
 public class SieveMailetTest {
 
     class Header {
