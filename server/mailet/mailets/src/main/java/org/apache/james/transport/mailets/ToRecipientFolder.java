@@ -18,11 +18,13 @@
  ****************************************************************/
 package org.apache.james.transport.mailets;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.MessagingException;
 
-import com.google.common.collect.Iterators;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.sieverepository.api.SieveRepository;
 import org.apache.james.user.api.UsersRepository;
@@ -31,9 +33,7 @@ import org.apache.mailet.MailetConfig;
 import org.apache.mailet.MailetContext;
 import org.apache.mailet.base.GenericMailet;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
+import com.google.common.collect.Iterators;
 
 /**
  * Receives a Mail from the Queue and takes care to deliver the message
