@@ -86,15 +86,15 @@ public class ToRecipientFolderTest {
 
     @Test
     public void initParameterTesting() throws Exception {
-        mailetConfig.setProperty(ToRecipientFolder.FOLDER, "Junk");
+        mailetConfig.setProperty(ToRecipientFolder.FOLDER_PARAMETER, "Junk");
         recipientFolder.init(mailetConfig);
 
-        Assert.assertEquals("Junk", recipientFolder.getInitParameter(ToRecipientFolder.FOLDER));
+        Assert.assertEquals("Junk", recipientFolder.getInitParameter(ToRecipientFolder.FOLDER_PARAMETER));
     }
 
     @Test
     public void consumeOptionShouldGhostTheMail() throws Exception {
-        mailetConfig.setProperty(ToRecipientFolder.CONSUME, "true");
+        mailetConfig.setProperty(ToRecipientFolder.CONSUME_PARAMETER, "true");
         recipientFolder.init(mailetConfig);
 
         Mail mail = createMail();
@@ -123,7 +123,7 @@ public class ToRecipientFolderTest {
         when(session.getPathDelimiter()).thenReturn('.');
         when(mailboxManager.createSystemSession(any(String.class), any(Logger.class))).thenReturn(session);
 
-        mailetConfig.setProperty(ToRecipientFolder.FOLDER, "Junk");
+        mailetConfig.setProperty(ToRecipientFolder.FOLDER_PARAMETER, "Junk");
         recipientFolder.init(mailetConfig);
         recipientFolder.service(createMail());
 
@@ -156,7 +156,7 @@ public class ToRecipientFolderTest {
         when(session.getPathDelimiter()).thenReturn('.');
         when(mailboxManager.createSystemSession(any(String.class), any(Logger.class))).thenReturn(session);
 
-        mailetConfig.setProperty(ToRecipientFolder.FOLDER, "Junk");
+        mailetConfig.setProperty(ToRecipientFolder.FOLDER_PARAMETER, "Junk");
         recipientFolder.init(mailetConfig);
         recipientFolder.service(createMail());
 
