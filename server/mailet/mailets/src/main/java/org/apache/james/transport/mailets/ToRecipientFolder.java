@@ -18,13 +18,11 @@
  ****************************************************************/
 package org.apache.james.transport.mailets;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.MessagingException;
 
+import com.google.common.collect.Iterators;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.sieverepository.api.SieveRepository;
 import org.apache.james.user.api.UsersRepository;
@@ -33,7 +31,9 @@ import org.apache.mailet.MailetConfig;
 import org.apache.mailet.MailetContext;
 import org.apache.mailet.base.GenericMailet;
 
-import com.google.common.collect.Iterators;
+import java.util.Arrays;
+import java.util.Iterator;
+
 
 /**
  * Receives a Mail from the Queue and takes care to deliver the message
@@ -59,8 +59,6 @@ public class ToRecipientFolder extends GenericMailet {
     private MailboxManager mailboxManager;
     private SieveRepository sieveRepository;
     private UsersRepository usersRepository;
-    private String folder;
-    private boolean consume;
 
     @Inject
     public void setMailboxManager(@Named("mailboxmanager")MailboxManager mailboxManager) {
@@ -88,18 +86,13 @@ public class ToRecipientFolder extends GenericMailet {
     public void service(Mail mail) throws MessagingException {
         if (!mail.getState().equals(Mail.GHOST)) {
             sieveMailet.service(mail);
-            if (consume) {
-                mail.setState(Mail.GHOST);
-            }
         }
     }
 
     @Override
     public void init() throws MessagingException {
         super.init();
-        this.folder = getInitParameter(FOLDER, "INBOX");
-        this.consume = getInitParameter(CONSUME, false);
-        sieveMailet = new SieveMailet(usersRepository, mailboxManager, sieveRepository, this.folder);
+        sieveMailet = new SieveMailet(usersRepository, mailboxManager, sieveRepository, getInitParameter(FOLDER, "INBOX"));
         sieveMailet.init(new MailetConfig() {
             
             @Override
@@ -112,7 +105,6 @@ public class ToRecipientFolder extends GenericMailet {
                     return getMailetConfig().getInitParameter(name);
                 }
             }
-            
 
             @Override
             public Iterator<String> getInitParameterNames() {
@@ -131,8 +123,8 @@ public class ToRecipientFolder extends GenericMailet {
             }
 
         });
-        // Override the default value of "quiet"
         sieveMailet.setQuiet(getInitParameter("quiet", true));
+        sieveMailet.setConsume(getInitParameter(CONSUME, false));
     }
 
     @Override
