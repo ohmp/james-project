@@ -30,31 +30,15 @@ import org.apache.james.protocols.imap.DecodingException;
 /**
  * Parse COPY commands
  */
-public class CopyCommandParser extends AbstractUidCommandParser {
+public class CopyCommandParser extends AbstractMessageRangeCommandParser {
 
     public CopyCommandParser() {
-        this(ImapCommand.selectedStateCommand(ImapConstants.COPY_COMMAND_NAME));
+        super(ImapCommand.selectedStateCommand(ImapConstants.COPY_COMMAND_NAME));
     }
 
-    protected CopyCommandParser(ImapCommand command) {
-    	super(command);
-    }
-    /**
-     * @see
-     * org.apache.james.imap.decode.parser.AbstractUidCommandParser#decode(org.apache.james.imap.api.ImapCommand,
-     * org.apache.james.imap.decode.ImapRequestLineReader, java.lang.String,
-     * boolean, org.apache.james.imap.api.process.ImapSession)
-     */
-    protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, boolean useUids, ImapSession session) throws DecodingException {
-        IdRange[] idSet = request.parseIdRange(session);
-        String mailboxName = request.mailbox();
-        request.eol();
-        return createRequest(command, tag, useUids, idSet, mailboxName);
-    }
-
-	protected CopyRequest createRequest(ImapCommand command, String tag,
-			boolean useUids, IdRange[] idSet, String mailboxName) {
+    @Override
+	protected CopyRequest createRequest(ImapCommand command, String tag, boolean useUids, IdRange[] idSet, String mailboxName) {
 		return new CopyRequest(command, idSet, mailboxName, useUids, tag);
-}
+    }
 
 }

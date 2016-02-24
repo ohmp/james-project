@@ -21,15 +21,29 @@ package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.message.IdRange;
-import org.apache.james.imap.api.message.request.ImapRequest;
 
-/**
- * {@link ImapRequest} which request the move of messages
- */
-public class MoveRequest extends AbstractMessageRangeRequest {
+public abstract class AbstractMessageRangeRequest extends AbstractImapRequest {
 
-	public MoveRequest(ImapCommand command, IdRange[] idSet, String mailboxName, boolean useUids, String tag) {
-		super(command, idSet, mailboxName, useUids, tag);
-	}
+    private final IdRange[] idSet;
+    private final String mailboxName;
+    private final boolean useUids;
 
+    public AbstractMessageRangeRequest(ImapCommand command, IdRange[] idSet, String mailboxName, boolean useUids, String tag) {
+        super(tag, command);
+        this.idSet = idSet;
+        this.mailboxName = mailboxName;
+        this.useUids = useUids;
+    }
+
+    public final IdRange[] getIdSet() {
+        return idSet;
+    }
+
+    public final String getMailboxName() {
+        return mailboxName;
+    }
+
+    public final boolean isUseUids() {
+        return useUids;
+    }
 }

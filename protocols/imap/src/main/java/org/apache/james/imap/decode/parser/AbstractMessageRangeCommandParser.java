@@ -17,19 +17,29 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.imap.message.request;
+package org.apache.james.imap.decode.parser;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.message.IdRange;
-import org.apache.james.imap.api.message.request.ImapRequest;
+import org.apache.james.imap.api.process.ImapSession;
+import org.apache.james.imap.decode.ImapRequestLineReader;
+import org.apache.james.imap.message.request.AbstractMessageRangeRequest;
+import org.apache.james.protocols.imap.DecodingException;
 
-/**
- * {@link ImapRequest} which request the move of messages
- */
-public class MoveRequest extends AbstractMessageRangeRequest {
+public abstract class AbstractMessageRangeCommandParser extends AbstractUidCommandParser {
 
-	public MoveRequest(ImapCommand command, IdRange[] idSet, String mailboxName, boolean useUids, String tag) {
-		super(command, idSet, mailboxName, useUids, tag);
-	}
+    public AbstractMessageRangeCommandParser(ImapCommand command) {
+        super(command);
+    }
+
+    protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, boolean useUids, ImapSession session) throws DecodingException {
+        IdRange[] idSet = request.parseIdRange(session);
+        String mailboxName = request.mailbox();
+        request.eol();
+        return createRequest(command, tag, useUids, idSet, mailboxName);
+    }
+
+    abstract protected AbstractMessageRangeRequest createRequest(ImapCommand command, String tag, boolean useUids, IdRange[] idSet, String mailboxName);
 
 }
