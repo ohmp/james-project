@@ -34,6 +34,7 @@ import org.apache.james.utils.ConfigurationProvider;
 import com.github.fge.lambdas.Throwing;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
@@ -41,10 +42,20 @@ import com.google.inject.multibindings.Multibinder;
 public class JMAPModule extends AbstractModule {
     private static final int DEFAULT_JMAP_PORT = 80;
 
+    private final Module methodsModule;
+
+    public JMAPModule(Module methodsModule) {
+        this.methodsModule = methodsModule;
+    }
+
+    public JMAPModule() {
+        this(new MethodsModule());
+    }
+
     @Override
     protected void configure() {
         install(new JMAPCommonModule());
-        install(new MethodsModule());
+        install(methodsModule);
         bind(RequestHandler.class).in(Singleton.class);
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(MailetConfigurationPrecondition.class);
     }
