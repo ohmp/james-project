@@ -201,8 +201,9 @@ public class CassandraMessageMapper implements MessageMapper<CassandraId> {
 
     @Override
     public MessageMetaData move(Mailbox<CassandraId> destinationMailbox, MailboxMessage<CassandraId> original) throws MailboxException {
+        MessageMetaData messageMetaData = copy(destinationMailbox, original);
         deleteUsingMailboxId(original.getMailboxId(), original);
-        return copy(destinationMailbox, original);
+        return messageMetaData;
     }
 
     @Override

@@ -73,7 +73,7 @@ public abstract class AbstractMessageMoveTest<Id extends MailboxId> {
     }
 
     @Test
-    public void movingAMessageShoudlWork() throws Exception {
+    public void movingAMessageShouldWork() throws Exception {
         messageMapper.add(benwaInboxMailbox, message1);
         message1.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
 
@@ -83,7 +83,7 @@ public abstract class AbstractMessageMoveTest<Id extends MailboxId> {
     }
 
     @Test
-    public void movingAMessageShoudlReturnCorrectMetadata() throws Exception {
+    public void movingAMessageShouldReturnCorrectMetadata() throws Exception {
         messageMapper.add(benwaInboxMailbox, message1);
         message1.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
 
@@ -95,7 +95,7 @@ public abstract class AbstractMessageMoveTest<Id extends MailboxId> {
     }
 
     @Test
-    public void movingAMessageShoudlNotViolateMessageCount() throws Exception {
+    public void movingAMessageShouldNotViolateMessageCount() throws Exception {
         messageMapper.add(benwaInboxMailbox, message1);
         message1.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
 
@@ -106,7 +106,7 @@ public abstract class AbstractMessageMoveTest<Id extends MailboxId> {
     }
 
     @Test
-    public void movingAMessageShoudlNotViolateUnseenMessageCount() throws Exception {
+    public void movingAMessageShouldNotViolateUnseenMessageCount() throws Exception {
         messageMapper.add(benwaInboxMailbox, message1);
         message1.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
 
@@ -117,7 +117,7 @@ public abstract class AbstractMessageMoveTest<Id extends MailboxId> {
     }
 
     @Test
-    public void movingASeenMessageShoudlNotIncrementUnseenMessageCount() throws Exception {
+    public void movingASeenMessageShouldNotIncrementUnseenMessageCount() throws Exception {
         message1.setFlags(new Flags(Flags.Flag.SEEN));
         messageMapper.add(benwaInboxMailbox, message1);
         message1.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
