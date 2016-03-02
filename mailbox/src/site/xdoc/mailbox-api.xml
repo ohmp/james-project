@@ -54,8 +54,8 @@
 
         <ul>
             Mailbox manager capabilities represents which operations a mailbox manager is able to support. For now the list is :
-            <li>Basic : supports all basic operations</li>
-            <li>Move : implements the move capability</li>
+            <li>Basic: supports all basic operations</li>
+            <li>Move: implements the move capability</li>
         </ul>
 
 <!-- 
