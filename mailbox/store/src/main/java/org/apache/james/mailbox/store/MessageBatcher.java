@@ -40,7 +40,6 @@ public class MessageBatcher {
         this.moveBatchSize = moveBatchSize;
     }
 
-    @SuppressWarnings("unchecked")
     public List<MessageRange> batchMessages(MessageRange set, BatchedOperation batchedOperation) throws MailboxException {
         if (moveBatchSize > 0) {
             List<MessageRange> movedRanges = new ArrayList<MessageRange>();
