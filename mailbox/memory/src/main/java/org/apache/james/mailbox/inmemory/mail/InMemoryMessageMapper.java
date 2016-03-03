@@ -98,9 +98,9 @@ public class InMemoryMessageMapper extends AbstractMessageMapper<InMemoryId> {
     @Override
     public MessageMetaData move(Mailbox<InMemoryId> mailbox, MailboxMessage<InMemoryId> original) throws MailboxException {
         InMemoryId originalMailboxId = original.getMailboxId();
-        MailboxMessage<InMemoryId> copy = SimpleMailboxMessage.copy(mailbox.getMailboxId(), original);
-        MessageMetaData messageMetaData = copy(mailbox, copy);
-        getMembershipByUidForId(originalMailboxId).remove(original.getUid());
+        long uid = original.getUid();
+        MessageMetaData messageMetaData = copy(mailbox, original);
+        getMembershipByUidForId(originalMailboxId).remove(uid);
         return messageMetaData;
     }
 
