@@ -37,20 +37,19 @@ import com.google.common.collect.ImmutableList;
 
 public class MoveProcessor extends AbstractMessageRangeProcessor<MoveRequest> implements CapabilityImplementingProcessor {
 
-	private final boolean moveCapabilitySupported;
+    private final boolean moveCapabilitySupported;
 
-	public MoveProcessor(ImapProcessor next, MailboxManager mailboxManager, StatusResponseFactory factory) {
-		super(MoveRequest.class, next, mailboxManager, factory);
+    public MoveProcessor(ImapProcessor next, MailboxManager mailboxManager, StatusResponseFactory factory) {
+        super(MoveRequest.class, next, mailboxManager, factory);
         moveCapabilitySupported = mailboxManager.getSupportedCapabilities().contains(MailboxManager.Capabilities.Move);
-	}
+    }
 
     @Override
-    protected List<MessageRange> process(MailboxPath targetMailbox,
-                                         SelectedMailbox currentMailbox,
+    protected List<MessageRange> process(MailboxPath targetMailbox, SelectedMailbox currentMailbox,
                                          MailboxSession mailboxSession,
                                          MailboxManager mailboxManager, MessageRange messageSet) throws MailboxException {
-		return mailboxManager.moveMessages(messageSet, currentMailbox.getPath(), targetMailbox, mailboxSession);
-	}
+        return mailboxManager.moveMessages(messageSet, currentMailbox.getPath(), targetMailbox, mailboxSession);
+    }
 
     @Override
     protected String getOperationName() {
@@ -58,12 +57,12 @@ public class MoveProcessor extends AbstractMessageRangeProcessor<MoveRequest> im
     }
 
     @Override
-	public List<String> getImplementedCapabilities(ImapSession session) {
+    public List<String> getImplementedCapabilities(ImapSession session) {
         if (moveCapabilitySupported) {
             return ImmutableList.of(ImapConstants.MOVE_COMMAND_NAME);
         } else {
             return ImmutableList.of();
         }
-	}
+    }
 
 }
