@@ -37,8 +37,8 @@ public class CopyCommandParser extends AbstractMessageRangeCommandParser {
     }
 
     @Override
-	protected CopyRequest createRequest(ImapCommand command, String tag, boolean useUids, IdRange[] idSet, String mailboxName) {
-		return new CopyRequest(command, idSet, mailboxName, useUids, tag);
+    protected CopyRequest createRequest(ImapCommand command, String tag, boolean useUids, IdRange[] idSet, String mailboxName) {
+        return new CopyRequest(command, idSet, mailboxName, useUids, tag);
     }
 
 }
