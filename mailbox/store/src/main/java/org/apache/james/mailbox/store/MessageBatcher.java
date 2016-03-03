@@ -29,6 +29,8 @@ import org.msgpack.core.Preconditions;
 
 public class MessageBatcher {
 
+    public static final int NO_BATCH_SIZE = 0;
+
     public interface BatchedOperation {
         List<MessageRange> execute(MessageRange messageRange) throws MailboxException;
     }
@@ -36,7 +38,7 @@ public class MessageBatcher {
     private final int moveBatchSize;
 
     public MessageBatcher(int moveBatchSize) {
-        Preconditions.checkArgument(moveBatchSize >= 0);
+        Preconditions.checkArgument(moveBatchSize >= NO_BATCH_SIZE);
         this.moveBatchSize = moveBatchSize;
     }
 

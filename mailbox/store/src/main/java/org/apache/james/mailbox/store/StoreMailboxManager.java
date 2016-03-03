@@ -191,10 +191,10 @@ public class StoreMailboxManager<Id extends MailboxId> implements MailboxManager
             this.addGlobalListener((MailboxListener) quotaUpdater, null);
         }
         if (copyBatcher == null) {
-            copyBatcher = new MessageBatcher(0);
+            copyBatcher = new MessageBatcher(MessageBatcher.NO_BATCH_SIZE);
         }
         if (moveBatcher == null) {
-            moveBatcher = new MessageBatcher(0);
+            moveBatcher = new MessageBatcher(MessageBatcher.NO_BATCH_SIZE);
         }
     }
 
