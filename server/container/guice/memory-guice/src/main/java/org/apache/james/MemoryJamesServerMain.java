@@ -38,6 +38,7 @@ import org.apache.james.modules.server.DNSServiceModule;
 import org.apache.james.modules.server.MemoryDequeueDecoratorModule;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.modules.server.MailStoreRepositoryModule;
+import org.apache.james.modules.server.MemoryMailQueueModule;
 import org.apache.james.modules.server.QuotaModule;
 import org.apache.james.modules.server.SieveModule;
 import org.apache.onami.lifecycle.jsr250.PreDestroyModule;
@@ -58,7 +59,7 @@ public class MemoryJamesServerMain {
         new SMTPServerModule(),
         new LMTPServerModule(),
         new ManageSieveServerModule(),
-        new ActiveMQQueueModule(),
+        new MemoryMailQueueModule(),
         new MemoryDequeueDecoratorModule(),
         new SieveModule(),
         new MailStoreRepositoryModule(),
