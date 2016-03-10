@@ -19,62 +19,41 @@
 
 package org.apache.james;
 
-import org.apache.james.jmap.JMAPModule;
 import org.apache.james.jmap.CassandraMethodsModule;
-import org.apache.james.modules.CommonServicesModule;
 import org.apache.james.modules.data.CassandraDomainListModule;
 import org.apache.james.modules.data.CassandraRecipientRewriteTableModule;
 import org.apache.james.modules.data.CassandraUsersRepositoryModule;
 import org.apache.james.modules.mailbox.CassandraMailboxModule;
 import org.apache.james.modules.mailbox.CassandraSessionModule;
 import org.apache.james.modules.mailbox.ElasticSearchMailboxModule;
-import org.apache.james.modules.protocols.IMAPServerModule;
-import org.apache.james.modules.protocols.JMAPServerModule;
-import org.apache.james.modules.protocols.LMTPServerModule;
-import org.apache.james.modules.protocols.ManageSieveServerModule;
-import org.apache.james.modules.protocols.POP3ServerModule;
-import org.apache.james.modules.protocols.ProtocolHandlerModule;
-import org.apache.james.modules.protocols.SMTPServerModule;
 import org.apache.james.modules.server.ActiveMQQueueModule;
-import org.apache.james.modules.server.CamelMailetContainerModule;
-import org.apache.james.modules.server.ConfigurationProviderModule;
-import org.apache.james.modules.server.DNSServiceModule;
 import org.apache.james.modules.server.CassandraDequeueDecoratorModule;
 import org.apache.james.modules.server.JMXServerModule;
-import org.apache.james.modules.server.MailStoreRepositoryModule;
 import org.apache.james.modules.server.QuotaModule;
-import org.apache.james.modules.server.SieveModule;
-import org.apache.onami.lifecycle.jsr250.PreDestroyModule;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public class CassandraJamesServerMain {
 
+    public static final Module cassandraDataModule = Modules.combine(
+        new CassandraUsersRepositoryModule(),
+        new CassandraDomainListModule(),
+        new CassandraRecipientRewriteTableModule());
+
+    public static final Module cassandraMailboxModules = Modules.combine(
+        new CassandraMailboxModule(),
+        new CassandraSessionModule(),
+        new ElasticSearchMailboxModule(),
+        new QuotaModule());
+
     public static final Module defaultModule = Modules.combine(
-            new CommonServicesModule(),
-            new CassandraMailboxModule(),
-            new CassandraSessionModule(),
-            new ElasticSearchMailboxModule(),
-            new CassandraUsersRepositoryModule(),
-            new CassandraDomainListModule(),
-            new CassandraRecipientRewriteTableModule(),
-            new DNSServiceModule(),
-            new IMAPServerModule(),
-            new ProtocolHandlerModule(),
-            new POP3ServerModule(),
-            new SMTPServerModule(),
-            new LMTPServerModule(),
-            new ManageSieveServerModule(),
-            new ActiveMQQueueModule(),
-            new CassandraDequeueDecoratorModule(),
-            new SieveModule(),
-            new MailStoreRepositoryModule(),
-            new CamelMailetContainerModule(),
-            new QuotaModule(),
-            new ConfigurationProviderModule(),
-            new JMAPServerModule(new JMAPModule(new CassandraMethodsModule())),
-            new PreDestroyModule());
+        GuiceJamesServer.protocolsModule(new CassandraMethodsModule()),
+        GuiceJamesServer.mailetProcessingModule(new CassandraDequeueDecoratorModule()),
+        GuiceJamesServer.commonUtilitiesModule,
+        cassandraDataModule,
+        cassandraMailboxModules,
+        new ActiveMQQueueModule());
 
     public static void main(String[] args) throws Exception {
         GuiceJamesServer server = new GuiceJamesServer(Modules.combine(

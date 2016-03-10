@@ -77,6 +77,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore {
         LOGGER.info("JamesMailStore init... " + this);
         List<HierarchicalConfiguration> registeredClasses = configuration.configurationsAt("mailrepositories.mailrepository");
         for (HierarchicalConfiguration registeredClass : registeredClasses) {
+            System.out.println(registeredClass.getKeys().next());
             readConfigurationEntry(registeredClass);
         }
     }
@@ -96,6 +97,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore {
 
     private void readConfigurationEntry(HierarchicalConfiguration repositoryConfiguration) throws ConfigurationException {
         String className = repositoryConfiguration.getString("[@class]");
+        System.out.println("ClassName" + className);
         MailRepositoryProvider usedMailRepository = mailRepositories.stream()
             .filter(mailRepositoryProvider -> mailRepositoryProvider.canonicalName().equals(className))
             .findAny()
