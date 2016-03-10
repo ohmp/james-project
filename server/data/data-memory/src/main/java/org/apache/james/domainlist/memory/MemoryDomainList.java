@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 
 public class MemoryDomainList extends AbstractDomainList {
 
-    private List<String> domains;
+    private final List<String> domains;
 
     public MemoryDomainList() {
         domains = new ArrayList<String>();
