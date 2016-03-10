@@ -40,12 +40,12 @@ import com.google.common.collect.Multimaps;
 
 public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
 
-    static class InMemroyMappingEntry {
+    static class InMemoryMappingEntry {
         private final String user;
         private final String domain;
         private final String mapping;
 
-        public InMemroyMappingEntry(String user, String domain, String mapping) {
+        public InMemoryMappingEntry(String user, String domain, String mapping) {
             this.user = user;
             this.domain = domain;
             this.mapping = mapping;
@@ -73,7 +73,7 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
                 return false;
             }
 
-            InMemroyMappingEntry that = (InMemroyMappingEntry) o;
+            InMemoryMappingEntry that = (InMemoryMappingEntry) o;
 
             return Objects.equal(this.user, that.user)
                 && Objects.equal(this.domain, that.domain)
@@ -86,20 +86,20 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
         }
     }
 
-    private final List<InMemroyMappingEntry> mappingEntries;
+    private final List<InMemoryMappingEntry> mappingEntries;
 
     public MemoryRecipientRewriteTable() {
-        mappingEntries = new ArrayList<InMemroyMappingEntry>();
+        mappingEntries = new ArrayList<InMemoryMappingEntry>();
     }
 
     @Override
     protected void addMappingInternal(String user, String domain, String mapping) throws RecipientRewriteTableException {
-        mappingEntries.add(new InMemroyMappingEntry(getFixedUser(user), getFixedDomain(domain), mapping));
+        mappingEntries.add(new InMemoryMappingEntry(getFixedUser(user), getFixedDomain(domain), mapping));
     }
 
     @Override
     protected void removeMappingInternal(String user, String domain, String mapping) throws RecipientRewriteTableException {
-        mappingEntries.remove(new InMemroyMappingEntry(getFixedUser(user), getFixedDomain(domain), mapping));
+        mappingEntries.remove(new InMemoryMappingEntry(getFixedUser(user), getFixedDomain(domain), mapping));
     }
 
     @Override
@@ -124,12 +124,12 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
             return null;
         }
         Map<String, Collection<Mappings>> userMappingsMap = Multimaps.transformEntries(
-            Multimaps.index(mappingEntries, new Function<InMemroyMappingEntry, String>() {
-                public String apply(InMemroyMappingEntry mappingEntry) {
+            Multimaps.index(mappingEntries, new Function<InMemoryMappingEntry, String>() {
+                public String apply(InMemoryMappingEntry mappingEntry) {
                     return mappingEntry.asKey();
                 }
-            }), new Maps.EntryTransformer<String, InMemroyMappingEntry, Mappings>() {
-                public Mappings transformEntry(String s, InMemroyMappingEntry mappingEntry) {
+            }), new Maps.EntryTransformer<String, InMemoryMappingEntry, Mappings>() {
+                public Mappings transformEntry(String s, InMemoryMappingEntry mappingEntry) {
                     return MappingsImpl.fromRawString(mappingEntry.getMapping());
                 }
             }).asMap();
@@ -147,13 +147,13 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
     private Optional<Mappings> retrieveMappings(final String user, final String domain) {
         List<String> userEntries = Lists.newArrayList(
             Iterables.transform(
-                Iterables.filter(mappingEntries, new Predicate<InMemroyMappingEntry>() {
-                    public boolean apply(InMemroyMappingEntry mappingEntry) {
+                Iterables.filter(mappingEntries, new Predicate<InMemoryMappingEntry>() {
+                    public boolean apply(InMemoryMappingEntry mappingEntry) {
                         return user.equals(mappingEntry.getUser()) && domain.equals(mappingEntry.getDomain());
                     }
-                }), new Function<InMemroyMappingEntry, String>() {
+                }), new Function<InMemoryMappingEntry, String>() {
                     @Override
-                    public String apply(InMemroyMappingEntry mappingEntry) {
+                    public String apply(InMemoryMappingEntry mappingEntry) {
                         return mappingEntry.getMapping();
                     }
                 }));
