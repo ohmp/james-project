@@ -1088,13 +1088,13 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldStripBccFromDeliveredEmail() throws Exception {
         // Sender
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
         // Recipient
         String recipientAddress = "recipient" + "@" + USERS_DOMAIN;
         String password = "password";
-        jmapServer.serverProbe().addUser(recipientAddress, password);
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
-        embeddedElasticSearch.awaitForElasticSearch();
+        getJmapServer().serverProbe().addUser(recipientAddress, password);
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
+        await();
         AccessToken recipientToken = JmapAuthentication.authenticateJamesUser(recipientAddress, password);
 
         String messageCreationId = "user|inbox|1";
@@ -1147,7 +1147,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldKeepBccInSentMailbox() throws Exception {
         // Sender
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
         String sentMailboxId = getAllMailboxesIds(accessToken).stream()
                 .filter(x -> x.get("role").equals("sent"))
                 .map(x -> x.get("id"))
@@ -1156,9 +1156,9 @@ public abstract class SetMessagesMethodTest {
         // Recipient
         String recipientAddress = "recipient" + "@" + USERS_DOMAIN;
         String password = "password";
-        jmapServer.serverProbe().addUser(recipientAddress, password);
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
-        embeddedElasticSearch.awaitForElasticSearch();
+        getJmapServer().serverProbe().addUser(recipientAddress, password);
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
+        await();
 
         String messageCreationId = "user|inbox|1";
         String fromAddress = username;
@@ -1210,19 +1210,19 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldSendMessageToBcc() throws Exception {
         // Sender
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
 
         // Recipient
         String recipientAddress = "recipient" + "@" + USERS_DOMAIN;
         String password = "password";
-        jmapServer.serverProbe().addUser(recipientAddress, password);
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
-        embeddedElasticSearch.awaitForElasticSearch();
+        getJmapServer().serverProbe().addUser(recipientAddress, password);
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
+        await();
 
         String bccAddress = "bob" + "@" + USERS_DOMAIN;
-        jmapServer.serverProbe().addUser(bccAddress, password);
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, bccAddress, "inbox");
-        embeddedElasticSearch.awaitForElasticSearch();
+        getJmapServer().serverProbe().addUser(bccAddress, password);
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, bccAddress, "inbox");
+        await();
         AccessToken bccToken = JmapAuthentication.authenticateJamesUser(bccAddress, password);
 
         String messageCreationId = "user|inbox|1";
@@ -1296,13 +1296,13 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldSendAReadableHtmlMessage() throws Exception {
         // Sender
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
         // Recipient
         String recipientAddress = "recipient" + "@" + USERS_DOMAIN;
         String password = "password";
-        jmapServer.serverProbe().addUser(recipientAddress, password);
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
-        embeddedElasticSearch.awaitForElasticSearch();
+        getJmapServer().serverProbe().addUser(recipientAddress, password);
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, "inbox");
+        await();
         AccessToken recipientToken = JmapAuthentication.authenticateJamesUser(recipientAddress, password);
 
         String messageCreationId = "user|inbox|1";

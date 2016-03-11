@@ -181,13 +181,13 @@ public abstract class GetMessagesMethodTest {
 
     @Test
     public void getMessagesShouldReturnMessageWhenHtmlMessage() throws Exception {
-        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "inbox");
+        getJmapServer().serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "inbox");
 
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
-        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "inbox"),
+        getJmapServer().serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "inbox"),
                 new ByteArrayInputStream("Content-Type: text/html\r\nSubject: my test subject\r\n\r\nThis is a <b>HTML</b> mail".getBytes()), Date.from(dateTime.toInstant()), false, new Flags());
         
-        embeddedElasticSearch.awaitForElasticSearch();
+        await();
         
         given()
             .accept(ContentType.JSON)

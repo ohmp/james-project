@@ -22,7 +22,6 @@ package org.apache.james.modules.server;
 import org.apache.james.queue.api.MailQueueFactory;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 
 public class MemoryMailQueueModule extends AbstractModule {
 

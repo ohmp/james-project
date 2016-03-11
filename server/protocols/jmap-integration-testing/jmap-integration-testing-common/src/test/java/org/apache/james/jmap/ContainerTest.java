@@ -37,7 +37,7 @@ public class ContainerTest {
             .withExposedPorts(80);
 
     @Test
-    public void containerShouldBeReachableOnExposedPort() throws ClientProtocolException, IOException, URISyntaxException {
+    public void containerShouldBeReachableOnExposedPort() throws IOException, URISyntaxException {
         String containerIpAddress = container.getContainerIpAddress();
         Integer containerPort = container.getMappedPort(80);
         Response response = Request.Get(new URIBuilder().setScheme("http").setHost(containerIpAddress).setPort(containerPort).build()).execute();

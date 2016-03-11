@@ -20,7 +20,6 @@
 package org.apache.james.modules.server;
 
 import org.apache.james.jmap.send.PostDequeueDecoratorFactory;
-import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 
