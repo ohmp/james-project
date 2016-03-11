@@ -19,18 +19,17 @@
 package org.apache.james.mailbox.store.mail.model.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.mail.Flags;
 import javax.mail.util.SharedByteArrayInputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.store.TestId;
@@ -42,6 +41,8 @@ public class SimpleMailboxMessageTest {
     private static final Charset MESSAGE_CHARSET = Charset.forName("UTF-8");
     private static final String MESSAGE_CONTENT = "Simple message content without special characters";
     private static final String MESSAGE_CONTENT_SPECIAL_CHAR = "Simple message content with special characters: \"'(§è!çà$*`";
+    public static final TestId TEST_ID = TestId.of(1L);
+    public static final int BODY_START_OCTET = 0;
     private SimpleMailboxMessage<TestId> MESSAGE;
     private SimpleMailboxMessage<TestId> MESSAGE_SPECIAL_CHAR;
 
@@ -52,36 +53,76 @@ public class SimpleMailboxMessageTest {
     }
 
     @Test
+    public void copyShouldPreserveTextualLineCount() throws Exception {
+        long textualLineCount = 42L;
+        PropertyBuilder propertyBuilder = new PropertyBuilder();
+        propertyBuilder.setTextualLineCount(textualLineCount);
+        SimpleMailboxMessage<TestId> simpleMailboxMessage = new SimpleMailboxMessage<TestId>(new Date(),
+            MESSAGE_CONTENT.length(),
+            BODY_START_OCTET,
+            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
+            new Flags(),
+            propertyBuilder,
+            TEST_ID);
+
+        assertThat(SimpleMailboxMessage.copy(TEST_ID, simpleMailboxMessage).getTextualLineCount()).isEqualTo(textualLineCount);
+    }
+
+    @Test
+    public void copyShouldPreserveMediaType() throws Exception {
+        PropertyBuilder propertyBuilder = new PropertyBuilder();
+        String text = "text";
+        propertyBuilder.setMediaType(text);
+        SimpleMailboxMessage<TestId> simpleMailboxMessage = new SimpleMailboxMessage<TestId>(new Date(),
+            MESSAGE_CONTENT.length(),
+            BODY_START_OCTET,
+            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
+            new Flags(),
+            propertyBuilder,
+            TEST_ID);
+
+        assertThat(SimpleMailboxMessage.copy(TEST_ID, simpleMailboxMessage).getMediaType()).isEqualTo(text);
+    }
+
+    @Test
+    public void copyShouldPreserveMediaSubType() throws Exception {
+        PropertyBuilder propertyBuilder = new PropertyBuilder();
+        String plain = "plain";
+        propertyBuilder.setSubType(plain);
+        SimpleMailboxMessage<TestId> simpleMailboxMessage = new SimpleMailboxMessage<TestId>(new Date(),
+            MESSAGE_CONTENT.length(),
+            BODY_START_OCTET,
+            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
+            new Flags(),
+            propertyBuilder,
+            TEST_ID);
+
+        assertThat(SimpleMailboxMessage.copy(TEST_ID, simpleMailboxMessage).getSubType()).isEqualTo(plain);
+    }
+
+    @Test
     public void testSize() {
-        assertEquals(MESSAGE_CONTENT.length(), MESSAGE.getFullContentOctets());
+        assertThat(MESSAGE.getFullContentOctets()).isEqualTo(MESSAGE_CONTENT.length());
     }
 
     @Test
     public void testInputStreamSize() throws IOException {
-        InputStream is = MESSAGE.getFullContent();
-        int byteCount = 0;
-        while (is.read() != -1) {
-            byteCount++;
-        }
-        assertEquals(MESSAGE_CONTENT.length(), byteCount);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byteArrayOutputStream.write(MESSAGE.getFullContent());
+        assertThat(byteArrayOutputStream.size()).isEqualTo(MESSAGE_CONTENT.getBytes().length);
     }
 
     @Test
     public void testInputStreamSizeSpecialCharacters() throws IOException {
-        InputStream is = MESSAGE_SPECIAL_CHAR.getFullContent();
-        int byteCount = 0;
-        while (is.read() != -1) {
-            byteCount++;
-        }
-        assertFalse(MESSAGE_CONTENT_SPECIAL_CHAR.length() == byteCount);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byteArrayOutputStream.write(MESSAGE_SPECIAL_CHAR.getFullContent());
+        assertThat(byteArrayOutputStream.size()).isEqualTo(MESSAGE_CONTENT_SPECIAL_CHAR.getBytes().length);
     }
 
     @Test
     public void testFullContent() throws IOException {
-        assertEquals(MESSAGE_CONTENT,
-                new String(IOUtils.toByteArray(MESSAGE.getFullContent()),MESSAGE_CHARSET));
-        assertEquals(MESSAGE_CONTENT_SPECIAL_CHAR,
-                new String(IOUtils.toByteArray(MESSAGE_SPECIAL_CHAR.getFullContent()),MESSAGE_CHARSET));
+        assertThat(new String(IOUtils.toByteArray(MESSAGE.getFullContent()),MESSAGE_CHARSET)).isEqualTo(MESSAGE_CONTENT);
+        assertThat(new String(IOUtils.toByteArray(MESSAGE_SPECIAL_CHAR.getFullContent()),MESSAGE_CHARSET)).isEqualTo(MESSAGE_CONTENT_SPECIAL_CHAR);
     }
 
     @Test
@@ -100,9 +141,9 @@ public class SimpleMailboxMessageTest {
 
     private static SimpleMailboxMessage<TestId> buildMessage(String content) {
         return new SimpleMailboxMessage<TestId>(Calendar.getInstance().getTime(),
-            content.length(), 0, new SharedByteArrayInputStream(
+            content.length(), BODY_START_OCTET, new SharedByteArrayInputStream(
                     content.getBytes(MESSAGE_CHARSET)), new Flags(),
-            new PropertyBuilder(), TestId.of(1L));
+            new PropertyBuilder(), TEST_ID);
     }
 
 }
