@@ -53,54 +53,6 @@ public class SimpleMailboxMessageTest {
     }
 
     @Test
-    public void copyShouldPreserveTextualLineCount() throws Exception {
-        long textualLineCount = 42L;
-        PropertyBuilder propertyBuilder = new PropertyBuilder();
-        propertyBuilder.setTextualLineCount(textualLineCount);
-        SimpleMailboxMessage<TestId> simpleMailboxMessage = new SimpleMailboxMessage<TestId>(new Date(),
-            MESSAGE_CONTENT.length(),
-            BODY_START_OCTET,
-            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
-            new Flags(),
-            propertyBuilder,
-            TEST_ID);
-
-        assertThat(SimpleMailboxMessage.copy(TEST_ID, simpleMailboxMessage).getTextualLineCount()).isEqualTo(textualLineCount);
-    }
-
-    @Test
-    public void copyShouldPreserveMediaType() throws Exception {
-        PropertyBuilder propertyBuilder = new PropertyBuilder();
-        String text = "text";
-        propertyBuilder.setMediaType(text);
-        SimpleMailboxMessage<TestId> simpleMailboxMessage = new SimpleMailboxMessage<TestId>(new Date(),
-            MESSAGE_CONTENT.length(),
-            BODY_START_OCTET,
-            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
-            new Flags(),
-            propertyBuilder,
-            TEST_ID);
-
-        assertThat(SimpleMailboxMessage.copy(TEST_ID, simpleMailboxMessage).getMediaType()).isEqualTo(text);
-    }
-
-    @Test
-    public void copyShouldPreserveMediaSubType() throws Exception {
-        PropertyBuilder propertyBuilder = new PropertyBuilder();
-        String plain = "plain";
-        propertyBuilder.setSubType(plain);
-        SimpleMailboxMessage<TestId> simpleMailboxMessage = new SimpleMailboxMessage<TestId>(new Date(),
-            MESSAGE_CONTENT.length(),
-            BODY_START_OCTET,
-            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
-            new Flags(),
-            propertyBuilder,
-            TEST_ID);
-
-        assertThat(SimpleMailboxMessage.copy(TEST_ID, simpleMailboxMessage).getSubType()).isEqualTo(plain);
-    }
-
-    @Test
     public void testSize() {
         assertThat(MESSAGE.getFullContentOctets()).isEqualTo(MESSAGE_CONTENT.length());
     }
@@ -133,10 +85,29 @@ public class SimpleMailboxMessageTest {
 
     @Test
     public void copyShouldReturnFieldByFieldEqualsObject() throws MailboxException {
-        SimpleMailboxMessage<TestId> original = buildMessage("my content");
+        long textualLineCount = 42L;
+        String text = "text";
+        String plain = "plain";
+        PropertyBuilder propertyBuilder = new PropertyBuilder();
+        propertyBuilder.setTextualLineCount(textualLineCount);
+        propertyBuilder.setMediaType(text);
+        propertyBuilder.setSubType(plain);
+        SimpleMailboxMessage<TestId> original = new SimpleMailboxMessage<TestId>(new Date(),
+            MESSAGE_CONTENT.length(),
+            BODY_START_OCTET,
+            new SharedByteArrayInputStream(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET)),
+            new Flags(),
+            propertyBuilder,
+            TEST_ID);
+
         SimpleMailboxMessage<TestId> copy = SimpleMailboxMessage.copy(TestId.of(1337), original);
+
         assertThat((Object)copy).isEqualToIgnoringGivenFields(original, "message", "mailboxId").isNotSameAs(original);
         assertThat(copy.getMessage()).usingComparator(new FieldByFieldComparator()).isEqualTo(original.getMessage());
+        assertThat(SimpleMailboxMessage.copy(TEST_ID, original).getTextualLineCount()).isEqualTo(textualLineCount);
+        assertThat(SimpleMailboxMessage.copy(TEST_ID, original).getMediaType()).isEqualTo(text);
+        assertThat(SimpleMailboxMessage.copy(TEST_ID, original).getSubType()).isEqualTo(plain);
+
     }
 
     private static SimpleMailboxMessage<TestId> buildMessage(String content) {
