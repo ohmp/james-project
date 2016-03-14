@@ -102,6 +102,5 @@ public class EmbeddedActiveMQ {
         String[] transportConnectorsURIs = {"tcp://localhost:0"};
         brokerService.setTransportConnectorURIs(transportConnectorsURIs);
         brokerService.start();
-        System.out.println("Started : " + brokerService.isStarted());
     }
 }
