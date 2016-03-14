@@ -38,13 +38,10 @@ public class MessageAssert extends AbstractAssert<MessageAssert, MailboxMessage<
         return new MessageAssert(actual);
     }
 
-    public MessageAssert isEqualTo(MailboxMessage<?> expected, MessageMapper.FetchType usedFetchType, long uid) throws IOException {
+    public MessageAssert isEqualToWithoutUid(MailboxMessage<?> expected, MessageMapper.FetchType usedFetchType) throws IOException {
         isNotNull();
         if (!Objects.equal(actual.getMailboxId(), expected.getMailboxId())) {
             failWithMessage("Expected Mailbox ID to be <%s> but was <%s>", expected.getMailboxId().toString(), actual.getMailboxId().toString());
-        }
-        if (!Objects.equal(actual.getUid(), uid)) {
-            failWithMessage("Expected UID to be <%s> but was <%s>", uid, actual.getUid());
         }
         if (!Objects.equal(actual.getInternalDate(), expected.getInternalDate())) {
             failWithMessage("Expected Internal Date to be <%s> but was <%s>", expected.getInternalDate(), actual.getInternalDate());
@@ -80,7 +77,11 @@ public class MessageAssert extends AbstractAssert<MessageAssert, MailboxMessage<
     }
 
     public MessageAssert isEqualTo(MailboxMessage<?> expected, MessageMapper.FetchType usedFetchType) throws IOException {
-        return isEqualTo(expected, usedFetchType, expected.getUid());
+        isNotNull();
+        if (!Objects.equal(actual.getUid(), expected.getUid())) {
+            failWithMessage("Expected UID to be <%s> but was <%s>", expected.getUid(), actual.getUid());
+        }
+        return isEqualToWithoutUid(expected, usedFetchType);
     }
 
     public MessageAssert hasFlags(Flags flags) {

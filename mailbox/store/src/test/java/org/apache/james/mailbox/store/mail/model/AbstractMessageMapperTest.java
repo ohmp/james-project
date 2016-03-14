@@ -443,8 +443,15 @@ public abstract class AbstractMessageMapperTest<Id extends MailboxId> {
         messageMapper.copy(benwaInboxMailbox, message7);
         message7.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
         assertThat(messageMapper.getLastUid(benwaInboxMailbox)).isGreaterThan(message6.getUid());
-        MessageAssert.assertThat(messageMapper.findInMailbox(benwaInboxMailbox, MessageRange.one(messageMapper.getLastUid(benwaInboxMailbox)), MessageMapper.FetchType.Full, LIMIT).next())
-            .isEqualTo(message7, MessageMapper.FetchType.Full, messageMapper.getLastUid(benwaInboxMailbox));
+
+        MailboxMessage result = messageMapper.findInMailbox(benwaInboxMailbox,
+            MessageRange.one(messageMapper.getLastUid(benwaInboxMailbox)),
+            MessageMapper.FetchType.Full,
+            LIMIT)
+            .next();
+
+        MessageAssert.assertThat(result).isEqualToWithoutUid(message7, MessageMapper.FetchType.Full);
+        assertThat(result.getUid()).isEqualTo(messageMapper.getLastUid(benwaInboxMailbox));
     }
     
     @Test
