@@ -35,12 +35,16 @@ import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessa
 import org.apache.james.mailbox.store.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.tika.extractor.TikaTextExtractor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 
 public class ElasticSearchMailboxModule extends AbstractModule {
+
+    private static final Logger TIMELINE_LOGGER = LoggerFactory.getLogger("timeline");
 
     @Override
     protected void configure() {
@@ -52,12 +56,16 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Singleton
     protected ClientProvider provideClientProvider(FileSystem fileSystem) throws ConfigurationException, FileNotFoundException {
         PropertiesConfiguration propertiesReader = new PropertiesConfiguration(fileSystem.getFile(FileSystem.FILE_PROTOCOL_AND_CONF + "elasticsearch.properties"));
+        TIMELINE_LOGGER.info("ElasticSearch ClientProvider instantiation started");
         ClientProvider clientProvider = new ClientProviderImpl(propertiesReader.getString("elasticsearch.masterHost"),
             propertiesReader.getInt("elasticsearch.port"));
+        TIMELINE_LOGGER.info("ElasticSearch cluster connected");
         IndexCreationFactory.createIndex(clientProvider,
             propertiesReader.getInt("elasticsearch.nb.shards"),
             propertiesReader.getInt("elasticsearch.nb.replica"));
+        TIMELINE_LOGGER.info("ElasticSearch index created");
         NodeMappingFactory.applyMapping(clientProvider);
+        TIMELINE_LOGGER.info("ElasticSearch ClientProvider instantiation done");
         return clientProvider;
     }
 
