@@ -37,13 +37,13 @@ public class SessionWithInitializedTablesFactory {
     }
 
     public Session createSession(Cluster cluster, String keyspace) {
-        TIMELINE_LOGGER.info("Cassandra initializing session started");
+        TIMELINE_LOGGER.info("3 Cassandra initializing session started");
         Session session = cluster.connect(keyspace);
         new CassandraTypesCreator(module, session)
             .initializeTypes();
         new CassandraTableManager(module, session)
             .ensureAllTables();
-        TIMELINE_LOGGER.info("Cassandra initializing session done");
+        TIMELINE_LOGGER.info("3 Cassandra initializing session done");
         return session;
     }
 

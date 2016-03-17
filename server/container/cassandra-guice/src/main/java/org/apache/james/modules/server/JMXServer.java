@@ -62,7 +62,7 @@ public class JMXServer {
     }
 
     public void start() {
-        TIMELINE_LOGGER.info("JMX startup started");
+        TIMELINE_LOGGER.info("30 JMX startup started");
         synchronized (lock) {
             if (isStarted) {
                 return;
@@ -70,12 +70,12 @@ public class JMXServer {
             isStarted = true;
             doStart();
         }
-        TIMELINE_LOGGER.info("JMX startup done");
+        TIMELINE_LOGGER.info("30 JMX startup done");
     }
 
     @PreDestroy
     public void stop() {
-        TIMELINE_LOGGER.info("JMX stop started");
+        TIMELINE_LOGGER.info("31 JMX stop started");
         synchronized (lock) {
             if (!isStarted) {
                 return;
@@ -83,7 +83,7 @@ public class JMXServer {
             isStarted = false;
             doStop();
         }
-        TIMELINE_LOGGER.info("JMX stop done");
+        TIMELINE_LOGGER.info("31 JMX stop done");
     }
 
     public void register(String key, Object remote) throws Exception {

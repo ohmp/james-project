@@ -59,10 +59,10 @@ public class CassandraDomainListModule extends AbstractModule {
 
         @Override
         public void initModule() throws Exception {
-            TIMELINE_LOGGER.info("domainList configuration started");
+            TIMELINE_LOGGER.info("19 domainList configuration started");
             cassandraDomainList.setLog(LOGGER);
             cassandraDomainList.configure(configurationProvider.getConfiguration("domainlist"));
-            TIMELINE_LOGGER.info("domainList configuration done");
+            TIMELINE_LOGGER.info("19 domainList configuration done");
         }
     }
 }

@@ -56,17 +56,32 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Singleton
     protected ClientProvider provideClientProvider(FileSystem fileSystem) throws ConfigurationException, FileNotFoundException {
         PropertiesConfiguration propertiesReader = new PropertiesConfiguration(fileSystem.getFile(FileSystem.FILE_PROTOCOL_AND_CONF + "elasticsearch.properties"));
-        TIMELINE_LOGGER.info("ElasticSearch ClientProvider instantiation started");
+        ClientProvider clientProvider = createClientProvider(propertiesReader);
+        createIndex(propertiesReader, clientProvider);
+        applyMapping(clientProvider);
+        return clientProvider;
+    }
+
+    private ClientProvider createClientProvider(PropertiesConfiguration propertiesReader) {
+        TIMELINE_LOGGER.info("15 ElasticSearch ClientProvider instantiation started");
         ClientProvider clientProvider = new ClientProviderImpl(propertiesReader.getString("elasticsearch.masterHost"),
             propertiesReader.getInt("elasticsearch.port"));
-        TIMELINE_LOGGER.info("ElasticSearch cluster connected");
+        TIMELINE_LOGGER.info("15 ElasticSearch ClientProvider instantiation done");
+        return clientProvider;
+    }
+
+    private void createIndex(PropertiesConfiguration propertiesReader, ClientProvider clientProvider) {
+        TIMELINE_LOGGER.info("16 ElasticSearch index creation started");
         IndexCreationFactory.createIndex(clientProvider,
             propertiesReader.getInt("elasticsearch.nb.shards"),
             propertiesReader.getInt("elasticsearch.nb.replica"));
-        TIMELINE_LOGGER.info("ElasticSearch index created");
+        TIMELINE_LOGGER.info("16 ElasticSearch index creation done");
+    }
+
+    private void applyMapping(ClientProvider clientProvider) {
+        TIMELINE_LOGGER.info("17 ElasticSearch ClientProvider mapping started");
         NodeMappingFactory.applyMapping(clientProvider);
-        TIMELINE_LOGGER.info("ElasticSearch ClientProvider instantiation done");
-        return clientProvider;
+        TIMELINE_LOGGER.info("17 ElasticSearch ClientProvider mapping done");
     }
 
 }

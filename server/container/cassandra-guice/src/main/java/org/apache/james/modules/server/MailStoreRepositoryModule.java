@@ -86,10 +86,10 @@ public class MailStoreRepositoryModule extends AbstractModule {
 
         @Override
         public void initModule() throws Exception {
-            TIMELINE_LOGGER.info("MailRepositoryStore initialization started");
+            TIMELINE_LOGGER.info("26 MailRepositoryStore initialization started");
             javaMailRepositoryStore.configure(configurationProvider.getConfiguration("mailrepositorystore"));
             javaMailRepositoryStore.init();
-            TIMELINE_LOGGER.info("MailRepositoryStore initialization done");
+            TIMELINE_LOGGER.info("26 MailRepositoryStore initialization done");
         }
     }
 

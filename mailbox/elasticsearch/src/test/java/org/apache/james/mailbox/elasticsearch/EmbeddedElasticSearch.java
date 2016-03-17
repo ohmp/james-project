@@ -45,7 +45,7 @@ public class EmbeddedElasticSearch extends ExternalResource {
     
     @Override
     public void before() throws IOException {
-        TIMELINE_LOGGER.info("ElasticSearch starting embedded server");
+        TIMELINE_LOGGER.info("6 ElasticSearch starting embedded server");
         node = nodeBuilder().local(true)
             .settings(ImmutableSettings.builder()
                 .put("index.store.type", "memory")
@@ -55,12 +55,12 @@ public class EmbeddedElasticSearch extends ExternalResource {
             .node();
         node.start();
         awaitForElasticSearch();
-        TIMELINE_LOGGER.info("ElasticSearch starting embedded server done");
+        TIMELINE_LOGGER.info("6 ElasticSearch starting embedded server done");
     }
 
     @Override
     public void after() {
-        TIMELINE_LOGGER.info("ElasticSearch stopping embedded server");
+        TIMELINE_LOGGER.info("5 ElasticSearch stopping embedded server");
         awaitForElasticSearch();
         try (Client client = node.client()) {
             client.admin()
@@ -71,7 +71,7 @@ public class EmbeddedElasticSearch extends ExternalResource {
             LOGGER.warn("Error while closing ES connection", e);
         }
         node.close();
-        TIMELINE_LOGGER.info("ElasticSearch stopping embedded server done");
+        TIMELINE_LOGGER.info("5 ElasticSearch stopping embedded server done");
     }
 
     public Node getNode() {

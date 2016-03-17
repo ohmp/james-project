@@ -53,9 +53,9 @@ public class EmbeddedActiveMQ {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-        TIMELINE_LOGGER.info("EmbeddedActiveMQ connecting to broker started");
+        TIMELINE_LOGGER.info("22 EmbeddedActiveMQ connecting to broker started");
         activeMQConnectionFactory = createActiveMQConnectionFactory(createBlobTransferPolicy(fileSystem));
-        TIMELINE_LOGGER.info("EmbeddedActiveMQ connecting to broker done");
+        TIMELINE_LOGGER.info("22 EmbeddedActiveMQ connecting to broker done");
     }
 
     public ConnectionFactory getConnectionFactory() {
@@ -64,9 +64,9 @@ public class EmbeddedActiveMQ {
 
     @PreDestroy
     public void stop() throws Exception {
-        TIMELINE_LOGGER.info("EmbeddedActiveMQ stop started");
+        TIMELINE_LOGGER.info("23 EmbeddedActiveMQ stop started");
         brokerService.stop();
-        TIMELINE_LOGGER.info("EmbeddedActiveMQ done started");
+        TIMELINE_LOGGER.info("23 EmbeddedActiveMQ done started");
     }
 
     private ActiveMQConnectionFactory createActiveMQConnectionFactory(BlobTransferPolicy blobTransferPolicy) {
@@ -91,7 +91,7 @@ public class EmbeddedActiveMQ {
     }
 
     private void launchEmbeddedBroker() throws Exception {
-        TIMELINE_LOGGER.info("EmbeddedActiveMQ launching broker started");
+        TIMELINE_LOGGER.info("24 EmbeddedActiveMQ launching broker started");
         brokerService = new BrokerService();
         brokerService.setBrokerName("james");
         brokerService.setUseJmx(false);
@@ -111,6 +111,6 @@ public class EmbeddedActiveMQ {
         String[] transportConnectorsURIs = {"tcp://localhost:0"};
         brokerService.setTransportConnectorURIs(transportConnectorsURIs);
         brokerService.start();
-        TIMELINE_LOGGER.info("EmbeddedActiveMQ launching broker done");
+        TIMELINE_LOGGER.info("24 EmbeddedActiveMQ launching broker done");
     }
 }

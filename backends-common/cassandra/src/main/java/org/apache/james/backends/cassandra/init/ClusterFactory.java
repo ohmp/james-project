@@ -50,7 +50,7 @@ public class ClusterFactory {
     public static Cluster createClusterForClusterWithPassWord(List<CassandraServer> servers, String userName, String password,
             Optional<Integer> refreshSchemaIntervalMillis) {
 
-        TIMELINE_LOGGER.info("Cassandra connecting to cluster started");
+        TIMELINE_LOGGER.info("2 Cassandra connecting to cluster started");
 
         Cluster.Builder clusterBuilder = Cluster.builder();
         servers.forEach(
@@ -63,7 +63,7 @@ public class ClusterFactory {
             clusterBuilder.withQueryOptions(new QueryOptions().setRefreshSchemaIntervalMillis(refreshSchemaIntervalMillis.get()));
         }
         Cluster cluster = clusterBuilder.build();
-        TIMELINE_LOGGER.info("Cassandra connecting to cluster done");
+        TIMELINE_LOGGER.info("2 Cassandra connecting to cluster done");
         return cluster;
     }
 

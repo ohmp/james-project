@@ -61,10 +61,10 @@ public class CassandraRecipientRewriteTableModule extends AbstractModule {
 
         @Override
         public void initModule() throws Exception {
-            TIMELINE_LOGGER.info("RRT configuration started");
+            TIMELINE_LOGGER.info("20 RRT configuration started");
             recipientRewriteTable.setLog(LOGGER);
             recipientRewriteTable.configure(configurationProvider.getConfiguration("recipientrewritetable"));
-            TIMELINE_LOGGER.info("RRT configuration started");
+            TIMELINE_LOGGER.info("20 RRT configuration started");
         }
     }
 

@@ -103,28 +103,28 @@ public class CamelMailetContainerModule extends AbstractModule {
         }
 
         private void initMailContext() throws ConfigurationException {
-            TIMELINE_LOGGER.info("mailetContext initialization started");
+            TIMELINE_LOGGER.info("27 mailetContext initialization started");
             mailetContext.setLog(MAILET_LOGGER);
             mailetContext.configure(configurationProvider.getConfiguration("mailetcontainer").configurationAt("context"));
             mailetContext.setMailProcessor(camelCompositeProcessor);
-            TIMELINE_LOGGER.info("mailetContext initialization done");
+            TIMELINE_LOGGER.info("27 mailetContext initialization done");
         }
 
         private void initJamesMailSpooler() throws ConfigurationException {
-            TIMELINE_LOGGER.info("jamesMailSpooler initialization started");
+            TIMELINE_LOGGER.info("28 jamesMailSpooler initialization started");
             jamesMailSpooler.setLog(SPOOLER_LOGGER);
             jamesMailSpooler.configure(configurationProvider.getConfiguration("mailetcontainer").configurationAt("spooler"));
             jamesMailSpooler.init();
-            TIMELINE_LOGGER.info("jamesMailSpooler initialization done");
+            TIMELINE_LOGGER.info("28 jamesMailSpooler initialization done");
         }
 
         private void initCamelCompositeProcessor() throws Exception {
-            TIMELINE_LOGGER.info("camelCompositeProcessor initialization started");
+            TIMELINE_LOGGER.info("29 camelCompositeProcessor initialization started");
             camelCompositeProcessor.setLog(CAMEL_LOGGER);
             camelCompositeProcessor.setCamelContext(new DefaultCamelContext());
             camelCompositeProcessor.configure(configurationProvider.getConfiguration("mailetcontainer").configurationAt("processors"));
             camelCompositeProcessor.init();
-            TIMELINE_LOGGER.info("camelCompositeProcessor initialization done");
+            TIMELINE_LOGGER.info("29 camelCompositeProcessor initialization done");
         }
     }
 

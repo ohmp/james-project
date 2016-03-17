@@ -64,12 +64,12 @@ public abstract class AbstractServerFactory implements Configurable, LogEnabled 
 
     @PostConstruct
     public void init() throws Exception {
-        TIMELINE_LOGGER.info(getClass() + " initialization started");
+        TIMELINE_LOGGER.info(getClass().getSimpleName() + "2 " + getClass().getSimpleName() + " initialization started");
         servers = createServers(log, config);
         for (AbstractConfigurableAsyncServer server: servers) {
             server.init();
         }
-        TIMELINE_LOGGER.info(getClass() + " initialization done");
+        TIMELINE_LOGGER.info(getClass().getSimpleName() + "2 " + getClass().getSimpleName() + " initialization done");
     }
     
     /**
@@ -82,11 +82,11 @@ public abstract class AbstractServerFactory implements Configurable, LogEnabled 
     
     @PreDestroy
     public void destroy() {
-        TIMELINE_LOGGER.info(getClass() + " destruction started");
+        TIMELINE_LOGGER.info(getClass().getSimpleName() + "1 " + getClass().getSimpleName() + " destruction started");
         for (AbstractConfigurableAsyncServer server: servers) {
             server.destroy();
         }
-        TIMELINE_LOGGER.info(getClass() + " destruction done");
+        TIMELINE_LOGGER.info(getClass().getSimpleName() + "1 " + getClass().getSimpleName() + " destruction done");
     }
  
 }

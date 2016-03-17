@@ -48,21 +48,22 @@ public class CassandraJamesServer {
     }
 
     public void start() throws Exception {
-        TIMELINE_LOGGER.info("Guice injections started");
+        TIMELINE_LOGGER.info("12 Guice James server started");
+        TIMELINE_LOGGER.info("11 Guice injections started");
         Injector injector = Guice.createInjector(serverModule);
-        TIMELINE_LOGGER.info("Guice injections done");
+        TIMELINE_LOGGER.info("11 Guice injections done");
 
         injector.getInstance(ConfigurationsPerformer.class).initModules();
         preDestroy = injector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
         serverProbe = injector.getInstance(GuiceServerProbe.class);
         jmapPort = injector.getInstance(JMAPServer.class).getPort();
-        TIMELINE_LOGGER.info("Guice James server started");
+        TIMELINE_LOGGER.info("12 Guice James server started");
     }
 
     public void stop() {
-        TIMELINE_LOGGER.info("Guice stopping James server");
+        TIMELINE_LOGGER.info("13 Guice stopping James server");
         preDestroy.stage();
-        TIMELINE_LOGGER.info("Guice James server stopped");
+        TIMELINE_LOGGER.info("13 Guice James server stopped");
     }
 
     public ExtendedServerProbe serverProbe() {

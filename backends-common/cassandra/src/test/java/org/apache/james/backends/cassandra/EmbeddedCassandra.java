@@ -38,13 +38,13 @@ public class EmbeddedCassandra {
     }
 
     private EmbeddedCassandra() {
-        TIMELINE_LOGGER.info("Cassandra starting Embedded server");
+        TIMELINE_LOGGER.info("1 Cassandra starting Embedded server");
         try {
             EmbeddedCassandraServerHelper.startEmbeddedCassandra(TimeUnit.SECONDS.toMillis(20));
         } catch (ConfigurationException | TTransportException | IOException | InterruptedException e) {
             Throwables.propagate(e);
         }
-        TIMELINE_LOGGER.info("Cassandra starting Embedded server done");
+        TIMELINE_LOGGER.info("1 Cassandra starting Embedded server done");
     }
     
 }

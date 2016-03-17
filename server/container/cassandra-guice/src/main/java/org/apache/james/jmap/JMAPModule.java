@@ -85,7 +85,7 @@ public class JMAPModule extends AbstractModule {
 
         @Override
         public void initModule() throws Exception {
-            TIMELINE_LOGGER.info("JMAP mailetcontainer configuration check started");
+            TIMELINE_LOGGER.info("14 JMAP mailetcontainer configuration check started");
             Optional<HierarchicalConfiguration> removeMimeHeaderMailet = configurationProvider.getConfiguration("mailetcontainer")
                 .configurationAt("processors")
                 .configurationsAt("processor")
@@ -99,7 +99,7 @@ public class JMAPModule extends AbstractModule {
             if (!removeMimeHeaderMailet.isPresent()) {
                 throw new ConfigurationException("Missing RemoveMimeHeader in mailets configuration (mailetcontainer -> processors -> transport). Should be configured to remove Bcc header");
             }
-            TIMELINE_LOGGER.info("JMAP mailetcontainer configuration check done");
+            TIMELINE_LOGGER.info("14 JMAP mailetcontainer configuration check done");
         }
     }
 }

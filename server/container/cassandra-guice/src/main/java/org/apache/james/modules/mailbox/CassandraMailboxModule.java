@@ -80,9 +80,9 @@ public class CassandraMailboxModule extends AbstractModule {
 
     @Provides @Named(MAILBOXMANAGER_NAME) @Singleton
     public MailboxManager provideMailboxManager(CassandraMailboxManager cassandraMailboxManager) throws MailboxException {
-        TIMELINE_LOGGER.info("MailboxManager initialization started");
+        TIMELINE_LOGGER.info("18 MailboxManager initialization started");
         cassandraMailboxManager.init();
-        TIMELINE_LOGGER.info("MailboxManager initialization done");
+        TIMELINE_LOGGER.info("18 MailboxManager initialization done");
         return cassandraMailboxManager;
     }
 }

@@ -53,11 +53,11 @@ public class ActiveMQQueueModule extends AbstractModule {
     @Provides
     @Singleton
     public MailQueueFactory createActiveMailQueueFactory(ActiveMQMailQueueFactory activeMQMailQueueFactory) {
-        TIMELINE_LOGGER.info("MailQueueFactory creation started");
+        TIMELINE_LOGGER.info("21 MailQueueFactory creation started");
         activeMQMailQueueFactory.setUseJMX(true);
         activeMQMailQueueFactory.setLog(LOGGER);
         activeMQMailQueueFactory.init();
-        TIMELINE_LOGGER.info("MailQueueFactory creation done");
+        TIMELINE_LOGGER.info("21 MailQueueFactory creation done");
         return activeMQMailQueueFactory;
     }
 }

@@ -32,11 +32,11 @@ public class ClusterWithKeyspaceCreatedFactory {
     private final static int DEFAULT_REPLICATION_FACTOR = 1;
 
     public static Cluster clusterWithInitializedKeyspace(Cluster cluster, String keyspace, int replicationFactor) {
-        TIMELINE_LOGGER.info("Cassandra Create keyspace started");
+        TIMELINE_LOGGER.info("4 Cassandra Create keyspace started");
         if (isKeyspacePresent(cluster, keyspace)) {
             createKeyspace(cluster, keyspace, replicationFactor);
         }
-        TIMELINE_LOGGER.info("Cassandra Create keyspace done");
+        TIMELINE_LOGGER.info("4 Cassandra Create keyspace done");
         return cluster;
     }
 

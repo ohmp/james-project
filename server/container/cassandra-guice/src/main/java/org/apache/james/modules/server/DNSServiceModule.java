@@ -55,11 +55,11 @@ public class DNSServiceModule extends AbstractModule {
         }
 
         public void initModule() throws Exception {
-            TIMELINE_LOGGER.info("DNS_Service initialization started");
+            TIMELINE_LOGGER.info("25 DNS_Service initialization started");
             dnsService.setLog(LOGGER);
             dnsService.configure(configurationProvider.getConfiguration("dnsservice"));
             dnsService.init();
-            TIMELINE_LOGGER.info("DNS_Service initialization done");
+            TIMELINE_LOGGER.info("25 DNS_Service initialization done");
         }
     }
 }
