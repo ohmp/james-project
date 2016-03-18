@@ -114,6 +114,11 @@
         <td><a href="config-fetchmail.html">FetchMail Configuration</a></td>
         <td></td>
       </tr>
+      <tr>
+        <td><a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/managesieve-template.xml">managesieve.xml</a></td>
+        <td><a href="config-managesieve.html">ManageSieve Configuration</a></td>
+        <td></td>
+      </tr>
 
     </table>
     
