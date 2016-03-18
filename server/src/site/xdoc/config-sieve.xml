@@ -26,7 +26,81 @@
 <body>
 
   <section name="Sieve Configuration">
-  
+
+      <h2>Sieve configuration</h2>
+
+      <p>James relies on the Apache JSIEVE project for parsing and interpreting SIEVE scripts. You can find
+      <a href="http://james.apache.org/jsieve/index.html">here</a> the supported SIEVE functionality and extensions,
+          along with more information about both SIEVE and JSIEVE. </p>
+
+      <p>JAMES integrates mailet to execute SIEVE scripts when a user receive an e-mail. This is integrated in the
+          LocalDelivery mailet.</p>
+
+      <p>JAMES then have to store user SIEVE scripts. This is done by the SieveRepository. A section in this page
+          describes how to configure it.</p>
+
+      <p>JAMES then introduce mechanisms to allow a user to manage its SIEVE scripts. Two mechanisms exists. You can
+          either do it threw a ManageSieve server (RFC-5804). See its configuration <a href="config-managesieve.html">
+          here</a>. Or you can use the ManageSieve mailet described in the following section (non standard). An
+          administrator can manage the quota allocated for the different users for Sieve script storage space using the
+          CLI client.</p>
+
+
+
+
+      <h2>Configuring Sieve Repository</h2>
+
+      <p>A SieveRepository is the entity responsible of storing SIEVE scripts.</p>
+
+      <p>Consult <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/sieverepository-template.xml">
+          sieverepository-template.xml</a> in GIT to get some examples and hints.</p>
+
+      <p>You must specify the SieveRepository class as attribute of the sieverepository tag. The possible choices are :
+          <ul>
+              <li>org.apache.james.sieverepository.file.SieveFileRepository</li>
+              <li>org.apache.james.sieverepository.cassandra.CassandraSieveRepository</li>
+              <li>org.apache.james.sieverepository.file.SieveDefaultRepository</li>
+          </ul>
+      </p>
+
+      <p>Please note that SieveDefaultRepository is deprecated, and included for legacy support. It requires you to
+          manually create a file in the /sieve folder for the users. This SIEVE repository do not support the notion of
+          of Active script, and the notion of quotas. Thus, it is not suitable for use with ManageSieve, either the mailets
+          or the ManageSieve server.</p>
+
+      <p>This configuration file is not needed when used with Guice.</p>
+
+
+
+
+
+      <h2>Managing Sieve scripts</h2>
+
+      <p>User can use the <a href="config-managesieve.html">ManageSieve</a> server.</p>
+
+      <p>An other non standard way to do this is by sending e-mails to the ManageSieveMailet</p>
+
+      <h3>ManageSieve mailet</h3>
+
+      <p>ManageSieveMailet interprets mail from a local sender as commands to manage Sieve scripts stored
+          on the mail server. The commands are a subset of those defined by
+          <a href="http://tools.ietf.org/html/rfc5804#section-2">rfc5804#section-2</a>.</p>
+
+      <p>For each supported command and associated response, the format is the same as defined by RFC 5804, with the
+          exception that when Sieve scripts are involved in the exchange they are attached to the mail with the MIME
+          type of 'application/sieve' rather than being embedded in the command.</p>
+
+      <p>The command is written in the subject header of a mail received by this mailet. Responses from this mailet are
+          sent to the sender as mail with the message body containing the response.</p>
+
+      <h4>An Important Note About Security</h4>
+
+      <p>
+          The mail server on which this mailet is deployed MUST robustly authenticate the sender, who MUST be local.
+          Sieve provides powerful email processing capabilities that if hijacked can expose the mail of individuals and
+          organisations to intruders.
+      </p>
+
   </section>
 
 </body>
