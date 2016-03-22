@@ -127,9 +127,9 @@ public class InMemoryMailboxMapper implements MailboxMapper<InMemoryId> {
         return false;
     }
 
-    private boolean belongsToSameUser(Mailbox<InMemoryId> mailbox, Mailbox<InMemoryId> box) {
-        return Objects.equal(mailbox.getNamespace(), box.getNamespace())
-            && Objects.equal(mailbox.getUser(), box.getUser());
+    private boolean belongsToSameUser(Mailbox<InMemoryId> mailbox, Mailbox<InMemoryId> otherMailbox) {
+        return Objects.equal(mailbox.getNamespace(), otherMailbox.getNamespace())
+            && Objects.equal(mailbox.getUser(), otherMailbox.getUser());
     }
 
     /**
