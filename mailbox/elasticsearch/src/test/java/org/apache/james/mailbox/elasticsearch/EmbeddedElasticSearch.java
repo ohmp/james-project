@@ -25,11 +25,13 @@ import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import java.io.IOException;
 
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.flush.FlushAction;
 import org.elasticsearch.action.admin.indices.flush.FlushRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.junit.rules.ExternalResource;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,15 +41,18 @@ public class EmbeddedElasticSearch extends ExternalResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddedElasticSearch.class);
 
+    private final TemporaryFolder temporaryFolder;
     private Node node;
-    
+
+    public EmbeddedElasticSearch(TemporaryFolder temporaryFolder) {
+        this.temporaryFolder = temporaryFolder;
+    }
+
     @Override
     public void before() throws IOException {
         node = nodeBuilder().local(true)
-            .settings(ImmutableSettings.builder()
-                .put("index.store.type", "memory")
-                .put("index.store.fs.memory.enabled", "true")
-                .put("script.disable_dynamic",true)
+            .settings(Settings.builder()
+                .put("path.home", temporaryFolder.getRoot().getAbsolutePath())
                 .build())
             .node();
         node.start();
@@ -82,7 +87,7 @@ public class EmbeddedElasticSearch extends ExternalResource {
 
     private boolean flush() {
         try (Client client = node.client()) {
-            new FlushRequestBuilder(client.admin().indices()).setForce(true).get();
+            new FlushRequestBuilder(client, FlushAction.INSTANCE).setForce(true).get();
             return true;
         } catch (Exception e) {
             return false;

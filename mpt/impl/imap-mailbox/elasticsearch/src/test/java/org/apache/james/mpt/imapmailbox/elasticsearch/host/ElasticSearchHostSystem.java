@@ -59,20 +59,14 @@ import com.google.inject.Inject;
 public class ElasticSearchHostSystem extends JamesImapHostSystem {
 
     private static final ImapFeatures SUPPORTED_FEATURES = ImapFeatures.of(Feature.NAMESPACE_SUPPORT);
-    
+    private PublicTemporaryFolder publicTemporaryFolder;
     private EmbeddedElasticSearch embeddedElasticSearch;
     private StoreMailboxManager<InMemoryId> mailboxManager;
     private MockAuthenticator userManager;
 
     @Inject
     public ElasticSearchHostSystem() throws Throwable {
-        this.embeddedElasticSearch = new EmbeddedElasticSearch();
-        embeddedElasticSearch.before();
-        initFields();
-    }
-
-    public EmbeddedElasticSearch getEmbeddedElasticSearch() {
-        return embeddedElasticSearch;
+        before();
     }
 
     public boolean addUser(String user, String password) throws Exception {
@@ -82,10 +76,30 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
 
     @Override
     protected void resetData() throws Exception {
-        embeddedElasticSearch.after();
-        this.embeddedElasticSearch = new EmbeddedElasticSearch();
+        after();
+        try {
+            before();
+        } catch (Throwable throwable) {
+            throw Throwables.propagate(throwable);
+        }
+    }
+
+    private void before() throws Throwable {
+        this.publicTemporaryFolder = new PublicTemporaryFolder();
+        this.embeddedElasticSearch = new EmbeddedElasticSearch(publicTemporaryFolder);
+        publicTemporaryFolder.before();
         embeddedElasticSearch.before();
         initFields();
+    }
+
+    private void after() {
+        embeddedElasticSearch.after();
+        publicTemporaryFolder.after();
+    }
+
+    @Override
+    public void afterTests() throws Exception {
+        super.afterTests();
     }
 
     private void initFields() {

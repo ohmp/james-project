@@ -50,14 +50,14 @@ public class QueryConverterTest {
         assertThatJson(queryConverter.from(searchQuery, MAILBOX_UUID).toXContent(jsonBuilder(), QueryBuilder.EMPTY_PARAMS).string())
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "    \"filtered\": {" +
-                "        \"query\": {" +
-                "                    \"match_all\": {}" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
+                "            \"match_all\": {}" +
                 "        }," +
                 "        \"filter\": {" +
-                "                    \"term\": {" +
-                "                        \"mailboxId\": \"12345\"" +
-                "                    }" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\"" +
+                "            }" +
                 "        }" +
                 "    }" +
                 "}");
@@ -70,19 +70,19 @@ public class QueryConverterTest {
         assertThatJson(queryConverter.from(searchQuery, MAILBOX_UUID).toXContent(jsonBuilder(), QueryBuilder.EMPTY_PARAMS).string())
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "    \"filtered\": {" +
-                "        \"query\": {" +
-                "                    \"match\": {" +
-                "                        \"textBody\": {" +
-                "                            \"query\": \"awesome Linagora team\"," +
-                "                            \"type\": \"boolean\"" +
-                "                        }" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
+                "            \"match\": {" +
+                "                \"textBody\": {" +
+                "                    \"query\": \"awesome Linagora team\"," +
+                "                    \"type\": \"boolean\"" +
+                "                }" +
                 "            }" +
                 "        }," +
                 "        \"filter\": {" +
-                "                    \"term\": {" +
-                "                        \"mailboxId\": \"12345\"" +
-                "                    }" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\"" +
+                "            }" +
                 "        }" +
                 "    }" +
                 "}");
@@ -95,29 +95,27 @@ public class QueryConverterTest {
         assertThatJson(queryConverter.from(searchQuery, MAILBOX_UUID).toXContent(jsonBuilder(), QueryBuilder.EMPTY_PARAMS).string())
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "  \"filtered\" : {" +
-                "    \"query\" : {" +
-                "      \"match_all\" : { }" +
-                "    }," +
-                "    \"filter\" : {" +
-                "      \"bool\" : {" +
-                "        \"must\" : [ {" +
-                "          \"range\" : {" +
-                "            \"modSeq\" : {" +
-                "              \"from\" : 42," +
-                "              \"to\" : null," +
-                "              \"include_lower\" : true," +
-                "              \"include_upper\" : true" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
+                "            \"bool\": {" +
+                "                \"filter\": {" +
+                "                    \"range\": {" +
+                "                        \"modSeq\": {" +
+                "                            \"from\": 42," +
+                "                            \"to\": null," +
+                "                            \"include_lower\": true," +
+                "                            \"include_upper\": true" +
+                "                        }" +
+                "                    }" +
+                "                }" +
                 "            }" +
-                "          }" +
-                "        }, {" +
-                "          \"term\" : {" +
-                "            \"mailboxId\" : \"12345\"" +
-                "          }" +
-                "        } ]" +
-                "      }" +
+                "        }," +
+                "        \"filter\": {" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\"" +
+                "            }" +
+                "        }" +
                 "    }" +
-                "  }" +
                 "}");
     }
 
@@ -129,33 +127,30 @@ public class QueryConverterTest {
         assertThatJson(queryConverter.from(searchQuery, MAILBOX_UUID).toXContent(jsonBuilder(), QueryBuilder.EMPTY_PARAMS).string())
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "    \"filtered\": {" +
-                "        \"query\": {" +
-                "                    \"bool\": {" +
-                "                        \"must\": [" +
-                "                            {" +
-                "                                \"match\": {" +
-                "                                    \"textBody\": {" +
-                "                                        \"query\": \"awesome Linagora team\"," +
-                "                                        \"type\": \"boolean\"" +
-                "                                    }" +
-                "                                }" +
-                "                            }," +
-                "                            {" +
-                "                                \"match\": {" +
-                "                                    \"textBody\": {" +
-                "                                        \"query\": \"Gold fish\"," +
-                "                                        \"type\": \"boolean\"" +
-                "                                    }" +
-                "                                }" +
-                "                            }" +
-                "                        ]" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
+                "            \"bool\": {" +
+                "                \"must\": [{" +
+                "                    \"match\": {" +
+                "                        \"textBody\": {" +
+                "                            \"query\": \"awesome Linagora team\"," +
+                "                            \"type\": \"boolean\"" +
+                "                        }" +
+                "                    }" +
+                "                }, {" +
+                "                    \"match\": {" +
+                "                        \"textBody\": {" +
+                "                            \"query\": \"Gold fish\"," +
+                "                            \"type\": \"boolean\"" +
+                "                        }" +
+                "                    }" +
+                "                }]" +
                 "            }" +
                 "        }," +
                 "        \"filter\": {" +
-                "                    \"term\": {" +
-                "                        \"mailboxId\": \"12345\"" +
-                "                    }" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\"" +
+                "            }" +
                 "        }" +
                 "    }" +
                 "}");
@@ -168,29 +163,27 @@ public class QueryConverterTest {
         assertThatJson(queryConverter.from(searchQuery, MAILBOX_UUID + "\"},{\"exist\":\"id\"},{\"match\":\"well done").toXContent(jsonBuilder(), QueryBuilder.EMPTY_PARAMS).string())
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "  \"filtered\" : {" +
-                "    \"query\" : {" +
-                "      \"match_all\" : { }" +
-                "    }," +
-                "    \"filter\" : {" +
-                "      \"bool\" : {" +
-                "        \"must\" : [ {" +
-                "          \"range\" : {" +
-                "            \"modSeq\" : {" +
-                "              \"from\" : 42," +
-                "              \"to\" : null," +
-                "              \"include_lower\" : true," +
-                "              \"include_upper\" : true" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
+                "            \"bool\": {" +
+                "                \"filter\": {" +
+                "                    \"range\": {" +
+                "                        \"modSeq\": {" +
+                "                            \"from\": 42," +
+                "                            \"to\": null," +
+                "                            \"include_lower\": true," +
+                "                            \"include_upper\": true" +
+                "                        }" +
+                "                    }" +
+                "                }" +
                 "            }" +
-                "          }" +
-                "        }, {" +
-                "          \"term\" : {" +
-                "            \"mailboxId\" : \"12345\\\"},{\\\"exist\\\":\\\"id\\\"},{\\\"match\\\":\\\"well done\"" +
-                "          }" +
-                "        } ]" +
-                "      }" +
+                "        }," +
+                "        \"filter\": {" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\\\"},{\\\"exist\\\":\\\"id\\\"},{\\\"match\\\":\\\"well done\"" +
+                "            }" +
+                "        }" +
                 "    }" +
-                "  }" +
                 "}");
     }
 
@@ -201,37 +194,37 @@ public class QueryConverterTest {
         assertThatJson(queryConverter.from(searchQuery, MAILBOX_UUID).toXContent(jsonBuilder(), QueryBuilder.EMPTY_PARAMS).string())
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "  \"filtered\" : {" +
-                "    \"query\" : {" +
-                "      \"nested\" : {" +
-                "        \"query\" : {" +
-                "          \"bool\" : {" +
-                "            \"should\" : [ {" +
-                "              \"match\" : {" +
-                "                \"bcc.name\" : {" +
-                "                  \"query\" : \"Benoit Tellier<btellier@free.fr>\"," +
-                "                  \"type\" : \"boolean\"" +
-                "                }" +
-                "              }" +
-                "            }, {" +
-                "              \"match\" : {" +
-                "                \"bcc.address\" : {" +
-                "                  \"query\" : \"Benoit Tellier<btellier@free.fr>\"," +
-                "                  \"type\" : \"boolean\"" +
-                "                }" +
-                "              }" +
-                "            } ]" +
-                "          }" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
+                "            \"nested\": {" +
+                "                \"query\": {" +
+                "                    \"bool\": {" +
+                "                        \"should\": [{" +
+                "                            \"match\": {" +
+                "                                \"bcc.name\": {" +
+                "                                    \"query\": \"Benoit Tellier<btellier@free.fr>\"," +
+                "                                    \"type\": \"boolean\"" +
+                "                                }" +
+                "                            }" +
+                "                        }, {" +
+                "                            \"match\": {" +
+                "                                \"bcc.address\": {" +
+                "                                    \"query\": \"Benoit Tellier<btellier@free.fr>\"," +
+                "                                    \"type\": \"boolean\"" +
+                "                                }" +
+                "                            }" +
+                "                        }]" +
+                "                    }" +
+                "                }," +
+                "                \"path\": \"bcc\"" +
+                "            }" +
                 "        }," +
-                "        \"path\" : \"bcc\"" +
-                "      }" +
-                "    }," +
-                "    \"filter\" : {" +
-                "      \"term\" : {" +
-                "        \"mailboxId\" : \"12345\"" +
-                "      }" +
+                "        \"filter\": {" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\"" +
+                "            }" +
+                "        }" +
                 "    }" +
-                "  }" +
                 "}");
     }
 
@@ -246,29 +239,24 @@ public class QueryConverterTest {
             .when(IGNORING_VALUES)
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "    \"filtered\": {" +
-                "        \"query\": {" +
-                "            \"match_all\": {}" +
-                "        }," +
-                "        \"filter\": {" +
+                "    \"bool\": {" +
+                "        \"must\": {" +
                 "            \"bool\": {" +
-                "                \"must\": [" +
-                "                    {" +
-                "                        \"range\": {" +
-                "                            \"sentDate\": {" +
-                "                                \"from\": null," +
-                "                                \"to\": \"2015-02-25T22:00:00+01:00\"," +
-                "                                \"include_lower\": true," +
-                "                                \"include_upper\": true" +
-                "                            }" +
-                "                        }" +
-                "                    }," +
-                "                    {" +
-                "                        \"term\": {" +
-                "                            \"mailboxId\": \"12345\"" +
+                "                \"filter\": {" +
+                "                    \"range\": {" +
+                "                        \"sentDate\": {" +
+                "                            \"from\": null," +
+                "                            \"to\": \"2015-02-25T22:00:00+0700\"," +
+                "                            \"include_lower\": true," +
+                "                            \"include_upper\": true" +
                 "                        }" +
                 "                    }" +
-                "                ]" +
+                "                }" +
+                "            }" +
+                "        }," +
+                "        \"filter\": {" +
+                "            \"term\": {" +
+                "                \"mailboxId\": \"12345\"" +
                 "            }" +
                 "        }" +
                 "    }" +

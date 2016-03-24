@@ -19,17 +19,14 @@
 
 package org.apache.james.mailbox.elasticsearch;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-
 import java.io.IOException;
+import java.util.Optional;
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 public class IndexCreationFactory {
 
@@ -53,7 +50,7 @@ public class IndexCreationFactory {
         }
     }
 
-    private static ClientProvider createIndex(ClientProvider clientProvider, XContentBuilder settings) {
+    private static ClientProvider createIndex(ClientProvider clientProvider, Settings settings) {
         try {
             try (Client client = clientProvider.get()) {
                 client.admin()
@@ -69,22 +66,22 @@ public class IndexCreationFactory {
         return clientProvider;
     }
 
-    public static XContentBuilder settingForInMemory() throws IOException {
-        return generateSetting(1, 0, Optional.of(jsonBuilder().startObject().field("type", "memory").endObject()));
+    public static Settings settingForInMemory() throws IOException {
+        return generateSetting(1, 0, Optional.of(Settings.builder().put("type", "memory").build()));
     }
 
-    public static XContentBuilder normalSettings(int nbShards, int nbReplica) throws IOException{
+    public static Settings normalSettings(int nbShards, int nbReplica) throws IOException{
         return generateSetting(nbShards, nbReplica, Optional.empty());
     }
 
-    private static XContentBuilder generateSetting(int nbShards, int nbReplica, Optional<XContentBuilder> store) throws IOException {
-        XContentBuilder contentBuilder = jsonBuilder().startObject()
-            .field("number_of_shards", nbShards)
-            .field("number_of_replicas", nbReplica);
+    private static Settings generateSetting(int nbShards, int nbReplica, Optional<Settings> store) throws IOException {
+        Settings.Builder settingsBuilder = Settings.builder();
+        settingsBuilder.put("number_of_shards", nbShards);
+        settingsBuilder.put("number_of_replicas", nbReplica);
         if (store.isPresent()) {
-            contentBuilder.field("store", store.get());
+            settingsBuilder.put("store", store.get());
         }
-        return contentBuilder.endObject();
+        return settingsBuilder.build();
     }
 
 }

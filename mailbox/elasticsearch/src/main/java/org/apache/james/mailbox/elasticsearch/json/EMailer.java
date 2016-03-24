@@ -20,9 +20,7 @@
 package org.apache.james.mailbox.elasticsearch.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.elasticsearch.common.base.MoreObjects;
-
-import java.util.Objects;
+import com.google.common.base.Objects;
 
 public class EMailer {
 
@@ -48,20 +46,20 @@ public class EMailer {
     public boolean equals(Object o) {
         if (o instanceof EMailer) {
             EMailer otherEMailer = (EMailer) o;
-            return Objects.equals(name, otherEMailer.name)
-                && Objects.equals(address, otherEMailer.address);
+            return Objects.equal(name, otherEMailer.name)
+                && Objects.equal(address, otherEMailer.address);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, address);
+        return Objects.hashCode(name, address);
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
+        return Objects.toStringHelper(this)
             .add("name", name)
             .add("address", address)
             .toString();
