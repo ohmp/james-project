@@ -55,11 +55,12 @@ public class DeleteByQueryPerformer {
         this.isSynchronous = isSynchronous;
     }
 
-    public void perform(QueryBuilder queryBuilder) {
+    public Void perform(QueryBuilder queryBuilder) {
         if (isSynchronous) {
-            doDeleteByQuery(queryBuilder);
+             return doDeleteByQuery(queryBuilder);
         } else {
             executor.execute(() -> doDeleteByQuery(queryBuilder));
+            return null;
         }
     }
 
