@@ -31,10 +31,12 @@ import org.slf4j.LoggerFactory;
 public class IndexCreationFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexCreationFactory.class);
+    private static final int DEFAULT_NB_SHARDS = 1;
+    private static final int DEFAULT_NB_REPLICA = 0;
 
     public static ClientProvider createIndex(ClientProvider clientProvider, int nbShards, int nbReplica) {
         try {
-            return createIndex(clientProvider, normalSettings(nbShards, nbReplica));
+            return createIndex(clientProvider, generateSetting(nbShards, nbReplica));
         } catch (IOException e) {
             LOGGER.error("Error while creating index : ", e);
             return clientProvider;
@@ -43,7 +45,7 @@ public class IndexCreationFactory {
 
     public static ClientProvider createIndex(ClientProvider clientProvider) {
         try {
-            return createIndex(clientProvider, settingForInMemory());
+            return createIndex(clientProvider, generateSetting(DEFAULT_NB_SHARDS, DEFAULT_NB_REPLICA));
         } catch (IOException e) {
             LOGGER.error("Error while creating index : ", e);
             return clientProvider;
@@ -66,22 +68,11 @@ public class IndexCreationFactory {
         return clientProvider;
     }
 
-    public static Settings settingForInMemory() throws IOException {
-        return generateSetting(1, 0, Optional.of(Settings.builder().put("type", "memory").build()));
-    }
-
-    public static Settings normalSettings(int nbShards, int nbReplica) throws IOException{
-        return generateSetting(nbShards, nbReplica, Optional.empty());
-    }
-
-    private static Settings generateSetting(int nbShards, int nbReplica, Optional<Settings> store) throws IOException {
-        Settings.Builder settingsBuilder = Settings.builder();
-        settingsBuilder.put("number_of_shards", nbShards);
-        settingsBuilder.put("number_of_replicas", nbReplica);
-        if (store.isPresent()) {
-            settingsBuilder.put("store", store.get());
-        }
-        return settingsBuilder.build();
+    private static Settings generateSetting(int nbShards, int nbReplica) throws IOException {
+        return Settings.builder()
+            .put("number_of_shards", nbShards)
+            .put("number_of_replicas", nbReplica)
+            .build();
     }
 
 }

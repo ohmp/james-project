@@ -30,7 +30,6 @@ import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -147,22 +146,22 @@ public class CriterionConverter {
                         dateOperator.getDateResultion()))));
     }
 
-    private QueryBuilder convertConjunction(SearchQuery.ConjunctionCriterion criterion) {
-        switch (criterion.getType()) {
-            case AND:
-                return convertToBoolQuery(criterion.getCriteria(), BoolQueryBuilder::must);
-            case OR:
-                return convertToBoolQuery(criterion.getCriteria(), BoolQueryBuilder::should);
-            case NOR:
-                return convertToBoolQuery(criterion.getCriteria(), BoolQueryBuilder::mustNot);
-            default:
-                throw new RuntimeException("Unexpected conjunction criteria " + criterion.getType());
-        }
+    private BoolQueryBuilder convertConjunction(SearchQuery.ConjunctionCriterion criterion) {
+        return convertToBoolQuery(criterion.getCriteria().stream().map(this::convertCriterion),
+            convertConjunctionType(criterion.getType()));
     }
 
-    private BoolQueryBuilder convertToBoolQuery(List<Criterion> criteria, BiFunction<BoolQueryBuilder, QueryBuilder, BoolQueryBuilder> addCriterionToBoolQuery) {
-        return convertToBoolQuery(criteria.stream().map(this::convertCriterion),
-            addCriterionToBoolQuery);
+    private BiFunction<BoolQueryBuilder, QueryBuilder, BoolQueryBuilder> convertConjunctionType(SearchQuery.Conjunction type) {
+        switch (type) {
+            case AND:
+                return BoolQueryBuilder::must;
+            case OR:
+                return BoolQueryBuilder::should;
+            case NOR:
+                return BoolQueryBuilder::mustNot;
+            default:
+                throw new RuntimeException("Unexpected conjunction criteria " + type);
+        }
     }
 
     private BoolQueryBuilder convertToBoolQuery(Stream<QueryBuilder> stream, BiFunction<BoolQueryBuilder, QueryBuilder, BoolQueryBuilder> addCriterionToBoolQuery) {
