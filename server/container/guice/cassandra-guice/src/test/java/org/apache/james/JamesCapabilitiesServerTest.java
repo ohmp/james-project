@@ -40,7 +40,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 
 public class JamesCapabilitiesServerTest {
 
@@ -77,7 +76,7 @@ public class JamesCapabilitiesServerTest {
     }
 
     private GuiceJamesServer<CassandraId> createCassandraJamesServer(final MailboxManager mailboxManager) {
-        return new GuiceJamesServer<>(new TypeLiteral<CassandraId>() {})
+        return new GuiceJamesServer<>(CassandraJamesServerMain.cassandraId)
             .combineWith(CassandraJamesServerMain.cassandraServerModule)
             .overrideWith(new TestElasticSearchModule(embeddedElasticSearch),
                 new TestFilesystemModule(temporaryFolder),
@@ -89,6 +88,7 @@ public class JamesCapabilitiesServerTest {
                         bind(MailboxManager.class).toInstance(mailboxManager);
                     }
 
+                    @SuppressWarnings("unused")
                     @Provides
                     @Singleton
                     Session provideSession(CassandraModule cassandraModule) {
