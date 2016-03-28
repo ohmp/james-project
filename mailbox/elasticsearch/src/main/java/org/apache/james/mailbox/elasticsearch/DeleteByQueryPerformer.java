@@ -35,16 +35,22 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 
 public class DeleteByQueryPerformer {
-    public static final int BATCH_SIZE = 100;
+    public static final int DEFAULT_BATCH_SIZE = 100;
     public static final TimeValue TIMEOUT = new TimeValue(60000);
 
     private final ClientProvider clientProvider;
     private final ExecutorService executor;
+    private final int batchSize;
 
     @Inject
     public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor) {
+        this(clientProvider, executor, DEFAULT_BATCH_SIZE);
+    }
+
+    public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize) {
         this.clientProvider = clientProvider;
         this.executor = executor;
+        this.batchSize = batchSize;
     }
 
     public void perform(QueryBuilder queryBuilder) {
@@ -59,7 +65,7 @@ public class DeleteByQueryPerformer {
                     .setScroll(TIMEOUT)
                     .setNoFields()
                     .setQuery(queryBuilder)
-                    .setSize(BATCH_SIZE));
+                    .setSize(batchSize));
             for (SearchResponse searchResponse : scrollIterable) {
                 deleteRetrievedIds(client, searchResponse);
             }
