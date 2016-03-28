@@ -56,7 +56,7 @@ public class ElasticSearchIndexerTest {
     public void setup() throws IOException {
         node = embeddedElasticSearch.getNode();
         TestingClientProvider clientProvider = new TestingClientProvider(node);
-        deleteByQueryPerformer = new DeleteByQueryPerformer(clientProvider, Executors.newSingleThreadExecutor(), MINIMUM_BATCH_SIZE);
+        deleteByQueryPerformer = new DeleteByQueryPerformer(clientProvider, Executors.newSingleThreadExecutor(), MINIMUM_BATCH_SIZE, true);
         testee = new ElasticSearchIndexer(clientProvider, deleteByQueryPerformer);
     }
     

@@ -170,7 +170,7 @@ public class ElasticSearchIntegrationTest {
         );
         MailboxSessionMapperFactory<InMemoryId> mapperFactory = new InMemoryMailboxSessionMapperFactory();
         elasticSearchListeningMessageSearchIndex = new ElasticSearchListeningMessageSearchIndex<>(mapperFactory,
-            new ElasticSearchIndexer(clientProvider, new DeleteByQueryPerformer(clientProvider, Executors.newSingleThreadExecutor(), BATCH_SIZE)),
+            new ElasticSearchIndexer(clientProvider, new DeleteByQueryPerformer(clientProvider, Executors.newSingleThreadExecutor(), BATCH_SIZE, true)),
             new ElasticSearchSearcher<>(clientProvider, new QueryConverter(new CriterionConverter()), SEARCH_SIZE),
             new MessageToElasticSearchJson(new DefaultTextExtractor(), ZoneId.of("Europe/Paris")));
         storeMailboxManager = new StoreMailboxManager<>(

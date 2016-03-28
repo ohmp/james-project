@@ -41,20 +41,26 @@ public class DeleteByQueryPerformer {
     private final ClientProvider clientProvider;
     private final ExecutorService executor;
     private final int batchSize;
+    private final boolean isSynchronous;
 
     @Inject
     public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor) {
-        this(clientProvider, executor, DEFAULT_BATCH_SIZE);
+        this(clientProvider, executor, DEFAULT_BATCH_SIZE, false);
     }
 
-    public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize) {
+    public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize, boolean isSynchronous) {
         this.clientProvider = clientProvider;
         this.executor = executor;
         this.batchSize = batchSize;
+        this.isSynchronous = isSynchronous;
     }
 
     public void perform(QueryBuilder queryBuilder) {
-        executor.execute(() -> doDeleteByQuery(queryBuilder));
+        if (isSynchronous) {
+            doDeleteByQuery(queryBuilder);
+        } else {
+            executor.execute(() -> doDeleteByQuery(queryBuilder));
+        }
     }
 
     private Void doDeleteByQuery(QueryBuilder queryBuilder) {
