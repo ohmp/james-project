@@ -41,30 +41,24 @@ public class DeleteByQueryPerformer {
     private final ClientProvider clientProvider;
     private final ExecutorService executor;
     private final int batchSize;
-    private final boolean isSynchronous;
 
     @Inject
     public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor) {
-        this(clientProvider, executor, DEFAULT_BATCH_SIZE, false);
+        this(clientProvider, executor, DEFAULT_BATCH_SIZE);
     }
 
-    public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize, boolean isSynchronous) {
+    public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize) {
         this.clientProvider = clientProvider;
         this.executor = executor;
         this.batchSize = batchSize;
-        this.isSynchronous = isSynchronous;
     }
 
     public Void perform(QueryBuilder queryBuilder) {
-        if (isSynchronous) {
-             return doDeleteByQuery(queryBuilder);
-        } else {
-            executor.execute(() -> doDeleteByQuery(queryBuilder));
-            return null;
-        }
+        executor.execute(() -> doDeleteByQuery(queryBuilder));
+        return null;
     }
 
-    private Void doDeleteByQuery(QueryBuilder queryBuilder) {
+    protected void doDeleteByQuery(QueryBuilder queryBuilder) {
         try (Client client = clientProvider.get()) {
             ScrollIterable scrollIterable = new ScrollIterable(client,
                 client.prepareSearch(ElasticSearchIndexer.MAILBOX_INDEX)
@@ -76,7 +70,6 @@ public class DeleteByQueryPerformer {
             for (SearchResponse searchResponse : scrollIterable) {
                 deleteRetrievedIds(client, searchResponse);
             }
-            return null;
         }
     }
 
