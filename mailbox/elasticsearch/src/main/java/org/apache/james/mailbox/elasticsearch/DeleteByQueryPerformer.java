@@ -34,6 +34,8 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class DeleteByQueryPerformer {
     public static final int DEFAULT_BATCH_SIZE = 100;
     public static final TimeValue TIMEOUT = new TimeValue(60000);
@@ -47,7 +49,8 @@ public class DeleteByQueryPerformer {
         this(clientProvider, executor, DEFAULT_BATCH_SIZE);
     }
 
-    public DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize) {
+    @VisibleForTesting
+    DeleteByQueryPerformer(ClientProvider clientProvider, @Named("AsyncExecutor") ExecutorService executor, int batchSize) {
         this.clientProvider = clientProvider;
         this.executor = executor;
         this.batchSize = batchSize;
