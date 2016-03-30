@@ -63,16 +63,15 @@ public class DeleteByQueryPerformer {
 
     protected void doDeleteByQuery(QueryBuilder queryBuilder) {
         try (Client client = clientProvider.get()) {
-            ScrollIterable scrollIterable = new ScrollIterable(client,
+            new ScrollIterable(client,
                 client.prepareSearch(ElasticSearchIndexer.MAILBOX_INDEX)
                     .setTypes(ElasticSearchIndexer.MESSAGE_TYPE)
                     .setScroll(TIMEOUT)
                     .setNoFields()
                     .setQuery(queryBuilder)
-                    .setSize(batchSize));
-            for (SearchResponse searchResponse : scrollIterable) {
-                deleteRetrievedIds(client, searchResponse);
-            }
+                    .setSize(batchSize))
+                .stream()
+                .forEach(searchResponse -> deleteRetrievedIds(client, searchResponse));
         }
     }
 
