@@ -66,7 +66,7 @@ public class ElasticSearchSearcher<Id extends MailboxId> {
 
     public Iterator<Long> search(Mailbox<Id> mailbox, SearchQuery searchQuery) throws MailboxException {
         try (Client client = clientProvider.get()) {
-            return new ScrollIterable(client, getSearchRequestBuilder(client, mailbox, searchQuery)).toStream()
+            return new ScrollIterable(client, getSearchRequestBuilder(client, mailbox, searchQuery)).stream()
                 .flatMap(this::transformResponseToUidStream)
                 .iterator();
         }

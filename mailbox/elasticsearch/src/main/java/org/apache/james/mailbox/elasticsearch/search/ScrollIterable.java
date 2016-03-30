@@ -31,6 +31,7 @@ import org.elasticsearch.common.unit.TimeValue;
 
 public class ScrollIterable implements Iterable<SearchResponse> {
 
+    private static final TimeValue TIMEOUT = new TimeValue(60000);
     private final Client client;
     private final SearchRequestBuilder searchRequestBuilder;
 
@@ -44,7 +45,7 @@ public class ScrollIterable implements Iterable<SearchResponse> {
         return new ScrollIterator(client, searchRequestBuilder);
     }
 
-    public Stream<SearchResponse> toStream() {
+    public Stream<SearchResponse> stream() {
         return StreamSupport.stream(spliterator(), false);
     }
 
@@ -67,7 +68,7 @@ public class ScrollIterable implements Iterable<SearchResponse> {
         public SearchResponse next() {
             SearchResponse result = searchResponseFuture.actionGet();
             searchResponseFuture =  client.prepareSearchScroll(result.getScrollId())
-                .setScroll(new TimeValue(60000))
+                .setScroll(TIMEOUT)
                 .execute();
             return result;
         }

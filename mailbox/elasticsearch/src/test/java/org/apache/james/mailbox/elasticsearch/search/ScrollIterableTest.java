@@ -165,7 +165,7 @@ public class ScrollIterableTest {
     }
 
     private List<String> convertToIdList(ScrollIterable scrollIterable) {
-        return scrollIterable.toStream()
+        return scrollIterable.stream()
             .flatMap(searchResponse -> Arrays.asList(searchResponse.getHits().getHits()).stream())
             .map(SearchHit::getId)
             .collect(Collectors.toList());
