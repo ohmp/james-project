@@ -75,7 +75,7 @@ public class VacationMailetTest {
     public void unactivatedVacationShouldNotSendNotification() throws Exception {
         FakeMail mail = createFakeMail();
         when(zonedDateTimeProvider.get()).thenReturn(DATE_TIME_2);
-        when(vacationRepository.retrieveVacation(AccountId.create(USERNAME)))
+        when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME)))
             .thenReturn(CompletableFuture.completedFuture(VacationRepository.DEFAULT_VACATION));
 
         testee.service(mail);
@@ -86,7 +86,7 @@ public class VacationMailetTest {
     @Test
     public void activateVacationShouldSendNotification() throws Exception {
         FakeMail mail = createFakeMail();
-        when(vacationRepository.retrieveVacation(AccountId.create(USERNAME)))
+        when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME)))
             .thenReturn(CompletableFuture.completedFuture(
                 Vacation.builder()
                     .enabled(true)
@@ -100,6 +100,25 @@ public class VacationMailetTest {
 
         FakeMailContext.SentMail expected = new FakeMailContext.SentMail(originalRecipient, ImmutableList.of(originalSender), null);
         assertThat(fakeMailContext.getSentMails()).containsExactly(expected);
+    }
+
+    @Test
+    public void activateVacationShouldNotSendNotificationToMailingList() throws Exception {
+        FakeMail mail = createFakeMail();
+        mail.setSender(new MailAddress("owner-list@any.com"));
+        when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME)))
+            .thenReturn(CompletableFuture.completedFuture(
+                Vacation.builder()
+                    .enabled(true)
+                    .fromDate(Optional.of(DATE_TIME_1))
+                    .toDate(Optional.of(DATE_TIME_3))
+                    .textBody("Explaining my vacation")
+                    .build()));
+        when(zonedDateTimeProvider.get()).thenReturn(DATE_TIME_2);
+
+        testee.service(mail);
+
+        assertThat(fakeMailContext.getSentMails()).isEmpty();
     }
 
     private FakeMail createFakeMail() throws MessagingException {

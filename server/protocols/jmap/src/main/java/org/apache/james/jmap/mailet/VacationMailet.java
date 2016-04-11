@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.mailet;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -32,6 +31,7 @@ import org.apache.james.jmap.utils.ZonedDateTimeProvider;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
 import org.apache.mailet.base.GenericMailet;
+import org.apache.mailet.base.MailetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ public class VacationMailet extends GenericMailet {
         mail.getRecipients()
             .stream()
             .map(mailAddress -> new ContextualizedValue<>(mailAddress,
-                AccountId.create(mailAddress.getLocalPart() + "@" + mailAddress.getDomain())))
+                AccountId.fromString(mailAddress.getLocalPart() + "@" + mailAddress.getDomain())))
             .map(accountIdWithContext -> new ContextualizedValue<>(accountIdWithContext.getRecipient(),
                 vacationRepository.retrieveVacation(accountIdWithContext.getValue())))
             .map(vacationWithContext -> manageVacation(vacationWithContext, mail))
@@ -102,13 +102,15 @@ public class VacationMailet extends GenericMailet {
 
     private void sendNotification(MailAddress recipient, Mail processedMail, Vacation vacation) {
         try {
-            VacationReply vacationReply = VacationReply.builder(processedMail)
-                .mailRecipient(recipient)
-                .reason(vacation.getTextBody())
-                .build();
-            getMailetContext().sendMail(vacationReply.getSender(),
-                vacationReply.getRecipients(),
-                vacationReply.getMimeMessage());
+            if (MailetUtil.canSendAutomaticResponse(processedMail)) {
+                VacationReply vacationReply = VacationReply.builder(processedMail)
+                    .mailRecipient(recipient)
+                    .reason(vacation.getTextBody())
+                    .build();
+                getMailetContext().sendMail(vacationReply.getSender(),
+                    vacationReply.getRecipients(),
+                    vacationReply.getMimeMessage());
+            }
         } catch (MessagingException e) {
             LOGGER.warn("Failed to send JMAP vacation notification from {} to {}", recipient, processedMail.getSender(), e);
         }
