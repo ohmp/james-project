@@ -56,7 +56,6 @@ public class CassandraAccessTokenDAO {
             .where(eq(CassandraAccessTokenTable.TOKEN, bindMarker(CassandraAccessTokenTable.TOKEN))));
 
         this.insertStatement = session.prepare(insertInto(CassandraAccessTokenTable.TABLE_NAME)
-            .ifNotExists()
             .value(CassandraAccessTokenTable.TOKEN, bindMarker(CassandraAccessTokenTable.TOKEN))
             .value(CassandraAccessTokenTable.USERNAME, bindMarker(CassandraAccessTokenTable.USERNAME))
             .using(ttl(bindMarker(TTL))));
@@ -66,8 +65,8 @@ public class CassandraAccessTokenDAO {
             .where(eq(CassandraAccessTokenTable.TOKEN, bindMarker(CassandraAccessTokenTable.TOKEN))));
     }
 
-    public CompletableFuture<Boolean> addToken(String username, AccessToken accessToken) {
-        return cassandraAsyncExecutor.executeReturnApplied(insertStatement.bind()
+    public CompletableFuture<Void> addToken(String username, AccessToken accessToken) {
+        return cassandraAsyncExecutor.executeVoid(insertStatement.bind()
             .setUUID(CassandraAccessTokenTable.TOKEN, accessToken.getToken())
             .setString(CassandraAccessTokenTable.USERNAME, username)
             .setInt(TTL, durationInSeconds));
