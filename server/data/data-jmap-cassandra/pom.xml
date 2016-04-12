@@ -33,7 +33,7 @@
     <artifactId>james-server-data-jmap-cassandra</artifactId>
     <packaging>jar</packaging>
 
-    <name>Apache James :: Server :: Data :: JMAP</name>
+    <name>Apache James :: Server :: Data :: JMAP :: Cassandra persistance</name>
 
     <profiles>
         <profile>
