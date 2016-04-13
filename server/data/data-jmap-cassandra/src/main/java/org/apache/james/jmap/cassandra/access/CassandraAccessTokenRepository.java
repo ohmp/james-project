@@ -37,8 +37,8 @@ public class CassandraAccessTokenRepository implements AccessTokenRepository {
     private final CassandraAccessTokenDAO cassandraAccessTokenDAO;
 
     @Inject
-    public CassandraAccessTokenRepository(Session session, @Named(TOKEN_EXPIRATION_IN_MS) long durationInMilliseconds) {
-        this.cassandraAccessTokenDAO = new CassandraAccessTokenDAO(session, durationInMilliseconds);
+    public CassandraAccessTokenRepository(CassandraAccessTokenDAO cassandraAccessTokenDAO) {
+        this.cassandraAccessTokenDAO = cassandraAccessTokenDAO;
     }
 
     @Override
