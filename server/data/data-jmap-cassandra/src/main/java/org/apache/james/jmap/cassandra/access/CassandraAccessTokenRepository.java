@@ -58,13 +58,11 @@ public class CassandraAccessTokenRepository implements AccessTokenRepository {
     }
 
     @Override
-    public CompletableFuture<Try<String>> getUsernameFromToken(AccessToken accessToken) throws InvalidAccessToken {
+    public CompletableFuture<String> getUsernameFromToken(AccessToken accessToken) throws InvalidAccessToken {
         Preconditions.checkNotNull(accessToken);
 
         return cassandraAccessTokenDAO.getUsernameFromToken(accessToken)
             .thenApply(
-                optional -> Try.ofFailable(
-                    () -> optional.orElseThrow(
-                        () -> new InvalidAccessToken(accessToken))));
+                optional -> optional.<InvalidAccessToken>orElseThrow(() -> new InvalidAccessToken(accessToken)));
     }
 }

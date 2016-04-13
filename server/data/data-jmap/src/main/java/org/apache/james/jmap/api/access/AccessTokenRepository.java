@@ -33,6 +33,6 @@ public interface AccessTokenRepository {
 
     CompletableFuture<Void> removeToken(AccessToken accessToken);
 
-    CompletableFuture<Try<String>> getUsernameFromToken(AccessToken accessToken) throws InvalidAccessToken;
+    CompletableFuture<String> getUsernameFromToken(AccessToken accessToken) throws InvalidAccessToken;
 
 }

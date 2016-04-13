@@ -22,6 +22,8 @@ package org.apache.james.jmap.api.access;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.concurrent.CompletionException;
+
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,27 +45,30 @@ public abstract class AbstractAccessTokenRepositoryTest {
 
     @Test
     public void validTokenMustBeRetrieved() throws Throwable {
-        accessTokenRepository.addToken(USERNAME, TOKEN);
-        assertThat(accessTokenRepository.getUsernameFromToken(TOKEN).join().get()).isEqualTo(USERNAME);
+        accessTokenRepository.addToken(USERNAME, TOKEN).join();
+        assertThat(accessTokenRepository.getUsernameFromToken(TOKEN).join()).isEqualTo(USERNAME);
     }
 
     @Test
     public void absentTokensMustBeInvalid() throws Exception {
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join().get()).isInstanceOf(InvalidAccessToken.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join()).isInstanceOf(CompletionException.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join()).hasCauseInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
     public void removedTokensMustBeInvalid() throws Exception {
-        accessTokenRepository.addToken(USERNAME, TOKEN);
-        accessTokenRepository.removeToken(TOKEN);
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join().get()).isInstanceOf(InvalidAccessToken.class);
+        accessTokenRepository.addToken(USERNAME, TOKEN).join();
+        accessTokenRepository.removeToken(TOKEN).join();
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join()).isInstanceOf(CompletionException.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join()).hasCauseInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
     public void outDatedTokenMustBeInvalid() throws Exception {
-        accessTokenRepository.addToken(USERNAME, TOKEN);
+        accessTokenRepository.addToken(USERNAME, TOKEN).join();
         Thread.sleep(2 * TTL_IN_MS);
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join().get()).isInstanceOf(InvalidAccessToken.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join()).isInstanceOf(CompletionException.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).join()).hasCauseInstanceOf(InvalidAccessToken.class);
     }
 
     @Test(expected = NullPointerException.class)
