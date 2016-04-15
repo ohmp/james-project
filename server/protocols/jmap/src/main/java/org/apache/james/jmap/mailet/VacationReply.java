@@ -21,6 +21,7 @@ package org.apache.james.jmap.mailet;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
@@ -43,6 +44,7 @@ public class VacationReply {
         private final Mail originalMail;
         private MailAddress mailRecipient;
         private String reason;
+        private Optional<String> subject = Optional.empty();
 
         public Builder(Mail originalMail) {
             Preconditions.checkNotNull(originalMail, "Origin mail shall not be null");
@@ -59,11 +61,19 @@ public class VacationReply {
             return this;
         }
 
+        public Builder subject(Optional<String> subject) {
+            this.subject = subject;
+            return this;
+        }
+
         public VacationReply build() throws MessagingException {
             Preconditions.checkNotNull(mailRecipient, "Original recipient address should not be null");
 
             MimeMessage reply = (MimeMessage) originalMail.getMessage().reply(false);
             reply.setContent(generateNotificationContent());
+            if (subject.isPresent()) {
+                reply.setHeader("subject", subject.get());
+            }
 
             return new VacationReply(mailRecipient, Lists.newArrayList(originalMail.getSender()), reply);
         }
