@@ -23,8 +23,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 
-import com.jasongoodwin.monads.Try;
-
 public interface AccessTokenRepository {
 
     String TOKEN_EXPIRATION_IN_MS = "tokenExpirationInMs";

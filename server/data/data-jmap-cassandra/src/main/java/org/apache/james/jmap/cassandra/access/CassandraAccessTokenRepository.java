@@ -22,15 +22,12 @@ package org.apache.james.jmap.cassandra.access;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.access.AccessTokenRepository;
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 
-import com.datastax.driver.core.Session;
 import com.google.common.base.Preconditions;
-import com.jasongoodwin.monads.Try;
 
 public class CassandraAccessTokenRepository implements AccessTokenRepository {
 

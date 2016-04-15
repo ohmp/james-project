@@ -33,7 +33,6 @@ import org.apache.james.jmap.api.access.AccessTokenRepository;
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 
 import com.google.common.base.Preconditions;
-import com.jasongoodwin.monads.Try;
 
 @Singleton
 public class MemoryAccessTokenRepository implements AccessTokenRepository {

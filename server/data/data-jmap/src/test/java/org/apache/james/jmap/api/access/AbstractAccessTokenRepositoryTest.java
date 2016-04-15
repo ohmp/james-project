@@ -32,7 +32,7 @@ public abstract class AbstractAccessTokenRepositoryTest {
 
     private static final AccessToken TOKEN = AccessToken.generate();
     private static final String USERNAME = "username";
-    public static final long TTL_IN_MS = 1000;
+    protected static final long TTL_IN_MS = 1000;
 
     private AccessTokenRepository accessTokenRepository;
 
