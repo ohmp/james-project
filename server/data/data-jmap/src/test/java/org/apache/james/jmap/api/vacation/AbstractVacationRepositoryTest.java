@@ -21,7 +21,6 @@ package org.apache.james.jmap.api.vacation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -31,7 +30,7 @@ import org.junit.Test;
 public abstract class AbstractVacationRepositoryTest {
 
     public static final AccountId ACCOUNT_ID = AccountId.create("identifier");
-    public static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.of(2016, 4, 3, 2, 1, 0, 0, ZoneId.systemDefault());
+    public static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.parse("2016-04-03T02:01+07:00[Asia/Vientiane]");
     public static final Vacation VACATION_1 = Vacation.builder().enabled(true).build();
     public static final Vacation VACATION_2 = Vacation.builder().fromDate(Optional.of(ZONED_DATE_TIME)).enabled(true).build();
 
