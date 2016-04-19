@@ -34,7 +34,6 @@ import org.apache.james.jmap.JmapAuthentication;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.vacation.AccountId;
 import org.apache.james.jmap.api.vacation.Vacation;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,7 +103,7 @@ public abstract class GetVacationResponseTest {
 
     @Test
     public void getVacationResponseShouldReturnStoredValue() {
-        jmapServer.serverProbe().modifyVacation(AccountId.create(USER),
+        jmapServer.serverProbe().modifyVacation(AccountId.fromString(USER),
             Vacation.builder()
                 .enabled(true)
                 .fromDate(Optional.of(ZonedDateTime.parse("2014-09-30T14:10:00Z")))
@@ -137,7 +136,7 @@ public abstract class GetVacationResponseTest {
 
     @Test
     public void getVacationResponseShouldReturnStoredValueWithNonDefaultTimezone() {
-        jmapServer.serverProbe().modifyVacation(AccountId.create(USER),
+        jmapServer.serverProbe().modifyVacation(AccountId.fromString(USER),
             Vacation.builder()
                 .enabled(true)
                 .fromDate(Optional.of(ZonedDateTime.parse("2014-09-30T14:10:00+02:00")))
@@ -170,7 +169,7 @@ public abstract class GetVacationResponseTest {
 
     @Test
     public void accountIdIsNotSupported() {
-        jmapServer.serverProbe().modifyVacation(AccountId.create(USER),
+        jmapServer.serverProbe().modifyVacation(AccountId.fromString(USER),
             Vacation.builder()
                 .enabled(true)
                 .fromDate(Optional.of(ZonedDateTime.parse("2014-09-30T14:10:00+02:00")))

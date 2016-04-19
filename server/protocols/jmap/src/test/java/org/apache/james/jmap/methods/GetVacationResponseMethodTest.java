@@ -82,7 +82,7 @@ public class GetVacationResponseMethodTest {
             .enabled(true)
             .textBody("I am in vacation")
             .build();
-        when(vacationRepository.retrieveVacation(AccountId.create(USERNAME))).thenReturn(CompletableFuture.completedFuture(vacation));
+        when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME))).thenReturn(CompletableFuture.completedFuture(vacation));
         when(mailboxSession.getUser()).thenReturn(user);
         when(user.getUserName()).thenReturn(USERNAME);
 
