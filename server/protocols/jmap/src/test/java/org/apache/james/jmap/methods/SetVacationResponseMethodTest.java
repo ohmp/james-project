@@ -172,7 +172,7 @@ public class SetVacationResponseMethodTest {
     }
 
     @Test
-    public void processShouldWork() {
+    public void processShouldUpdateRepositoryUponValidRequest() {
         SetVacationRequest setVacationRequest = SetVacationRequest.builder()
             .update(ImmutableMap.of(Vacation.ID, VacationResponse.builder()
                     .id(Vacation.ID)
@@ -221,10 +221,10 @@ public class SetVacationResponseMethodTest {
             .clientId(clientId)
             .responseName(SetVacationResponseMethod.RESPONSE_NAME)
             .response(SetVacationResponse.builder()
-                .notUpdated(ImmutableMap.of(Vacation.ID, SetError.builder()
+                .notUpdated(Vacation.ID, SetError.builder()
                     .type(SetVacationResponseMethod.INVALID_ARGUMENTS)
                     .description(SetVacationResponseMethod.ERROR_MESSAGE_BASE + WRONG_ID)
-                    .build()))
+                    .build())
                 .build())
             .build();
         assertThat(result).containsExactly(expected);

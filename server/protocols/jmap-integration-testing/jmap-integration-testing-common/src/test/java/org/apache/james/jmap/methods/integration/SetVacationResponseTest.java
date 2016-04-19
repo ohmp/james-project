@@ -23,10 +23,10 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.jmap.JmapAuthentication;
@@ -168,8 +168,8 @@ public abstract class SetVacationResponseTest {
         Vacation vacation = jmapServer.serverProbe().retrieveVacation(AccountId.fromString(USER));
         assertThat(vacation.getTextBody()).isEqualTo("Message explaining my wonderful vacations");
         assertThat(vacation.isEnabled()).isTrue();
-        assertThat(vacation.getFromDate()).isEqualTo(Optional.of(ZonedDateTime.parse("2014-09-30T14:10:00Z[GMT]")));
-        assertThat(vacation.getToDate()).isEqualTo(Optional.of(ZonedDateTime.parse("2014-10-30T14:10:00Z[GMT]")));
+        assertThat(vacation.getFromDate()).contains(ZonedDateTime.parse("2014-09-30T14:10:00Z[GMT]"));
+        assertThat(vacation.getToDate()).contains(ZonedDateTime.parse("2014-10-30T14:10:00Z[GMT]"));
     }
 
     @Test
@@ -235,7 +235,8 @@ public abstract class SetVacationResponseTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("invalidArguments"));
+            .body(ARGUMENTS + ".type", equalTo("invalidArguments"))
+            .body(ARGUMENTS + ".description", containsString("textBody property of vacationResponse object should not be null"));
     }
 
     @Test
@@ -263,7 +264,8 @@ public abstract class SetVacationResponseTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("invalidArguments"));
+            .body(ARGUMENTS + ".type", equalTo("invalidArguments"))
+            .body(ARGUMENTS + ".description", containsString("textBody property of vacationResponse object should not be null"));
     }
 
     @Test

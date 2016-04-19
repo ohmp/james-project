@@ -34,7 +34,6 @@ import org.apache.james.jmap.model.VacationResponse;
 import org.apache.james.mailbox.MailboxSession;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 
 public class SetVacationResponseMethod implements Method {
 
@@ -103,11 +102,11 @@ public class SetVacationResponseMethod implements Method {
                 .clientId(clientId)
                 .responseName(RESPONSE_NAME)
                 .response(SetVacationResponse.builder()
-                    .notUpdated(ImmutableMap.of(Vacation.ID,
+                    .notUpdated(Vacation.ID,
                         SetError.builder()
                             .type(INVALID_ARGUMENTS)
                             .description(ERROR_MESSAGE_BASE + vacationResponse.getId())
-                            .build()))
+                            .build())
                     .build())
                 .build());
         }
