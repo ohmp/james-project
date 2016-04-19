@@ -76,7 +76,7 @@ public class GetVacationResponseMethodTest {
     }
 
     @Test
-    public void processShouldWork() {
+    public void processShouldReturnTheAppropriateVacationResponse() {
         ClientId clientId = mock(ClientId.class);
         Vacation vacation = Vacation.builder()
             .enabled(true)
@@ -95,7 +95,7 @@ public class GetVacationResponseMethodTest {
             .responseName(GetVacationResponseMethod.RESPONSE_NAME)
             .response(GetVacationResponse.builder()
                 .accountId(USERNAME)
-                .setVacationResponse(VacationResponse.builder()
+                .vacationResponse(VacationResponse.builder()
                     .fromVacation(vacation)
                     .build())
                 .build())

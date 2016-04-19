@@ -74,7 +74,7 @@ public class GetVacationResponseMethod implements Method {
         Vacation vacation = vacationRepository.retrieveVacation(AccountId.fromString(mailboxSession.getUser().getUserName())).join();
         return GetVacationResponse.builder()
             .accountId(mailboxSession.getUser().getUserName())
-            .setVacationResponse(VacationResponse.builder()
+            .vacationResponse(VacationResponse.builder()
                 .fromVacation(vacation)
                 .build())
             .build();

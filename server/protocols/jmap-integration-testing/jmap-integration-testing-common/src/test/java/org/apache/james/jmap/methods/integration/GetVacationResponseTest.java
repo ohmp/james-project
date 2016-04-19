@@ -22,9 +22,9 @@ package org.apache.james.jmap.methods.integration;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -95,8 +95,8 @@ public abstract class GetVacationResponseTest {
             .body(ARGUMENTS + ".accountId", equalTo(USER))
             .body(ARGUMENTS + ".list", hasSize(1))
             .body(ARGUMENTS + ".list[0].id", equalTo("singleton"))
-            .body(ARGUMENTS + ".list[0].fromDate", isEmptyOrNullString())
-            .body(ARGUMENTS + ".list[0].toDate", isEmptyOrNullString())
+            .body(ARGUMENTS + ".list[0].fromDate", nullValue())
+            .body(ARGUMENTS + ".list[0].toDate", nullValue())
             .body(ARGUMENTS + ".list[0].isEnabled", equalTo(false))
             .body(ARGUMENTS + ".list[0].textBody", equalTo(""));
     }
