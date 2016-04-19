@@ -35,7 +35,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.james.jmap.api.vacation.AccountId;
 import org.apache.james.jmap.api.vacation.Vacation;
 import org.apache.james.jmap.api.vacation.VacationRepository;
-import org.apache.james.jmap.utils.ZonedDateTimeProvider;
+import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.apache.mailet.MailAddress;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailContext;
