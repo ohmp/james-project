@@ -184,7 +184,7 @@ public class SetVacationResponseMethodTest {
             .enabled(false)
             .textBody(TEXT_BODY)
             .build();
-        AccountId accountId = AccountId.create(USERNAME);
+        AccountId accountId = AccountId.fromString(USERNAME);
 
         when(mailboxSession.getUser()).thenReturn(USER);
         when(vacationRepository.modifyVacation(accountId, vacation)).thenReturn(CompletableFuture.completedFuture(null));

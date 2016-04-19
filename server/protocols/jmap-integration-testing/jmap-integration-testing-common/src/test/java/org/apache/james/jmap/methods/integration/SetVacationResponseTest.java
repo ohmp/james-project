@@ -165,7 +165,7 @@ public abstract class SetVacationResponseTest {
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".updated[0]", equalTo("singleton"));
 
-        Vacation vacation = jmapServer.serverProbe().retrieveVacation(AccountId.create(USER));
+        Vacation vacation = jmapServer.serverProbe().retrieveVacation(AccountId.fromString(USER));
         assertThat(vacation.getTextBody()).isEqualTo("Message explaining my wonderful vacations");
         assertThat(vacation.isEnabled()).isTrue();
         assertThat(vacation.getFromDate()).isEqualTo(Optional.of(ZonedDateTime.parse("2014-09-30T14:10:00Z[GMT]")));
