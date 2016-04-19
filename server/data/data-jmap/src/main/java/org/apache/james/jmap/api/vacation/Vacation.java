@@ -35,7 +35,7 @@ public class Vacation {
     }
 
     public static class Builder {
-        private Optional<Boolean> isEnabled;
+        private Optional<Boolean> isEnabled = Optional.empty();
         private Optional<ZonedDateTime> fromDate = Optional.empty();
         private Optional<ZonedDateTime> toDate = Optional.empty();
         private String textBody = "";
@@ -46,11 +46,13 @@ public class Vacation {
         }
 
         public Builder fromDate(Optional<ZonedDateTime> fromDate) {
+            Preconditions.checkNotNull(fromDate);
             this.fromDate = fromDate;
             return this;
         }
 
         public Builder toDate(Optional<ZonedDateTime> toDate) {
+            Preconditions.checkNotNull(toDate);
             this.toDate = toDate;
             return this;
         }
