@@ -26,7 +26,7 @@ import com.google.common.base.Strings;
 
 public class AccountId {
 
-    public static AccountId create(String identifier) {
+    public static AccountId fromString(String identifier) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(identifier), "AccountId identifier should not be null or empty");
         return new AccountId(identifier);
     }

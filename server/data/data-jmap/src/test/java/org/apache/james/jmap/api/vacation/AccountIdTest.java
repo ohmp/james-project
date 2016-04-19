@@ -29,17 +29,17 @@ public class AccountIdTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createShouldThrowOnNullIdentifier() {
-        AccountId.create(null);
+        AccountId.fromString(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void createShouldThrowOnEmptyIdentifier() {
-        AccountId.create("");
+        AccountId.fromString("");
     }
 
     @Test
     public void createShouldWork() {
-        assertThat(AccountId.create(IDENTIFIER).getIdentifier()).isEqualTo(IDENTIFIER);
+        assertThat(AccountId.fromString(IDENTIFIER).getIdentifier()).isEqualTo(IDENTIFIER);
     }
 
 }

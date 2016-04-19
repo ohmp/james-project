@@ -29,7 +29,7 @@ import org.junit.Test;
 
 public abstract class AbstractVacationRepositoryTest {
 
-    public static final AccountId ACCOUNT_ID = AccountId.create("identifier");
+    public static final AccountId ACCOUNT_ID = AccountId.fromString("identifier");
     public static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.parse("2016-04-03T02:01+07:00[Asia/Vientiane]");
     public static final Vacation VACATION_1 = Vacation.builder().enabled(true).build();
     public static final Vacation VACATION_2 = Vacation.builder().fromDate(Optional.of(ZONED_DATE_TIME)).enabled(true).build();
