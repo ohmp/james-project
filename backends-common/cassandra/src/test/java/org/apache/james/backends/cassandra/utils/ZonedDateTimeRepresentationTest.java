@@ -27,11 +27,41 @@ import org.junit.Test;
 
 public class ZonedDateTimeRepresentationTest {
 
-    private static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.parse("2016-04-13T12:04:40.906+07:00[Asia/Vientiane]");
+    private static final ZonedDateTime ZONED_DATE_TIME_VN = ZonedDateTime.parse("2016-04-13T12:04:40.906+07:00[Asia/Vientiane]");
+    private static final ZonedDateTime ZONED_DATE_TIME_FR = ZonedDateTime.parse("2016-04-13T07:04:40.906+02:00");
+    private static final long INSTANT = 1460523880906L;
 
     @Test
-    public void convertToZonedDateTimeShouldWork() {
-        assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME).convertToZonedDateTime()).isEqualTo(ZONED_DATE_TIME);
+    public void zonedDateTimeRepresentationShouldBeReversible() {
+        ZonedDateTimeRepresentation originalValue = ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_VN);
+
+        ZonedDateTimeRepresentation generatedValue = ZonedDateTimeRepresentation.fromDate(originalValue.getDate(), originalValue.getSerializedZoneId());
+
+        assertThat(originalValue.getZonedDateTime()).isEqualTo(generatedValue.getZonedDateTime());
+    }
+
+    @Test
+    public void getSerializedZoneIdShouldWork() {
+        assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_VN).getSerializedZoneId())
+            .isEqualTo("Asia/Vientiane");
+    }
+
+    @Test
+    public void getDateShouldWork() {
+        assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_VN).getDate().getTime())
+            .isEqualTo(INSTANT);
+    }
+
+    @Test
+    public void getSerializedZoneIdShouldWorkWithFrTimeZone() {
+        assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_FR).getSerializedZoneId())
+            .isEqualTo("+02:00");
+    }
+
+    @Test
+    public void getDateShouldWorkWithFrTimeZone() {
+        assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_FR).getDate().getTime())
+            .isEqualTo(INSTANT);
     }
 
 }

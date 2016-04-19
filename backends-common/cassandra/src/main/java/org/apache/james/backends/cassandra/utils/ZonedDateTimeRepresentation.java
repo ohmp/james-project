@@ -2,33 +2,36 @@
 
 package org.apache.james.backends.cassandra.utils;
 
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 public class ZonedDateTimeRepresentation {
 
-    private final long msSinceEpoch;
-    private final String serializedZoneId;
-
     public static ZonedDateTimeRepresentation fromZonedDateTime(ZonedDateTime zonedDateTime) {
-        return new ZonedDateTimeRepresentation(zonedDateTime.toInstant().toEpochMilli(), zonedDateTime.getZone().getId());
+        return new ZonedDateTimeRepresentation(zonedDateTime);
     }
 
-    public ZonedDateTimeRepresentation(long msSinceEpochUTC, String serializedZoneId) {
-        this.msSinceEpoch = msSinceEpochUTC;
-        this.serializedZoneId = serializedZoneId;
+    public static ZonedDateTimeRepresentation fromDate(Date date, String serializedZoneId) {
+        return new ZonedDateTimeRepresentation(ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of(serializedZoneId)));
     }
 
-    public long getMsSinceEpoch() {
-        return msSinceEpoch;
+    private final ZonedDateTime zonedDateTime;
+
+
+    public ZonedDateTimeRepresentation(ZonedDateTime zonedDateTime) {
+        this.zonedDateTime = zonedDateTime;
+    }
+
+    public Date getDate() {
+        return new Date(zonedDateTime.toInstant().toEpochMilli());
     }
 
     public String getSerializedZoneId() {
-        return serializedZoneId;
+        return zonedDateTime.getZone().getId();
     }
 
-    public ZonedDateTime convertToZonedDateTime() {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(msSinceEpoch), ZoneId.of(serializedZoneId));
+    public ZonedDateTime getZonedDateTime() {
+        return zonedDateTime;
     }
 }

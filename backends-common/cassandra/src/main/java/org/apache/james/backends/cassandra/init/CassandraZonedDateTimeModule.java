@@ -19,8 +19,8 @@
 
 package org.apache.james.backends.cassandra.init;
 
-import static com.datastax.driver.core.DataType.bigint;
 import static com.datastax.driver.core.DataType.text;
+import static com.datastax.driver.core.DataType.timestamp;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 public class CassandraZonedDateTimeModule implements CassandraModule {
 
     public static final String ZONED_DATE_TIME = "zonedDateTime";
-    public static final String MS_SINCE_EPOCH = "msSinceEpoch";
+    public static final String DATE = "date";
     public static final String TIME_ZONE = "timeZone";
 
     private final List<CassandraTable> tables;
@@ -49,7 +49,7 @@ public class CassandraZonedDateTimeModule implements CassandraModule {
             new CassandraType(ZONED_DATE_TIME,
                 SchemaBuilder.createType(ZONED_DATE_TIME)
                     .ifNotExists()
-                    .addColumn(MS_SINCE_EPOCH, bigint())
+                    .addColumn(DATE, timestamp())
                     .addColumn(TIME_ZONE, text())));
     }
 
