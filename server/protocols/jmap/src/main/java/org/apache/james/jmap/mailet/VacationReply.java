@@ -31,6 +31,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
+import org.apache.james.jmap.api.vacation.Vacation;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
 
@@ -43,8 +44,7 @@ public class VacationReply {
 
         private final Mail originalMail;
         private MailAddress mailRecipient;
-        private String reason;
-        private Optional<String> subject = Optional.empty();
+        private Vacation vacation;
 
         public Builder(Mail originalMail) {
             Preconditions.checkNotNull(originalMail, "Origin mail shall not be null");
@@ -56,13 +56,8 @@ public class VacationReply {
             return this;
         }
 
-        public Builder reason(String reason) {
-            this.reason = reason;
-            return this;
-        }
-
-        public Builder subject(Optional<String> subject) {
-            this.subject = subject;
+        public Builder vacation(Vacation vacation) {
+            this.vacation = vacation;
             return this;
         }
 
@@ -71,6 +66,7 @@ public class VacationReply {
 
             MimeMessage reply = (MimeMessage) originalMail.getMessage().reply(false);
             reply.setContent(generateNotificationContent());
+            Optional<String> subject = vacation.getSubject();
             if (subject.isPresent()) {
                 reply.setHeader("subject", subject.get());
             }
@@ -81,18 +77,38 @@ public class VacationReply {
         private Multipart generateNotificationContent() throws MessagingException {
             try {
                 Multipart multipart = new MimeMultipart("mixed");
-                MimeBodyPart reasonPart = new MimeBodyPart();
-                reasonPart.setDataHandler(
-                    new DataHandler(
-                        new ByteArrayDataSource(
-                            reason,
-                            "text/plain; charset=UTF-8")));
-                reasonPart.setDisposition(MimeBodyPart.INLINE);
-                multipart.addBodyPart(reasonPart);
+                addPlainPart(multipart, vacation.getTextBody());
+                addHtmlPart(multipart, vacation.getHtmlBody());
                 return multipart;
             } catch (IOException e) {
                 throw new MessagingException("Cannot read specified content", e);
             }
+        }
+
+        private Multipart addPlainPart(Multipart multipart, Optional<String> textOptional) throws MessagingException, IOException {
+            if (textOptional.isPresent()) {
+                return addTextPart(multipart, textOptional.get(), "text/plain");
+            }
+            return multipart;
+        }
+
+        private Multipart addHtmlPart(Multipart multipart, Optional<String> htmlOptional) throws MessagingException, IOException {
+            if (htmlOptional.isPresent()) {
+                return addTextPart(multipart, htmlOptional.get(), "text/html");
+            }
+            return multipart;
+        }
+
+        private Multipart addTextPart(Multipart multipart, String text, String contentType) throws MessagingException, IOException {
+            MimeBodyPart textReasonPart = new MimeBodyPart();
+            textReasonPart.setDataHandler(
+                new DataHandler(
+                    new ByteArrayDataSource(
+                        text,
+                        contentType + "; charset=UTF-8")));
+            textReasonPart.setDisposition(MimeBodyPart.INLINE);
+            multipart.addBodyPart(textReasonPart);
+            return multipart;
         }
     }
 

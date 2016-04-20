@@ -113,7 +113,7 @@ public class VacationMailet extends GenericMailet {
         try {
             VacationReply vacationReply = VacationReply.builder(processedMail)
                 .mailRecipient(recipient)
-                .reason(vacation.getTextBody())
+                .vacation(vacation)
                 .build();
             getMailetContext().sendMail(vacationReply.getSender(),
                 vacationReply.getRecipients(),

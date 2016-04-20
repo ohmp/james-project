@@ -101,7 +101,7 @@ public class VacationMailetTest {
                     .enabled(true)
                     .fromDate(Optional.of(DATE_TIME_1))
                     .toDate(Optional.of(DATE_TIME_3))
-                    .textBody("Explaining my vacation")
+                    .textBody(Optional.of("Explaining my vacation"))
                     .build()));
         when(zonedDateTimeProvider.get()).thenReturn(DATE_TIME_2);
         when(notificationRegistry.isRegistered(ACCOUNT_ID, recipientId))
@@ -126,7 +126,7 @@ public class VacationMailetTest {
                     .enabled(true)
                     .fromDate(Optional.of(DATE_TIME_1))
                     .toDate(Optional.of(DATE_TIME_3))
-                    .textBody("Explaining my vacation")
+                    .textBody(Optional.of("Explaining my vacation"))
                     .build()));
         when(zonedDateTimeProvider.get()).thenReturn(DATE_TIME_2);
         when(notificationRegistry.isRegistered(ACCOUNT_ID, RecipientId.fromMailAddress(originalSender)))
@@ -147,7 +147,7 @@ public class VacationMailetTest {
                     .enabled(true)
                     .fromDate(Optional.of(DATE_TIME_1))
                     .toDate(Optional.of(DATE_TIME_3))
-                    .textBody("Explaining my vacation")
+                    .textBody(Optional.of("Explaining my vacation"))
                     .build()));
         when(zonedDateTimeProvider.get()).thenReturn(DATE_TIME_2);
         when(notificationRegistry.isRegistered(ACCOUNT_ID, RecipientId.fromMailAddress(originalSender)))
