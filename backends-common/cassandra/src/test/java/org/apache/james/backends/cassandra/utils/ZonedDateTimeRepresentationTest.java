@@ -41,13 +41,13 @@ public class ZonedDateTimeRepresentationTest {
     }
 
     @Test
-    public void getSerializedZoneIdShouldWork() {
+    public void getSerializedZoneIdShouldReturnTheRightZone() {
         assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_VN).getSerializedZoneId())
             .isEqualTo("Asia/Vientiane");
     }
 
     @Test
-    public void getDateShouldWork() {
+    public void getDateShouldReturnTheRightDate() {
         assertThat(ZonedDateTimeRepresentation.fromZonedDateTime(ZONED_DATE_TIME_VN).getDate().getTime())
             .isEqualTo(INSTANT);
     }
