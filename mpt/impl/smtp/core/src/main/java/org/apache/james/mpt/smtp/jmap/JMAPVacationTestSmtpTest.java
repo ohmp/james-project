@@ -22,6 +22,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.net.InetAddress;
 import java.util.Locale;
@@ -129,6 +130,57 @@ public class JMAPVacationTestSmtpTest extends AbstractSimpleScriptedTestProtocol
             .get("/api/email")
         .then()
             .statusCode(200)
+            .body("[0].from", equalTo(USER_AT_DOMAIN))
+            .body("[0].to[0]", equalTo("matthieu@yopmail.com"))
+            .body("[0].subject", equalTo("Re: test"))
+            .body("[0].text", equalTo(REASON));
+    }
+
+    @Test
+    public void jmapVacationShouldNotBeSentTwice() throws Exception {
+        String bodyRequest = "[[" +
+            "\"setVacationResponse\", " +
+            "{" +
+                "\"update\":{" +
+                    "\"singleton\" : {" +
+                        "\"id\": \"singleton\"," +
+                        "\"isEnabled\": \"true\"," +
+                        "\"textBody\": \"" + REASON + "\"" +
+                    "}" +
+                "}" +
+            "}, \"#0\"" +
+            "]]";
+
+        RestAssured.port = hostSystem.getJmapPort();
+        RestAssured.baseURI = HTTP_LOCALHOST;
+
+        AccessToken accessToken = JmapAuthentication.authenticateJamesUser(USER_AT_DOMAIN, PASSWORD);
+
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body(bodyRequest)
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200);
+
+        scriptTest("helo_two_times", Locale.US);
+
+        Thread.sleep(1000);
+
+        RestAssured.port = restSMTPPort;
+        RestAssured.baseURI = restSMTPBasedUPI;
+
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+        .when()
+            .get("/api/email")
+        .then()
+            .statusCode(200)
+            .body("", hasSize(1))
             .body("[0].from", equalTo(USER_AT_DOMAIN))
             .body("[0].to[0]", equalTo("matthieu@yopmail.com"))
             .body("[0].subject", equalTo("Re: test"))
