@@ -24,8 +24,6 @@ import java.util.AbstractMap;
 
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-
 public class SetVacationResponseTest {
 
     public static final String UPDATED_VACATION_ID = "updatedVacationId";
@@ -34,11 +32,11 @@ public class SetVacationResponseTest {
     public static final String ERROR_DESCRIPTION = "Because an error is needed";
 
     @Test
-    public void getVacationResponseShouldWork() {
+    public void setVacationResponseShouldBeConstructedWithTheRightInformation() {
         SetError setError = SetError.builder().type(ERROR_TYPE).description(ERROR_DESCRIPTION).build();
         SetVacationResponse setVacationResponse = SetVacationResponse.builder()
             .updatedId(UPDATED_VACATION_ID)
-            .notUpdated(ImmutableMap.of(NOT_UPDATED_VACATION_ID, setError))
+            .notUpdated(NOT_UPDATED_VACATION_ID, setError)
             .build();
 
         assertThat(setVacationResponse.getUpdated().get()).containsExactly(UPDATED_VACATION_ID);

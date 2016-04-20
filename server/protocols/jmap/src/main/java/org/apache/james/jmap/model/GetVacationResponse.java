@@ -43,7 +43,7 @@ public class GetVacationResponse implements Method.Response {
             return this;
         }
 
-        public Builder setVacationResponse(VacationResponse vacationResponse) {
+        public Builder vacationResponse(VacationResponse vacationResponse) {
             this.vacationResponse = vacationResponse;
             return this;
         }

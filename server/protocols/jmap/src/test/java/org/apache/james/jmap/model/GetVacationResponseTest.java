@@ -27,14 +27,14 @@ public class GetVacationResponseTest {
     public static final String IDENTIFIER = "identifier";
 
     @Test
-    public void getVacationResponseShouldWork() {
+    public void getVacationResponseShouldBeConstructedWithTheRightInformation() {
         VacationResponse vacationResponse = VacationResponse.builder()
             .textBody("Any text")
             .id("singleton")
             .build();
         GetVacationResponse getVacationResponse = GetVacationResponse.builder()
             .accountId(IDENTIFIER)
-            .setVacationResponse(vacationResponse)
+            .vacationResponse(vacationResponse)
             .build();
 
         assertThat(getVacationResponse.getAccountId()).isEqualTo(IDENTIFIER);

@@ -32,7 +32,7 @@ public class SetVacationRequestTest {
     public static final String VACATION_ID = "singleton";
 
     @Test
-    public void setVacationRequestShouldWork() {
+    public void setVacationRequestShouldBeConstructedWithTheRightInformation() {
         VacationResponse vacationResponse = VacationResponse.builder().id(VACATION_ID).textBody("any message").build();
         SetVacationRequest setVacationRequest = SetVacationRequest.builder()
             .update(ImmutableMap.of(VACATION_ID, vacationResponse))

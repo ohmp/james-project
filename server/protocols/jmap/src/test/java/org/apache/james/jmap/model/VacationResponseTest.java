@@ -21,7 +21,6 @@ package org.apache.james.jmap.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -31,11 +30,11 @@ public class VacationResponseTest {
 
     public static final String IDENTIFIER = "identifier";
     public static final String MESSAGE = "A message explaining I am in vacation";
-    public static final ZonedDateTime FROM_DATE = ZonedDateTime.of(2016, 4, 6, 18, 43, 36, 0, ZoneId.systemDefault());
-    public static final ZonedDateTime TO_DATE = ZonedDateTime.of(2016, 4, 21, 18, 43, 36, 0, ZoneId.systemDefault());
+    public static final ZonedDateTime FROM_DATE = ZonedDateTime.parse("2016-04-15T11:56:32.224+07:00[Asia/Vientiane]");
+    public static final ZonedDateTime TO_DATE = ZonedDateTime.parse("2016-04-16T11:56:32.224+07:00[Asia/Vientiane]");
 
     @Test
-    public void vacationResponseBuilderShouldWork() {
+    public void vacationResponseBuilderShouldBeConstructedWithTheRightInformation() {
         VacationResponse vacationResponse = VacationResponse.builder()
             .id(IDENTIFIER)
             .enabled(true)

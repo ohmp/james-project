@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import org.apache.james.jmap.methods.Method;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -38,22 +39,27 @@ public class SetVacationResponse implements Method.Response {
     public static class Builder {
 
         private Optional<String> updatedId = Optional.empty();
-        private Optional<Map<String, SetError>> notUpdated = Optional.empty();
+        private Optional<String> notUpdatedId = Optional.empty();
+        private Optional<SetError> setError = Optional.empty();
 
         public Builder updatedId(String updatedId) {
+            Preconditions.checkNotNull(updatedId);
             this.updatedId = Optional.of(updatedId);
             return this;
         }
 
-        public Builder notUpdated(Map<String, SetError> notUpdated) {
-            this.notUpdated = Optional.of(notUpdated);
+        public Builder notUpdated(String id, SetError setError) {
+            Preconditions.checkNotNull(id);
+            Preconditions.checkNotNull(setError);
+            this.notUpdatedId = Optional.of(id);
+            this.setError = Optional.of(setError);
             return this;
         }
 
         public SetVacationResponse build() {
             return new SetVacationResponse(
                 updatedId.map(ImmutableList::of),
-                notUpdated.map(ImmutableMap::copyOf));
+                notUpdatedId.map(id -> ImmutableMap.of(id, setError.get())));
         }
     }
 

@@ -20,7 +20,6 @@
 package org.apache.james.jmap.model;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.jmap.api.vacation.Vacation;
@@ -30,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 @JsonDeserialize(builder = SetVacationRequest.Builder.class)
 public class SetVacationRequest implements JmapRequest {
@@ -41,19 +41,25 @@ public class SetVacationRequest implements JmapRequest {
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private ImmutableMap<String, VacationResponse> update;
+        private Map<String, VacationResponse> update = Maps.newHashMap();
 
         public Builder accountId(String accountId) {
             throw new NotImplementedException();
         }
 
         public Builder update(Map<String, VacationResponse> update) {
-            this.update = ImmutableMap.copyOf(update);
+            this.update.putAll(update);
+            return this;
+        }
+
+        @JsonIgnore
+        public Builder update(String id, VacationResponse vacationResponse) {
+            this.update.put(id, vacationResponse);
             return this;
         }
 
         public SetVacationRequest build() {
-            return new SetVacationRequest(Optional.ofNullable(update).orElse(ImmutableMap.of()));
+            return new SetVacationRequest(ImmutableMap.copyOf(update));
         }
     }
 
