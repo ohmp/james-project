@@ -25,6 +25,8 @@ import javax.inject.Inject;
 import javax.mail.MessagingException;
 
 import org.apache.james.jmap.api.vacation.AccountId;
+import org.apache.james.jmap.api.vacation.NotificationRegistry;
+import org.apache.james.jmap.api.vacation.RecipientId;
 import org.apache.james.jmap.api.vacation.Vacation;
 import org.apache.james.jmap.api.vacation.VacationRepository;
 import org.apache.james.util.date.ZonedDateTimeProvider;
@@ -59,11 +61,13 @@ public class VacationMailet extends GenericMailet {
 
     private final VacationRepository vacationRepository;
     private final ZonedDateTimeProvider zonedDateTimeProvider;
+    private final NotificationRegistry notificationRegistry;
 
     @Inject
-    public VacationMailet(VacationRepository vacationRepository, ZonedDateTimeProvider zonedDateTimeProvider) {
+    public VacationMailet(VacationRepository vacationRepository, ZonedDateTimeProvider zonedDateTimeProvider, NotificationRegistry notificationRegistry) {
         this.vacationRepository = vacationRepository;
         this.zonedDateTimeProvider = zonedDateTimeProvider;
+        this.notificationRegistry = notificationRegistry;
     }
 
     @Override
@@ -92,8 +96,13 @@ public class VacationMailet extends GenericMailet {
 
     private boolean shouldSendNotification(Vacation vacation, Mail processedMail, MailAddress recipient) {
         try {
-            return vacation.isActiveAtDate(zonedDateTimeProvider.get())
-                && MailetUtil.canSendAutomaticResponse(processedMail);
+            if (!vacation.isActiveAtDate(zonedDateTimeProvider.get())) {
+                return false;
+            }
+            CompletableFuture<Boolean> hasAlreadyBeenSent = notificationRegistry.isRegistered(
+                AccountId.fromString(recipient.toString()),
+                RecipientId.fromMailAddress(processedMail.getSender()));
+            return MailetUtil.canSendAutomaticResponse(processedMail) && ! hasAlreadyBeenSent.join();
         } catch (MessagingException e) {
             LOGGER.warn("Failed detect automatic response in a mail from {} to {}", processedMail.getSender(), recipient, e);
             return false;
@@ -102,15 +111,14 @@ public class VacationMailet extends GenericMailet {
 
     private void sendNotification(MailAddress recipient, Mail processedMail, Vacation vacation) {
         try {
-            if (MailetUtil.canSendAutomaticResponse(processedMail)) {
-                VacationReply vacationReply = VacationReply.builder(processedMail)
-                    .mailRecipient(recipient)
-                    .reason(vacation.getTextBody())
-                    .build();
-                getMailetContext().sendMail(vacationReply.getSender(),
-                    vacationReply.getRecipients(),
-                    vacationReply.getMimeMessage());
-            }
+            VacationReply vacationReply = VacationReply.builder(processedMail)
+                .mailRecipient(recipient)
+                .reason(vacation.getTextBody())
+                .build();
+            getMailetContext().sendMail(vacationReply.getSender(),
+                vacationReply.getRecipients(),
+                vacationReply.getMimeMessage());
+            notificationRegistry.register(AccountId.fromString(recipient.toString()), RecipientId.fromMailAddress(processedMail.getSender()), vacation.getToDate());
         } catch (MessagingException e) {
             LOGGER.warn("Failed to send JMAP vacation notification from {} to {}", recipient, processedMail.getSender(), e);
         }
