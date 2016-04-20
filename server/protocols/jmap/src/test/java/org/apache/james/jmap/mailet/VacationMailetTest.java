@@ -39,6 +39,7 @@ import org.apache.james.jmap.api.vacation.NotificationRegistry;
 import org.apache.james.jmap.api.vacation.RecipientId;
 import org.apache.james.jmap.api.vacation.Vacation;
 import org.apache.james.jmap.api.vacation.VacationRepository;
+import org.apache.james.mailbox.store.extractor.TextExtractor;
 import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.apache.mailet.MailAddress;
 import org.apache.mailet.base.test.FakeMail;
@@ -61,6 +62,7 @@ public class VacationMailetTest {
     private VacationRepository vacationRepository;
     private ZonedDateTimeProvider zonedDateTimeProvider;
     private NotificationRegistry notificationRegistry;
+    private TextExtractor textExtractor;
     private FakeMailContext fakeMailContext;
     private MailAddress originalSender;
     private MailAddress originalRecipient;
@@ -75,7 +77,8 @@ public class VacationMailetTest {
         vacationRepository = mock(VacationRepository.class);
         zonedDateTimeProvider = mock(ZonedDateTimeProvider.class);
         notificationRegistry = mock(NotificationRegistry.class);
-        testee = new VacationMailet(vacationRepository, zonedDateTimeProvider, notificationRegistry);
+        textExtractor = mock(TextExtractor.class);
+        testee = new VacationMailet(vacationRepository, zonedDateTimeProvider, notificationRegistry, textExtractor);
         fakeMailContext = new FakeMailContext();
         testee.init(new FakeMailetConfig("vacation", fakeMailContext));
     }
