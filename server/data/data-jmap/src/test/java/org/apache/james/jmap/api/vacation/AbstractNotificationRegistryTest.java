@@ -37,7 +37,8 @@ public abstract class AbstractNotificationRegistryTest {
 
     public static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.parse("2016-04-03T02:01:01+07:00[Asia/Vientiane]");
     public static final ZonedDateTime ZONED_DATE_TIME_PLUS_1_SECONDS = ZonedDateTime.parse("2016-04-03T02:01:02+07:00[Asia/Vientiane]");
-    public static final AccountId ACCOUNT_ID = AccountId.create("id");
+    public static final ZonedDateTime ZONED_DATE_TIME_PLUS_10_SECONDS = ZonedDateTime.parse("2016-04-03T02:01:11+07:00[Asia/Vientiane]");
+    public static final AccountId ACCOUNT_ID = AccountId.fromString("id");
     private NotificationRegistry notificationRegistry;
     private ZonedDateTimeProvider zonedDateTimeProvider;
     private RecipientId recipientId;
@@ -48,7 +49,7 @@ public abstract class AbstractNotificationRegistryTest {
     public void setUp() throws Exception {
         zonedDateTimeProvider = mock(ZonedDateTimeProvider.class);
         notificationRegistry = createNotificationRegistry(zonedDateTimeProvider);
-        recipientId = RecipientId.create(new MailAddress("benwa@apache.org"));
+        recipientId = RecipientId.fromMailAddress(new MailAddress("benwa@apache.org"));
     }
 
     @Test
@@ -76,6 +77,8 @@ public abstract class AbstractNotificationRegistryTest {
         when(zonedDateTimeProvider.get()).thenReturn(ZONED_DATE_TIME);
 
         notificationRegistry.register(ACCOUNT_ID, recipientId, Optional.of(ZONED_DATE_TIME_PLUS_1_SECONDS)).join();
+
+        when(zonedDateTimeProvider.get()).thenReturn(ZONED_DATE_TIME_PLUS_10_SECONDS);
 
         await().atMost(2, TimeUnit.SECONDS).until(() -> !notificationRegistry.isRegistered(ACCOUNT_ID, recipientId).join());
     }
