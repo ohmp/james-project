@@ -94,14 +94,14 @@ public abstract class AbstractNotificationRegistryTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void question() throws Exception {
+    public void registerShouldThrowWhenExpiryDateIsPast() throws Exception {
         when(zonedDateTimeProvider.get()).thenReturn(ZONED_DATE_TIME_PLUS_1_SECONDS);
 
         notificationRegistry.register(ACCOUNT_ID, recipientId, Optional.of(ZONED_DATE_TIME)).join();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void question1() throws Exception {
+    public void registerShouldThrowWhenExpiryDateIsPresent() throws Exception {
         when(zonedDateTimeProvider.get()).thenReturn(ZONED_DATE_TIME);
 
         notificationRegistry.register(ACCOUNT_ID, recipientId, Optional.of(ZONED_DATE_TIME)).join();
