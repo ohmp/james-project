@@ -19,22 +19,27 @@
 
 package org.apache.mailet.base.test;
 
-import org.apache.mailet.HostAddress;
-import org.apache.mailet.LookupException;
-import org.apache.mailet.MailetContext;
-import org.apache.mailet.Mail;
-import org.apache.mailet.MailAddress;
-import org.apache.mailet.TemporaryLookupException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import org.apache.mailet.HostAddress;
+import org.apache.mailet.LookupException;
+import org.apache.mailet.Mail;
+import org.apache.mailet.MailAddress;
+import org.apache.mailet.MailetContext;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 @SuppressWarnings("deprecation")
 public class FakeMailContext implements MailetContext {
@@ -44,11 +49,17 @@ public class FakeMailContext implements MailetContext {
         private final MailAddress sender;
         private final Collection<MailAddress> recipients;
         private final MimeMessage msg;
+        private final List<String> attributeNames;
+
+        public SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg, List<String> attributeNames) {
+            this.sender = sender;
+            this.recipients = ImmutableList.copyOf(recipients);
+            this.msg = msg;
+            this.attributeNames = Lists.newArrayList(attributeNames);
+        }
 
         public SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg) {
-            this.sender = sender;
-            this.recipients = recipients;
-            this.msg = msg;
+            this(sender, recipients, msg, Collections.<String>emptyList());
         }
 
         public MailAddress getSender() {
@@ -65,29 +76,29 @@ public class FakeMailContext implements MailetContext {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (!(o instanceof SentMail)) {
+                return false;
+            }
 
             SentMail sentMail = (SentMail) o;
 
-            if (sender != null ? !sender.equals(sentMail.sender) : sentMail.sender != null) return false;
-            return !(recipients != null ? !recipients.equals(sentMail.recipients) : sentMail.recipients != null);
-
+            return Objects.equal(this.sender, sentMail.sender)
+                && Objects.equal(this.recipients, sentMail.recipients)
+                && Objects.equal(this.attributeNames, sentMail.attributeNames);
         }
 
         @Override
         public int hashCode() {
-            int result = sender != null ? sender.hashCode() : 0;
-            result = 31 * result + (recipients != null ? recipients.hashCode() : 0);
-            return result;
+            return Objects.hashCode(sender, recipients, attributeNames);
         }
 
         @Override
         public String toString() {
-            return "SentMail{" +
-                "recipients=" + recipients +
-                ", sender=" + sender +
-                '}';
+            return MoreObjects.toStringHelper(this)
+                .add("recipients", recipients)
+                .add("sender", sender)
+                .add("attributeNames", attributeNames)
+                .toString();
         }
     }
     
@@ -212,7 +223,7 @@ public class FakeMailContext implements MailetContext {
         t.printStackTrace(System.out);
     }
 
-    public List<String> dnsLookup(String name, RecordType type) throws TemporaryLookupException, LookupException {
+    public List<String> dnsLookup(String name, RecordType type) throws LookupException {
         return null;   // trivial implementation
     }
 
