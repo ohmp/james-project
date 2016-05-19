@@ -42,8 +42,8 @@ public class CassandraVacationIntegrationTest extends VacationIntegrationTest {
         .around(embeddedElasticSearch);
 
     @Override
-    protected GuiceJamesServer<?> createJmapServer() {
-        return new GuiceJamesServer<>(CassandraJamesServerMain.cassandraId)
+    protected GuiceJamesServer createJmapServer() {
+        return new GuiceJamesServer()
             .combineWith(CassandraJamesServerMain.cassandraServerModule)
             .overrideWith(new CassandraJmapServerModule(temporaryFolder, embeddedElasticSearch, cassandra));
     }

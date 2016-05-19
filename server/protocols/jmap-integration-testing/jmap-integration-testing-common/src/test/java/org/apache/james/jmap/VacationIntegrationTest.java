@@ -56,13 +56,13 @@ public abstract class VacationIntegrationTest {
 
     private ConditionFactory calmlyAwait;
 
-    protected abstract GuiceJamesServer<?> createJmapServer();
+    protected abstract GuiceJamesServer createJmapServer();
 
     protected abstract void await();
 
     @Before
     public void setUp() throws Exception {
-        GuiceJamesServer<?> guiceJamesServer = createJmapServer();
+        GuiceJamesServer guiceJamesServer = createJmapServer();
         guiceJamesServer.start();
 
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
