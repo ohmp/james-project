@@ -23,6 +23,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.mailbox.model.MailboxConstants;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,6 +57,7 @@ public abstract class VacationIntegrationTest {
     private static final String REASON = "Message explaining my wonderful vacations";
 
     private ConditionFactory calmlyAwait;
+    private GuiceJamesServer guiceJamesServer;
 
     protected abstract GuiceJamesServer createJmapServer();
 
@@ -62,7 +65,7 @@ public abstract class VacationIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        GuiceJamesServer guiceJamesServer = createJmapServer();
+        guiceJamesServer = createJmapServer();
         guiceJamesServer.start();
 
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
@@ -79,6 +82,11 @@ public abstract class VacationIntegrationTest {
 
         Duration slowPacedPollInterval = Duration.FIVE_HUNDRED_MILLISECONDS;
         calmlyAwait = Awaitility.with().pollInterval(slowPacedPollInterval).and().with().pollDelay(slowPacedPollInterval).await();
+    }
+
+    @After
+    public void teardown() {
+        guiceJamesServer.stop();
     }
 
     @Test
@@ -111,9 +119,9 @@ public abstract class VacationIntegrationTest {
             .contentType(ContentType.JSON)
             .header("Authorization", user1AccessToken.serialize())
             .body(bodyRequest)
-        .when()
+            .when()
             .post("/jmap")
-        .then()
+            .then()
             .statusCode(200);
 
         // When
@@ -139,7 +147,7 @@ public abstract class VacationIntegrationTest {
             .contentType(ContentType.JSON)
             .header("Authorization", user2AccessToken.serialize())
             .body(requestBody)
-        .when()
+            .when()
             .post("/jmap");
 
         // Then
@@ -149,6 +157,68 @@ public abstract class VacationIntegrationTest {
         // User 2 should well receive a notification about user 1 vacation
         calmlyAwait.atMost(10, TimeUnit.SECONDS)
             .until( () -> isTextMessageReceived(user2AccessToken, getInboxId(user2AccessToken), REASON, USER_1, USER_2));
+    }
+
+    @Test
+    public void jmapVacationShouldNotGenerateAReplyWhenInactive() throws Exception {
+        /* Test scenario :
+            - User 2 matthieu@mydomain.tld sends User 1 a mail
+            - User 1 should well receive this mail
+            - User 2 should not receive a notification
+        */
+
+        // Given
+        guiceJamesServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, USER_2, "INBOX");
+        AccessToken user1AccessToken = JmapAuthentication.authenticateJamesUser(USER_1, PASSWORD);
+        AccessToken user2AccessToken = JmapAuthentication.authenticateJamesUser(USER_2, PASSWORD);
+
+        // When
+        // User 2 matthieu@mydomain.tld sends User 1 a mail
+        String originalMessageTextBody = "Hello someone, and thank you for joining example.com!";
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\"," +
+            "    {" +
+            "      \"create\": { \"user|inbox|1\" : {" +
+            "        \"from\": { \"email\": \"" + USER_2 + "\"}," +
+            "        \"to\": [{ \"name\": \"Benwa\", \"email\": \"" + USER_1 + "\"}]," +
+            "        \"subject\": \"Thank you for joining example.com!\"," +
+            "        \"textBody\": \"" + originalMessageTextBody + "\"," +
+            "        \"mailboxIds\": [\"" + getOutboxId(user2AccessToken) + "\"]" +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", user2AccessToken.serialize())
+            .body(requestBody)
+            .when()
+            .post("/jmap");
+
+        // Then
+        // User 1 should well receive this mail
+        calmlyAwait.atMost(10, TimeUnit.SECONDS)
+            .until(() -> isTextMessageReceived(user1AccessToken, getInboxId(user1AccessToken), originalMessageTextBody, USER_2, USER_1));
+        // User 2 should not receive a notification
+        with()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", user2AccessToken.serialize())
+            .body("[[\"getMessageList\", " +
+                "{" +
+                "  \"fetchMessages\": true, " +
+                "  \"filter\": {" +
+                "    \"inMailboxes\":[\"" + getInboxId(user2AccessToken) + "\"]" +
+                "  }" +
+                "}, \"#0\"]]")
+            .post("/jmap")
+            .then()
+            .statusCode(200)
+            .body(SECOND_NAME, equalTo("messages"))
+            .body(SECOND_ARGUMENTS + ".list", empty());
     }
 
     private boolean isTextMessageReceived(AccessToken recipientToken, String mailboxId, String expectedTextBody, String expectedFrom, String expectedTo) {
