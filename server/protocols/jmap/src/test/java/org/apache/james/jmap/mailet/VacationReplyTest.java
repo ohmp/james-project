@@ -36,7 +36,7 @@ public class VacationReplyTest {
     public static final String REASON = "I am in vacation dudes !";
 
     @Test
-    public void vacationReplyShouldWork() throws Exception {
+    public void vacationReplyShouldGenerateASuitableAnswer() throws Exception {
         MailAddress originalSender = new MailAddress("distant@apache.org");
         MailAddress originalRecipient = new MailAddress("benwa@apache.org");
         FakeMail mail = new FakeMail();

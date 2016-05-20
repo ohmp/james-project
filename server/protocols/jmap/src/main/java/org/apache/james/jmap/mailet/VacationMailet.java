@@ -52,7 +52,7 @@ public class VacationMailet extends GenericMailet {
     }
 
     @Override
-    public void service(Mail mail) throws MessagingException {
+    public void service(Mail mail) {
         try {
             ZonedDateTime processingDate = zonedDateTimeProvider.get();
             mail.getRecipients()
@@ -65,7 +65,7 @@ public class VacationMailet extends GenericMailet {
     }
 
     public CompletableFuture<Void> manageVacation(MailAddress recipient, Mail processedMail, ZonedDateTime processingDate) {
-        AccountId accountId = AccountId.fromString(recipient.getLocalPart() + "@" + recipient.getDomain());
+        AccountId accountId = AccountId.fromString(recipient.toString());
         CompletableFuture<Vacation> vacationFuture = vacationRepository.retrieveVacation(accountId);
         return vacationFuture.thenApply(vacation -> {
             if (shouldSendNotification(vacation, processedMail, recipient, processingDate)) {

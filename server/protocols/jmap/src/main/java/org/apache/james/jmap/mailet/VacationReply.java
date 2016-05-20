@@ -38,7 +38,7 @@ public class VacationReply {
 
     public static class Builder {
 
-        public static final boolean REPLY_TO_ALL = false;
+        public static final boolean NOT_REPLY_TO_ALL = false;
         private final Mail originalMail;
         private MailAddress mailRecipient;
         private String reason;
@@ -62,12 +62,13 @@ public class VacationReply {
 
         public VacationReply build() throws MessagingException {
             Preconditions.checkState(mailRecipient != null, "Original recipient address should not be null");
+            Preconditions.checkState(originalMail.getSender() != null, "Original sender address should not be null");
 
             return new VacationReply(mailRecipient, ImmutableList.of(originalMail.getSender()), generateMimeMessage());
         }
 
         private MimeMessage generateMimeMessage() throws MessagingException {
-            MimeMessage reply = (MimeMessage) originalMail.getMessage().reply(REPLY_TO_ALL);
+            MimeMessage reply = (MimeMessage) originalMail.getMessage().reply(NOT_REPLY_TO_ALL);
             reply.setText(reason);
             reply.setHeader("from", mailRecipient.toString());
             reply.setHeader("to", originalMail.getSender().toString());
