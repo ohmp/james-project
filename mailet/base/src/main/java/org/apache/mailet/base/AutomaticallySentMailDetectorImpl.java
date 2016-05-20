@@ -72,9 +72,9 @@ public class AutomaticallySentMailDetectorImpl implements AutomaticallySentMailD
     }
 
     public boolean isMdnSentAutomatically(Mail mail) throws MessagingException {
-        final ResultCollector resultCollector = new ResultCollector(false);
+        ResultCollector resultCollector = new ResultCollector(false);
         MimeConfig config = MimeConfig.custom().setMaxLineLen(-1).setMaxHeaderLen(-1).build();
-        final MimeStreamParser parser = new MimeStreamParser(config);
+        MimeStreamParser parser = new MimeStreamParser(config);
         parser.setContentHandler(createMdnContentHandler(resultCollector));
         try {
             parser.parse(mail.getMessage().getInputStream());
