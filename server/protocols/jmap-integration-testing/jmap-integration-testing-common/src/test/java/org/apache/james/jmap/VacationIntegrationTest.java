@@ -203,6 +203,7 @@ public abstract class VacationIntegrationTest {
         calmlyAwait.atMost(10, TimeUnit.SECONDS)
             .until(() -> isTextMessageReceived(user1AccessToken, getInboxId(user1AccessToken), originalMessageTextBody, USER_2, USER_1));
         // User 2 should not receive a notification
+        Thread.sleep(1000L);
         with()
             .accept(ContentType.JSON)
             .contentType(ContentType.JSON)
