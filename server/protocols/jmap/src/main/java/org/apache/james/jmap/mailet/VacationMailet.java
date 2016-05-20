@@ -67,11 +67,10 @@ public class VacationMailet extends GenericMailet {
     public CompletableFuture<Void> manageVacation(MailAddress recipient, Mail processedMail, ZonedDateTime processingDate) {
         AccountId accountId = AccountId.fromString(recipient.toString());
         CompletableFuture<Vacation> vacationFuture = vacationRepository.retrieveVacation(accountId);
-        return vacationFuture.thenApply(vacation -> {
+        return vacationFuture.thenAccept(vacation -> {
             if (shouldSendNotification(vacation, processedMail, recipient, processingDate)) {
                 sendNotification(recipient, processedMail, vacation);
             }
-            return null;
         });
     }
 
