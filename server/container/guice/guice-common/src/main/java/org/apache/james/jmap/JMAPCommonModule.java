@@ -38,6 +38,7 @@ import org.apache.mailet.base.AutomaticallySentMailDetectorImpl;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
@@ -57,6 +58,7 @@ public class JMAPCommonModule extends AbstractModule {
         bind(MailSpool.class).in(Singleton.class);
         bind(MailFactory.class).in(Singleton.class);
 
+        bind(AutomaticallySentMailDetectorImpl.class).in(Scopes.SINGLETON);
         bind(AutomaticallySentMailDetector.class).to(AutomaticallySentMailDetectorImpl.class);
     }
 
