@@ -28,6 +28,8 @@ import javax.mail.internet.MimeMessage;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.consumers.ThrowingConsumer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -76,9 +78,7 @@ public class VacationReply {
 
         private MimeMessage generateMimeMessage() throws MessagingException {
             MimeMessage reply = (MimeMessage) originalMail.getMessage().reply(NOT_REPLY_TO_ALL);
-            if (subject.isPresent()) {
-                reply.setHeader("subject", subject.get());
-            }
+            subject.ifPresent(Throwing.consumer(subjectString -> reply.setHeader("subject", subjectString)));
             reply.setText(reason);
             reply.setHeader("from", mailRecipient.toString());
             reply.setHeader("to", originalMail.getSender().toString());
