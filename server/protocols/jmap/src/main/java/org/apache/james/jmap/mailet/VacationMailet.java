@@ -59,11 +59,13 @@ public class VacationMailet extends GenericMailet {
     @Override
     public void service(Mail mail) {
         try {
-            ZonedDateTime processingDate = zonedDateTimeProvider.get();
-            mail.getRecipients()
-                .stream()
-                .map(mailAddress -> manageVacation(mailAddress, mail, processingDate))
-                .forEach(CompletableFuture::join);
+            if (! automaticallySentMailDetector.isAutomaticallySent(mail)) {
+                ZonedDateTime processingDate = zonedDateTimeProvider.get();
+                mail.getRecipients()
+                    .stream()
+                    .map(mailAddress -> manageVacation(mailAddress, mail, processingDate))
+                    .forEach(CompletableFuture::join);
+            }
         } catch (Throwable e) {
             LOGGER.warn("Can not process vacation for one or more recipients in {}", mail.getRecipients(), e);
         }
@@ -80,14 +82,8 @@ public class VacationMailet extends GenericMailet {
     }
 
     private boolean shouldSendNotification(Vacation vacation, Mail processedMail, MailAddress recipient, ZonedDateTime processingDate) {
-        try {
-            return vacation.isActiveAtDate(processingDate)
-                && ! automaticallySentMailDetector.isAutomaticallySent(processedMail)
-                && hasNotSentNotificationsYet(processedMail, recipient);
-        } catch (MessagingException e) {
-            LOGGER.warn("Failed detect automatic response in a mail from {} to {}", processedMail.getSender(), recipient, e);
-            return false;
-        }
+        return vacation.isActiveAtDate(processingDate)
+            && hasNotSentNotificationsYet(processedMail, recipient);
     }
 
     private boolean hasNotSentNotificationsYet(Mail processedMail, MailAddress recipient) {
