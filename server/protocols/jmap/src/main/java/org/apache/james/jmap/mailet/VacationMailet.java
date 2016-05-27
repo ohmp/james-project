@@ -74,28 +74,20 @@ public class VacationMailet extends GenericMailet {
     public CompletableFuture<Void> manageVacation(MailAddress recipient, Mail processedMail, ZonedDateTime processingDate) {
         AccountId accountId = AccountId.fromString(recipient.toString());
         CompletableFuture<Vacation> vacationFuture = vacationRepository.retrieveVacation(accountId);
-        return vacationFuture.thenAccept(vacation -> {
-            if (shouldSendNotification(vacation, processedMail, recipient, processingDate)) {
+        CompletableFuture<Boolean> hasAlreadyBeenSent = notificationRegistry.isRegistered(
+            AccountId.fromString(recipient.toString()),
+            RecipientId.fromMailAddress(processedMail.getSender()));
+
+        return vacationFuture.thenAcceptBoth(hasAlreadyBeenSent, (vacation, alreadySent) -> {
+            if (shouldSendNotification(vacation, processingDate, alreadySent)) {
                 sendNotification(recipient, processedMail, vacation);
             }
         });
     }
 
-    private boolean shouldSendNotification(Vacation vacation, Mail processedMail, MailAddress recipient, ZonedDateTime processingDate) {
+    private boolean shouldSendNotification(Vacation vacation, ZonedDateTime processingDate, boolean alreadySent) {
         return vacation.isActiveAtDate(processingDate)
-            && hasNotSentNotificationsYet(processedMail, recipient);
-    }
-
-    private boolean hasNotSentNotificationsYet(Mail processedMail, MailAddress recipient) {
-        CompletableFuture<Boolean> hasAlreadyBeenSent = notificationRegistry.isRegistered(
-            AccountId.fromString(recipient.toString()),
-            RecipientId.fromMailAddress(processedMail.getSender()));
-        try {
-            return !hasAlreadyBeenSent.join();
-        } catch (Throwable t) {
-            LOGGER.warn("Error while checking registration state of vacation notification for user {} and sender {}", recipient, processedMail.getSender(), t);
-            return true;
-        }
+            && ! alreadySent;
     }
 
     private void sendNotification(MailAddress recipient, Mail processedMail, Vacation vacation) {
