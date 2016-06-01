@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.mail.Flags;
 
@@ -80,6 +81,58 @@ public abstract class GetMessageListMethodTest {
     @After
     public void teardown() {
         jmapServer.stop();
+    }
+
+    @Test
+    public void getMessagesShouldBehaveAsIfMailboxDidNotExistWhenUsedOnAnOtherUserMailbox() throws Exception {
+        String attacker = "attacker@" + domain;
+        String password = "password";
+        jmapServer.serverProbe().addUser(attacker, password);
+        AccessToken attackerAccessToken =  JmapAuthentication.authenticateJamesUser(attacker, password);
+
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "INBOX");
+        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "INBOX"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        await();
+
+        String victimInboxId = getInboxId(accessToken);
+
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", attackerAccessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + victimInboxId + "\"]}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", empty());
+    }
+
+    private String getInboxId(AccessToken accessToken) {
+        return getMailboxIdByRole(accessToken, "inbox");
+    }
+
+    private String getMailboxIdByRole(AccessToken accessToken, String role) {
+        return getAllMailboxesIds(accessToken).stream()
+            .filter(x -> x.get("role").equals(role))
+            .map(x -> x.get("id"))
+            .findFirst()
+            .get();
+    }
+
+    private List<Map<String, String>> getAllMailboxesIds(AccessToken accessToken) {
+        return with()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMailboxes\", {\"properties\": [\"role\", \"id\"]}, \"#0\"]]")
+            .post("/jmap")
+            .andReturn()
+            .body()
+            .jsonPath()
+            .getList(ARGUMENTS + ".list");
     }
     
     @Test
