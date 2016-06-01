@@ -62,6 +62,7 @@ public abstract class GetMessagesMethodTest {
     private AccessToken accessToken;
     private String username;
     private GuiceJamesServer jmapServer;
+    private String domain;
 
     @Before
     public void setup() throws Throwable {
@@ -71,7 +72,7 @@ public abstract class GetMessagesMethodTest {
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        String domain = "domain.tld";
+        domain = "domain.tld";
         username = "username@" + domain;
         String password = "password";
         jmapServer.serverProbe().addDomain(domain);
@@ -84,7 +85,39 @@ public abstract class GetMessagesMethodTest {
     public void teardown() {
         jmapServer.stop();
     }
-    
+
+    @Test
+    public void asAnAttackerICanReadAnyBodyMails() throws Exception {
+        String attacker = "attacker@" + domain;
+        String password = "password";
+        jmapServer.serverProbe().addUser(attacker, password);
+        AccessToken attackerAccessToken =  JmapAuthentication.authenticateJamesUser(attacker, password);
+
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "inbox");
+        ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
+        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "inbox"),
+            new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes()), Date.from(dateTime.toInstant()), false, new Flags());
+
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", attackerAccessToken.serialize())
+            .body("[[\"getMessages\", {\"ids\": [\"" + username + "|inbox|1\"]}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messages"))
+            .body(ARGUMENTS + ".list", hasSize(1))
+            .body(ARGUMENTS + ".list[0].id", equalTo(attacker + "|inbox|1"))
+            .body(ARGUMENTS + ".list[0].threadId", equalTo(attacker + "|inbox|1"))
+            .body(ARGUMENTS + ".list[0].subject", equalTo("my test subject"))
+            .body(ARGUMENTS + ".list[0].textBody", equalTo("testmail"))
+            .body(ARGUMENTS + ".list[0].isUnread", equalTo(true))
+            .body(ARGUMENTS + ".list[0].preview", equalTo("testmail"))
+            .body(ARGUMENTS + ".list[0].date", equalTo("2014-10-30T14:12:00Z"));
+    }
+
     @Test
     public void getMessagesShouldErrorNotSupportedWhenRequestContainsNonNullAccountId() throws Exception {
         given()
