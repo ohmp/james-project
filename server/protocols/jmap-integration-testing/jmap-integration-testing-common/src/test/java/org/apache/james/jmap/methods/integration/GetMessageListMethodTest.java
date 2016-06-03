@@ -37,7 +37,7 @@ import java.util.List;
 import javax.mail.Flags;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.JmapAuthentication;
+import org.apache.james.jmap.utils.JmapAuthentication;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -186,14 +186,7 @@ public abstract class GetMessageListMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
 
-        String mailboxId = 
-                with()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-                .header("Authorization", accessToken.serialize())
-                .body("[[\"getMailboxes\", {}, \"#0\"]]")
-                .post("/jmap")
-                .path("[0][1].list[0].id");
+        String mailboxId = jmapServer.serverProbe().getMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox").getMailboxId().serialize();
         
         given()
             .accept(ContentType.JSON)
@@ -217,7 +210,7 @@ public abstract class GetMessageListMethodTest {
         jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox2");
         await();
 
-        List<String> mailboxIds = 
+        List<String> mailboxIds =
                 with()
                 .accept(ContentType.JSON)
                 .contentType(ContentType.JSON)

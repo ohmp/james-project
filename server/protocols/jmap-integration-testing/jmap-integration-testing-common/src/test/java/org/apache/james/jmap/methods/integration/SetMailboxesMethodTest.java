@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.JmapAuthentication;
+import org.apache.james.jmap.utils.JmapAuthentication;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.hamcrest.Matchers;
