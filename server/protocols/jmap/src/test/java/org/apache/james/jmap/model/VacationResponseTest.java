@@ -43,9 +43,9 @@ public class VacationResponseTest {
             .enabled(true)
             .fromDate(Optional.of(FROM_DATE))
             .toDate(Optional.of(TO_DATE))
-            .textBody(MESSAGE)
+            .textBody(Optional.of(MESSAGE))
             .subject(Optional.of(SUBJECT))
-            .htmlBody(HTML_MESSAGE)
+            .htmlBody(Optional.of(HTML_MESSAGE))
             .build();
 
         assertThat(vacationResponse.getId()).isEqualTo(IDENTIFIER);
@@ -85,7 +85,7 @@ public class VacationResponseTest {
         VacationResponse vacationResponse = VacationResponse.builder()
             .id(IDENTIFIER)
             .enabled(true)
-            .textBody(MESSAGE)
+            .textBody(Optional.of(MESSAGE))
             .build();
 
         assertThat(vacationResponse.getId()).isEqualTo(IDENTIFIER);
@@ -99,7 +99,7 @@ public class VacationResponseTest {
         VacationResponse vacationResponse = VacationResponse.builder()
             .id(IDENTIFIER)
             .enabled(true)
-            .htmlBody(MESSAGE)
+            .htmlBody(Optional.of(MESSAGE))
             .build();
 
         assertThat(vacationResponse.getId()).isEqualTo(IDENTIFIER);

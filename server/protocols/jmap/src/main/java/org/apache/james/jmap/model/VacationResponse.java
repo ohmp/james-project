@@ -90,23 +90,9 @@ public class VacationResponse {
             return this;
         }
 
-        @JsonIgnore
-        public Builder textBody(String textBody) {
-            Preconditions.checkNotNull(textBody);
-            this.textBody = Optional.of(textBody);
-            return this;
-        }
-
         public Builder htmlBody(Optional<String> htmlBody) {
             Preconditions.checkNotNull(htmlBody);
             this.htmlBody = htmlBody;
-            return this;
-        }
-
-        @JsonIgnore
-        public Builder htmlBody(String htmlBody) {
-            Preconditions.checkNotNull(htmlBody);
-            this.htmlBody = Optional.of(htmlBody);
             return this;
         }
 
