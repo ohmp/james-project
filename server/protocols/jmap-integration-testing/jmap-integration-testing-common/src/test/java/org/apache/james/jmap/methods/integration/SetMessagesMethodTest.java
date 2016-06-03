@@ -23,6 +23,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
@@ -48,6 +49,8 @@ import org.apache.james.jmap.utils.MailboxRetriever;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.SearchQuery;
+import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -105,6 +108,40 @@ public abstract class SetMessagesMethodTest {
     @After
     public void teardown() {
         jmapServer.stop();
+    }
+
+    @Test
+    public void deletionsUsingJmapDoNotUpdateTheSearchIndex() throws Exception {
+        // Given
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.andCriteria(new SearchQuery.AllCriterion());
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+        Mailbox mailbox = jmapServer.serverProbe().getMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        await();
+        assertThat(jmapServer.serverProbe().search(null, mailbox, searchQuery)).containsExactly(1L);
+
+        // WHen
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"setMessages\", {\"destroy\": [\"" + username + "|mailbox|1\"]}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messagesSet"))
+            .body(ARGUMENTS + ".notDestroyed", anEmptyMap())
+            .body(ARGUMENTS + ".destroyed", hasSize(1))
+            .body(ARGUMENTS + ".destroyed", contains(username + "|mailbox|1"));
+        await();
+        Thread.sleep(10000L);
+
+        //Then
+        // Should be empty
+        assertThat(jmapServer.serverProbe().search(null, mailbox, searchQuery)).containsExactly(1L);
     }
 
     @Test
