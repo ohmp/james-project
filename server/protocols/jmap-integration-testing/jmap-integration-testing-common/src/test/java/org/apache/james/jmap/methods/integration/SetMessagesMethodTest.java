@@ -111,6 +111,46 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
+    public void asAJMAPUserICanMarkYouMessagesAsRead() throws Exception {
+        // Given
+        String attacker = "attacker@" + USERS_DOMAIN;
+        String password = "password";
+        jmapServer.serverProbe().addUser(attacker, password);
+        AccessToken attackerAccessToken = JmapAuthentication.authenticateJamesUser(attacker, password);
+
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, attacker, "outbox");
+
+        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        await();
+
+        //When
+        String presumedMessageId = username + "|mailbox|1";
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", attackerAccessToken.serialize())
+            .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isUnread\" : false } } }, \"#0\"]]", presumedMessageId))
+        .when()
+            .post("/jmap");
+
+        //Then
+        with()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessages\", {\"ids\": [\"" + presumedMessageId + "\"]}, \"#0\"]]")
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messages"))
+            .body(ARGUMENTS + ".list", hasSize(1))
+            .body(ARGUMENTS + ".list[0].isUnread", equalTo(false))
+            .log().ifValidationFails();
+    }
+
+    @Test
     public void deletionsUsingJmapDoNotUpdateTheSearchIndex() throws Exception {
         // Given
         SearchQuery searchQuery = new SearchQuery();
