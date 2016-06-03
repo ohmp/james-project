@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import javax.activation.DataHandler;
+import javax.inject.Inject;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.internet.MimeBodyPart;
@@ -40,6 +41,7 @@ public class MimeMessageBodyGenerator {
 
     private final HtmlTextExtractor htmlTextExtractor;
 
+    @Inject
     public MimeMessageBodyGenerator(HtmlTextExtractor htmlTextExtractor) {
         this.htmlTextExtractor = htmlTextExtractor;
     }
