@@ -110,6 +110,54 @@ public abstract class SetMessagesMethodTest {
         jmapServer.stop();
     }
 
+
+    @Test
+    public void asAJMAPUserICanDeleteSomeBodyElseMessages() throws Exception {
+        // Given
+        String attacker = "attacker@" + USERS_DOMAIN;
+        String password = "password";
+        jmapServer.serverProbe().addUser(attacker, password);
+        AccessToken attackerAccessToken = JmapAuthentication.authenticateJamesUser(attacker, password);
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, attacker, "outbox");
+
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        await();
+
+        // When
+        String presumedMessageId = username + "|mailbox|1";
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", attackerAccessToken.serialize())
+            .body("[[\"setMessages\", {\"destroy\": [\"" + presumedMessageId + "\"]}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messagesSet"))
+            .body(ARGUMENTS + ".notDestroyed", anEmptyMap())
+            .body(ARGUMENTS + ".destroyed", hasSize(1))
+            .body(ARGUMENTS + ".destroyed", contains(username + "|mailbox|1"));
+        await();
+        Thread.sleep(10000L);
+
+        //Then
+        // Should not be empty
+        with()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessages\", {\"ids\": [\"" + presumedMessageId + "\"]}, \"#0\"]]")
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messages"))
+            .body(ARGUMENTS + ".list", empty())
+            .log().ifValidationFails();
+    }
+
     @Test
     public void JMAPFlagsUpdatesDoNotUpdateSearchIndex() throws Exception {
         // Given
