@@ -23,7 +23,9 @@ import org.apache.james.GuiceJamesServer;
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.jmap.methods.integration.SetMessagesMethodTest;
 import org.apache.james.jmap.servers.MemoryJmapServerModule;
+import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class MemorySetMessagesMethodTest extends SetMessagesMethodTest {
@@ -40,5 +42,23 @@ public class MemorySetMessagesMethodTest extends SetMessagesMethodTest {
     
     @Override
     protected void await() {
+    }
+
+    @Ignore
+    @Test
+    public void JMAPFlagsUpdatesDoNotUpdateSearchIndex() throws Exception {
+
+    }
+
+    @Ignore
+    @Test
+    public void deletionsUsingJmapDoNotUpdateTheSearchIndex() throws Exception {
+
+    }
+
+    @Ignore
+    @Test
+    public void sentMailsAreIndexed() throws Exception {
+
     }
 }
