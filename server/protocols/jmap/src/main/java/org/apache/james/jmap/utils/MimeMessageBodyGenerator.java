@@ -34,6 +34,7 @@ import javax.mail.util.ByteArrayDataSource;
 import org.apache.james.mime4j.dom.field.ContentTypeField;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 public class MimeMessageBodyGenerator {
@@ -42,7 +43,8 @@ public class MimeMessageBodyGenerator {
     private final HtmlTextExtractor htmlTextExtractor;
 
     @Inject
-    public MimeMessageBodyGenerator(HtmlTextExtractor htmlTextExtractor) {
+    @VisibleForTesting
+    MimeMessageBodyGenerator(HtmlTextExtractor htmlTextExtractor) {
         this.htmlTextExtractor = htmlTextExtractor;
     }
 
