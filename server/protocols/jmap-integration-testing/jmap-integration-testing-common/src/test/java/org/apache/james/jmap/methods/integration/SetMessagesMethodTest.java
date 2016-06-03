@@ -145,6 +145,51 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
+    public void sentMailsAreIndexed() throws Exception {
+        // Given
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.andCriteria(new SearchQuery.AllCriterion());
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
+        Mailbox mailbox = jmapServer.serverProbe().getMailbox(MailboxConstants.USER_NAMESPACE, username, "sent");
+        String sentMailboxId = MailboxRetriever.getSentId(accessToken);
+
+        String fromAddress = username;
+        String messageCreationId = "user|inbox|1";
+        String messageSubject = "Thank you for joining example.com!";
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\","+
+            "    {" +
+            "      \"create\": { \"" + messageCreationId  + "\" : {" +
+            "        \"from\": { \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}," +
+            "        \"to\": [{ \"name\": \"BOB\", \"email\": \"someone@example.com\"}]," +
+            "        \"subject\": \"" + messageSubject + "\"," +
+            "        \"textBody\": \"Hello someone, and thank you for joining example.com!\"," +
+            "        \"mailboxIds\": [\"" + MailboxRetriever.getOutboxId(accessToken) + "\"]" +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+
+        //When
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body(requestBody)
+            // When
+            .when()
+            .post("/jmap");
+        calmlyAwait.atMost(30, TimeUnit.SECONDS).until( () -> messageHasBeenMovedToSentBox(sentMailboxId));
+        await();
+
+        //Then
+        // Should contains one message
+        assertThat(jmapServer.serverProbe().search(null, mailbox, searchQuery)).containsExactly(1L);
+    }
+
+    @Test
     public void setMessagesShouldReturnErrorNotSupportedWhenRequestContainsNonNullAccountId() throws Exception {
         given()
             .accept(ContentType.JSON)
