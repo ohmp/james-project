@@ -111,6 +111,37 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
+    public void JMAPFlagsUpdatesDoNotUpdateSearchIndex() throws Exception {
+        // Given
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.andCriteria(SearchQuery.flagIsUnSet(Flags.Flag.SEEN));
+
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+        Mailbox mailbox = jmapServer.serverProbe().getMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        jmapServer.serverProbe().appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        await();
+        assertThat(jmapServer.serverProbe().search(null, mailbox, searchQuery)).containsExactly(1L);
+
+        //When
+        String presumedMessageId = username + "|mailbox|1";
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isUnread\" : false } } }, \"#0\"]]", presumedMessageId))
+        .when()
+            .post("/jmap");
+        await();
+        Thread.sleep(1000L);
+
+        //Then
+        // Should be empty
+        assertThat(jmapServer.serverProbe().search(null, mailbox, searchQuery)).containsExactly(1L);
+    }
+
+    @Test
     public void asAJMAPUserICanMarkYouMessagesAsRead() throws Exception {
         // Given
         String attacker = "attacker@" + USERS_DOMAIN;
