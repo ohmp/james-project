@@ -108,6 +108,33 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
+    public void iCanNotMarkMessagesAsReadWithoutOutBox() throws Exception {
+        // Given
+        String user2 = "user2@" + USERS_DOMAIN;
+        String password = "password";
+        jmapServer.serverProbe().addUser(user2, password);
+        AccessToken attackerAccessToken = JmapAuthentication.authenticateJamesUser(user2, password);
+
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, user2, "mailbox");
+
+        jmapServer.serverProbe().appendMessage(user2, new MailboxPath(MailboxConstants.USER_NAMESPACE, user2, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        await();
+
+        //Then
+        String presumedMessageId = user2 + "|mailbox|1";
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", attackerAccessToken.serialize())
+            .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isUnread\" : false } } }, \"#0\"]]", presumedMessageId))
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(500);
+    }
+
+    @Test
     public void setMessagesShouldReturnErrorNotSupportedWhenRequestContainsNonNullAccountId() throws Exception {
         given()
             .accept(ContentType.JSON)
