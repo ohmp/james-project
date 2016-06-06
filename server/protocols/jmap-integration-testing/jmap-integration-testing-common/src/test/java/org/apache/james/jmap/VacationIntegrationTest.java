@@ -137,7 +137,7 @@ public abstract class VacationIntegrationTest {
         calmlyAwait.atMost(10, TimeUnit.SECONDS)
             .until(() -> isTextMessageReceived(user1AccessToken, getInboxId(user1AccessToken), ORIGINAL_MESSAGE_TEXT_BODY, USER_2, USER_1));
         calmlyAwait.atMost(10, TimeUnit.SECONDS)
-                .until( () -> assertOneHTMLMessageReceived(user2AccessToken, getInboxId(user2AccessToken), USER_1, USER_2));
+                .until( () -> assertOneMessageWithNullTextBodyReceived(user2AccessToken, getInboxId(user2AccessToken), USER_1, USER_2));
     }
 
     @Test
@@ -376,7 +376,7 @@ public abstract class VacationIntegrationTest {
             .body(SECOND_ARGUMENTS + ".list[0].to.email[0]", equalTo(expectedTo));
     }
 
-    private boolean assertOneHTMLMessageReceived(AccessToken recipientToken, String mailboxId, String expectedFrom, String expectedTo) {
+    private boolean assertOneMessageWithNullTextBodyReceived(AccessToken recipientToken, String mailboxId, String expectedFrom, String expectedTo) {
         try {
             with()
                 .accept(ContentType.JSON)
