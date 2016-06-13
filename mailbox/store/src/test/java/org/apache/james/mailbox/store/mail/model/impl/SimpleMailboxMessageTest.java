@@ -62,7 +62,7 @@ public class SimpleMailboxMessageTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             byteArrayOutputStream.write(MESSAGE.getFullContent());
-            assertThat(byteArrayOutputStream.size()).isEqualTo(MESSAGE_CONTENT.getBytes().length);
+            assertThat(byteArrayOutputStream.size()).isEqualTo(MESSAGE_CONTENT.getBytes(MESSAGE_CHARSET).length);
         } finally {
             byteArrayOutputStream.close();
         }
@@ -73,7 +73,7 @@ public class SimpleMailboxMessageTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             byteArrayOutputStream.write(MESSAGE_SPECIAL_CHAR.getFullContent());
-            assertThat(byteArrayOutputStream.size()).isEqualTo(MESSAGE_CONTENT_SPECIAL_CHAR.getBytes().length);
+            assertThat(byteArrayOutputStream.size()).isEqualTo(MESSAGE_CONTENT_SPECIAL_CHAR.getBytes(MESSAGE_CHARSET).length);
         } finally {
             byteArrayOutputStream.close();
         }
@@ -81,8 +81,8 @@ public class SimpleMailboxMessageTest {
 
     @Test
     public void testFullContent() throws IOException {
-        assertThat(new String(IOUtils.toByteArray(MESSAGE.getFullContent()),MESSAGE_CHARSET)).isEqualTo(MESSAGE_CONTENT);
-        assertThat(new String(IOUtils.toByteArray(MESSAGE_SPECIAL_CHAR.getFullContent()),MESSAGE_CHARSET)).isEqualTo(MESSAGE_CONTENT_SPECIAL_CHAR);
+        assertThat(new String(IOUtils.toByteArray(MESSAGE.getFullContent()), MESSAGE_CHARSET)).isEqualTo(MESSAGE_CONTENT);
+        assertThat(new String(IOUtils.toByteArray(MESSAGE_SPECIAL_CHAR.getFullContent()), MESSAGE_CHARSET)).isEqualTo(MESSAGE_CONTENT_SPECIAL_CHAR);
     }
 
     @Test
