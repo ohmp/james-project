@@ -24,6 +24,7 @@ import static net.javacrumbs.jsonunit.core.Option.IGNORING_VALUES;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -50,6 +51,7 @@ public class MailboxMessageToElasticSearchJsonTest {
     public static final TestId MAILBOX_ID = TestId.of(18L);
     public static final long MOD_SEQ = 42L;
     public static final long UID = 25L;
+    public static final Charset CHARSET = Charset.forName("UTF-8");
 
     private Date date;
     private PropertyBuilder propertyBuilder;
@@ -80,7 +82,7 @@ public class MailboxMessageToElasticSearchJsonTest {
         spamMail.setModSeq(MOD_SEQ);
         assertThatJson(messageToElasticSearchJson.convertToJson(spamMail))
             .when(IGNORING_ARRAY_ORDER)
-            .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("documents/spamMail.json")));
+            .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("documents/spamMail.json"), CHARSET));
     }
 
     @Test
@@ -242,7 +244,7 @@ public class MailboxMessageToElasticSearchJsonTest {
         spamMail.setModSeq(MOD_SEQ);
         assertThatJson(messageToElasticSearchJson.convertToJson(spamMail))
             .when(IGNORING_ARRAY_ORDER)
-            .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("documents/nonTextual.json")));
+            .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("documents/nonTextual.json"), CHARSET));
     }
 
 }
