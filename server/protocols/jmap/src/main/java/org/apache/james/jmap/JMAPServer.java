@@ -43,7 +43,8 @@ public class JMAPServer implements Configurable {
                        AuthenticationFilter authenticationFilter, FirstUserConnectionFilter firstUserConnectionFilter) {
 
         server = JettyHttpServer.create(
-                configurationBuilderFor(jmapConfiguration)
+                Configuration.builder()
+                        .port(jmapConfiguration.getPort())
                         .serve(JMAPUrls.AUTHENTICATION)
                             .with(authenticationServlet)
                         .filter(JMAPUrls.AUTHENTICATION)
@@ -58,16 +59,6 @@ public class JMAPServer implements Configurable {
                         .serveAsOneLevelTemplate(JMAPUrls.DOWNLOAD)
                             .with(downloadServlet)
                         .build());
-    }
-
-    private Builder configurationBuilderFor(JMAPConfiguration jmapConfiguration) {
-        Builder builder = Configuration.builder();
-        if (jmapConfiguration.getPort().isPresent()) {
-            builder.port(jmapConfiguration.getPort().get());
-        } else {
-            builder.randomPort();
-        }
-        return builder;
     }
 
     @Override
