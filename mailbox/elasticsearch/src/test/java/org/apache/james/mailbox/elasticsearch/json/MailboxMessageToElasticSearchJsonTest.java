@@ -42,6 +42,7 @@ import org.apache.james.mailbox.tika.extractor.TikaTextExtractor;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 
 public class MailboxMessageToElasticSearchJsonTest {
@@ -51,7 +52,7 @@ public class MailboxMessageToElasticSearchJsonTest {
     public static final TestId MAILBOX_ID = TestId.of(18L);
     public static final long MOD_SEQ = 42L;
     public static final long UID = 25L;
-    public static final Charset CHARSET = Charset.forName("UTF-8");
+    public static final Charset CHARSET = Charsets.UTF_8;
 
     private Date date;
     private PropertyBuilder propertyBuilder;
