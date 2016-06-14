@@ -37,8 +37,10 @@ import org.assertj.core.internal.FieldByFieldComparator;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
+
 public class SimpleMailboxMessageTest {
-    private static final Charset MESSAGE_CHARSET = Charset.forName("UTF-8");
+    private static final Charset MESSAGE_CHARSET = Charsets.UTF_8;
     private static final String MESSAGE_CONTENT = "Simple message content without special characters";
     private static final String MESSAGE_CONTENT_SPECIAL_CHAR = "Simple message content with special characters: \"'(§è!çà$*`";
     public static final TestId TEST_ID = TestId.of(1L);
