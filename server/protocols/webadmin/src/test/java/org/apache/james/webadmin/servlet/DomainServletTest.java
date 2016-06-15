@@ -56,7 +56,7 @@ public class DomainServletTest {
     @Before
     public void setUp() throws Exception {
         domainListManagementMBean = mock(DomainListManagementMBean.class);
-        webAdminServer = new WebAdminServer(RANDOM_PORT, new DomainServlet(domainListManagementMBean));
+        webAdminServer = new WebAdminServer(RANDOM_PORT, new DomainServlet(domainListManagementMBean), mock(UserServlet.class));
         webAdminServer.configure(null);
 
         RestAssured.port = webAdminServer.getPort();

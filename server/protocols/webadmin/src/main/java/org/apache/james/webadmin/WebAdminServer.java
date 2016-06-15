@@ -29,6 +29,7 @@ import org.apache.james.http.jetty.Configuration;
 import org.apache.james.http.jetty.JettyHttpServer;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.webadmin.servlet.DomainServlet;
+import org.apache.james.webadmin.servlet.UserServlet;
 
 import com.google.common.base.Throwables;
 
@@ -36,12 +37,14 @@ public class WebAdminServer implements Configurable {
 
     private final JettyHttpServer server;
 
-    public WebAdminServer(Optional<Integer> port, DomainServlet domainServlet) {
+    public WebAdminServer(Optional<Integer> port, DomainServlet domainServlet, UserServlet userServlet) {
         this.server = JettyHttpServer.create(
             Configuration.builder()
                 .port(port)
                 .serve(Constants.DOMAIN + "/*")
                     .with(domainServlet)
+                .serve(Constants.USER + "/*")
+                    .with(userServlet)
                 .build());
     }
 

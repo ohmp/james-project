@@ -17,13 +17,24 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin;
+package org.apache.james.webadmin.model;
 
-public interface Constants {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
-    String JSON_CONTENT_TYPE = "application/json";
+public class UserRequest {
 
-    String DOMAIN = "/domain";
-    String USER = "/user";
+    private final String password;
 
+    @JsonCreator
+    public UserRequest(@JsonProperty("password") String password) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(password));
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 }

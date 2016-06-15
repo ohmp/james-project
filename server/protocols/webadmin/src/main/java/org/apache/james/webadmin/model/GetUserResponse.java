@@ -17,13 +17,18 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin;
+package org.apache.james.webadmin.model;
 
-public interface Constants {
+import java.util.List;
 
-    String JSON_CONTENT_TYPE = "application/json";
+public class GetUserResponse {
+    private final List<String> usernames;
 
-    String DOMAIN = "/domain";
-    String USER = "/user";
+    public GetUserResponse(List<String> domains) {
+        this.usernames = domains;
+    }
 
+    public List<String> getUsernames() {
+        return usernames;
+    }
 }
