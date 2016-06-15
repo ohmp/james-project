@@ -36,7 +36,7 @@ import java.util.Optional;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.UsersRepositoryManagementMBean;
 import org.apache.james.webadmin.Constants;
-import org.apache.james.webadmin.WebAdminServer;
+import org.apache.james.webadmin.WebAdminServerImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,22 +49,22 @@ public class UserServletTest {
 
     public static final Optional<Integer> RANDOM_PORT = Optional.empty();
 
-    private WebAdminServer webAdminServer;
+    private WebAdminServerImpl webAdminServerImpl;
     private UsersRepositoryManagementMBean usersRepositoryManagementMBean;
 
     @Before
     public void setUp() throws Exception {
         usersRepositoryManagementMBean = mock(UsersRepositoryManagementMBean.class);
-        webAdminServer = new WebAdminServer(RANDOM_PORT, mock(DomainServlet.class), new UserServlet(usersRepositoryManagementMBean));
-        webAdminServer.configure(null);
+        webAdminServerImpl = new WebAdminServerImpl(RANDOM_PORT, mock(DomainServlet.class), new UserServlet(usersRepositoryManagementMBean));
+        webAdminServerImpl.configure(null);
 
-        RestAssured.port = webAdminServer.getPort();
+        RestAssured.port = webAdminServerImpl.getPort();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
     }
 
     @After
     public void tearDown() {
-        webAdminServer.stop();
+        webAdminServerImpl.stop();
     }
 
     @Test

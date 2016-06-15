@@ -36,7 +36,7 @@ import java.util.Optional;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.domainlist.api.DomainListManagementMBean;
 import org.apache.james.webadmin.Constants;
-import org.apache.james.webadmin.WebAdminServer;
+import org.apache.james.webadmin.WebAdminServerImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,22 +50,22 @@ public class DomainServletTest {
 
     public static final Optional<Integer> RANDOM_PORT = Optional.empty();
 
-    private WebAdminServer webAdminServer;
+    private WebAdminServerImpl webAdminServerImpl;
     private DomainListManagementMBean domainListManagementMBean;
 
     @Before
     public void setUp() throws Exception {
         domainListManagementMBean = mock(DomainListManagementMBean.class);
-        webAdminServer = new WebAdminServer(RANDOM_PORT, new DomainServlet(domainListManagementMBean), mock(UserServlet.class));
-        webAdminServer.configure(null);
+        webAdminServerImpl = new WebAdminServerImpl(RANDOM_PORT, new DomainServlet(domainListManagementMBean), mock(UserServlet.class));
+        webAdminServerImpl.configure(null);
 
-        RestAssured.port = webAdminServer.getPort();
+        RestAssured.port = webAdminServerImpl.getPort();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
     }
 
     @After
     public void tearDown() {
-        webAdminServer.stop();
+        webAdminServerImpl.stop();
     }
 
     @Test

@@ -17,30 +17,30 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james;
+package org.apache.james.utils;
 
-import org.apache.james.jmap.methods.GetMessageListMethod;
-import org.apache.james.modules.TestFilesystemModule;
-import org.apache.james.modules.TestJMAPServerModule;
-import org.apache.james.modules.TestWebAdminServerModule;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import java.io.FileNotFoundException;
 
-public class MemoryJamesServerTest extends AbstractJamesServerTest {
+import javax.inject.Inject;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.james.filesystem.api.FileSystem;
 
-    @Override
-    protected GuiceJamesServer createJamesServer() {
-        return new GuiceJamesServer()
-                .combineWith(MemoryJamesServerMain.inMemoryServerModule)
-                .overrideWith(new TestFilesystemModule(temporaryFolder),
-                        new TestJMAPServerModule(GetMessageListMethod.DEFAULT_MAXIMUM_LIMIT),
-                        new TestWebAdminServerModule());
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+
+public class PropertiesProvider {
+
+    private final FileSystem fileSystem;
+
+    @Inject
+    public PropertiesProvider(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
-    @Override
-    protected void clean() {
+    public PropertiesConfiguration getConfiguration(String fileName) throws FileNotFoundException, ConfigurationException {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(fileName));
+        return new PropertiesConfiguration(fileSystem.getFile(FileSystem.FILE_PROTOCOL_AND_CONF + fileName + ".properties"));
     }
 }

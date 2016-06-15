@@ -19,55 +19,8 @@
 
 package org.apache.james.webadmin;
 
-import java.util.Optional;
-
-import javax.annotation.PreDestroy;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.james.http.jetty.Configuration;
-import org.apache.james.http.jetty.JettyHttpServer;
 import org.apache.james.lifecycle.api.Configurable;
-import org.apache.james.webadmin.servlet.DomainServlet;
-import org.apache.james.webadmin.servlet.UserServlet;
 
-import com.google.common.base.Throwables;
-
-public class WebAdminServer implements Configurable {
-
-    private final JettyHttpServer server;
-
-    public WebAdminServer(Optional<Integer> port, DomainServlet domainServlet, UserServlet userServlet) {
-        this.server = JettyHttpServer.create(
-            Configuration.builder()
-                .port(port)
-                .serve(Constants.DOMAIN + "/*")
-                    .with(domainServlet)
-                .serve(Constants.USER + "/*")
-                    .with(userServlet)
-                .build());
-    }
-
-    @Override
-    public void configure(HierarchicalConfiguration config) throws ConfigurationException {
-        try {
-            server.start();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @PreDestroy
-    public void stop() {
-        try {
-            server.stop();
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
-    }
-
-    public int getPort() {
-        return server.getPort();
-    }
+public interface WebAdminServer extends Configurable {
 
 }
