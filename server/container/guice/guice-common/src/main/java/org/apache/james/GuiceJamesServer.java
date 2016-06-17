@@ -19,6 +19,7 @@
 package org.apache.james;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import javax.annotation.PreDestroy;
 
@@ -29,6 +30,7 @@ import org.apache.james.modules.ProtocolsModule;
 import org.apache.james.utils.ConfigurationsPerformer;
 import org.apache.james.utils.ExtendedServerProbe;
 import org.apache.james.utils.GuiceServerProbe;
+import org.apache.james.webadmin.WebAdminServer;
 import org.apache.onami.lifecycle.core.Stager;
 
 import com.google.common.collect.Iterables;
@@ -45,8 +47,8 @@ public class GuiceJamesServer {
     private Stager<PreDestroy> preDestroy;
     private GuiceServerProbe serverProbe;
     private int jmapPort;
+    private Optional<Integer> webadminPort;
 
-    
     public GuiceJamesServer() {
         this(Modules.combine(
                         new CommonServicesModule(),
@@ -72,6 +74,15 @@ public class GuiceJamesServer {
         injector.getInstance(ConfigurationsPerformer.class).initModules();
         serverProbe = injector.getInstance(GuiceServerProbe.class);
         jmapPort = injector.getInstance(JMAPServer.class).getPort();
+        locateWebAdminPort(injector);
+    }
+
+    private void locateWebAdminPort(Injector injector) {
+        try {
+            webadminPort = Optional.of(injector.getInstance(WebAdminServer.class).getPort());
+        } catch(Exception e) {
+            webadminPort = Optional.empty();
+        }
     }
 
     public void stop() {
@@ -86,5 +97,9 @@ public class GuiceJamesServer {
 
     public int getJmapPort() {
         return jmapPort;
+    }
+
+    public Optional<Integer> getWebadminPort() {
+        return webadminPort;
     }
 }
