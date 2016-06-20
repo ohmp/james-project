@@ -20,10 +20,6 @@
 package org.apache.james.webadmin.routes;
 
 import static org.apache.james.webadmin.Constants.SEPARATOR;
-import static spark.Spark.delete;
-import static spark.Spark.get;
-import static spark.Spark.halt;
-import static spark.Spark.put;
 
 import javax.inject.Inject;
 
@@ -39,6 +35,7 @@ import com.google.common.base.Strings;
 
 import spark.Request;
 import spark.Response;
+import spark.Service;
 
 public class DomainRoutes implements Routes {
 
@@ -60,16 +57,16 @@ public class DomainRoutes implements Routes {
     }
 
     @Override
-    public void define() {
-        get(DOMAINS,
+    public void define(Service service) {
+        service.get(DOMAINS,
             (request, response) -> domainList.getDomains(),
             jsonTransformer);
 
-        get(SPECIFIC_DOMAIN, this::exists);
+        service.get(SPECIFIC_DOMAIN, this::exists);
 
-        put(SPECIFIC_DOMAIN, this::addDomain);
+        service.put(SPECIFIC_DOMAIN, this::addDomain);
 
-        delete(SPECIFIC_DOMAIN, this::removeDomain);
+        service.delete(SPECIFIC_DOMAIN, this::removeDomain);
     }
 
     private String removeDomain(Request request, Response response) {
@@ -105,9 +102,9 @@ public class DomainRoutes implements Routes {
 
     private String exists(Request request, Response response) throws DomainListException {
         if (!domainList.containsDomain(request.params(DOMAIN_NAME))) {
-            halt(404);
+            response.status(404);
         } else {
-            halt(204);
+            response.status(204);
         }
         return EMPTY_BODY;
     }
