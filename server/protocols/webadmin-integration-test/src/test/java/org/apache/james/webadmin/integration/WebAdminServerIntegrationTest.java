@@ -23,10 +23,13 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+
+import java.net.URL;
 
 import org.apache.james.CassandraJamesServerMain;
 import org.apache.james.GuiceJamesServer;
@@ -50,6 +53,7 @@ import com.jayway.restassured.parsing.Parser;
 public class WebAdminServerIntegrationTest {
 
     public static final String DOMAIN = "domain";
+    public static final String SPECIFIC_DOMAIN = DomainRoutes.DOMAINS + SEPARATOR + DOMAIN;
     public static final String USERNAME = "username@" + DOMAIN;
 
     private TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -84,9 +88,9 @@ public class WebAdminServerIntegrationTest {
     @Test
     public void postShouldAddTheGivenDomain() throws Exception {
         when()
-            .put(DomainRoutes.DOMAINS + DOMAIN)
+            .put(SPECIFIC_DOMAIN)
         .then()
-            .statusCode(200);
+            .statusCode(204);
 
         assertThat(guiceJamesServer.serverProbe().listDomains()).contains(DOMAIN);
     }
@@ -96,9 +100,9 @@ public class WebAdminServerIntegrationTest {
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
 
         when()
-            .delete(DomainRoutes.DOMAINS + DOMAIN)
+            .delete(DomainRoutes.DOMAINS + SEPARATOR + DOMAIN)
         .then()
-            .statusCode(200);
+            .statusCode(204);
 
         assertThat(guiceJamesServer.serverProbe().listDomains()).doesNotContain(DOMAIN);
     }
@@ -114,7 +118,7 @@ public class WebAdminServerIntegrationTest {
         .when()
             .post(UserRoutes.USERS)
         .then()
-            .statusCode(200);
+            .statusCode(204);
 
         assertThat(guiceJamesServer.serverProbe().listUsers()).contains(USERNAME);
     }
@@ -129,9 +133,9 @@ public class WebAdminServerIntegrationTest {
             .contentType(ContentType.JSON)
             .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
         .when()
-            .delete(UserRoutes.USERS + USERNAME)
+            .delete(UserRoutes.USERS + SEPARATOR + USERNAME)
         .then()
-            .statusCode(200);
+            .statusCode(204);
 
         assertThat(guiceJamesServer.serverProbe().listUsers()).doesNotContain(USERNAME);
     }

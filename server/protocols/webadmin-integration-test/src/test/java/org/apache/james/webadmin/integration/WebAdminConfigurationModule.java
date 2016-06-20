@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin.integration;
 
+import static org.apache.james.webadmin.WebAdminServer.WEBADMIN_ENABLED;
 import static org.apache.james.webadmin.WebAdminServer.WEBADMIN_PORT;
 
 import org.apache.james.webadmin.WebAdminServer;
@@ -38,5 +39,11 @@ public class WebAdminConfigurationModule extends AbstractModule {
     @Named(WEBADMIN_PORT)
     public int provideWebAdminPort() throws Exception {
         return WebAdminServer.findFreePort();
+    }
+
+    @Provides
+    @Named(WEBADMIN_ENABLED)
+    public boolean provideWebAdminEnabled() throws Exception {
+        return true;
     }
 }
