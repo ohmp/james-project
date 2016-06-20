@@ -20,10 +20,6 @@
 package org.apache.james.webadmin.routes;
 
 import static org.apache.james.webadmin.Constants.SEPARATOR;
-import static spark.Spark.delete;
-import static spark.Spark.get;
-import static spark.Spark.halt;
-import static spark.Spark.post;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +41,7 @@ import com.google.common.collect.ImmutableList;
 
 import spark.Request;
 import spark.Response;
+import spark.Service;
 
 public class UserRoutes implements Routes {
 
@@ -66,14 +63,14 @@ public class UserRoutes implements Routes {
     }
 
     @Override
-    public void define() {
-        get(USERS,
+    public void define(Service service) {
+        service.get(USERS,
             (request, response) -> getUsers(),
             jsonTransformer);
 
-        post(USERS, this::addUser);
+        service.post(USERS, this::addUser);
 
-        delete(USERS + SEPARATOR + USER_NAME, this::removeUser);
+        service.delete(USERS + SEPARATOR + USER_NAME, this::removeUser);
     }
 
     private List<String> getUsers() throws UsersRepositoryException {
@@ -101,7 +98,7 @@ public class UserRoutes implements Routes {
             return addUser(addUserRequest);
         } catch (IOException e) {
             LOGGER.info("Error while deserializing addUser request", e);
-            halt(400);
+            response.status(400);
             return EMPTY_BODY;
         }
     }
@@ -114,7 +111,6 @@ public class UserRoutes implements Routes {
             user.setPassword(new String(addUserRequest.getPassword()));
             usersRepository.updateUser(user);
         }
-        halt(204);
         return EMPTY_BODY;
     }
 
