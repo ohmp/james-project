@@ -17,32 +17,24 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.model;
+package org.apache.james.webadmin.utils;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
+import java.io.IOException;
 
-public class AddUserRequest {
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-    private final String username;
-    private final char[] password;
+public class JsonExtractor<Request> {
 
-    @JsonCreator
-    public AddUserRequest(@JsonProperty("username") String username,
-                          @JsonProperty("password") char[] password) {
-        Preconditions.checkNotNull(username);
-        Preconditions.checkNotNull(password);
-        Preconditions.checkArgument(!username.isEmpty());
-        this.username = username;
-        this.password = password;
+    private final ObjectMapper objectMapper;
+    private final Class<Request> type;
+
+    public JsonExtractor(ObjectMapper objectMapper, Class<Request> type) {
+        this.objectMapper = objectMapper;
+        this.type = type;
     }
 
-    public String getUsername() {
-        return username;
+    public Request parse(String text) throws IOException {
+        return objectMapper.readValue(text, type);
     }
 
-    public char[] getPassword() {
-        return password;
-    }
 }

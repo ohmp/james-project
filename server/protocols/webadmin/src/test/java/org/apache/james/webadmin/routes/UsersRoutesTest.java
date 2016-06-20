@@ -20,11 +20,15 @@
 package org.apache.james.webadmin.routes;
 
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.when;
+import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -44,7 +48,7 @@ import org.junit.runner.RunWith;
 
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.parsing.Parser;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
@@ -53,14 +57,17 @@ public class UsersRoutesTest {
 
     public static final String DOMAIN = "domain";
     public static final String USERNAME = "username@" + DOMAIN;
+    public static final String PATH_SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
     private WebAdminServer webAdminServer;
 
     private void createServer(UsersRepository usersRepository) throws Exception {
         webAdminServer = new WebAdminServer(new UserRoutes(usersRepository, new JsonTransformer()));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
+
         RestAssured.port = webAdminServer.getPort();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
+        RestAssured.defaultParser = Parser.JSON;
     }
 
     @After
@@ -84,10 +91,7 @@ public class UsersRoutesTest {
 
         @Test
         public void getUsersShouldBeEmptyByDefault() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(UserRoutes.USERS)
             .then()
                 .statusCode(200)
@@ -96,10 +100,7 @@ public class UsersRoutesTest {
 
         @Test
         public void postShouldReturnUserErrorWhenNoBody() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .post(UserRoutes.USERS)
             .then()
                 .statusCode(400);
@@ -108,8 +109,6 @@ public class UsersRoutesTest {
         @Test
         public void postShouldReturnUserErrorWhenEmptyJsonBody() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{}")
             .when()
                 .post(UserRoutes.USERS)
@@ -120,8 +119,6 @@ public class UsersRoutesTest {
         @Test
         public void postShouldReturnUserErrorWhenWrongJsonBody() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"bad\":\"any\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -132,8 +129,6 @@ public class UsersRoutesTest {
         @Test
         public void postShouldReturnUserErrorWhenMissingPasswordJsonBody() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"username\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -144,8 +139,6 @@ public class UsersRoutesTest {
         @Test
         public void postShouldReturnUserErrorWhenMissingUserJsonBody() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -156,63 +149,73 @@ public class UsersRoutesTest {
         @Test
         public void postShouldReturnOkWhenValidJsonBody() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"username@domain\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
             .then()
-                .statusCode(200);
+                .statusCode(204);
+        }
+
+        @Test
+        public void postShouldReturnRequireNonNullUsername() {
+            given()
+                .body("{\"username\":null,\"password\":\"password\"}")
+            .when()
+                .post(UserRoutes.USERS)
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void postShouldReturnRequireNotEmptyUsername() {
+            given()
+                .body("{\"username\":\"\",\"password\":\"password\"}")
+            .when()
+                .post(UserRoutes.USERS)
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void postShouldReturnRequireNonNullPassword() {
+            given()
+                .body("{\"username\":\"username@domain\",\"password\":null}")
+            .when()
+                .post(UserRoutes.USERS)
+            .then()
+                .statusCode(400);
         }
 
         @Test
         public void postShouldAddTheUser() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
+            with()
                 .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
-            .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(200);
+            .post(UserRoutes.USERS);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(UserRoutes.USERS)
             .then()
                 .statusCode(200)
-                .body(equalTo("[\"" + USERNAME + "\"]"));
+                .body(containsString(USERNAME));
         }
 
         @Test
         public void postingTwoTimesShouldBeAllowed() {
             // Given
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
+            with()
                 .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
-            .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(200);
+            .post(UserRoutes.USERS);
 
             // When
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
             .then()
-                .statusCode(200);
+                .statusCode(204);
 
             // Then
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(UserRoutes.USERS)
             .then()
                 .statusCode(200)
@@ -221,41 +224,27 @@ public class UsersRoutesTest {
 
         @Test
         public void deleteShouldReturnOk() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(UserRoutes.USER + USERNAME)
+            when()
+                .delete(PATH_SPECIFIC_USER)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
         public void deleteShouldRemoveAssociatedUser() {
             // Given
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
+            with()
                 .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
-            .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(200);
+            .post(UserRoutes.USERS);
 
             // When
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(UserRoutes.USER + USERNAME)
+            when()
+                .delete(PATH_SPECIFIC_USER)
             .then()
-                .statusCode(200);
+                .statusCode(204);
 
             // Then
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(UserRoutes.USERS)
             .then()
                 .statusCode(200)
@@ -265,13 +254,11 @@ public class UsersRoutesTest {
         @Test
         public void deleteShouldStillBeValidWithExtraBody() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"bad\":\"any\"}")
             .when()
-                .delete(UserRoutes.USER + "username@" + DOMAIN)
+                .delete(PATH_SPECIFIC_USER)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
     }
 
@@ -293,23 +280,17 @@ public class UsersRoutesTest {
         public void deleteShouldStillBeOkWhenNoUser() throws Exception {
             doThrow(new UsersRepositoryException("message")).when(usersRepository).removeUser(username);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(UserRoutes.USER + username)
+            when()
+                .delete(PATH_SPECIFIC_USER)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
         public void getShouldFailOnRepositoryException() throws Exception {
             when(usersRepository.list()).thenThrow(new UsersRepositoryException("message"));
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(UserRoutes.USERS)
             .then()
                 .statusCode(500);
@@ -320,8 +301,6 @@ public class UsersRoutesTest {
             when(usersRepository.getUserByName(username)).thenThrow(new UsersRepositoryException("message"));
 
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -330,18 +309,16 @@ public class UsersRoutesTest {
         }
 
         @Test
-        public void postShouldFailOnRepositoryExceptionOnAddUser() throws Exception {
+        public void postShouldNotFailOnRepositoryExceptionOnAddUser() throws Exception {
             when(usersRepository.getUserByName(username)).thenReturn(null);
             doThrow(new UsersRepositoryException("message")).when(usersRepository).addUser(username, password);
 
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
             .then()
-                .statusCode(500);
+                .statusCode(204);
         }
 
         @Test
@@ -350,8 +327,6 @@ public class UsersRoutesTest {
             doThrow(new UsersRepositoryException("message")).when(usersRepository).updateUser(any());
 
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -364,11 +339,8 @@ public class UsersRoutesTest {
         public void deleteShouldFailOnUnknownException() throws Exception {
             doThrow(new RuntimeException()).when(usersRepository).removeUser(username);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(UserRoutes.USER + username)
+            when()
+                .delete(PATH_SPECIFIC_USER)
             .then()
                 .statusCode(500);
         }
@@ -377,10 +349,7 @@ public class UsersRoutesTest {
         public void getShouldFailOnUnknownException() throws Exception {
             when(usersRepository.list()).thenThrow(new RuntimeException());
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(UserRoutes.USERS)
             .then()
                 .statusCode(500);
@@ -391,8 +360,6 @@ public class UsersRoutesTest {
             when(usersRepository.getUserByName(username)).thenThrow(new RuntimeException());
 
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -406,8 +373,6 @@ public class UsersRoutesTest {
             doThrow(new RuntimeException()).when(usersRepository).addUser(username, password);
 
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)
@@ -421,8 +386,6 @@ public class UsersRoutesTest {
             doThrow(new RuntimeException()).when(usersRepository).updateUser(any());
 
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
                 .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
             .when()
                 .post(UserRoutes.USERS)

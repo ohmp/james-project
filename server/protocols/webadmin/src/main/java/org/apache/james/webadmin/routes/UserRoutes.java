@@ -19,8 +19,10 @@
 
 package org.apache.james.webadmin.routes;
 
+import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static spark.Spark.delete;
 import static spark.Spark.get;
+import static spark.Spark.halt;
 import static spark.Spark.post;
 
 import java.io.IOException;
@@ -34,7 +36,10 @@ import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.model.AddUserRequest;
+import org.apache.james.webadmin.utils.JsonExtractor;
 import org.apache.james.webadmin.utils.JsonTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -46,19 +51,19 @@ public class UserRoutes implements Routes {
 
     private static final String USER_NAME = ":userName";
     private static final String EMPTY_BODY = "";
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRoutes.class);
 
     public static final String USERS = "/users";
-    public static final String USER = "/user/";
 
     private final UsersRepository usersRepository;
     private final JsonTransformer jsonTransformer;
-    private final ObjectMapper objectMapper;
+    private final JsonExtractor<AddUserRequest> jsonExtractor;
 
     @Inject
     public UserRoutes(UsersRepository usersRepository, JsonTransformer jsonTransformer) {
         this.usersRepository = usersRepository;
         this.jsonTransformer = jsonTransformer;
-        this.objectMapper = new ObjectMapper();
+        this.jsonExtractor = new JsonExtractor<>(new ObjectMapper(), AddUserRequest.class);
     }
 
     @Override
@@ -69,7 +74,7 @@ public class UserRoutes implements Routes {
 
         post(USERS, this::addUser);
 
-        delete(USER + USER_NAME, this::removeUser);
+        delete(USERS + SEPARATOR + USER_NAME, this::removeUser);
     }
 
     private List<String> getUsers() throws UsersRepositoryException {
@@ -82,18 +87,22 @@ public class UserRoutes implements Routes {
         String username = request.params(USER_NAME);
         try {
             usersRepository.removeUser(username);
+            response.status(204);
             return EMPTY_BODY;
         } catch (UsersRepositoryException e) {
-            return "The user " + username + " do not exists";
+            response.status(204);
+            return "The user " + username + " does not exists";
         }
     }
 
     private String addUser(Request request, Response response) throws IOException, UsersRepositoryException {
         try {
-            AddUserRequest addUserRequest = objectMapper.readValue(request.body(), AddUserRequest.class);
+            AddUserRequest addUserRequest = jsonExtractor.parse(request.body());
+            response.status(204);
             return addUser(addUserRequest);
         } catch (IOException e) {
-            response.status(400);
+            LOGGER.info("Error while deserializing addUser request", e);
+            halt(400);
             return EMPTY_BODY;
         }
     }
@@ -101,11 +110,20 @@ public class UserRoutes implements Routes {
     private String addUser(AddUserRequest addUserRequest) throws UsersRepositoryException {
         User user = usersRepository.getUserByName(addUserRequest.getUsername());
         if (user == null) {
-            usersRepository.addUser(addUserRequest.getUsername(), new String(addUserRequest.getPassword()));
+            addUser(addUserRequest.getUsername(), addUserRequest.getPassword());
         } else {
             user.setPassword(new String(addUserRequest.getPassword()));
             usersRepository.updateUser(user);
         }
+        halt(204);
         return EMPTY_BODY;
+    }
+
+    private void addUser(String username, char[] password) throws UsersRepositoryException {
+        try {
+            usersRepository.addUser(username, new String(password));
+        } catch (UsersRepositoryException e) {
+            LOGGER.info("Race condition while creating user {} : user already exists", username);
+        }
     }
 }
