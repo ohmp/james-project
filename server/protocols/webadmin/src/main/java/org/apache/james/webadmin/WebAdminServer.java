@@ -19,10 +19,6 @@
 
 package org.apache.james.webadmin;
 
-import static spark.Spark.awaitInitialization;
-import static spark.Spark.port;
-import static spark.Spark.stop;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Set;
@@ -40,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
+import spark.Service;
+
 public class WebAdminServer implements Configurable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebAdminServer.class);
@@ -51,6 +49,7 @@ public class WebAdminServer implements Configurable {
     private final int port;
     private final Set<Routes> routesList;
     private final boolean enabled;
+    private final Service service;
 
     // Spark do not allow to retrieve allocated port when using a random port. Thus we generate the port.
     public static int findFreePort() throws IOException {
@@ -64,6 +63,7 @@ public class WebAdminServer implements Configurable {
         this.port = port;
         this.routesList = routesList;
         this.enabled = enabled;
+        this.service = Service.ignite();
     }
 
     @VisibleForTesting
@@ -74,8 +74,8 @@ public class WebAdminServer implements Configurable {
     @Override
     public void configure(HierarchicalConfiguration config) throws ConfigurationException {
         if (enabled) {
-            port(port);
-            routesList.forEach(Routes::define);
+            service.port(port);
+            routesList.forEach(routes -> routes.define(service));
             LOGGER.info("Web admin server started");
         }
     }
@@ -83,13 +83,13 @@ public class WebAdminServer implements Configurable {
     @PreDestroy
     public void destroy() {
         if (enabled) {
-            stop();
+            service.stop();
             LOGGER.info("Web admin server stopped");
         }
     }
 
     public void await() {
-        awaitInitialization();
+        service.awaitInitialization();
     }
 
     public int getPort() {
