@@ -45,9 +45,12 @@ public class WebAdminServer implements Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebAdminServer.class);
     public static final HierarchicalConfiguration NO_CONFIGURATION = null;
     public static final String WEBADMIN_PORT = "webadmin_port";
+    public static final String WEBADMIN_ENABLED = "webadmin_enabled";
+    public static final int DEFAULT_PORT = 8080;
 
     private final int port;
     private final Set<Routes> routesList;
+    private final boolean enabled;
 
     // Spark do not allow to retrieve allocated port when using a random port. Thus we generate the port.
     public static int findFreePort() throws IOException {
@@ -57,27 +60,32 @@ public class WebAdminServer implements Configurable {
     }
 
     @Inject
-    @VisibleForTesting
-    public WebAdminServer(@Named(WEBADMIN_PORT)int port, Set<Routes> routesList) {
+    private WebAdminServer(@Named(WEBADMIN_ENABLED) boolean enabled, @Named(WEBADMIN_PORT)int port, Set<Routes> routesList) {
         this.port = port;
         this.routesList = routesList;
+        this.enabled = enabled;
     }
 
+    @VisibleForTesting
     public WebAdminServer(Routes... routes) throws IOException {
-        this(findFreePort(), ImmutableSet.copyOf(routes));
+        this(true, findFreePort(), ImmutableSet.copyOf(routes));
     }
 
     @Override
     public void configure(HierarchicalConfiguration config) throws ConfigurationException {
-        port(port);
-        routesList.forEach(Routes::define);
-        LOGGER.info("Web admin server started");
+        if (enabled) {
+            port(port);
+            routesList.forEach(Routes::define);
+            LOGGER.info("Web admin server started");
+        }
     }
 
     @PreDestroy
     public void destroy() {
-        stop();
-        LOGGER.info("Web admin server stopped");
+        if (enabled) {
+            stop();
+            LOGGER.info("Web admin server stopped");
+        }
     }
 
     public void await() {

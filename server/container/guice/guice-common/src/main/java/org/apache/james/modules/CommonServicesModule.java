@@ -53,7 +53,6 @@ public class CommonServicesModule extends AbstractModule {
         install(new PreDestroyModule());
         install(new DNSServiceModule());
         install(new AsyncTasksExecutorModule());
-        install(new OptionalModuleLoader());
 
         bind(FileSystemImpl.class).in(Scopes.SINGLETON);
         bind(GuiceServerProbe.class).in(Scopes.SINGLETON);

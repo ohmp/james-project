@@ -20,8 +20,10 @@
 package org.apache.james.modules.server;
 
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
+import static org.apache.james.webadmin.WebAdminServer.WEBADMIN_ENABLED;
 import static org.apache.james.webadmin.WebAdminServer.WEBADMIN_PORT;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Set;
 
@@ -62,7 +64,21 @@ public class WebAdminServerModule extends AbstractModule {
     @Provides
     @Named(WEBADMIN_PORT)
     public int provideWebAdminPort(PropertiesProvider propertiesProvider) throws Exception {
-        return propertiesProvider.getConfiguration("webadmin").getInt("port");
+        try {
+            return propertiesProvider.getConfiguration("webadmin").getInt("port");
+        } catch (FileNotFoundException e) {
+            return WebAdminServer.DEFAULT_PORT;
+        }
+    }
+
+    @Provides
+    @Named(WEBADMIN_ENABLED)
+    public boolean provideWebAdminEnabled(PropertiesProvider propertiesProvider) throws Exception {
+        try {
+            return propertiesProvider.getConfiguration("webadmin").getBoolean("enabled", false);
+        } catch (FileNotFoundException e) {
+            return false;
+        }
     }
 
     @Singleton
