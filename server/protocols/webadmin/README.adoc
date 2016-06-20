@@ -10,33 +10,33 @@ The web administration supports for now the CRUD operations on the domains and t
 
 .bash
 ====
-curl -XPOST http://ip:port/domain/domainToBeCreated
+curl -XPOST http://ip:port/domains/domainToBeCreated
 ====
 
 Response codes :
- - 200 : The domain was successfully added
+ - 204 : The domain was successfully added
  - 500 : Internal error while adding the domain
 
 === Delete a domain
 
 .bash
 ====
-curl -XDELETE http://ip:port/domain/domainToBeDeleted
+curl -XDELETE http://ip:port/domains/domainToBeDeleted
 ====
 
 Response codes :
- - 200 : The domain was successfully removed
+ - 204 : The domain was successfully removed
  - 500 : Internal error while removing the domain
 
 === Test if a domain exists
 
 .bash
 ====
-curl -XGET http://ip:port/domain/domainName
+curl -XGET http://ip:port/domains/domainName
 ====
 
 Response codes :
- - 200 : The domains exists
+ - 204 : The domains exists
  - 404 : The domain do not exist
  - 500 : Internal error while accessing the domains
 
@@ -44,7 +44,7 @@ Response codes :
 
 .bash
 ====
-curl -XGET http://ip:port/domain
+curl -XGET http://ip:port/domains
 ====
 
 Possible response :
@@ -68,7 +68,7 @@ curl -XPOST http://ip:port/users -d '{"username":"usernameToBeUsed","password":"
 ====
 
 Response codes :
- - 200 : The user was successfully created
+ - 204 : The user was successfully created
  - 500 : Internal error while adding the user
 
 Note : if the user is already, its password will be updated.
@@ -83,18 +83,18 @@ If the user do not exist, then it will be created.
 
 .bash
 ====
-curl -XDELETE http://ip:port/user/userToBeDeleted
+curl -XDELETE http://ip:port/users/userToBeDeleted
 ====
 
 Response codes :
- - 200 : The user was successfully deleted
+ - 204 : The user was successfully deleted
  - 500 : Internal error while deleting the user
 
 === Retrieving the user list
 
 .bash
 ====
-curl -XGET http://ip:port/user
+curl -XGET http://ip:port/users
 ====
 
 The answer looks like :
