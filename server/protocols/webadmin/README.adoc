@@ -69,6 +69,7 @@ curl -XPOST http://ip:port/users -d '{"username":"usernameToBeUsed","password":"
 
 Response codes :
  - 204 : The user was successfully created
+ - 409 : Conflict : the user was removed between existence check and insert / update
  - 500 : Internal error while adding the user
 
 Note : if the user is already, its password will be updated.
