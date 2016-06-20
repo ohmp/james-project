@@ -10,8 +10,14 @@ The web administration supports for now the CRUD operations on the domains and t
 
 .bash
 ====
-curl -XPOST http://ip:port/domains/domainToBeCreated
+curl -XPUT http://ip:port/domains/domainToBeCreated
 ====
+
+Resource name domainToBeCreated :
+ - can not be null or empty
+ - can not contain '@'
+ - can not be more than 255 characters
+ - can not contain '/'
 
 Response codes :
  - 204 : The domain was successfully added
