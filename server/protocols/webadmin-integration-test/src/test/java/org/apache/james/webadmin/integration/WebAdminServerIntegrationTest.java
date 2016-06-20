@@ -20,10 +20,12 @@
 package org.apache.james.webadmin.integration;
 
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
 import org.apache.james.CassandraJamesServerMain;
@@ -43,6 +45,7 @@ import org.junit.rules.TemporaryFolder;
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.parsing.Parser;
 
 public class WebAdminServerIntegrationTest {
 
@@ -70,6 +73,7 @@ public class WebAdminServerIntegrationTest {
 
         RestAssured.port = guiceJamesServer.getWebadminPort().orElseThrow(() -> new RuntimeException("Unable to locate Web Admin port"));
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
+        RestAssured.defaultParser = Parser.JSON;
     }
 
     @After
@@ -79,11 +83,8 @@ public class WebAdminServerIntegrationTest {
 
     @Test
     public void postShouldAddTheGivenDomain() throws Exception {
-        given()
-            .accept(ContentType.JSON)
-            .contentType(ContentType.JSON)
-        .when()
-            .post(DomainRoutes.DOMAIN + DOMAIN)
+        when()
+            .put(DomainRoutes.DOMAINS + DOMAIN)
         .then()
             .statusCode(200);
 
@@ -94,11 +95,8 @@ public class WebAdminServerIntegrationTest {
     public void deleteShouldRemoveTheGivenDomain() throws Exception {
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
 
-        given()
-            .accept(ContentType.JSON)
-            .contentType(ContentType.JSON)
-        .when()
-            .delete(DomainRoutes.DOMAIN + DOMAIN)
+        when()
+            .delete(DomainRoutes.DOMAINS + DOMAIN)
         .then()
             .statusCode(200);
 
@@ -131,7 +129,7 @@ public class WebAdminServerIntegrationTest {
             .contentType(ContentType.JSON)
             .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
         .when()
-            .delete(UserRoutes.USER + USERNAME)
+            .delete(UserRoutes.USERS + USERNAME)
         .then()
             .statusCode(200);
 
@@ -143,10 +141,7 @@ public class WebAdminServerIntegrationTest {
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
         guiceJamesServer.serverProbe().addUser(USERNAME, "anyPassword");
 
-        given()
-            .accept(ContentType.JSON)
-            .contentType(ContentType.JSON)
-        .when()
+        when()
             .get(UserRoutes.USERS)
         .then()
             .statusCode(200)
