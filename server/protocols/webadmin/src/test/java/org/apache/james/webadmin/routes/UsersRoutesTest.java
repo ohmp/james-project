@@ -318,7 +318,7 @@ public class UsersRoutesTest {
             .when()
                 .post(UserRoutes.USERS)
             .then()
-                .statusCode(204);
+                .statusCode(409);
         }
 
         @Test
@@ -331,7 +331,7 @@ public class UsersRoutesTest {
             .when()
                 .post(UserRoutes.USERS)
             .then()
-                .statusCode(500);
+                .statusCode(409);
         }
 
 

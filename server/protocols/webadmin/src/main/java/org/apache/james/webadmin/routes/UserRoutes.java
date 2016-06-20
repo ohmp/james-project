@@ -91,11 +91,10 @@ public class UserRoutes implements Routes {
         }
     }
 
-    private String addUser(Request request, Response response) throws IOException, UsersRepositoryException {
+    private String addUser(Request request, Response response) throws UsersRepositoryException {
         try {
             AddUserRequest addUserRequest = jsonExtractor.parse(request.body());
-            response.status(204);
-            return addUser(addUserRequest);
+            return addUser(addUserRequest, response);
         } catch (IOException e) {
             LOGGER.info("Error while deserializing addUser request", e);
             response.status(400);
@@ -103,22 +102,25 @@ public class UserRoutes implements Routes {
         }
     }
 
-    private String addUser(AddUserRequest addUserRequest) throws UsersRepositoryException {
+    private String addUser(AddUserRequest addUserRequest, Response response) throws UsersRepositoryException {
         User user = usersRepository.getUserByName(addUserRequest.getUsername());
-        if (user == null) {
-            addUser(addUserRequest.getUsername(), addUserRequest.getPassword());
-        } else {
-            user.setPassword(new String(addUserRequest.getPassword()));
-            usersRepository.updateUser(user);
+        try {
+            addUser(user, addUserRequest);
+            response.status(204);
+        } catch (UsersRepositoryException e) {
+            LOGGER.info("Error creating or updating user : {}", e.getMessage());
+            response.status(409);
         }
         return EMPTY_BODY;
     }
 
-    private void addUser(String username, char[] password) throws UsersRepositoryException {
-        try {
-            usersRepository.addUser(username, new String(password));
-        } catch (UsersRepositoryException e) {
-            LOGGER.info("Race condition while creating user {} : user already exists", username);
+    private void addUser(User user, AddUserRequest addUserRequest) throws UsersRepositoryException {
+        if (user == null) {
+            usersRepository.addUser(addUserRequest.getUsername(), new String(addUserRequest.getPassword()));
+        } else {
+            user.setPassword(new String(addUserRequest.getPassword()));
+            usersRepository.updateUser(user);
         }
     }
+
 }
