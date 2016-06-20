@@ -37,6 +37,7 @@ import org.apache.james.lifecycle.api.Configurable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 public class WebAdminServer implements Configurable {
@@ -56,6 +57,7 @@ public class WebAdminServer implements Configurable {
     }
 
     @Inject
+    @VisibleForTesting
     public WebAdminServer(@Named(WEBADMIN_PORT)int port, Set<Routes> routesList) {
         this.port = port;
         this.routesList = routesList;
