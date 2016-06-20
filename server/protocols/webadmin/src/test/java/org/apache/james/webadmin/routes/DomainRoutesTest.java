@@ -20,9 +20,13 @@
 package org.apache.james.webadmin.routes;
 
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.when;
+import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -46,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.parsing.Parser;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
@@ -55,6 +59,7 @@ public class DomainRoutesTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainRoutesTest.class);
     public static final String DOMAIN = "domain";
+    public static final String PATH_SPECIFIC_DOMAIN = DomainRoutes.DOMAINS + SEPARATOR + DOMAIN;
 
     private WebAdminServer webAdminServer;
 
@@ -65,6 +70,7 @@ public class DomainRoutesTest {
 
         RestAssured.port = webAdminServer.getPort();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
+        RestAssured.defaultParser = Parser.JSON;
     }
 
     @After
@@ -90,9 +96,6 @@ public class DomainRoutesTest {
         @Test
         public void getDomainsShouldBeEmptyByDefault() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
                 .get(DomainRoutes.DOMAINS)
             .then()
                 .statusCode(200)
@@ -100,77 +103,63 @@ public class DomainRoutesTest {
         }
 
         @Test
-        public void postShouldBeOk() {
+        public void putShouldReturnErrorWhenUsedWithEmptyDomain() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + DOMAIN)
+                .put(DomainRoutes.DOMAINS + SEPARATOR)
             .then()
-                .statusCode(200);
+                .statusCode(404);
+        }
+
+        @Test
+        public void deleteShouldReturnErrorWhenUsedWithEmptyDomain() {
+            given()
+                .delete(DomainRoutes.DOMAINS + SEPARATOR)
+            .then()
+                .statusCode(404);
+        }
+
+        @Test
+        public void putShouldBeOk() {
+            given()
+                .put(PATH_SPECIFIC_DOMAIN)
+            .then()
+                .statusCode(204);
         }
 
         @Test
         public void getDomainsShouldDisplayAddedDomains() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + DOMAIN)
-            .then()
-                .statusCode(200);
+            with()
+                .put(PATH_SPECIFIC_DOMAIN);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(DomainRoutes.DOMAINS)
             .then()
                 .statusCode(200)
-                .body(is("[\"domain\"]"));
+                .body(containsString(DOMAIN));
         }
 
         @Test
-        public void postShouldWorkOnTheSecondTimeForAGivenValue() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + DOMAIN)
-            .then()
-                .statusCode(200);
+        public void putShouldWorkOnTheSecondTimeForAGivenValue() {
+            with()
+                .put(PATH_SPECIFIC_DOMAIN);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + DOMAIN)
+            when()
+                .put(PATH_SPECIFIC_DOMAIN)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
         public void deleteShouldRemoveTheGivenDomain() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + DOMAIN)
-            .then()
-                .statusCode(200);
+            with()
+                .put(PATH_SPECIFIC_DOMAIN);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(DomainRoutes.DOMAIN + DOMAIN)
+            when()
+                .delete(PATH_SPECIFIC_DOMAIN)
             .then()
-                .statusCode(200);
+                .statusCode(204);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(DomainRoutes.DOMAINS)
             .then()
                 .statusCode(200)
@@ -178,42 +167,30 @@ public class DomainRoutesTest {
         }
 
         @Test
-        public void deleteShouldBeOkWhenTheDomainIsNotPresent() {
+        public void
+        whedeleteShouldBeOkWhenTheDomainIsNotPresent() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(DomainRoutes.DOMAIN + "domain")
+                .delete(PATH_SPECIFIC_DOMAIN)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
         public void getDomainShouldReturnOkWhenTheDomainIsPresent() {
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + DOMAIN)
-            .then()
-                .statusCode(200);
+            with()
+                .put(PATH_SPECIFIC_DOMAIN);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .get(DomainRoutes.DOMAIN + DOMAIN)
+            when()
+                .get(PATH_SPECIFIC_DOMAIN)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
-        public void getDomainSHouldReturnNotFoundWhenTheDomainIsAbsent() {
+        public void
+        whegetDomainSHouldReturnNotFoundWhenTheDomainIsAbsent() {
             given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .get(DomainRoutes.DOMAIN + DOMAIN)
+                .get(PATH_SPECIFIC_DOMAIN)
             .then()
                 .statusCode(404);
         }
@@ -236,24 +213,18 @@ public class DomainRoutesTest {
         public void deleteShouldReturnErrorOnUnknownException() throws Exception {
             doThrow(new RuntimeException()).when(domainList).removeDomain(domain);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(DomainRoutes.DOMAIN + "domain")
+            when()
+                .delete(PATH_SPECIFIC_DOMAIN)
             .then()
                 .statusCode(500);
         }
 
         @Test
-        public void postShouldReturnErrorOnUnknownException() throws Exception {
+        public void putShouldReturnErrorOnUnknownException() throws Exception {
             doThrow(new RuntimeException()).when(domainList).addDomain(domain);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + "domain")
+            when()
+                .put(PATH_SPECIFIC_DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -262,11 +233,8 @@ public class DomainRoutesTest {
         public void getDomainShouldReturnErrorOnUnknownException() throws Exception {
             when(domainList.containsDomain(domain)).thenThrow(new RuntimeException());
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .get(DomainRoutes.DOMAIN + "domain")
+            when()
+                .get(PATH_SPECIFIC_DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -275,10 +243,7 @@ public class DomainRoutesTest {
         public void getDomainsShouldReturnErrorOnUnknownException() throws Exception {
             when(domainList.getDomains()).thenThrow(new RuntimeException());
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(DomainRoutes.DOMAINS)
             .then()
                 .statusCode(500);
@@ -288,37 +253,28 @@ public class DomainRoutesTest {
         public void deleteShouldReturnOkWhenDomainListException() throws Exception {
             doThrow(new DomainListException("message")).when(domainList).removeDomain(domain);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .delete(DomainRoutes.DOMAIN + "domain")
+            when()
+                .delete(PATH_SPECIFIC_DOMAIN)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
-        public void postShouldReturnOkWhenDomainListException() throws Exception {
+        public void putShouldReturnOkWhenDomainListException() throws Exception {
             doThrow(new DomainListException("message")).when(domainList).addDomain(domain);
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .post(DomainRoutes.DOMAIN + "domain")
+            when()
+                .put(PATH_SPECIFIC_DOMAIN)
             .then()
-                .statusCode(200);
+                .statusCode(204);
         }
 
         @Test
         public void getDomainShouldReturnErrorOnDomainListException() throws Exception {
             when(domainList.containsDomain(domain)).thenThrow(new DomainListException("message"));
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
-                .get(DomainRoutes.DOMAIN + "domain")
+            when()
+                .get(PATH_SPECIFIC_DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -327,10 +283,7 @@ public class DomainRoutesTest {
         public void getDomainsShouldReturnErrorOnDomainListException() throws Exception {
             when(domainList.getDomains()).thenThrow(new DomainListException("message"));
 
-            given()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-            .when()
+            when()
                 .get(DomainRoutes.DOMAINS)
             .then()
                 .statusCode(500);

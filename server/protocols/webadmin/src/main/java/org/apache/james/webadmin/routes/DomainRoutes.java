@@ -19,9 +19,11 @@
 
 package org.apache.james.webadmin.routes;
 
+import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static spark.Spark.delete;
 import static spark.Spark.get;
-import static spark.Spark.post;
+import static spark.Spark.halt;
+import static spark.Spark.put;
 
 import javax.inject.Inject;
 
@@ -29,6 +31,11 @@ import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.utils.JsonTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 import spark.Request;
 import spark.Response;
@@ -37,9 +44,10 @@ public class DomainRoutes implements Routes {
 
     private static final String DOMAIN_NAME = ":domainName";
     private static final String EMPTY_BODY = "";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DomainRoutes.class);
 
-    public static final String DOMAIN = "/domain/";
     public static final String DOMAINS = "/domains";
+    public static final String SPECIFIC_DOMAIN = DOMAINS + SEPARATOR + DOMAIN_NAME;
 
 
     private final DomainList domainList;
@@ -57,36 +65,49 @@ public class DomainRoutes implements Routes {
             (request, response) -> domainList.getDomains(),
             jsonTransformer);
 
-        get(DOMAIN + DOMAIN_NAME, this::exists);
+        get(SPECIFIC_DOMAIN, this::exists);
 
-        post(DOMAIN + DOMAIN_NAME, this::addDomain);
+        put(SPECIFIC_DOMAIN, this::addDomain);
 
-        delete(DOMAIN + DOMAIN_NAME, this::removeDomain);
+        delete(SPECIFIC_DOMAIN, this::removeDomain);
     }
 
     private String removeDomain(Request request, Response response) {
         try {
-            domainList.removeDomain(request.params(DOMAIN_NAME));
-            return EMPTY_BODY;
+            String domain = request.params(DOMAIN_NAME);
+            removeDomain(domain);
         } catch (DomainListException e) {
-            return request.params(DOMAIN_NAME) + " did not exists";
+            LOGGER.info("{} did not exists", request.params(DOMAIN_NAME));
         }
+        response.status(204);
+        return EMPTY_BODY;
+    }
+
+    private void removeDomain(String domain) throws DomainListException {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(domain));
+        domainList.removeDomain(domain);
     }
 
     private String addDomain(Request request, Response response) {
         try {
-            domainList.addDomain(request.params(DOMAIN_NAME));
-            return EMPTY_BODY;
+            addDomain(request.params(DOMAIN_NAME));
         } catch (DomainListException e) {
-            return request.params(DOMAIN_NAME) + " already exists";
+            LOGGER.info("{} already exists", request.params(DOMAIN_NAME));
         }
+        response.status(204);
+        return EMPTY_BODY;
+    }
+
+    private void addDomain(String domain) throws DomainListException {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(domain));
+        domainList.addDomain(domain);
     }
 
     private String exists(Request request, Response response) throws DomainListException {
         if (!domainList.containsDomain(request.params(DOMAIN_NAME))) {
-            response.status(404);
+            halt(404);
         } else {
-            response.status(200);
+            halt(204);
         }
         return EMPTY_BODY;
     }
