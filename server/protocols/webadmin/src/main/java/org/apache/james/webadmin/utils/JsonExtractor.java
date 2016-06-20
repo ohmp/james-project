@@ -28,8 +28,8 @@ public class JsonExtractor<Request> {
     private final ObjectMapper objectMapper;
     private final Class<Request> type;
 
-    public JsonExtractor(ObjectMapper objectMapper, Class<Request> type) {
-        this.objectMapper = objectMapper;
+    public JsonExtractor(Class<Request> type) {
+        this.objectMapper = new ObjectMapper();
         this.type = type;
     }
 

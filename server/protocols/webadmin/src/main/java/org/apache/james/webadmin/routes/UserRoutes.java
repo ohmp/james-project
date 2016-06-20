@@ -41,7 +41,6 @@ import org.apache.james.webadmin.utils.JsonTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 import spark.Request;
@@ -63,7 +62,7 @@ public class UserRoutes implements Routes {
     public UserRoutes(UsersRepository usersRepository, JsonTransformer jsonTransformer) {
         this.usersRepository = usersRepository;
         this.jsonTransformer = jsonTransformer;
-        this.jsonExtractor = new JsonExtractor<>(new ObjectMapper(), AddUserRequest.class);
+        this.jsonExtractor = new JsonExtractor<>(AddUserRequest.class);
     }
 
     @Override
