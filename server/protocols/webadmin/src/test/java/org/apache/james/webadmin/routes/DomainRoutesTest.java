@@ -139,6 +139,32 @@ public class DomainRoutesTest {
         }
 
         @Test
+        public void putShouldReturnUserErrorWhenNameContainsAT() {
+            when()
+                .put(PATH_SPECIFIC_DOMAIN + "@" + DOMAIN)
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void putShouldReturnUserErrorWhenNameContainsUrlSeparator() {
+            when()
+                .put(PATH_SPECIFIC_DOMAIN + "/" + DOMAIN)
+            .then()
+                .statusCode(404);
+        }
+
+        @Test
+        public void putShouldReturnUserErrorWhenNameIsTooLong() {
+            when()
+                .put(PATH_SPECIFIC_DOMAIN + "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                    "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                    "0123456789.0123456789.0123456789.")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
         public void putShouldWorkOnTheSecondTimeForAGivenValue() {
             with()
                 .put(PATH_SPECIFIC_DOMAIN);

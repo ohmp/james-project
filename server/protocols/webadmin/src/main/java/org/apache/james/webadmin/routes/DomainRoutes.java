@@ -45,6 +45,7 @@ public class DomainRoutes implements Routes {
 
     public static final String DOMAINS = "/domains";
     public static final String SPECIFIC_DOMAIN = DOMAINS + SEPARATOR + DOMAIN_NAME;
+    public static final int MAXIMUM_DOMAIN_SIZE = 256;
 
 
     private final DomainList domainList;
@@ -88,15 +89,21 @@ public class DomainRoutes implements Routes {
     private String addDomain(Request request, Response response) {
         try {
             addDomain(request.params(DOMAIN_NAME));
+            response.status(204);
         } catch (DomainListException e) {
             LOGGER.info("{} already exists", request.params(DOMAIN_NAME));
+            response.status(204);
+        } catch (IllegalArgumentException e) {
+            LOGGER.info("Invalid request for domain creation");
+            response.status(400);
         }
-        response.status(204);
         return EMPTY_BODY;
     }
 
     private void addDomain(String domain) throws DomainListException {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(domain));
+        Preconditions.checkArgument(!domain.contains("@"));
+        Preconditions.checkArgument(domain.length() < MAXIMUM_DOMAIN_SIZE);
         domainList.addDomain(domain);
     }
 
