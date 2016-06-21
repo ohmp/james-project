@@ -67,7 +67,7 @@ public class WebAdminServerModule extends AbstractModule {
     @Named(WEBADMIN_PORT)
     public Port provideWebAdminPort(PropertiesProvider propertiesProvider) throws Exception {
         try {
-            return new FixedPort(propertiesProvider.getConfiguration("webadmin").getInt("port"));
+            return new FixedPort(propertiesProvider.getConfiguration("webadmin").getInt("port", WebAdminServer.DEFAULT_PORT));
         } catch (FileNotFoundException e) {
             return new FixedPort(WebAdminServer.DEFAULT_PORT);
         }
