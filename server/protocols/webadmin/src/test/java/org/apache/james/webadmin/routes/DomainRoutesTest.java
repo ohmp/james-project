@@ -59,7 +59,6 @@ public class DomainRoutesTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainRoutesTest.class);
     public static final String DOMAIN = "domain";
-    public static final String PATH_SPECIFIC_DOMAIN = DomainRoutes.DOMAINS + SEPARATOR + DOMAIN;
 
     private WebAdminServer webAdminServer;
 
@@ -68,9 +67,10 @@ public class DomainRoutesTest {
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
-        RestAssured.port = webAdminServer.getPort();
+        RestAssured.port = webAdminServer.getPort().get();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.defaultParser = Parser.JSON;
+        RestAssured.basePath = DomainRoutes.DOMAINS;
     }
 
     @After
@@ -96,7 +96,7 @@ public class DomainRoutesTest {
         @Test
         public void getDomainsShouldBeEmptyByDefault() {
             given()
-                .get(DomainRoutes.DOMAINS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(is("[]"));
@@ -105,7 +105,7 @@ public class DomainRoutesTest {
         @Test
         public void putShouldReturnErrorWhenUsedWithEmptyDomain() {
             given()
-                .put(DomainRoutes.DOMAINS + SEPARATOR)
+                .put("" + SEPARATOR)
             .then()
                 .statusCode(404);
         }
@@ -113,7 +113,7 @@ public class DomainRoutesTest {
         @Test
         public void deleteShouldReturnErrorWhenUsedWithEmptyDomain() {
             given()
-                .delete(DomainRoutes.DOMAINS + SEPARATOR)
+                .delete("" + SEPARATOR)
             .then()
                 .statusCode(404);
         }
@@ -121,7 +121,7 @@ public class DomainRoutesTest {
         @Test
         public void putShouldBeOk() {
             given()
-                .put(PATH_SPECIFIC_DOMAIN)
+                .put(DOMAIN)
             .then()
                 .statusCode(204);
         }
@@ -129,10 +129,10 @@ public class DomainRoutesTest {
         @Test
         public void getDomainsShouldDisplayAddedDomains() {
             with()
-                .put(PATH_SPECIFIC_DOMAIN);
+                .put(DOMAIN);
 
             when()
-                .get(DomainRoutes.DOMAINS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(containsString(DOMAIN));
@@ -141,7 +141,7 @@ public class DomainRoutesTest {
         @Test
         public void putShouldReturnUserErrorWhenNameContainsAT() {
             when()
-                .put(PATH_SPECIFIC_DOMAIN + "@" + DOMAIN)
+                .put(DOMAIN + "@" + DOMAIN)
             .then()
                 .statusCode(400);
         }
@@ -149,7 +149,7 @@ public class DomainRoutesTest {
         @Test
         public void putShouldReturnUserErrorWhenNameContainsUrlSeparator() {
             when()
-                .put(PATH_SPECIFIC_DOMAIN + "/" + DOMAIN)
+                .put(DOMAIN + "/" + DOMAIN)
             .then()
                 .statusCode(404);
         }
@@ -157,7 +157,7 @@ public class DomainRoutesTest {
         @Test
         public void putShouldReturnUserErrorWhenNameIsTooLong() {
             when()
-                .put(PATH_SPECIFIC_DOMAIN + "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                .put(DOMAIN + "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
                     "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
                     "0123456789.0123456789.0123456789.")
             .then()
@@ -167,10 +167,10 @@ public class DomainRoutesTest {
         @Test
         public void putShouldWorkOnTheSecondTimeForAGivenValue() {
             with()
-                .put(PATH_SPECIFIC_DOMAIN);
+                .put(DOMAIN);
 
             when()
-                .put(PATH_SPECIFIC_DOMAIN)
+                .put(DOMAIN)
             .then()
                 .statusCode(204);
         }
@@ -178,25 +178,24 @@ public class DomainRoutesTest {
         @Test
         public void deleteShouldRemoveTheGivenDomain() {
             with()
-                .put(PATH_SPECIFIC_DOMAIN);
+                .put(DOMAIN);
 
             when()
-                .delete(PATH_SPECIFIC_DOMAIN)
+                .delete(DOMAIN)
             .then()
                 .statusCode(204);
 
             when()
-                .get(DomainRoutes.DOMAINS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(is("[]"));
         }
 
         @Test
-        public void
-        whedeleteShouldBeOkWhenTheDomainIsNotPresent() {
+        public void deleteShouldBeOkWhenTheDomainIsNotPresent() {
             given()
-                .delete(PATH_SPECIFIC_DOMAIN)
+                .delete(DOMAIN)
             .then()
                 .statusCode(204);
         }
@@ -204,19 +203,18 @@ public class DomainRoutesTest {
         @Test
         public void getDomainShouldReturnOkWhenTheDomainIsPresent() {
             with()
-                .put(PATH_SPECIFIC_DOMAIN);
+                .put(DOMAIN);
 
             when()
-                .get(PATH_SPECIFIC_DOMAIN)
+                .get(DOMAIN)
             .then()
                 .statusCode(204);
         }
 
         @Test
-        public void
-        whegetDomainSHouldReturnNotFoundWhenTheDomainIsAbsent() {
+        public void getDomainShouldReturnNotFoundWhenTheDomainIsAbsent() {
             given()
-                .get(PATH_SPECIFIC_DOMAIN)
+                .get(DOMAIN)
             .then()
                 .statusCode(404);
         }
@@ -240,7 +238,7 @@ public class DomainRoutesTest {
             doThrow(new RuntimeException()).when(domainList).removeDomain(domain);
 
             when()
-                .delete(PATH_SPECIFIC_DOMAIN)
+                .delete(DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -250,7 +248,7 @@ public class DomainRoutesTest {
             doThrow(new RuntimeException()).when(domainList).addDomain(domain);
 
             when()
-                .put(PATH_SPECIFIC_DOMAIN)
+                .put(DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -260,7 +258,7 @@ public class DomainRoutesTest {
             when(domainList.containsDomain(domain)).thenThrow(new RuntimeException());
 
             when()
-                .get(PATH_SPECIFIC_DOMAIN)
+                .get(DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -270,7 +268,7 @@ public class DomainRoutesTest {
             when(domainList.getDomains()).thenThrow(new RuntimeException());
 
             when()
-                .get(DomainRoutes.DOMAINS)
+                .get()
             .then()
                 .statusCode(500);
         }
@@ -280,7 +278,7 @@ public class DomainRoutesTest {
             doThrow(new DomainListException("message")).when(domainList).removeDomain(domain);
 
             when()
-                .delete(PATH_SPECIFIC_DOMAIN)
+                .delete(DOMAIN)
             .then()
                 .statusCode(204);
         }
@@ -290,7 +288,7 @@ public class DomainRoutesTest {
             doThrow(new DomainListException("message")).when(domainList).addDomain(domain);
 
             when()
-                .put(PATH_SPECIFIC_DOMAIN)
+                .put(DOMAIN)
             .then()
                 .statusCode(204);
         }
@@ -300,7 +298,7 @@ public class DomainRoutesTest {
             when(domainList.containsDomain(domain)).thenThrow(new DomainListException("message"));
 
             when()
-                .get(PATH_SPECIFIC_DOMAIN)
+                .get(DOMAIN)
             .then()
                 .statusCode(500);
         }
@@ -310,7 +308,7 @@ public class DomainRoutesTest {
             when(domainList.getDomains()).thenThrow(new DomainListException("message"));
 
             when()
-                .get(DomainRoutes.DOMAINS)
+                .get()
             .then()
                 .statusCode(500);
         }
