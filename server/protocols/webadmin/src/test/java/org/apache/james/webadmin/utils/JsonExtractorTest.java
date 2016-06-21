@@ -24,17 +24,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 
-import org.apache.james.webadmin.model.AddUserRequest;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+
 public class JsonExtractorTest {
 
-    private JsonExtractor<AddUserRequest> jsonExtractor;
+    private JsonExtractor<Request> jsonExtractor;
 
     @Before
     public void setUp() {
-        jsonExtractor = new JsonExtractor<>(AddUserRequest.class);
+        jsonExtractor = new JsonExtractor<>(Request.class);
     }
 
     @Test
@@ -49,7 +52,7 @@ public class JsonExtractorTest {
 
     @Test
     public void parseShouldThrowOnBrokenJson() throws Exception {
-        assertThatThrownBy(() -> jsonExtractor.parse("{\"any\":\"broken")).isInstanceOf(IOException.class);
+        assertThatThrownBy(() -> jsonExtractor.parse("{\"field1\":\"broken")).isInstanceOf(IOException.class);
     }
 
     @Test
@@ -59,27 +62,55 @@ public class JsonExtractorTest {
 
     @Test
     public void parseShouldThrowOnMissingMandatoryField() throws Exception {
-        assertThatThrownBy(() -> jsonExtractor.parse("{\"username\":\"any\"}")).isInstanceOf(IOException.class);
+        assertThatThrownBy(() -> jsonExtractor.parse("{\"field1\":\"any\"}")).isInstanceOf(IOException.class);
     }
 
     @Test
-    public void parseShouldThrowOnValidationProblem() throws Exception {
-        assertThatThrownBy(() -> jsonExtractor.parse("{\"username\":\"\",\"password\":\"any\"}")).isInstanceOf(IOException.class);
+    public void parseShouldThrowOnValidationProblemIllegalArgumentException() throws Exception {
+        assertThatThrownBy(() -> jsonExtractor.parse("{\"field1\":\"\",\"field2\":\"any\"}")).isInstanceOf(IOException.class);
+    }
+
+    @Test
+    public void parseShouldThrowOnValidationProblemNPE() throws Exception {
+        assertThatThrownBy(() -> jsonExtractor.parse("{\"field1\":null,\"field2\":\"any\"}")).isInstanceOf(IOException.class);
     }
 
     @Test
     public void parseShouldThrowOnExtraFiled() throws Exception {
-        assertThatThrownBy(() -> jsonExtractor.parse("{\"username\":\"\",\"password\":\"any\",\"extra\":\"extra\"}")).isInstanceOf(IOException.class);
+        assertThatThrownBy(() -> jsonExtractor.parse("{\"field1\":\"value\",\"field2\":\"any\",\"extra\":\"extra\"}")).isInstanceOf(IOException.class);
     }
 
     @Test
     public void parseShouldInstantiateDestinationClass() throws Exception {
-        String username = "username";
-        String password = "password";
-        AddUserRequest addUserRequest = jsonExtractor.parse("{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}");
+        String field1 = "value1";
+        String field2 = "value2";
+        Request request = jsonExtractor.parse("{\"field1\":\"" + field1 + "\",\"field2\":\"" + field2 + "\"}");
 
-        assertThat(addUserRequest.getUsername()).isEqualTo(username);
-        assertThat(addUserRequest.getPassword()).isEqualTo(password.toCharArray());
+        assertThat(request.getField1()).isEqualTo(field1);
+        assertThat(request.getField2()).isEqualTo(field2);
+    }
+
+    static class Request {
+        private final String field1;
+        private final String field2;
+
+        @JsonCreator
+        public Request(@JsonProperty("field1") String field1,
+                       @JsonProperty("field2") String field2) {
+            Preconditions.checkNotNull(field1);
+            Preconditions.checkNotNull(field2);
+            Preconditions.checkArgument(!field1.isEmpty());
+            this.field1 = field1;
+            this.field2 = field2;
+        }
+
+        public String getField1() {
+            return field1;
+        }
+
+        public String getField2() {
+            return field2;
+        }
     }
 
 }
