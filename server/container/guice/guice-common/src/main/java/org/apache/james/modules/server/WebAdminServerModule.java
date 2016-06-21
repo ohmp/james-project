@@ -31,6 +31,8 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.utils.ConfigurationPerformer;
 import org.apache.james.utils.PropertiesProvider;
+import org.apache.james.webadmin.FixedPort;
+import org.apache.james.webadmin.Port;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.routes.DomainRoutes;
@@ -63,11 +65,11 @@ public class WebAdminServerModule extends AbstractModule {
 
     @Provides
     @Named(WEBADMIN_PORT)
-    public int provideWebAdminPort(PropertiesProvider propertiesProvider) throws Exception {
+    public Port provideWebAdminPort(PropertiesProvider propertiesProvider) throws Exception {
         try {
-            return propertiesProvider.getConfiguration("webadmin").getInt("port");
+            return new FixedPort(propertiesProvider.getConfiguration("webadmin").getInt("port"));
         } catch (FileNotFoundException e) {
-            return WebAdminServer.DEFAULT_PORT;
+            return new FixedPort(WebAdminServer.DEFAULT_PORT);
         }
     }
 
