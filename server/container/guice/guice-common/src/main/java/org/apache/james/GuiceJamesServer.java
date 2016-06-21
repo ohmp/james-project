@@ -30,6 +30,7 @@ import org.apache.james.modules.ProtocolsModule;
 import org.apache.james.utils.ConfigurationsPerformer;
 import org.apache.james.utils.ExtendedServerProbe;
 import org.apache.james.utils.GuiceServerProbe;
+import org.apache.james.webadmin.Port;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.onami.lifecycle.core.Stager;
 
@@ -47,7 +48,7 @@ public class GuiceJamesServer {
     private Stager<PreDestroy> preDestroy;
     private GuiceServerProbe serverProbe;
     private int jmapPort;
-    private Optional<Integer> webadminPort;
+    private Optional<Port> webadminPort;
 
     public GuiceJamesServer() {
         this(Modules.combine(
@@ -74,14 +75,14 @@ public class GuiceJamesServer {
         injector.getInstance(ConfigurationsPerformer.class).initModules();
         serverProbe = injector.getInstance(GuiceServerProbe.class);
         jmapPort = injector.getInstance(JMAPServer.class).getPort();
-        locateWebAdminPort(injector);
+        webadminPort =locateWebAdminPort(injector);
     }
 
-    private void locateWebAdminPort(Injector injector) {
+    private Optional<Port> locateWebAdminPort(Injector injector) {
         try {
-            webadminPort = Optional.of(injector.getInstance(WebAdminServer.class).getPort());
+            return Optional.of(injector.getInstance(WebAdminServer.class).getPort());
         } catch(Exception e) {
-            webadminPort = Optional.empty();
+            return Optional.empty();
         }
     }
 
@@ -99,7 +100,7 @@ public class GuiceJamesServer {
         return jmapPort;
     }
 
-    public Optional<Integer> getWebadminPort() {
+    public Optional<Port> getWebadminPort() {
         return webadminPort;
     }
 }

@@ -25,11 +25,7 @@ import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-
-import java.net.URL;
 
 import org.apache.james.CassandraJamesServerMain;
 import org.apache.james.GuiceJamesServer;
@@ -47,14 +43,14 @@ import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.parsing.Parser;
 
 public class WebAdminServerIntegrationTest {
 
     public static final String DOMAIN = "domain";
-    public static final String SPECIFIC_DOMAIN = DomainRoutes.DOMAINS + SEPARATOR + DOMAIN;
     public static final String USERNAME = "username@" + DOMAIN;
+    public static final String SPECIFIC_DOMAIN = DomainRoutes.DOMAINS + SEPARATOR + DOMAIN;
+    public static final String SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
 
     private TemporaryFolder temporaryFolder = new TemporaryFolder();
     private EmbeddedElasticSearch embeddedElasticSearch = new EmbeddedElasticSearch(temporaryFolder);
@@ -75,7 +71,9 @@ public class WebAdminServerIntegrationTest {
                 new WebAdminConfigurationModule());
         guiceJamesServer.start();
 
-        RestAssured.port = guiceJamesServer.getWebadminPort().orElseThrow(() -> new RuntimeException("Unable to locate Web Admin port"));
+        RestAssured.port = guiceJamesServer.getWebadminPort()
+            .orElseThrow(() -> new RuntimeException("Unable to locate Web Admin port"))
+            .get();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.defaultParser = Parser.JSON;
     }
@@ -100,7 +98,7 @@ public class WebAdminServerIntegrationTest {
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
 
         when()
-            .delete(DomainRoutes.DOMAINS + SEPARATOR + DOMAIN)
+            .delete(SPECIFIC_DOMAIN)
         .then()
             .statusCode(204);
 
@@ -112,11 +110,9 @@ public class WebAdminServerIntegrationTest {
         guiceJamesServer.serverProbe().addDomain(DOMAIN);
 
         given()
-            .accept(ContentType.JSON)
-            .contentType(ContentType.JSON)
-            .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
+            .body("{\"password\":\"password\"}")
         .when()
-            .post(UserRoutes.USERS)
+            .put(SPECIFIC_USER)
         .then()
             .statusCode(204);
 
@@ -129,11 +125,9 @@ public class WebAdminServerIntegrationTest {
         guiceJamesServer.serverProbe().addUser(USERNAME, "anyPassword");
 
         given()
-            .accept(ContentType.JSON)
-            .contentType(ContentType.JSON)
             .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
         .when()
-            .delete(UserRoutes.USERS + SEPARATOR + USERNAME)
+            .delete(SPECIFIC_USER)
         .then()
             .statusCode(204);
 

@@ -22,7 +22,8 @@ package org.apache.james.webadmin.integration;
 import static org.apache.james.webadmin.WebAdminServer.WEBADMIN_ENABLED;
 import static org.apache.james.webadmin.WebAdminServer.WEBADMIN_PORT;
 
-import org.apache.james.webadmin.WebAdminServer;
+import org.apache.james.webadmin.Port;
+import org.apache.james.webadmin.RandomPort;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -37,8 +38,8 @@ public class WebAdminConfigurationModule extends AbstractModule {
 
     @Provides
     @Named(WEBADMIN_PORT)
-    public int provideWebAdminPort() throws Exception {
-        return WebAdminServer.findFreePort();
+    public Port provideWebAdminPort() throws Exception {
+        return new RandomPort();
     }
 
     @Provides
