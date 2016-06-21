@@ -70,8 +70,13 @@ Response codes :
 
 .bash
 ====
-curl -XPOST http://ip:port/users -d '{"username":"usernameToBeUsed","password":"passwordToBeUsed"}'
+curl -XPUT http://ip:port/users/usernameToBeUsed -d '{"password":"passwordToBeUsed"}'
 ====
+
+Resource name usernameToBeUsed :
+ - can not be null or empty
+ - can not be more than 255 characters
+ - can not contain '/'
 
 Response codes :
  - 204 : The user was successfully created
