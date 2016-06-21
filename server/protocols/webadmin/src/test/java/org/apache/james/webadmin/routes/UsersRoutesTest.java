@@ -24,7 +24,6 @@ import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
-import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -40,6 +39,7 @@ import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.user.memory.MemoryUsersRepository;
 import org.apache.james.webadmin.WebAdminServer;
+import org.apache.james.webadmin.service.UserService;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.junit.After;
 import org.junit.Before;
@@ -57,17 +57,17 @@ public class UsersRoutesTest {
 
     public static final String DOMAIN = "domain";
     public static final String USERNAME = "username@" + DOMAIN;
-    public static final String PATH_SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
     private WebAdminServer webAdminServer;
 
     private void createServer(UsersRepository usersRepository) throws Exception {
-        webAdminServer = new WebAdminServer(new UserRoutes(usersRepository, new JsonTransformer()));
+        webAdminServer = new WebAdminServer(new UserRoutes(new UserService(usersRepository), new JsonTransformer()));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
-        RestAssured.port = webAdminServer.getPort();
+        RestAssured.port = webAdminServer.getPort().get();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.defaultParser = Parser.JSON;
+        RestAssured.basePath = UserRoutes.USERS;
     }
 
     @After
@@ -88,20 +88,19 @@ public class UsersRoutesTest {
             createServer(usersRepository);
         }
 
-
         @Test
         public void getUsersShouldBeEmptyByDefault() {
             when()
-                .get(UserRoutes.USERS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(is("[]"));
         }
 
         @Test
-        public void postShouldReturnUserErrorWhenNoBody() {
+        public void putShouldReturnUserErrorWhenNoBody() {
             when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(400);
         }
@@ -111,7 +110,7 @@ public class UsersRoutesTest {
             given()
                 .body("{}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(400);
         }
@@ -121,27 +120,7 @@ public class UsersRoutesTest {
             given()
                 .body("{\"bad\":\"any\"}")
             .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(400);
-        }
-
-        @Test
-        public void postShouldReturnUserErrorWhenMissingPasswordJsonBody() {
-            given()
-                .body("{\"username\":\"username\"}")
-            .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(400);
-        }
-
-        @Test
-        public void postShouldReturnUserErrorWhenMissingUserJsonBody() {
-            given()
-                .body("{\"password\":\"password\"}")
-            .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(400);
         }
@@ -149,39 +128,19 @@ public class UsersRoutesTest {
         @Test
         public void postShouldReturnOkWhenValidJsonBody() {
             given()
-                .body("{\"username\":\"username@domain\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(204);
         }
 
         @Test
-        public void postShouldReturnRequireNonNullUsername() {
-            given()
-                .body("{\"username\":null,\"password\":\"password\"}")
-            .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(400);
-        }
-
-        @Test
-        public void postShouldReturnRequireNotEmptyUsername() {
-            given()
-                .body("{\"username\":\"\",\"password\":\"password\"}")
-            .when()
-                .post(UserRoutes.USERS)
-            .then()
-                .statusCode(400);
-        }
-
-        @Test
         public void postShouldReturnRequireNonNullPassword() {
             given()
-                .body("{\"username\":\"username@domain\",\"password\":null}")
+                .body("{\"password\":null}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(400);
         }
@@ -189,11 +148,11 @@ public class UsersRoutesTest {
         @Test
         public void postShouldAddTheUser() {
             with()
-                .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
-            .post(UserRoutes.USERS);
+                .body("{\"password\":\"password\"}")
+            .put(USERNAME);
 
             when()
-                .get(UserRoutes.USERS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(containsString(USERNAME));
@@ -203,20 +162,20 @@ public class UsersRoutesTest {
         public void postingTwoTimesShouldBeAllowed() {
             // Given
             with()
-                .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
-            .post(UserRoutes.USERS);
+                .body("{\"password\":\"password\"}")
+            .put(USERNAME);
 
             // When
             given()
-                .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(204);
 
             // Then
             when()
-                .get(UserRoutes.USERS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(equalTo("[\"" + USERNAME + "\"]"));
@@ -225,27 +184,87 @@ public class UsersRoutesTest {
         @Test
         public void deleteShouldReturnOk() {
             when()
-                .delete(PATH_SPECIFIC_USER)
+                .delete(USERNAME)
             .then()
                 .statusCode(204);
+        }
+
+        @Test
+        public void deleteShouldReturnBadRequestWhenEmptyUserName() {
+            when()
+                .delete("/")
+            .then()
+                .statusCode(404);
+        }
+
+        @Test
+        public void deleteShouldReturnBadRequestWhenUsernameIsTooLong() {
+            when()
+                .delete(USERNAME + "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                    "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                    "0123456789.0123456789.0123456789.")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void deleteShouldReturnNotFoundWhenUsernameContainsSlash() {
+            given()
+                .body("{\"password\":\"password\"}")
+            .when()
+                .put(USERNAME + "/" + USERNAME)
+            .then()
+                .statusCode(404);
+        }
+
+        @Test
+        public void putShouldReturnBadRequestWhenEmptyUserName() {
+            given()
+                .body("{\"password\":\"password\"}")
+            .when()
+                .put("/")
+            .then()
+                .statusCode(404);
+        }
+
+        @Test
+        public void putShouldReturnBadRequestWhenUsernameIsTooLong() {
+            given()
+                .body("{\"password\":\"password\"}")
+            .when()
+                .put(USERNAME + "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                    "0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789.0123456789." +
+                    "0123456789.0123456789.0123456789.")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void putShouldReturnNotFoundWhenUsernameContainsSlash() {
+            given()
+                .body("{\"password\":\"password\"}")
+            .when()
+                .put(USERNAME + "/" + USERNAME)
+            .then()
+                .statusCode(404);
         }
 
         @Test
         public void deleteShouldRemoveAssociatedUser() {
             // Given
             with()
-                .body("{\"username\":\"" + USERNAME + "\",\"password\":\"password\"}")
-            .post(UserRoutes.USERS);
+                .body("{\"password\":\"password\"}")
+            .put(USERNAME);
 
             // When
             when()
-                .delete(PATH_SPECIFIC_USER)
+                .delete(USERNAME)
             .then()
                 .statusCode(204);
 
             // Then
             when()
-                .get(UserRoutes.USERS)
+                .get()
             .then()
                 .statusCode(200)
                 .body(equalTo("[]"));
@@ -256,7 +275,7 @@ public class UsersRoutesTest {
             given()
                 .body("{\"bad\":\"any\"}")
             .when()
-                .delete(PATH_SPECIFIC_USER)
+                .delete(USERNAME)
             .then()
                 .statusCode(204);
         }
@@ -281,7 +300,7 @@ public class UsersRoutesTest {
             doThrow(new UsersRepositoryException("message")).when(usersRepository).removeUser(username);
 
             when()
-                .delete(PATH_SPECIFIC_USER)
+                .delete(USERNAME)
             .then()
                 .statusCode(204);
         }
@@ -291,7 +310,7 @@ public class UsersRoutesTest {
             when(usersRepository.list()).thenThrow(new UsersRepositoryException("message"));
 
             when()
-                .get(UserRoutes.USERS)
+                .get()
             .then()
                 .statusCode(500);
         }
@@ -301,9 +320,9 @@ public class UsersRoutesTest {
             when(usersRepository.getUserByName(username)).thenThrow(new UsersRepositoryException("message"));
 
             given()
-                .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(500);
         }
@@ -314,9 +333,9 @@ public class UsersRoutesTest {
             doThrow(new UsersRepositoryException("message")).when(usersRepository).addUser(username, password);
 
             given()
-                .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(409);
         }
@@ -327,9 +346,9 @@ public class UsersRoutesTest {
             doThrow(new UsersRepositoryException("message")).when(usersRepository).updateUser(any());
 
             given()
-                .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(409);
         }
@@ -340,7 +359,7 @@ public class UsersRoutesTest {
             doThrow(new RuntimeException()).when(usersRepository).removeUser(username);
 
             when()
-                .delete(PATH_SPECIFIC_USER)
+                .delete(USERNAME)
             .then()
                 .statusCode(500);
         }
@@ -350,7 +369,7 @@ public class UsersRoutesTest {
             when(usersRepository.list()).thenThrow(new RuntimeException());
 
             when()
-                .get(UserRoutes.USERS)
+                .get()
             .then()
                 .statusCode(500);
         }
@@ -360,9 +379,9 @@ public class UsersRoutesTest {
             when(usersRepository.getUserByName(username)).thenThrow(new RuntimeException());
 
             given()
-                .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(500);
         }
@@ -373,9 +392,9 @@ public class UsersRoutesTest {
             doThrow(new RuntimeException()).when(usersRepository).addUser(username, password);
 
             given()
-                .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(500);
         }
@@ -386,9 +405,9 @@ public class UsersRoutesTest {
             doThrow(new RuntimeException()).when(usersRepository).updateUser(any());
 
             given()
-                .body("{\"username\":\"" + username + "\",\"password\":\"password\"}")
+                .body("{\"password\":\"password\"}")
             .when()
-                .post(UserRoutes.USERS)
+                .put(USERNAME)
             .then()
                 .statusCode(500);
         }

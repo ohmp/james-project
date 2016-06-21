@@ -22,22 +22,17 @@ package org.apache.james.webadmin.routes;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
-import org.apache.james.user.api.model.User;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.model.AddUserRequest;
+import org.apache.james.webadmin.service.UserService;
 import org.apache.james.webadmin.utils.JsonExtractor;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 import spark.Request;
 import spark.Response;
@@ -51,13 +46,13 @@ public class UserRoutes implements Routes {
 
     public static final String USERS = "/users";
 
-    private final UsersRepository usersRepository;
+    private final UserService userService;
     private final JsonTransformer jsonTransformer;
     private final JsonExtractor<AddUserRequest> jsonExtractor;
 
     @Inject
-    public UserRoutes(UsersRepository usersRepository, JsonTransformer jsonTransformer) {
-        this.usersRepository = usersRepository;
+    public UserRoutes(UserService userService, JsonTransformer jsonTransformer) {
+        this.userService = userService;
         this.jsonTransformer = jsonTransformer;
         this.jsonExtractor = new JsonExtractor<>(AddUserRequest.class);
     }
@@ -65,62 +60,46 @@ public class UserRoutes implements Routes {
     @Override
     public void define(Service service) {
         service.get(USERS,
-            (request, response) -> getUsers(),
+            (request, response) -> userService.getUsers(),
             jsonTransformer);
 
-        service.post(USERS, this::addUser);
+        service.put(USERS + SEPARATOR + USER_NAME, this::upsertUser);
 
         service.delete(USERS + SEPARATOR + USER_NAME, this::removeUser);
-    }
-
-    private List<String> getUsers() throws UsersRepositoryException {
-        return Optional.ofNullable(usersRepository.list())
-            .map(ImmutableList::copyOf)
-            .orElse(ImmutableList.of());
     }
 
     private String removeUser(Request request, Response response) {
         String username = request.params(USER_NAME);
         try {
-            usersRepository.removeUser(username);
+            userService.removeUser(username);
             response.status(204);
             return EMPTY_BODY;
         } catch (UsersRepositoryException e) {
             response.status(204);
             return "The user " + username + " does not exists";
-        }
-    }
-
-    private String addUser(Request request, Response response) throws UsersRepositoryException {
-        try {
-            AddUserRequest addUserRequest = jsonExtractor.parse(request.body());
-            return addUser(addUserRequest, response);
-        } catch (IOException e) {
-            LOGGER.info("Error while deserializing addUser request", e);
+        } catch (IllegalArgumentException e) {
+            LOGGER.info("Invalid user path", e);
             response.status(400);
             return EMPTY_BODY;
         }
     }
 
-    private String addUser(AddUserRequest addUserRequest, Response response) throws UsersRepositoryException {
-        User user = usersRepository.getUserByName(addUserRequest.getUsername());
+    private String upsertUser(Request request, Response response) throws UsersRepositoryException {
         try {
-            addUser(user, addUserRequest);
-            response.status(204);
-        } catch (UsersRepositoryException e) {
-            LOGGER.info("Error creating or updating user : {}", e.getMessage());
-            response.status(409);
+            return userService.upsertUser(request.params(USER_NAME),
+                jsonExtractor.parse(request.body()).getPassword(),
+                response);
+        } catch (IOException e) {
+            LOGGER.info("Error while deserializing upsertUser request", e);
+            response.status(400);
+            return EMPTY_BODY;
+        } catch (IllegalArgumentException e) {
+            LOGGER.info("Invalid user path", e);
+            response.status(400);
+            return EMPTY_BODY;
         }
-        return EMPTY_BODY;
     }
 
-    private void addUser(User user, AddUserRequest addUserRequest) throws UsersRepositoryException {
-        if (user == null) {
-            usersRepository.addUser(addUserRequest.getUsername(), new String(addUserRequest.getPassword()));
-        } else {
-            user.setPassword(new String(addUserRequest.getPassword()));
-            usersRepository.updateUser(user);
-        }
-    }
+
 
 }

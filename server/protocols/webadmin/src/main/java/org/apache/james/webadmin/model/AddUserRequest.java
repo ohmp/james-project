@@ -25,21 +25,12 @@ import com.google.common.base.Preconditions;
 
 public class AddUserRequest {
 
-    private final String username;
     private final char[] password;
 
     @JsonCreator
-    public AddUserRequest(@JsonProperty("username") String username,
-                          @JsonProperty("password") char[] password) {
-        Preconditions.checkNotNull(username);
+    public AddUserRequest(@JsonProperty("password") char[] password) {
         Preconditions.checkNotNull(password);
-        Preconditions.checkArgument(!username.isEmpty());
-        this.username = username;
         this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public char[] getPassword() {
