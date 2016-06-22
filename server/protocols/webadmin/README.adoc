@@ -82,7 +82,7 @@ Resource name usernameToBeUsed :
 Response codes :
  - 204 : The user was successfully created
  - 400 : The user name or the payload is invalid
- - 409 : Conflict : the user was removed between existence check and insert / update
+ - 409 : Conflict : A concurrent modification make that query to fail
  - 500 : Internal error while adding the user
 
 Note : if the user is already, its password will be updated.
