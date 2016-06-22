@@ -27,24 +27,24 @@ import org.junit.Test;
 public class FixedPortTest {
 
     @Test
-    public void getShouldThrowOnNegativePort() {
+    public void toIntShouldThrowOnNegativePort() {
         assertThatThrownBy(() -> new FixedPort(-1)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void getShouldThrowOnNullPort() {
+    public void toIntShouldThrowOnNullPort() {
         assertThatThrownBy(() -> new FixedPort(0)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void getShouldThrowOnTooBigNumbers() {
+    public void toIntShouldThrowOnTooBigNumbers() {
         assertThatThrownBy(() -> new FixedPort(65536)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void getShouldReturnedDesiredPort() {
+    public void toIntShouldReturnedDesiredPort() {
         int expectedPort = 452;
-        assertThat(new FixedPort(expectedPort).get()).isEqualTo(expectedPort);
+        assertThat(new FixedPort(expectedPort).toInt()).isEqualTo(expectedPort);
     }
 
 }

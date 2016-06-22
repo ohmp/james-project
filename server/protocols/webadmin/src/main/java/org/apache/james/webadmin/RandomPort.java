@@ -22,6 +22,8 @@ package org.apache.james.webadmin;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 
 public class RandomPort implements Port {
@@ -34,15 +36,15 @@ public class RandomPort implements Port {
         }
     }
 
-    private Integer port;
+    private final Supplier<Integer> portSupplier;
+
+    public RandomPort() {
+        portSupplier = Suppliers.memoize(RandomPort::findFreePort);
+    }
 
     @Override
-    public int get() {
-        // Initialization is done here to reduce the window of concurrency to effectively listen on this port.
-        if (port == null) {
-            port = findFreePort();
-        }
-        return port;
+    public int toInt() {
+        return portSupplier.get();
     }
 
 }

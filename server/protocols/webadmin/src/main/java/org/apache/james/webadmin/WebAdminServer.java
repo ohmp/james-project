@@ -20,7 +20,6 @@
 package org.apache.james.webadmin;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Set;
 
 import javax.annotation.PreDestroy;
@@ -70,7 +69,7 @@ public class WebAdminServer implements Configurable {
     @Override
     public void configure(HierarchicalConfiguration config) throws ConfigurationException {
         if (enabled) {
-            service.port(port.get());
+            service.port(port.toInt());
             routesList.forEach(routes -> routes.define(service));
             LOGGER.info("Web admin server started");
         }

@@ -31,7 +31,7 @@ public class FixedPort implements Port {
     }
 
     @Override
-    public int get() {
+    public int toInt() {
         return port;
     }
 

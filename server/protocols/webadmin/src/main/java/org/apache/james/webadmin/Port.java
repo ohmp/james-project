@@ -21,6 +21,6 @@ package org.apache.james.webadmin;
 
 public interface Port {
 
-    int get();
+    int toInt();
 
 }

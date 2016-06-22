@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -34,7 +35,7 @@ public class JsonTransformer implements ResponseTransformer {
     }
 
     @Override
-    public String render(Object o) throws Exception {
+    public String render(Object o) throws JsonProcessingException {
         return objectMapper.writeValueAsString(o);
     }
 }

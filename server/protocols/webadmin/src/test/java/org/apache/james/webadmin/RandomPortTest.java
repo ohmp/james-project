@@ -26,9 +26,9 @@ import org.junit.Test;
 public class RandomPortTest {
 
     @Test
-    public void getShouldReturnTwoTimeTheSameResult() {
+    public void toIntShouldReturnTwoTimeTheSameResult() {
         RandomPort testee = new RandomPort();
-        assertThat(testee.get()).isEqualTo(testee.get());
+        assertThat(testee.toInt()).isEqualTo(testee.toInt());
     }
 
 }
