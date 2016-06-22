@@ -21,6 +21,7 @@ Resource name domainToBeCreated :
 
 Response codes :
  - 204 : The domain was successfully added
+ - 400 : The domain name is invalid
  - 500 : Internal error while adding the domain
 
 === Delete a domain
@@ -43,7 +44,7 @@ curl -XGET http://ip:port/domains/domainName
 
 Response codes :
  - 204 : The domains exists
- - 404 : The domain do not exist
+ - 404 : The domain does not exist
  - 500 : Internal error while accessing the domains
 
 === Get the list of domains
@@ -80,6 +81,7 @@ Resource name usernameToBeUsed :
 
 Response codes :
  - 204 : The user was successfully created
+ - 400 : The user name or the payload is invalid
  - 409 : Conflict : the user was removed between existence check and insert / update
  - 500 : Internal error while adding the user
 
@@ -113,7 +115,7 @@ The answer looks like :
 
 .json
 ====
-{"usernames":["username@domain-jmapauthentication.tld","username@domain.tld"]}
+[{"username":"username@domain-jmapauthentication.tld"},{"username":"username@domain.tld"}]
 ====
 
 Response codes :
