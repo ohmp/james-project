@@ -25,7 +25,6 @@ import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Matchers.any;
@@ -64,7 +63,7 @@ public class UsersRoutesTest {
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
-        RestAssured.port = webAdminServer.getPort().get();
+        RestAssured.port = webAdminServer.getPort().toInt();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.defaultParser = Parser.JSON;
         RestAssured.basePath = UserRoutes.USERS;
@@ -155,7 +154,7 @@ public class UsersRoutesTest {
                 .get()
             .then()
                 .statusCode(200)
-                .body(containsString(USERNAME));
+                .body(equalTo("[{\"username\":\"" + USERNAME + "\"}]"));
         }
 
         @Test
@@ -178,7 +177,7 @@ public class UsersRoutesTest {
                 .get()
             .then()
                 .statusCode(200)
-                .body(equalTo("[\"" + USERNAME + "\"]"));
+                .body(equalTo("[{\"username\":\"" + USERNAME + "\"}]"));
         }
 
         @Test

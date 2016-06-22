@@ -19,26 +19,9 @@
 
 package org.apache.james.webadmin.utils;
 
-import java.io.IOException;
+public class JsonExtractException extends Exception {
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class JsonExtractor<Request> {
-
-    private final ObjectMapper objectMapper;
-    private final Class<Request> type;
-
-    public JsonExtractor(Class<Request> type) {
-        this.objectMapper = new ObjectMapper();
-        this.type = type;
+    public JsonExtractException(Throwable throwable) {
+        super(throwable);
     }
-
-    public Request parse(String text) throws JsonExtractException {
-        try {
-            return objectMapper.readValue(text, type);
-        } catch (IOException e) {
-            throw new JsonExtractException(e);
-        }
-    }
-
 }

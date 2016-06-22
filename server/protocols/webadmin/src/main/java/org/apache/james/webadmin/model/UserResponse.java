@@ -17,28 +17,17 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.utils;
+package org.apache.james.webadmin.model;
 
-import java.io.IOException;
+public class UserResponse {
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+    private final String username;
 
-public class JsonExtractor<Request> {
-
-    private final ObjectMapper objectMapper;
-    private final Class<Request> type;
-
-    public JsonExtractor(Class<Request> type) {
-        this.objectMapper = new ObjectMapper();
-        this.type = type;
+    public UserResponse(String username) {
+        this.username = username;
     }
 
-    public Request parse(String text) throws JsonExtractException {
-        try {
-            return objectMapper.readValue(text, type);
-        } catch (IOException e) {
-            throw new JsonExtractException(e);
-        }
+    public String getUsername() {
+        return username;
     }
-
 }

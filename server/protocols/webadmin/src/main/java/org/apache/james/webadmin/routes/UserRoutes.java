@@ -21,14 +21,13 @@ package org.apache.james.webadmin.routes;
 
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 
-import java.io.IOException;
-
 import javax.inject.Inject;
 
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.model.AddUserRequest;
 import org.apache.james.webadmin.service.UserService;
+import org.apache.james.webadmin.utils.JsonExtractException;
 import org.apache.james.webadmin.utils.JsonExtractor;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.slf4j.Logger;
@@ -89,8 +88,8 @@ public class UserRoutes implements Routes {
             return userService.upsertUser(request.params(USER_NAME),
                 jsonExtractor.parse(request.body()).getPassword(),
                 response);
-        } catch (IOException e) {
-            LOGGER.info("Error while deserializing upsertUser request", e);
+        } catch (JsonExtractException e) {
+            LOGGER.info("Error while deserializing addUser request", e);
             response.status(400);
             return EMPTY_BODY;
         } catch (IllegalArgumentException e) {
