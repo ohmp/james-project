@@ -73,7 +73,7 @@ public class WebAdminServerIntegrationTest {
 
         RestAssured.port = guiceJamesServer.getWebadminPort()
             .orElseThrow(() -> new RuntimeException("Unable to locate Web Admin port"))
-            .get();
+            .toInt();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.defaultParser = Parser.JSON;
     }
@@ -143,7 +143,7 @@ public class WebAdminServerIntegrationTest {
             .get(UserRoutes.USERS)
         .then()
             .statusCode(200)
-            .body(is("[\"username@domain\"]"));
+            .body(is("[{\"username\":\"username@domain\"}]"));
     }
 
 }
