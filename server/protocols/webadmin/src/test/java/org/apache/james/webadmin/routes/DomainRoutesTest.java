@@ -67,7 +67,7 @@ public class DomainRoutesTest {
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
-        RestAssured.port = webAdminServer.getPort().get();
+        RestAssured.port = webAdminServer.getPort().toInt();
         RestAssured.config = newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8));
         RestAssured.defaultParser = Parser.JSON;
         RestAssured.basePath = DomainRoutes.DOMAINS;
@@ -105,7 +105,7 @@ public class DomainRoutesTest {
         @Test
         public void putShouldReturnErrorWhenUsedWithEmptyDomain() {
             given()
-                .put("" + SEPARATOR)
+                .put(SEPARATOR)
             .then()
                 .statusCode(404);
         }
@@ -113,7 +113,7 @@ public class DomainRoutesTest {
         @Test
         public void deleteShouldReturnErrorWhenUsedWithEmptyDomain() {
             given()
-                .delete("" + SEPARATOR)
+                .delete(SEPARATOR)
             .then()
                 .statusCode(404);
         }
