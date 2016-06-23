@@ -37,6 +37,7 @@ import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.util.streams.ImmutableCollectors;
 import org.apache.james.webadmin.model.MailboxResponse;
 import org.apache.james.webadmin.utils.MailboxHaveChildrenException;
+import org.apache.james.webadmin.validation.MailboxName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,13 +60,12 @@ public class UserMailboxesService {
         this.usersRepository = usersRepository;
     }
 
-    public void createMailbox(String username, String mailboxName) throws MailboxException, UsersRepositoryException {
+    public void createMailbox(String username, MailboxName mailboxName) throws MailboxException, UsersRepositoryException {
         usernamePreconditions(username);
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
         try {
             mailboxManager.createMailbox(
-                convertToMailboxPath(username, mailboxName, mailboxSession),
+                convertToMailboxPath(username, mailboxName.getMailboxName(), mailboxSession),
                 mailboxSession);
         } catch (MailboxExistsException e) {
             LOGGER.info("Attempt to create mailbox {} for user {} that already exists", mailboxName, username);
@@ -88,20 +88,18 @@ public class UserMailboxesService {
             .collect(ImmutableCollectors.toImmutableList());
     }
 
-    public boolean testMailboxExists(String username, String mailboxName) throws MailboxException, UsersRepositoryException {
+    public boolean testMailboxExists(String username, MailboxName mailboxName) throws MailboxException, UsersRepositoryException {
         usernamePreconditions(username);
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
         return mailboxManager.mailboxExists(
-            convertToMailboxPath(username, mailboxName, mailboxSession),
+            convertToMailboxPath(username, mailboxName.getMailboxName(), mailboxSession),
             mailboxSession);
     }
 
-    public void deleteMailbox(String username, String mailboxName) throws MailboxException, UsersRepositoryException, MailboxHaveChildrenException {
+    public void deleteMailbox(String username, MailboxName mailboxName) throws MailboxException, UsersRepositoryException, MailboxHaveChildrenException {
         usernamePreconditions(username);
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
-        MailboxPath mailboxPath = convertToMailboxPath(username, mailboxName, mailboxSession);
+        MailboxPath mailboxPath = convertToMailboxPath(username, mailboxName.getMailboxName(), mailboxSession);
         listChildren(mailboxPath, mailboxSession)
             .forEach(Throwing.consumer(path -> deleteMailbox(mailboxSession, path)));
     }

@@ -109,35 +109,155 @@ public class UserMailboxesRoutesTest {
             when()
                 .get()
             .then()
-                .statusCode(400);
+                .statusCode(404);
         }
 
         @Test
-        public void getShouldReturnUserErrorWithNonExistingUser() throws Exception {
+        public void getShouldReturnNotFoundWithNonExistingUser() throws Exception {
             when(usersRepository.contains(USERNAME)).thenReturn(false);
 
             when()
                 .get(MAILBOX_NAME)
             .then()
-                .statusCode(400);
+                .statusCode(404);
         }
 
         @Test
-        public void putShouldReturnUserErrorWithNonExistingUser() throws Exception {
+        public void putShouldReturnNotFoundWithNonExistingUser() throws Exception {
             when(usersRepository.contains(USERNAME)).thenReturn(false);
 
             when()
                 .put(MAILBOX_NAME)
             .then()
-                .statusCode(400);
+                .statusCode(404);
         }
 
         @Test
-        public void deleteShouldReturnUserErrorWithNonExistingUser() throws Exception {
+        public void deleteShouldReturnNotFoundWithNonExistingUser() throws Exception {
             when(usersRepository.contains(USERNAME)).thenReturn(false);
 
             when()
                 .put(MAILBOX_NAME)
+            .then()
+                .statusCode(404);
+        }
+
+        @Test
+        public void getShouldReturnUserErrorWithInvalidWildcardMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .get(MAILBOX_NAME + "*")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void putShouldReturnUserErrorWithInvalidWildcardMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME+ "*")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void deleteShouldReturnUserErrorWithInvalidWildcardMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME + "*")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void getShouldReturnUserErrorWithInvalidPercentMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .get(MAILBOX_NAME + "%")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void putShouldReturnUserErrorWithInvalidPercentMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME+ "%")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void deleteShouldReturnUserErrorWithInvalidPercentMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME + "%")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void getShouldReturnUserErrorWithInvalidSharpMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .get(MAILBOX_NAME + "#")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void putShouldReturnUserErrorWithInvalidSharpMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME+ "#")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void deleteShouldReturnUserErrorWithInvalidSharpMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME + "#")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void getShouldReturnUserErrorWithInvalidAndMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .get(MAILBOX_NAME + "&")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void putShouldReturnUserErrorWithInvalidAndMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME+ "&")
+            .then()
+                .statusCode(400);
+        }
+
+        @Test
+        public void deleteShouldReturnUserErrorWithInvalidAndMailboxName() throws Exception {
+            when(usersRepository.contains(USERNAME)).thenReturn(false);
+
+            when()
+                .put(MAILBOX_NAME + "&")
             .then()
                 .statusCode(400);
         }
@@ -149,7 +269,7 @@ public class UserMailboxesRoutesTest {
             when()
                 .delete()
             .then()
-                .statusCode(400);
+                .statusCode(404);
         }
 
         @Test
