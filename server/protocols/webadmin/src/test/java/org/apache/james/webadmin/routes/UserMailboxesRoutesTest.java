@@ -298,7 +298,7 @@ public class UserMailboxesRoutesTest {
         }
 
         @Test
-        public void deleteShouldReturnAConflictWhenMailboxHasChildren() {
+        public void deleteShouldReturnOkWhenMailboxHasChildren() {
             with()
                 .put(MAILBOX_NAME);
 
@@ -308,7 +308,44 @@ public class UserMailboxesRoutesTest {
             when()
                 .delete(MAILBOX_NAME)
             .then()
-                .statusCode(409);
+                .statusCode(204);
+        }
+
+        @Test
+        public void deleteShouldDeleteAMailboxAndItsChildren() {
+            with()
+                .put(MAILBOX_NAME);
+
+            with()
+                .put(MAILBOX_NAME + ".child");
+
+            with()
+                .delete(MAILBOX_NAME);
+
+            when()
+                .get()
+            .then()
+                .statusCode(200)
+                .body(is("[]"));
+        }
+
+        @Test
+        public void deleteShouldNotDeleteUnrelatedMailbox() {
+            String mailboxName = MAILBOX_NAME + "!child";
+            with()
+                .put(MAILBOX_NAME);
+
+            with()
+                .put(mailboxName);
+
+            with()
+                .delete(MAILBOX_NAME);
+
+            when()
+                .get()
+            .then()
+                .statusCode(200)
+                .body(is("[{\"mailboxName\":\"" + mailboxName + "\"}]"));
         }
 
         @Test
@@ -388,7 +425,7 @@ public class UserMailboxesRoutesTest {
 
         @Test
         public void deleteShouldGenerateInternalErrorOnUnknownExceptionOnDelete() throws Exception {
-            when(mailboxManager.search(any(), any())).thenReturn(ImmutableList.of(new SimpleMailboxMetaData(new MailboxPath("#private", USERNAME, "any"), '.')));
+            when(mailboxManager.search(any(), any())).thenReturn(ImmutableList.of(new SimpleMailboxMetaData(new MailboxPath("#private", USERNAME, MAILBOX_NAME), '.')));
             doThrow(new RuntimeException()).when(mailboxManager).deleteMailbox(any(), any());
 
             when()
@@ -409,7 +446,7 @@ public class UserMailboxesRoutesTest {
 
         @Test
         public void deleteShouldGenerateInternalErrorOnUnknownMailboxExceptionOnDelete() throws Exception {
-            when(mailboxManager.search(any(), any())).thenReturn(ImmutableList.of(new SimpleMailboxMetaData(new MailboxPath("#private", USERNAME, "any"), '.')));
+            when(mailboxManager.search(any(), any())).thenReturn(ImmutableList.of(new SimpleMailboxMetaData(new MailboxPath("#private", USERNAME, MAILBOX_NAME), '.')));
             doThrow(new MailboxException()).when(mailboxManager).deleteMailbox(any(), any());
 
             when()

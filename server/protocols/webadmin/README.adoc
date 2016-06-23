@@ -146,7 +146,7 @@ Response codes :
  curl -XDELETE http://ip:port/users/usernameToBeUsed/mailboxes/INBOX.work
  ====
 
-=== Deleting a mailbox
+=== Deleting a mailbox and its children
 
 .bash
 ====
@@ -159,7 +159,6 @@ Resource name mailboxNameToBeCreated should not be empty
 Response codes :
  - 204 : The mailbox now does not exist on the server
  - 400 : The user name does not exist
- - 409 : The mailbox can not be deleted due to its children mailboxes. Delete children mailboxes first.
  - 500 : Internal error
 
 === Testing existence of a mailbox

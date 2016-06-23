@@ -102,26 +102,15 @@ public class UserMailboxesService {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
         MailboxPath mailboxPath = convertToMailboxPath(username, mailboxName, mailboxSession);
-        try {
-            if (!haveChildren(mailboxPath, mailboxSession)) {
-                deleteMailbox(mailboxSession, mailboxPath);
-            } else {
-                throw new MailboxHaveChildrenException(mailboxName);
-            }
-        } catch (MailboxNotFoundException e) {
-            LOGGER.info("Attempt to delete mailbox {} for user {} that does not exists", mailboxPath.getName(), mailboxPath.getUser());
-        }
+        listChildren(mailboxPath, mailboxSession)
+            .forEach(Throwing.consumer(path -> deleteMailbox(mailboxSession, path)));
     }
 
-    private boolean haveChildren(MailboxPath mailboxPath, MailboxSession mailboxSession) throws MailboxException {
-        return mailboxManager.search(
-            MailboxQuery.builder()
-                .base(mailboxPath)
-                .build(), mailboxSession)
+    private Stream<MailboxPath> listChildren(MailboxPath mailboxPath, MailboxSession mailboxSession) throws MailboxException {
+        return mailboxManager.search(createUserMailboxesQuery(mailboxPath.getUser()), mailboxSession)
             .stream()
-            .findAny()
-            .map(mailboxMetaData -> mailboxMetaData.inferiors() == MailboxMetaData.Children.HAS_CHILDREN)
-            .orElseThrow(() -> new MailboxNotFoundException(mailboxPath));
+            .map(MailboxMetaData::getPath)
+            .filter(path -> path.getHierarchyLevels(mailboxSession.getPathDelimiter()).contains(mailboxPath));
     }
 
     private void deleteMailbox(MailboxSession mailboxSession, MailboxPath mailboxPath) throws MailboxException {
