@@ -65,7 +65,7 @@ public class UserMailboxesService {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
         try {
             mailboxManager.createMailbox(
-                convertToMailboxPath(username, mailboxName.getMailboxName(), mailboxSession),
+                convertToMailboxPath(username, mailboxName.asString(), mailboxSession),
                 mailboxSession);
         } catch (MailboxExistsException e) {
             LOGGER.info("Attempt to create mailbox {} for user {} that already exists", mailboxName, username);
@@ -92,14 +92,14 @@ public class UserMailboxesService {
         usernamePreconditions(username);
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
         return mailboxManager.mailboxExists(
-            convertToMailboxPath(username, mailboxName.getMailboxName(), mailboxSession),
+            convertToMailboxPath(username, mailboxName.asString(), mailboxSession),
             mailboxSession);
     }
 
     public void deleteMailbox(String username, MailboxName mailboxName) throws MailboxException, UsersRepositoryException, MailboxHaveChildrenException {
         usernamePreconditions(username);
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USER_NAME, LOGGER);
-        MailboxPath mailboxPath = convertToMailboxPath(username, mailboxName.getMailboxName(), mailboxSession);
+        MailboxPath mailboxPath = convertToMailboxPath(username, mailboxName.asString(), mailboxSession);
         listChildren(mailboxPath, mailboxSession)
             .forEach(Throwing.consumer(path -> deleteMailbox(mailboxSession, path)));
     }

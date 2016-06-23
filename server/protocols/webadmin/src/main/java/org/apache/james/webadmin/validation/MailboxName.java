@@ -19,23 +19,22 @@
 
 package org.apache.james.webadmin.validation;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public class MailboxName {
 
+    public static final CharMatcher INVALID_CHAR_MATCHER = CharMatcher.anyOf("%*&#");
     private final String mailboxName;
 
     public MailboxName(String mailboxName) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
-        Preconditions.checkArgument(!mailboxName.contains("*"));
-        Preconditions.checkArgument(!mailboxName.contains("%"));
-        Preconditions.checkArgument(!mailboxName.contains("&"));
-        Preconditions.checkArgument(!mailboxName.contains("#"));
+        Preconditions.checkArgument(INVALID_CHAR_MATCHER.matchesNoneOf(mailboxName));
         this.mailboxName = mailboxName;
     }
 
-    public String getMailboxName() {
+    public String asString() {
         return mailboxName;
     }
 }
