@@ -25,12 +25,12 @@ import com.google.common.base.Strings;
 
 public class MailboxName {
 
-    public static final CharMatcher INVALID_CHAR_MATCHER = CharMatcher.anyOf("%*&#");
+    public static final CharMatcher INVALID_CHARS_MATCHER = CharMatcher.anyOf("%*&#");
     private final String mailboxName;
 
     public MailboxName(String mailboxName) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
-        Preconditions.checkArgument(INVALID_CHAR_MATCHER.matchesNoneOf(mailboxName));
+        Preconditions.checkArgument(INVALID_CHARS_MATCHER.matchesNoneOf(mailboxName));
         this.mailboxName = mailboxName;
     }
 
