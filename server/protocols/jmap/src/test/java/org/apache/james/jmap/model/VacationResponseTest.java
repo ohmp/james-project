@@ -25,9 +25,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import org.apache.james.jmap.api.vacation.Vacation;
 import org.junit.Test;
 
 public class VacationResponseTest {
+
+    private static final ZonedDateTime DATE_2014 = ZonedDateTime.parse("2014-09-30T14:10:00Z");
+    private static final ZonedDateTime DATE_2015 = ZonedDateTime.parse("2015-09-30T14:10:00Z");
+    private static final ZonedDateTime DATE_2016 = ZonedDateTime.parse("2016-09-30T14:10:00Z");
 
     public static final String IDENTIFIER = "identifier";
     public static final String MESSAGE = "A message explaining I am in vacation";
@@ -106,6 +111,55 @@ public class VacationResponseTest {
         assertThat(vacationResponse.isEnabled()).isEqualTo(true);
         assertThat(vacationResponse.getTextBody()).isEmpty();
         assertThat(vacationResponse.getHtmlBody()).contains(MESSAGE);
+    }
+
+    @Test
+    public void isActivatedShouldBeTrueIfInRange() {
+        Vacation vacation = Vacation.builder()
+            .textBody("any")
+            .enabled(true)
+            .fromDate(Optional.of(DATE_2014))
+            .toDate(Optional.of(DATE_2016))
+            .build();
+
+        assertThat(VacationResponse.builder().fromVacation(vacation, DATE_2015).build().isActivated()).contains(true);
+    }
+
+    @Test
+    public void isActivatedShouldBeFalseBeforeRange() {
+        Vacation vacation = Vacation.builder()
+            .textBody("any")
+            .enabled(true)
+            .fromDate(Optional.of(DATE_2015))
+            .toDate(Optional.of(DATE_2016))
+            .build();
+
+        assertThat(VacationResponse.builder().fromVacation(vacation, DATE_2014).build().isActivated()).contains(false);
+    }
+
+    @Test
+    public void isActivatedShouldBeFalseAfterRange() {
+        Vacation vacation = Vacation.builder()
+            .textBody("any")
+            .enabled(true)
+            .fromDate(Optional.of(DATE_2014))
+            .toDate(Optional.of(DATE_2015))
+            .build();
+
+        assertThat(VacationResponse.builder().fromVacation(vacation, DATE_2016).build().isActivated()).contains(false);
+    }
+
+
+
+    @Test
+    public void isActivatedShouldNotBeComputedIfNotImportedFromAVacation() {
+        VacationResponse vacationResponse = VacationResponse.builder()
+            .id(IDENTIFIER)
+            .enabled(true)
+            .htmlBody(Optional.of(MESSAGE))
+            .build();
+
+        assertThat(vacationResponse.isActivated()).isEmpty();
     }
 
 }

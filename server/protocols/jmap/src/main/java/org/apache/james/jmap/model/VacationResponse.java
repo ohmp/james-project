@@ -52,6 +52,7 @@ public class VacationResponse {
         private Optional<String> subject = Optional.empty();
         private Optional<String> textBody = Optional.empty();
         private Optional<String> htmlBody = Optional.empty();
+        private Optional<Boolean> isActivated = Optional.empty();
 
         public Builder id(String id) {
             this.id = id;
@@ -61,6 +62,13 @@ public class VacationResponse {
         @JsonProperty("isEnabled")
         public Builder enabled(boolean enabled) {
             isEnabled = Optional.of(enabled);
+            return this;
+        }
+
+        @JsonProperty("isActivated")
+        public Builder activated(Optional<Boolean> activated) {
+            Preconditions.checkNotNull(activated);
+            this.isActivated = activated;
             return this;
         }
 
@@ -96,7 +104,7 @@ public class VacationResponse {
             return this;
         }
 
-        public Builder fromVacation(Vacation vacation) {
+        public Builder fromVacation(Vacation vacation, ZonedDateTime zonedDateTime) {
             this.id = Vacation.ID;
             this.isEnabled = Optional.of(vacation.isEnabled());
             this.fromDate = vacation.getFromDate();
@@ -104,6 +112,7 @@ public class VacationResponse {
             this.textBody = vacation.getTextBody();
             this.subject = vacation.getSubject();
             this.htmlBody = vacation.getHtmlBody();
+            this.isActivated = Optional.of(vacation.isActiveAtDate(zonedDateTime));
             return this;
         }
 
@@ -112,7 +121,7 @@ public class VacationResponse {
             if (enabled) {
                 Preconditions.checkState(textBody.isPresent() || htmlBody.isPresent(), "textBody or htmlBody property of vacationResponse object should not be null when enabled");
             }
-            return new VacationResponse(id, enabled, fromDate, toDate, textBody, subject, htmlBody);
+            return new VacationResponse(id, enabled, fromDate, toDate, textBody, subject, htmlBody, isActivated);
         }
     }
 
@@ -123,9 +132,10 @@ public class VacationResponse {
     private final Optional<String> subject;
     private final Optional<String> textBody;
     private final Optional<String> htmlBody;
+    private final Optional<Boolean> isActivated;
 
     private VacationResponse(String id, boolean isEnabled, Optional<ZonedDateTime> fromDate, Optional<ZonedDateTime> toDate,
-                             Optional<String> textBody, Optional<String> subject, Optional<String> htmlBody) {
+                             Optional<String> textBody, Optional<String> subject, Optional<String> htmlBody, Optional<Boolean> isActivated) {
         this.id = id;
         this.isEnabled = isEnabled;
         this.fromDate = fromDate;
@@ -133,6 +143,7 @@ public class VacationResponse {
         this.textBody = textBody;
         this.subject = subject;
         this.htmlBody = htmlBody;
+        this.isActivated = isActivated;
     }
 
     public String getId() {
@@ -171,6 +182,11 @@ public class VacationResponse {
         return id.equals(Vacation.ID);
     }
 
+    @JsonProperty("isActivated")
+    public Optional<Boolean> isActivated() {
+        return isActivated;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -185,11 +201,12 @@ public class VacationResponse {
             && Objects.equals(this.toDate, that.toDate)
             && Objects.equals(this.textBody, that.textBody)
             && Objects.equals(this.subject, that.subject)
-            && Objects.equals(this.htmlBody, that.htmlBody);
+            && Objects.equals(this.htmlBody, that.htmlBody)
+            && Objects.equals(this.isActivated, that.isActivated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, isEnabled, fromDate, toDate, textBody, subject, htmlBody);
+        return Objects.hash(id, isEnabled, fromDate, toDate, textBody, subject, htmlBody, isActivated);
     }
 }

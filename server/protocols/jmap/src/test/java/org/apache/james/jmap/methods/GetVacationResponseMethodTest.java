@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -37,23 +38,30 @@ import org.apache.james.jmap.model.GetVacationResponse;
 import org.apache.james.jmap.model.SetMailboxesRequest;
 import org.apache.james.jmap.model.VacationResponse;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
 
 public class GetVacationResponseMethodTest {
+
+    private static final ZonedDateTime DATE_2014 = ZonedDateTime.parse("2014-09-30T14:10:00Z");
 
     public static final String USERNAME = "username";
     private GetVacationResponseMethod testee;
     private VacationRepository vacationRepository;
     private MailboxSession mailboxSession;
     private MailboxSession.User user;
+    private ZonedDateTimeProvider zonedDateTimeProvider;
 
     @Before
     public void setUp() {
+        zonedDateTimeProvider = mock(ZonedDateTimeProvider.class);
         vacationRepository = mock(VacationRepository.class);
         mailboxSession = mock(MailboxSession.class);
         user = mock(MailboxSession.User.class);
-        testee = new GetVacationResponseMethod(vacationRepository);
+        testee = new GetVacationResponseMethod(vacationRepository, zonedDateTimeProvider);
+
+        when(zonedDateTimeProvider.get()).thenReturn(DATE_2014);
     }
 
     @Test(expected = NullPointerException.class)
@@ -98,7 +106,7 @@ public class GetVacationResponseMethodTest {
             .response(GetVacationResponse.builder()
                 .accountId(USERNAME)
                 .vacationResponse(VacationResponse.builder()
-                    .fromVacation(vacation)
+                    .fromVacation(vacation, DATE_2014)
                     .build())
                 .build())
             .build();
