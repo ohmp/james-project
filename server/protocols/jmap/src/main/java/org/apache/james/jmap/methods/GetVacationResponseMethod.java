@@ -78,7 +78,8 @@ public class GetVacationResponseMethod implements Method {
         return GetVacationResponse.builder()
             .accountId(mailboxSession.getUser().getUserName())
             .vacationResponse(VacationResponse.builder()
-                .fromVacation(vacation, zonedDateTimeProvider.get())
+                .fromVacation(vacation)
+                .activated(vacation.isActiveAtDate(zonedDateTimeProvider.get()))
                 .build())
             .build();
     }

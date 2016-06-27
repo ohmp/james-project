@@ -72,6 +72,11 @@ public class VacationResponse {
             return this;
         }
 
+        @JsonIgnore
+        public Builder activated(boolean activated) {
+            return activated(Optional.of(activated));
+        }
+
         @JsonDeserialize(using = OptionalZonedDateTimeDeserializer.class)
         public Builder fromDate(Optional<ZonedDateTime> fromDate) {
             Preconditions.checkNotNull(fromDate);
@@ -104,7 +109,7 @@ public class VacationResponse {
             return this;
         }
 
-        public Builder fromVacation(Vacation vacation, ZonedDateTime zonedDateTime) {
+        public Builder fromVacation(Vacation vacation) {
             this.id = Vacation.ID;
             this.isEnabled = Optional.of(vacation.isEnabled());
             this.fromDate = vacation.getFromDate();
@@ -112,7 +117,6 @@ public class VacationResponse {
             this.textBody = vacation.getTextBody();
             this.subject = vacation.getSubject();
             this.htmlBody = vacation.getHtmlBody();
-            this.isActivated = Optional.of(vacation.isActiveAtDate(zonedDateTime));
             return this;
         }
 

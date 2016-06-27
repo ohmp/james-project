@@ -45,6 +45,8 @@ import org.junit.Test;
 public class GetVacationResponseMethodTest {
 
     private static final ZonedDateTime DATE_2014 = ZonedDateTime.parse("2014-09-30T14:10:00Z");
+    private static final ZonedDateTime DATE_2015 = ZonedDateTime.parse("2015-09-30T14:10:00Z");
+    private static final ZonedDateTime DATE_2016 = ZonedDateTime.parse("2016-09-30T14:10:00Z");
 
     public static final String USERNAME = "username";
     private GetVacationResponseMethod testee;
@@ -91,10 +93,13 @@ public class GetVacationResponseMethodTest {
             .enabled(true)
             .textBody("I am in vacation")
             .subject(Optional.of("subject"))
+            .fromDate(Optional.of(DATE_2014))
+            .toDate(Optional.of(DATE_2016))
             .build();
         when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME))).thenReturn(CompletableFuture.completedFuture(vacation));
         when(mailboxSession.getUser()).thenReturn(user);
         when(user.getUserName()).thenReturn(USERNAME);
+        when(zonedDateTimeProvider.get()).thenReturn(DATE_2015);
 
         GetVacationRequest getVacationRequest = GetVacationRequest.builder().build();
 
@@ -106,7 +111,76 @@ public class GetVacationResponseMethodTest {
             .response(GetVacationResponse.builder()
                 .accountId(USERNAME)
                 .vacationResponse(VacationResponse.builder()
-                    .fromVacation(vacation, DATE_2014)
+                    .fromVacation(vacation)
+                    .activated(true)
+                    .build())
+                .build())
+            .build();
+        assertThat(result).containsExactly(expected);
+    }
+
+    @Test
+    public void processShouldReturnUnActivatedVacationResponseWhenBeforeDate() {
+        ClientId clientId = mock(ClientId.class);
+        Vacation vacation = Vacation.builder()
+            .enabled(true)
+            .textBody("I am in vacation")
+            .subject(Optional.of("subject"))
+            .fromDate(Optional.of(DATE_2015))
+            .toDate(Optional.of(DATE_2016))
+            .build();
+        when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME))).thenReturn(CompletableFuture.completedFuture(vacation));
+        when(mailboxSession.getUser()).thenReturn(user);
+        when(user.getUserName()).thenReturn(USERNAME);
+        when(zonedDateTimeProvider.get()).thenReturn(DATE_2014);
+
+        GetVacationRequest getVacationRequest = GetVacationRequest.builder().build();
+
+        Stream<JmapResponse> result = testee.process(getVacationRequest, clientId, mailboxSession);
+
+        JmapResponse expected = JmapResponse.builder()
+            .clientId(clientId)
+            .responseName(GetVacationResponseMethod.RESPONSE_NAME)
+            .response(GetVacationResponse.builder()
+                .accountId(USERNAME)
+                .vacationResponse(VacationResponse.builder()
+                    .fromVacation(vacation)
+                    .activated(false)
+                    .build())
+                .build())
+            .build();
+        assertThat(result).containsExactly(expected);
+    }
+
+
+
+    @Test
+    public void processShouldReturnUnActivatedVacationResponseWhenAfterDate() {
+        ClientId clientId = mock(ClientId.class);
+        Vacation vacation = Vacation.builder()
+            .enabled(true)
+            .textBody("I am in vacation")
+            .subject(Optional.of("subject"))
+            .fromDate(Optional.of(DATE_2014))
+            .toDate(Optional.of(DATE_2015))
+            .build();
+        when(vacationRepository.retrieveVacation(AccountId.fromString(USERNAME))).thenReturn(CompletableFuture.completedFuture(vacation));
+        when(mailboxSession.getUser()).thenReturn(user);
+        when(user.getUserName()).thenReturn(USERNAME);
+        when(zonedDateTimeProvider.get()).thenReturn(DATE_2016);
+
+        GetVacationRequest getVacationRequest = GetVacationRequest.builder().build();
+
+        Stream<JmapResponse> result = testee.process(getVacationRequest, clientId, mailboxSession);
+
+        JmapResponse expected = JmapResponse.builder()
+            .clientId(clientId)
+            .responseName(GetVacationResponseMethod.RESPONSE_NAME)
+            .response(GetVacationResponse.builder()
+                .accountId(USERNAME)
+                .vacationResponse(VacationResponse.builder()
+                    .fromVacation(vacation)
+                    .activated(false)
                     .build())
                 .build())
             .build();
