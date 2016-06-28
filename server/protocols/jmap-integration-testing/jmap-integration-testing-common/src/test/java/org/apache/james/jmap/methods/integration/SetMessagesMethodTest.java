@@ -712,6 +712,59 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
+    public void setMessageShouldSupportArbitraryMessageId() {
+        String messageCreationId = "1717fcd1-603e-44a5-b2a6-1234dbcd5723";
+        String fromAddress = username;
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\","+
+            "    {" +
+            "      \"create\": { \"" + messageCreationId  + "\" : {" +
+            "        \"from\": { \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}," +
+            "        \"to\": [{ \"name\": \"BOB\", \"email\": \"someone@example.com\"}]," +
+            "        \"subject\": \"Thank you for joining example.com!\"," +
+            "        \"textBody\": \"Hello someone, and thank you for joining example.com!\"," +
+            "        \"mailboxIds\": [\"" + getOutboxId() + "\"]" +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+
+        given()
+            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
+            .header("Authorization", accessToken.serialize())
+            .body(requestBody)
+        .when()
+            .post("/jmap")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body(NAME, equalTo("messagesSet"))
+            .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
+            // note that assertions on result message had to be split between
+            // string-typed values and boolean-typed value assertions on the same .created entry
+            // make sure only one creation has been processed
+            .body(ARGUMENTS + ".created", aMapWithSize(1))
+            // assert server-set attributes are returned
+            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), Matchers.allOf(
+                hasEntry(equalTo("id"), not(isEmptyOrNullString())),
+                hasEntry(equalTo("blobId"), not(isEmptyOrNullString())),
+                hasEntry(equalTo("threadId"), not(isEmptyOrNullString())),
+                hasEntry(equalTo("size"), not(isEmptyOrNullString()))
+            )))
+            // assert that message flags are all unset
+            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), Matchers.allOf(
+                hasEntry(equalTo("isDraft"), equalTo(false)),
+                hasEntry(equalTo("isUnread"), equalTo(false)),
+                hasEntry(equalTo("isFlagged"), equalTo(false)),
+                hasEntry(equalTo("isAnswered"), equalTo(false))
+            )))
+        ;
+    }
+
+    @Test
     public void setMessagesShouldCreateMessageInOutboxWhenSendingMessage() throws MailboxException {
         // Given
         String messageCreationId = "user|inbox|1";
