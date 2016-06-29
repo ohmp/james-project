@@ -743,25 +743,7 @@ public abstract class SetMessagesMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messagesSet"))
             .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
-            // note that assertions on result message had to be split between
-            // string-typed values and boolean-typed value assertions on the same .created entry
-            // make sure only one creation has been processed
-            .body(ARGUMENTS + ".created", aMapWithSize(1))
-            // assert server-set attributes are returned
-            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), Matchers.allOf(
-                hasEntry(equalTo("id"), not(isEmptyOrNullString())),
-                hasEntry(equalTo("blobId"), not(isEmptyOrNullString())),
-                hasEntry(equalTo("threadId"), not(isEmptyOrNullString())),
-                hasEntry(equalTo("size"), not(isEmptyOrNullString()))
-            )))
-            // assert that message flags are all unset
-            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), Matchers.allOf(
-                hasEntry(equalTo("isDraft"), equalTo(false)),
-                hasEntry(equalTo("isUnread"), equalTo(false)),
-                hasEntry(equalTo("isFlagged"), equalTo(false)),
-                hasEntry(equalTo("isAnswered"), equalTo(false))
-            )))
-        ;
+            .body(ARGUMENTS + ".created", aMapWithSize(1));
     }
 
     @Test
