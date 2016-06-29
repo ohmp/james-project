@@ -732,8 +732,6 @@ public abstract class SetMessagesMethodTest {
             "]";
 
         given()
-            .accept(ContentType.JSON)
-            .contentType(ContentType.JSON)
             .header("Authorization", accessToken.serialize())
             .body(requestBody)
         .when()
