@@ -637,6 +637,7 @@ public class RemoteDelivery extends GenericMailet implements Runnable {
         }
         Collection<MailAddress> recipients = mail.getRecipients();
 
+        mail.setAttribute(RETRY_ATTRIBUTE_KEY, 0);
         if (usePriority) {
 
             // Use highest prio for new emails. See JAMES-1311
@@ -857,6 +858,7 @@ public class RemoteDelivery extends GenericMailet implements Runnable {
         try {
             return Optional.fromNullable((Integer) mail.getAttribute(RETRY_ATTRIBUTE_KEY)).or(0);
         } catch(ClassCastException e) {
+            log("Unable to parse retries for mail " + mail.getName(), e);
             return 0;
         }
     }
