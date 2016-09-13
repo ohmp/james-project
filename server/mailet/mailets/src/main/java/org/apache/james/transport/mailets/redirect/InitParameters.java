@@ -52,4 +52,6 @@ public interface InitParameters {
     boolean isDebug();
 
     boolean isStatic();
+
+    String asString();
 }
