@@ -142,12 +142,13 @@ public abstract class SetVacationResponseTest {
 
     @Test
     public void setVacationResponseShouldContainAnErrorWhenInvalidId() {
+        int id = 1;
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
                 "\"update\":{" +
                     "\"singleton\" : {" +
-                        "\"id\": \"1\"," +
+            "\"id\": \"" + id + "\"," +
                         "\"isEnabled\": \"true\"," +
                         "\"textBody\": \"Message explaining my wonderful vacations\"" +
                     "}" +
@@ -165,7 +166,7 @@ public abstract class SetVacationResponseTest {
             .statusCode(200)
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".notUpdated.singleton.type", equalTo("invalidArguments"))
-            .body(ARGUMENTS + ".notUpdated.singleton.description", equalTo("There is one VacationResponse object per account, with isEnabled not set to null and id set to \"singleton\""));
+            .body(ARGUMENTS + ".notUpdated.singleton.description", equalTo("There is one VacationResponse object per account, with id set to \\\"singleton\\\" and not to " + id));
     }
 
     @Test
