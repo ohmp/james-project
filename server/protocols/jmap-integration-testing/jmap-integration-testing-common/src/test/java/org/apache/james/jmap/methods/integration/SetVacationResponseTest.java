@@ -148,7 +148,7 @@ public abstract class SetVacationResponseTest {
             "{" +
                 "\"update\":{" +
                     "\"singleton\" : {" +
-            "\"id\": \"" + id + "\"," +
+                        "\"id\": \"" + id + "\"," +
                         "\"isEnabled\": \"true\"," +
                         "\"textBody\": \"Message explaining my wonderful vacations\"" +
                     "}" +
