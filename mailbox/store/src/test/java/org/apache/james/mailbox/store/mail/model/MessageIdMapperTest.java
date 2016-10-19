@@ -46,6 +46,7 @@ import org.xenei.junit.contract.Contract;
 import org.xenei.junit.contract.ContractTest;
 import org.xenei.junit.contract.IProducer;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @Contract(MapperProvider.class)
@@ -140,7 +141,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     public void findMailboxesShouldReturnTwoMailboxesWhenMessageExistsInTwoMailboxes() throws MailboxException {
         saveMessages();
 
-        SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
+        SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1, Optional.<MessageId> absent());
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
         sut.save(message1InOtherMailbox);
 
@@ -172,7 +173,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
         message1.setUid(mapperProvider.generateMessageUid());
         sut.save(message1);
 
-        SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
+        SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1, Optional.<MessageId> absent());
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
         sut.save(message1InOtherMailbox);
 
@@ -184,7 +185,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     public void saveShouldWorkWhenSavingTwoTimesWithSameMessageIdAndSameMailboxId() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
         sut.save(message1);
-        SimpleMailboxMessage copiedMessage = SimpleMailboxMessage.copy(message1.getMailboxId(), message1);
+        SimpleMailboxMessage copiedMessage = SimpleMailboxMessage.copy(message1.getMailboxId(), message1, Optional.<MessageId> absent());
         copiedMessage.setUid(mapperProvider.generateMessageUid());
         sut.save(copiedMessage);
 
@@ -214,7 +215,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
         message1.setUid(mapperProvider.generateMessageUid());
         sut.save(message1);
 
-        SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
+        SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1, Optional.<MessageId> absent());
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
         sut.save(message1InOtherMailbox);
 
@@ -229,7 +230,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     public void deleteShouldDeleteMessageIndicesWhenStoredTwoTimesInTheSameMailbox() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
         sut.save(message1);
-        SimpleMailboxMessage copiedMessage = SimpleMailboxMessage.copy(message1.getMailboxId(), message1);
+        SimpleMailboxMessage copiedMessage = SimpleMailboxMessage.copy(message1.getMailboxId(), message1, Optional.<MessageId> absent());
         copiedMessage.setUid(mapperProvider.generateMessageUid());
         sut.save(copiedMessage);
 
