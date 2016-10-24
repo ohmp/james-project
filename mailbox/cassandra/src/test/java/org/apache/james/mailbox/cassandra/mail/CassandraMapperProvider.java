@@ -68,57 +68,53 @@ public class CassandraMapperProvider implements MapperProvider {
     
     @Override
     public MailboxMapper createMailboxMapper() throws MailboxException {
-        CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY);
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
                 new CassandraModSeqProvider(cassandra.getConf()),
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
-                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY, imapUidDAO),
+                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY),
                 new CassandraMessageIdDAO(cassandra.getConf(), MESSAGE_ID_FACTORY),
-                imapUidDAO
+                new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY)
             ).getMailboxMapper(new MockMailboxSession("benwa"));
     }
 
     @Override
     public MessageMapper createMessageMapper() throws MailboxException {
-        CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY);
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
                 new CassandraModSeqProvider(cassandra.getConf()),
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
-                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY, imapUidDAO),
+                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY),
                 new CassandraMessageIdDAO(cassandra.getConf(), MESSAGE_ID_FACTORY),
-                imapUidDAO
+                new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY)
             ).getMessageMapper(new MockMailboxSession("benwa"));
     }
 
     @Override
     public MessageIdMapper createMessageIdMapper() throws MailboxException {
-        CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY);
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
                 new CassandraModSeqProvider(cassandra.getConf()),
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
-                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY, imapUidDAO),
+                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY),
                 new CassandraMessageIdDAO(cassandra.getConf(), MESSAGE_ID_FACTORY),
-                imapUidDAO
+                new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY)
             ).getMessageIdMapper(new MockMailboxSession("benwa"));
     }
 
     @Override
     public AttachmentMapper createAttachmentMapper() throws MailboxException {
-        CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY);
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
                 new CassandraModSeqProvider(cassandra.getConf()),
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
-                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY, imapUidDAO),
+                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY),
                 new CassandraMessageIdDAO(cassandra.getConf(), MESSAGE_ID_FACTORY),
-                imapUidDAO
+                new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY)
             ).getAttachmentMapper(new MockMailboxSession("benwa"));
     }
 
@@ -149,15 +145,14 @@ public class CassandraMapperProvider implements MapperProvider {
 
     @Override
     public AnnotationMapper createAnnotationMapper() throws MailboxException {
-        CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY);
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
                 new CassandraModSeqProvider(cassandra.getConf()),
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
-                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY, imapUidDAO),
+                new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(), MESSAGE_ID_FACTORY),
                 new CassandraMessageIdDAO(cassandra.getConf(), MESSAGE_ID_FACTORY),
-                imapUidDAO
+                new CassandraMessageIdToImapUidDAO(cassandra.getConf(), MESSAGE_ID_FACTORY)
             ).getAnnotationMapper(new MockMailboxSession("benwa"));
     }
 
