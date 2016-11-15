@@ -81,10 +81,9 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     private FunctionChainer<Pair<MailboxMessage, Stream<MessageAttachment>>, SimpleMailboxMessage> toMailboxMessages() {
-        return Throwing.function(pair -> {
-            return SimpleMailboxMessage.cloneWithAttachments(pair.getLeft(),
-                pair.getRight().collect(Guavate.toImmutableList()));
-        });
+        return Throwing.function(pair -> SimpleMailboxMessage.cloneWithAttachments(
+            pair.getLeft(),
+            pair.getRight().collect(Guavate.toImmutableList())));
     }
 
     @Override
