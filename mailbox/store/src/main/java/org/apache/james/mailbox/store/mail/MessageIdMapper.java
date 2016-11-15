@@ -26,11 +26,10 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.Message;
 
 public interface MessageIdMapper {
 
-    List<Message> find(List<MessageId> messageIds, FetchType fetchType);
+    List<MailboxMessage> find(List<MessageId> messageIds, FetchType fetchType);
 
     List<MailboxId> findMailboxes(MessageId messageId);
 
