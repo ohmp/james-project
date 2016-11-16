@@ -111,24 +111,42 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public void delete(MessageId messageId, MailboxId mailboxId) {
+    public void delete(MessageId messageId, List<MailboxId> mailboxIds) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
-        CassandraId cassandraMailboxId = (CassandraId) mailboxId;
 
-        CompletableFuture<Void> imapUiFuture = imapUidDAO.delete(cassandraMessageId, cassandraMailboxId);
+        CompletableFuture<Void> imapUiFuture = deleteInMessageIdToMailboxMapping(mailboxIds, cassandraMessageId);
         List<ComposedMessageId> composedMessageIds = retrieveMessageIds(cassandraMessageId);
-        CompletableFuture<Void> messageIdFuture = composedMessageIds.stream()
-            .filter(composedMessageId -> composedMessageId.getMailboxId().equals(mailboxId))
-            .findAny()
-            .map(composedMessageId -> messageIdDAO.delete(cassandraMailboxId, composedMessageId.getUid()))
-            .orElse(CompletableFuture.completedFuture(null));
-        CompletableFuture<Void> messageFuture = composedMessageIds.stream()
-            .filter(composedMessageId -> !composedMessageId.getMailboxId().equals(mailboxId))
+        CompletableFuture<Void> messageIdFuture = deleteInMailboxToMessageIdMapping(mailboxIds, composedMessageIds);
+        CompletableFuture<Void> messageFuture = deleteInMessageTable(mailboxIds, cassandraMessageId, composedMessageIds);
+
+        CompletableFuture.allOf(imapUiFuture, messageFuture, messageIdFuture);
+    }
+
+    private CompletableFuture<Void> deleteInMessageTable(List<MailboxId> mailboxIds, CassandraMessageId cassandraMessageId, List<ComposedMessageId> composedMessageIds) {
+        return composedMessageIds.stream()
+            .filter(composedMessageId -> !isInSpecifiedList(mailboxIds, composedMessageId))
             .findAny()
             .map(any -> CompletableFuture.completedFuture((Void) null))
             .orElse(messageDAO.delete(cassandraMessageId));
+    }
 
-        CompletableFuture.allOf(imapUiFuture, messageFuture, messageIdFuture);
+    private CompletableFuture<Void> deleteInMailboxToMessageIdMapping(List<MailboxId> mailboxIds, List<ComposedMessageId> composedMessageIds) {
+        return composedMessageIds.stream()
+            .filter(composedMessageId -> isInSpecifiedList(mailboxIds, composedMessageId))
+            .map(composedMessageId -> messageIdDAO.delete((CassandraId) composedMessageId.getMailboxId(), composedMessageId.getUid()))
+            .reduce(CompletableFuture::allOf)
+            .orElse(CompletableFuture.completedFuture(null));
+    }
+
+    private CompletableFuture<Void> deleteInMessageIdToMailboxMapping(List<MailboxId> mailboxIds, CassandraMessageId cassandraMessageId) {
+        return mailboxIds.stream()
+            .map(mailboxId -> imapUidDAO.delete(cassandraMessageId, (CassandraId) mailboxId))
+            .reduce(CompletableFuture::allOf)
+            .orElse(CompletableFuture.completedFuture(null));
+    }
+
+    private boolean isInSpecifiedList(List<MailboxId> mailboxIds, ComposedMessageId composedMessageId) {
+        return mailboxIds.contains(composedMessageId.getMailboxId());
     }
 
     private List<ComposedMessageId> retrieveMessageIds(CassandraMessageId cassandraMessageId) {
