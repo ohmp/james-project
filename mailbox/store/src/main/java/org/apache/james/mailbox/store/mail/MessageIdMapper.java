@@ -27,6 +27,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -40,7 +41,7 @@ public interface MessageIdMapper {
 
     List<MailboxId> findMailboxes(MessageId messageId);
 
-    void save(MailboxMessage mailboxMessage) throws MailboxNotFoundException, MailboxException;
+    MessageMetaData save(MailboxMessage mailboxMessage) throws MailboxNotFoundException, MailboxException;
 
     void delete(MessageId messageId);
 
