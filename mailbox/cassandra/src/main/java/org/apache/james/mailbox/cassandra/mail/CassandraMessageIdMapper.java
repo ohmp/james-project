@@ -25,7 +25,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.mail.Flags;
+
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
+import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -35,36 +40,51 @@ import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.store.FlagsUpdateCalculator;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
+import org.apache.james.mailbox.store.mail.ModSeqProvider;
+import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.functions.FunctionChainer;
 import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableList;
 
 public class CassandraMessageIdMapper implements MessageIdMapper {
 
+    public static final boolean DEFAULT_STOP_IF_DELETED = true;
     private final MailboxMapper mailboxMapper;
     private final AttachmentMapper attachmentMapper;
     private final CassandraMessageIdToImapUidDAO imapUidDAO;
     private final CassandraMessageIdDAO messageIdDAO;
     private final CassandraMessageDAO messageDAO;
+    private final ModSeqProvider modSeqProvider;
+    private final MailboxSession mailboxSession;
 
     public CassandraMessageIdMapper(MailboxMapper mailboxMapper, AttachmentMapper attachmentMapper,
-                                    CassandraMessageIdToImapUidDAO imapUidDAO, CassandraMessageIdDAO messageIdDAO, CassandraMessageDAO messageDAO) {
+                                    CassandraMessageIdToImapUidDAO imapUidDAO, CassandraMessageIdDAO messageIdDAO,
+                                    CassandraMessageDAO messageDAO, ModSeqProvider modSeqProvider, MailboxSession mailboxSession) {
         this.mailboxMapper = mailboxMapper;
         this.attachmentMapper = attachmentMapper;
         this.imapUidDAO = imapUidDAO;
         this.messageIdDAO = messageIdDAO;
         this.messageDAO = messageDAO;
+        this.modSeqProvider = modSeqProvider;
+        this.mailboxSession = mailboxSession;
     }
 
     @Override
     public List<MailboxMessage> find(List<MessageId> messageIds, FetchType fetchType) {
+        return findAsStream(messageIds, fetchType)
+            .collect(Guavate.toImmutableList());
+    }
+
+    private Stream<SimpleMailboxMessage> findAsStream(List<MessageId> messageIds, FetchType fetchType) {
         List<ComposedMessageIdWithMetaData> composedMessageIds = messageIds.stream()
             .map(messageId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty()))
             .flatMap(CompletableFuture::join)
@@ -72,8 +92,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         return messageDAO.retrieveMessages(composedMessageIds, fetchType, Optional.empty()).join()
             .map(loadAttachments())
             .map(toMailboxMessages())
-            .sorted(Comparator.comparing(MailboxMessage::getUid))
-            .collect(Guavate.toImmutableList());
+            .sorted(Comparator.comparing(MailboxMessage::getUid));
     }
 
     private Function<Pair<MailboxMessage, Stream<MessageAttachmentById>>, Pair<MailboxMessage, Stream<MessageAttachment>>> loadAttachments() {
@@ -169,5 +188,24 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         CassandraId mailboxId = (CassandraId) composedMessageId.getMailboxId();
         return CompletableFuture.allOf(imapUidDAO.delete(messageId, mailboxId),
             messageIdDAO.delete(mailboxId, composedMessageId.getUid()));
+    }
+
+    @Override
+    public void setFlags(Flags newState, MessageManager.FlagsUpdateMode replace, MessageId messageId, Mailbox mailbox) throws MailboxException {
+        long oldModSeq = modSeqProvider.highestModSeq(mailboxSession, mailbox);
+        new FunctionRunnerWithRetry(1000)
+            .execute(() -> tryFlagsUpdate(newState, replace, messageId, mailbox, oldModSeq));
+    }
+
+    private Boolean tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode replace, MessageId messageId, Mailbox mailbox, long oldModSeq) throws MailboxException {
+        long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailbox);
+        return findAsStream(ImmutableList.of(messageId), FetchType.Metadata)
+                .findAny()
+                .map(metadata -> new ComposedMessageIdWithMetaData(
+                    new ComposedMessageId(mailbox.getMailboxId(), messageId, metadata.getUid()),
+                    new FlagsUpdateCalculator(metadata.createFlags(), replace).buildNewFlags(newState),
+                    newModSeq))
+                .map(composedMessageIdWithMetaData -> imapUidDAO.updateMetadata(composedMessageIdWithMetaData, oldModSeq).join())
+                .orElse(DEFAULT_STOP_IF_DELETED);
     }
 }
