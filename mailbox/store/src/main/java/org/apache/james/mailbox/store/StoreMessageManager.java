@@ -72,6 +72,7 @@ import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
+import org.apache.james.mailbox.store.mail.model.FlagsOperations;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
@@ -362,19 +363,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
                 propertyBuilder.setTextualLineCount(lines);
             }
 
-            final Flags flags;
-            if (flagsToBeSet == null) {
-                flags = new Flags();
-            } else {
-                flags = flagsToBeSet;
-
-                // Check if we need to trim the flags
-                trimFlags(flags, mailboxSession);
-
-            }
-            if (isRecent) {
-                flags.add(Flags.Flag.RECENT);
-            }
+            final Flags flags = FlagsOperations.prepareForAppend(flagsToBeSet, isRecent, getPermanentFlags(mailboxSession));
             if (internalDate == null) {
                 internalDate = new Date();
             }
@@ -515,60 +504,25 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     }
 
     /**
-     * Check if the given {@link Flags} contains {@link Flags} which are not
-     * included in the returned {@link Flags} of
-     * {@link #getPermanentFlags(MailboxSession)}. If any are found, these are
-     * removed from the given {@link Flags} instance. The only exception is the
-     * {@link Flag#RECENT} flag.
-     * 
-     * This flag is never removed!
-     * 
-     * @param flags
-     * @param session
-     */
-    private void trimFlags(Flags flags, MailboxSession session) {
-
-        Flags permFlags = getPermanentFlags(session);
-
-        Flag[] systemFlags = flags.getSystemFlags();
-        for (Flag f : systemFlags) {
-            if (f != Flag.RECENT && permFlags.contains(f) == false) {
-                flags.remove(f);
-            }
-        }
-        // if the permFlags contains the special USER flag we can skip this as
-        // all user flags are allowed
-        if (permFlags.contains(Flags.Flag.USER) == false) {
-            String[] uFlags = flags.getUserFlags();
-            for (String uFlag : uFlags) {
-                if (permFlags.contains(uFlag) == false) {
-                    flags.remove(uFlag);
-                }
-            }
-        }
-
-    }
-
-    /**
      * @see org.apache.james.mailbox.MessageManager#setFlags(javax.mail.Flags,
      *      boolean, boolean, org.apache.james.mailbox.model.MessageRange,
      *      org.apache.james.mailbox.MailboxSession)
      */
-    public Map<MessageUid, Flags> setFlags(final Flags flags, final FlagsUpdateMode flagsUpdateMode, final MessageRange set, MailboxSession mailboxSession) throws MailboxException {
+    public Map<MessageUid, Flags> setFlags(Flags flags, final FlagsUpdateMode flagsUpdateMode, final MessageRange set, MailboxSession mailboxSession) throws MailboxException {
 
         if (!isWriteable(mailboxSession)) {
             throw new ReadOnlyException(getMailboxPath(), mailboxSession.getPathDelimiter());
         }
         final SortedMap<MessageUid, Flags> newFlagsByUid = new TreeMap<MessageUid, Flags>();
 
-        trimFlags(flags, mailboxSession);
+        final Flags trimedFlags = FlagsOperations.trim(flags, getPermanentFlags(mailboxSession));
 
         final MessageMapper messageMapper = mapperFactory.getMessageMapper(mailboxSession);
 
         Iterator<UpdatedFlags> it = messageMapper.execute(new Mapper.Transaction<Iterator<UpdatedFlags>>() {
 
             public Iterator<UpdatedFlags> run() throws MailboxException {
-                return messageMapper.updateFlags(getMailboxEntity(), new FlagsUpdateCalculator(flags, flagsUpdateMode), set);
+                return messageMapper.updateFlags(getMailboxEntity(), new FlagsUpdateCalculator(trimedFlags, flagsUpdateMode), set);
             }
         });
 
