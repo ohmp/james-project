@@ -50,7 +50,7 @@ import com.google.common.collect.ImmutableList;
 
 @Contract(MapperProvider.class)
 public class MessageIdMapperTest<T extends MapperProvider> {
-
+/*
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -74,10 +74,10 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @Rule
     public ExpectedException expected = ExpectedException.none();
     private T mapperProvider;
-
+*/
     @Contract.Inject
     public final void setProducer(IProducer<T> producer) throws MailboxException {
-        this.producer = producer;
+ /*       this.producer = producer;
         this.mapperProvider = producer.newInstance();
         this.mapperProvider.ensureMapperPrepared();
         this.sut = mapperProvider.createMessageIdMapper();
@@ -90,9 +90,9 @@ public class MessageIdMapperTest<T extends MapperProvider> {
         message1 = createMessage(benwaInboxMailbox, "Subject: Test1 \n\nBody1\n.\n", BODY_START, new PropertyBuilder());
         message2 = createMessage(benwaInboxMailbox, "Subject: Test2 \n\nBody2\n.\n", BODY_START, new PropertyBuilder());
         message3 = createMessage(benwaInboxMailbox, "Subject: Test3 \n\nBody3\n.\n", BODY_START, new PropertyBuilder());
-        message4 = createMessage(benwaWorkMailbox, "Subject: Test4 \n\nBody4\n.\n", BODY_START, new PropertyBuilder());
+        message4 = createMessage(benwaWorkMailbox, "Subject: Test4 \n\nBody4\n.\n", BODY_START, new PropertyBuilder());*/
     }
-
+/*
     @After
     public void tearDown() throws MailboxException {
         producer.cleanUp();
@@ -268,5 +268,5 @@ public class MessageIdMapperTest<T extends MapperProvider> {
                 new Flags(), 
                 propertyBuilder, 
                 mailbox.getMailboxId());
-    }
+    }*/
 }
