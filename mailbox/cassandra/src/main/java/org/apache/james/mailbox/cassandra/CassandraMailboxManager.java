@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
@@ -35,7 +36,9 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
 import org.apache.james.mailbox.store.Authenticator;
+import org.apache.james.mailbox.store.FullPermanenentFlagsProvider;
 import org.apache.james.mailbox.store.StoreMailboxManager;
+import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.apache.james.mailbox.store.StoreMessageManager;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
@@ -101,6 +104,17 @@ public class CassandraMailboxManager extends StoreMailboxManager {
             getQuotaRootResolver(),
             getMessageParser(),
             getMessageIdFactory());
+    }
+
+    @Override
+    public MessageIdManager getMessageIdManager() {
+        return new StoreMessageIdManager(getMapperFactory(),
+            getEventDispatcher(),
+            getMessageIdFactory(),
+            getMessageParser(),
+            new FullPermanenentFlagsProvider(),
+            getQuotaManager(),
+            getQuotaRootResolver());
     }
 
 }
