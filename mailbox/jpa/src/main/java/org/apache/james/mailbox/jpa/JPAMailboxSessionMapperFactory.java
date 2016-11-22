@@ -97,4 +97,13 @@ public class JPAMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
         return new JPAAnnotationMapper(entityManagerFactory);
     }
 
+    @Override
+    public UidProvider getUidProvider() {
+        return uidProvider;
+    }
+
+    @Override
+    public ModSeqProvider getModSeqProvider() {
+        return modSeqProvider;
+    }
 }

@@ -31,7 +31,9 @@ import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
+import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.NoopAttachmentMapper;
+import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.user.SubscriptionMapper;
 
 public class MaildirMailboxSessionMapperFactory extends
@@ -81,4 +83,13 @@ public class MaildirMailboxSessionMapperFactory extends
         throw new NotImplementedException();
     }
 
+    @Override
+    public UidProvider getUidProvider() {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public ModSeqProvider getModSeqProvider() {
+        throw new NotImplementedException();
+    }
 }

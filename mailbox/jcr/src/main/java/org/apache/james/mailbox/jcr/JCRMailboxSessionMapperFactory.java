@@ -97,4 +97,13 @@ public class JCRMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
         throw new NotImplementedException();
     }
 
+    @Override
+    public UidProvider getUidProvider() {
+        return uidProvider;
+    }
+
+    @Override
+    public ModSeqProvider getModSeqProvider() {
+        return modSeqProvider;
+    }
 }
