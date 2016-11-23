@@ -49,9 +49,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-public class MessageReader {
+public class MimeMessageReader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MessageReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MimeMessageReader.class);
 
     public class MessageInformation {
         private final PropertyBuilder propertyBuilder;
@@ -90,28 +90,21 @@ public class MessageReader {
     }
 
     private final MessageParser messageParser;
+    private final InputStream msgIn;
     private File file;
     private TeeInputStream tmpMsgIn;
     private BodyOffsetInputStream bIn;
     private FileOutputStream out;
     private SharedFileInputStream contentIn;
 
-    public MessageReader(MessageParser messageParser) {
-        this.messageParser = messageParser;
-    }
-
-    public void init(InputStream msgIn) throws IOException {
+    public MimeMessageReader(MessageParser messageParser, InputStream msgIn) {
         Preconditions.checkNotNull(msgIn);
-        // Create a temporary file and copy the message to it. We will work
-        // with the file as
-        // source for the InputStream
-        file = File.createTempFile("imap", ".msg");
-        out = new FileOutputStream(file);
-        tmpMsgIn = new TeeInputStream(msgIn, out);
-        bIn = new BodyOffsetInputStream(tmpMsgIn);
+        this.messageParser = messageParser;
+        this.msgIn = msgIn;
     }
 
     public MessageInformation read() throws IOException, MimeException {
+        init();
         PropertyBuilder propertyBuilder = buildProperties(bIn);
         finishCopyInitialStream();
         int bodyStartOctet = (int) bIn.getBodyStartOffset();
@@ -125,6 +118,16 @@ public class MessageReader {
         final List<MessageAttachment> attachments = extractAttachments(contentIn);
 
         return new MessageInformation(propertyBuilder, size, bodyStartOctet, attachments, contentIn);
+    }
+
+    private void init() throws IOException {
+        // Create a temporary file and copy the message to it. We will work
+        // with the file as
+        // source for the InputStream
+        file = File.createTempFile("imap", ".msg");
+        out = new FileOutputStream(file);
+        tmpMsgIn = new TeeInputStream(msgIn, out);
+        bIn = new BodyOffsetInputStream(tmpMsgIn);
     }
 
     private void finishCopyInitialStream() throws IOException {

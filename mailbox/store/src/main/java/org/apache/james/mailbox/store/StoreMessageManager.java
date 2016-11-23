@@ -257,10 +257,9 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
             throw new ReadOnlyException(getMailboxPath(), mailboxSession.getPathDelimiter());
         }
 
-        MessageReader messageReader = new MessageReader(messageParser);
+        MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, msgIn);
         try {
-            messageReader.init(msgIn);
-            MessageReader.MessageInformation messageInformation = messageReader.read();
+            MimeMessageReader.MessageInformation messageInformation = mimeMessageReader.read();
 
             final MailboxMessage message = createMessage(Optional.fromNullable(internalDate).or(new Date()),
                 messageInformation.getSize(),
@@ -291,7 +290,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         } catch (MimeException e) {
             throw new MailboxException("Unable to parse message", e);
         } finally {
-            messageReader.close();
+            mimeMessageReader.close();
         }
     }
 
