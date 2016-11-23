@@ -20,11 +20,8 @@
 package org.apache.james.mailbox.store;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import javax.mail.Flags;
 import javax.mail.internet.SharedInputStream;
@@ -54,16 +51,15 @@ import org.apache.james.mailbox.store.quota.QuotaChecker;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 public class StoreMessageIdManager implements MessageIdManager {
 
-    private static final Function<MailboxMessage, MetadataWithMailbox> EXTRACT_METADATA_FUNCTION = new Function<MailboxMessage, MetadataWithMailbox>() {
+    private static final Function<MailboxMessage, MetadataWithMailboxId> EXTRACT_METADATA_FUNCTION = new Function<MailboxMessage, MetadataWithMailboxId>() {
         @Override
-        public MetadataWithMailbox apply(MailboxMessage mailboxMessage) {
-            return new MetadataWithMailbox(new SimpleMessageMetaData(mailboxMessage), mailboxMessage.getMailboxId());
+        public MetadataWithMailboxId apply(MailboxMessage mailboxMessage) {
+            return new MetadataWithMailboxId(new SimpleMessageMetaData(mailboxMessage), mailboxMessage.getMailboxId());
         }
     };
 
@@ -88,17 +84,14 @@ public class StoreMessageIdManager implements MessageIdManager {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
         Map<MailboxId, UpdatedFlags> updatedFlags = messageIdMapper.setFlags(newState, replace, messageId);
         for (Map.Entry<MailboxId, UpdatedFlags> entry : updatedFlags.entrySet()) {
-            dispatchFlagsChange(mailboxSession, entry);
+            dispatchFlagsChange(mailboxSession, entry.getKey(), entry.getValue());
         }
     }
 
-    private void dispatchFlagsChange(MailboxSession mailboxSession, Map.Entry<MailboxId, UpdatedFlags> entry) throws MailboxException {
-        Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).findMailboxById(entry.getKey());
-        if (!entry.getValue().getNewFlags().equals(entry.getValue().getOldFlags())) {
-            dispatcher.flagsUpdated(mailboxSession,
-                ImmutableList.of(entry.getValue().getUid()),
-                mailbox,
-                ImmutableList.of(entry.getValue()));
+    private void dispatchFlagsChange(MailboxSession mailboxSession, MailboxId mailboxId, UpdatedFlags updatedFlags) throws MailboxException {
+        Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).findMailboxById(mailboxId);
+        if (updatedFlags.flagsChanged()) {
+            dispatcher.flagsUpdated(mailboxSession, updatedFlags.getUid(), mailbox, updatedFlags);
         }
     }
 
@@ -107,10 +100,10 @@ public class StoreMessageIdManager implements MessageIdManager {
         try {
             MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.createMessageIdMapper(mailboxSession);
             return FluentIterable.from(messageIdMapper.find(messageIds, MessageMapper.FetchType.getFetchType(minimal)))
-                .transform(createMessageToResult(minimal))
+                .transform(messageResultConverter(minimal))
                 .toList();
-        } catch (RuntimeException runtime) {
-            throw unwrap(runtime);
+        } catch (WrappedException wrappedException) {
+            throw wrappedException.unwrap();
         }
     }
 
@@ -119,17 +112,15 @@ public class StoreMessageIdManager implements MessageIdManager {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
 
-        Iterable<MetadataWithMailbox> metadatasWithMailbox = FluentIterable
+        Iterable<MetadataWithMailboxId> metadatasWithMailbox = FluentIterable
             .from(messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata))
-            .filter(createIsInMailboxesPredicate(mailboxIds))
+            .filter(inMailbox(mailboxIds))
             .transform(EXTRACT_METADATA_FUNCTION);
 
         messageIdMapper.delete(messageId, mailboxIds);
 
-        for (MetadataWithMailbox metadataWithMailbox: metadatasWithMailbox) {
-            Map<MessageUid, MessageMetaData> map = new HashMap<MessageUid, MessageMetaData>();
-            map.put(metadataWithMailbox.messageMetaData.getUid(), metadataWithMailbox.messageMetaData);
-            dispatcher.expunged(mailboxSession, map, mailboxMapper.findMailboxById(metadataWithMailbox.mailboxId));
+        for (MetadataWithMailboxId metadataWithMailboxId : metadatasWithMailbox) {
+            dispatcher.expunged(mailboxSession, metadataWithMailboxId.messageMetaData, mailboxMapper.findMailboxById(metadataWithMailboxId.mailboxId));
         }
     }
 
@@ -164,11 +155,12 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private void setInMailboxes(MessageIdMapper messageIdMapper, MailboxMessage mailboxMessage, List<MailboxId> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
         for (MailboxId mailboxId : mailboxIds) {
 
             SimpleMailboxMessage copy = SimpleMailboxMessage.copy(mailboxId, mailboxMessage);
             MessageMetaData metaData = save(mailboxSession, messageIdMapper, mailboxId, copy);
-            dispatchAddedMessage(mailboxId, mailboxSession, metaData);
+            dispatcher.added(mailboxSession, metaData, mailboxMapper.findMailboxById(mailboxId));
         }
     }
 
@@ -189,27 +181,20 @@ public class StoreMessageIdManager implements MessageIdManager {
         return new SimpleMailboxMessage(messageIdFactory.generate(), internalDate, size, bodyStartOctet, content, flags, propertyBuilder, mailboxId, attachments);
     }
 
-    private void dispatchAddedMessage(MailboxId mailboxId, MailboxSession mailboxSession, MessageMetaData messageMetaData) throws MailboxException {
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
-        SortedMap<MessageUid, MessageMetaData> map = new TreeMap<MessageUid, MessageMetaData>();
-        map.put(messageMetaData.getUid(), messageMetaData);
-        dispatcher.added(mailboxSession, map, mailboxMapper.findMailboxById(mailboxId));
-    }
-
-    private Function<MailboxMessage, MessageResult> createMessageToResult(final MessageResult.FetchGroup minimal) {
+    private Function<MailboxMessage, MessageResult> messageResultConverter(final MessageResult.FetchGroup minimal) {
         return new Function<MailboxMessage, MessageResult>() {
             @Override
             public MessageResult apply(MailboxMessage input) {
                 try {
                     return ResultUtils.loadMessageResult(input, minimal);
                 } catch (MailboxException e) {
-                    throw Throwables.propagate(e);
+                    throw new WrappedException(e);
                 }
             }
         };
     }
 
-    private Predicate<MailboxMessage> createIsInMailboxesPredicate(final List<MailboxId> mailboxIds) {
+    private Predicate<MailboxMessage> inMailbox(final List<MailboxId> mailboxIds) {
         return new Predicate<MailboxMessage>() {
             @Override
             public boolean apply(MailboxMessage mailboxMessage) {
@@ -227,20 +212,25 @@ public class StoreMessageIdManager implements MessageIdManager {
         };
     }
 
-    private RuntimeException unwrap(RuntimeException runtime) throws MailboxException {
-        if (runtime.getCause() instanceof MailboxException) {
-            throw (MailboxException) runtime.getCause();
-        }
-        throw runtime;
-    }
-
-    private static class MetadataWithMailbox {
+    private static class MetadataWithMailboxId {
         private final MessageMetaData messageMetaData;
         private final MailboxId mailboxId;
 
-        public MetadataWithMailbox(MessageMetaData messageMetaData, MailboxId mailboxId) {
+        public MetadataWithMailboxId(MessageMetaData messageMetaData, MailboxId mailboxId) {
             this.messageMetaData = messageMetaData;
             this.mailboxId = mailboxId;
+        }
+    }
+
+    private static class WrappedException extends RuntimeException {
+        private final MailboxException cause;
+
+        public WrappedException(MailboxException cause) {
+            this.cause = cause;
+        }
+
+        public MailboxException unwrap() throws MailboxException {
+            throw cause;
         }
     }
 }

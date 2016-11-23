@@ -41,6 +41,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.OverQuotaException;
 import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.model.UpdatedFlags;
@@ -130,7 +131,7 @@ public class StoreMessageIdManagerTest {
 
         storeMessageIdManager.delete(messageId, ImmutableList.<MailboxId>of(TEST_ID), session);
 
-        verify(dispatcher).expunged(eq(session), any(SortedMap.class), eq(mailbox));
+        verify(dispatcher).expunged(eq(session), any(MessageMetaData.class), eq(mailbox));
         verifyNoMoreInteractions(dispatcher);
     }
 
@@ -171,7 +172,7 @@ public class StoreMessageIdManagerTest {
 
         storeMessageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(TEST_ID), session);
 
-        verify(dispatcher).added(eq(session), any(SortedMap.class), any(Mailbox.class));
+        verify(dispatcher).added(eq(session), any(MessageMetaData.class), any(Mailbox.class));
         verifyNoMoreInteractions(dispatcher);
     }
 
@@ -217,13 +218,14 @@ public class StoreMessageIdManagerTest {
     public void setFlagsShouldDispatch() throws Exception {
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         Map<MailboxId, UpdatedFlags> mailboxIdUpdatedFlags = new HashMap<MailboxId, UpdatedFlags>();
-        mailboxIdUpdatedFlags.put(TEST_ID, new UpdatedFlags(UID, MOD_SEQ, FLAGS, newFlags));
+        UpdatedFlags updatedFlags = new UpdatedFlags(UID, MOD_SEQ, FLAGS, newFlags);
+        mailboxIdUpdatedFlags.put(TEST_ID, updatedFlags);
         when(messageIdMapper.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId))
             .thenReturn(mailboxIdUpdatedFlags);
 
         storeMessageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, session);
 
-        verify(dispatcher).flagsUpdated(eq(session), any(List.class), any(Mailbox.class), any(List.class));
+        verify(dispatcher).flagsUpdated(session, UID, mailbox, updatedFlags);
         verifyNoMoreInteractions(dispatcher);
     }
 
