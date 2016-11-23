@@ -36,7 +36,6 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
 import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.FullPermanenentFlagsProvider;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.apache.james.mailbox.store.StoreMessageManager;
@@ -111,8 +110,6 @@ public class CassandraMailboxManager extends StoreMailboxManager {
         return new StoreMessageIdManager(getMapperFactory(),
             getEventDispatcher(),
             getMessageIdFactory(),
-            getMessageParser(),
-            new FullPermanenentFlagsProvider(),
             getQuotaManager(),
             getQuotaRootResolver());
     }
