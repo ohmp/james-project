@@ -31,7 +31,6 @@ import java.util.TreeMap;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
-import javax.mail.internet.SharedInputStream;
 
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxPathLocker;
@@ -70,8 +69,8 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.FlagsOperations;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.Message;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
-import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.mailbox.store.quota.QuotaChecker;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
@@ -259,23 +258,17 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, msgIn);
         try {
-            MimeMessageReader.MessageInformation messageInformation = mimeMessageReader.read();
+            Message message = mimeMessageReader.read(messageIdFactory.generate(), Optional.fromNullable(internalDate).or(new Date()));
 
-            final MailboxMessage message = createMessage(Optional.fromNullable(internalDate).or(new Date()),
-                messageInformation.getSize(),
-                messageInformation.getBodyStartOctet(),
-                messageInformation.getContentIn(),
-                FlagsOperations.prepareForAppend(flagsToBeSet, isRecent, getPermanentFlags(mailboxSession)),
-                messageInformation.getPropertyBuilder(),
-                messageInformation.getAttachments());
+            final MailboxMessage mailboxMessage = createMailboxMessage(message, FlagsOperations.prepareForAppend(flagsToBeSet, isRecent, getPermanentFlags(mailboxSession)));
 
-            new QuotaChecker(quotaManager, quotaRootResolver, mailbox).tryAddition(1, messageInformation.getSize());
+            new QuotaChecker(quotaManager, quotaRootResolver, mailbox).tryAddition(1, mailboxMessage.getFullContentOctets());
 
             return locker.executeWithLock(mailboxSession, getMailboxPath(), new MailboxPathLocker.LockAwareExecution<ComposedMessageId>() {
 
                 @Override
                 public ComposedMessageId execute() throws MailboxException {
-                    MessageMetaData data = appendMessageToStore(message, message.getAttachments(), mailboxSession);
+                    MessageMetaData data = appendMessageToStore(mailboxMessage, mailboxMessage.getAttachments(), mailboxSession);
 
                     SortedMap<MessageUid, MessageMetaData> uids = new TreeMap<MessageUid, MessageMetaData>();
                     MessageUid messageUid = data.getUid();
@@ -297,8 +290,8 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     /**
      * Create a new {@link MailboxMessage} for the given data
      */
-    protected MailboxMessage createMessage(Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, List<MessageAttachment> attachments) throws MailboxException {
-        return new SimpleMailboxMessage(messageIdFactory.generate(), internalDate, size, bodyStartOctet, content, flags, propertyBuilder, getMailboxEntity().getMailboxId(), attachments);
+    protected MailboxMessage createMailboxMessage(Message message, Flags flags) throws MailboxException {
+        return SimpleMailboxMessage.copy(message, flags, getMailboxEntity().getMailboxId());
     }
 
     /**

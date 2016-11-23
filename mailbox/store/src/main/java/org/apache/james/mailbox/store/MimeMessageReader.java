@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.util.SharedFileInputStream;
@@ -30,8 +31,11 @@ import javax.mail.util.SharedFileInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.TeeInputStream;
 import org.apache.james.mailbox.model.MessageAttachment;
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.store.mail.model.Message;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleMessage;
 import org.apache.james.mailbox.store.streaming.BodyOffsetInputStream;
 import org.apache.james.mailbox.store.streaming.CountingInputStream;
 import org.apache.james.mime4j.MimeException;
@@ -53,42 +57,6 @@ public class MimeMessageReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(MimeMessageReader.class);
 
-    public class MessageInformation {
-        private final PropertyBuilder propertyBuilder;
-        private final int size;
-        private final int bodyStartOctet;
-        private final List<MessageAttachment> attachments;
-        private final SharedFileInputStream contentIn;
-
-        public MessageInformation(PropertyBuilder propertyBuilder, int size, int bodyStartOctet, List<MessageAttachment> attachments, SharedFileInputStream contentIn) {
-            this.propertyBuilder = propertyBuilder;
-            this.size = size;
-            this.bodyStartOctet = bodyStartOctet;
-            this.attachments = attachments;
-            this.contentIn = contentIn;
-        }
-
-        public PropertyBuilder getPropertyBuilder() {
-            return propertyBuilder;
-        }
-
-        public int getSize() {
-            return size;
-        }
-
-        public int getBodyStartOctet() {
-            return bodyStartOctet;
-        }
-
-        public List<MessageAttachment> getAttachments() {
-            return attachments;
-        }
-
-        public SharedFileInputStream getContentIn() {
-            return contentIn;
-        }
-    }
-
     private final MessageParser messageParser;
     private final InputStream msgIn;
     private File file;
@@ -103,7 +71,7 @@ public class MimeMessageReader {
         this.msgIn = msgIn;
     }
 
-    public MessageInformation read() throws IOException, MimeException {
+    public Message read(MessageId messageId, Date internalDate) throws IOException, MimeException {
         init();
         PropertyBuilder propertyBuilder = buildProperties(bIn);
         finishCopyInitialStream();
@@ -112,12 +80,11 @@ public class MimeMessageReader {
             bodyStartOctet = 0;
         }
         contentIn = new SharedFileInputStream(file);
+        int size = (int) file.length();
+        List<MessageAttachment> attachments = extractAttachments(contentIn);
 
-        final int size = (int) file.length();
-
-        final List<MessageAttachment> attachments = extractAttachments(contentIn);
-
-        return new MessageInformation(propertyBuilder, size, bodyStartOctet, attachments, contentIn);
+        return new SimpleMessage(messageId, contentIn, size, internalDate, propertyBuilder.getSubType(), propertyBuilder.getMediaType(),
+            bodyStartOctet, propertyBuilder.getTextualLineCount(), propertyBuilder.toProperties(), attachments);
     }
 
     private void init() throws IOException {

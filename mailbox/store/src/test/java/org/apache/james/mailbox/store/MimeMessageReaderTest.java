@@ -19,24 +19,36 @@
 
 package org.apache.james.mailbox.store;
 
+import static org.apache.james.mailbox.store.mail.model.StandardNames.MIME_CONTENT_TRANSFER_ENCODING_NAME;
+import static org.apache.james.mailbox.store.mail.model.StandardNames.MIME_CONTENT_TRANSFER_ENCODING_SPACE;
+import static org.apache.james.mailbox.store.mail.model.StandardNames.MIME_CONTENT_TYPE_PARAMETER_BOUNDARY_NAME;
+import static org.apache.james.mailbox.store.mail.model.StandardNames.MIME_CONTENT_TYPE_PARAMETER_CHARSET_NAME;
+import static org.apache.james.mailbox.store.mail.model.StandardNames.MIME_CONTENT_TYPE_PARAMETER_SPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
+import java.util.Date;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 import org.apache.james.mailbox.model.MessageAttachment;
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.omg.CORBA.portable.InputStream;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 
 public class MimeMessageReaderTest {
+    private static final MessageId MESSAGE_ID = new DefaultMessageId.Factory().generate();
+    private static final Date SUN_SEP_9TH_2001 = new Date(1000000000000L);
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -58,7 +70,7 @@ public class MimeMessageReaderTest {
     public void readShouldCopyContent() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(IOUtils.toString(mimeMessageReader.read().getContentIn(), Charsets.UTF_8))
+        assertThat(IOUtils.toString(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getFullContent(), Charsets.UTF_8))
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResourceAsStream("eml/mail.eml"), Charsets.UTF_8));
     }
 
@@ -66,23 +78,23 @@ public class MimeMessageReaderTest {
     public void readShouldCalculateSize() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(mimeMessageReader.read().getSize())
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getFullContentOctets())
             .isEqualTo(5250);
     }
 
     @Test
-    public void readShouldCalculateBodyStartOctet() throws Exception {
+    public void readShouldCalculateBodyOctets() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(mimeMessageReader.read().getBodyStartOctet())
-            .isEqualTo(4785);
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getBodyOctets())
+            .isEqualTo(465);
     }
 
     @Test
     public void readShouldCalculateLineCountOfTextParts() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getTextualLineCount())
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getTextualLineCount())
             .isEqualTo(10);
     }
 
@@ -90,23 +102,23 @@ public class MimeMessageReaderTest {
     public void readShouldRetrieveCharset() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getCharset())
-            .isEqualTo("UTF-8");
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getProperties())
+            .contains(new SimpleProperty(MIME_CONTENT_TYPE_PARAMETER_SPACE, MIME_CONTENT_TYPE_PARAMETER_CHARSET_NAME, "UTF-8"));
     }
 
     @Test
     public void readShouldRetrieveTransferEncoding() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getContentTransferEncoding())
-            .isEqualTo("7bit");
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getProperties())
+            .contains(new SimpleProperty(MIME_CONTENT_TRANSFER_ENCODING_SPACE, MIME_CONTENT_TRANSFER_ENCODING_NAME, "7bit"));
     }
 
     @Test
     public void readShouldRetrieveMediaType() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
 
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getMediaType())
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getMediaType())
             .isEqualTo("text");
     }
 
@@ -114,7 +126,7 @@ public class MimeMessageReaderTest {
     public void readShouldRetrieveSubtype() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/htmlMail.eml"));
 
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getSubType())
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getSubType())
             .isEqualTo("alternative");
     }
 
@@ -122,24 +134,8 @@ public class MimeMessageReaderTest {
     public void readShouldRetrieveBoundary() throws Exception {
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/htmlMail.eml"));
 
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getBoundary())
-            .isEqualTo("--==_mimepart_556fffe8c7e84_7ed0e0fe20445637");
-    }
-
-    @Test
-    public void readShouldReturnNullBoundaryWhenSimpleMail() throws Exception {
-        MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/mail.eml"));
-
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getBoundary())
-            .isNull();
-    }
-
-    @Test
-    public void readShouldReturnEmptyLanguageWhenNoneSpecified() throws Exception {
-        MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/htmlMail.eml"));
-
-        assertThat(mimeMessageReader.read().getPropertyBuilder().getContentLanguage())
-            .isEmpty();
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getProperties())
+            .contains(new org.apache.james.mailbox.store.mail.model.impl.SimpleProperty(MIME_CONTENT_TYPE_PARAMETER_SPACE, MIME_CONTENT_TYPE_PARAMETER_BOUNDARY_NAME, "--==_mimepart_556fffe8c7e84_7ed0e0fe20445637"));
     }
 
     @Test
@@ -149,7 +145,7 @@ public class MimeMessageReaderTest {
 
         MimeMessageReader mimeMessageReader = new MimeMessageReader(messageParser, ClassLoader.getSystemResourceAsStream("eml/htmlMail.eml"));
 
-        assertThat(mimeMessageReader.read().getAttachments()).isEmpty();
+        assertThat(mimeMessageReader.read(MESSAGE_ID, SUN_SEP_9TH_2001).getAttachments()).isEmpty();
     }
 
 }
