@@ -19,8 +19,6 @@
 
 package org.apache.james.mailbox.store;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +34,6 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
@@ -49,17 +46,13 @@ import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
-import org.apache.james.mailbox.store.mail.model.FlagsOperations;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.mailbox.store.quota.QuotaChecker;
-import org.apache.james.mime4j.MimeException;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
@@ -73,29 +66,19 @@ public class StoreMessageIdManager implements MessageIdManager {
             return new MetadataWithMailbox(new SimpleMessageMetaData(mailboxMessage), mailboxMessage.getMailboxId());
         }
     };
-    public static final Function<MessageAttachment, Attachment> TRANSFORM_TO_ATTACHEMENT = new Function<MessageAttachment, Attachment>() {
-        @Override
-        public Attachment apply(MessageAttachment input) {
-            return input.getAttachment();
-        }
-    };
 
     private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
     private final MailboxEventDispatcher dispatcher;
     private final MessageId.Factory messageIdFactory;
-    private final MessageParser messageParser;
-    private final PermanentFlagsProvider permanentFlagsProvider;
     private final QuotaManager quotaManager;
     private final QuotaRootResolver quotaRootResolver;
 
     public StoreMessageIdManager(MailboxSessionMapperFactory mailboxSessionMapperFactory, MailboxEventDispatcher dispatcher,
-                                 MessageId.Factory messageIdFactory, MessageParser messageParser, PermanentFlagsProvider permanentFlagsProvider,
+                                 MessageId.Factory messageIdFactory,
                                  QuotaManager quotaManager, QuotaRootResolver quotaRootResolver) {
         this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
         this.dispatcher = dispatcher;
         this.messageIdFactory = messageIdFactory;
-        this.messageParser = messageParser;
-        this.permanentFlagsProvider = permanentFlagsProvider;
         this.quotaManager = quotaManager;
         this.quotaRootResolver = quotaRootResolver;
     }
@@ -197,44 +180,6 @@ public class StoreMessageIdManager implements MessageIdManager {
         mailboxMessage.setUid(uid);
         messageIdMapper.save(mailboxMessage);
         return new SimpleMessageMetaData(uid, modSeq, mailboxMessage.createFlags(), mailboxMessage.getFullContentOctets(), mailboxMessage.getInternalDate(), mailboxMessage.getMessageId());
-    }
-
-    @Override
-    public MessageMetaData appendMessage(InputStream msgIn, Date internalDate, Flags flagsToBeSet, MailboxId mailboxId, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-        MessageReader messageReader = new MessageReader(messageParser);
-        try {
-            messageReader.init(msgIn);
-            MailboxMessage message = createMailboxMessage(internalDate, flagsToBeSet, mailboxId, mailboxSession, messageReader.read());
-            MessageMetaData messageMetaData = save(mailboxSession, messageIdMapper, mailboxId, message);
-            persistAttachments(mailboxSession, message);
-            dispatchAddedMessage(mailboxId, mailboxSession, messageMetaData);
-            return messageMetaData;
-        } catch (IOException e) {
-            throw new MailboxException("Unable to parse message", e);
-        } catch (MimeException e) {
-            throw new MailboxException("Unable to parse message", e);
-        } finally {
-            messageReader.close();
-        }
-    }
-
-    private void persistAttachments(MailboxSession mailboxSession, MailboxMessage message) throws MailboxException {
-        mailboxSessionMapperFactory.getAttachmentMapper(mailboxSession).storeAttachments(
-            FluentIterable.from(message.getAttachments())
-                .transform(TRANSFORM_TO_ATTACHEMENT)
-                .toList());
-    }
-
-    private MailboxMessage createMailboxMessage(Date internalDate, Flags flagsToBeSet, MailboxId mailboxId, MailboxSession mailboxSession, MessageReader.MessageInformation messageInformation) throws MailboxException {
-        return createMessage(Optional.fromNullable(internalDate).or(new Date()),
-                    messageInformation.getSize(),
-                    messageInformation.getBodyStartOctet(),
-                    messageInformation.getContentIn(),
-                    FlagsOperations.prepareForAppend(flagsToBeSet, true, permanentFlagsProvider.get(mailboxSession)),
-                    messageInformation.getPropertyBuilder(),
-                    messageInformation.getAttachments(),
-                    mailboxId);
     }
 
     /**

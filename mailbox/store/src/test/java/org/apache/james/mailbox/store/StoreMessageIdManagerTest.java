@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,6 @@ import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.quota.DefaultQuotaRootResolver;
 import org.apache.james.mailbox.store.quota.QuotaImpl;
 import org.junit.Before;
@@ -68,7 +66,6 @@ import com.google.common.collect.ImmutableList;
 
 public class StoreMessageIdManagerTest {
 
-    private static final Date SUN_SEP_9TH_2001 = new Date(1000000000000L);
     private static final TestId TEST_ID = TestId.of(36);
     private static final TestId OTHER_TEST_ID = TestId.of(52);
     private static final MessageUid UID = MessageUid.of(28);
@@ -97,8 +94,8 @@ public class StoreMessageIdManagerTest {
         messageIdFactory = mock(DefaultMessageId.Factory.class);
         session = mock(MailboxSession.class);
         quotaManager = mock(QuotaManager.class);
-        storeMessageIdManager = new StoreMessageIdManager(mailboxSessionMapperFactory, dispatcher, messageIdFactory, mock(MessageParser.class),
-            new FullPermanenentFlagsProvider(), quotaManager, new DefaultQuotaRootResolver(mailboxSessionMapperFactory));
+        storeMessageIdManager = new StoreMessageIdManager(mailboxSessionMapperFactory, dispatcher, messageIdFactory,
+            quotaManager, new DefaultQuotaRootResolver(mailboxSessionMapperFactory));
 
         messageId = new DefaultMessageId();
         mailboxMapper = mock(MailboxMapper.class);
@@ -149,28 +146,6 @@ public class StoreMessageIdManagerTest {
         storeMessageIdManager.delete(messageId, ImmutableList.<MailboxId>of(TEST_ID), session);
 
         verifyNoMoreInteractions(dispatcher);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void appendMessageShouldDispatchEvent() throws Exception {
-        ByteArrayInputStream arrayInputStream = new ByteArrayInputStream("".getBytes());
-        Date internalDate = SUN_SEP_9TH_2001;
-
-        storeMessageIdManager.appendMessage(arrayInputStream, internalDate, FLAGS, TEST_ID, session);
-
-        verify(dispatcher).added(eq(session), any(SortedMap.class), any(Mailbox.class));
-        verifyNoMoreInteractions(dispatcher);
-    }
-
-    @Test
-    public void appendMessageShouldThrowWhenOverQuota() throws Exception {
-        when(quotaManager.getMessageQuota(any(QuotaRoot.class))).thenReturn(OVER_QUOTA);
-        Date internalDate = SUN_SEP_9TH_2001;
-
-        expectedException.expect(OverQuotaException.class);
-
-        storeMessageIdManager.appendMessage(ARRAY_INPUT_STREAM, internalDate, FLAGS, TEST_ID, session);
     }
 
     @SuppressWarnings("unchecked")
