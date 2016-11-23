@@ -30,8 +30,8 @@ import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
-import org.apache.james.mailbox.store.mail.ModSeqProviderFactory;
-import org.apache.james.mailbox.store.mail.UidProviderFactory;
+import org.apache.james.mailbox.store.mail.ModSeqProviderProvider;
+import org.apache.james.mailbox.store.mail.UidProviderProvider;
 import org.apache.james.mailbox.store.transaction.Mapper;
 import org.apache.james.mailbox.store.user.SubscriptionMapper;
 import org.apache.james.mailbox.store.user.SubscriptionMapperFactory;
@@ -41,7 +41,7 @@ import org.apache.james.mailbox.store.user.SubscriptionMapperFactory;
  * in a {@link MailboxSession}
  */
 public abstract class MailboxSessionMapperFactory implements RequestAware, MailboxMapperFactory, MessageMapperFactory, AttachmentMapperFactory,
-    SubscriptionMapperFactory, UidProviderFactory, ModSeqProviderFactory {
+    SubscriptionMapperFactory, UidProviderProvider, ModSeqProviderProvider {
 
     protected final static String ATTACHMENTMAPPER = "ATTACHMENTMAPPER";
     protected final static String MESSAGEMAPPER ="MESSAGEMAPPER";

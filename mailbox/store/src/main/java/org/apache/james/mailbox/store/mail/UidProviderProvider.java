@@ -19,8 +19,8 @@
 
 package org.apache.james.mailbox.store.mail;
 
-public interface ModSeqProviderFactory {
+public interface UidProviderProvider {
 
-    ModSeqProvider getModSeqProvider();
+    UidProvider getUidProvider();
 
 }
