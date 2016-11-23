@@ -19,11 +19,16 @@
 package org.apache.james.mailbox.store.mail;
 
 import java.util.List;
+import java.util.Map;
 
+import javax.mail.Flags;
+
+import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
@@ -38,4 +43,6 @@ public interface MessageIdMapper {
     void delete(MessageId messageId);
 
     void delete(MessageId messageId, List<MailboxId> mailboxIds);
+
+    Map<MailboxId, UpdatedFlags> setFlags(Flags newState, MessageManager.FlagsUpdateMode updateMode, MessageId messageId) throws MailboxException;
 }
