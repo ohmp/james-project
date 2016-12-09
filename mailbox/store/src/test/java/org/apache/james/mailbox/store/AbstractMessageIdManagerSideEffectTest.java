@@ -42,7 +42,6 @@ import org.apache.james.mailbox.exception.OverQuotaException;
 import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaRoot;
@@ -57,6 +56,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractMessageIdManagerSideEffectTest {
@@ -72,10 +73,11 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     private MailboxSession session;
     private Mailbox mailbox1;
     private Mailbox mailbox2;
+    private Mailbox mailbox3;
     private QuotaManager quotaManager;
-    private MessageIdManagerTestingData testingData;
+    private MessageIdManagerTestSystem testingData;
 
-    protected abstract MessageIdManagerTestingData createTestingData(QuotaManager quotaManager, MailboxEventDispatcher dispatcher);
+    protected abstract MessageIdManagerTestSystem createTestingData(QuotaManager quotaManager, MailboxEventDispatcher dispatcher);
 
     @Before
     public void setUp() throws Exception {
@@ -87,6 +89,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         messageIdManager = testingData.getMessageIdManager();
         mailbox1 = testingData.getMailbox1();
         mailbox2 = testingData.getMailbox2();
+        mailbox3 = testingData.getMailbox3();
     }
 
     @After
@@ -100,9 +103,12 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
         reset(dispatcher);
 
+        MessageResult messageResult = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session).get(0);
+        SimpleMessageMetaData simpleMessageMetaData = fromMessageResult(messageId, messageResult);
+
         messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
-        verify(dispatcher).expunged(eq(session), any(MessageMetaData.class), eq(mailbox1));
+        verify(dispatcher).expunged(session, simpleMessageMetaData, mailbox1);
         verifyNoMoreInteractions(dispatcher);
     }
 
@@ -136,7 +142,38 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
         messageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
 
-        verify(dispatcher).added(eq(session), any(MessageMetaData.class), any(Mailbox.class));
+        MessageResult messageResult = FluentIterable
+            .from(messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session))
+            .filter(inMailbox(mailbox1.getMailboxId()))
+            .get(0);
+        SimpleMessageMetaData simpleMessageMetaData = fromMessageResult(messageId, messageResult);
+
+        verify(dispatcher).added(session, simpleMessageMetaData, mailbox1);
+        verifyNoMoreInteractions(dispatcher);
+    }
+
+    @Test
+    public void setInMailboxesShouldCallDispatcherWithMultipleMailboxes() throws Exception {
+        givenUnlimitedQuota();
+        MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
+        reset(dispatcher);
+
+        messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox3.getMailboxId()), session);
+
+        List<MessageResult> messageResults = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session);
+        MessageResult messageResultMaibox1 = FluentIterable
+            .from(messageResults)
+            .filter(inMailbox(mailbox1.getMailboxId()))
+            .get(0);
+        SimpleMessageMetaData metadataMailbox1 = fromMessageResult(messageId, messageResultMaibox1);
+        MessageResult messageResultMaibox3 = FluentIterable
+            .from(messageResults)
+            .filter(inMailbox(mailbox3.getMailboxId()))
+            .get(0);
+        SimpleMessageMetaData metadataMailbox3 = fromMessageResult(messageId, messageResultMaibox3);
+
+        verify(dispatcher).added(session, metadataMailbox1, mailbox1);
+        verify(dispatcher).added(session, metadataMailbox3, mailbox3);
         verifyNoMoreInteractions(dispatcher);
     }
 
@@ -213,5 +250,18 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     private void givenUnlimitedQuota() throws MailboxException {
         when(quotaManager.getMessageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
         when(quotaManager.getStorageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
+    }
+
+    private Predicate<MessageResult> inMailbox(final MailboxId mailboxId) {
+        return new Predicate<MessageResult>() {
+            @Override
+            public boolean apply(MessageResult input) {
+                return input.getMailboxId().equals(mailboxId);
+            }
+        };
+    }
+
+    private SimpleMessageMetaData fromMessageResult(MessageId messageId, MessageResult messageResult) {
+        return new SimpleMessageMetaData(messageResult.getUid(), messageResult.getModSeq(), messageResult.getFlags(), messageResult.getSize(), messageResult.getInternalDate(), messageId);
     }
 }
