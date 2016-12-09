@@ -130,13 +130,13 @@ public abstract class AbstractMessageIdManagerStorageTest {
         MessageId messageId1 = testingData.persist(mailbox1.getMailboxId(), FLAGS);
         MessageId messageId2 = testingData.persist(mailbox2.getMailboxId(), FLAGS);
 
-        messageIdManager.setInMailboxes(messageId1, ImmutableList.of(mailbox2.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId2, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         MessageUid uidMessage1Mailbox1 = messageIdManager.getMessages(ImmutableList.of(messageId1), FetchGroupImpl.MINIMAL, session)
             .get(0)
             .getUid();
         MessageUid uidMessage2Mailbox1 = FluentIterable
-            .from(messageIdManager.getMessages(ImmutableList.of(messageId2), FetchGroupImpl.MINIMAL, session))
+            .from(messageIdManager.getMessages(ImmutableList.of(messageId1), FetchGroupImpl.MINIMAL, session))
             .filter(new Predicate<MessageResult>() {
                 @Override
                 public boolean apply(MessageResult input) {
@@ -155,7 +155,7 @@ public abstract class AbstractMessageIdManagerStorageTest {
         MessageId messageId1 = testingData.persist(mailbox1.getMailboxId(), FLAGS);
         MessageId messageId2 = testingData.persist(mailbox2.getMailboxId(), FLAGS);
 
-        messageIdManager.setInMailboxes(messageId1, ImmutableList.of(mailbox2.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId2, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         long modSeqMessage1Mailbox1 = messageIdManager.getMessages(ImmutableList.of(messageId1), FetchGroupImpl.MINIMAL, session)
             .get(0)
