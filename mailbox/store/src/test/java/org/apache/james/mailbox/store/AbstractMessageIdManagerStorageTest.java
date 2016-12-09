@@ -276,5 +276,24 @@ public abstract class AbstractMessageIdManagerStorageTest {
         assertThat(modSeq2).isGreaterThan(modSeq1);
     }
 
+    @Test
+    public void getMessageShouldBeEmptyWhenMessageHasNoMoreMailboxes() throws Exception {
+        MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
 
+        testingData.deleteMailbox(mailbox1.getMailboxId());
+
+        assertThat(messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session)).isEmpty();
+    }
+
+    @Test
+    public void setInMailboxesShouldPreserveMessageFromOneMailboxDeletion() throws Exception {
+        MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox2.getMailboxId()), session);
+
+        testingData.deleteMailbox(mailbox1.getMailboxId());
+
+        List<MessageResult> messageResults = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session);
+        assertThat(messageResults).hasSize(1);
+        assertThat(messageResults.get(0).getMailboxId()).isEqualTo(mailbox2.getMailboxId());
+    }
 }
