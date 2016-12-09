@@ -26,15 +26,17 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 
-public abstract class MessageIdManagerTestingData {
+public abstract class MessageIdManagerTestSystem {
     private final MessageIdManager messageIdManager;
     private final Mailbox mailbox1;
     private final Mailbox mailbox2;
+    private final Mailbox mailbox3;
 
-    public MessageIdManagerTestingData(MessageIdManager messageIdManager, Mailbox mailbox1, Mailbox mailbox2) {
+    public MessageIdManagerTestSystem(MessageIdManager messageIdManager, Mailbox mailbox1, Mailbox mailbox2, Mailbox mailbox3) {
         this.messageIdManager = messageIdManager;
         this.mailbox1 = mailbox1;
         this.mailbox2 = mailbox2;
+        this.mailbox3 = mailbox3;
     }
 
     public MessageIdManager getMessageIdManager() {
@@ -47,6 +49,10 @@ public abstract class MessageIdManagerTestingData {
 
     public Mailbox getMailbox2() {
         return mailbox2;
+    }
+
+    public Mailbox getMailbox3() {
+        return mailbox3;
     }
 
     /**
