@@ -31,6 +31,7 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.model.FetchGroupImpl;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -45,13 +46,13 @@ import com.google.common.collect.ImmutableList;
 public abstract class AbstractMessageIdManagerStorageTest {
 
     public static final Flags FLAGS = new Flags();
-    private MessageIdManagerTestingData testingData;
+    private MessageIdManagerTestSystem testingData;
     private MessageIdManager messageIdManager;
     private Mailbox mailbox1;
     private Mailbox mailbox2;
     private MailboxSession session;
 
-    protected abstract MessageIdManagerTestingData createTestingData();
+    protected abstract MessageIdManagerTestSystem createTestingData();
 
     @Before
     public void setUp() {
@@ -137,12 +138,7 @@ public abstract class AbstractMessageIdManagerStorageTest {
             .getUid();
         MessageUid uidMessage2Mailbox1 = FluentIterable
             .from(messageIdManager.getMessages(ImmutableList.of(messageId1), FetchGroupImpl.MINIMAL, session))
-            .filter(new Predicate<MessageResult>() {
-                @Override
-                public boolean apply(MessageResult input) {
-                    return input.getMailboxId().equals(mailbox1.getMailboxId());
-                }
-            })
+            .filter(inMailbox(mailbox1.getMailboxId()))
             .toList()
             .get(0)
             .getUid();
@@ -162,12 +158,7 @@ public abstract class AbstractMessageIdManagerStorageTest {
             .getModSeq();
         long modSeqMessage2Mailbox1 = FluentIterable
             .from(messageIdManager.getMessages(ImmutableList.of(messageId2), FetchGroupImpl.MINIMAL, session))
-            .filter(new Predicate<MessageResult>() {
-                @Override
-                public boolean apply(MessageResult input) {
-                    return input.getMailboxId().equals(mailbox1.getMailboxId());
-                }
-            })
+            .filter(inMailbox(mailbox1.getMailboxId()))
             .toList()
             .get(0)
             .getModSeq();
@@ -186,12 +177,7 @@ public abstract class AbstractMessageIdManagerStorageTest {
 
         MessageResult messageResult2 = FluentIterable
             .from(messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session))
-            .filter(new Predicate<MessageResult>() {
-                @Override
-                public boolean apply(MessageResult input) {
-                    return input.getMailboxId().equals(mailbox1.getMailboxId());
-                }
-            })
+            .filter(inMailbox(mailbox1.getMailboxId()))
             .toList()
             .get(0);
         MessageUid messageUid2 = messageResult2.getUid();
@@ -295,5 +281,14 @@ public abstract class AbstractMessageIdManagerStorageTest {
         List<MessageResult> messageResults = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session);
         assertThat(messageResults).hasSize(1);
         assertThat(messageResults.get(0).getMailboxId()).isEqualTo(mailbox2.getMailboxId());
+    }
+
+    private Predicate<MessageResult> inMailbox(final MailboxId mailboxId) {
+        return new Predicate<MessageResult>() {
+            @Override
+            public boolean apply(MessageResult input) {
+                return input.getMailboxId().equals(mailboxId);
+            }
+        };
     }
 }
