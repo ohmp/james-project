@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.store;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -26,8 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.util.List;
 
 import javax.mail.Flags;
 
@@ -36,15 +36,17 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.OverQuotaException;
+import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageMetaData;
+import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
-import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.quota.QuotaImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -56,11 +58,8 @@ import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractMessageIdManagerSideEffectTest {
 
-    private static final MessageUid UID = MessageUid.of(28);
-    private static final long MOD_SEQ = 18;
     private static final Quota OVER_QUOTA = QuotaImpl.quota(102, 100);
     public static final Flags FLAGS = new Flags();
-    private static final ByteArrayInputStream ARRAY_INPUT_STREAM = new ByteArrayInputStream("".getBytes());
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -98,11 +97,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @SuppressWarnings("unchecked")
     @Test
     public void deleteShouldCallEventDispatcher() throws Exception {
-        MailboxMessage mailboxMessage = createMessage(mailbox1.getMailboxId(), FLAGS);
+        MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
 
-        testingData.persist(mailboxMessage);
-
-        messageIdManager.delete(mailboxMessage.getMessageId(), ImmutableList.of(mailbox1.getMailboxId()), session);
+        messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         verify(dispatcher).expunged(eq(session), any(MessageMetaData.class), eq(mailbox1));
         verifyNoMoreInteractions(dispatcher);
@@ -111,12 +108,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @SuppressWarnings("unchecked")
     @Test
     public void deleteShouldNotCallEventDispatcherWhenMessageIsInWrongMailbox() throws Exception {
-        MailboxMessage mailboxMessage = createMessage(mailbox2.getMailboxId(), FLAGS);
+        MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
 
-
-        testingData.persist(mailboxMessage);
-
-        messageIdManager.delete(mailboxMessage.getMessageId(), ImmutableList.of(mailbox1.getMailboxId()), session);
+        messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         verifyNoMoreInteractions(dispatcher);
     }
@@ -124,11 +118,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @SuppressWarnings("unchecked")
     @Test
     public void setInMailboxesShouldNotCallDispatcherWhenMessageAlreadyInMailbox() throws Exception {
-        MailboxMessage mailboxMessage = createMessage(mailbox1.getMailboxId(), FLAGS);
+        MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
 
-        testingData.persist(mailboxMessage);
-
-        messageIdManager.setInMailboxes(mailboxMessage.getMessageId(), ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
 
         verifyNoMoreInteractions(dispatcher);
     }
@@ -136,11 +128,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @SuppressWarnings("unchecked")
     @Test
     public void setInMailboxesShouldCallDispatcher() throws Exception {
-        MailboxMessage mailboxMessage = createMessage(mailbox2.getMailboxId(), FLAGS);
+        MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
 
-        testingData.persist(mailboxMessage);
-
-        messageIdManager.setInMailboxes(mailboxMessage.getMessageId(), ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
 
         verify(dispatcher).added(eq(session), any(MessageMetaData.class), any(Mailbox.class));
         verifyNoMoreInteractions(dispatcher);
@@ -149,22 +139,20 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @SuppressWarnings("unchecked")
     @Test
     public void setInMailboxesThrowWhenOverQuota() throws Exception {
-        MailboxMessage mailboxMessage = createMessage(mailbox2.getMailboxId(), FLAGS);
-        testingData.persist(mailboxMessage);
+        MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
         when(quotaManager.getMessageQuota(any(QuotaRoot.class))).thenReturn(OVER_QUOTA);
 
         expectedException.expect(OverQuotaException.class);
 
-        messageIdManager.setInMailboxes(mailboxMessage.getMessageId(), ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
     }
 
     @Test
     public void setFlagsShouldNotDispatchWhenFlagAlreadySet() throws Exception {
         Flags newFlags = new Flags(Flags.Flag.SEEN);
-        MailboxMessage mailboxMessage = createMessage(mailbox2.getMailboxId(), newFlags);
-        testingData.persist(mailboxMessage);
+        MessageId messageId = testingData.persist(mailbox2.getMailboxId(), newFlags);
 
-        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, mailboxMessage.getMessageId(), session);
+        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, session);
 
         verifyNoMoreInteractions(dispatcher);
     }
@@ -172,23 +160,19 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @SuppressWarnings("unchecked")
     @Test
     public void setFlagsShouldDispatch() throws Exception {
-        MailboxMessage mailboxMessage = createMessage(mailbox2.getMailboxId(), FLAGS);
-        testingData.persist(mailboxMessage);
+        MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
 
         Flags newFlags = new Flags(Flags.Flag.SEEN);
-        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, mailboxMessage.getMessageId(), session);
+        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, session);
 
-        UpdatedFlags updatedFlags = new UpdatedFlags(UID, MOD_SEQ, FLAGS, newFlags);
-        verify(dispatcher).flagsUpdated(session, UID, mailbox1, updatedFlags);
+        List<MessageResult> messages = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session);
+        assertThat(messages).hasSize(1);
+        MessageResult messageResult = messages.get(0);
+        MessageUid messageUid = messageResult.getUid();
+        long modSeq = messageResult.getModSeq();
+        UpdatedFlags updatedFlags = new UpdatedFlags(messageUid, modSeq, FLAGS, newFlags);
+
+        verify(dispatcher).flagsUpdated(session, messageUid, mailbox1, updatedFlags);
         verifyNoMoreInteractions(dispatcher);
-    }
-
-    private MailboxMessage createMessage(MailboxId mailboxId, Flags flags) throws IOException {
-        MailboxMessage mailboxMessage = mock(MailboxMessage.class);
-        when(mailboxMessage.getUid()).thenReturn(UID);
-        when(mailboxMessage.getMailboxId()).thenReturn(mailboxId);
-        when(mailboxMessage.getFullContent()).thenReturn(ARRAY_INPUT_STREAM);
-        when(mailboxMessage.createFlags()).thenReturn(flags);
-        return mailboxMessage;
     }
 }
