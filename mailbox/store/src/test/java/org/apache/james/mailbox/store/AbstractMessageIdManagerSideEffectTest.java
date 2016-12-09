@@ -46,6 +46,7 @@ import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.quota.QuotaImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,37 +55,6 @@ import org.junit.rules.ExpectedException;
 import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractMessageIdManagerSideEffectTest {
-
-    private TestingData testingData;
-
-    private abstract class TestingData {
-        private final MessageIdManager messageIdManager;
-        private final Mailbox mailbox1;
-        private final Mailbox mailbox2;
-
-        public TestingData(MessageIdManager messageIdManager, Mailbox mailbox1, Mailbox mailbox2) {
-            this.messageIdManager = messageIdManager;
-            this.mailbox1 = mailbox1;
-            this.mailbox2 = mailbox2;
-        }
-
-        public MessageIdManager getMessageIdManager() {
-            return messageIdManager;
-        }
-
-        public Mailbox getMailbox1() {
-            return mailbox1;
-        }
-
-        public Mailbox getMailbox2() {
-            return mailbox2;
-        }
-
-        // Should take care of find returning the MailboxMessage
-        // Should take care of findMailboxes returning the mailbox the message is in
-        // Should persist flags // Should keep track of flag state for setFlags
-        public abstract void persist(MailboxMessage mailboxMessage);
-    }
 
     private static final MessageUid UID = MessageUid.of(28);
     private static final long MOD_SEQ = 18;
@@ -101,8 +71,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     private Mailbox mailbox1;
     private Mailbox mailbox2;
     private QuotaManager quotaManager;
+    private MessageIdManagerTestingData testingData;
 
-    protected abstract TestingData createTestingData(QuotaManager quotaManager, MailboxEventDispatcher dispatcher);
+    protected abstract MessageIdManagerTestingData createTestingData(QuotaManager quotaManager, MailboxEventDispatcher dispatcher);
 
     @Before
     public void setUp() throws Exception {
@@ -117,6 +88,11 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
         when(quotaManager.getMessageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
         when(quotaManager.getStorageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
+    }
+
+    @After
+    public void tearDown() {
+        testingData.clean();
     }
 
     @SuppressWarnings("unchecked")
