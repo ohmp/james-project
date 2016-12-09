@@ -25,7 +25,6 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
-import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
 public abstract class MessageIdManagerTestingData {
     private final MessageIdManager messageIdManager;
@@ -54,6 +53,8 @@ public abstract class MessageIdManagerTestingData {
     // Should take care of findMailboxes returning the mailbox the message is in
     // Should persist flags // Should keep track of flag state for setFlags
     public abstract MessageId persist(MailboxId mailboxId, Flags flags);
+
+    public abstract MessageId createNotUsedMessageId();
 
     public abstract void clean();
 }
