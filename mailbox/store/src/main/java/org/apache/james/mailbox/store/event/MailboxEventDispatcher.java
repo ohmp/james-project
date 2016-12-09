@@ -22,7 +22,6 @@ package org.apache.james.mailbox.store.event;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxSession;
@@ -34,6 +33,7 @@ import org.apache.james.mailbox.store.mail.model.Mailbox;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 
 /**
  * Helper class to dispatch {@link org.apache.james.mailbox.MailboxListener.Event}'s to registerend MailboxListener
@@ -61,7 +61,9 @@ public class MailboxEventDispatcher {
     }
 
     public void added(MailboxSession session, MessageMetaData messageMetaData, Mailbox mailbox) {
-        SortedMap<MessageUid, MessageMetaData> metaDataMap = new TreeMap<MessageUid, MessageMetaData>();
+        SortedMap<MessageUid, MessageMetaData> metaDataMap = ImmutableSortedMap.<MessageUid, MessageMetaData>naturalOrder()
+                .put(messageMetaData.getUid(), messageMetaData)
+                .build();
         metaDataMap.put(messageMetaData.getUid(), messageMetaData);
         added(session, metaDataMap, mailbox);
     }

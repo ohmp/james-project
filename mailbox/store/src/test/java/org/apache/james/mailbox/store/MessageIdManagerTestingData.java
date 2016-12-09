@@ -49,9 +49,16 @@ public abstract class MessageIdManagerTestingData {
         return mailbox2;
     }
 
-    // Should take care of find returning the MailboxMessage
-    // Should take care of findMailboxes returning the mailbox the message is in
-    // Should persist flags // Should keep track of flag state for setFlags
+    /**
+     * Should take care of find returning the MailboxMessage
+     * Should take care of findMailboxes returning the mailbox the message is in
+     * Should persist flags 
+     * Should keep track of flag state for setFlags
+     * 
+     * @param mailboxId
+     * @param flags
+     * @return the id of persisted message
+     */
     public abstract MessageId persist(MailboxId mailboxId, Flags flags);
 
     public abstract MessageId createNotUsedMessageId();
