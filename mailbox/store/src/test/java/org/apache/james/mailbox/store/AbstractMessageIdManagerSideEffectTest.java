@@ -37,6 +37,7 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageManager.FlagsUpdateMode;
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.OverQuotaException;
 import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
@@ -86,9 +87,6 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         messageIdManager = testingData.getMessageIdManager();
         mailbox1 = testingData.getMailbox1();
         mailbox2 = testingData.getMailbox2();
-
-        when(quotaManager.getMessageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
-        when(quotaManager.getStorageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
     }
 
     @After
@@ -98,6 +96,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
     @Test
     public void deleteShouldCallEventDispatcher() throws Exception {
+        givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
         reset(dispatcher);
 
@@ -109,6 +108,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
     @Test
     public void deleteShouldNotCallEventDispatcherWhenMessageIsInWrongMailbox() throws Exception {
+        givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
         reset(dispatcher);
 
@@ -119,6 +119,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
     @Test
     public void setInMailboxesShouldNotCallDispatcherWhenMessageAlreadyInMailbox() throws Exception {
+        givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
         reset(dispatcher);
 
@@ -129,6 +130,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
     @Test
     public void setInMailboxesShouldCallDispatcher() throws Exception {
+        givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
         reset(dispatcher);
 
@@ -151,6 +153,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
     @Test
     public void setFlagsShouldNotDispatchWhenFlagAlreadySet() throws Exception {
+        givenUnlimitedQuota();
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), newFlags);
         reset(dispatcher);
@@ -162,6 +165,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
 
     @Test
     public void setFlagsShouldDispatch() throws Exception {
+        givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
         reset(dispatcher);
 
@@ -204,5 +208,10 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         verifyNoMoreInteractions(dispatcher);
+    }
+
+    private void givenUnlimitedQuota() throws MailboxException {
+        when(quotaManager.getMessageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
+        when(quotaManager.getStorageQuota(any(QuotaRoot.class))).thenReturn(QuotaImpl.unlimited());
     }
 }
