@@ -130,9 +130,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         final List<MailboxId> alreadyInMailboxes = messageIdMapper.findMailboxes(messageId);
 
         List<MailboxMessage> mailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full);
-        if (mailboxMessages.isEmpty()) {
-            throw new MailboxException("Can not retrieve message with Id " + messageId);
-        } else {
+        if (!mailboxMessages.isEmpty()) {
             MailboxMessage mailboxMessage = mailboxMessages.get(0);
 
             validateQuota(mailboxIds, mailboxSession, mailboxMessage);
