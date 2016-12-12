@@ -128,7 +128,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
         reset(dispatcher);
 
-        messageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         verifyNoMoreInteractions(dispatcher);
     }
@@ -139,7 +139,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), FLAGS);
         reset(dispatcher);
 
-        messageIdManager.setInMailboxes(messageId, ImmutableList.<MailboxId>of(mailbox1.getMailboxId()), session);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         MessageResult messageResult = FluentIterable
             .from(messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session))
@@ -216,7 +216,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         long modSeq = messageResult.getModSeq();
         UpdatedFlags updatedFlags = new UpdatedFlags(messageUid, modSeq, FLAGS, newFlags);
 
-        verify(dispatcher).flagsUpdated(session, messageUid, mailbox1, updatedFlags);
+        verify(dispatcher).flagsUpdated(session, messageUid, mailbox2, updatedFlags);
         verifyNoMoreInteractions(dispatcher);
     }
 
