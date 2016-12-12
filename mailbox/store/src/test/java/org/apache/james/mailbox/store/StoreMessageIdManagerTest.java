@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.mail.Flags;
@@ -44,6 +43,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaRoot;
+import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
@@ -213,7 +213,6 @@ public class StoreMessageIdManagerTest {
         verifyNoMoreInteractions(dispatcher);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void setFlagsShouldDispatch() throws Exception {
         Flags newFlags = new Flags(Flags.Flag.SEEN);

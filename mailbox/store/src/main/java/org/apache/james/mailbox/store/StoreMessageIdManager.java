@@ -98,8 +98,8 @@ public class StoreMessageIdManager implements MessageIdManager {
     @Override
     public List<MessageResult> getMessages(List<MessageId> messageIds, final MessageResult.FetchGroup minimal, MailboxSession mailboxSession) throws MailboxException {
         try {
-            MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.createMessageIdMapper(mailboxSession);
-            return FluentIterable.from(messageIdMapper.find(messageIds, MessageMapper.FetchType.getFetchType(minimal)))
+            MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+            return FluentIterable.from(messageIdMapper.find(messageIds, MessageMapper.FetchType.Full))
                 .transform(messageResultConverter(minimal))
                 .toList();
         } catch (WrappedException wrappedException) {
