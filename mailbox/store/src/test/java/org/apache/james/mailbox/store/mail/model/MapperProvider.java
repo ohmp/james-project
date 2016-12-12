@@ -37,7 +37,8 @@ public interface MapperProvider {
         MAILBOX,
         ATTACHMENT,
         ANNOTATION,
-        MOVE
+        MOVE,
+        UNIQUE_MESSAGE_ID
     }
 
     List<Capabilities> getNotImplemented();
@@ -55,6 +56,8 @@ public interface MapperProvider {
     MailboxId generateId();
 
     MessageUid generateMessageUid();
+
+    long generateModSeq(Mailbox mailbox) throws MailboxException;
 
     void clearMapper() throws MailboxException;
 

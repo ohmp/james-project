@@ -21,9 +21,9 @@ package org.apache.james.mailbox.cassandra.mail;
 import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
+import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMailboxSessionMapperFactory;
@@ -44,7 +44,9 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
+import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MapperProvider;
+import org.apache.james.mailbox.store.mail.model.MessageUidProvider;
 
 import com.google.common.collect.ImmutableList;
 
@@ -60,6 +62,14 @@ public class CassandraMapperProvider implements MapperProvider {
         new CassandraAttachmentModule(),
         new CassandraAnnotationModule()));
 
+    private final MessageUidProvider messageUidProvider;
+    private final CassandraModSeqProvider cassandraModSeqProvider;
+
+    public CassandraMapperProvider() {
+        messageUidProvider = new MessageUidProvider();
+        cassandraModSeqProvider = new CassandraModSeqProvider(cassandra.getConf());
+    }
+
     @Override
     public MessageId generateMessageId() {
         return new DefaultMessageId.Factory().generate();
@@ -69,7 +79,7 @@ public class CassandraMapperProvider implements MapperProvider {
     public MailboxMapper createMailboxMapper() throws MailboxException {
         return new CassandraMailboxSessionMapperFactory(
             new CassandraUidProvider(cassandra.getConf()),
-            new CassandraModSeqProvider(cassandra.getConf()),
+            cassandraModSeqProvider,
             cassandra.getConf(),
             cassandra.getTypesProvider(),
             new DefaultMessageId.Factory()
@@ -80,7 +90,7 @@ public class CassandraMapperProvider implements MapperProvider {
     public MessageMapper createMessageMapper() throws MailboxException {
         return new CassandraMailboxSessionMapperFactory(
             new CassandraUidProvider(cassandra.getConf()),
-            new CassandraModSeqProvider(cassandra.getConf()),
+            cassandraModSeqProvider,
             cassandra.getConf(),
             cassandra.getTypesProvider(),
             new DefaultMessageId.Factory()
@@ -96,7 +106,7 @@ public class CassandraMapperProvider implements MapperProvider {
     public AttachmentMapper createAttachmentMapper() throws MailboxException {
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
-                new CassandraModSeqProvider(cassandra.getConf()),
+                cassandraModSeqProvider,
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
                 new DefaultMessageId.Factory()
@@ -127,7 +137,7 @@ public class CassandraMapperProvider implements MapperProvider {
     public AnnotationMapper createAnnotationMapper() throws MailboxException {
         return new CassandraMailboxSessionMapperFactory(
                 new CassandraUidProvider(cassandra.getConf()),
-                new CassandraModSeqProvider(cassandra.getConf()),
+                cassandraModSeqProvider,
                 cassandra.getConf(),
                 cassandra.getTypesProvider(),
                 new DefaultMessageId.Factory()
@@ -136,11 +146,17 @@ public class CassandraMapperProvider implements MapperProvider {
 
     @Override
     public List<Capabilities> getNotImplemented() {
-        return ImmutableList.of();
+        return ImmutableList.of(Capabilities.UNIQUE_MESSAGE_ID);
     }
 
     @Override
     public MessageUid generateMessageUid() {
-        return MessageUid.of(RandomUtils.nextLong());
+        return messageUidProvider.next();
+    }
+
+    @Override
+    public long generateModSeq(Mailbox mailbox) throws MailboxException {
+        MailboxSession mailboxSession = null;
+        return cassandraModSeqProvider.nextModSeq(mailboxSession, mailbox);
     }
 }

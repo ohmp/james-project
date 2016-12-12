@@ -46,7 +46,7 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.assertj.core.data.MapEntry;
 import org.junit.After;
-import org.junit.Ignore;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.xenei.junit.contract.Contract;
@@ -55,14 +55,13 @@ import org.xenei.junit.contract.IProducer;
 
 import com.google.common.collect.ImmutableList;
 
-@Ignore
 @Contract(MapperProvider.class)
 public class MessageIdMapperTest<T extends MapperProvider> {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private final static char DELIMITER = ':';
+    private final static char DELIMITER = '.';
     private static final int BODY_START = 16;
     private final static long UID_VALIDITY = 42;
 
@@ -87,6 +86,8 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     public final void setProducer(IProducer<T> producer) throws MailboxException {
         this.producer = producer;
         this.mapperProvider = producer.newInstance();
+        Assume.assumeFalse(mapperProvider.getNotImplemented().contains(MapperProvider.Capabilities.UNIQUE_MESSAGE_ID));
+
         this.mapperProvider.ensureMapperPrepared();
         this.sut = mapperProvider.createMessageIdMapper();
         this.messageMapper = mapperProvider.createMessageMapper();
@@ -150,6 +151,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         List<MailboxId> mailboxes = sut.findMailboxes(message1.getMessageId());
@@ -159,6 +161,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void saveShouldSaveAMessage() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
         List<MailboxMessage> messages = sut.find(ImmutableList.of(message1.getMessageId()), FetchType.Full);
         assertThat(messages).containsOnly(message1);
@@ -170,18 +173,21 @@ public class MessageIdMapperTest<T extends MapperProvider> {
         notPersistedMailbox.setMailboxId(mapperProvider.generateId());
         SimpleMailboxMessage message = createMessage(notPersistedMailbox, "Subject: Test \n\nBody\n.\n", BODY_START, new PropertyBuilder());
         message.setUid(mapperProvider.generateMessageUid());
+        message.setModSeq(mapperProvider.generateModSeq(notPersistedMailbox));
 
         expectedException.expect(MailboxNotFoundException.class);
         sut.save(message);
     }
 
     @ContractTest
-    public void saveShouldSaveMessageAnotherIndicesWhenMessageAlreadyInMailbox() throws Exception {
+    public void saveShouldSaveMessageInAnotherMailboxWhenMessageAlreadyInOneMailbox() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         List<MailboxId> mailboxes = sut.findMailboxes(message1.getMessageId());
@@ -191,9 +197,11 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void saveShouldWorkWhenSavingTwoTimesWithSameMessageIdAndSameMailboxId() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
         SimpleMailboxMessage copiedMessage = SimpleMailboxMessage.copy(message1.getMailboxId(), message1);
         copiedMessage.setUid(mapperProvider.generateMessageUid());
+        copiedMessage.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(copiedMessage);
 
         List<MailboxId> mailboxes = sut.findMailboxes(message1.getMessageId());
@@ -208,6 +216,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void deleteShouldDeleteAMessage() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         MessageId messageId = message1.getMessageId();
@@ -220,10 +229,12 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void deleteShouldDeleteMessageIndicesWhenStoredInTwoMailboxes() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         MessageId messageId = message1.getMessageId();
@@ -236,9 +247,11 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void deleteShouldDeleteMessageIndicesWhenStoredTwoTimesInTheSameMailbox() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
         SimpleMailboxMessage copiedMessage = SimpleMailboxMessage.copy(message1.getMailboxId(), message1);
         copiedMessage.setUid(mapperProvider.generateMessageUid());
+        copiedMessage.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(copiedMessage);
 
         MessageId messageId = message1.getMessageId();
@@ -251,10 +264,12 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void deleteWithMailboxIdsShouldNotDeleteIndicesWhenMailboxIdsIsEmpty() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         MessageId messageId = message1.getMessageId();
@@ -267,10 +282,12 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void deleteWithMailboxIdsShouldDeleteOneIndexWhenMailboxIdsContainsOneElement() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         MessageId messageId = message1.getMessageId();
@@ -283,10 +300,12 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void deleteWithMailboxIdsShouldDeleteIndicesWhenMailboxIdsContainsMultipleElements() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         MessageId messageId = message1.getMessageId();
@@ -299,11 +318,12 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void setFlagsShouldReturnUpdatedFlagsWhenMessageIsInOneMailbox() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         MessageId messageId = message1.getMessageId();
         Flags newFlags = new Flags(Flag.ANSWERED);
-        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(newFlags, MessageManager.FlagsUpdateMode.REMOVE, messageId);
+        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(messageId, newFlags, MessageManager.FlagsUpdateMode.REMOVE);
 
         int modSeq = 1;
         UpdatedFlags expectedUpdatedFlags = new UpdatedFlags(message1.getUid(), modSeq, new Flags(), newFlags);
@@ -311,15 +331,24 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     }
 
     @ContractTest
+    public void setFlagsShouldReturnEmptyWhenMessageIdDoesntExist() throws Exception {
+        MessageId unknownMessageId = mapperProvider.generateMessageId();
+        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(unknownMessageId, new Flags(Flag.RECENT), MessageManager.FlagsUpdateMode.REMOVE);
+
+        assertThat(flags).isEmpty();
+    }
+
+    @ContractTest
     public void setFlagsShouldAddFlagsWhenAddUpdateMode() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         MessageId messageId = message1.getMessageId();
         Flags initialFlags = new Flags(Flag.RECENT);
-        sut.setFlags(initialFlags, MessageManager.FlagsUpdateMode.REMOVE, messageId);
+        sut.setFlags(messageId, initialFlags, MessageManager.FlagsUpdateMode.REMOVE);
 
-        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.ADD, messageId);
+        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(messageId, new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.ADD);
 
         Flags newFlags = new FlagsBuilder()
             .add(Flag.RECENT)
@@ -333,15 +362,17 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void setFlagsShouldReturnUpdatedFlagsWhenMessageIsInTwoMailboxes() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         MessageId messageId = message1.getMessageId();
         Flags newFlags = new Flags(Flag.ANSWERED);
-        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(newFlags, MessageManager.FlagsUpdateMode.REMOVE, messageId);
+        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(messageId, newFlags, MessageManager.FlagsUpdateMode.REMOVE);
 
         int modSeq = 1;
         UpdatedFlags expectedUpdatedFlags = new UpdatedFlags(message1.getUid(), modSeq, new Flags(), newFlags);
@@ -353,10 +384,11 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     @ContractTest
     public void setFlagsShouldUpdateFlagsWhenMessageIsInOneMailbox() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         MessageId messageId = message1.getMessageId();
-        sut.setFlags(new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.REMOVE, messageId);
+        sut.setFlags(messageId, new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.REMOVE);
 
         List<MailboxMessage> messages = sut.find(ImmutableList.of(messageId), MessageMapper.FetchType.Body);
         assertThat(messages).hasSize(1);
@@ -364,16 +396,33 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     }
 
     @ContractTest
+    public void setFlagsShouldUpdateModSeqWhenMessageIsInOneMailbox() throws Exception {
+        message1.setUid(mapperProvider.generateMessageUid());
+        long modSeq = mapperProvider.generateModSeq(benwaInboxMailbox);
+        message1.setModSeq(modSeq);
+        sut.save(message1);
+
+        MessageId messageId = message1.getMessageId();
+        sut.setFlags(messageId, new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.REMOVE);
+
+        List<MailboxMessage> messages = sut.find(ImmutableList.of(messageId), MessageMapper.FetchType.Body);
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0).getModSeq()).isGreaterThan(modSeq);
+    }
+
+    @ContractTest
     public void setFlagsShouldUpdateFlagsWhenMessageIsInTwoMailboxes() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
         sut.save(message1);
 
         SimpleMailboxMessage message1InOtherMailbox = SimpleMailboxMessage.copy(benwaWorkMailbox.getMailboxId(), message1);
         message1InOtherMailbox.setUid(mapperProvider.generateMessageUid());
+        message1InOtherMailbox.setModSeq(mapperProvider.generateModSeq(benwaWorkMailbox));
         sut.save(message1InOtherMailbox);
 
         MessageId messageId = message1.getMessageId();
-        sut.setFlags(new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.REMOVE, messageId);
+        sut.setFlags(messageId, new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.REMOVE);
 
         List<MailboxMessage> messages = sut.find(ImmutableList.of(messageId), MessageMapper.FetchType.Body);
         assertThat(messages).hasSize(2);
@@ -397,7 +446,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
 
     private void addMessageAndSetModSeq(Mailbox mailbox, MailboxMessage message) throws MailboxException {
         messageMapper.add(mailbox, message);
-        message1.setModSeq(messageMapper.getHighestModSeq(mailbox));
+        message1.setModSeq(mapperProvider.generateModSeq(mailbox));
     }
 
     private SimpleMailboxMessage createMessage(Mailbox mailbox, String content, int bodyStart, PropertyBuilder propertyBuilder) {
