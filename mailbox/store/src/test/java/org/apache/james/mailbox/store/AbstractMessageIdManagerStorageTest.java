@@ -39,6 +39,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -46,6 +47,17 @@ import com.google.common.collect.ImmutableList;
 public abstract class AbstractMessageIdManagerStorageTest {
 
     public static final Flags FLAGS = new Flags();
+
+    
+    private static final Function<MessageResult, Flags> getFlags() {
+        return new Function<MessageResult, Flags>() {
+            @Override
+            public Flags apply(MessageResult input) {
+                return input.getFlags();
+            }
+        };
+    }
+
     private MessageIdManagerTestSystem testingData;
     private MessageIdManager messageIdManager;
     private Mailbox mailbox1;
@@ -263,6 +275,41 @@ public abstract class AbstractMessageIdManagerStorageTest {
     }
 
     @Test
+    public void setFlagsShouldChangeFlagsInAllMailboxes() throws Exception {
+        Flags newFlags = new Flags(Flags.Flag.SEEN);
+        MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
+        messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox2.getMailboxId()), session);
+        
+        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, session);
+        
+        List<Flags> flags = FluentIterable
+                .from(messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, session))
+                .transform(getFlags())
+                .toList();
+
+        assertThat(flags).hasSize(2);
+        assertThat(flags.get(0)).isEqualTo(newFlags);
+        assertThat(flags.get(1)).isEqualTo(newFlags);
+    }
+
+    @Test
+    public void setFlagsShouldNotChangeFlagsOfAnotherMessageInSameMailbox() throws Exception {
+        Flags newFlags = new Flags(Flags.Flag.SEEN);
+        MessageId messageId1 = testingData.persist(mailbox1.getMailboxId(), FLAGS);
+        MessageId messageId2 = testingData.persist(mailbox1.getMailboxId(), FLAGS);
+        
+        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId2, session);
+        
+        List<Flags> flags = FluentIterable
+                .from(messageIdManager.getMessages(ImmutableList.of(messageId1), FetchGroupImpl.MINIMAL, session))
+                .transform(getFlags())
+                .toList();
+
+        assertThat(flags).hasSize(1);
+        assertThat(flags.get(0)).isEqualTo(FLAGS);
+    }
+
+    @Test
     public void getMessageShouldBeEmptyWhenMessageHasNoMoreMailboxes() throws Exception {
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), FLAGS);
 
@@ -291,4 +338,5 @@ public abstract class AbstractMessageIdManagerStorageTest {
             }
         };
     }
+
 }
