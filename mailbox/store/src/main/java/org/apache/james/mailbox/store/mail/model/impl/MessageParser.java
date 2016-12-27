@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.Cid;
 import org.apache.james.mailbox.model.MessageAttachment;
-import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
 import org.apache.james.mime4j.dom.Body;
@@ -41,6 +40,8 @@ import org.apache.james.mime4j.dom.field.ParsedField;
 import org.apache.james.mime4j.message.DefaultMessageBuilder;
 import org.apache.james.mime4j.message.DefaultMessageWriter;
 import org.apache.james.mime4j.stream.Field;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -48,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 
 public class MessageParser {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageParser.class);
     private static final String TEXT_MEDIA_TYPE = "text";
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_ID = "Content-ID";
@@ -57,8 +59,8 @@ public class MessageParser {
             ContentDispositionField.DISPOSITION_TYPE_ATTACHMENT.toLowerCase(),
             ContentDispositionField.DISPOSITION_TYPE_INLINE.toLowerCase());
 
-    public List<MessageAttachment> retrieveAttachments(InputStream fullContent) throws MimeException, IOException {
-        Body body = new DefaultMessageBuilder()
+    public List<MessageAttachment> retrieveAttachments(InputStream fullContent) throws IOException {
+            Body body = new DefaultMessageBuilder()
                 .parseMessage(fullContent)
                 .getBody();
         try {
@@ -73,19 +75,28 @@ public class MessageParser {
         }
     }
 
-    private List<MessageAttachment> listAttachments(Multipart multipart, Context context) throws IOException {
+    private List<MessageAttachment> listAttachments(Multipart multipart, Context context) {
         ImmutableList.Builder<MessageAttachment> attachments = ImmutableList.builder();
         MessageWriter messageWriter = new DefaultMessageWriter();
         for (Entity entity : multipart.getBodyParts()) {
-            if (isMultipart(entity)) {
-                attachments.addAll(listAttachments((Multipart) entity.getBody(), Context.fromEntity(entity)));
-            } else {
-                if (isAttachment(entity, context)) {
-                    attachments.add(retrieveAttachment(messageWriter, entity));
-                }
+            try {
+                attachments.addAll(handleEntity(entity, context, messageWriter));
+            } catch (Exception e) {
+                LOGGER.info("Can not parse attachment", e);
             }
         }
         return attachments.build();
+    }
+
+    private List<MessageAttachment> handleEntity(Entity entity, Context context, MessageWriter messageWriter) throws IOException {
+        if (isMultipart(entity)) {
+            return listAttachments((Multipart) entity.getBody(), Context.fromEntity(entity));
+        } else {
+            if (isAttachment(entity, context)) {
+                return ImmutableList.of(retrieveAttachment(messageWriter, entity));
+            }
+        }
+        return ImmutableList.of();
     }
 
     private MessageAttachment retrieveAttachment(MessageWriter messageWriter, Entity entity) throws IOException {

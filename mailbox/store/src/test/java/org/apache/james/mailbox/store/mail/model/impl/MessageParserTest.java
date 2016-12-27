@@ -184,4 +184,11 @@ public class MessageParserTest {
 
         assertThat(attachments).hasSize(0);
     }
+
+    @Test
+    public void retireveAttachmentsShouldReturnPartialResultWhenFault() throws Exception {
+        List<MessageAttachment> attachments = testee.retrieveAttachments(ClassLoader.getSystemResourceAsStream("eml/twoAttachmentsOneBadOneGood.eml"));
+
+        assertThat(attachments).hasSize(1);
+    }
 }
