@@ -150,6 +150,19 @@ Feature: GetMessages method
       |cid      |"part1.37A15C92.A7C3488D@linagora.com"     |
       |isInline |true                                       |
 
+  Scenario: Mailbox should preserve valid attachment when non valid attachments are present
+    Given the user has a message "m1" in "inbox" mailbox with two attachments, one bad, one valid
+    When the user ask for messages "m1"
+    Then no error is returned
+    And the list of attachments of the message contains 1 attachments
+    And the first attachment is:
+      |key      | value                                     |
+      |blobId   |"223a76c0e8c1b1762487d8e0598bd88497d73ef2" |
+      |type     |"image/jpeg"                               |
+      |size     |846                                        |
+      |cid      |null                                       |
+      |isInline |false                                      |
+
   Scenario: Retrieving message should return attachments and html body when some attachments and html message
     Given the user has a message "m1" in "inbox" mailbox with two attachments
     When the user ask for messages "m1"

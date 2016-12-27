@@ -167,6 +167,11 @@ public class GetMessagesMethodStepdefs {
         appendMessage(messageName, "eml/longLine.eml");
     }
 
+    @Given("^the user has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with two attachments, one bad, one valid$")
+    public void appendMessageTwoAttachmentOneBadOneValid(String messageName, String mailbox) throws Throwable {
+        appendMessage(messageName, "eml/twoAttachmentsOneBadOneGood.eml");
+    }
+
     private void appendMessage(String messageName, String emlFileName) throws Exception {
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
         MessageId id = mainStepdefs.jmapServer.serverProbe().appendMessage(userStepdefs.lastConnectedUser,
