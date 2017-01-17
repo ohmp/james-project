@@ -123,6 +123,8 @@ public abstract class SetMessagesMethodTest {
         accessToken = JmapAuthentication.authenticateJamesUser(USERNAME, password);
 
         jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "outbox");
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "trash");
+        jmapServer.serverProbe().createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "draft");
         await();
 
         Duration slowPacedPollInterval = Duration.FIVE_HUNDRED_MILLISECONDS;
@@ -2020,6 +2022,45 @@ public abstract class SetMessagesMethodTest {
             .body(ARGUMENTS + ".list", hasSize(1))
             .body(firstMessage + ".mailboxIds", contains(heartFolderId))
             .body(firstMessage + ".isUnread", equalTo(true));
+    }
+
+    @Test
+    public void moveToTrashIsNotYetSupported() throws Exception {
+        String newMailboxName = "heartFolder";
+        jmapServer.serverProbe().createMailbox("#private", USERNAME, newMailboxName);
+        String trashId = jmapServer.serverProbe().getMailbox("#private", USERNAME, "trash").getMailboxId().serialize();
+
+        ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
+        ComposedMessageId message = jmapServer.serverProbe().appendMessage(USERNAME, new MailboxPath("#private", USERNAME, "inbox"),
+            new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(Charsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
+
+        String messageToMoveId = message.getMessageId().serialize();
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\","+
+            "    {" +
+            "      \"update\": { \"" + messageToMoveId + "\" : {" +
+            "        \"mailboxIds\": [\"" + trashId + "\"]" +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body(requestBody)
+        .when()
+            .post("/jmap")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body(NAME, equalTo("messagesSet"))
+            .body(NOT_UPDATED, hasKey(messageToMoveId))
+            .body(NOT_UPDATED + "[\""+messageToMoveId+"\"].type", equalTo("invalidProperties"))
+            .body(NOT_UPDATED + "[\""+messageToMoveId+"\"].properties", hasSize(1))
+            .body(NOT_UPDATED + "[\""+messageToMoveId+"\"].properties[0]", equalTo("inMailboxes"))
+            .body(ARGUMENTS + ".updated", hasSize(0));
     }
     
     @Test
