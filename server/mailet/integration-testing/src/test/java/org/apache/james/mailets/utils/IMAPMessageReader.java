@@ -45,6 +45,14 @@ public class IMAPMessageReader implements Closeable {
             .contains("OK FETCH completed");
     }
 
+    public boolean userGetNotifiedForNewMessagesWhenSelectingMailbox(String user, String password, int numOfNewMessage, String mailboxName) throws IOException {
+        imapClient.login(user, password);
+        imapClient.select(mailboxName);
+        System.out.println(imapClient.getReplyString());
+
+        return imapClient.getReplyString().contains("OK [UNSEEN " + numOfNewMessage +"]");
+    }
+
     public boolean userDoesNotReceiveMessage(String user, String password) throws IOException {
         return userDoesNotReceiveMessageInMailbox(user, password, "INBOX");
     }
