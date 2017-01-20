@@ -51,7 +51,6 @@ public class IMAPMessageReader implements Closeable {
 
     public boolean userGetNotifiedForNewMessagesWhenSelectingMailbox(String user, String password, int numOfNewMessage, String mailboxName) throws IOException {
         connectAndSelect(user, password, mailboxName);
-        System.out.println(imapClient.getReplyString());
 
         return imapClient.getReplyString().contains("OK [UNSEEN " + numOfNewMessage +"]");
     }
