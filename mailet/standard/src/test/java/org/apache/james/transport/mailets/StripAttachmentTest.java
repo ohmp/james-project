@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -307,6 +308,31 @@ public class StripAttachmentTest {
         MimeBodyPart savedBodyPart = new MimeBodyPart(new ByteArrayInputStream(saved.get(expectedKey)));
         String content = IOUtils.toString(savedBodyPart.getInputStream());
         assertThat(content).isEqualTo(EXPECTED_ATTACHMENT_CONTENT);
+    }
+
+    @Test
+    public void mimeTypeParameterShouldAllowMimeTypes() throws MessagingException, IOException {
+        StripAttachment mailet = new StripAttachment();
+
+        String customAttribute = "my.custom.attribute";
+        FakeMailetConfig mci = FakeMailetConfig.builder()
+            .setProperty("mimeType", "text/calendar, application/ics")
+            .setProperty("attribute", customAttribute)
+            .build();
+        mailet.init(mci);
+
+        InputStream gmailMimeStream = ClassLoader.getSystemResourceAsStream("mime/gmail.mime");
+
+        Mail mail = FakeMail.builder()
+            .mimeMessage(MimeMessageBuilder.mimeMessageFromStream(gmailMimeStream))
+            .build();
+
+        mailet.service(mail);
+
+        @SuppressWarnings("unchecked")
+        Map<String, byte[]> saved = (Map<String, byte[]>) mail.getAttribute(customAttribute);
+        assertThat(saved).hasSize(2);
+        assertThat(saved).containsOnlyKeys("invite.ics", "Portion de message joint");
     }
 
     @Test
