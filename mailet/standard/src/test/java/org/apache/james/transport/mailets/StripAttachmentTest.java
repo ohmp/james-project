@@ -311,7 +311,7 @@ public class StripAttachmentTest {
     }
 
     @Test
-    public void test() throws MessagingException, IOException {
+    public void serviceShouldDecodeHeaderFilenames() throws MessagingException, IOException {
         StripAttachment mailet = new StripAttachment();
 
         String customAttribute = "my.custom.attribute";
