@@ -26,12 +26,14 @@ import javax.inject.Singleton;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.james.backends.es.ClientProvider;
+import org.apache.james.backends.es.ClientProviderImpl;
+import org.apache.james.backends.es.IndexCreationFactory;
+import org.apache.james.backends.es.NodeMappingFactory;
 import org.apache.james.filesystem.api.FileSystem;
-import org.apache.james.mailbox.elasticsearch.ClientProvider;
-import org.apache.james.mailbox.elasticsearch.ClientProviderImpl;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
-import org.apache.james.mailbox.elasticsearch.IndexCreationFactory;
-import org.apache.james.mailbox.elasticsearch.NodeMappingFactory;
+import org.apache.james.mailbox.elasticsearch.MailboxElasticsearchConstants;
+import org.apache.james.mailbox.elasticsearch.MailboxMappingFactory;
 import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
@@ -74,9 +76,13 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         Client client = getRetryer(executor, propertiesReader)
                 .getWithRetry(ctx -> clientProvider.get()).get();
         IndexCreationFactory.createIndex(client,
+            MailboxElasticsearchConstants.MAILBOX_INDEX,
             propertiesReader.getInt("elasticsearch.nb.shards"),
             propertiesReader.getInt("elasticsearch.nb.replica"));
-        NodeMappingFactory.applyMapping(client);
+        NodeMappingFactory.applyMapping(client,
+            MailboxElasticsearchConstants.MAILBOX_INDEX,
+            MailboxElasticsearchConstants.MESSAGE_TYPE,
+            MailboxMappingFactory.getMappingContent());
         return client;
     }
 
