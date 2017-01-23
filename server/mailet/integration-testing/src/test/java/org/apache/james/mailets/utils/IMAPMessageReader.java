@@ -54,16 +54,17 @@ public class IMAPMessageReader implements Closeable {
     }
 
     public String readFirstMessageInInbox(String user, String password) throws IOException {
-        imapClient.login(user, password);
-        imapClient.select("INBOX");
-        imapClient.fetch("1:1", "(BODY[])");
-        return imapClient.getReplyString();
+        return readFirstMessageInInbox(user, password, "(BODY[])");
     }
 
     public String readFirstMessageHeadersInInbox(String user, String password) throws IOException {
+        return readFirstMessageInInbox(user, password, "(RFC822.HEADER)");
+    }
+
+    private String readFirstMessageInInbox(String user, String password, String parameters) throws IOException {
         imapClient.login(user, password);
         imapClient.select("INBOX");
-        imapClient.fetch("1:1", "(RFC822.HEADER)");
+        imapClient.fetch("1:1", parameters);
         return imapClient.getReplyString();
     }
 
