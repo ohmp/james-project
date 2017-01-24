@@ -105,13 +105,16 @@ public class ICALToJsonAttributeTest {
     public void initShouldSetAttributesWhenPresent() throws Exception {
         String destination = "myDestination";
         String source = "mySource";
+        String raw = "myRaw";
         testee.init(FakeMailetConfig.builder()
             .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME, source)
             .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME, destination)
+            .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME, raw)
             .build());
 
         assertThat(testee.getSourceAttributeName()).isEqualTo(source);
         assertThat(testee.getDestinationAttributeName()).isEqualTo(destination);
+        assertThat(testee.getRawSourceAttributeName()).isEqualTo(raw);
     }
 
     @Test
