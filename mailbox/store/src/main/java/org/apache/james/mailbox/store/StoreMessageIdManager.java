@@ -223,8 +223,10 @@ public class StoreMessageIdManager implements MessageIdManager {
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
         for (MailboxId mailboxId : mailboxIds) {
             SimpleMailboxMessage copy = SimpleMailboxMessage.copy(mailboxId, mailboxMessage);
+            Flags flags = copy.createFlags();
+            flags.add(Flag.RECENT);
+            copy.setFlags(flags);
             MessageMetaData metaData = save(mailboxSession, messageIdMapper, copy);
-            metaData.getFlags().add(Flag.RECENT);
             dispatcher.added(mailboxSession, metaData, mailboxMapper.findMailboxById(mailboxId));
         }
     }
