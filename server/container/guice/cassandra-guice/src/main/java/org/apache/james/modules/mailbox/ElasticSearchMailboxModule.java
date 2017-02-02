@@ -49,12 +49,12 @@ import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
 public class ElasticSearchMailboxModule extends AbstractModule {
 
-    private static final int DEFAULT_CONNECTION_MAX_RETRIES = 7;
-    private static final int DEFAULT_CONNECTION_MIN_DELAY = 3000;
-    private static final boolean DEFAULT_INDEX_ATTACHMENTS = true;
     public static final String ES_CONFIG_FILE = FileSystem.FILE_PROTOCOL_AND_CONF + "elasticsearch.properties";
     public static final String ELASTICSEARCH_MASTER_HOST = "elasticsearch.masterHost";
     public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
+    private static final int DEFAULT_CONNECTION_MAX_RETRIES = 7;
+    private static final int DEFAULT_CONNECTION_MIN_DELAY = 3000;
+    private static final boolean DEFAULT_INDEX_ATTACHMENTS = true;
 
     @Override
     protected void configure() {
