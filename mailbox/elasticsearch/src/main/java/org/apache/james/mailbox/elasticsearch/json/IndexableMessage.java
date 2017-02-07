@@ -68,12 +68,12 @@ public class IndexableMessage {
     }
 
     private void setFlattenedAttachments(MimePart parsingResult, IndexAttachments indexAttachments) {
-        if (indexAttachments.equals(IndexAttachments.YES)) {
-            attachments = parsingResult.getAttachmentsStream()
-                    .collect(Collectors.toList());
-        } else {
-            attachments = ImmutableList.of();
-        }
+        List<MimePart> mimeparts = parsingResult.getAttachmentsStream()
+                .collect(Collectors.toList());
+
+        hasAttachment = mimeparts.stream().anyMatch(IndexableMessage::isAttachmentMimepart);
+
+        this.attachments = IndexAttachments.YES.equals(indexAttachments) ? mimeparts : ImmutableList.of();
     }
 
     private void copyHeaderFields(HeaderCollection headerCollection, ZonedDateTime internalDate) {
@@ -114,6 +114,12 @@ public class IndexableMessage {
             zoneId);
     }
 
+    private static boolean isAttachmentMimepart(MimePart mimepart) {
+        return mimepart.getContentDisposition()
+                .map("attachment"::equals)
+                .orElse(false);
+    }
+
     private void generateText() {
         this.text = Stream.of(from.serialize(),
                 to.serialize(),
@@ -134,6 +140,7 @@ public class IndexableMessage {
     private String date;
     private String mediaType;
     private String subType;
+    private boolean hasAttachment;
     private boolean isUnRead;
     private boolean isRecent;
     private boolean isFlagged;
@@ -155,11 +162,12 @@ public class IndexableMessage {
     private Optional<String> bodyHtml;
     private String text;
 
+
     public IndexableMessage(long uid, String mailboxId, List<String> users, long modSeq, long size, String date, String mediaType,
                             String subType, boolean isUnRead, boolean isRecent, boolean isFlagged, boolean isDeleted, boolean isDraft,
                             boolean isAnswered, String[] userFlags, Multimap<String, String> headers, EMailers from, EMailers to,
                             EMailers cc, EMailers bcc, EMailers replyTo, Subjects subjects, String sentDate, List<Property> properties,
-                            List<MimePart> attachments, Optional<String> bodyText, Optional<String> bodyHtml, String text) {
+                            List<MimePart> attachments, boolean hasAttachment, Optional<String> bodyText, Optional<String> bodyHtml, String text) {
         this.uid = uid;
         this.mailboxId = mailboxId;
         this.users = users;
@@ -185,6 +193,7 @@ public class IndexableMessage {
         this.sentDate = sentDate;
         this.properties = properties;
         this.attachments = attachments;
+        this.hasAttachment = hasAttachment;
         this.bodyText = bodyText;
         this.bodyHtml = bodyHtml;
         this.text = text;
@@ -330,7 +339,7 @@ public class IndexableMessage {
 
     @JsonProperty(JsonMessageConstants.HAS_ATTACHMENT)
     public boolean getHasAttachment() {
-        return attachments.size() > 0;
+        return hasAttachment;
     }
 
     @JsonProperty(JsonMessageConstants.TEXT)
