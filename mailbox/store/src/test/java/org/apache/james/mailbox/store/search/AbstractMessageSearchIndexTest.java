@@ -67,6 +67,7 @@ public abstract class AbstractMessageSearchIndexTest {
     private ComposedMessageId m7;
     private ComposedMessageId m8;
     private ComposedMessageId m9;
+    private ComposedMessageId mailWithAttachment;
     private ComposedMessageId mOther;
 
     @Before
@@ -162,6 +163,14 @@ public abstract class AbstractMessageSearchIndexTest {
             session,
             true,
             new Flags("Hello you"));
+
+        mailWithAttachment = myFolderMessageManager.appendMessage(
+            ClassLoader.getSystemResourceAsStream("eml/oneAttachmentAndSomeTextInlined.eml"),
+            new Date(1409608900000L),
+            session,
+            true,
+            new Flags("Hello you"));
+
         await();
     }
 
@@ -224,6 +233,22 @@ public abstract class AbstractMessageSearchIndexTest {
     }
 
     @Test
+    public void hasAttachment() throws MailboxException {
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.andCriteria(SearchQuery.hasAttachment());
+        assertThat(messageSearchIndex.search(session, mailbox2, searchQuery))
+            .containsOnly(mailWithAttachment.getUid());
+    }
+
+    @Test
+    public void hasNoAttachment() throws MailboxException {
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.andCriteria(SearchQuery.hasNoAttachment());
+        assertThat(messageSearchIndex.search(session, mailbox2, searchQuery))
+            .containsOnly(mOther.getUid());
+    }
+
+    @Test
     public void flagIsSetShouldReturnUidOfMessageMarkedAsDeletedWhenUsedWithFlagDeleted() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.flagIsSet(Flags.Flag.DELETED));
@@ -272,7 +297,7 @@ public abstract class AbstractMessageSearchIndexTest {
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
             .containsOnly(m6.getUid());
     }
-    
+
     @Test
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInAllMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
@@ -287,7 +312,7 @@ public abstract class AbstractMessageSearchIndexTest {
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInOneMailbox() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.flagIsSet(Flags.Flag.SEEN));
-        MultimailboxesSearchQuery query = 
+        MultimailboxesSearchQuery query =
                 MultimailboxesSearchQuery
                     .from(searchQuery)
                     .inMailboxes(mailbox.getMailboxId())
@@ -302,7 +327,7 @@ public abstract class AbstractMessageSearchIndexTest {
     public void multimailboxSearchShouldReturnUidOfMessageWithExpectedFromInTwoMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.address(AddressType.From, "murari"));
-        MultimailboxesSearchQuery query = 
+        MultimailboxesSearchQuery query =
                 MultimailboxesSearchQuery
                     .from(searchQuery)
                     .inMailboxes(mailbox.getMailboxId(), mailbox2.getMailboxId())
@@ -316,7 +341,7 @@ public abstract class AbstractMessageSearchIndexTest {
     public void multimailboxSearchShouldReturnUidOfMessageWithExpectedFromInAllMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.address(AddressType.From, "murari"));
-        MultimailboxesSearchQuery query = 
+        MultimailboxesSearchQuery query =
                 MultimailboxesSearchQuery
                     .from(searchQuery)
                     .build();
@@ -330,7 +355,7 @@ public abstract class AbstractMessageSearchIndexTest {
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInTwoMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.flagIsSet(Flags.Flag.SEEN));
-        MultimailboxesSearchQuery query = 
+        MultimailboxesSearchQuery query =
                 MultimailboxesSearchQuery
                     .from(searchQuery)
                     .inMailboxes(mailbox.getMailboxId(), mailbox2.getMailboxId())
@@ -910,6 +935,6 @@ public abstract class AbstractMessageSearchIndexTest {
         List<MessageId> actual = messageSearchIndex.search(session, MultimailboxesSearchQuery.from(searchQuery).build(), LIMIT);
 
         assertThat(actual).containsOnly(m1.getMessageId(), m2.getMessageId(), m3.getMessageId(), m4.getMessageId(), m5.getMessageId(),
-            m6.getMessageId(), m7.getMessageId(), m8.getMessageId(), m9.getMessageId(), mOther.getMessageId());
+            m6.getMessageId(), m7.getMessageId(), m8.getMessageId(), m9.getMessageId(), mOther.getMessageId(), mailWithAttachment.getMessageId());
     }
 }

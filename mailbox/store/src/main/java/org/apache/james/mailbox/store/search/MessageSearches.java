@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.Predicate;
 
 import javax.mail.Flags;
 
@@ -40,6 +41,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.UnsupportedSearchException;
+import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageResult.Header;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SearchQuery.AddressType;
@@ -94,6 +96,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
     public MessageSearches() {
     }
 
+    @Override
     public Iterator<SimpleMessageSearchIndex.SearchResult> iterator() {
         ImmutableList.Builder<MailboxMessage> builder = ImmutableList.builder();
         while (messages.hasNext()) {
@@ -125,7 +128,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
 
     /**
      * Does the row match the given criteria?
-     * 
+     *
      * @param query
      *            <code>SearchQuery</code>, not null
      * @param message
@@ -151,7 +154,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
 
     /**
      * Does the row match the given criterion?
-     * 
+     *
      * @param criterion
      *            the criterion to use
      * @param message
@@ -187,6 +190,8 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
             result = true;
         } else if (criterion instanceof SearchQuery.ConjunctionCriterion) {
             result = matches((SearchQuery.ConjunctionCriterion) criterion, message, recentMessageUids);
+        } else if (criterion instanceof SearchQuery.AttachmentCriterion) {
+            result = matches((SearchQuery.AttachmentCriterion) criterion, message);
         } else if (criterion instanceof SearchQuery.ModSeqCriterion) {
             result = matches((SearchQuery.ModSeqCriterion) criterion, message);
         } else {
@@ -394,7 +399,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
 
     /**
      * Match against a {@link AddressType} header
-     * 
+     *
      * @param operator
      * @param headerName
      * @param message
@@ -521,6 +526,18 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
         cal.set(dateTime.getYear(), dateTime.getMonth() - 1, dateTime.getDay(), dateTime.getHour(),
                 dateTime.getMinute(), dateTime.getSecond());
         return cal.getTime();
+    }
+
+
+    private boolean matches(SearchQuery.AttachmentCriterion criterion, MailboxMessage message) throws UnsupportedSearchException {
+        boolean mailHasAttachments = message.getAttachments().stream().anyMatch(new Predicate<MessageAttachment>() {
+            @Override
+            public boolean test(MessageAttachment attachment) {
+                return !attachment.isInline();
+            }
+        });
+
+        return mailHasAttachments == criterion.getOperator().isSet();
     }
 
     private boolean matches(SearchQuery.SizeCriterion criterion, MailboxMessage message) throws UnsupportedSearchException {

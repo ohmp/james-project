@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.ZoneId;
 
 import javax.mail.Flags;
@@ -198,14 +199,102 @@ public class IndexableMessageTest {
                 new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.NO);
 
         assertThat(indexableMessage.getText()).isEqualTo("Ad Min admin@opush.test " +
-                "a@test a@test B b@test " + 
+                "a@test a@test B b@test " +
                 "c@test c@test " +
-                "dD d@test " + 
-                "my subject " + 
+                "dD d@test " +
+                "my subject " +
                 "Mail content\n" +
                 "\n" +
-                "-- \n" + 
+                "-- \n" +
                 "Ad Min\n");
+    }
+
+    @Test
+    public void hasAttachmentsShouldReturnTrueIfThereIsOneAttachmentThatHaveAttachmentAsContentDispositionAndIndexingIsAsked() throws IOException {
+        //Given
+        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
+        TestId mailboxId = TestId.of(1);
+        when(mailboxMessage.getMailboxId())
+            .thenReturn(mailboxId);
+        when(mailboxMessage.getFullContent())
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithAttachment.eml"))));
+        when(mailboxMessage.createFlags())
+            .thenReturn(new Flags());
+        when(mailboxMessage.getUid())
+            .thenReturn(MESSAGE_UID);
+
+        // When
+        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
+                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
+
+        // Then
+        assertThat(indexableMessage.getHasAttachment()).isTrue();
+    }
+
+    @Test
+    public void hasAttachmentsShouldReturnTrueIfThereIsOneAttachmentThatHaveAttachmentAsContentDispositionAndIndexingIsNotAsked() throws IOException {
+        //Given
+        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
+        TestId mailboxId = TestId.of(1);
+        when(mailboxMessage.getMailboxId())
+            .thenReturn(mailboxId);
+        when(mailboxMessage.getFullContent())
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithAttachment.eml"))));
+        when(mailboxMessage.createFlags())
+            .thenReturn(new Flags());
+        when(mailboxMessage.getUid())
+            .thenReturn(MESSAGE_UID);
+
+        // When
+        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
+                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.NO);
+
+        // Then
+        assertThat(indexableMessage.getHasAttachment()).isTrue();
+    }
+
+    @Test
+    public void hasAttachmentsShouldReturnFalseIfThereIsNoAttachmentThatHaveAttachmentAsContentDispositionAndAttachmentIndexingIsAsked() throws IOException {
+        //Given
+        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
+        TestId mailboxId = TestId.of(1);
+        when(mailboxMessage.getMailboxId())
+            .thenReturn(mailboxId);
+        when(mailboxMessage.getFullContent())
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithOnlyInlineAttachment.eml"))));
+        when(mailboxMessage.createFlags())
+            .thenReturn(new Flags());
+        when(mailboxMessage.getUid())
+            .thenReturn(MESSAGE_UID);
+
+        // When
+        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
+                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
+
+        // Then
+        assertThat(indexableMessage.getHasAttachment()).isFalse();
+    }
+
+    @Test
+    public void hasAttachmentsShouldReturnFalseIfThereIsNoAttachmentThatHaveAttachmentAsContentDispositionAndAttachmentIndexingIsNotAsked() throws IOException {
+        //Given
+        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
+        TestId mailboxId = TestId.of(1);
+        when(mailboxMessage.getMailboxId())
+            .thenReturn(mailboxId);
+        when(mailboxMessage.getFullContent())
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithOnlyInlineAttachment.eml"))));
+        when(mailboxMessage.createFlags())
+            .thenReturn(new Flags());
+        when(mailboxMessage.getUid())
+            .thenReturn(MESSAGE_UID);
+
+        // When
+        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
+                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.NO);
+
+        // Then
+        assertThat(indexableMessage.getHasAttachment()).isFalse();
     }
 
     @Test
@@ -216,7 +305,7 @@ public class IndexableMessageTest {
         when(mailboxMessage.getMailboxId())
             .thenReturn(mailboxId);
         when(mailboxMessage.getFullContent())
-            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/Toto.eml"))));
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithAttachment.eml"))));
         when(mailboxMessage.createFlags())
             .thenReturn(new Flags());
         when(mailboxMessage.getUid())
@@ -238,7 +327,7 @@ public class IndexableMessageTest {
         when(mailboxMessage.getMailboxId())
             .thenReturn(mailboxId);
         when(mailboxMessage.getFullContent())
-            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/Toto.eml"))));
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithAttachment.eml"))));
         when(mailboxMessage.createFlags())
             .thenReturn(new Flags());
         when(mailboxMessage.getUid())
