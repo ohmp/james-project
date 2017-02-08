@@ -40,6 +40,8 @@ import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.extractor.DefaultTextExtractor;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.tika.extractor.TikaTextExtractor;
+import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -210,7 +212,30 @@ public class IndexableMessageTest {
     }
 
     @Test
-    public void hasAttachmentsShouldReturnTrueIfThereIsOneAttachmentThatHaveAttachmentAsContentDispositionAndIndexingIsAsked() throws IOException {
+    public void hasAttachmentsShouldReturnTrueWhenPropertyIsPresentAndTrue() throws IOException {
+        //Given
+        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
+        TestId mailboxId = TestId.of(1);
+        when(mailboxMessage.getMailboxId())
+            .thenReturn(mailboxId);
+        when(mailboxMessage.getFullContent())
+            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithHeaders.eml"))));
+        when(mailboxMessage.createFlags())
+            .thenReturn(new Flags());
+        when(mailboxMessage.getUid())
+            .thenReturn(MESSAGE_UID);
+        when(mailboxMessage.getProperties()).thenReturn(ImmutableList.of(IndexableMessage.HAS_ATTACHMENT_PROPERTY));
+
+        // When
+        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
+                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
+
+        // Then
+        assertThat(indexableMessage.getHasAttachment()).isTrue();
+    }
+
+    @Test
+    public void hasAttachmentsShouldReturnTrueWhenPropertyIsPresentButFalse() throws IOException {
         //Given
         MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
         TestId mailboxId = TestId.of(1);
@@ -222,61 +247,19 @@ public class IndexableMessageTest {
             .thenReturn(new Flags());
         when(mailboxMessage.getUid())
             .thenReturn(MESSAGE_UID);
+        when(mailboxMessage.getProperties())
+            .thenReturn(ImmutableList.of(new SimpleProperty(PropertyBuilder.JAMES_INTERNALS, PropertyBuilder.HAS_ATTACHMENT, "false")));
 
         // When
         IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
-                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
-
-        // Then
-        assertThat(indexableMessage.getHasAttachment()).isTrue();
-    }
-
-    @Test
-    public void hasAttachmentsShouldReturnTrueIfThereIsOneAttachmentThatHaveAttachmentAsContentDispositionAndIndexingIsNotAsked() throws IOException {
-        //Given
-        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
-        TestId mailboxId = TestId.of(1);
-        when(mailboxMessage.getMailboxId())
-            .thenReturn(mailboxId);
-        when(mailboxMessage.getFullContent())
-            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithAttachment.eml"))));
-        when(mailboxMessage.createFlags())
-            .thenReturn(new Flags());
-        when(mailboxMessage.getUid())
-            .thenReturn(MESSAGE_UID);
-
-        // When
-        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
-                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.NO);
-
-        // Then
-        assertThat(indexableMessage.getHasAttachment()).isTrue();
-    }
-
-    @Test
-    public void hasAttachmentsShouldReturnFalseIfThereIsNoAttachmentThatHaveAttachmentAsContentDispositionAndAttachmentIndexingIsAsked() throws IOException {
-        //Given
-        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
-        TestId mailboxId = TestId.of(1);
-        when(mailboxMessage.getMailboxId())
-            .thenReturn(mailboxId);
-        when(mailboxMessage.getFullContent())
-            .thenReturn(new ByteArrayInputStream(IOUtils.toByteArray(ClassLoader.getSystemResourceAsStream("eml/mailWithOnlyInlineAttachment.eml"))));
-        when(mailboxMessage.createFlags())
-            .thenReturn(new Flags());
-        when(mailboxMessage.getUid())
-            .thenReturn(MESSAGE_UID);
-
-        // When
-        IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
-                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
+            new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
 
         // Then
         assertThat(indexableMessage.getHasAttachment()).isFalse();
     }
 
     @Test
-    public void hasAttachmentsShouldReturnFalseIfThereIsNoAttachmentThatHaveAttachmentAsContentDispositionAndAttachmentIndexingIsNotAsked() throws IOException {
+    public void hasAttachmentsShouldReturnTrueWhenPropertyIsAbsent() throws IOException {
         //Given
         MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
         TestId mailboxId = TestId.of(1);
@@ -288,10 +271,12 @@ public class IndexableMessageTest {
             .thenReturn(new Flags());
         when(mailboxMessage.getUid())
             .thenReturn(MESSAGE_UID);
+        when(mailboxMessage.getProperties())
+            .thenReturn(ImmutableList.of());
 
         // When
         IndexableMessage indexableMessage = IndexableMessage.from(mailboxMessage, ImmutableList.of(new MockMailboxSession("username").getUser()),
-                new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.NO);
+            new DefaultTextExtractor(), ZoneId.of("Europe/Paris"), IndexAttachments.YES);
 
         // Then
         assertThat(indexableMessage.getHasAttachment()).isFalse();
