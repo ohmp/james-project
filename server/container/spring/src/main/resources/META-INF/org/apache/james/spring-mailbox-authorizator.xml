@@ -21,8 +21,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans" 
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+          http://www.springframework.org/schema/beans classpath:org/springframework/beans/factory/xml/spring-beans-3.0.xsd">
 
-    <bean id="authorizator" class="org.apache.james.mailbox.spring.AnonymousAuthenticator"/>
+    <!-- 
+      Mailbox Authorizator
+     -->
+
+    <bean id="authorizator" class="org.apache.james.adapter.mailbox.store.UserRepositoryAuthorizator"/>
 
 </beans>
