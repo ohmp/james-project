@@ -74,7 +74,7 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
         }
     }
 
-    private void createDefaultMailboxes(User user) throws BadCredentialsException, MailboxException {
+    private void createDefaultMailboxes(User user) throws MailboxException {
         MailboxSession session = mailboxManager.createSystemSession(user.getUserName(), LOGGER);
         DefaultMailboxes.DEFAULT_MAILBOXES.stream()
             .map(toMailboxPath(session))
@@ -84,10 +84,7 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
 
     private boolean mailboxDoesntExist(MailboxPath mailboxPath, MailboxSession session) {
         try {
-            mailboxManager.getMailbox(mailboxPath, session);
-            return false;
-        } catch (MailboxNotFoundException e) {
-            return true;
+            return !mailboxManager.mailboxExists(mailboxPath, session);
         } catch (MailboxException e) {
             throw Throwables.propagate(e);
         }
