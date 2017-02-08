@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.function.Predicate;
 
 import javax.mail.Flags;
 
@@ -41,7 +40,6 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.UnsupportedSearchException;
-import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageResult.Header;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SearchQuery.AddressType;
@@ -49,6 +47,8 @@ import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import org.apache.james.mailbox.model.SearchQuery.UidRange;
 import org.apache.james.mailbox.store.ResultUtils;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.Property;
+import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.search.comparator.CombinedComparator;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.MimeIOException;
@@ -71,6 +71,7 @@ import org.apache.james.mime4j.utils.search.MessageMatcher;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -530,13 +531,8 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
 
 
     private boolean matches(SearchQuery.AttachmentCriterion criterion, MailboxMessage message) throws UnsupportedSearchException {
-        boolean mailHasAttachments = message.getAttachments().stream().anyMatch(new Predicate<MessageAttachment>() {
-            @Override
-            public boolean test(MessageAttachment attachment) {
-                return !attachment.isInline();
-            }
-        });
-
+        boolean mailHasAttachments = FluentIterable.from(message.getProperties())
+            .anyMatch(PropertyBuilder.isHasAttachmentProperty());
         return mailHasAttachments == criterion.getOperator().isSet();
     }
 
