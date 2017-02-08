@@ -31,7 +31,7 @@ public class PropertyBuilderTest {
     }
 
     @Test
-    public void setHasAttachmentShouldAddTrueWhenCalledWithTrue() {
+    public void setHasAttachmentShouldAddFalseWhenCalledWithFalse() {
         PropertyBuilder propertyBuilder = new PropertyBuilder();
         propertyBuilder.setHasAttachment(false);
         assertThat(propertyBuilder.toProperties())
@@ -39,7 +39,7 @@ public class PropertyBuilderTest {
     }
 
     @Test
-    public void setHasAttachmentShouldAddFalseWhenCalledWithFalse() {
+    public void setHasAttachmentShouldAddTrueWhenCalledWithTrue() {
         PropertyBuilder propertyBuilder = new PropertyBuilder();
         propertyBuilder.setHasAttachment(true);
         assertThat(propertyBuilder.toProperties())
