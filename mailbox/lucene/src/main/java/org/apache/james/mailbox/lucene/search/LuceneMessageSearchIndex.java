@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
@@ -48,7 +47,6 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.UnsupportedSearchException;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
@@ -70,6 +68,8 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.Property;
+import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.store.search.SearchUtil;
@@ -124,6 +124,7 @@ import org.apache.lucene.util.Version;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -766,12 +767,8 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     private static boolean hasAttachment(MailboxMessage membership) {
-        return membership.getAttachments().stream().anyMatch(new Predicate<MessageAttachment>() {
-            @Override
-            public boolean test(MessageAttachment attachment) {
-                return !attachment.isInline();
-            }
-        });
+       return FluentIterable.from(membership.getProperties())
+            .anyMatch(PropertyBuilder.isHasAttachmentProperty());
     }
 
     private String toSentDateField(DateResolution res) {
