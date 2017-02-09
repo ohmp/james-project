@@ -59,9 +59,5 @@
       Attachments
      -->
     <bean id="messageParser" class="org.apache.james.mailbox.store.mail.model.impl.MessageParser"/>
-    <!-- 
-      Authorizations
-     -->
-    <bean id="authorizator" class="org.apache.james.adapter.mailbox.store.UserRepositoryAuthorizator"/>
 
 </beans>
