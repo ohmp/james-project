@@ -23,6 +23,6 @@
        xsi:schemaLocation="
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="authorizator" class="org.apache.james.mailbox.spring.AnonymousAuthenticator"/>
+    <bean id="authenticator" class="org.apache.james.mailbox.spring.AnonymousAuthenticator"/>
 
 </beans>
