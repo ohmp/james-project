@@ -20,7 +20,6 @@
 package org.apache.james.mpt.session;
 
 import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 
 import org.apache.james.mpt.api.Continuation;
 import org.apache.james.mpt.api.Monitor;
@@ -55,9 +54,7 @@ public class ExternalSessionFactory implements SessionFactory {
     public Session newSession(Continuation continuation) throws Exception {
         InetSocketAddress address = getAddress();
         monitor.note("Connecting to " + address.getHostName() + ":" + address.getPort());
-        final SocketChannel channel = SocketChannel.open(address);
-        channel.configureBlocking(false);
-        return new ExternalSession(channel, monitor, shabang);
+        return new ExternalSession(address, monitor, shabang);
     }
 
     protected InetSocketAddress getAddress() {

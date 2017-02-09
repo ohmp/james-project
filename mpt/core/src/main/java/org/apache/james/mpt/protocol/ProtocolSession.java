@@ -202,6 +202,11 @@ public class ProtocolSession implements ProtocolInteractor {
         testElements.add(new LogElement(level, message));
     }
 
+    public void REINIT(int sessionNumber) {
+        this.maxSessionNumber = Math.max(this.maxSessionNumber, sessionNumber);
+        testElements.add(new ReinitElement(sessionNumber));
+    }
+
     /**
      * A client request, which write the specified message to a Writer.
      */
@@ -490,6 +495,24 @@ public class ProtocolSession implements ProtocolInteractor {
             if (nextTest != null) {
                 nextTest.testProtocol(sessions, continueAfterFailure);
             }
+        }
+
+        public boolean isClient() {
+            return false;
+        }
+    }
+
+    private class ReinitElement implements ProtocolElement {
+
+        private final int sessionNumber;
+
+        public ReinitElement(int sessionNumber) {
+            this.sessionNumber = sessionNumber < 0 ? 0 : sessionNumber;
+        }
+
+        public void testProtocol(Session[] sessions, boolean continueAfterFailure) throws Exception {
+            Session session = sessions[sessionNumber];
+            session.restart();
         }
 
         public boolean isClient() {

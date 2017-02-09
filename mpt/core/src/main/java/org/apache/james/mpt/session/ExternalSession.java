@@ -20,6 +20,7 @@
 package org.apache.james.mpt.session;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
@@ -37,7 +38,7 @@ public final class ExternalSession implements Session {
 
     private static final byte[] CRLF = { '\r', '\n' };
 
-    private final SocketChannel socket;
+    private SocketChannel socket;
 
     private final Monitor monitor;
 
@@ -51,18 +52,26 @@ public final class ExternalSession implements Session {
 
     private final String shabang;
 
-    public ExternalSession(SocketChannel socket, Monitor monitor, String shabang) {
-        this(socket, monitor, shabang, false);
+    private final InetSocketAddress address;
+
+    public ExternalSession(InetSocketAddress address, Monitor monitor, String shabang) throws IOException {
+        this(address, monitor, shabang, false);
     }
 
-    public ExternalSession(SocketChannel socket, Monitor monitor, String shabang, boolean debug) {
+    public ExternalSession(InetSocketAddress address, Monitor monitor, String shabang, boolean debug) throws IOException {
         super();
-        this.socket = socket;
+        this.address = address;
+        initSocket();
         this.monitor = monitor;
         readBuffer = ByteBuffer.allocateDirect(2048);
         ascii = Charset.forName("US-ASCII");
         lineEndBuffer = ByteBuffer.wrap(CRLF);
         this.shabang = shabang;
+    }
+
+    private void initSocket() throws IOException {
+        this.socket = SocketChannel.open(address);
+        socket.configureBlocking(false);
     }
 
     public String readLine() throws Exception {
@@ -151,6 +160,13 @@ public final class ExternalSession implements Session {
         }
     }
 
+    public void restart() throws Exception {
+        monitor.note("restarting...");
+        stop();
+        initSocket();
+        start();
+    }
+    
     public void stop() throws Exception {
         monitor.note("closing");
         socket.close();
