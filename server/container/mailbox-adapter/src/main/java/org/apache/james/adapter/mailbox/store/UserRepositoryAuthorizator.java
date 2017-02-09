@@ -21,12 +21,10 @@ package org.apache.james.adapter.mailbox.store;
 
 import javax.inject.Inject;
 
-import org.apache.james.lifecycle.api.LogEnabled;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
-import org.slf4j.Logger;
 
 /**
  * Authorizator which use an UsersRepository to check if the delegation is allowed
