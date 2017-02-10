@@ -82,6 +82,9 @@ import org.apache.james.mailbox.store.transaction.Mapper;
 import org.apache.james.mailbox.store.transaction.TransactionalMapper;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+
 /**
  * This base class of an {@link MailboxManager} implementation provides a high-level api for writing your own
  * {@link MailboxManager} implementation. If you plan to write your own {@link MailboxManager} its most times so easiest
@@ -667,11 +670,12 @@ public class StoreMailboxManager implements MailboxManager {
         }
         final String combinedName = mailboxExpression.getCombinedName()
                 .replace(freeWildcard, SQL_WILDCARD_CHAR)
-                .replace(localWildcard, SQL_WILDCARD_CHAR);
+                .replace(localWildcard, SQL_WILDCARD_CHAR)
+            + SQL_WILDCARD_CHAR;
         final MailboxPath search = new MailboxPath(mailboxExpression.getBase(), combinedName);
 
-        final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
-        final List<Mailbox> mailboxes = mapper.findMailboxWithPathLike(search);
+        final List<Mailbox> mailboxes = mailboxSessionMapperFactory.getMailboxMapper(session)
+            .findMailboxWithPathLike(search);
         final List<MailboxMetaData> results = new ArrayList<MailboxMetaData>(mailboxes.size());
         for (Mailbox mailbox : mailboxes) {
             final String name = mailbox.getName();
@@ -680,7 +684,7 @@ public class StoreMailboxManager implements MailboxManager {
                     final String match = name.substring(baseLength);
                     if (mailboxExpression.isExpressionMatch(match)) {
                         final MailboxMetaData.Children inferiors;
-                        if (mapper.hasChildren(mailbox, session.getPathDelimiter())) {
+                        if (containChildren(mailbox, mailboxes, session)) {
                             inferiors = MailboxMetaData.Children.HAS_CHILDREN;
                         } else {
                             inferiors = MailboxMetaData.Children.HAS_NO_CHILDREN;
@@ -693,6 +697,22 @@ public class StoreMailboxManager implements MailboxManager {
         }
         Collections.sort(results, new StandardMailboxMetaDataComparator());
         return results;
+    }
+
+    private boolean containChildren (final Mailbox parentMailbox, final List<Mailbox> mailboxesWithPathLike, final MailboxSession mailboxSession) {
+        return FluentIterable.from(mailboxesWithPathLike)
+            .anyMatch(isChildren(parentMailbox, mailboxSession));
+    }
+
+    private Predicate<Mailbox> isChildren(final Mailbox parentMailbox, final MailboxSession mailboxSession) {
+        return new Predicate<Mailbox>() {
+            @Override
+            public boolean apply(Mailbox input) {
+                return input.getNamespace().equals(parentMailbox.getNamespace())
+                    && input.getUser().equals(parentMailbox.getUser())
+                    && input.getName().startsWith(parentMailbox.getName() + mailboxSession.getPathDelimiter());
+            }
+        };
     }
 
     @Override
