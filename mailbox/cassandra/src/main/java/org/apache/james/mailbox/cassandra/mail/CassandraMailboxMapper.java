@@ -30,6 +30,7 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMailboxTable.PAT
 import static org.apache.james.mailbox.cassandra.table.CassandraMailboxTable.TABLE_NAME;
 import static org.apache.james.mailbox.cassandra.table.CassandraMailboxTable.UIDVALIDITY;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -113,8 +114,12 @@ public class CassandraMailboxMapper implements MailboxMapper {
     }
 
     private Mailbox keepOnlyOneMailbox(ResultSet resultSet) {
-        ImmutableList<SimpleMailbox> mailboxes = CassandraUtils.convertToStream(resultSet)
-            .map(this::mailbox)
+        return keepOnlyOneMailbox(CassandraUtils.convertToStream(resultSet)
+            .map(this::mailbox));
+    }
+
+    private Mailbox keepOnlyOneMailbox(Stream<SimpleMailbox> mailboxStream) {
+        ImmutableList<SimpleMailbox> mailboxes = mailboxStream
             .sorted(Comparator.comparing(mailbox -> mailbox.getMailboxId().serialize()))
             .collect(Guavate.toImmutableList());
         Mailbox mailbox = mailboxes.get(0);
@@ -144,6 +149,12 @@ public class CassandraMailboxMapper implements MailboxMapper {
         return getMailboxFilteredByNamespaceAndUserStream(path.getNamespace(), path.getUser())
             .filter((row) -> regex.matcher(row.getString(NAME)).matches())
             .map(this::mailbox)
+            .collect(Guavate.toImmutableListMultimap(this::path))
+            .asMap()
+            .values()
+            .stream()
+            .map(Collection::stream)
+            .map(this::keepOnlyOneMailbox)
             .collect(Collectors.toList());
     }
 

@@ -32,6 +32,7 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.Before;
 import org.junit.Test;
+
 public class CassandraMailboxMapperConcurrencyTest {
 
     public static final int MAX_RETRY = 10;
@@ -69,5 +70,24 @@ public class CassandraMailboxMapperConcurrencyTest {
         assertThat(testee.list()).hasSize(1);
     }
 
+    @Test
+    public void findMailboxWithPathLikeShouldAlsoRemoveDuplicatedMailboxes() throws Exception {
+        testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+        testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+        boolean termination = new ConcurrentTestRunner(10, 1,
+            (a, b) -> {
+                // several writes before self healed read
+                // this maximize probability to mix read and writes
+                testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+                testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+                testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+                testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+                testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY));
+                testee.findMailboxWithPathLike(MAILBOX_PATH);
+            }).run()
+            .awaitTermination(1, TimeUnit.MINUTES);
 
+        assertThat(termination).isTrue();
+        assertThat(testee.list()).hasSize(1);
+    }
 }
