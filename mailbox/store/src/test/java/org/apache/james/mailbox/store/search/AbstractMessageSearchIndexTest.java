@@ -263,6 +263,29 @@ public abstract class AbstractMessageSearchIndexTest {
             .hasSize(10);
     }
 
+    @Test
+    public void searchingMessageInMultipleMailboxShouldNotReturnLessMessageThanLimitArgumentEvenIfDuplicatedMessageAreBeforeLegitimeMessage() throws MailboxException {
+        Assume.assumeTrue(messageIdManager != null);
+        messageIdManager.setInMailboxes(m1.getMessageId(), ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()), session);
+
+        SearchQuery searchQuery = new SearchQuery();
+
+        ComposedMessageId addedAfterDuplicatedMessage = myFolderMessageManager.appendMessage(
+                ClassLoader.getSystemResourceAsStream("eml/mail.eml"),
+                new Date(1406930400000L),
+                session,
+                true,
+                new Flags(Flags.Flag.SEEN));
+
+        await();
+
+        assertThat(messageSearchIndex.search(session,
+                MultimailboxesSearchQuery.from(searchQuery)
+                        .inMailboxes(mailbox2.getMailboxId(), mailbox.getMailboxId())
+                        .build(), 13))
+                .hasSize(13);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void searchShouldThrowWhenSessionIsNull() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
