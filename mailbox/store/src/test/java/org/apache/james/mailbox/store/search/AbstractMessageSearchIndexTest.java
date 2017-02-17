@@ -195,6 +195,8 @@ public abstract class AbstractMessageSearchIndexTest {
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             session);
 
+        await();
+
         SearchQuery searchQuery = new SearchQuery();
 
         assertThat(messageSearchIndex.search(session,
@@ -222,6 +224,8 @@ public abstract class AbstractMessageSearchIndexTest {
         messageIdManager.setInMailboxes(m4.getMessageId(),
             ImmutableList.of(mailbox2.getMailboxId()),
             session);
+
+        await();
 
         SearchQuery searchQuery = new SearchQuery();
 
@@ -253,6 +257,8 @@ public abstract class AbstractMessageSearchIndexTest {
         messageIdManager.setInMailboxes(m5.getMessageId(), ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()), session);
         messageIdManager.setInMailboxes(m6.getMessageId(), ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()), session);
         messageIdManager.setInMailboxes(m7.getMessageId(), ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()), session);
+
+        await();
 
         SearchQuery searchQuery = new SearchQuery();
 
