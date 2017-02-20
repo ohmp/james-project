@@ -104,19 +104,12 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .thenCompose(composedMessageIds -> messageDAO.retrieveMessages(composedMessageIds, fetchType, Optional.empty()))
             .thenCompose(stream -> CompletableFutureUtil.allOf(
                 stream.map(pair -> mailboxExists(pair.getLeft())
-                    .thenApply(b -> backToPair(pair, b)))))
+                    .thenApply(b -> Optional.of(pair).filter(any -> b)))))
             .join()
             .flatMap(OptionalConverter::toStream)
             .map(loadAttachments(fetchType))
             .map(toMailboxMessages())
             .sorted(Comparator.comparing(MailboxMessage::getUid));
-    }
-
-    private Optional<Pair<CassandraMessageDAO.MessageWithoutAttachment, Stream<CassandraMessageDAO.MessageAttachmentRepresentation>>> backToPair(Pair<CassandraMessageDAO.MessageWithoutAttachment, Stream<CassandraMessageDAO.MessageAttachmentRepresentation>> pair, Boolean b) {
-        if (b) {
-            return Optional.of(pair);
-        }
-        return Optional.empty();
     }
 
     private CompletableFuture<Boolean> mailboxExists(CassandraMessageDAO.MessageWithoutAttachment messageWithoutAttachment) {
