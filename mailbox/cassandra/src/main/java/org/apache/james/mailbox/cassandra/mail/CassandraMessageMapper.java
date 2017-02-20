@@ -50,8 +50,6 @@ import org.apache.james.mailbox.store.FlagsUpdateCalculator;
 import org.apache.james.mailbox.store.SimpleMessageMetaData;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
-import org.apache.james.mailbox.store.mail.ModSeqProvider;
-import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
@@ -67,9 +65,9 @@ import com.google.common.collect.ImmutableList;
 public class CassandraMessageMapper implements MessageMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageMapper.class);
 
-    private final ModSeqProvider modSeqProvider;
+    private final CassandraModSeqProvider modSeqProvider;
     private final MailboxSession mailboxSession;
-    private final UidProvider uidProvider;
+    private final CassandraUidProvider uidProvider;
     private final int maxRetries;
     private final AttachmentMapper attachmentMapper;
     private final CassandraMessageDAO messageDAO;
@@ -79,7 +77,7 @@ public class CassandraMessageMapper implements MessageMapper {
     private final CassandraMailboxRecentsDAO mailboxRecentDAO;
     private final CassandraIndexTableHandler indexTableHandler;
 
-    public CassandraMessageMapper(UidProvider uidProvider, ModSeqProvider modSeqProvider,
+    public CassandraMessageMapper(CassandraUidProvider uidProvider, CassandraModSeqProvider modSeqProvider,
                                   MailboxSession mailboxSession, int maxRetries, AttachmentMapper attachmentMapper,
                                   CassandraMessageDAO messageDAO, CassandraMessageIdDAO messageIdDAO, CassandraMessageIdToImapUidDAO imapUidDAO,
                                   CassandraMailboxCounterDAO mailboxCounterDAO, CassandraMailboxRecentsDAO mailboxRecentDAO, CassandraIndexTableHandler indexTableHandler) {
@@ -212,9 +210,15 @@ public class CassandraMessageMapper implements MessageMapper {
 
     @Override
     public MessageMetaData add(Mailbox mailbox, MailboxMessage message) throws MailboxException {
-        message.setUid(uidProvider.nextUid(mailboxSession, mailbox));
-        message.setModSeq(modSeqProvider.nextModSeq(mailboxSession, mailbox));
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+
+        CompletableFuture<Optional<MessageUid>> uid = uidProvider.nextUid(mailboxId);
+        CompletableFuture<Long> modSeq = modSeqProvider.nextModSeq(mailboxId);
+        CompletableFuture.allOf(uid, modSeq).join();
+
+        message.setUid(uid.join().orElseThrow(() -> new MailboxException("Can not generate UID while saving " + message.getMessageId() + " in " + mailboxId)));
+        message.setModSeq(modSeq.join());
+
         save(mailbox, message)
             .thenCompose(voidValue -> indexTableHandler.updateIndexOnAdd(message, mailboxId))
             .join();
