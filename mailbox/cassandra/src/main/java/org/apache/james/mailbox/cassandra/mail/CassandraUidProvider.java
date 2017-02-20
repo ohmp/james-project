@@ -27,12 +27,13 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageUidTable.NEXT_UID;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
+import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
-import org.apache.james.backends.cassandra.utils.LightweightTransactionException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
@@ -41,23 +42,21 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.james.util.OptionalConverter;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
-import com.google.common.base.Throwables;
 
 public class CassandraUidProvider implements UidProvider {
     public final static int DEFAULT_MAX_RETRY = 100000;
-    private static final Logger LOG = LoggerFactory.getLogger(CassandraUidProvider.class);
 
     private final Session session;
+    private final CassandraAsyncExecutor executor;
     private final FunctionRunnerWithRetry runner;
 
     public CassandraUidProvider(Session session, int maxRetry) {
         this.session = session;
+        this.executor = new CassandraAsyncExecutor(session);
         this.runner = new FunctionRunnerWithRetry(maxRetry);
     }
 
@@ -74,69 +73,70 @@ public class CassandraUidProvider implements UidProvider {
     @Override
     public MessageUid nextUid(MailboxSession session, MailboxId mailboxId) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailboxId;
-        if (! findHighestUid(cassandraId).isPresent()) {
-            Optional<MessageUid> optional = tryInsertUid(cassandraId, Optional.empty());
-            if (optional.isPresent()) {
-                return optional.get();
-            }
-        }
+        return nextUid(cassandraId)
+        .join()
+        .orElseThrow(() -> new MailboxException("Error during Uid update"));
+    }
 
-        try {
-            return runner.executeAndRetrieveObject(
-                () -> {
-                    try {
-                        return tryUpdateUid(cassandraId, findHighestUid(cassandraId));
-                    } catch (Exception exception) {
-                        LOG.error("Can not retrieve next Uid", exception);
-                        throw Throwables.propagate(exception);
-                    }
-                });
-        } catch (LightweightTransactionException e) {
-            throw new MailboxException("Error during Uid update", e);
-        }
+    public CompletableFuture<Optional<MessageUid>> nextUid(CassandraId cassandraId) {
+        return findHighestUid(cassandraId)
+            .thenCompose(optional -> {
+                if (optional.isPresent()) {
+                    return tryUpdateUid(cassandraId, optional);
+                }
+                return tryInsert(cassandraId);
+            })
+            .thenCompose(optional -> {
+                if (optional.isPresent()) {
+                    return CompletableFuture.completedFuture(optional);
+                }
+                return runner.executeAsyncAndRetieveObject(
+                    () -> findHighestUid(cassandraId)
+                        .thenCompose(readUid -> tryUpdateUid(cassandraId, readUid)));
+            });
     }
 
     @Override
     public com.google.common.base.Optional<MessageUid> lastUid(MailboxSession mailboxSession, Mailbox mailbox) throws MailboxException {
-        return findHighestUid((CassandraId) mailbox.getMailboxId());
+        return OptionalConverter.toGuava(findHighestUid((CassandraId) mailbox.getMailboxId()).join());
     }
 
-    private com.google.common.base.Optional<MessageUid> findHighestUid(CassandraId mailboxId) throws MailboxException {
-        ResultSet result = session.execute(
+    private CompletableFuture<Optional<MessageUid>> findHighestUid(CassandraId mailboxId) {
+        return executor.executeSingleRow(
             select(NEXT_UID)
                 .from(CassandraMessageUidTable.TABLE_NAME)
-                .where(eq(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())));
-        if (result.isExhausted()) {
-            return com.google.common.base.Optional.absent();
-        } else {
-            return com.google.common.base.Optional.of(MessageUid.of(result.one().getLong(NEXT_UID)));
-        }
+                .where(eq(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())))
+            .thenApply(optional -> optional.map(row -> MessageUid.of(row.getLong(NEXT_UID))));
     }
 
-    private Optional<MessageUid> tryInsertUid(CassandraId mailboxId, Optional<MessageUid> uid) {
-        MessageUid nextUid = uid.map(MessageUid::next).orElse(MessageUid.MIN_VALUE);
-        return transactionalStatementToOptionalUid(nextUid,
-            insertInto(CassandraMessageUidTable.TABLE_NAME)
-                .value(NEXT_UID, nextUid.asLong())
-                .value(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())
-                .ifNotExists());
-    }
-
-    private Optional<MessageUid> tryUpdateUid(CassandraId mailboxId, com.google.common.base.Optional<MessageUid> uid) {
+    private CompletableFuture<Optional<MessageUid>> tryUpdateUid(CassandraId mailboxId, Optional<MessageUid> uid) {
         if (uid.isPresent()) {
             MessageUid nextUid = uid.get().next();
-            return transactionalStatementToOptionalUid(nextUid,
-                    update(CassandraMessageUidTable.TABLE_NAME)
-                        .onlyIf(eq(NEXT_UID, uid.get().asLong()))
-                        .with(set(NEXT_UID, nextUid.asLong()))
-                        .where(eq(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())));
+            return executor.executeReturnApplied(
+                update(CassandraMessageUidTable.TABLE_NAME)
+                    .onlyIf(eq(NEXT_UID, uid.get().asLong()))
+                    .with(set(NEXT_UID, nextUid.asLong()))
+                    .where(eq(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())))
+                .thenApply(success -> successToUid(nextUid, success));
         } else {
-            return transactionalStatementToOptionalUid(MessageUid.MIN_VALUE,
-                    update(CassandraMessageUidTable.TABLE_NAME)
-                    .onlyIf(eq(NEXT_UID, null))
-                    .with(set(NEXT_UID, MessageUid.MIN_VALUE.asLong()))
-                    .where(eq(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())));
+            return tryInsert(mailboxId);
         }
+    }
+
+    private CompletableFuture<Optional<MessageUid>> tryInsert(CassandraId mailboxId) {
+        return executor.executeReturnApplied(
+            insertInto(CassandraMessageUidTable.TABLE_NAME)
+                .value(NEXT_UID, MessageUid.MIN_VALUE.asLong())
+                .value(CassandraMessageUidTable.MAILBOX_ID, mailboxId.asUuid())
+                .ifNotExists())
+            .thenApply(success -> successToUid(MessageUid.MIN_VALUE, success));
+    }
+
+    private Optional<MessageUid> successToUid(MessageUid uid, Boolean success) {
+        if (success) {
+            return Optional.of(uid);
+        }
+        return Optional.empty();
     }
 
     private Optional<MessageUid> transactionalStatementToOptionalUid(MessageUid uid, BuiltStatement statement) {
