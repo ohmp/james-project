@@ -25,8 +25,13 @@ import java.util.stream.Stream;
 public class CompletableFutureUtil {
 
     public static <T> CompletableFuture<Stream<T>> allOf(Stream<CompletableFuture<T>> futureStream) {
-        return futureStream
-            .map((CompletableFuture<T> future) -> future.thenApply(Stream::of))
+        Stream<CompletableFuture<Stream<T>>> streamFutureStream = futureStream
+            .map((CompletableFuture<T> future) -> future.thenApply(Stream::of));
+        return flatAllOff(streamFutureStream);
+    }
+
+    public static <T> CompletableFuture<Stream<T>> flatAllOff(Stream<CompletableFuture<Stream<T>>> toto) {
+        return toto
             .reduce((future1, future2) ->
             future1.thenCompose(
                 stream1 -> future2.thenCompose(
