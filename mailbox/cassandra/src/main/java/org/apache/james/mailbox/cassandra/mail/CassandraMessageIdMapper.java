@@ -50,6 +50,7 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
+import org.apache.james.util.CompletableFutureUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,16 +191,17 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     @Override
     public Map<MailboxId, UpdatedFlags> setFlags(MessageId messageId, List<MailboxId> mailboxIds, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
-        return mailboxIds.stream()
-            .distinct()
-            .map(mailboxId -> (CassandraId) mailboxId)
-            .filter(mailboxId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(mailboxId))
-                .join()
-                .findAny()
-                .isPresent())
-            .flatMap(mailboxId -> flagsUpdateWithRetry(newState, updateMode, mailboxId, messageId))
-            .map(this::updateCounts)
-            .map(CompletableFuture::join)
+        return CompletableFutureUtil.allOf(
+            mailboxIds.stream()
+                .distinct()
+                .map(mailboxId -> (CassandraId) mailboxId)
+                .filter(mailboxId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(mailboxId))
+                    .join()
+                    .findAny()
+                    .isPresent())
+                .flatMap(mailboxId -> flagsUpdateWithRetry(newState, updateMode, mailboxId, messageId))
+                .map(this::updateCounts))
+            .join()
             .collect(Guavate.toImmutableMap(Pair::getLeft, Pair::getRight));
     }
 

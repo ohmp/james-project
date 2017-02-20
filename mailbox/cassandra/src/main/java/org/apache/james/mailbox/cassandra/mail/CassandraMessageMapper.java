@@ -55,6 +55,7 @@ import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
+import org.apache.james.util.CompletableFutureUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,13 +226,13 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public Iterator<UpdatedFlags> updateFlags(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MessageRange set) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        return retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
+        return CompletableFutureUtil.allOf(
+            retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
                 .flatMap(message -> updateFlagsOnMessage(mailbox, flagUpdateCalculator, message))
                 .map((UpdatedFlags updatedFlags) -> indexTableHandler.updateIndexOnFlagsUpdate(mailboxId, updatedFlags)
-                    .thenApply(voidValue -> updatedFlags))
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList()) // This collect is here as we need to consume all the stream before returning result
-                .iterator();
+                    .thenApply(voidValue -> updatedFlags)))
+            .join()
+            .iterator();
     }
 
     @Override
