@@ -30,8 +30,6 @@ import com.google.common.base.Preconditions;
 
 public class FunctionRunnerWithRetry {
 
-    public static class RelayingException extends RuntimeException {}
-
     @FunctionalInterface
     public interface OptionalSupplier<T> {
         Optional<T> getAsOptional();
@@ -60,7 +58,7 @@ public class FunctionRunnerWithRetry {
             .get();
     }
 
-    public <T> CompletableFuture<Optional<T>> executeAsyncAndRetieveObject(Supplier<CompletableFuture<Optional<T>>> futureSupplier) throws LightweightTransactionException {
+    public <T> CompletableFuture<Optional<T>> executeAsyncAndRetieveObject(Supplier<CompletableFuture<Optional<T>>> futureSupplier) {
         return executeAsyncAndRetieveObject(futureSupplier, 0);
     }
 
