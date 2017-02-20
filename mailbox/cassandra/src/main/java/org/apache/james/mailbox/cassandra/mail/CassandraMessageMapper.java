@@ -285,7 +285,6 @@ public class CassandraMessageMapper implements MessageMapper {
                 } else {
                     return handleRetries(mailbox, flagUpdateCalculator, message);
                 }
-
             });
     }
 
@@ -332,9 +331,7 @@ public class CassandraMessageMapper implements MessageMapper {
     private CompletableFuture<Optional<UpdatedFlags>> handleRetries(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message) {
         try {
             return new FunctionRunnerWithRetry(maxRetries)
-                .executeAsyncAndRetieveObject(() -> retryMessageFlagsUpdate(mailbox,
-                    message.getMessageId(),
-                    flagUpdateCalculator));
+                .executeAsyncAndRetieveObject(() -> retryMessageFlagsUpdate(mailbox, message.getMessageId(), flagUpdateCalculator));
         } catch (MessageDeletedDuringFlagsUpdateException e) {
             mailboxSession.getLog().warn(e.getMessage());
             return CompletableFuture.completedFuture(Optional.empty());
@@ -348,17 +345,14 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private CompletableFuture<Optional<UpdatedFlags>> retryMessageFlagsUpdate(Mailbox mailbox, MessageId messageId, FlagsUpdateCalculator flagUpdateCalculator) {
         CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
-        CompletableFuture<ComposedMessageIdWithMetaData> futureId = imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
+        return imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
             .thenApply(optional -> optional
-            .findFirst()
-            .orElseThrow(MailboxDeleteDuringUpdateException::new));
-        return futureId.thenCompose(composedMessageIdWithMetaData ->
-            tryMessageFlagsUpdate(flagUpdateCalculator,
-                mailbox,
-                messageDAO.retrieveMessages(ImmutableList.of(composedMessageIdWithMetaData), FetchType.Metadata, Optional.empty())
-                    .join()
-                    .findFirst()
-                    .map(pair -> pair.getLeft().toMailboxMessage(ImmutableList.of()))
-                    .orElseThrow(() -> new MessageDeletedDuringFlagsUpdateException(cassandraId, (CassandraMessageId) messageId))));
+                .findFirst()
+                .orElseThrow(MailboxDeleteDuringUpdateException::new))
+            .thenCompose(id -> messageDAO.retrieveMessages(ImmutableList.of(id), FetchType.Metadata, Optional.empty()))
+            .thenApply(Stream::findFirst)
+            .thenApply(optional -> optional.orElseThrow(() -> new MessageDeletedDuringFlagsUpdateException(cassandraId, (CassandraMessageId) messageId)))
+            .thenApply(pair -> pair.getKey().toMailboxMessage(ImmutableList.of()))
+            .thenCompose(message -> tryMessageFlagsUpdate(flagUpdateCalculator, mailbox, message));
     }
 }
