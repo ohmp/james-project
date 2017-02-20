@@ -179,7 +179,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
                 if (modSeq.isFirst()) {
                     return tryInsertModSeq(mailboxId, FIRST_MODSEQ);
                 }
-                return CompletableFuture.completedFuture(Optional.empty());
+                return tryUpdateModSeq(mailboxId, modSeq);
             }).thenCompose(firstInsert -> {
                     if (firstInsert.isPresent()) {
                         return CompletableFuture.completedFuture(firstInsert);
