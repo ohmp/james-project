@@ -478,7 +478,7 @@ public class CassandraIndexTableHandlerTest {
         testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
             new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
             new Flags(),
-            MODSEQ), MAILBOX_ID);
+            MODSEQ), MAILBOX_ID).join();
 
         Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isFalse();
