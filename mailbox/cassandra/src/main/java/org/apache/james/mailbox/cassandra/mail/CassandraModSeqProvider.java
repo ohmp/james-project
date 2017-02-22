@@ -193,7 +193,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
     }
 
     private CompletableFuture<Optional<ModSeq>> handleRetries(CassandraId mailboxId) {
-        return runner.executeAsyncAndRetieveObject(
+        return runner.executeAsyncAndRetrieveObject(
             () -> findHighestModSeq(mailboxId)
                 .thenCompose(newModSeq -> tryUpdateModSeq(mailboxId, newModSeq)));
     }
