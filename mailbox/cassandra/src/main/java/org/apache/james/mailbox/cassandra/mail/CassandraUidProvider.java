@@ -116,7 +116,7 @@ public class CassandraUidProvider implements UidProvider {
                 if (optional.isPresent()) {
                     return CompletableFuture.completedFuture(optional);
                 }
-                return runner.executeAsyncAndRetieveObject(
+                return runner.executeAsyncAndRetrieveObject(
                     () -> findHighestUid(cassandraId)
                         .thenCompose(readUid -> tryUpdateUid(cassandraId, readUid)));
             });
