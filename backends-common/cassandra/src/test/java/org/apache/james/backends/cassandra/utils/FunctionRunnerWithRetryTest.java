@@ -90,7 +90,7 @@ public class FunctionRunnerWithRetryTest {
         int value = 18;
 
         Optional<Integer> result = new FunctionRunnerWithRetry(MAX_RETRY)
-            .executeAsyncAndRetieveObject(
+            .executeAsyncAndRetrieveObject(
                 () -> CompletableFuture.completedFuture(Optional.of(value)))
             .join();
 
@@ -103,7 +103,7 @@ public class FunctionRunnerWithRetryTest {
         AtomicInteger times = new AtomicInteger(0);
 
         new FunctionRunnerWithRetry(MAX_RETRY)
-            .executeAsyncAndRetieveObject(
+            .executeAsyncAndRetrieveObject(
                 () -> {
                     times.incrementAndGet();
                     return CompletableFuture.completedFuture(Optional.of(value));
@@ -119,7 +119,7 @@ public class FunctionRunnerWithRetryTest {
         AtomicInteger times = new AtomicInteger(0);
 
         Optional<Integer> result = new FunctionRunnerWithRetry(MAX_RETRY)
-            .executeAsyncAndRetieveObject(
+            .executeAsyncAndRetrieveObject(
                 () -> {
                     int attemptCount = times.incrementAndGet();
                     if (attemptCount == MAX_RETRY) {
@@ -139,7 +139,7 @@ public class FunctionRunnerWithRetryTest {
         AtomicInteger times = new AtomicInteger(0);
 
         new FunctionRunnerWithRetry(MAX_RETRY)
-            .executeAsyncAndRetieveObject(
+            .executeAsyncAndRetrieveObject(
                 () -> {
                     int attemptCount = times.incrementAndGet();
                     if (attemptCount == MAX_RETRY) {
@@ -159,7 +159,7 @@ public class FunctionRunnerWithRetryTest {
         AtomicInteger times = new AtomicInteger(0);
 
         Optional<Integer> result = new FunctionRunnerWithRetry(MAX_RETRY)
-            .executeAsyncAndRetieveObject(
+            .executeAsyncAndRetrieveObject(
                 () -> {
                     times.incrementAndGet();
                     return CompletableFuture.completedFuture(Optional.<Integer>empty());

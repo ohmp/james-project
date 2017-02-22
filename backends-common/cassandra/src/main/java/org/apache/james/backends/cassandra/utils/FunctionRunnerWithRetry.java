@@ -21,7 +21,6 @@ package org.apache.james.backends.cassandra.utils;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -60,11 +59,11 @@ public class FunctionRunnerWithRetry {
             .get();
     }
 
-    public <T> CompletableFuture<Optional<T>> executeAsyncAndRetieveObject(Supplier<CompletableFuture<Optional<T>>> futureSupplier) {
-        return executeAsyncAndRetieveObject(futureSupplier, 0);
+    public <T> CompletableFuture<Optional<T>> executeAsyncAndRetrieveObject(Supplier<CompletableFuture<Optional<T>>> futureSupplier) {
+        return executeAsyncAndRetrieveObject(futureSupplier, 0);
     }
 
-    public <T> CompletableFuture<Optional<T>> executeAsyncAndRetieveObject(Supplier<CompletableFuture<Optional<T>>> futureSupplier, int tries) {
+    public <T> CompletableFuture<Optional<T>> executeAsyncAndRetrieveObject(Supplier<CompletableFuture<Optional<T>>> futureSupplier, int tries) {
         if (tries >= maxRetry) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
@@ -73,7 +72,7 @@ public class FunctionRunnerWithRetry {
                 if (optional.isPresent()) {
                     return CompletableFuture.completedFuture(optional);
                 }
-                return executeAsyncAndRetieveObject(futureSupplier, tries + 1);
+                return executeAsyncAndRetrieveObject(futureSupplier, tries + 1);
             });
     }
 }
