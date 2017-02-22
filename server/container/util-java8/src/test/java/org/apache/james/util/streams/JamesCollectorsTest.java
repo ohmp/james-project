@@ -60,9 +60,9 @@ public class JamesCollectorsTest {
 
     @Test
     public void chunkerShouldChunkMonoValueStreams() {
-        Stream<Integer> emptyStream = Stream.of(1);
+        Stream<Integer> monoValueStream = Stream.of(1);
 
-        List<List<Integer>> values = emptyStream.collect(JamesCollectors.chunker(10))
+        List<List<Integer>> values = monoValueStream.collect(JamesCollectors.chunker(10))
             .values()
             .stream()
             .map(ImmutableList::copyOf)
