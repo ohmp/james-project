@@ -73,9 +73,9 @@ public class JamesCollectorsTest {
 
     @Test
     public void chunkerShouldChunkStreamsSmallerThanChunkSize() {
-        Stream<Integer> emptyStream = Stream.of(1, 2);
+        Stream<Integer> stream = Stream.of(1, 2);
 
-        List<List<Integer>> values = emptyStream.collect(JamesCollectors.chunker(3))
+        List<List<Integer>> values = stream.collect(JamesCollectors.chunker(3))
             .values()
             .stream()
             .map(ImmutableList::copyOf)
@@ -86,9 +86,9 @@ public class JamesCollectorsTest {
 
     @Test
     public void chunkerShouldChunkStreamsAsBigAsChunkSize() {
-        Stream<Integer> emptyStream = Stream.of(1, 2, 3);
+        Stream<Integer> stream = Stream.of(1, 2, 3);
 
-        List<List<Integer>> values = emptyStream.collect(JamesCollectors.chunker(3))
+        List<List<Integer>> values = stream.collect(JamesCollectors.chunker(3))
             .values()
             .stream()
             .map(ImmutableList::copyOf)
@@ -99,9 +99,9 @@ public class JamesCollectorsTest {
 
     @Test
     public void chunkerShouldChunkStreamsBiggerThanChunkSize() {
-        Stream<Integer> emptyStream = Stream.of(1, 2, 3, 4);
+        Stream<Integer> stream = Stream.of(1, 2, 3, 4);
 
-        List<List<Integer>> values = emptyStream.collect(JamesCollectors.chunker(3))
+        List<List<Integer>> values = stream.collect(JamesCollectors.chunker(3))
             .values()
             .stream()
             .map(ImmutableList::copyOf)
@@ -114,9 +114,9 @@ public class JamesCollectorsTest {
 
     @Test
     public void chunkerShouldChunkInSeveralBuckets() {
-        Stream<Integer> emptyStream = Stream.of(1, 2, 3, 4, 5, 6, 7);
+        Stream<Integer> stream = Stream.of(1, 2, 3, 4, 5, 6, 7);
 
-        List<List<Integer>> values = emptyStream.collect(JamesCollectors.chunker(3))
+        List<List<Integer>> values = stream.collect(JamesCollectors.chunker(3))
             .values()
             .stream()
             .map(ImmutableList::copyOf)
