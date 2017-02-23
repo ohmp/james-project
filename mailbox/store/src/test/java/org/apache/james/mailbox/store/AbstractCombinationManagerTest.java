@@ -185,6 +185,7 @@ public abstract class AbstractCombinationManagerTest {
     }
 
     @Test
+    // Set in mailbox, messageIdManager ne casse pas le messageManager
     public void expungeFromMessageManagerShouldWorkWhenSetInMailboxesAMessageWithDeletedFlag() throws Exception { //I can mark as DELETED + expunge an mail with setInMbxs
         Flags deleted = new Flags(Flag.DELETED);
         ComposedMessageId messageId = messageManager1.appendMessage(new ByteArrayInputStream(MAIL_CONTENT), new Date(), session, false, deleted);

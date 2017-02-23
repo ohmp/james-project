@@ -35,21 +35,26 @@ public class CassandraIndexTableHandler {
     private final CassandraMailboxRecentsDAO mailboxRecentDAO;
     private final CassandraMailboxCounterDAO mailboxCounterDAO;
     private final CassandraFirstUnseenDAO firstUnseenDAO;
+    private final CassandraDeletedMessageDAO deletedMessageDAO;
 
     @Inject
     public CassandraIndexTableHandler(CassandraMailboxRecentsDAO mailboxRecentDAO,
                                       CassandraMailboxCounterDAO mailboxCounterDAO,
-                                      CassandraFirstUnseenDAO firstUnseenDAO) {
+                                      CassandraFirstUnseenDAO firstUnseenDAO,
+                                      CassandraDeletedMessageDAO deletedMessageDAO) {
         this.mailboxRecentDAO = mailboxRecentDAO;
         this.mailboxCounterDAO = mailboxCounterDAO;
         this.firstUnseenDAO = firstUnseenDAO;
+        this.deletedMessageDAO = deletedMessageDAO;
     }
 
     public CompletableFuture<Void> updateIndexOnDelete(ComposedMessageIdWithMetaData composedMessageIdWithMetaData, CassandraId mailboxId) {
+        MessageUid uid = composedMessageIdWithMetaData.getComposedMessageId().getUid();
         return CompletableFuture.allOf(
             updateFirstUnseenOnDelete(mailboxId, composedMessageIdWithMetaData.getFlags(), composedMessageIdWithMetaData.getComposedMessageId().getUid()),
             mailboxRecentDAO.removeFromRecent(mailboxId, composedMessageIdWithMetaData.getComposedMessageId().getUid()),
             mailboxCounterDAO.decrementCount(mailboxId),
+            deletedMessageDAO.removeDeleted(mailboxId, uid),
             decrementUnseenOnDelete(mailboxId, composedMessageIdWithMetaData.getFlags()));
     }
 
@@ -64,7 +69,18 @@ public class CassandraIndexTableHandler {
     public CompletableFuture<Void> updateIndexOnFlagsUpdate(CassandraId mailboxId, UpdatedFlags updatedFlags) {
         return CompletableFuture.allOf(manageUnseenMessageCountsOnFlagsUpdate(mailboxId, updatedFlags),
             manageRecentOnFlagsUpdate(mailboxId, updatedFlags),
+            updateDeletedOnFlagsUpdate(mailboxId, updatedFlags),
             updateFirstUnseenOnFlagsUpdate(mailboxId, updatedFlags));
+    }
+
+    private CompletableFuture<Void> updateDeletedOnFlagsUpdate(CassandraId mailboxId, UpdatedFlags updatedFlags) {
+        if (updatedFlags.isModifiedToSet(Flags.Flag.DELETED)) {
+            return deletedMessageDAO.addDeleted(mailboxId, updatedFlags.getUid());
+        } else if (updatedFlags.isModifiedToUnset(Flags.Flag.DELETED)) {
+            return deletedMessageDAO.removeDeleted(mailboxId, updatedFlags.getUid());
+        } else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     private CompletableFuture<Void> decrementUnseenOnDelete(CassandraId mailboxId, Flags flags) {

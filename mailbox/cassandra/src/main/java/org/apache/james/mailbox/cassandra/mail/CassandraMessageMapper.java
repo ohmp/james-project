@@ -49,7 +49,6 @@ import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.FlagsUpdateCalculator;
 import org.apache.james.mailbox.store.SimpleMessageMetaData;
-import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.UidProvider;
@@ -84,12 +83,13 @@ public class CassandraMessageMapper implements MessageMapper {
     private final CassandraIndexTableHandler indexTableHandler;
     private final CassandraFirstUnseenDAO firstUnseenDAO;
     private final AttachmentLoader attachmentLoader;
+    private final CassandraDeletedMessageDAO deletedMessageDAO;
 
     public CassandraMessageMapper(UidProvider uidProvider, ModSeqProvider modSeqProvider,
                                   MailboxSession mailboxSession, int maxRetries, CassandraAttachmentMapper attachmentMapper,
                                   CassandraMessageDAO messageDAO, CassandraMessageIdDAO messageIdDAO, CassandraMessageIdToImapUidDAO imapUidDAO,
                                   CassandraMailboxCounterDAO mailboxCounterDAO, CassandraMailboxRecentsDAO mailboxRecentDAO,
-                                  CassandraIndexTableHandler indexTableHandler, CassandraFirstUnseenDAO firstUnseenDAO) {
+                                  CassandraIndexTableHandler indexTableHandler, CassandraFirstUnseenDAO firstUnseenDAO, CassandraDeletedMessageDAO deletedMessageDAO) {
         this.uidProvider = uidProvider;
         this.modSeqProvider = modSeqProvider;
         this.mailboxSession = mailboxSession;
@@ -102,6 +102,7 @@ public class CassandraMessageMapper implements MessageMapper {
         this.indexTableHandler = indexTableHandler;
         this.firstUnseenDAO = firstUnseenDAO;
         this.attachmentLoader = new AttachmentLoader(attachmentMapper);
+        this.deletedMessageDAO = deletedMessageDAO;
     }
 
     @Override
@@ -200,10 +201,23 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public Map<MessageUid, MessageMetaData> expungeMarkedForDeletionInMailbox(Mailbox mailbox, MessageRange set) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        return retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
-                .filter(MailboxMessage::isDeleted)
-                .peek(message -> delete(mailbox, message))
-                .collect(Collectors.toMap(MailboxMessage::getUid, SimpleMessageMetaData::new));
+
+        List<ComposedMessageIdWithMetaData> composedMessageIdWithMetaDatas = deletedMessageDAO.retrieveDeletedMessage(mailboxId, set).thenCompose(
+            messageIds ->
+                CompletableFutureUtil.allOf(
+                    messageIds.map((MessageUid messageId) ->
+                        messageIdDAO.retrieve(mailboxId, messageId))))
+                .join()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Guavate.toImmutableList());
+
+        return retrieveMessages(composedMessageIdWithMetaDatas, FetchType.Metadata, Optional.empty())
+            .peek(message -> {
+                delete(mailbox, message);
+                deletedMessageDAO.removeDeleted(mailboxId, message.getUid());
+            })
+            .collect(Collectors.toMap(MailboxMessage::getUid, SimpleMessageMetaData::new));
     }
 
     @Override
