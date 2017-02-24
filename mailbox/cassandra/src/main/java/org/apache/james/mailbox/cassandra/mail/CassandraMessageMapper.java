@@ -227,6 +227,7 @@ public class CassandraMessageMapper implements MessageMapper {
             .collect(Collectors.toMap(MailboxMessage::getUid, SimpleMessageMetaData::new));
 
         // Remarks : Don't delete with messageDAO : you don't know if this message is contained in other mailbox
+        // Beware : You were not bounding your futures
     }
 
     @Override
