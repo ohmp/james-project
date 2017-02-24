@@ -33,6 +33,8 @@ import org.apache.james.jmap.model.SetVacationRequest;
 import org.apache.james.jmap.model.SetVacationResponse;
 import org.apache.james.jmap.model.VacationResponse;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 
 import com.google.common.base.Preconditions;
 
@@ -47,11 +49,13 @@ public class SetVacationResponseMethod implements Method {
 
     private final VacationRepository vacationRepository;
     private final NotificationRegistry notificationRegistry;
+    private final MetricFactory metricFactory;
 
     @Inject
-    public SetVacationResponseMethod(VacationRepository vacationRepository, NotificationRegistry notificationRegistry) {
+    public SetVacationResponseMethod(VacationRepository vacationRepository, NotificationRegistry notificationRegistry, MetricFactory metricFactory) {
         this.vacationRepository = vacationRepository;
         this.notificationRegistry = notificationRegistry;
+        this.metricFactory = metricFactory;
     }
 
     @Override
@@ -72,8 +76,9 @@ public class SetVacationResponseMethod implements Method {
         Preconditions.checkArgument(request instanceof SetVacationRequest);
         SetVacationRequest setVacationRequest = (SetVacationRequest) request;
 
+        TimeMetric timeMetric = metricFactory.timer(METHOD_NAME.getName());
         if (!setVacationRequest.isValid()) {
-            return Stream.of(JmapResponse
+            Stream<JmapResponse> responses = Stream.of(JmapResponse
                 .builder()
                 .clientId(clientId)
                 .error(ErrorResponse.builder()
@@ -81,11 +86,15 @@ public class SetVacationResponseMethod implements Method {
                     .description(INVALID_ARGUMENT_DESCRIPTION)
                     .build())
                 .build());
+            timeMetric.elapseTimeInMs();
+            return responses;
         }
 
-        return process(clientId,
+        Stream<JmapResponse> responses = process(clientId,
             AccountId.fromString(mailboxSession.getUser().getUserName()),
             setVacationRequest.getUpdate().get(Vacation.ID));
+        timeMetric.elapseTimeInMs();
+        return responses;
     }
 
 

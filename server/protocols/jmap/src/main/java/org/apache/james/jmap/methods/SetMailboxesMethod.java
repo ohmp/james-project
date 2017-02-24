@@ -28,6 +28,8 @@ import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.SetMailboxesRequest;
 import org.apache.james.jmap.model.SetMailboxesResponse;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -38,10 +40,12 @@ public class SetMailboxesMethod implements Method {
     @VisibleForTesting static final Response.Name RESPONSE_NAME = Response.name("mailboxesSet");
 
     private final Set<SetMailboxesProcessor> processors;
+    private final MetricFactory metricFactory;
 
     @Inject
-    public SetMailboxesMethod(Set<SetMailboxesProcessor> processors) {
+    public SetMailboxesMethod(Set<SetMailboxesProcessor> processors, MetricFactory metricFactory) {
         this.processors = processors;
+        this.metricFactory = metricFactory;
     }
 
     @Override
@@ -60,12 +64,16 @@ public class SetMailboxesMethod implements Method {
         Preconditions.checkNotNull(clientId);
         Preconditions.checkNotNull(mailboxSession);
         Preconditions.checkArgument(request instanceof SetMailboxesRequest);
+        
+        TimeMetric timeMetric = metricFactory.timer(METHOD_NAME.getName());
         SetMailboxesRequest setMailboxesRequest = (SetMailboxesRequest) request;
-        return Stream.of(
+        Stream<JmapResponse> responses = Stream.of(
                 JmapResponse.builder().clientId(clientId)
                 .response(setMailboxesResponse(setMailboxesRequest, mailboxSession))
                 .responseName(RESPONSE_NAME)
                 .build());
+        timeMetric.elapseTimeInMs();
+        return responses;
     }
 
     private SetMailboxesResponse setMailboxesResponse(SetMailboxesRequest request, MailboxSession mailboxSession) {
