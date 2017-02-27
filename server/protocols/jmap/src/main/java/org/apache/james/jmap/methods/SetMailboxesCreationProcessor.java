@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import org.apache.james.jmap.exceptions.MailboxParentNotFoundException;
 import org.apache.james.jmap.model.MailboxCreationId;
 import org.apache.james.jmap.model.MailboxFactory;
+import org.apache.james.jmap.model.MailboxPathBuilder;
 import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMailboxesRequest;
 import org.apache.james.jmap.model.SetMailboxesResponse;
@@ -148,43 +149,42 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
     }
 
     private MailboxPath getMailboxPath(MailboxCreateRequest mailboxRequest, Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId, MailboxSession mailboxSession) throws MailboxException {
-        if (mailboxRequest.getParentId().isPresent()) {
-            MailboxCreationId parentId = mailboxRequest.getParentId().get();
-            String parentName = getMailboxNameFromId(parentId, mailboxSession)
-                    .orElseGet(Throwing.supplier(() ->
-                        getMailboxNameFromId(creationIdsToCreatedMailboxId.get(parentId), mailboxSession)
-                            .orElseThrow(() -> new MailboxParentNotFoundException(parentId))
-                    ));
+        ThrowingFunction<MailboxId, MailboxPath> toPath = id -> {
+            try {
+                return mailboxManager.getMailbox(id, mailboxSession).getMailboxPath();
+            } catch (MailboxNotFoundException e) {
+                throw new MailboxParentNotFoundException(mailboxRequest.getParentId().get());
+            }
+        };
 
-            return new MailboxPath(mailboxSession.getPersonalSpace(), mailboxSession.getUser().getUserName(), 
-                    parentName + mailboxSession.getPathDelimiter() + escape(mailboxRequest.getName()));
+        Optional<MailboxPath> parent = toMailboxId(mailboxRequest.getParentId(), creationIdsToCreatedMailboxId)
+            .map(Throwing.function(toPath).sneakyThrow());
+        if (mailboxRequest.getParentId().isPresent() && !parent.isPresent()) {
+            new MailboxParentNotFoundException(mailboxRequest.getParentId().get());
         }
-        return new MailboxPath(mailboxSession.getPersonalSpace(), mailboxSession.getUser().getUserName(), escape(mailboxRequest.getName()));
+        return MailboxPathBuilder.builder()
+            .forUser(mailboxSession.getUser().getUserName())
+            .name(mailboxRequest.getName())
+            .withParent(parent)
+            .build(mailboxSession);
     }
 
-    private Optional<String> getMailboxNameFromId(MailboxCreationId creationId, MailboxSession mailboxSession) {
-        ThrowingFunction<? super MailboxId, Optional<String>> toName = parentId -> getMailboxNameFromId(parentId, mailboxSession);
-        return getMailboxIdFromCreationId(creationId)
-                .flatMap(Throwing.function(toName).sneakyThrow());
+    private Optional<MailboxId> toMailboxId(Optional<MailboxCreationId> creationId, Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId) {
+        if (!creationId.isPresent()) {
+            return Optional.empty();
+        }
+        Optional<MailboxId> inRequest = Optional.ofNullable(creationIdsToCreatedMailboxId.get(creationId.get()));
+        if (inRequest.isPresent()) {
+            return inRequest;
+        }
+        return getMailboxIdFromCreationId(creationId.get());
     }
 
     private Optional<MailboxId> getMailboxIdFromCreationId(MailboxCreationId creationId) {
         try {
             return Optional.of(mailboxIdFactory.fromString(creationId.getCreationId()));
         } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    @VisibleForTesting
-    Optional<String> getMailboxNameFromId(MailboxId mailboxId, MailboxSession mailboxSession) throws MailboxException {
-        if (mailboxId == null) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.of(mailboxManager.getMailbox(mailboxId, mailboxSession).getMailboxPath().getName());
-        } catch (MailboxNotFoundException e) {
-            return Optional.empty();
+            throw new MailboxParentNotFoundException(creationId);
         }
     }
 

@@ -27,6 +27,7 @@ import org.apache.james.jmap.exceptions.MailboxHasChildException;
 import org.apache.james.jmap.exceptions.MailboxParentNotFoundException;
 import org.apache.james.jmap.exceptions.SystemMailboxNotUpdatableException;
 import org.apache.james.jmap.model.MailboxFactory;
+import org.apache.james.jmap.model.MailboxPathBuilder;
 import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMailboxesRequest;
 import org.apache.james.jmap.model.SetMailboxesResponse;
@@ -196,39 +197,25 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     }
 
     private MailboxPath computeNewMailboxPath(Mailbox mailbox, MailboxPath originMailboxPath, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException {
-        Optional<MailboxId> parentId = updateRequest.getParentId();
-        if (parentId == null) {
-            return new MailboxPath(mailboxSession.getPersonalSpace(), 
-                    mailboxSession.getUser().getUserName(), 
-                    updateRequest.getName()
-                        .map(MailboxNameEscaper::escape)
-                        .orElse(mailbox.getName()));
+        ThrowingFunction<MailboxId, MailboxPath> toPath = id -> mailboxManager.getMailbox(id, mailboxSession).getMailboxPath();
+
+        return MailboxPathBuilder.builder()
+            .forUser(mailboxSession.getUser().getUserName())
+            .withParent(Optional.ofNullable(updateRequest.getParentId())
+                .orElse(Optional.empty())
+                .map(Throwing.function(toPath).sneakyThrow()))
+            .name(updateRequest.getName().orElse(mailbox.getName()))
+            .build(mailboxSession);
+    }
+
+    Optional<MailboxId> retrieveParent(Optional<MailboxId> actualParent, Optional<MailboxId> wanted) {
+        if (wanted == null) {
+            return Optional.empty();
         }
-
-        MailboxPath modifiedMailboxPath = updateRequest.getName()
-                .map(MailboxNameEscaper::escape)
-                .map(newName -> computeMailboxPathWithNewName(originMailboxPath, newName))
-                .orElse(originMailboxPath);
-        ThrowingFunction<MailboxId, MailboxPath> computeNewMailboxPath = parentMailboxId -> computeMailboxPathWithNewParentId(modifiedMailboxPath, parentMailboxId, mailboxSession);
-        return parentId
-                .map(Throwing.function(computeNewMailboxPath).sneakyThrow())
-                .orElse(modifiedMailboxPath);
-    }
-
-    private MailboxPath computeMailboxPathWithNewName(MailboxPath originMailboxPath, String newName) {
-        return new MailboxPath(originMailboxPath, newName);
-    }
-
-    private MailboxPath computeMailboxPathWithNewParentId(MailboxPath originMailboxPath, MailboxId parentMailboxId, MailboxSession mailboxSession) throws MailboxException {
-        MailboxPath newParentMailboxPath = mailboxManager.getMailbox(parentMailboxId, mailboxSession).getMailboxPath();
-        String lastName = getCurrentMailboxName(originMailboxPath, mailboxSession);
-        return new MailboxPath(originMailboxPath, newParentMailboxPath.getName() + mailboxSession.getPathDelimiter() + lastName);
-    }
-
-    private String getCurrentMailboxName(MailboxPath originMailboxPath, MailboxSession mailboxSession) {
-        return Iterables.getLast(
-                Splitter.on(mailboxSession.getPathDelimiter())
-                    .splitToList(originMailboxPath.getName()));
+        if (wanted.isPresent()) {
+            return wanted;
+        }
+        return actualParent;
     }
 
 }
