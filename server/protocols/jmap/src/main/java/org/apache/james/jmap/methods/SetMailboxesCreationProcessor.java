@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.utils.MailboxNameEscaper.escape;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +72,7 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
         this.mailboxManager = mailboxManager;
         this.subscriptionManager = subscriptionManager;
         this.sortingHierarchicalCollections =
-            new SortingHierarchicalCollections<Map.Entry<MailboxCreationId, MailboxCreateRequest>, MailboxCreationId>(
+            new SortingHierarchicalCollections<>(
                 x -> x.getKey(),
                 x -> x.getValue().getParentId());
         this.mailboxFactory = mailboxFactory;
@@ -103,7 +105,6 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
     private void createMailbox(MailboxCreationId mailboxCreationId, MailboxCreateRequest mailboxRequest, MailboxSession mailboxSession,
             Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId, SetMailboxesResponse.Builder builder) {
         try {
-            ensureValidMailboxName(mailboxRequest, mailboxSession);
             MailboxPath mailboxPath = getMailboxPath(mailboxRequest, creationIdsToCreatedMailboxId, mailboxSession);
             Optional<MailboxId> mailboxId = OptionalConverter.fromGuava(mailboxManager.createMailbox(mailboxPath, mailboxSession));
             Optional<Mailbox> mailbox = mailboxId.flatMap(id -> mailboxFactory.builder()
@@ -146,14 +147,6 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
         }
     }
 
-    private void ensureValidMailboxName(MailboxCreateRequest mailboxRequest, MailboxSession mailboxSession) throws MailboxNameException {
-        String name = mailboxRequest.getName();
-        char pathDelimiter = mailboxSession.getPathDelimiter();
-        if (name.contains(String.valueOf(pathDelimiter))) {
-            throw new MailboxNameException(String.format("The mailbox '%s' contains an illegal character: '%c'", name, pathDelimiter));
-        }
-    }
-
     private MailboxPath getMailboxPath(MailboxCreateRequest mailboxRequest, Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId, MailboxSession mailboxSession) throws MailboxException {
         if (mailboxRequest.getParentId().isPresent()) {
             MailboxCreationId parentId = mailboxRequest.getParentId().get();
@@ -164,9 +157,9 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
                     ));
 
             return new MailboxPath(mailboxSession.getPersonalSpace(), mailboxSession.getUser().getUserName(), 
-                    parentName + mailboxSession.getPathDelimiter() + mailboxRequest.getName());
+                    parentName + mailboxSession.getPathDelimiter() + escape(mailboxRequest.getName()));
         }
-        return new MailboxPath(mailboxSession.getPersonalSpace(), mailboxSession.getUser().getUserName(), mailboxRequest.getName());
+        return new MailboxPath(mailboxSession.getPersonalSpace(), mailboxSession.getUser().getUserName(), escape(mailboxRequest.getName()));
     }
 
     private Optional<String> getMailboxNameFromId(MailboxCreationId creationId, MailboxSession mailboxSession) {
