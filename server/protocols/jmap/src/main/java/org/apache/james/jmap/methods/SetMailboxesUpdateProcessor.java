@@ -45,6 +45,8 @@ import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.functions.ThrowingFunction;
@@ -57,24 +59,28 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     private final MailboxUtils mailboxUtils;
     private final MailboxManager mailboxManager;
     private final MailboxFactory mailboxFactory;
+    private final MetricFactory metricFactory;
     private final SubscriptionManager subscriptionManager;
 
     @Inject
     @VisibleForTesting
-    SetMailboxesUpdateProcessor(MailboxUtils mailboxUtils, MailboxManager mailboxManager, SubscriptionManager subscriptionManager, MailboxFactory mailboxFactory) {
+    SetMailboxesUpdateProcessor(MailboxUtils mailboxUtils, MailboxManager mailboxManager, SubscriptionManager subscriptionManager, MailboxFactory mailboxFactory, MetricFactory metricFactory) {
         this.mailboxUtils = mailboxUtils;
         this.mailboxManager = mailboxManager;
         this.subscriptionManager = subscriptionManager;
         this.mailboxFactory = mailboxFactory;
+        this.metricFactory = metricFactory;
     }
 
     @Override
     public SetMailboxesResponse process(SetMailboxesRequest request, MailboxSession mailboxSession) {
+        TimeMetric timeMetric = metricFactory.timer("mailboxUpdateProcessor");
+
         SetMailboxesResponse.Builder responseBuilder = SetMailboxesResponse.builder();
         request.getUpdate()
             .entrySet()
-            .stream()
             .forEach(update -> handleUpdate(update.getKey(), update.getValue(), responseBuilder, mailboxSession));
+        timeMetric.elapseTimeInMs();
         return responseBuilder.build();
     }
 

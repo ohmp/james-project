@@ -42,6 +42,8 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxId.Factory;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,19 +60,23 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     private final UpdateMessagePatchConverter updatePatchConverter;
     private final MessageIdManager messageIdManager;
     private final Factory mailboxIdFactory;
+    private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting SetMessagesUpdateProcessor(
-            UpdateMessagePatchConverter updatePatchConverter,
-            MessageIdManager messageIdManager,
-            Factory mailboxIdFactory) {
+        UpdateMessagePatchConverter updatePatchConverter,
+        MessageIdManager messageIdManager,
+        Factory mailboxIdFactory, MetricFactory metricFactory) {
         this.updatePatchConverter = updatePatchConverter;
         this.messageIdManager = messageIdManager;
         this.mailboxIdFactory = mailboxIdFactory;
+        this.metricFactory = metricFactory;
     }
 
     @Override
     public SetMessagesResponse process(SetMessagesRequest request,  MailboxSession mailboxSession) {
+        TimeMetric timeMetric = metricFactory.timer("SetMessagesUpdateProcessor");
+
         SetMessagesResponse.Builder responseBuilder = SetMessagesResponse.builder();
         request.buildUpdatePatches(updatePatchConverter).forEach( (id, patch) -> {
             if (patch.isValid()) {
@@ -78,6 +84,8 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
             } else {
                 handleInvalidRequest(responseBuilder, id, patch.getValidationErrors());
             }});
+
+        timeMetric.elapseTimeInMs();
         return responseBuilder.build();
     }
 

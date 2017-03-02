@@ -66,6 +66,7 @@ import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.TestMessageId;
+import org.apache.james.metrics.api.MetricFactory;
 import org.apache.mailet.Mail;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -126,7 +127,7 @@ public class SetMessagesCreationProcessorTest {
         fakeSystemMailboxesProvider = new TestSystemMailboxesProvider(() -> optionalOutbox, () -> optionalDrafts);
         session = new MockMailboxSession(USER);
         mimeMessageConverter = new MIMEMessageConverter();
-        sut = new SetMessagesCreationProcessor(mimeMessageConverter, mockedMailSpool, mockedMailFactory, messageFactory, fakeSystemMailboxesProvider, mockedAttachmentManager);
+        sut = new SetMessagesCreationProcessor(mimeMessageConverter, mockedMailSpool, mockedMailFactory, messageFactory, fakeSystemMailboxesProvider, mockedAttachmentManager, mock(MetricFactory.class));
         
         outbox = mock(MessageManager.class);
         when(outbox.getId()).thenReturn(OUTBOX_ID);
@@ -155,7 +156,7 @@ public class SetMessagesCreationProcessorTest {
     @Test
     public void processShouldReturnNonEmptyCreatedWhenRequestHasNonEmptyCreate() throws MailboxException {
         // Given
-        sut = new SetMessagesCreationProcessor(mimeMessageConverter, mockedMailSpool, mockedMailFactory, messageFactory, fakeSystemMailboxesProvider, mockedAttachmentManager);
+        sut = new SetMessagesCreationProcessor(mimeMessageConverter, mockedMailSpool, mockedMailFactory, messageFactory, fakeSystemMailboxesProvider, mockedAttachmentManager, mock(MetricFactory.class));
 
         // When
         SetMessagesResponse result = sut.process(createMessageInOutbox, session);
@@ -170,7 +171,7 @@ public class SetMessagesCreationProcessorTest {
     public void processShouldReturnErrorWhenOutboxNotFound() {
         // Given
         TestSystemMailboxesProvider doNotProvideOutbox = new TestSystemMailboxesProvider(Optional::empty, () -> optionalDrafts);
-        SetMessagesCreationProcessor sut = new SetMessagesCreationProcessor(mimeMessageConverter, mockedMailSpool, mockedMailFactory, messageFactory, doNotProvideOutbox, mockedAttachmentManager);
+        SetMessagesCreationProcessor sut = new SetMessagesCreationProcessor(mimeMessageConverter, mockedMailSpool, mockedMailFactory, messageFactory, doNotProvideOutbox, mockedAttachmentManager, mock(MetricFactory.class));
         // When
         SetMessagesResponse actual = sut.process(createMessageInOutbox, session);
         
