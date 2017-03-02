@@ -78,7 +78,7 @@ public class LMTPProtocolHandlerChain extends SMTPProtocolHandlerChain{
         defaultHandlers.add(new RcptCmdHandler(new NoopMetricFactory()));
         defaultHandlers.add(new RsetCmdHandler());
         defaultHandlers.add(new VrfyCmdHandler());
-        defaultHandlers.add(new DataCmdHandler());
+        defaultHandlers.add(new DataCmdHandler(new NoopMetricFactory()));
         defaultHandlers.add(new MailSizeEsmtpExtension());
         defaultHandlers.add(new WelcomeMessageHandler());
         defaultHandlers.add(new ReceivedDataLineFilter());

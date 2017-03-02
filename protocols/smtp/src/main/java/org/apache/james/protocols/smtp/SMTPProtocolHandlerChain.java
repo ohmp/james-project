@@ -101,7 +101,7 @@ public class SMTPProtocolHandlerChain extends ProtocolHandlerChainImpl {
         defaultHandlers.add(new RcptCmdHandler(metricFactory));
         defaultHandlers.add(new RsetCmdHandler());
         defaultHandlers.add(new VrfyCmdHandler());
-        defaultHandlers.add(new DataCmdHandler());
+        defaultHandlers.add(new DataCmdHandler(metricFactory));
         defaultHandlers.add(new MailSizeEsmtpExtension());
         defaultHandlers.add(new WelcomeMessageHandler());
         defaultHandlers.add(new PostmasterAbuseRcptHook());
