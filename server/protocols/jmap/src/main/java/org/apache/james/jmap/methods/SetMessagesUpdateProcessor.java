@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -75,7 +77,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
 
     @Override
     public SetMessagesResponse process(SetMessagesRequest request,  MailboxSession mailboxSession) {
-        TimeMetric timeMetric = metricFactory.timer("SetMessagesUpdateProcessor");
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + "SetMessagesUpdateProcessor");
 
         SetMessagesResponse.Builder responseBuilder = SetMessagesResponse.builder();
         request.buildUpdatePatches(updatePatchConverter).forEach( (id, patch) -> {

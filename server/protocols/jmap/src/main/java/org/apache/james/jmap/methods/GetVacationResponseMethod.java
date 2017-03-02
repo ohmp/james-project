@@ -70,7 +70,7 @@ public class GetVacationResponseMethod implements Method {
         Preconditions.checkNotNull(mailboxSession);
         Preconditions.checkArgument(request instanceof GetVacationRequest);
 
-        TimeMetric timeMetric = metricFactory.timer(METHOD_NAME.getName());
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + METHOD_NAME.getName());
         Stream<JmapResponse> responses = Stream.of(JmapResponse.builder()
             .clientId(clientId)
             .responseName(RESPONSE_NAME)

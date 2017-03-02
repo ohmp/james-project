@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -74,7 +76,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
     @Override
     public SetMailboxesResponse process(SetMailboxesRequest request, MailboxSession mailboxSession) {
-        TimeMetric timeMetric = metricFactory.timer("mailboxUpdateProcessor");
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + "mailboxUpdateProcessor");
 
         SetMailboxesResponse.Builder responseBuilder = SetMailboxesResponse.builder();
         request.getUpdate()

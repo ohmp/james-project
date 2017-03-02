@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -77,7 +79,7 @@ public class SetMailboxesDestructionProcessor implements SetMailboxesProcessor {
     }
 
     public SetMailboxesResponse process(SetMailboxesRequest request, MailboxSession mailboxSession) {
-        TimeMetric timeMetric = metricFactory.timer("SetMailboxesDestructionProcessor");
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + "SetMailboxesDestructionProcessor");
         ImmutableMap<MailboxId, Mailbox> idToMailbox = mapDestroyRequests(request, mailboxSession);
 
         SetMailboxesResponse.Builder builder = SetMailboxesResponse.builder();

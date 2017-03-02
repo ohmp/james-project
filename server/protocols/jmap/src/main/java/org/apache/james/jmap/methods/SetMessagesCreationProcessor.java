@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -108,7 +110,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     @Override
     public SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession) {
-        TimeMetric timeMetric = metricFactory.timer("SetMessageCreationProcessor");
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + "SetMessageCreationProcessor");
 
         Builder responseBuilder = SetMessagesResponse.builder();
         request.getCreate()

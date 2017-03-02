@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -82,7 +84,7 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
     }
 
     public SetMailboxesResponse process(SetMailboxesRequest request, MailboxSession mailboxSession) {
-        TimeMetric timeMetric = metricFactory.timer("SetMailboxesCreationProcessor");
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + "SetMailboxesCreationProcessor");
 
         SetMailboxesResponse.Builder builder = SetMailboxesResponse.builder();
         try {

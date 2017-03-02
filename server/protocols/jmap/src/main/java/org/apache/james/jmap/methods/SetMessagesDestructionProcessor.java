@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.methods;
 
+import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.util.List;
 import java.util.function.Function;
 
@@ -60,7 +62,7 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
 
     @Override
     public SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession) {
-        TimeMetric timeMetric = metricFactory.timer("SetMessageDestructionProcessor");
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + "SetMessageDestructionProcessor");
 
         SetMessagesResponse result = request.getDestroy().stream()
             .map(delete(mailboxSession))

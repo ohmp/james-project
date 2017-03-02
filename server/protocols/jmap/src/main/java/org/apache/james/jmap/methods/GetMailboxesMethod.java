@@ -79,7 +79,7 @@ public class GetMailboxesMethod implements Method {
     public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession) {
         Preconditions.checkArgument(request instanceof GetMailboxesRequest);
         GetMailboxesRequest mailboxesRequest = (GetMailboxesRequest) request;
-        TimeMetric timeMetric = metricFactory.timer(METHOD_NAME.getName());
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + METHOD_NAME.getName());
         Stream<JmapResponse> responses = Stream.of(
                 JmapResponse.builder().clientId(clientId)
                 .response(getMailboxesResponse(mailboxesRequest, mailboxSession))

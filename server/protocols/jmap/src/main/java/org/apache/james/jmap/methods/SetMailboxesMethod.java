@@ -65,7 +65,7 @@ public class SetMailboxesMethod implements Method {
         Preconditions.checkNotNull(mailboxSession);
         Preconditions.checkArgument(request instanceof SetMailboxesRequest);
         
-        TimeMetric timeMetric = metricFactory.timer(METHOD_NAME.getName());
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + METHOD_NAME.getName());
         SetMailboxesRequest setMailboxesRequest = (SetMailboxesRequest) request;
         Stream<JmapResponse> responses = Stream.of(
                 JmapResponse.builder().clientId(clientId)

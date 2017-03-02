@@ -89,7 +89,7 @@ public class GetMessagesMethod implements Method {
 
         GetMessagesRequest getMessagesRequest = (GetMessagesRequest) request;
         MessageProperties outputProperties = getMessagesRequest.getProperties().toOutputProperties();
-        TimeMetric timeMetric = metricFactory.timer(METHOD_NAME.getName());
+        TimeMetric timeMetric = metricFactory.timer(JMAP_PREFIX + METHOD_NAME.getName());
         Stream<JmapResponse> responses = Stream.of(JmapResponse.builder().clientId(clientId)
                             .response(getMessagesResponse(mailboxSession, getMessagesRequest))
                             .responseName(RESPONSE_NAME)
