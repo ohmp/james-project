@@ -36,6 +36,8 @@ import org.apache.james.jmap.exceptions.MailboxSessionCreationException;
 import org.apache.james.jmap.exceptions.NoValidAuthHeaderException;
 import org.apache.james.jmap.exceptions.UnauthorizedException;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,11 +52,13 @@ public class AuthenticationFilter implements Filter {
     public static final String MAILBOX_SESSION = "mailboxSession";
 
     private final List<AuthenticationStrategy> authMethods;
+    private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting
-    AuthenticationFilter(List<AuthenticationStrategy> authMethods) {
+    AuthenticationFilter(List<AuthenticationStrategy> authMethods, MetricFactory metricFactory) {
         this.authMethods = authMethods;
+        this.metricFactory = metricFactory;
     }
 
     @Override
@@ -63,6 +67,7 @@ public class AuthenticationFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        TimeMetric timeMetric = metricFactory.timer("JMAP-authentication-filter");
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
@@ -77,8 +82,9 @@ public class AuthenticationFilter implements Filter {
         } catch (UnauthorizedException | NoValidAuthHeaderException | MailboxSessionCreationException | JwtException e) {
             LOGGER.error("Exception occurred during authentication process", e);
             httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        } finally {
+            timeMetric.elapseTimeInMs();
         }
-
     }
 
     private HttpServletRequest addSessionToRequest(HttpServletRequest httpRequest, MailboxSession mailboxSession) {

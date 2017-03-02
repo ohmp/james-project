@@ -35,6 +35,8 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 import org.apache.james.user.api.AlreadyExistInUsersRepositoryException;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -46,10 +48,12 @@ import com.google.common.base.Throwables;
 public class UserProvisioningFilter implements Filter {
 
     private final UsersRepository usersRepository;
+    private final MetricFactory metricFactory;
 
     @Inject
-    @VisibleForTesting UserProvisioningFilter(UsersRepository usersRepository) {
+    @VisibleForTesting UserProvisioningFilter(UsersRepository usersRepository, MetricFactory metricFactory) {
         this.usersRepository = usersRepository;
+        this.metricFactory = metricFactory;
     }
     
     @Override
@@ -58,6 +62,7 @@ public class UserProvisioningFilter implements Filter {
     
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        TimeMetric timeMetric = metricFactory.timer("JMAP-user-provisioning");
         Optional<MailboxSession> session = Optional.ofNullable((MailboxSession)request.getAttribute(AuthenticationFilter.MAILBOX_SESSION));
         session.ifPresent(this::createAccountIfNeeded);
         chain.doFilter(request, response);

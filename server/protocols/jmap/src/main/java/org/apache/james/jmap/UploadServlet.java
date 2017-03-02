@@ -32,6 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +43,17 @@ public class UploadServlet extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(UploadServlet.class);
 
     private final UploadHandler uploadHandler;
+    private final MetricFactory metricFactory;
 
     @Inject
-    private UploadServlet(UploadHandler uploadHandler) {
+    private UploadServlet(UploadHandler uploadHandler, MetricFactory metricFactory) {
         this.uploadHandler = uploadHandler;
+        this.metricFactory = metricFactory;
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+        TimeMetric timeMetric = metricFactory.timer("JMAP-upload-post");
         String contentType = req.getContentType();
         if (Strings.isNullOrEmpty(contentType)) {
             resp.setStatus(SC_BAD_REQUEST);
@@ -65,6 +70,7 @@ public class UploadServlet extends HttpServlet {
                 internalServerError(resp, e);
             }
         }
+        timeMetric.elapseTimeInMs();
     }
 
     private void internalServerError(HttpServletResponse resp, Exception e) {

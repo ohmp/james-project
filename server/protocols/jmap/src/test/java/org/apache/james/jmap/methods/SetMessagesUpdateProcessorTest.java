@@ -31,6 +31,7 @@ import org.apache.james.jmap.model.UpdateMessagePatch;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.NoopMetricFactory;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -42,7 +43,7 @@ public class SetMessagesUpdateProcessorTest {
 
     @Test
     public void processShouldReturnEmptyUpdatedWhenRequestHasEmptyUpdate() {
-        SetMessagesUpdateProcessor sut = new SetMessagesUpdateProcessor(null, null, null, mock(MetricFactory.class));
+        SetMessagesUpdateProcessor sut = new SetMessagesUpdateProcessor(null, null, null, new NoopMetricFactory());
         SetMessagesRequest requestWithEmptyUpdate = SetMessagesRequest.builder().build();
 
         SetMessagesResponse result = sut.process(requestWithEmptyUpdate, null);
@@ -66,7 +67,7 @@ public class SetMessagesUpdateProcessorTest {
         when(mockConverter.fromJsonNode(any(ObjectNode.class)))
                 .thenReturn(mockInvalidPatch);
 
-        SetMessagesUpdateProcessor sut = new SetMessagesUpdateProcessor(mockConverter, null, null, mock(MetricFactory.class));
+        SetMessagesUpdateProcessor sut = new SetMessagesUpdateProcessor(mockConverter, null, null, new NoopMetricFactory());
         MessageId requestMessageId = TestMessageId.of(1);
         SetMessagesRequest requestWithInvalidUpdate = SetMessagesRequest.builder()
                 .update(ImmutableMap.of(requestMessageId, JsonNodeFactory.instance.objectNode()))
