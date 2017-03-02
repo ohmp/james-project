@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.imap.processor;
+package org.apache.james.metrics.api;
 
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
