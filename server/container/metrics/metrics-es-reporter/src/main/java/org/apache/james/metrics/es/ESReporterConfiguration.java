@@ -106,4 +106,15 @@ public class ESReporterConfiguration {
     public long getPeriodInSecond() {
         return periodInSecond.orElse(DEFAULT_PERIOD_IN_SECOND);
     }
+
+    @Override
+    public String toString() {
+        return "ESReporterConfiguration{" +
+            "host=" + host +
+            ", port=" + port +
+            ", enabled=" + enabled +
+            ", index=" + index +
+            ", periodInSecond=" + periodInSecond +
+            '}';
+    }
 }

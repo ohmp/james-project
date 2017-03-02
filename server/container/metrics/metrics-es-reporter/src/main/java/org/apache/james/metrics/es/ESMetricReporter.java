@@ -27,6 +27,8 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.elasticsearch.metrics.ElasticsearchReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
@@ -34,13 +36,17 @@ import com.google.common.base.Throwables;
 
 public class ESMetricReporter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ESMetricReporter.class);
+
     private final Optional<ElasticsearchReporter> reporter;
     private final ESReporterConfiguration esReporterConfiguration;
+    private final MetricRegistry metricRegistry;
 
     @Inject
     public ESMetricReporter(ESReporterConfiguration esReporterConfiguration, MetricRegistry registry) {
         this.reporter = getReporter(esReporterConfiguration, registry);
         this.esReporterConfiguration = esReporterConfiguration;
+        this.metricRegistry = registry;
     }
 
     private Optional<ElasticsearchReporter> getReporter(ESReporterConfiguration esReporterConfiguration, MetricRegistry registry) {
@@ -58,8 +64,10 @@ public class ESMetricReporter {
     }
 
     public void start() {
-        reporter.ifPresent(elasticsearchReporter ->
-            elasticsearchReporter.start(esReporterConfiguration.getPeriodInSecond(), TimeUnit.SECONDS));
+        reporter.ifPresent(elasticsearchReporter -> {
+            elasticsearchReporter.start(esReporterConfiguration.getPeriodInSecond(), TimeUnit.SECONDS);
+            LOGGER.info("ES reported started using " + metricRegistry + " on " + esReporterConfiguration);
+    });
     }
 
     @PreDestroy

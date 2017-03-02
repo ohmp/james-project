@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
@@ -50,6 +51,8 @@ public class ESMetricReporterModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(ESMetricReporter.class).in(Scopes.SINGLETON);
+
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(ESMetricReporterStarter.class);
     }
 

@@ -26,6 +26,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
@@ -37,6 +38,7 @@ public class DropWizardMetricFactory implements MetricFactory {
 
     @Inject
     public DropWizardMetricFactory(MetricRegistry metricRegistry) {
+        LoggerFactory.getLogger(this.getClass()).info("DropWizardMetricFactory started using " + metricRegistry);
         this.metricRegistry = metricRegistry;
         this.jmxReporter = JmxReporter.forRegistry(metricRegistry)
             .build();
