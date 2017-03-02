@@ -25,7 +25,9 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.UnionMetricFactory;
 import org.apache.james.metrics.dropwizard.DropWizardMetricFactory;
+import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.utils.ConfigurationPerformer;
 
 import com.codahale.metrics.MetricRegistry;
@@ -43,7 +45,12 @@ public class DropWizardMetricsModule extends AbstractModule {
     protected void configure() {
         bind(MetricRegistry.class).in(Scopes.SINGLETON);
         bind(DropWizardMetricFactory.class).in(Scopes.SINGLETON);
-        bind(MetricFactory.class).to(DropWizardMetricFactory.class);
+        bind(UnionMetricFactory.class).in(Scopes.SINGLETON);
+        bind(MetricFactory.class).to(UnionMetricFactory.class);
+
+        Multibinder<MetricFactory> metricFactoryMultibinder = Multibinder.newSetBinder(binder(), MetricFactory.class);
+        metricFactoryMultibinder.addBinding().to(DropWizardMetricFactory.class);
+        metricFactoryMultibinder.addBinding().to(DefaultMetricFactory.class);
 
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(DropWizardConfigurationPerformer.class);
     }
