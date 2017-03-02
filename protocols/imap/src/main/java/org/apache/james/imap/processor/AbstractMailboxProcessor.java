@@ -70,6 +70,7 @@ import com.google.common.base.Optional;
 
 abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends AbstractChainedProcessor<M> {
 
+    public static final String IMAP_PREFIX = "IMAP-";
     private final MailboxManager mailboxManager;
     private final StatusResponseFactory factory;
     private final MetricFactory metricFactory;
@@ -91,7 +92,7 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
         ImapCommand command = message.getCommand();
         String tag = message.getTag();
 
-        TimeMetric timeMetric = metricFactory.timer(command.getName());
+        TimeMetric timeMetric = metricFactory.timer(IMAP_PREFIX + command.getName());
         doProcess(message, command, tag, responder, session);
         timeMetric.elapseTimeInMs();
     }
