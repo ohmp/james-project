@@ -23,6 +23,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
@@ -34,6 +36,7 @@ public class UnionMetricFactory implements MetricFactory {
 
     @Inject
     public UnionMetricFactory(Set<MetricFactory> underlying) {
+        LoggerFactory.getLogger(this.getClass()).info("Union metric factory with " + underlying);
         Preconditions.checkArgument(!underlying.isEmpty(), "Can not create UnionMetricFactory on top of no others metric factories");
         this.underlying = ImmutableSet.copyOf(underlying);
     }

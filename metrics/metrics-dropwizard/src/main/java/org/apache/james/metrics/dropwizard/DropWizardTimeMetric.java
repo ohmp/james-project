@@ -20,6 +20,7 @@
 package org.apache.james.metrics.dropwizard;
 
 import org.apache.james.metrics.api.TimeMetric;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
@@ -40,6 +41,8 @@ public class DropWizardTimeMetric implements TimeMetric {
 
     @Override
     public long elapseTimeInMs() {
-        return time.stop();
+        long stop = time.stop();
+        LoggerFactory.getLogger(this.getClass()).info(name + " took " + stop);
+        return stop;
     }
 }

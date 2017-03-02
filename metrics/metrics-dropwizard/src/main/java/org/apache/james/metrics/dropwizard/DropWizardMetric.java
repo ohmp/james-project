@@ -20,6 +20,7 @@
 package org.apache.james.metrics.dropwizard;
 
 import org.apache.james.metrics.api.Metric;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
 
@@ -33,11 +34,13 @@ public class DropWizardMetric implements Metric {
 
     @Override
     public void increment() {
+        LoggerFactory.getLogger(this.getClass()).info("Metric incremented");
         counter.inc();
     }
 
     @Override
     public void decrement() {
+        LoggerFactory.getLogger(this.getClass()).info("Metric decremented");
         counter.dec();
     }
 }
