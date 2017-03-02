@@ -46,6 +46,8 @@ public class DropWizardMetricsModule extends AbstractModule {
         bind(MetricRegistry.class).in(Scopes.SINGLETON);
         bind(DropWizardMetricFactory.class).in(Scopes.SINGLETON);
         bind(UnionMetricFactory.class).in(Scopes.SINGLETON);
+        bind(DefaultMetricFactory.class).in(Scopes.SINGLETON);
+
         bind(MetricFactory.class).to(UnionMetricFactory.class);
 
         Multibinder<MetricFactory> metricFactoryMultibinder = Multibinder.newSetBinder(binder(), MetricFactory.class);
