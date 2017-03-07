@@ -189,7 +189,6 @@ public class NettyStartTlsSMTPServerTest {
         client.sendCommand("EHLO localhost");
 
         client.sendCommand("STARTTLS\r\nRSET\r\n");
-        System.out.println(client.getReplyString());
         assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isFalse();
     }
 
@@ -204,7 +203,6 @@ public class NettyStartTlsSMTPServerTest {
         client.sendCommand("EHLO localhost");
 
         client.sendCommand("RSET\r\nSTARTTLS\r\nRSET\r\n");
-        System.out.println(client.getReplyString());
         assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isFalse();
     }
 
