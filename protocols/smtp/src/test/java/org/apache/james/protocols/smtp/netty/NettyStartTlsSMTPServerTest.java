@@ -51,7 +51,6 @@ import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.utils.TestMessageHook;
 import org.assertj.core.api.AssertDelegateTarget;
-import org.junit.After;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
@@ -61,15 +60,6 @@ public class NettyStartTlsSMTPServerTest {
 
     private static final String LOCALHOST_IP = "127.0.0.1";
     private static final int RANDOM_PORT = 0;
-
-    private ProtocolServer server;
-
-    @After
-    public void tearDown() {
-        if (server != null) {
-            server.unbind();
-        }
-    }
 
     private ProtocolServer createServer(Protocol protocol, Encryption enc) {
         NettyServer server = NettyServer.builder()
@@ -98,48 +88,57 @@ public class NettyStartTlsSMTPServerTest {
 
     @Test
     public void connectShouldReturnTrueWhenConnecting() throws Exception {
-        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));  
-        server.bind();
-
+        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
         SMTPSClient client = createClient();
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
-        client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
-        assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isTrue();
 
-        client.quit();
-        client.disconnect();
+        try {
+            server.bind();
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+            client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+            assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isTrue();
+        } finally {
+            client.quit();
+            client.disconnect();
+            server.unbind();
+        }
     }
 
     @Test
     public void ehloShouldReturnTrueWhenSendingTheCommand() throws Exception {
-        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));  
-        server.bind();
-
+        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
         SMTPSClient client = createClient();
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
-        client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
 
-        client.sendCommand("EHLO localhost");
-        assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isTrue();
-        
-        client.quit();
-        client.disconnect();
+        try {
+            server.bind();
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+            client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+
+            client.sendCommand("EHLO localhost");
+            assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isTrue();
+        } finally {
+            client.quit();
+            client.disconnect();
+            server.unbind();
+        }
     }
 
     @Test
     public void startTlsShouldBeAnnouncedWhenServerSupportsIt() throws Exception {
-        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));  
-        server.bind();
-
+        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
         SMTPSClient client = createClient();
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
-        client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
-        client.sendCommand("EHLO localhost");
 
-        assertThat(new StartTLSAssert(client)).isStartTLSAnnounced();
+        try {
+            server.bind();
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+            client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+            client.sendCommand("EHLO localhost");
 
-        client.quit();
-        client.disconnect();
+            assertThat(new StartTLSAssert(client)).isStartTLSAnnounced();
+        } finally {
+            client.quit();
+            client.disconnect();
+            server.unbind();
+        }
     }
 
     private static class StartTLSAssert implements AssertDelegateTarget {
@@ -163,47 +162,60 @@ public class NettyStartTlsSMTPServerTest {
 
     @Test
     public void startTlsShouldReturnTrueWhenServerSupportsIt() throws Exception {
-        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));  
-        server.bind();
-
+        ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
         SMTPSClient client = createClient();
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
-        client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
-        client.sendCommand("EHLO localhost");
 
-        boolean execTLS = client.execTLS();
-        assertThat(execTLS).isTrue();
+        try {
+            server.bind();
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+            client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+            client.sendCommand("EHLO localhost");
 
-        client.quit();
-        client.disconnect();
+            boolean execTLS = client.execTLS();
+            assertThat(execTLS).isTrue();
+        } finally {
+            client.quit();
+            client.disconnect();
+            server.unbind();
+        }
     }
 
     @Test
     public void startTlsShouldFailWhenFollowedByInjectedCommand() throws Exception {
         ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));  
-        server.bind();
 
         SMTPSClient client = createClient();
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
-        client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
-        client.sendCommand("EHLO localhost");
+        try {
+            server.bind();
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+            client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+            client.sendCommand("EHLO localhost");
 
-        client.sendCommand("STARTTLS\r\nRSET\r\n");
-        assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isFalse();
+            client.sendCommand("STARTTLS\r\nRSET\r\n");
+            assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isFalse();
+        } finally {
+            client.disconnect();
+            server.unbind();
+        }
     }
 
     @Test
     public void startTlsShouldFailWhenFollowedByInjectedCommandAndNotAtBeginningOfLine() throws Exception {
         ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> absent()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
-        server.bind();
 
         SMTPSClient client = createClient();
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
-        client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
-        client.sendCommand("EHLO localhost");
+        try {
+            server.bind();
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+            client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+            client.sendCommand("EHLO localhost");
 
-        client.sendCommand("RSET\r\nSTARTTLS\r\nRSET\r\n");
-        assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isFalse();
+            client.sendCommand("RSET\r\nSTARTTLS\r\nRSET\r\n");
+            assertThat(SMTPReply.isPositiveCompletion(client.getReplyCode())).isFalse();
+        } finally {
+            client.disconnect();
+            server.unbind();
+        }
     }
 
     @Test
@@ -211,31 +223,39 @@ public class NettyStartTlsSMTPServerTest {
         TestMessageHook hook = new TestMessageHook();
         ProtocolServer server = createServer(createProtocol(Optional.<ProtocolHandler> of(hook)) , Encryption.createStartTls(BogusSslContextFactory.getServerContext()));  
         server.bind();
+        SMTPTransport transport = null;
 
-        InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
+        try {
+            InetSocketAddress bindedAddress = new ProtocolServerUtils(server).retrieveBindedAddress();
 
-        Properties mailProps = new Properties();
-        mailProps.put("mail.smtp.from", "test@localhost");
-        mailProps.put("mail.smtp.host", bindedAddress.getHostName());
-        mailProps.put("mail.smtp.port", bindedAddress.getPort());
-        mailProps.put("mail.smtp.socketFactory.class", BogusSSLSocketFactory.class.getName());
-        mailProps.put("mail.smtp.socketFactory.fallback", "false");
-        mailProps.put("mail.smtp.starttls.enable", "true");
+            Properties mailProps = new Properties();
+            mailProps.put("mail.smtp.from", "test@localhost");
+            mailProps.put("mail.smtp.host", bindedAddress.getHostName());
+            mailProps.put("mail.smtp.port", bindedAddress.getPort());
+            mailProps.put("mail.smtp.socketFactory.class", BogusSSLSocketFactory.class.getName());
+            mailProps.put("mail.smtp.socketFactory.fallback", "false");
+            mailProps.put("mail.smtp.starttls.enable", "true");
 
-        Session mailSession = Session.getDefaultInstance(mailProps);
+            Session mailSession = Session.getDefaultInstance(mailProps);
 
-        InternetAddress[] rcpts = new InternetAddress[] { new InternetAddress("valid@localhost") };
-        MimeMessage message = new MimeMessage(mailSession);
-        message.setFrom(new InternetAddress("test@localhost"));
-        message.setRecipients(Message.RecipientType.TO, rcpts);
-        message.setSubject("Testmail", "UTF-8");
-        message.setText("Test.....");
+            InternetAddress[] rcpts = new InternetAddress[]{new InternetAddress("valid@localhost")};
+            MimeMessage message = new MimeMessage(mailSession);
+            message.setFrom(new InternetAddress("test@localhost"));
+            message.setRecipients(Message.RecipientType.TO, rcpts);
+            message.setSubject("Testmail", "UTF-8");
+            message.setText("Test.....");
 
-        SMTPTransport transport = (SMTPTransport) mailSession.getTransport("smtps");
+            transport = (SMTPTransport) mailSession.getTransport("smtps");
 
-        transport.connect(new Socket(bindedAddress.getHostName(), bindedAddress.getPort()));
-        transport.sendMessage(message, rcpts);
+            transport.connect(new Socket(bindedAddress.getHostName(), bindedAddress.getPort()));
+            transport.sendMessage(message, rcpts);
 
-        assertThat(hook.getQueued()).hasSize(1);
+            assertThat(hook.getQueued()).hasSize(1);
+        } finally {
+            server.unbind();
+            if (transport != null) {
+                transport.close();
+            }
+        }
     }
 }
