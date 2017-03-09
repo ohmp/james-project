@@ -117,7 +117,7 @@ public class JwtFilterIntegrationTest {
     }
 
     @Test
-    public void jwtShouldRejectNonValidRequests() throws Exception {
+    public void jwtShouldRejectInvalidRequests() throws Exception {
         given()
             .header(new Header("Authorization", "Bearer invalid"))
         .when()
