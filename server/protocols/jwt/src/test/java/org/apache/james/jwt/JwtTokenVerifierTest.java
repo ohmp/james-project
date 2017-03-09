@@ -19,7 +19,6 @@
 package org.apache.james.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.security.Security;
 import java.util.Optional;
@@ -30,10 +29,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import io.jsonwebtoken.ClaimJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
 
 public class JwtTokenVerifierTest {
 
@@ -94,8 +89,7 @@ public class JwtTokenVerifierTest {
                 "tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFa" +
                 "Fp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0";
 
-        assertThatThrownBy(() -> sut.verify(invalidToken))
-            .isInstanceOf(SignatureException.class);
+        assertThat(sut.verify(invalidToken)).isFalse();
     }
 
     @Test
@@ -106,9 +100,7 @@ public class JwtTokenVerifierTest {
                 "VPY3q15vWzZH9O9IJzB2KdHRMPxl2luRjzDbh4DLp56NhZuLX_2a9UAlmbV8MQX4Z_04ybhAYrcBfxR3MgJyr0jlxSibqSbXrkXuo-" +
                 "PyybfZCIhK_qXUlO5OS6sO7AQhKZO9p0MQ";
 
-        assertThatThrownBy(() -> sut.verify(tokenWithNullSubject))
-            .isInstanceOf(MalformedJwtException.class)
-            .hasMessage("'subject' field in token is mandatory");
+        assertThat(sut.verify(tokenWithNullSubject)).isFalse();
     }
     
     @Test
@@ -119,9 +111,8 @@ public class JwtTokenVerifierTest {
                 "zJZ1Id40KSR2d7l3kIQJPLKUWJDnro5RAh4DOGOWNSq0JSbMhk7Zn3cXIBUpv3R8p79tui1UQpzwHMC0e6OSuWEDNQHtq-Cz85u8GG" +
                 "sUSbogmgObA_BimNtUq_Q1p0SGtIYBXmQ";
 
-        assertThatThrownBy(() -> sut.verify(tokenWithEmptySubject))
-            .isInstanceOf(MalformedJwtException.class)
-            .hasMessage("'subject' field in token is mandatory");
+
+        assertThat(sut.verify(tokenWithEmptySubject)).isFalse();
     }
 
     @Test
@@ -131,7 +122,9 @@ public class JwtTokenVerifierTest {
 
     @Test
     public void hasAttributeShouldNotThrowIfClaimValid() throws Exception {
-        sut.hasAttribute("admin", true, VALID_TOKEN_ADMIN_TRUE);
+        boolean authorized = sut.hasAttribute("admin", true, VALID_TOKEN_ADMIN_TRUE);
+
+        assertThat(authorized).isTrue();
     }
 
     @Test
@@ -141,9 +134,9 @@ public class JwtTokenVerifierTest {
 
     @Test
     public void hasAttributeShouldThrowIfClaimInvalid() throws Exception {
-        expectedException.expect(ClaimJwtException.class);
+        boolean authorized = sut.hasAttribute("admin", true, VALID_TOKEN_ADMIN_FALSE);
 
-        sut.hasAttribute("admin", true, VALID_TOKEN_ADMIN_FALSE);
+        assertThat(authorized).isFalse();
     }
 
 }
