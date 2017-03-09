@@ -43,7 +43,7 @@ public class JwtTokenVerifier {
         this.pubKeyProvider = pubKeyProvider;
     }
 
-    public boolean verify(String token) throws JwtException {
+    public boolean verify(String token) {
         try {
             String subject = extractLogin(token);
             if (Strings.isNullOrEmpty(subject)) {
@@ -63,7 +63,7 @@ public class JwtTokenVerifier {
                 .getSubject();
     }
 
-    public boolean hasAttribute(String attributeName, Object expectedValue, String token) throws JwtException {
+    public boolean hasAttribute(String attributeName, Object expectedValue, String token) {
         try {
             Jwts
                 .parser()
