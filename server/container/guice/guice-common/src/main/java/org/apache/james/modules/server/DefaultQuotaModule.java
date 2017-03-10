@@ -19,9 +19,11 @@
 
 package org.apache.james.modules.server;
 
+import org.apache.james.mailbox.quota.MaxQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.quota.DefaultQuotaRootResolver;
+import org.apache.james.mailbox.store.quota.NoMaxQuotaManager;
 import org.apache.james.mailbox.store.quota.NoQuotaManager;
 
 import com.google.inject.AbstractModule;
@@ -31,8 +33,13 @@ public class DefaultQuotaModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(QuotaManager.class).to(NoQuotaManager.class).in(Scopes.SINGLETON);
-        bind(QuotaRootResolver.class).to(DefaultQuotaRootResolver.class).in(Scopes.SINGLETON);
+        bind(NoQuotaManager.class).in(Scopes.SINGLETON);
+        bind(DefaultQuotaRootResolver.class).in(Scopes.SINGLETON);
+        bind(NoMaxQuotaManager.class).in(Scopes.SINGLETON);
+
+        bind(MaxQuotaManager.class).to(NoMaxQuotaManager.class);
+        bind(QuotaManager.class).to(NoQuotaManager.class);
+        bind(QuotaRootResolver.class).to(DefaultQuotaRootResolver.class);
     }
     
 }
