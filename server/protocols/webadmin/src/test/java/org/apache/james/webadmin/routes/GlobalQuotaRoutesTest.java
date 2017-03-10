@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 import org.apache.james.mailbox.inmemory.quota.InMemoryPerUserMaxQuotaManager;
 import org.apache.james.mailbox.model.Quota;
+import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.junit.After;
@@ -47,7 +48,9 @@ public class GlobalQuotaRoutesTest {
     @Before
     public void setUp() throws Exception {
         maxQuotaManager = new InMemoryPerUserMaxQuotaManager();
-        webAdminServer = new WebAdminServer(new GlobalQuotaRoutes(maxQuotaManager, new JsonTransformer()));
+        webAdminServer = new WebAdminServer(
+            new DefaultMetricFactory(),
+            new GlobalQuotaRoutes(maxQuotaManager, new JsonTransformer()));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
