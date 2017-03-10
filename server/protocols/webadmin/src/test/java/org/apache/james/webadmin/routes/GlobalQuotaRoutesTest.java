@@ -187,4 +187,72 @@ public class GlobalQuotaRoutesTest {
 
         assertThat(maxQuotaManager.getDefaultMaxMessage()).isEqualTo(Quota.UNLIMITED);
     }
+
+    @Test
+    public void getQuotaShouldReturnBothWhenValueSpecified() throws Exception {
+        maxQuotaManager.setDefaultMaxStorage(42);
+        maxQuotaManager.setDefaultMaxMessage(52);
+
+        given()
+            .get(GlobalQuotaRoutes.QUOTA_ENDPOINT)
+        .then()
+            .statusCode(200)
+            .body(is("{\"count\":52,\"size\":42}"));
+    }
+
+    @Test
+    public void getQuotaShouldReturnBothDefaultValues() throws Exception {
+        given()
+            .get(GlobalQuotaRoutes.QUOTA_ENDPOINT)
+        .then()
+            .statusCode(200)
+            .body(is("{\"count\":-1,\"size\":-1}"));
+    }
+
+    @Test
+    public void getQuotaShouldReturnBothWhenNoCount() throws Exception {
+        maxQuotaManager.setDefaultMaxStorage(42);
+
+        given()
+            .get(GlobalQuotaRoutes.QUOTA_ENDPOINT)
+        .then()
+            .statusCode(200)
+            .body(is("{\"count\":-1,\"size\":42}"));
+    }
+
+    @Test
+    public void getQuotaShouldReturnBothWhenNoSize() throws Exception {
+        maxQuotaManager.setDefaultMaxMessage(42);
+
+        given()
+            .get(GlobalQuotaRoutes.QUOTA_ENDPOINT)
+        .then()
+            .statusCode(200)
+            .body(is("{\"count\":42,\"size\":-1}"));
+    }
+
+    @Test
+    public void putQuotaShouldUpdateBothQuota() throws Exception {
+        given()
+            .body("{\"count\":52,\"size\":42}")
+            .put(GlobalQuotaRoutes.QUOTA_ENDPOINT)
+        .then()
+            .statusCode(204);
+
+        assertThat(maxQuotaManager.getDefaultMaxMessage()).isEqualTo(52);
+        assertThat(maxQuotaManager.getDefaultMaxStorage()).isEqualTo(42);
+    }
+
+    @Test
+    public void putQuotaShouldBaAbleToRemoveBothQuota() throws Exception {
+        given()
+            .body("{\"count\":-1,\"size\":-1}")
+            .put(GlobalQuotaRoutes.QUOTA_ENDPOINT)
+        .then()
+            .statusCode(204);
+
+        assertThat(maxQuotaManager.getDefaultMaxMessage()).isEqualTo(Quota.UNLIMITED);
+        assertThat(maxQuotaManager.getDefaultMaxStorage()).isEqualTo(Quota.UNLIMITED);
+    }
+
 }
