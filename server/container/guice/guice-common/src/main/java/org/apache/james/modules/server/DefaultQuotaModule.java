@@ -27,7 +27,7 @@ import org.apache.james.mailbox.store.quota.NoQuotaManager;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 
-public class QuotaModule extends AbstractModule {
+public class DefaultQuotaModule extends AbstractModule {
 
     @Override
     protected void configure() {

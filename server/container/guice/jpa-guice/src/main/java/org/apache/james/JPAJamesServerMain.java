@@ -26,7 +26,7 @@ import org.apache.james.modules.mailbox.LuceneSearchMailboxModule;
 import org.apache.james.modules.server.ActiveMQQueueModule;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.modules.server.NoJwtModule;
-import org.apache.james.modules.server.QuotaModule;
+import org.apache.james.modules.server.DefaultQuotaModule;
 import org.apache.james.modules.server.RawPostDequeueDecoratorModule;
 
 import com.google.inject.Module;
@@ -38,7 +38,7 @@ public class JPAJamesServerMain {
         new JPAMailboxModule(),
         new JPADataModule(),
         new SieveFileRepositoryModule(),
-        new QuotaModule(),
+        new DefaultQuotaModule(),
         new ActiveMQQueueModule(),
         new RawPostDequeueDecoratorModule(),
         new NoJwtModule());
