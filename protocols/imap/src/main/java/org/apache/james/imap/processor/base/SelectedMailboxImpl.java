@@ -33,6 +33,7 @@ import javax.mail.Flags.Flag;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.api.process.SelectedMailbox;
+import org.apache.james.imap.processor.MemoizedSupplier;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -48,7 +49,6 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 
 /**
@@ -72,7 +72,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     private final Set<MessageUid> flagUpdateUids = new TreeSet<MessageUid>();
     private final Flags.Flag uninterestingFlag = Flags.Flag.RECENT;
     private final Set<MessageUid> expungedUids = new TreeSet<MessageUid>();
-    private final Supplier<UidMsnMapper> uidMsnMapper;
+    private final MemoizedSupplier<UidMsnMapper> uidMsnMapper;
 
     private boolean isDeletedByOtherSession = false;
     private boolean sizeChanged = false;
@@ -99,8 +99,8 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
         uidMsnMapper = memoizedUIdMsnMapper(mailboxSession, messageManager);
     }
 
-    private Supplier<UidMsnMapper> memoizedUIdMsnMapper(final MailboxSession mailboxSession, final MessageManager messageManager) {
-        return Suppliers.memoize(new Supplier<UidMsnMapper>() {
+    private MemoizedSupplier<UidMsnMapper> memoizedUIdMsnMapper(final MailboxSession mailboxSession, final MessageManager messageManager) {
+        return new MemoizedSupplier<UidMsnMapper>(new Supplier<UidMsnMapper>() {
             @Override
             public UidMsnMapper get() {
                 UidMsnMapper uidMsnMapper = new UidMsnMapper();
@@ -337,7 +337,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
                     final List<MessageUid> uids = ((Added) event).getUids();
                     SelectedMailbox sm = session.getSelected();
                     for (MessageUid uid : uids) {
-                        uidMsnMapper.get().addUid(uid);
+                        addUid(uid);
                         if (sm != null) {
                             sm.addRecent(uid);
                         }
@@ -407,6 +407,12 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
                 final MailboxRenamed mailboxRenamed = (MailboxRenamed) event;
                 path = mailboxRenamed.getNewPath();
             }
+        }
+    }
+
+    private void addUid(MessageUid uid) {
+        if (uidMsnMapper.initialized()) {
+            uidMsnMapper.get().addUid(uid);
         }
     }
 
