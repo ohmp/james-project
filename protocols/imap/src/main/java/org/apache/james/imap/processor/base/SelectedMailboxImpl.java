@@ -307,13 +307,9 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
         return Collections.unmodifiableSet(new TreeSet<MessageUid>(expungedUids));
         
     }
-
-
-
-
     
     public synchronized Flags getApplicableFlags() {
-        return applicableFlags;
+        return new Flags(applicableFlags);
     }
 
     
