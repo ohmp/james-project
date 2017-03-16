@@ -1,6 +1,7 @@
 # Linagora's James newsletter
 
-[Linagora](http://linagora.com/) have a team of developpers devoted to the James server. We are already contributing for a few years to the project. This document will try to give you information about what we recently did for the James project, and give hints about the road-map we follow. We will also try to write it regulary.
+[Linagora](http://linagora.com/) have a team of developpers devoted to the James server. We are already contributing for a few years to the project. This document will try to give you information about 
+what we recently did in the James project, and give hints about the road-map we follow. We will also try to write it regulary.
 
 ## Deploying James internally
 
@@ -36,8 +37,8 @@ Everybody wants to read their e-mails fast. Thus the team made performance track
 We started implementing [Gatling](http://gatling.io/) load testing for the James server :
 
   - First with a [Gatling JMAP](https://github.com/linagora/james-gatling) implementation.
-  - Then we added a naive SMTP implementation
-  - And finally contributed a [IMAP DSL for Gatling](https://github.com/linagora/gatling-imap)
+  - Then we added a naive [SMTP implementation](https://github.com/linagora/james-gatling/tree/master/src/main/scala-2.11/org/apache/james/gatling/smtp)
+  - And finally contributed an [IMAP DSL for Gatling](https://github.com/linagora/gatling-imap)
 
 ![Result graph of 1.000 thunderbird like users](gatling2.png)
 
@@ -46,7 +47,12 @@ Running these load tests we :
   - Succeeded to support 1.000 thunderbird like users
   - However, it turned out we had problems with 10.000 users.
 
-Additionally, we added metrics a bit everywhere in James using the brand new metrics API. We collect and export everything in [ElasticSearch](https://github.com/elastic/elasticsearch-metrics-reporter-java) using [Dropwizard metrics](http://metrics.dropwizard.io/3.2.1/). Then we graph it all using [Grafana](http://grafana.com/). This allow us to collect all statistic and percentiles. We track so far :
+Additionally, we added metrics a bit everywhere in James using the brand new metrics API. We collect and export everything in 
+[ElasticSearch](https://github.com/elastic/elasticsearch-metrics-reporter-java) using [Dropwizard metrics](http://metrics.dropwizard.io/3.2.1/). Then we graph it all using [Grafana](http://grafana.com/). 
+This allow us to collect all statistic and percentiles. We decided to share our [boards and installation](https://github.com/apache/james-project/tree/master/grafana-reporting) guide with the community 
+as part of the James project.
+
+We track so far :
 
   - Protocols detailed time execution (and count)
   - Percentile of mailet and matcher executions
@@ -56,7 +62,7 @@ Additionally, we added metrics a bit everywhere in James using the brand new met
 
 All these solutions allow us to identify the components that needs improvement. For instance receiving too much incoming e-mails overload James with very heavy garbage collection. We then plan to move our mail queue to RabbitMQ, to parse e-mails only once on top of the mail pipeline, to reorganize a bit our configuration. A Camel upgrade (impossible in java-6) might also help.
  
- ## MessageId refactoring
+## MessageId refactoring
  
  We succeeded to finish and merge the MessageId refactoring. This huge task allow us to address messages by their ID, outside of mailbox context.
  
@@ -64,7 +70,7 @@ All these solutions allow us to identify the components that needs improvement. 
  
  This is now supported by the Cassandra and Memory implementation. We design a system of capabilities to allow enabling only the supported parts of protocols, in an implementation agnostic way.
  
- ## Our incoming plans
+## Our incoming plans
  
 
 We are pretty happy with the current state of the James server. We will then push for the 3.0 release of the James server.
@@ -83,9 +89,11 @@ For this :
  - Gatling: http://gatling.io/
  - Gatling James (JMAP + SMTP): https://github.com/linagora/james-gatling
  - Gatling IMAP: https://github.com/linagora/gatling-imap
+ - Gatling SMTP: https://github.com/linagora/james-gatling/tree/master/src/main/scala-2.11/org/apache/james/gatling/smtp
  - Dopwizard metrics: http://metrics.dropwizard.io/3.2.1/
  - ElasticSearch metrics: https://github.com/elastic/elasticsearch-metrics-reporter-java
  - Grafana: http://grafana.com/
+ - Grafana reporting in James: https://github.com/apache/james-project/tree/master/grafana-reporting
  - JMAP: http://jmap.io/
  - OpenPaaS: http://open-paas.org/
  - Linagora: http://linagora.com/
