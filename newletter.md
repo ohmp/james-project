@@ -28,6 +28,8 @@ Let me share a few numbers with you :
 This deployment help us detecting bugs, and performance issues. We follow the current state of master branch, that we update at midnight 
 with the built image uploaded on [dockerhub](https://hub.docker.com/r/linagora/james-ldap-project/).
 
+The following results were obtained on a serveur with an Intel Xeon CPU (E5-2650 2.00GHz 4 cores 4 threads) and 16 GB of RAM.
+
 ## Tracking performance
 
 Everybody wants to read their e-mails fast. Thus the team made performance tracking a priority. And we developed the tools to follow performance.
@@ -46,6 +48,8 @@ Running these load tests we :
 
   - Succeeded to support 1.000 thunderbird like users
   - However, it turned out we had problems with 10.000 users.
+
+The following results were obtained on a server with an Intel Xeon CPU (E3-1231 3.40GHz 4 cores 8 threads) with 32 GB of RAM.
 
 Additionally, we added metrics a bit everywhere in James using the brand new metrics API. We collect and export everything in 
 [ElasticSearch](https://github.com/elastic/elasticsearch-metrics-reporter-java) using [Dropwizard metrics](http://metrics.dropwizard.io/3.2.1/). Then we graph it all using [Grafana](http://grafana.com/). 
