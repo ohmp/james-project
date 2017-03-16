@@ -49,7 +49,8 @@ Running these load tests we :
   - Succeeded to support 1.000 thunderbird like users
   - However, it turned out we had problems with 10.000 users.
 
-The following results were obtained on a server with an Intel Xeon CPU (E3-1231 3.40GHz 4 cores 8 threads) with 32 GB of RAM.
+The following results were obtained on a server with an Intel Xeon CPU (E3-1231 3.40GHz 4 cores 8 threads) with 32 GB of RAM. We run Gatling on the same host, thus it has performance impact on the 
+results. So far Gatling is run manually when we take time for it. Maybe we will integrate it to our build pipeline. Also the testing server configuration we are using might change in the future.
 
 Additionally, we added metrics a bit everywhere in James using the brand new metrics API. We collect and export everything in 
 [ElasticSearch](https://github.com/elastic/elasticsearch-metrics-reporter-java) using [Dropwizard metrics](http://metrics.dropwizard.io/3.2.1/). Then we graph it all using [Grafana](http://grafana.com/). 
