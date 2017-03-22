@@ -48,22 +48,8 @@
 
     <modules>
         <module>api</module>
-        <module>caching</module>
-        <module>cassandra</module>
-        <module>elasticsearch</module>
-        <module>hbase</module>
-        <module>jcr</module>
-        <module>jpa</module>
-        <module>lucene</module>
-        <module>maildir</module>
         <module>memory</module>
-        <module>scanning-search</module>
         <module>store</module>
-        <module>spring</module>
-        <module>tika</module>
-        <module>tool</module>
-        <module>zoo-seq-provider</module>
-        <module>kafka</module>
     </modules>
 
     <issueManagement>
