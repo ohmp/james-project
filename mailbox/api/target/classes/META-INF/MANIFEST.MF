@@ -1,0 +1,39 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1490150752899
+Build-Jdk: 1.8.0_121
+Built-By: benwa
+Bundle-Description: Apache James Mailbox
+Bundle-DocURL: https://www.apache.org/
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache James :: Mailbox :: API
+Bundle-SymbolicName: org.apache.james.apache-james-mailbox-api
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Version: 3.0.0.beta6-SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.apache.james.mailbox;uses:="com.google.common.base,j
+ avax.mail,org.apache.james.mailbox.exception,org.apache.james.mailbox.m
+ odel,org.slf4j";version="3.0.0.beta6-SNAPSHOT",org.apache.james.mailbox
+ .quota;uses:="org.apache.james.mailbox,org.apache.james.mailbox.excepti
+ on,org.apache.james.mailbox.model";version="3.0.0.beta6-SNAPSHOT",org.a
+ pache.james.mailbox.model;uses:="com.google.common.base,com.google.comm
+ on.collect,javax.mail,org.apache.james.mailbox,org.apache.james.mailbox
+ .exception";version="3.0.0.beta6-SNAPSHOT",org.apache.james.mailbox.cop
+ ier;uses:="org.apache.james.mailbox,org.apache.james.mailbox.exception"
+ ;version="3.0.0.beta6-SNAPSHOT",org.apache.james.mailbox.exception;uses
+ :="org.apache.james.mailbox.model";version="3.0.0.beta6-SNAPSHOT",org.a
+ pache.james.mailbox.extractor;version="3.0.0.beta6-SNAPSHOT",org.apache
+ .james.mailbox.acl;uses:="javax.mail,org.apache.james.mailbox.exception
+ ,org.apache.james.mailbox.model";version="3.0.0.beta6-SNAPSHOT"
+Implementation-Title: Apache James :: Mailbox :: API
+Implementation-Vendor: The Apache Software Foundation
+Implementation-Vendor-Id: org.apache.james
+Implementation-Version: 3.0.0-beta6-SNAPSHOT
+Import-Package: com.google.common.base;version="[18.0,19)",com.google.co
+ mmon.collect;version="[18.0,19)",javax.mail,org.apache.commons.codec.di
+ gest;version="[1.7,2)",org.apache.commons.lang;version="[2.6,3)",org.sl
+ f4j;version="[1.7,2)"
+Specification-Title: Apache James :: Mailbox :: API
+Specification-Vendor: The Apache Software Foundation
+Specification-Version: 3.0.0-beta6-SNAPSHOT
+Tool: Bnd-2.1.0.20130426-122213

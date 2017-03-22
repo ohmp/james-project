@@ -1,0 +1,59 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1490150762451
+Build-Jdk: 1.8.0_121
+Built-By: benwa
+Bundle-Description: Apache James Mailbox
+Bundle-DocURL: https://www.apache.org/
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache James :: Mailbox :: In Memory
+Bundle-SymbolicName: org.apache.james.apache-james-mailbox-memory
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Version: 3.0.0.beta6-SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.apache.james.mailbox.inmemory;uses:="javax.inject,ja
+ vax.mail,org.apache.james.mailbox,org.apache.james.mailbox.acl,org.apac
+ he.james.mailbox.exception,org.apache.james.mailbox.extractor,org.apach
+ e.james.mailbox.model,org.apache.james.mailbox.quota,org.apache.james.m
+ ailbox.store,org.apache.james.mailbox.store.event,org.apache.james.mail
+ box.store.mail,org.apache.james.mailbox.store.mail.model,org.apache.jam
+ es.mailbox.store.mail.model.impl,org.apache.james.mailbox.store.search,
+ org.apache.james.mailbox.store.user";version="3.0.0.beta6-SNAPSHOT",org
+ .apache.james.mailbox.inmemory.user;uses:="org.apache.james.mailbox.sto
+ re.transaction,org.apache.james.mailbox.store.user,org.apache.james.mai
+ lbox.store.user.model";version="3.0.0.beta6-SNAPSHOT",org.apache.james.
+ mailbox.inmemory.quota;uses:="javax.inject,org.apache.james.mailbox,org
+ .apache.james.mailbox.exception,org.apache.james.mailbox.model,org.apac
+ he.james.mailbox.quota,org.apache.james.mailbox.store.quota";version="3
+ .0.0.beta6-SNAPSHOT",org.apache.james.mailbox.inmemory.mail;uses:="com.
+ google.common.base,javax.mail,org.apache.james.mailbox,org.apache.james
+ .mailbox.exception,org.apache.james.mailbox.model,org.apache.james.mail
+ box.store.mail,org.apache.james.mailbox.store.mail.model,org.apache.jam
+ es.mailbox.store.transaction";version="3.0.0.beta6-SNAPSHOT"
+Implementation-Title: Apache James :: Mailbox :: In Memory
+Implementation-Vendor: The Apache Software Foundation
+Implementation-Vendor-Id: org.apache.james
+Implementation-Version: 3.0.0-beta6-SNAPSHOT
+Import-Package: com.google.common.base;version="[18.0,19)",com.google.co
+ mmon.cache;version="[18.0,19)",com.google.common.collect;version="[18.0
+ ,19)",javax.inject,javax.mail,org.apache.commons.io;version="[1.4,2)",o
+ rg.apache.commons.lang;version="[2.6,3)",org.apache.james.mailbox;versi
+ on="[3.0,4)",org.apache.james.mailbox.acl;version="[3.0,4)",org.apache.
+ james.mailbox.exception;version="[3.0,4)",org.apache.james.mailbox.extr
+ actor;version="[3.0,4)",org.apache.james.mailbox.inmemory.InMemoryId,or
+ g.apache.james.mailbox.model;version="[3.0,4)",org.apache.james.mailbox
+ .quota;version="[3.0,4)",org.apache.james.mailbox.store;version="[3.0,4
+ )",org.apache.james.mailbox.store.event;version="[3.0,4)",org.apache.ja
+ mes.mailbox.store.mail;version="[3.0,4)",org.apache.james.mailbox.store
+ .mail.model;version="[3.0,4)",org.apache.james.mailbox.store.mail.model
+ .impl,org.apache.james.mailbox.store.mail.utils;version="[3.0,4)",org.a
+ pache.james.mailbox.store.quota;version="[3.0,4)",org.apache.james.mail
+ box.store.search;version="[3.0,4)",org.apache.james.mailbox.store.trans
+ action;version="[3.0,4)",org.apache.james.mailbox.store.user;version="[
+ 3.0,4)",org.apache.james.mailbox.store.user.model;version="[3.0,4)",org
+ .jsoup;version="[1.9,2)",org.jsoup.nodes;version="[1.9,2)",org.slf4j;ve
+ rsion="[1.7,2)"
+Specification-Title: Apache James :: Mailbox :: In Memory
+Specification-Vendor: The Apache Software Foundation
+Specification-Version: 3.0.0-beta6-SNAPSHOT
+Tool: Bnd-2.1.0.20130426-122213

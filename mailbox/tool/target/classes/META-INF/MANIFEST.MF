@@ -1,0 +1,47 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1489638769811
+Build-Jdk: 1.8.0_121
+Built-By: benwa
+Bundle-Description: Apache James Mailbox
+Bundle-DocURL: https://www.apache.org/
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache James :: Mailbox :: Tools
+Bundle-SymbolicName: org.apache.james.apache-james-mailbox-tool
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Version: 3.0.0.beta6-SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.apache.james.mailbox.copier;version="3.0.0.beta6-SNA
+ PSHOT";uses:="org.apache.james.mailbox,org.apache.james.mailbox.excepti
+ on,org.slf4j",org.apache.james.mailbox.jpa.migrator.command;uses:="java
+ x.persistence,org.apache.james.mailbox.jpa.migrator.exception";version=
+ "3.0.0.beta6-SNAPSHOT",org.apache.james.mailbox.jpa.migrator;uses:="org
+ .apache.james.mailbox.jpa.migrator.exception";version="3.0.0.beta6-SNAP
+ SHOT",org.apache.james.mailbox.jpa.migrator.exception;version="3.0.0.be
+ ta6-SNAPSHOT",org.apache.james.mailbox.indexer.registrations;uses:="com
+ .google.common.base,org.apache.james.mailbox,org.apache.james.mailbox.i
+ ndexer.events,org.apache.james.mailbox.model";version="3.0.0.beta6-SNAP
+ SHOT",org.apache.james.mailbox.indexer.events;uses:="javax.mail,org.apa
+ che.james.mailbox,org.apache.james.mailbox.model";version="3.0.0.beta6-
+ SNAPSHOT",org.apache.james.mailbox.indexer;uses:="javax.inject,org.apac
+ he.james.mailbox,org.apache.james.mailbox.exception,org.apache.james.ma
+ ilbox.model,org.apache.james.mailbox.store,org.apache.james.mailbox.sto
+ re.search";version="3.0.0.beta6-SNAPSHOT"
+Implementation-Title: Apache James :: Mailbox :: Tools
+Implementation-Vendor: The Apache Software Foundation
+Implementation-Vendor-Id: org.apache.james
+Implementation-Version: 3.0.0-beta6-SNAPSHOT
+Import-Package: com.google.common.base;version="[18.0,19)",com.google.co
+ mmon.collect;version="[18.0,19)",javax.inject,javax.mail,javax.persiste
+ nce;version="[1.1,2)",org.apache.james.mailbox;version="[3.0,4)",org.ap
+ ache.james.mailbox.exception;version="[3.0,4)",org.apache.james.mailbox
+ .model;version="[3.0,4)",org.apache.james.mailbox.store;version="[3.0,4
+ )",org.apache.james.mailbox.store.mail;version="[3.0,4)",org.apache.jam
+ es.mailbox.store.mail.model;version="[3.0,4)",org.apache.james.mailbox.
+ store.search;version="[3.0,4)",org.apache.james.mailbox.store.streaming
+ ;version="[3.0,4)",org.apache.openjpa.kernel;version="[2.2,3)",org.apac
+ he.openjpa.lib.rop;version="[2.2,3)",org.slf4j;version="[1.7,2)"
+Specification-Title: Apache James :: Mailbox :: Tools
+Specification-Vendor: The Apache Software Foundation
+Specification-Version: 3.0.0-beta6-SNAPSHOT
+Tool: Bnd-2.1.0.20130426-122213
