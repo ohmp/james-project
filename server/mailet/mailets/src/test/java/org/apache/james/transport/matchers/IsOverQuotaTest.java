@@ -21,6 +21,10 @@ package org.apache.james.transport.matchers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
+
+import javax.mail.MessagingException;
+
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
@@ -34,7 +38,9 @@ import org.apache.james.mailbox.store.NoMailboxPathLocker;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.quota.CurrentQuotaCalculator;
 import org.apache.james.mailbox.store.quota.DefaultQuotaRootResolver;
+import org.apache.james.mailbox.store.quota.QuotaRootImpl;
 import org.apache.james.mailbox.store.quota.StoreQuotaManager;
+import org.apache.mailet.MailAddress;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMatcherConfig;
@@ -53,15 +59,12 @@ public class IsOverQuotaTest {
             new NoMailboxPathLocker(), new UnionMailboxACLResolver(), new SimpleGroupMembershipResolver(), new MessageParser(),
             new InMemoryMessageId.Factory());
 
-        testee = new IsOverQuota();
         DefaultQuotaRootResolver quotaRootResolver = new DefaultQuotaRootResolver(factory);
-        testee.setQuotaRootResolver(quotaRootResolver);
         StoreQuotaManager quotaManager = new StoreQuotaManager();
         maxQuotaManager = new InMemoryPerUserMaxQuotaManager();
         quotaManager.setMaxQuotaManager(maxQuotaManager);
         quotaManager.setCurrentQuotaManager(new InMemoryCurrentQuotaManager(new CurrentQuotaCalculator(factory, quotaRootResolver), mailboxManager));
-        testee.setQuotaManager(quotaManager);
-        testee.setMailboxManager(mailboxManager);
+        testee = new IsOverQuota(quotaRootResolver, quotaManager, mailboxManager);
 
         mailboxManager.setQuotaRootResolver(quotaRootResolver);
         mailboxManager.setQuotaManager(quotaManager);
@@ -83,37 +86,69 @@ public class IsOverQuotaTest {
 
     @Test
     public void matchShouldKeepAddressesWithTooBigSize() throws Exception {
-        /* TODO */
+        maxQuotaManager.setDefaultMaxStorage(100);
+
+        FakeMail fakeMail = FakeMail.builder()
+            .recipient(MailAddressFixture.ANY_AT_JAMES)
+            .size(1000)
+            .build();
+
+        Collection<MailAddress> result = testee.match(fakeMail);
+
+        assertThat(result).containsOnly(MailAddressFixture.ANY_AT_JAMES);
     }
 
     @Test
-    public void matchShouldKeepAddressesWithTooBigSizeIfCurrentMailTriggersQuota() throws Exception {
-        /* TODO */
+    public void matchShouldReturnEmptyAtSizeQuotaLimit() throws Exception {
+        maxQuotaManager.setDefaultMaxStorage(1000);
+
+        FakeMail fakeMail = FakeMail.builder()
+            .recipient(MailAddressFixture.ANY_AT_JAMES)
+            .size(1000)
+            .build();
+
+        Collection<MailAddress> result = testee.match(fakeMail);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
     public void matchShouldKeepAddressesWithTooMuchMessages() throws Exception {
-        /* TODO */
+        maxQuotaManager.setDefaultMaxMessage(0);
+
+        FakeMail fakeMail=FakeMail.builder()
+            .recipient(MailAddressFixture.ANY_AT_JAMES)
+            .build();
+        Collection <MailAddress> result=testee.match(fakeMail);
+
+        assertThat(result).containsOnly(MailAddressFixture.ANY_AT_JAMES);
     }
 
     @Test
-    public void matchShouldKeepAddressesWithTooMuchMessagesIfCurrentMailTriggersQuota() throws Exception {
-        /* TODO */
+    public void matchShouldReturnEmptyOnMessageLimit() throws Exception {
+        maxQuotaManager.setDefaultMaxMessage(1);
+
+        FakeMail fakeMail=FakeMail.builder()
+            .recipient(MailAddressFixture.ANY_AT_JAMES)
+            .build();
+        Collection <MailAddress> result=testee.match(fakeMail);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
-    public void matchShouldNotIncludeRecipientNotOverQuota() {
-        /* TODO */
-    }
+    public void matchShouldNotIncludeRecipientNotOverQuota() throws MessagingException {
+        maxQuotaManager.setMaxStorage(QuotaRootImpl.quotaRoot("#private&" + MailAddressFixture.ANY_AT_JAMES.getLocalPart()),
+            100);
 
-    @Test
-    public void matchShouldWorkWithVirtualHosting() {
-        /* TODO */
-    }
+        FakeMail fakeMail=FakeMail.builder()
+            .recipient(MailAddressFixture.ANY_AT_JAMES)
+            .recipient(MailAddressFixture.OTHER_AT_JAMES)
+            .size(150)
+            .build();
 
-    @Test
-    public void matchShouldWorkWithoutVirtualHosting() {
-        /* TODO */
+        Collection<MailAddress> result = testee.match(fakeMail);
+        assertThat(result).containsOnly(MailAddressFixture.ANY_AT_JAMES);
     }
 
 }

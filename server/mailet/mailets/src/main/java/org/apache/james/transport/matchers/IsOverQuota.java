@@ -11,6 +11,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
@@ -30,28 +31,14 @@ public class IsOverQuota extends GenericMatcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IsOverQuota.class);
 
-    private QuotaRootResolver quotaRootResolver;
-    private QuotaManager quotaManager;
-    private MailboxManager mailboxManager;
-
-    /*
-    TODO
-
-    Q2 Make these fields final
-     */
+    private final QuotaRootResolver quotaRootResolver;
+    private final QuotaManager quotaManager;
+    private final MailboxManager mailboxManager;
 
     @Inject
-    public void setQuotaRootResolver(QuotaRootResolver quotaRootResolver) {
+    public IsOverQuota(QuotaRootResolver quotaRootResolver, QuotaManager quotaManager, MailboxManager mailboxManager) {
         this.quotaRootResolver = quotaRootResolver;
-    }
-
-    @Inject
-    public void setQuotaManager(QuotaManager quotaManager) {
         this.quotaManager = quotaManager;
-    }
-
-    @Inject
-    public void setMailboxManager(MailboxManager mailboxManager) {
         this.mailboxManager = mailboxManager;
     }
 
@@ -66,14 +53,14 @@ public class IsOverQuota extends GenericMatcher {
                 MailboxSession mailboxSession = mailboxManager.createSystemSession(mailAddress.getLocalPart(), LOGGER);
                 MailboxPath mailboxPath = MailboxPath.inbox(mailboxSession);
                 QuotaRoot quotaRoot = quotaRootResolver.getQuotaRoot(mailboxPath);
-                /*
-                TODO change here to reject emails for account having too many messages or a too big size
-                 */
-                /*
-                TODO we should update the quota with the e-mails value to be more precise on the
-                 */
-                if (quotaManager.getMessageQuota(quotaRoot).isOverQuota() &&
-                    quotaManager.getStorageQuota(quotaRoot).isOverQuota()) {
+
+                Quota messageQuota = quotaManager.getMessageQuota(quotaRoot);
+                Quota storageQuota = quotaManager.getStorageQuota(quotaRoot);
+                messageQuota.addValueToQuota(1);
+                storageQuota.addValueToQuota(mail.getMessageSize());
+
+                if (messageQuota.isOverQuota() ||
+                    storageQuota.isOverQuota()) {
                     result.add(mailAddress);
                 }
             }
