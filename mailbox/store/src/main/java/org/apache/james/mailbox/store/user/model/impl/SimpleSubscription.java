@@ -45,4 +45,21 @@ public class SimpleSubscription implements Subscription {
     You will check both user and mailbox
      */
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SimpleSubscription that = (SimpleSubscription) o;
+
+        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+        return mailbox != null ? mailbox.equals(that.mailbox) : that.mailbox == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = user != null ? user.hashCode() : 0;
+        result = 31 * result + (mailbox != null ? mailbox.hashCode() : 0);
+        return result;
+    }
 }

@@ -21,6 +21,10 @@ package org.apache.james.mailbox.inmemory.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
+import org.apache.james.mailbox.store.user.model.Subscription;
+import org.apache.james.mailbox.store.user.model.impl.SimpleSubscription;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,6 +49,10 @@ public class InMemorySubscriptionMapperTest {
 
         Check findSubscriptionsForUser return no subscription for USER_1 if we did not create one
          */
+        List<Subscription> subscriptions =  testee.findSubscriptionsForUser(USER_1);
+
+        assertThat(subscriptions).isEmpty();
+
     }
 
     @Test
@@ -54,6 +62,9 @@ public class InMemorySubscriptionMapperTest {
 
         Check findMailboxSubscriptionForUser return a null subscription for USER_1 if we did not create one
          */
+        Subscription subscriptions =  testee.findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
+
+        assertThat(subscriptions).isNull();
     }
 
     @Test
@@ -65,7 +76,13 @@ public class InMemorySubscriptionMapperTest {
 
         Check that findSubscriptionsForUser now return this subscription
          */
-    }
+        SimpleSubscription subscription = new SimpleSubscription(USER_1, MAILBOX_1);
+        testee.save(subscription);
+
+        List<Subscription> subscriptions = testee.findSubscriptionsForUser(USER_1);
+
+        assertThat(subscriptions).containsOnly(subscription);
+        }
 
     @Test
     public void findSubscriptionsForUserShouldReturnSubscriptions() {
@@ -76,6 +93,19 @@ public class InMemorySubscriptionMapperTest {
 
         Check that findSubscriptionsForUser now return these subscriptions
          */
+
+        SimpleSubscription subscription = new SimpleSubscription(USER_1, MAILBOX_1);
+        testee.save(subscription);
+
+        SimpleSubscription subscription2 = new SimpleSubscription(USER_1, MAILBOX_2);
+        testee.save(subscription2);
+
+        List<Subscription> subscriptions = testee.findSubscriptionsForUser(USER_1);
+
+        assertThat(subscriptions).containsOnly(subscription,subscription2);
+
+
+
     }
 
     @Test
@@ -88,6 +118,17 @@ public class InMemorySubscriptionMapperTest {
 
         Check that findSubscriptionsForUser for USER_1 now return only USER_1 subscription
          */
+        SimpleSubscription subscription = new SimpleSubscription(USER_1, MAILBOX_1);
+        testee.save(subscription);
+
+        SimpleSubscription subscription2 = new SimpleSubscription(USER_2, MAILBOX_2);
+        testee.save(subscription2);
+
+        List<Subscription> subscriptions = testee.findSubscriptionsForUser(USER_1);
+
+        assertThat(subscriptions).containsOnly(subscription);
+
+
     }
 
     @Test
@@ -100,6 +141,17 @@ public class InMemorySubscriptionMapperTest {
 
         Check that findMailboxSubscriptionForUser for USER_1, MAILBOX_1 should only return this subscription
          */
+
+        SimpleSubscription simpleSubscription = new SimpleSubscription(USER_1,MAILBOX_1);
+        testee.save(simpleSubscription);
+        SimpleSubscription simpleSubscription1 = new SimpleSubscription(USER_2,MAILBOX_1);
+        testee.save(simpleSubscription1);
+
+        Subscription subscription = testee.findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
+
+        assertThat(subscription).isEqualTo(subscription);
+
+
     }
 
     @Test
@@ -112,5 +164,14 @@ public class InMemorySubscriptionMapperTest {
 
         Check that findMailboxSubscriptionForUser for USER_1, MAILBOX_1 should only return this subscription
          */
+
+        SimpleSubscription simpleSubscription = new SimpleSubscription(USER_1,MAILBOX_1);
+        testee.save(simpleSubscription);
+        SimpleSubscription simpleSubscription1 = new SimpleSubscription(USER_1,MAILBOX_2);
+        testee.save(simpleSubscription1);
+
+        Subscription subscription = testee.findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
+
+        assertThat(subscription).isEqualTo(subscription);
     }
 }
