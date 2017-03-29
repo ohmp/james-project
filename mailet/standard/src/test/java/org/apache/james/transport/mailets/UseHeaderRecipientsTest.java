@@ -21,8 +21,6 @@ package org.apache.james.transport.mailets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.mail.internet.AddressException;
-
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
 import org.apache.mailet.base.MailAddressFixture;
@@ -31,59 +29,65 @@ import org.apache.mailet.base.test.FakeMailContext;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.apache.mailet.base.test.MimeMessageBuilder;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class UseHeaderRecipientsTest {
 
+    public static final String RECIPIENT1 = "abc1@apache1.org";
+    public static final String RECIPIENT2 = "abc2@apache2.org";
+    public static final String RECIPIENT3 = "abc3@apache3.org";
     private UseHeaderRecipients testee;
     private FakeMailContext mailetContext;
+    private MailAddress mailAddress1;
+    private MailAddress mailAddress2;
+    private MailAddress mailAddress3;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
         testee = new UseHeaderRecipients();
         mailetContext = FakeMailContext.defaultContext();
         testee.init(FakeMailetConfig.builder().mailetContext(mailetContext).build());
+
+        mailAddress1 = new MailAddress(RECIPIENT1);
+        mailAddress2 = new MailAddress(RECIPIENT2);
+        mailAddress3 = new MailAddress(RECIPIENT3);
     }
 
     @Test
     public void serviceShouldSetMimeMessageRecipients() throws Exception {
-
-        String RCPT_1 = "abc1@apache1.org";
-        String RCPT_2 = "abc2@apache2.org";
-
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.ANY_AT_JAMES2)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RCPT_1, RCPT_2)
+                .addToRecipient(RECIPIENT1, RECIPIENT2)
                 .build())
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(new MailAddress(RCPT_1), new MailAddress(RCPT_2));
+            .containsOnly(mailAddress1, mailAddress2);
     }
 
     @Test
     public void serviceShouldSetToCcAndBccSpecifiedInTheMimeMessage() throws Exception {
-
-        String RCPT_1 = "abc1@apache1.org";
-        String RCPT_2 = "abc2@apache2.org";
-        String RCPT_3 = "abc3@apache3.org";
-
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RCPT_1)
-                .addCcRecipient(RCPT_2)
-                .addBccRecipient(RCPT_3)
+                .addToRecipient(RECIPIENT1)
+                .addCcRecipient(RECIPIENT2)
+                .addBccRecipient(RECIPIENT3)
                 .build())
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(new MailAddress(RCPT_1), new MailAddress(RCPT_2), new MailAddress(RCPT_3));
+            .containsOnly(mailAddress1, mailAddress2, mailAddress3);
     }
 
     @Test
@@ -117,37 +121,32 @@ public class UseHeaderRecipientsTest {
 
     @Test
     public void serviceShouldResendTheEmail() throws Exception {
-        String RCPT_1 = "abc1@apache1.org";
-        String RCPT_2 = "abc2@apache2.org";
-        String RCPT_3 = "abc3@apache3.org";
-
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RCPT_1)
-                .addCcRecipient(RCPT_2)
-                .addBccRecipient(RCPT_3)
+                .addToRecipient(RECIPIENT1)
+                .addCcRecipient(RECIPIENT2)
+                .addBccRecipient(RECIPIENT3)
                 .build())
             .build();
 
         testee.service(fakeMail);
 
-        assertThat(fakeMail.getRecipients())
-            .containsOnly(new MailAddress(RCPT_1), new MailAddress(RCPT_2), new MailAddress(RCPT_3));
-
         assertThat(mailetContext.getSentMails())
             .containsOnly(FakeMailContext.sentMailBuilder()
-                .recipients(new MailAddress(RCPT_1), new MailAddress(RCPT_2), new MailAddress(RCPT_3))
+                .recipients(mailAddress1, mailAddress2, mailAddress3)
                 .build());
     }
 
-    @Test (expected = AddressException.class)
+    @Test
     public void serviceShouldThrowOnInvalidMailAddress() throws Exception {
-
-        String RCPT_1 = "abcd";
+        expectedException.expect(RuntimeException.class);
 
         FakeMail fakeMail = FakeMail.builder()
-            .recipients(new MailAddress(RCPT_1))
+            .recipients(mailAddress1)
+            .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                .addToRecipient("invalid")
+                .build())
             .build();
 
         testee.service(fakeMail);
@@ -155,37 +154,31 @@ public class UseHeaderRecipientsTest {
 
     @Test
     public void serviceShouldSupportAddressList() throws Exception {
-
-        String RCPT_1 = "abc1@apache1.org";
-        String RCPT_2 = "abc2@apache2.org";
-
         FakeMail fakeMail = FakeMail.builder()
             .recipients()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RCPT_1, RCPT_2)
+                .addToRecipient(RECIPIENT1, RECIPIENT2)
                 .build())
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(new MailAddress(RCPT_1), new MailAddress(RCPT_2));
+            .containsOnly(mailAddress1, mailAddress2);
     }
 
     @Test
     public void serviceShouldSupportMailboxes() throws Exception {
-        String RCPT_1 = "abc1@apache1.org";
-
         FakeMail fakeMail = FakeMail.builder()
             .recipients()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient("APACHE" + "<" + RCPT_1 + ">")
+                .addToRecipient("APACHE" + "<" + UseHeaderRecipientsTest.RECIPIENT1 + ">")
                 .build())
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(new MailAddress(RCPT_1));
+            .containsOnly(mailAddress1);
     }
 }

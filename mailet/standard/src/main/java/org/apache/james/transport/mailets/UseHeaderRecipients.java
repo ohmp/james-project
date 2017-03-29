@@ -68,6 +68,17 @@ import com.google.common.collect.ImmutableList;
  */
 public class UseHeaderRecipients extends GenericMailet {
 
+    public static final Function<Mailbox, MailAddress> TO_MAIL_ADDRESS = new Function<Mailbox, MailAddress>() {
+        @Override
+        public MailAddress apply(Mailbox input) {
+            try {
+                return new MailAddress(input.getAddress());
+            } catch (AddressException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+    };
+
     /**
      * Controls certain log messages
      */
@@ -152,6 +163,10 @@ public class UseHeaderRecipients extends GenericMailet {
     private ImmutableList<MailAddress> getMailAddressesFromHeaderLine(String header) throws MessagingException {
         String unfoldedDecodedString = sanitizeHeaderString(header);
         Iterable<String> headerParts = Splitter.on(",").split(unfoldedDecodedString);
+        return getMailAddressesFromHeadersParts(headerParts);
+    }
+
+    private ImmutableList<MailAddress> getMailAddressesFromHeadersParts(Iterable<String> headerParts) throws AddressException {
         ImmutableList.Builder<MailAddress> result = ImmutableList.builder();
         for (String headerPart : headerParts) {
             if (isDebug) {
@@ -173,16 +188,7 @@ public class UseHeaderRecipients extends GenericMailet {
         }
 
         return FluentIterable.from(mailboxList.build())
-            .transform(new Function<Mailbox, MailAddress>() {
-                @Override
-                public MailAddress apply(Mailbox input) {
-                    try {
-                        return new MailAddress(input.getAddress());
-                    } catch (AddressException e) {
-                        throw Throwables.propagate(e);
-                    }
-                }
-            })
+            .transform(TO_MAIL_ADDRESS)
             .toList();
     }
 
