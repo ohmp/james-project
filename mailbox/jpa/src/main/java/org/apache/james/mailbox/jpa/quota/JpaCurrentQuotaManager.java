@@ -35,18 +35,8 @@ import com.google.common.base.Preconditions;
 
 public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
 
-    public static final Function<JpaCurrentQuota, Long> READ_MESSAGE_COUNT = new Function<JpaCurrentQuota, Long>() {
-        @Override
-        public Long apply(JpaCurrentQuota input) {
-            return input.getMessageCount();
-        }
-    };
-    public static final Function<JpaCurrentQuota, Long> READ_STORAGE = new Function<JpaCurrentQuota, Long>() {
-        @Override
-        public Long apply(JpaCurrentQuota input) {
-            return input.getSize();
-        }
-    };
+    public static final long NO_MESSAGES = 0L;
+    public static final long NO_STORED_BYTES = 0L;
 
     private final EntityManager entityManager;
 
@@ -62,16 +52,22 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
 
     @Override
     public long getCurrentMessageCount(QuotaRoot quotaRoot) throws MailboxException {
-        return Optional.fromNullable(retrieveUserQuota(quotaRoot))
-            .transform(READ_MESSAGE_COUNT)
-            .or(0L);
+        JpaCurrentQuota userQuota = retrieveUserQuota(quotaRoot);
+
+        if (userQuota == null) {
+            return NO_STORED_BYTES;
+        }
+        return userQuota.getMessageCount();
     }
 
     @Override
     public long getCurrentStorage(QuotaRoot quotaRoot) throws MailboxException {
-        return Optional.fromNullable(retrieveUserQuota(quotaRoot))
-            .transform(READ_STORAGE)
-            .or(0L);
+        JpaCurrentQuota userQuota = retrieveUserQuota(quotaRoot);
+
+        if (userQuota == null) {
+            return NO_STORED_BYTES;
+        }
+        return userQuota.getSize();
     }
 
     @Override
@@ -80,7 +76,7 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
         Preconditions.checkArgument(size > 0, "Size should be positive");
 
         JpaCurrentQuota jpaCurrentQuota = Optional.fromNullable(retrieveUserQuota(quotaRoot))
-            .or(new JpaCurrentQuota(quotaRoot.getValue(), 0L, 0L));
+            .or(new JpaCurrentQuota(quotaRoot.getValue(), NO_MESSAGES, NO_STORED_BYTES));
 
         entityManager.merge(new JpaCurrentQuota(quotaRoot.getValue(),
             jpaCurrentQuota.getMessageCount() + count,
@@ -93,7 +89,7 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
         Preconditions.checkArgument(size > 0, "Counts should be positive");
 
         JpaCurrentQuota jpaCurrentQuota = Optional.fromNullable(retrieveUserQuota(quotaRoot))
-            .or(new JpaCurrentQuota(quotaRoot.getValue(), 0L, 0L));
+            .or(new JpaCurrentQuota(quotaRoot.getValue(), NO_MESSAGES, NO_STORED_BYTES));
 
         entityManager.merge(new JpaCurrentQuota(quotaRoot.getValue(),
             jpaCurrentQuota.getMessageCount() - count,
