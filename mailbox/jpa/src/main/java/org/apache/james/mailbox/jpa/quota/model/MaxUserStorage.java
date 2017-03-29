@@ -27,12 +27,12 @@ import javax.persistence.Table;
 @Entity(name = "MaxUserStorage")
 @Table(name = "JAMES_MAX_USER_STORAGE")
 public class MaxUserStorage {
-	
-	@Id
+
+    @Id
     @Column(name = "QUOTAROOT_ID")
     private String quotaRoot;
 
-	@Column(name = "VALUE")
+    @Column(name = "VALUE")
     private long value;
 
     public MaxUserStorage(String quotaRoot, long value) {

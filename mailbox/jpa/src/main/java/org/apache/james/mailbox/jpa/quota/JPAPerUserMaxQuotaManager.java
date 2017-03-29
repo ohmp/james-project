@@ -76,55 +76,39 @@ public class JPAPerUserMaxQuotaManager implements MaxQuotaManager {
     public long getDefaultMaxStorage() throws MailboxException {
         MaxDefaultStorage storedValue = entityManager.find(MaxDefaultStorage.class, MaxDefaultStorage.DEFAULT_KEY);
 
-        return Optional.fromNullable(storedValue)
-            .transform(new Function<MaxDefaultStorage, Long>() {
-                @Override
-                public Long apply(MaxDefaultStorage input) {
-                    return input.getValue();
-                }
-            })
-            .or(Quota.UNLIMITED);
+        if (storedValue == null) {
+            return Quota.UNLIMITED;
+        }
+        return storedValue.getValue();
     }
 
     @Override
     public long getDefaultMaxMessage() throws MailboxException {
         MaxDefaultMessageCount storedValue = entityManager.find(MaxDefaultMessageCount.class, MaxDefaultMessageCount.DEFAULT_KEY);
 
-        return Optional.fromNullable(storedValue)
-            .transform(new Function<MaxDefaultMessageCount, Long>() {
-                @Override
-                public Long apply(MaxDefaultMessageCount input) {
-                    return input.getValue();
-                }
-            })
-            .or(Quota.UNLIMITED);
+        if (storedValue == null) {
+            return Quota.UNLIMITED;
+        }
+        return storedValue.getValue();
     }
 
     @Override
     public long getMaxStorage(QuotaRoot quotaRoot) throws MailboxException {
         MaxUserStorage storedValue = entityManager.find(MaxUserStorage.class, quotaRoot.getValue());
 
-        return Optional.fromNullable(storedValue)
-            .transform(new Function<MaxUserStorage, Long>() {
-                @Override
-                public Long apply(MaxUserStorage input) {
-                    return input.getValue();
-                }
-            })
-            .or(getDefaultMaxStorage());
+        if (storedValue == null) {
+            return getDefaultMaxStorage();
+        }
+        return storedValue.getValue();
     }
 
     @Override
     public long getMaxMessage(QuotaRoot quotaRoot) throws MailboxException {
         MaxUserMessageCount storedValue = entityManager.find(MaxUserMessageCount.class, quotaRoot.getValue());
 
-        return Optional.fromNullable(storedValue)
-            .transform(new Function<MaxUserMessageCount, Long>() {
-                @Override
-                public Long apply(MaxUserMessageCount input) {
-                    return input.getValue();
-                }
-            })
-            .or(getDefaultMaxMessage());
+        if (storedValue == null) {
+            return getDefaultMaxMessage();
+        }
+        return storedValue.getValue();
     }
 }

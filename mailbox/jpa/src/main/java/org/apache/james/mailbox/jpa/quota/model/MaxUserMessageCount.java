@@ -27,10 +27,10 @@ import javax.persistence.Table;
 @Entity(name="MaxUserMessageCount")
 @Table(name="JAMES_MAX_USER_MESSAGE_COUNT")
 public class MaxUserMessageCount {  
-	private static final String DEFAULT_KEY = "default_key";
+    private static final String DEFAULT_KEY = "default_key";
 
-	@Id
-	@Column(name = "QUOTAROOT_ID")
+    @Id
+    @Column(name = "QUOTAROOT_ID")
     private String quotaRoot = DEFAULT_KEY;
 
     @Column(name = "VALUE")
