@@ -47,39 +47,49 @@ public class TooManyRecipientsTest {
         testee = new TooManyRecipients();
     }
 
-    @Test (expected = MessagingException.class)
+    @Test
     public void initShouldThrowOnAbsentCondition() throws Exception {
+        expectedException.expect(MessagingException.class);
+
         testee.init(FakeMatcherConfig.builder()
             .matcherName("matcherName")
             .build());
     }
 
-    @Test (expected = MessagingException.class)
+    @Test
     public void initShouldThrowOnInvalidCondition() throws Exception{
+        expectedException.expect(MessagingException.class);
+
         testee.init(FakeMatcherConfig.builder()
             .condition("a")
             .matcherName("matcherName")
             .build());
     }
 
-    @Test (expected = MessagingException.class)
+    @Test
     public void initShouldThrowOnEmptyCondition() throws Exception {
+        expectedException.expect(MessagingException.class);
+
         testee.init(FakeMatcherConfig.builder()
             .condition("")
             .matcherName("matcherName")
             .build());
     }
 
-    @Test (expected = MessagingException.class)
+    @Test
     public void initShouldThrowOnZeroCondition() throws Exception {
+        expectedException.expect(MessagingException.class);
+
         testee.init(FakeMatcherConfig.builder()
             .condition("0")
             .matcherName("matcherName")
             .build());
     }
 
-    @Test (expected = MessagingException.class)
+    @Test
     public void initShouldThrowOnNegativeCondition() throws Exception {
+        expectedException.expect(MessagingException.class);
+
         testee.init(FakeMatcherConfig.builder()
             .condition("-10")
             .matcherName("matcherName")
