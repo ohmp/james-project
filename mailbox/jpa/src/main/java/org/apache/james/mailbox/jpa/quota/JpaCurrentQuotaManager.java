@@ -72,7 +72,7 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
 
     @Override
     public void increase(QuotaRoot quotaRoot, long count, long size) throws MailboxException {
-        Preconditions.checkArgument(count > 0,"Counts should be positive");
+        Preconditions.checkArgument(count > 0, "Counts should be positive");
         Preconditions.checkArgument(size > 0, "Size should be positive");
 
         JpaCurrentQuota jpaCurrentQuota = Optional.fromNullable(retrieveUserQuota(quotaRoot))
