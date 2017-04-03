@@ -106,7 +106,7 @@ public class UseHeaderRecipientsTest {
     }
 
     @Test
-    public void serviceShouldGoshEmail() throws Exception {
+    public void serviceShouldGhostEmail() throws Exception {
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
