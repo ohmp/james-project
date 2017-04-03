@@ -119,7 +119,9 @@ public class JMXServer {
             });
             registeredKeys.clear();
             jmxConnectorServer.stop();
-            restrictingRMISocketFactory.getSockets().forEach(Throwing.consumer(ServerSocket::close).sneakyThrow());
+            restrictingRMISocketFactory.getSockets()
+                .forEach(Throwing.consumer(ServerSocket::close)
+                    .sneakyThrow());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
