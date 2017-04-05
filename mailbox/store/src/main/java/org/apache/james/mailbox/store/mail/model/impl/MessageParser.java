@@ -78,7 +78,7 @@ public class MessageParser {
         try {
             Optional<ContentDispositionField> contentDisposition = readHeader(message, CONTENT_DISPOSITION, ContentDispositionField.class);
 
-            if (contentDisposition.isPresent() && contentDisposition.get().isAttachment()) {
+            if (isMessageWithOnlyOneAttachment(contentDisposition)) {
                 return ImmutableList.of(retrieveAttachment(new DefaultMessageWriter(), message));
             }
 
@@ -91,6 +91,10 @@ public class MessageParser {
         } finally {
             body.dispose();
         }
+    }
+
+    private boolean isMessageWithOnlyOneAttachment(Optional<ContentDispositionField> contentDisposition) {
+        return contentDisposition.isPresent() && contentDisposition.get().isAttachment();
     }
 
     private List<MessageAttachment> listAttachments(Multipart multipart, Context context) throws IOException {
