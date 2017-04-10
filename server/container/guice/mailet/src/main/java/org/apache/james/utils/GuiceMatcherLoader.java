@@ -21,7 +21,6 @@ package org.apache.james.utils;
 
 import javax.mail.MessagingException;
 
-import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailetcontainer.api.MatcherLoader;
 import org.apache.mailet.Matcher;
 import org.apache.mailet.MatcherConfig;
@@ -36,8 +35,8 @@ public class GuiceMatcherLoader implements MatcherLoader {
     private final GuiceGenericLoader<Matcher> genericLoader;
 
     @Inject
-    public GuiceMatcherLoader(Injector injector, FileSystem fileSystem) {
-        this.genericLoader = new GuiceGenericLoader<>(injector, fileSystem, STANDARD_PACKAGE);
+    public GuiceMatcherLoader(Injector injector, ExtendedClassLoader extendedClassLoader) {
+        this.genericLoader = new GuiceGenericLoader<>(injector, extendedClassLoader, STANDARD_PACKAGE);
     }
 
     @Override

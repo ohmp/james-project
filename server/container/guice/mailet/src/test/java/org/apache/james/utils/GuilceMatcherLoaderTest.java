@@ -26,10 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.mail.MessagingException;
 
-import org.apache.james.transport.mailets.AddFooter;
-import org.apache.mailet.Mailet;
+import org.apache.james.transport.matchers.All;
+import org.apache.mailet.Matcher;
 import org.apache.mailet.base.test.FakeMailContext;
-import org.apache.mailet.base.test.FakeMailetConfig;
+import org.apache.mailet.base.test.FakeMatcherConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,75 +37,75 @@ import org.junit.rules.ExpectedException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class GuilceMailetLoaderTest {
+public class GuilceMatcherLoaderTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private Injector injector = Guice.createInjector();
 
     @Test
-    public void getMailetShouldLoadClass() throws Exception {
-        GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
+    public void getMatcherShouldLoadClass() throws Exception {
+        GuiceMatcherLoader guiceMailetLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(THROWING_FILE_SYSTEM));
 
-        Mailet mailet = guiceMailetLoader.getMailet(FakeMailetConfig.builder()
-            .mailetName("AddFooter")
+        Matcher matcher = guiceMailetLoader.getMatcher(FakeMatcherConfig.builder()
+            .matcherName("All")
             .mailetContext(FakeMailContext.defaultContext())
             .build());
 
-        assertThat(mailet).isInstanceOf(AddFooter.class);
+        assertThat(matcher).isInstanceOf(All.class);
     }
 
     @Test
     public void getMailetShouldThrowOnBadType() throws Exception {
-        GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
+        GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(THROWING_FILE_SYSTEM));
 
         expectedException.expect(MessagingException.class);
 
-        guiceMailetLoader.getMailet(FakeMailetConfig.builder()
-            .mailetName("org.apache.james.transport.matchers.SizeGreaterThan")
+        guiceMatcherLoader.getMatcher(FakeMatcherConfig.builder()
+            .matcherName("org.apache.james.transport.mailets.Null")
             .mailetContext(FakeMailContext.defaultContext())
             .build());
     }
 
     @Test
     public void getMailetShouldLoadClassWhenInIncludedJars() throws Exception {
-        GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
+        GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(CLASSPATH_FILE_SYSTEM));
 
-        Mailet mailet = guiceMailetLoader.getMailet(FakeMailetConfig.builder()
-            .mailetName("CustomMailet")
+        Matcher matcher = guiceMatcherLoader.getMatcher(FakeMatcherConfig.builder()
+            .matcherName("CustomMatcher")
             .mailetContext(FakeMailContext.defaultContext())
             .build());
 
-        assertThat(mailet.getClass().getCanonicalName())
-            .isEqualTo("org.apache.james.transport.mailets.CustomMailet");
+        assertThat(matcher.getClass().getCanonicalName())
+            .isEqualTo("org.apache.james.transport.matchers.CustomMatcher");
     }
 
     @Test
     public void getMailedShouldShouldRecursivelyIncludeJar() throws Exception {
-        GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
+        GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(RECURSIVE_CLASSPATH_FILE_SYSTEM));
 
-        Mailet mailet = guiceMailetLoader.getMailet(FakeMailetConfig.builder()
-            .mailetName("CustomMailet")
+        Matcher matcher = guiceMatcherLoader.getMatcher(FakeMatcherConfig.builder()
+            .matcherName("CustomMatcher")
             .mailetContext(FakeMailContext.defaultContext())
             .build());
 
-        assertThat(mailet.getClass().getCanonicalName())
-            .isEqualTo("org.apache.james.transport.mailets.CustomMailet");
+        assertThat(matcher.getClass().getCanonicalName())
+            .isEqualTo("org.apache.james.transport.matchers.CustomMatcher");
     }
 
     @Test
     public void getMailetShouldThrowOnUnknownMailet() throws Exception {
-        GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
+        GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(CLASSPATH_FILE_SYSTEM));
 
         expectedException.expect(MessagingException.class);
 
-        guiceMailetLoader.getMailet(FakeMailetConfig.builder()
-            .mailetName("org.apache.james.transport.mailets.Unknown")
+        guiceMatcherLoader.getMatcher(FakeMatcherConfig.builder()
+            .matcherName("org.apache.james.transport.matchers.Unknown")
             .mailetContext(FakeMailContext.defaultContext())
             .build());
     }

@@ -21,7 +21,6 @@ package org.apache.james.utils;
 
 import javax.mail.MessagingException;
 
-import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailetcontainer.api.MailetLoader;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.MailetConfig;
@@ -36,8 +35,8 @@ public class GuiceMailetLoader implements MailetLoader {
     private final GuiceGenericLoader<Mailet> genericLoader;
 
     @Inject
-    public GuiceMailetLoader(Injector injector, FileSystem fileSystem) {
-        this.genericLoader = new GuiceGenericLoader<>(injector, fileSystem, STANDARD_PACKAGE);
+    public GuiceMailetLoader(Injector injector, ExtendedClassLoader extendedClassLoader) {
+        this.genericLoader = new GuiceGenericLoader<>(injector, extendedClassLoader, STANDARD_PACKAGE);
     }
 
     @Override
