@@ -125,7 +125,7 @@ public class MailetUtil {
             .or(defaultValue);
 
         if (Strings.isNullOrEmpty(value.orNull())) {
-            throw new MessagingException(" is required. It should be a strictly positive integer");
+            throw new MessagingException("Condition is required. It should be a strictly positive integer");
         }
 
         int valueAsInt = tryParseInteger(value.orNull());
@@ -138,7 +138,6 @@ public class MailetUtil {
 
     private static int tryParseInteger(String value) throws MessagingException {
         try {
-            System.out.println(value);
             return Integer.valueOf(value);
         } catch (NumberFormatException e) {
             throw new MessagingException("Expecting condition to be a strictly positive integer. Got " + value);

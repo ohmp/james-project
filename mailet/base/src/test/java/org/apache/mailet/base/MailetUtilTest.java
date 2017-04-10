@@ -141,7 +141,7 @@ public class MailetUtilTest {
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldThrowOnNull() throws Exception {
+    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldReturnDefaultValueOnNull() throws Exception {
         assertThat(MailetUtil.getInitParameterAsStrictlyPositiveInteger(null, DEFAULT_VALUE))
             .isEqualTo(DEFAULT_VALUE);
     }
@@ -157,7 +157,7 @@ public class MailetUtilTest {
     public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldThrowOnNegativeNumber() throws Exception {
         expectedException.expect(MessagingException.class);
 
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("-1");
+        MailetUtil.getInitParameterAsStrictlyPositiveInteger("-1", DEFAULT_VALUE);
     }
 
     @Test
