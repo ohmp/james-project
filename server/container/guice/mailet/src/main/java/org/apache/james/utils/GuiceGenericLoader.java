@@ -33,8 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
-import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
 
 public class GuiceGenericLoader<T> {
@@ -43,7 +41,7 @@ public class GuiceGenericLoader<T> {
 
     private final Injector injector;
     private final String defaultPackageName;
-    private URLClassLoader urlClassLoader;
+    private final URLClassLoader urlClassLoader;
 
     public GuiceGenericLoader(Injector injector, FileSystem fileSystem, String defaultPackageName) {
         this.injector = injector;
@@ -55,25 +53,24 @@ public class GuiceGenericLoader<T> {
     private URL[] retrieveIncludedUrls(FileSystem fileSystem) {
         try {
             File file = fileSystem.getFile("file://" + INCLUDED_JARS_FOLDER_NAME);
-            ImmutableList<URL> urls = recursiveExpend(file)
-                .collect(Guavate.toImmutableList());
-            return urls.toArray(new URL[urls.size()]);
+            return (URL[]) recursiveExpand(file)
+                .toArray();
         } catch (IOException e) {
             LOGGER.info("No " + INCLUDED_JARS_FOLDER_NAME + " folder.");
             return new URL[]{};
         }
     }
 
-    private Stream<URL> recursiveExpend(File file) {
+    private Stream<URL> recursiveExpand(File file) {
         return Optional.ofNullable(file.listFiles())
             .map(Arrays::stream)
             .orElse(Stream.of())
-            .flatMap(Throwing.function(this::expendFile).sneakyThrow());
+            .flatMap(Throwing.function(this::expandFile).sneakyThrow());
     }
 
-    private Stream<URL> expendFile(File file) throws MalformedURLException {
+    private Stream<URL> expandFile(File file) throws MalformedURLException {
         if (file.isDirectory()) {
-            return recursiveExpend(file);
+            return recursiveExpand(file);
         }
         LOGGER.info("Loading custom classpath resource " + file.getAbsolutePath());
         return Stream.of(file.toURI().toURL());
