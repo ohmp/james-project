@@ -19,22 +19,75 @@
 
 package org.apache.james.utils;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.apache.james.filesystem.api.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
 
 public class GuiceGenericLoader<T> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GuiceGenericLoader.class);
+    public static final String INCLUDED_JARS_FOLDER_NAME = "included-jars/";
 
     private final Injector injector;
     private final String defaultPackageName;
+    private URLClassLoader urlClassLoader;
 
-    public GuiceGenericLoader(Injector injector, String defaultPackageName) {
+    public GuiceGenericLoader(Injector injector, FileSystem fileSystem, String defaultPackageName) {
         this.injector = injector;
         this.defaultPackageName = defaultPackageName;
+
+        this.urlClassLoader = new URLClassLoader(retrieveIncludedUrls(fileSystem), getClass().getClassLoader());
+    }
+
+    private URL[] retrieveIncludedUrls(FileSystem fileSystem) {
+        try {
+            File file = fileSystem.getFile("file://" + INCLUDED_JARS_FOLDER_NAME);
+            ImmutableList<URL> urls = recursiveExpend(file)
+                .collect(Guavate.toImmutableList());
+            return urls.toArray(new URL[urls.size()]);
+        } catch (IOException e) {
+            LOGGER.info("No " + INCLUDED_JARS_FOLDER_NAME + " folder.");
+            return new URL[]{};
+        }
+    }
+
+    private Stream<URL> recursiveExpend(File file) {
+        return Optional.ofNullable(file.listFiles())
+            .map(Arrays::stream)
+            .orElse(Stream.of())
+            .flatMap(Throwing.function(this::expendFile).sneakyThrow());
+    }
+
+    private Stream<URL> expendFile(File file) throws MalformedURLException {
+        if (file.isDirectory()) {
+            return recursiveExpend(file);
+        }
+        LOGGER.info("Loading custom classpath resource " + file.getAbsolutePath());
+        return Stream.of(file.toURI().toURL());
     }
 
     public T instanciate(String className) throws Exception {
-        @SuppressWarnings("unchecked")
-        Class<T> clazz = (Class<T>) ClassLoader.getSystemClassLoader().loadClass(constructFullName(className));
+        Class<T> clazz = locateClass(className);
         return injector.getInstance(clazz);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<T> locateClass(String className) throws ClassNotFoundException {
+        String fullName = constructFullName(className);
+        return (Class<T>) urlClassLoader.loadClass(fullName);
     }
 
     private String constructFullName(String name) {
