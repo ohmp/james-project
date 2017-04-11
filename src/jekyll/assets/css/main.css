@@ -3070,7 +3070,7 @@
 
 /* Header */
 
-	.wrapper .apache_ref {
+	#wrapper .apache_ref {
 		position: absolute;
 		top: 0;
 		right: 5%;
@@ -3080,7 +3080,7 @@
 		border-radius: 0 0 10px 10px;
 	}
 
-	.wrapper .apache_ref_mobile {
+	#wrapper .apache_ref_mobile {
 		display: none;
 		position: absolute;
 		top: 0;
@@ -3090,16 +3090,16 @@
 		background: url('images/overlay.png') rgba(0,0,0,0.2);
 	}
 
-	.wrapper .apache_ref_mobile a {
+	#wrapper .apache_ref_mobile a {
 		font-size: 9pt;
 		color: #DDD;
 	}
 
-	.wrapper .apache_ref  img {
+	#wrapper .apache_ref  img {
 		width: 10em;
 	}
 
-	.wrapper .apache_ref a {
+	#wrapper .apache_ref a {
 		border: none;
 		padding: 0;
 		margin: 0;
@@ -3246,7 +3246,7 @@
 			.apache_ref {
 				display:none;
 			}
-			.wrapper .apache_ref_mobile {
+			#wrapper .apache_ref_mobile {
 				display: block;
 			}
 

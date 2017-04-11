@@ -1,6 +1,24 @@
 ---
 layout: default
 ---
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership. The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
 <link href="assets/css/lightbox.css" rel="stylesheet">
 <div id="wrapper">
   <div class="apache_ref">
@@ -45,8 +63,8 @@ layout: default
               <p class="align-left">Create your <b>own personal solution</b> of emails treatment by assembling the components you need thanks to the Inversion of Control mail platform offered and  go further customizing filtering and routing rules using <b>James Mailet Container</b>.</p>
               <div class="about-table">
                 <h3 class="tb-h3">James from a technical point of view</h3>
-                <b>Complete portability</b> (100%&nbsp;pure&nbsp;Java)<br/>
-                <b>Running on Java 6 onwards</b> &&nbsp;on&nbsp;the&nbsp;<b>JVM</b><br/><br/>
+                <b>Complete portability</b> (100% pure Java)<br/>
+                <b>Running on Java 6 onwards</b> and on the <b>JVM</b><br/><br/>
                 <b>James Components:</b><br/>
                 - <b>Emailing protocols:</b> SMTP, LMP, POP3, IMAP, ManageSieve, JMAP<br/>
                 - <b>Mailet container:</b> independent, extensible and pluggable email processing agents<br/>
@@ -57,8 +75,8 @@ layout: default
               </div>
               <p class="align-left"><br/><br/>Your James server <b>can also be used as Mail Transfer Agent</b>, by enabling only <b>SMTP</b> or as a <b>IMAP</b> Mail Delivery Agent.</p>
               <a href="images/james-general-architecture.png" data-lightbox="james-schema" data-title="James General architecture" alt="James General architecture" class="james-schema" ><span class="fa fa-sitemap"></span>james general architecture<span class="fa fa-long-arrow-right"></span></a>
-              <a href="images/james-smtp-relay.png" data-lightbox="james-schema" data-title="James SMTP relay" alt="James SMTP relay" class="james-schema"><span class="fa fa-sitemap"></span>using james as smtp&nbsp;relay<span class="fa fa-long-arrow-right"></span></a>
-              <a href="images/james-imap-server.png" data-lightbox="james-schema" data-title="James IMAP server" alt="James IMAP server" class="james-schema"><span class="fa fa-sitemap"></span>using james as an imap&nbsp;server<span class="fa fa-long-arrow-right"></span></a><br/><br/>
+              <a href="images/james-smtp-relay.png" data-lightbox="james-schema" data-title="James SMTP relay" alt="James SMTP relay" class="james-schema"><span class="fa fa-sitemap"></span>using james as smtp relay<span class="fa fa-long-arrow-right"></span></a>
+              <a href="images/james-imap-server.png" data-lightbox="james-schema" data-title="James IMAP server" alt="James IMAP server" class="james-schema"><span class="fa fa-sitemap"></span>using james as an imap server<span class="fa fa-long-arrow-right"></span></a><br/><br/>
               <h2 class="big-h2"><span class="fa fa-wrench"></span> <span>James is a <b>living Open Source project</b> (all developments and implementations are based on open technical standards), any function which is not already available from <b>can be developed!</b></span></h2>
             </div>
           </div>
@@ -74,7 +92,7 @@ layout: default
               <li class="post-template"><span class="long-arrow-right">&#8594;</span><span><b>
 WHAT WILL I TRY:</b><br>
               <span>Here you will try James server v 3.0 thanks to an image.This James image has a default configuration using JPA (hsqldb) and Lucene. It also includes a default domain named james.local and three default users: user01, user02, user03.<br>
-              <i>Note: this James server will respond to IMAP port 143 and SMTP port 25.</i></span>
+                <i>Note: this James server will respond to IMAP port 143 and SMTP port 25.</i></span></span>
               </li>
               <li class="post-template"><span class="long-arrow-right">&#8594;</span><span><b>STEPS YOU HAVE TO FOLLOW:</b><br>
                 Pull the James image with the following single command starting the three components:<br>
@@ -225,24 +243,3 @@ WHAT WILL I TRY:</b><br>
 <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
 <script src="assets/js/main.js"></script>
 
-<!--
-  <div class="home">
-
-    <h1 class="page-heading">Posts</h1>
-
-    <ul class="post-list">
-      {% for post in site.posts %}
-        <li>
-          <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
-
-          <h2>
-            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title | escape }}</a>
-          </h2>
-        </li>
-      {% endfor %}
-    </ul>
-
-    <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
-
-  </div>
--->
