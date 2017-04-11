@@ -46,10 +46,10 @@ public class ExtendedClassLoader {
 
     @Inject
     public ExtendedClassLoader(FileSystem fileSystem) {
-        this.urlClassLoader = new URLClassLoader(retrieveIncludedUrls(fileSystem), getClass().getClassLoader());
+        this.urlClassLoader = new URLClassLoader(retrieveExtensionsUrls(fileSystem), getClass().getClassLoader());
     }
 
-    private URL[] retrieveIncludedUrls(FileSystem fileSystem) {
+    private URL[] retrieveExtensionsUrls(FileSystem fileSystem) {
         try {
             File file = fileSystem.getFile("file://" + EXTENSIONS_JARS_FOLDER_NAME);
             return recursiveExpand(file)

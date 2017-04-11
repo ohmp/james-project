@@ -84,7 +84,7 @@ public class GuilceMailetLoaderTest {
     }
 
     @Test
-    public void getMailedShouldShouldRecursivelyIncludeJar() throws Exception {
+    public void getMailetShouldShouldRecursivelyIncludeJar() throws Exception {
         GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
             new ExtendedClassLoader(RECURSIVE_CLASSPATH_FILE_SYSTEM));
 
@@ -95,6 +95,20 @@ public class GuilceMailetLoaderTest {
 
         assertThat(mailet.getClass().getCanonicalName())
             .isEqualTo("org.apache.james.transport.mailets.CustomMailet");
+    }
+
+    @Test
+    public void getMailedShouldShouldAllowCustomPackages() throws Exception {
+        GuiceMailetLoader guiceMailetLoader = new GuiceMailetLoader(injector,
+            new ExtendedClassLoader(CLASSPATH_FILE_SYSTEM));
+
+        Mailet mailet = guiceMailetLoader.getMailet(FakeMailetConfig.builder()
+            .mailetName("com.custom.mailets.AnotherMailet")
+            .mailetContext(FakeMailContext.defaultContext())
+            .build());
+
+        assertThat(mailet.getClass().getCanonicalName())
+            .isEqualTo("com.custom.mailets.AnotherMailet");
     }
 
     @Test

@@ -57,7 +57,7 @@ public class GuilceMatcherLoaderTest {
     }
 
     @Test
-    public void getMailetShouldThrowOnBadType() throws Exception {
+    public void getMatcherShouldThrowOnBadType() throws Exception {
         GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(THROWING_FILE_SYSTEM));
 
@@ -70,7 +70,7 @@ public class GuilceMatcherLoaderTest {
     }
 
     @Test
-    public void getMailetShouldLoadClassWhenInIncludedJars() throws Exception {
+    public void getMatcherShouldLoadClassWhenInIncludedJars() throws Exception {
         GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(CLASSPATH_FILE_SYSTEM));
 
@@ -84,7 +84,7 @@ public class GuilceMatcherLoaderTest {
     }
 
     @Test
-    public void getMailedShouldShouldRecursivelyIncludeJar() throws Exception {
+    public void getMatcherShouldShouldRecursivelyIncludeJar() throws Exception {
         GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(RECURSIVE_CLASSPATH_FILE_SYSTEM));
 
@@ -98,7 +98,21 @@ public class GuilceMatcherLoaderTest {
     }
 
     @Test
-    public void getMailetShouldThrowOnUnknownMailet() throws Exception {
+    public void getMatcherShouldAllowCustomPackages() throws Exception {
+        GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
+            new ExtendedClassLoader(RECURSIVE_CLASSPATH_FILE_SYSTEM));
+
+        Matcher matcher = guiceMatcherLoader.getMatcher(FakeMatcherConfig.builder()
+            .matcherName("com.custom.matchers.AnotherMatcher")
+            .mailetContext(FakeMailContext.defaultContext())
+            .build());
+
+        assertThat(matcher.getClass().getCanonicalName())
+            .isEqualTo("com.custom.matchers.AnotherMatcher");
+    }
+
+    @Test
+    public void getMatcherShouldThrowOnUnknownMailet() throws Exception {
         GuiceMatcherLoader guiceMatcherLoader = new GuiceMatcherLoader(injector,
             new ExtendedClassLoader(CLASSPATH_FILE_SYSTEM));
 
