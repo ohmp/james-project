@@ -6,4 +6,4 @@ categories: james update
 ---
 
 James PMC is happy to announce that we are working on a Java implementation of the SPF specification. The first
-[http://people.apache.org/dist/james/jspf/](betas) are already available for download.
+[http://people.apache.org/dist/james/jspf/]: betas are already available for download.
