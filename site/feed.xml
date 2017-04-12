@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>James Website</title>
+    <description>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+</description>
+    <link>http://james.apache.org/</link>
+    <atom:link href="http://james.apache.org/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Wed, 12 Apr 2017 05:59:45 +0000</pubDate>
+    <lastBuildDate>Wed, 12 Apr 2017 05:59:45 +0000</lastBuildDate>
+    <generator>Jekyll v3.4.3</generator>
+    
+      <item>
+        <title>Test Post</title>
+        <description>&lt;p&gt;You’ll find this post in your &lt;code class=&quot;highlighter-rouge&quot;&gt;_posts&lt;/code&gt; directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run &lt;code class=&quot;highlighter-rouge&quot;&gt;jekyll serve&lt;/code&gt;, which launches a web server and auto-regenerates your site when a file is updated.&lt;/p&gt;
+
+&lt;p&gt;To add new posts, simply add a file in the &lt;code class=&quot;highlighter-rouge&quot;&gt;_posts&lt;/code&gt; directory that follows the convention &lt;code class=&quot;highlighter-rouge&quot;&gt;YYYY-MM-DD-name-of-post.ext&lt;/code&gt; and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.&lt;/p&gt;
+
+&lt;p&gt;Jekyll also offers powerful support for code snippets:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;print_hi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Hi, &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;print_hi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Tom'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#=&amp;gt; prints 'Hi, Tom' to STDOUT.&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Check out the &lt;a href=&quot;http://jekyllrb.com/docs/home&quot;&gt;Jekyll docs&lt;/a&gt; for more info on how to get the most out of Jekyll. File all bugs/feature requests at &lt;a href=&quot;https://github.com/jekyll/jekyll&quot;&gt;Jekyll’s GitHub repo&lt;/a&gt;. If you have questions, you can ask them on &lt;a href=&quot;https://talk.jekyllrb.com/&quot;&gt;Jekyll Talk&lt;/a&gt;.&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 09 Sep 2016 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2016/09/09/test.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2016/09/09/test.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Welcome to Jekyll</title>
+        <description>&lt;p&gt;You’ll find this post in your &lt;code class=&quot;highlighter-rouge&quot;&gt;_posts&lt;/code&gt; directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run &lt;code class=&quot;highlighter-rouge&quot;&gt;jekyll serve&lt;/code&gt;, which launches a web server and auto-regenerates your site when a file is updated.&lt;/p&gt;
+
+&lt;p&gt;To add new posts, simply add a file in the &lt;code class=&quot;highlighter-rouge&quot;&gt;_posts&lt;/code&gt; directory that follows the convention &lt;code class=&quot;highlighter-rouge&quot;&gt;YYYY-MM-DD-name-of-post.ext&lt;/code&gt; and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.&lt;/p&gt;
+
+&lt;p&gt;Jekyll also offers powerful support for code snippets:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;print_hi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Hi, &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;print_hi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Tom'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#=&amp;gt; prints 'Hi, Tom' to STDOUT.&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Check out the &lt;a href=&quot;http://jekyllrb.com/docs/home&quot;&gt;Jekyll docs&lt;/a&gt; for more info on how to get the most out of Jekyll. File all bugs/feature requests at &lt;a href=&quot;https://github.com/jekyll/jekyll&quot;&gt;Jekyll’s GitHub repo&lt;/a&gt;. If you have questions, you can ask them on &lt;a href=&quot;https://talk.jekyllrb.com/&quot;&gt;Jekyll Talk&lt;/a&gt;.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 29 Aug 2016 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/welcome-jekyll</link>
+        <guid isPermaLink="true">http://james.apache.org/welcome-jekyll</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James Mime4j 0.7.2 released</title>
+        <description>&lt;p&gt;The Java Apache Mail Enterprise Server (a.k.a. Apache James) Project is happy to announce the release of version 1.6.0
+of Apache James Protocols library.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 07 Jan 2012 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2012/01/07/protocols-1.6.1.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2012/01/07/protocols-1.6.1.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James Mime4j 0.7.2 released</title>
+        <description>&lt;p&gt;The Java Apache Mail Enterprise Server (a.k.a. Apache James) Project is happy to announce
+the release of version 0.7.2 of Apache James Mime4j library.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 07 Jan 2012 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2012/01/07/mime4j-0.7.2.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2012/01/07/mime4j-0.7.2.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James Protocols 1.6.0-RC1 released</title>
+        <description>&lt;p&gt;The Java Apache Mail Enterprise Server (a.k.a. Apache James) Project is happy to announce the release of version 1.6.0-RC1 of Apache James Protocols library.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 07 Oct 2011 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2011/10/07/protocols-1.6.0-RC1.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2011/10/07/protocols-1.6.0-RC1.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James jSPF 1.0.0 released</title>
+        <description>&lt;p&gt;The Java Apache Mail Enterprise Server (a.k.a. Apache James) Project is happy to announce the release of version 1.0.0 of Apache James jSPF (Sender Policy Framework) library.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 07 Oct 2011 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2011/10/07/jspf-1.0.0.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2011/10/07/jspf-1.0.0.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James Mime4j 0.7.1 released</title>
+        <description>&lt;p&gt;The Java Apache Mail Enterprise Server (a.k.a. Apache James) Project is happy to announce the release of version 0.7.1 of Apache James Mime4j library&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 07 Oct 2011 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2011/10/07/mime4j-0.7.1.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2011/10/07/mime4j-0.7.1.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James Protocols 1.6-beta1 released</title>
+        <description>&lt;p&gt;The Java Apache Mail Enterprise Server (a.k.a. Apache James) Project is happy to announce the release of version 1.6-beta1 of Apache James Protocols library.&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 06 Oct 2011 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2011/10/06/protocols-1.6-beta2.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2011/10/06/protocols-1.6-beta2.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James Server 3.0-beta3 released</title>
+        <description>&lt;p&gt;The Apache James project is happy to announce the release of version 3.0-beta3 of its modular mail server.&lt;/p&gt;
+
+&lt;p&gt;We thank all Users for their feedback and tests and we encourage anyone to
+[download]: http://james.apache.org/download.cgi#Apache_James_Server and discover this Milestone 3 release.&lt;/p&gt;
+
+&lt;p&gt;If you’re interested in contributing to the James project, please subscribe to the James
+[mailing lists]: http://james.apache.org/mail.html&lt;/p&gt;
+
+&lt;p&gt;What’s new in 3.0-beta3 for end users:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Numerous IMAP bug fixes (better client support, memory improvement, NIO and IO support…)&lt;/li&gt;
+  &lt;li&gt;Support for IMAP IDLE (RFC 2177, server transmit updates to the client in real time)&lt;/li&gt;
+  &lt;li&gt;Support for IMAP User Flags&lt;/li&gt;
+  &lt;li&gt;Support for IMAP WITHIN Extensions (RFC 5032)&lt;/li&gt;
+  &lt;li&gt;Mailbox Tooling to copy from a persistence implementation to another implementation&lt;/li&gt;
+  &lt;li&gt;Telnet Management has been removed in favor of JMX with client shell&lt;/li&gt;
+  &lt;li&gt;More metrics counters available via JMX&lt;/li&gt;
+  &lt;li&gt;Better debug logging on protocols&lt;/li&gt;
+  &lt;li&gt;JPA validated against more databases (among others Oracle)&lt;/li&gt;
+  &lt;li&gt;Multiple address and port configurations per protocol&lt;/li&gt;
+  &lt;li&gt;POP3 is now operational (was buggy in 3.0-M2)&lt;/li&gt;
+  &lt;li&gt;Upgrade tool from James 2.3 is available&lt;/li&gt;
+  &lt;li&gt;Better logging on protocols with adjustable level&lt;/li&gt;
+  &lt;li&gt;Full mailet package must be specified&lt;/li&gt;
+  &lt;li&gt;Composite Matchers&lt;/li&gt;
+  &lt;li&gt;Better debug logging on protocols&lt;/li&gt;
+  &lt;li&gt;Mailing list functionality has been removed&lt;/li&gt;
+  &lt;li&gt;More documentation on web site for configuration,…&lt;/li&gt;
+  &lt;li&gt;Java 1.6 mandatory&lt;/li&gt;
+  &lt;li&gt;… and much more, see details on https://issues.apache.org/jira/secure/ReleaseNote.jspa?in&amp;amp;version=12316850&amp;amp;styleName=Html&amp;amp;projectId=10411&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;What’s new in 3.0-beta3 for developers:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Less maven modules&lt;/li&gt;
+  &lt;li&gt;Maven 3.0.2 required to build&lt;/li&gt;
+  &lt;li&gt;Upgrade to latest frameworks versions (netty, activemq, jackrabbit…)&lt;/li&gt;
+  &lt;li&gt;Code reports generation via ‘mvn site -P site-reports’ maven profile&lt;/li&gt;
+  &lt;li&gt;Corrections further to findbugs,… reports&lt;/li&gt;
+  &lt;li&gt;Code formatting&lt;/li&gt;
+  &lt;li&gt;… and much more, see details on https://issues.apache.org/jira/secure/ReleaseNote.jspa?in&amp;amp;version=12316850&amp;amp;styleName=Html&amp;amp;projectId=10411&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 06 Aug 2011 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2011/08/06/james-beta3.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2011/08/06/james-beta3.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+      <item>
+        <title>Apache James jDKIM 0.2</title>
+        <description>&lt;p&gt;The Apache James Project is happy to announce
+the release of version 0.2 of the Apache James jDKIM library.&lt;/p&gt;
+
+&lt;p&gt;jDKIM is a DKIM implementation library written in Java. It provides
+both verification and signing and also provides Mailets for the
+Apache JAMES project.&lt;/p&gt;
+
+&lt;p&gt;This is the first official release of the library, but the code has
+been in production almost unchanged since two years.&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 06 May 2011 14:13:22 +0000</pubDate>
+        <link>http://james.apache.org/james/update/2011/05/06/jdKim0.2.html</link>
+        <guid isPermaLink="true">http://james.apache.org/james/update/2011/05/06/jdKim0.2.html</guid>
+        
+        
+        <category>james</category>
+        
+        <category>update</category>
+        
+      </item>
+    
+  </channel>
+</rss>
