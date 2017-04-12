@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Moving to GIT !"
-date:   2016-0-08 16:13:22 +0200
+title:  "Moving to GIT!"
+date:   2016-02-09 16:13:22 +0200
 categories: james update
 ---
 
