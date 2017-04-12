@@ -39,5 +39,5 @@ git checkout $SHA1
 
 # Compilation /james-project/src/jekyll/_site
 
-jekyll build --source src/jekyll --destination $DESTINATION
+jekyll build --source src/homepage --destination $DESTINATION
 
