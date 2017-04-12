@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "Apache JSieve 0.3 released"
+date:   2009-06-16 16:13:22 +0200
+categories: james update
+---
+
+The Apache James Project is pleased to announce that the third release of
+[Apache JSieve]: http://james.apache.org/jsieve - an implementation of the
+[Sieve]: http://www.ietf.org/rfc/rfc3028.txt mail filtering language -
+is now available for [download]: download.cgi#Apache_JSieve. This is the first modular release and includes a
+ filtering [mailet]: http://james.apache.org/mailet.
+
+See the [release notes]: http://james.apache.org/jsieve/0.3/release-notes.html for more details.
