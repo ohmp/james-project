@@ -28,5 +28,7 @@ If you're interesting in contributing to the James project, please subscribe to 
 [mailing lists]: http://james.apache.org/mail.html.
 
 Information about James can be found at the James web site
-at [http://james.apache.org/]: http://james.apache.org/.
+at [http://james.apache.org/][web].
+
+[web]: http://james.apache.org/
 

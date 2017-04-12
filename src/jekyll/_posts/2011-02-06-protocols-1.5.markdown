@@ -7,7 +7,9 @@ categories: james update
 
 The Apache James Project is happy to announce the release of version 1.5 of the Apache James Protocols.
 
-[Read the release notes]: https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12311060&amp;version=12316655
+[Read the release notes][notes]
+
+[notes]: https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12311060&amp;version=12316655
 
 
 

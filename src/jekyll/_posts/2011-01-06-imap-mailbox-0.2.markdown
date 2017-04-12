@@ -13,6 +13,8 @@ with following features:
  - Support for IMAP User Flags.
  - Support for IMAP WITHIN Extensions (RFC 5032).
  - Mailbox Tooling to copy from a persistence implementation to another implementation.
- - ... See also the complete release notes for [IMAP 0.2]: http://s.apache.org/n8 and [Mailbox 0.2]: http://s.apache.org/SNu.
+ - ... See also the complete release notes for [IMAP 0.2][IMAP] and [Mailbox 0.2][Mailbox].
 
 
+[IMAP]: http://s.apache.org/n8
+[Mailbox]: http://s.apache.org/SNu

@@ -6,9 +6,12 @@ categories: james update
 ---
 
 The Apache James project is pleased to announce that Apache James 2.3.2 is now
-[available]: download.cgi#Apache_James_2.3.2_is_the_stable_version.
+[available][available].
 
 This is a minor bug fix release.
 
-See the [Release Notes]: http://james.apache.org/server/2.3.2/release-notes.html
+See the [Release Notes][notes]
 for more details. Upgrading is recommended for users of previous 2.x releases.
+
+[notes]: http://james.apache.org/server/2.3.2/release-notes.html
+[available]: /download.cgi#Apache_James_2.3.2_is_the_stable_version

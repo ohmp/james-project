@@ -6,5 +6,6 @@ categories: james update
 ---
 
 The Apache James Project is pleased to announce a new Apache protocols release in preparation of the upcoming 3.0-M1
-[Apache Mail server]: http://james.apache.org/imap .
+[Apache Mail server][imap].
 
+[imap]: http://james.apache.org/imap

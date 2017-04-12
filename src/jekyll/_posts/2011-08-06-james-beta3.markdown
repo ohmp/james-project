@@ -8,10 +8,10 @@ categories: james update
 The Apache James project is happy to announce the release of version 3.0-beta3 of its modular mail server.
 
 We thank all Users for their feedback and tests and we encourage anyone to
-[download]: http://james.apache.org/download.cgi#Apache_James_Server and discover this Milestone 3 release.
+[download][download] and discover this Milestone 3 release.
 
 If you're interested in contributing to the James project, please subscribe to the James
-[mailing lists]: http://james.apache.org/mail.html
+[mailing lists][lists]
 
 
 What's new in 3.0-beta3 for end users:
@@ -47,8 +47,11 @@ What's new in 3.0-beta3 for developers:
   - Code formatting
   - ... and much more, see details on https://issues.apache.org/jira/secure/ReleaseNote.jspa?in&amp;version=12316850&amp;styleName=Html&amp;projectId=10411
 
-[Quick Start]: http://james.apache.org/server/3/quick-start.html
+[Quick Start][quick]
 
+[quick]: http://james.apache.org/server/3/quick-start.html
+[lists]: http://james.apache.org/mail.html
+[download]: http://james.apache.org/download.cgi#Apache_James_Server
 
 
 

@@ -5,7 +5,7 @@ date:   2008-08-16 16:13:22 +0200
 categories: james update
 ---
 
-We are proud to announce the [availability]: ../download.cgi of APACHE Mime4j-0.4. This release brings a number of
+We are proud to announce the [availability][availability] of APACHE Mime4j-0.4. This release brings a number of
 significant improvements in terms of supported capabilities, flexibility and performance:
 
   - Revised and improved public API with support for pull parsing
@@ -15,3 +15,4 @@ significant improvements in terms of supported capabilities, flexibility and per
   - More comprehensive header parsing including support for RFC1864, RFC2045, RFC2183, RFC2557 and RFC3066
   - Revised packaging and exception hierarchy. MimeException now extends IOException
 
+[availability]: /download.cgi

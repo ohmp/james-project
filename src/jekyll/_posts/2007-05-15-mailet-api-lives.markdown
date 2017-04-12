@@ -6,5 +6,6 @@ categories: james update
 ---
 
 Following a decision taken by the James PMC a few months ago, the Apache Mailet API project is now independent of James
-Server and has its own [webpage]: mailet/index.html and its own source repository.
+Server and has its own [webpage][webpage] and its own source repository.
 
+[webpage]: /mailet/index.html

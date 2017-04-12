@@ -6,8 +6,12 @@ categories: james update
 ---
 
 The Apache James project is pleased to announced that the first release of
-[Apache MPT]: http://james.apache.org/mpt - a functional testing
+[Apache MPT][MPT] - a functional testing
 library particularly suitable for line protocols based on ASCII - is now
-[available]: download.cgi#Apache_MPT . These protocols are common in mail but the library may be useful more widely.
+[available][available] . These protocols are common in mail but the library may be useful more widely.
 
-See the [release notes]: http://james.apache.org/mpt/0.1/release-notes.html for more details.
+See the [release notes][notes] for more details.
+
+[notes]: http://james.apache.org/mpt/0.1/release-notes.html
+[available]: /download.cgi#Apache_MPT
+[MPT]: http://james.apache.org/mpt

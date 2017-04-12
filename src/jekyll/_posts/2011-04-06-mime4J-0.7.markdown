@@ -30,5 +30,7 @@ The 0.7 release brings another round of API enhancements, bug fixes and performa
  behaviours). Mime4J 0.7 also provides LenientFieldParser as an alternative to DefaultFieldParser
  when a higher degree of tolerance to non-severe MIME field format violations is desired.
 
-[Read the release notes]: https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12310521&amp;version=12313592
+[Read the release notes][notes]
+
+[notes]: https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12310521&amp;version=12313592
 

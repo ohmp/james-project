@@ -6,5 +6,8 @@ categories: james update
 ---
 
 The Apache James Project is pleased to announce that the first independent release of
-[Apache Mailet Standard]: http://james.apache.org/mailet/standard/ - was bundled with James Server 2.3 before -
-is now available for <a href='download.cgi#Apache_JSieve'>download
+[Apache Mailet Standard][standard]/ - was bundled with James Server 2.3 before -
+is now available for [download][download].
+
+[standard]: http://james.apache.org/mailet/standard/
+[download]: download.cgi#Apache_JSieve

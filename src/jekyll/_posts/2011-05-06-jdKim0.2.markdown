@@ -15,7 +15,9 @@ Apache JAMES project.
 This is the first official release of the library, but the code has
 been in production almost unchanged since two years.
 
-[Read the release notes]: https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12310990&amp;version=12314300
+[Read the release notes][notes]
+
+[notes]: https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12310990&amp;version=12314300
 
 
 

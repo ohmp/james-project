@@ -11,8 +11,10 @@ This move will provide a clearer division between development of the API and dev
 this will encourage more participation from external projects.
 
 The effort will start small, by releasing the current version, and move on to look at the enhancements we've been
-discussing over on [the mailet api list]: http://james.apache.org/mail.html where we will extend a warm welcome to anyone
+discussing over on [the mailet api list][list] where we will extend a warm welcome to anyone
 who has something to contribute.
 
 Eventually we hope to extend the scope of the sub-project to include things like a Reference Implementation independent
 of James Server and suitable for embedding, an SDK, and possibly a TCK.
+
+[list]: http://james.apache.org/mail.html

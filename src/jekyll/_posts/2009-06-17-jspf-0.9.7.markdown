@@ -5,5 +5,7 @@ date:   2009-06-17 16:13:22 +0200
 categories: james update
 ---
 
-The Apache James Project is pleased to announce a new [Apache jSPF]: http://james.apache.org/jspf release which included
+The Apache James Project is pleased to announce a new [Apache jSPF][jSPF] release which included
 some critical bug fixes.
+
+[jSPF]: http://james.apache.org/jspf

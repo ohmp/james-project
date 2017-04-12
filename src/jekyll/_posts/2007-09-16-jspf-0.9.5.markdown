@@ -5,8 +5,9 @@ date:   2007-09-16 16:13:22 +0200
 categories: james update
 ---
 
-We are proud to announce the [availability]: download.cgi of APACHE jSPF-0.9.5. This release brings initial support for
+We are proud to announce the [availability][availability] of APACHE jSPF-0.9.5. This release brings initial support for
 asynchronous processing and is fully RFC4408 compliant.
 
+[availability]: /download.cgi
 
 
