@@ -51,6 +51,8 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
     
     private static final HookResult SYNTAX_ERROR = new HookResult(HookReturnCode.DENY, SMTPRetCode.SYNTAX_ERROR_ARGUMENTS, DSNStatus.getStatus(DSNStatus.PERMANENT, DSNStatus.DELIVERY_INVALID_ARG) + " Syntactically incorrect value for SIZE parameter");
     private static final HookResult QUOTA_EXCEEDED = new HookResult(HookReturnCode.DENY, SMTPRetCode.QUOTA_EXCEEDED, DSNStatus.getStatus(DSNStatus.PERMANENT, DSNStatus.SYSTEM_MSG_TOO_BIG) + " Message size exceeds fixed maximum message size");
+    public static final int SINGLE_CHARACTER_LINE = 3;
+    public static final int DOT_BYTE = 46;
 
     @Override
     public void init(Configuration config) throws ConfigurationException {
@@ -153,7 +155,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
         // If we already defined we failed and sent a reply we should simply
         // wait for a CRLF.CRLF to be sent by the client.
         if (failed != null && failed) {
-            if (line.remaining() == 3 && line.get() == 46) {
+            if (isDataTerminated(line)) {
                 line.rewind();
                 next.onLine(session, ByteBuffer.wrap(".\r\n".getBytes()));
                 return new SMTPResponse(SMTPRetCode.QUOTA_EXCEEDED, "Quota exceeded");
@@ -161,7 +163,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
                 return null;
             }
         } else {
-            if (line.remaining() == 3 && line.get() == 46) {
+            if (isDataTerminated(line)) {
                 line.rewind();
                 return next.onLine(session, line);
             } else {
@@ -190,6 +192,10 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
                 }
             }
         }
+    }
+
+    private boolean isDataTerminated(ByteBuffer line) {
+        return line.remaining() == SINGLE_CHARACTER_LINE && line.get() == DOT_BYTE;
     }
 
     /**
