@@ -22,6 +22,7 @@ package org.apache.james.modules.protocols;
 import java.security.Security;
 import java.util.List;
 
+import org.apache.james.jmap.JMAPConfiguration;
 import org.apache.james.jmap.JMAPModule;
 import org.apache.james.jmap.JMAPServer;
 import org.apache.james.jmap.crypto.JamesSignatureHandler;
@@ -52,19 +53,23 @@ public class JMAPServerModule extends AbstractModule {
 
         private final JMAPServer server;
         private final JamesSignatureHandler signatureHandler;
+        private final JMAPConfiguration jmapConfiguration;
 
         @Inject
-        public JMAPModuleConfigurationPerformer(JMAPServer server, JamesSignatureHandler signatureHandler) {
+        public JMAPModuleConfigurationPerformer(JMAPServer server, JamesSignatureHandler signatureHandler, JMAPConfiguration jmapConfiguration) {
             this.server = server;
             this.signatureHandler = signatureHandler;
+            this.jmapConfiguration = jmapConfiguration;
         }
 
         @Override
         public void initModule() {
             try {
-                signatureHandler.init();
-                server.configure(null);
-                registerPEMWithSecurityProvider();
+                if (jmapConfiguration.isEnabled()) {
+                    signatureHandler.init();
+                    server.configure(null);
+                    registerPEMWithSecurityProvider();
+                }
             } catch (Exception e) {
                 Throwables.propagate(e);
             }

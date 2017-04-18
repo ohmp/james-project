@@ -48,6 +48,7 @@ public class JamesSignatureHandlerProvider {
         };
         JamesSignatureHandler signatureHandler = new JamesSignatureHandler(fileSystem, 
                 JMAPConfiguration.builder()
+                    .enabled(true)
                     .keystore("keystore")
                     .secret("james72laBalle")
                     .build());
