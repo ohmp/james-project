@@ -480,23 +480,18 @@ public class SMTPServerTest {
 
     @Test
     public void messageExceedingMessageSizeShouldBeDiscarded() throws Exception {
+        // Given
         init(smtpConfiguration);
         int maxSize = 1024;
         smtpServer.setMaximalMessageSize(maxSize);
 
+        // When
         SMTPClient smtpProtocol = new SMTPClient();
         InetSocketAddress bindedAddress = new ProtocolServerUtils(smtpServer).retrieveBindedAddress();
         smtpProtocol.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
-
-        // no message there, yet
-        assertThat(queue.getLastMail())
-            .as("no mail received by mail server")
-            .isNull();
-
         smtpProtocol.sendCommand("EHLO " + InetAddress.getLocalHost());
         smtpProtocol.setSender("mail@localhost");
         smtpProtocol.addRecipient("mail@localhost");
-
         // Create a 1K+ message
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Subject: test\r\n\r\n");
@@ -506,18 +501,49 @@ public class SMTPServerTest {
             stringBuilder.append(repeatedString);
         }
         stringBuilder.append("\r\n\r\n.\r\n");
-
         smtpProtocol.sendShortMessageData(stringBuilder.toString());
 
-        assertThat(smtpProtocol.getReplyString()).isEqualTo("552 Quota exceeded\r\n");
-
-        smtpProtocol.quit();
-        smtpProtocol.disconnect();
-
-        // mail was propagated by SMTPServer
+        // Then
         assertThat(queue.getLastMail())
             .as("mail received by mail server")
             .isNull();
+
+        // finally
+        smtpProtocol.quit();
+        smtpProtocol.disconnect();
+    }
+
+    @Test
+    public void messageExceedingMessageSizeShouldBeRespondedAsOverQuota() throws Exception {
+        // Given
+        init(smtpConfiguration);
+        int maxSize = 1024;
+        smtpServer.setMaximalMessageSize(maxSize);
+
+        //When
+        SMTPClient smtpProtocol = new SMTPClient();
+        InetSocketAddress bindedAddress = new ProtocolServerUtils(smtpServer).retrieveBindedAddress();
+        smtpProtocol.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
+        smtpProtocol.sendCommand("EHLO " + InetAddress.getLocalHost());
+        smtpProtocol.setSender("mail@localhost");
+        smtpProtocol.addRecipient("mail@localhost");
+        // Create a 1K+ message
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Subject: test\r\n\r\n");
+        String repeatedString = "This is the repeated body...\r\n";
+        int repeatCount = (maxSize / repeatedString.length()) + 1;
+        for (int i = 0; i < repeatCount; i++) {
+            stringBuilder.append(repeatedString);
+        }
+        stringBuilder.append("\r\n\r\n.\r\n");
+        smtpProtocol.sendShortMessageData(stringBuilder.toString());
+
+        // Then
+        assertThat(smtpProtocol.getReplyString()).isEqualTo("552 Quota exceeded\r\n");
+
+        // Finally
+        smtpProtocol.quit();
+        smtpProtocol.disconnect();
     }
 
     @Test
