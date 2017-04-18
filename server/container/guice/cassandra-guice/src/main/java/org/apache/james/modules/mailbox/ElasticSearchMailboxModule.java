@@ -65,6 +65,8 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     private static final int DEFAULT_CONNECTION_MAX_RETRIES = 7;
     private static final int DEFAULT_CONNECTION_MIN_DELAY = 3000;
     private static final boolean DEFAULT_INDEX_ATTACHMENTS = true;
+    public static final int DEFAULT_NB_SHARDS = 1;
+    public static final int DEFAULT_NB_REPLICA = 0;
 
     @Override
     protected void configure() {
@@ -89,8 +91,8 @@ public class ElasticSearchMailboxModule extends AbstractModule {
                 .getWithRetry(ctx -> clientProvider.get()).get();
         IndexCreationFactory.createIndex(client,
             MailboxElasticsearchConstants.MAILBOX_INDEX,
-            propertiesReader.getInt("elasticsearch.nb.shards"),
-            propertiesReader.getInt("elasticsearch.nb.replica"));
+            propertiesReader.getInt("elasticsearch.nb.shards", DEFAULT_NB_SHARDS),
+            propertiesReader.getInt("elasticsearch.nb.replica", DEFAULT_NB_REPLICA));
         NodeMappingFactory.applyMapping(client,
             MailboxElasticsearchConstants.MAILBOX_INDEX,
             MailboxElasticsearchConstants.MESSAGE_TYPE,
