@@ -42,8 +42,11 @@ import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.tika.extractor.TikaTextExtractor;
+import org.apache.james.utils.PropertiesProvider;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
@@ -52,6 +55,8 @@ import com.google.inject.Scopes;
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
 public class ElasticSearchMailboxModule extends AbstractModule {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchMailboxModule.class);
 
     public static final String ES_CONFIG_FILE = FileSystem.FILE_PROTOCOL_AND_CONF + "elasticsearch.properties";
     public static final String ELASTICSEARCH_HOSTS = "elasticsearch.hosts";
@@ -75,8 +80,8 @@ public class ElasticSearchMailboxModule extends AbstractModule {
 
     @Provides
     @Singleton
-    protected Client provideClientProvider(FileSystem fileSystem, AsyncRetryExecutor executor) throws ConfigurationException, FileNotFoundException, ExecutionException, InterruptedException {
-        PropertiesConfiguration propertiesReader = new PropertiesConfiguration(fileSystem.getFile(ES_CONFIG_FILE));
+    protected Client provideClientProvider(PropertiesProvider propertiesProvider, AsyncRetryExecutor executor) throws ConfigurationException, FileNotFoundException, ExecutionException, InterruptedException {
+        PropertiesConfiguration propertiesReader = getElasticSearchConfiguration(propertiesProvider);
 
         ClientProvider clientProvider = connectToCluster(propertiesReader);
 
@@ -91,6 +96,17 @@ public class ElasticSearchMailboxModule extends AbstractModule {
             MailboxElasticsearchConstants.MESSAGE_TYPE,
             MailboxMappingFactory.getMappingContent());
         return client;
+    }
+
+    private PropertiesConfiguration getElasticSearchConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
+        try {
+            return propertiesProvider.getConfiguration("elasticsearch");
+        } catch (FileNotFoundException e) {
+            LOGGER.warn("Could not find elasticsearch configuration file. Using 127.0.0.1:9300 as contact point");
+            PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
+            propertiesConfiguration.addProperty(ELASTICSEARCH_HOSTS, "127.0.0.1");
+            return propertiesConfiguration;
+        }
     }
 
     private static ClientProvider connectToCluster(PropertiesConfiguration propertiesReader) throws ConfigurationException {
