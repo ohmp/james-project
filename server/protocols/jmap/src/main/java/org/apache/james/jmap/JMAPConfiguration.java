@@ -49,6 +49,14 @@ public class JMAPConfiguration {
             return this;
         }
 
+        public Builder enable() {
+            return enabled(true);
+        }
+
+        public Builder disable() {
+            return enabled(false);
+        }
+
         public Builder secret(String secret) {
             this.secret = secret;
             return this;

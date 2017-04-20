@@ -34,7 +34,7 @@ public class JMAPConfigurationTest {
     @Test
     public void buildShouldThrowWhenKeystoreIsNull() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
-                .enabled(true)
+                .enable()
                 .keystore(null)
                 .build())
             .isInstanceOf(IllegalStateException.class)
@@ -44,7 +44,7 @@ public class JMAPConfigurationTest {
     @Test
     public void buildShouldThrowWhenKeystoreIsEmpty() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
-                .enabled(true)
+                .enable()
                 .keystore("")
                 .build())
             .isInstanceOf(IllegalStateException.class)
@@ -54,7 +54,7 @@ public class JMAPConfigurationTest {
     @Test
     public void buildShouldThrowWhenSecretIsNull() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
-                .enabled(true)
+                .enable()
                 .keystore("keystore")
                 .secret(null)
                 .build())
@@ -65,7 +65,7 @@ public class JMAPConfigurationTest {
     @Test
     public void buildShouldThrowWhenSecretIsEmpty() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
-                .enabled(true)
+                .enable()
                 .keystore("keystore")
                 .secret("")
                 .build())
@@ -76,7 +76,7 @@ public class JMAPConfigurationTest {
     @Test
     public void buildShouldThrowWhenJwtPublicKeyPemIsNull() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
-                .enabled(true)
+                .enable()
                 .keystore("keystore")
                 .secret("secret")
                 .jwtPublicKeyPem(null)
@@ -89,7 +89,7 @@ public class JMAPConfigurationTest {
         JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(ENABLED, "keystore", "secret", Optional.of("file://conf/jwt_publickey"), Optional.empty());
 
         JMAPConfiguration jmapConfiguration = JMAPConfiguration.builder()
-            .enabled(true)
+            .enable()
             .keystore("keystore")
             .secret("secret")
             .jwtPublicKeyPem(Optional.of("file://conf/jwt_publickey"))
@@ -103,7 +103,7 @@ public class JMAPConfigurationTest {
         JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(ENABLED, "keystore", "secret", Optional.of("file://conf/jwt_publickey"), Optional.of(80));
 
         JMAPConfiguration jmapConfiguration = JMAPConfiguration.builder()
-            .enabled(true)
+            .enable()
             .keystore("keystore")
             .secret("secret")
             .jwtPublicKeyPem(Optional.of("file://conf/jwt_publickey"))
@@ -121,7 +121,7 @@ public class JMAPConfigurationTest {
         JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(DISABLED, keystore, secret, jwtPublicKeyPem, port);
 
         JMAPConfiguration jmapConfiguration = JMAPConfiguration.builder()
-            .enabled(false)
+            .disable()
             .build();
         assertThat(jmapConfiguration).isEqualToComparingFieldByField(expectedJMAPConfiguration);
     }

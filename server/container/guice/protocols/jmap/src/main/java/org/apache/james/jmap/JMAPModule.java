@@ -113,7 +113,7 @@ public class JMAPModule extends AbstractModule {
         } catch (FileNotFoundException e) {
             LOGGER.warn("Could not find JMAP configuration file. JMAP server will not be enabled.");
             return JMAPConfiguration.builder()
-                .enabled(false)
+                .disable()
                 .build();
         }
     }
