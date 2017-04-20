@@ -18,6 +18,29 @@
  ****************************************************************/
 package org.apache.james.modules.mailbox;
 
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
+import org.apache.james.backends.cassandra.init.CassandraZonedDateTimeModule;
+import org.apache.james.backends.cassandra.init.ClusterBuilder;
+import org.apache.james.backends.cassandra.init.ClusterWithKeyspaceCreatedFactory;
+import org.apache.james.backends.cassandra.init.QueryLoggerConfiguration;
+import org.apache.james.backends.cassandra.init.SessionWithInitializedTablesFactory;
+import org.apache.james.util.Host;
+import org.apache.james.utils.PropertiesProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PerHostPercentileTracker;
 import com.datastax.driver.core.QueryLogger;
@@ -29,29 +52,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
-import org.apache.james.backends.cassandra.init.CassandraZonedDateTimeModule;
-import org.apache.james.backends.cassandra.init.ClusterBuilder;
-import org.apache.james.backends.cassandra.init.ClusterWithKeyspaceCreatedFactory;
-import org.apache.james.backends.cassandra.init.QueryLoggerConfiguration;
-import org.apache.james.backends.cassandra.init.SessionWithInitializedTablesFactory;
-import org.apache.james.filesystem.api.FileSystem;
-import org.apache.james.util.Host;
-import org.apache.james.utils.PropertiesProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class CassandraSessionModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraSessionModule.class);
@@ -62,6 +62,7 @@ public class CassandraSessionModule extends AbstractModule {
     private static final int DEFAULT_REPLICATION_FACTOR = 1;
     private static final String DEFAULT_KEYSPACE = "apache_james";
     private static final String CASSANDRA_NODES = "cassandra.nodes";
+    private static final String LOCALHOST = "127.0.0.1";
 
     @Override
     protected void configure() {
@@ -177,9 +178,9 @@ public class CassandraSessionModule extends AbstractModule {
         try {
             return propertiesProvider.getConfiguration("cassandra");
         } catch (FileNotFoundException e) {
-            LOGGER.warn("Could not locate cassandra configuration file. Defaulting to node 127.0.0.1:9042");
+            LOGGER.warn("Could not locate cassandra configuration file. Defaulting to node " + LOCALHOST + ":9042");
             PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
-            propertiesConfiguration.addProperty(CASSANDRA_NODES, "127.0.0.1");
+            propertiesConfiguration.addProperty(CASSANDRA_NODES, LOCALHOST);
             return propertiesConfiguration;
         }
     }
