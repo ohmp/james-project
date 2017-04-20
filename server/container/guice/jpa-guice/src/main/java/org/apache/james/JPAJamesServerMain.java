@@ -53,8 +53,7 @@ public class JPAJamesServerMain {
         new ManageSieveServerModule(),
         new WebAdminServerModule(),
         new DataRoutesModules(),
-        new MailboxRoutesModule(),
-        new DefaultProcessorsConfigurationProviderModule());
+        new MailboxRoutesModule());
     
     public static final Module jpaServerModule = Modules.combine(
         new JPAMailboxModule(),
@@ -63,7 +62,8 @@ public class JPAJamesServerMain {
         new ActiveMQQueueModule(),
         new RawPostDequeueDecoratorModule(),
         new MailboxModule(),
-        new NoJwtModule());
+        new NoJwtModule(),
+        new DefaultProcessorsConfigurationProviderModule());
 
     public static void main(String[] args) throws Exception {
         GuiceJamesServer server = new GuiceJamesServer()
