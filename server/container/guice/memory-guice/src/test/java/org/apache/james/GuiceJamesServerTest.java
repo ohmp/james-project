@@ -71,10 +71,10 @@ public class GuiceJamesServerTest {
     public void serverShouldPropagateUncaughtConfigurationException() throws Exception {
         expectedException.expect(RuntimeException.class);
 
-        GuiceJamesServer overwittenServer = null;
+        GuiceJamesServer overWrittenServer = null;
 
         try {
-            overwittenServer = this.guiceJamesServer.overrideWith(
+            overWrittenServer = this.guiceJamesServer.overrideWith(
                 binder -> Multibinder.newSetBinder(binder, ConfigurationPerformer.class).addBinding().toInstance(
                     new ConfigurationPerformer() {
                         @Override
@@ -89,32 +89,32 @@ public class GuiceJamesServerTest {
                     }
                 )
             );
-            overwittenServer.start();
+            overWrittenServer.start();
         } finally {
-            if (overwittenServer != null) {
-                overwittenServer.stop();
+            if (overWrittenServer != null) {
+                overWrittenServer.stop();
             }
         }
     }
 
     @Test
     public void serverShouldNotBeStartedOnUncaughtException() throws Exception {
-        GuiceJamesServer overwittenServer = null;
+        GuiceJamesServer overWrittenServer = null;
 
         try {
-            overwittenServer = this.guiceJamesServer.overrideWith(
+            overWrittenServer = this.guiceJamesServer.overrideWith(
                 binder -> Multibinder.newSetBinder(binder, ConfigurationPerformer.class)
                     .addBinding()
                     .toInstance(THROWING_CONFIGURATION_PERFORMER));
 
             try {
-                overwittenServer.start();
+                overWrittenServer.start();
             } catch (RuntimeException e) {}
 
-            assertThat(overwittenServer.isStarted()).isFalse();
+            assertThat(overWrittenServer.isStarted()).isFalse();
         } finally {
-            if (overwittenServer != null) {
-                overwittenServer.stop();
+            if (overWrittenServer != null) {
+                overWrittenServer.stop();
             }
         }
     }
