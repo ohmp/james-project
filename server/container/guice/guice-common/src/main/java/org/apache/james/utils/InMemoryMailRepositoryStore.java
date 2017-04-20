@@ -71,16 +71,19 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
 
     public void init() throws Exception {
         LOGGER.info("JamesMailStore init... " + this);
-        List<HierarchicalConfiguration> registeredClasses;
+        List<HierarchicalConfiguration> registeredClasses = retrieveRegisteredClassConfiguration();
+        for (HierarchicalConfiguration registeredClass : registeredClasses) {
+            readConfigurationEntry(registeredClass);
+        }
+    }
+
+    private List<HierarchicalConfiguration> retrieveRegisteredClassConfiguration() {
         try {
-            registeredClasses = configuration.configurationsAt("mailrepositories.mailrepository");
+            return configuration.configurationsAt("mailrepositories.mailrepository");
         } catch (Exception e) {
             LOGGER.warn("Could not process configuration. Skipping Mail Repository initialization.", e);
-            registeredClasses = ImmutableList.of();
+            return ImmutableList.of();
         }
-            for (HierarchicalConfiguration registeredClass : registeredClasses) {
-                readConfigurationEntry(registeredClass);
-            }
     }
 
     @Override
