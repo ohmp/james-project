@@ -58,15 +58,16 @@ public class ElasticSearchMailboxModule extends AbstractModule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchMailboxModule.class);
 
-    public static final String ES_CONFIG_FILE = FileSystem.FILE_PROTOCOL_AND_CONF + "elasticsearch.properties";
+    public static final String ELASTICSEARCH_CONFIGURATION_NAME = "elasticsearch";
     public static final String ELASTICSEARCH_HOSTS = "elasticsearch.hosts";
     public static final String ELASTICSEARCH_MASTER_HOST = "elasticsearch.masterHost";
     public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
     private static final int DEFAULT_CONNECTION_MAX_RETRIES = 7;
     private static final int DEFAULT_CONNECTION_MIN_DELAY = 3000;
     private static final boolean DEFAULT_INDEX_ATTACHMENTS = true;
-    public static final int DEFAULT_NB_SHARDS = 1;
-    public static final int DEFAULT_NB_REPLICA = 0;
+    private static final int DEFAULT_NB_SHARDS = 1;
+    private static final int DEFAULT_NB_REPLICA = 0;
+    private static final String LOCALHOST = "127.0.0.1";
 
     @Override
     protected void configure() {
@@ -91,8 +92,8 @@ public class ElasticSearchMailboxModule extends AbstractModule {
                 .getWithRetry(ctx -> clientProvider.get()).get();
         IndexCreationFactory.createIndex(client,
             MailboxElasticsearchConstants.MAILBOX_INDEX,
-            propertiesReader.getInt("elasticsearch.nb.shards", DEFAULT_NB_SHARDS),
-            propertiesReader.getInt("elasticsearch.nb.replica", DEFAULT_NB_REPLICA));
+            propertiesReader.getInt(ELASTICSEARCH_CONFIGURATION_NAME + ".nb.shards", DEFAULT_NB_SHARDS),
+            propertiesReader.getInt(ELASTICSEARCH_CONFIGURATION_NAME + ".nb.replica", DEFAULT_NB_REPLICA));
         NodeMappingFactory.applyMapping(client,
             MailboxElasticsearchConstants.MAILBOX_INDEX,
             MailboxElasticsearchConstants.MESSAGE_TYPE,
@@ -102,11 +103,11 @@ public class ElasticSearchMailboxModule extends AbstractModule {
 
     private PropertiesConfiguration getElasticSearchConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
-            return propertiesProvider.getConfiguration("elasticsearch");
+            return propertiesProvider.getConfiguration(ELASTICSEARCH_CONFIGURATION_NAME);
         } catch (FileNotFoundException e) {
-            LOGGER.warn("Could not find elasticsearch configuration file. Using 127.0.0.1:9300 as contact point");
+            LOGGER.warn("Could not find " + ELASTICSEARCH_CONFIGURATION_NAME + " configuration file. Using 127.0.0.1:9300 as contact point");
             PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
-            propertiesConfiguration.addProperty(ELASTICSEARCH_HOSTS, "127.0.0.1");
+            propertiesConfiguration.addProperty(ELASTICSEARCH_HOSTS, LOCALHOST);
             return propertiesConfiguration;
         }
     }
@@ -144,14 +145,14 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         return executor
                 .withProportionalJitter()
                 .retryOn(NoNodeAvailableException.class)
-                .withMaxRetries(configuration.getInt("elasticsearch.retryConnection.maxRetries", DEFAULT_CONNECTION_MAX_RETRIES))
-                .withMinDelay(configuration.getInt("elasticsearch.retryConnection.minDelay", DEFAULT_CONNECTION_MIN_DELAY));
+                .withMaxRetries(configuration.getInt(ELASTICSEARCH_CONFIGURATION_NAME + ".retryConnection.maxRetries", DEFAULT_CONNECTION_MAX_RETRIES))
+                .withMinDelay(configuration.getInt(ELASTICSEARCH_CONFIGURATION_NAME + ".retryConnection.minDelay", DEFAULT_CONNECTION_MIN_DELAY));
     }
 
     @Provides 
     @Singleton
     public IndexAttachments provideIndexAttachments(PropertiesConfiguration configuration) {
-        if (configuration.getBoolean("elasticsearch.indexAttachments", DEFAULT_INDEX_ATTACHMENTS)) {
+        if (configuration.getBoolean(ELASTICSEARCH_CONFIGURATION_NAME + ".indexAttachments", DEFAULT_INDEX_ATTACHMENTS)) {
             return IndexAttachments.YES;
         }
         return IndexAttachments.NO;
