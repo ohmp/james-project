@@ -29,15 +29,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class DefaultMemoryJamesServerTest {
 
     @Rule
     public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     private GuiceJamesServer guiceJamesServer;
 
@@ -53,13 +49,11 @@ public class DefaultMemoryJamesServerTest {
         guiceJamesServer.stop();
     }
 
-
     @Test
     public void memoryJamesServerShouldStartWithNoConfigurationFile() throws Exception {
         guiceJamesServer.start();
 
         assertThat(guiceJamesServer.isStarted()).isTrue();
     }
-
 
 }
