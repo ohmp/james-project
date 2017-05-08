@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,8 +51,10 @@ import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
+import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.OptionalConverter;
+import org.apache.james.util.streams.JamesCollectors;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
@@ -61,6 +64,7 @@ public class CassandraMessageMapper implements MessageMapper {
         .count(0L)
         .unseen(0L)
         .build();
+    public static final int UPDATE_BATCH_SIZE = 200;
 
     private final CassandraModSeqProvider modSeqProvider;
     private final MailboxSession mailboxSession;
@@ -268,13 +272,19 @@ public class CassandraMessageMapper implements MessageMapper {
         long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailboxId);
 
         return retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
-                .join()
-                .map(message -> tryMessageFlagsUpdate(flagUpdateCalculator, message, newModSeq))
-                .map((UpdatedFlags updatedFlags) -> indexTableHandler.updateIndexOnFlagsUpdate(mailboxId, updatedFlags)
-                    .thenApply(voidValue -> updatedFlags))
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList()) // This collect is here as we need to consume all the stream before returning result
-                .iterator();
+            .join()
+            .collect(JamesCollectors.chunker(UPDATE_BATCH_SIZE))
+            .values()
+            .stream()
+            .map(list -> CompletableFutureUtil.allOf(
+                list.stream()
+                    .map(message -> tryMessageFlagsUpdate(flagUpdateCalculator, message, newModSeq)
+                        .thenCompose(updatedFlags -> indexTableHandler.updateIndexOnFlagsUpdate(mailboxId, updatedFlags)
+                            .thenApply(voidValue -> updatedFlags)))))
+            .map(CompletableFuture::join)
+            .flatMap(Function.identity())
+            .collect(Collectors.toList()) // This collect is here as we need to consume all the stream before returning result
+            .iterator();
     }
 
     @Override
@@ -316,30 +326,28 @@ public class CassandraMessageMapper implements MessageMapper {
                 imapUidDAO.insert(composedMessageIdWithMetaData));
     }
 
-    private UpdatedFlags tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
+    private CompletableFuture<UpdatedFlags> tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
         Flags oldFlags = message.createFlags();
         Flags newFlags = flagUpdateCalculator.buildNewFlags(oldFlags);
 
         message.setFlags(newFlags);
         message.setModSeq(newModSeq);
-        updateFlags(message, flagUpdateCalculator);
-
-        return UpdatedFlags.builder()
-            .uid(message.getUid())
-            .modSeq(newModSeq)
-            .oldFlags(oldFlags)
-            .newFlags(newFlags)
-            .build();
+        return updateFlags(message, flagUpdateCalculator)
+            .thenApply(any -> UpdatedFlags.builder()
+                .uid(message.getUid())
+                .modSeq(newModSeq)
+                .oldFlags(oldFlags)
+                .newFlags(newFlags)
+                .build());
     }
 
-    private Void updateFlags(MailboxMessage message, FlagsUpdateCalculator flagsUpdateCalculator) {
+    private CompletableFuture<Void> updateFlags(MailboxMessage message, FlagsUpdateCalculator flagsUpdateCalculator) {
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(message.getMailboxId(), message.getMessageId(), message.getUid()))
                 .modSeq(message.getModSeq())
                 .flags(message.createFlags())
                 .build();
         return imapUidDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator)
-            .thenCompose(any ->messageIdDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator))
-            .join();
+            .thenCompose(any ->messageIdDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator));
     }
 }
