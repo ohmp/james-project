@@ -32,18 +32,15 @@ import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
 import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
-import org.apache.james.mailbox.cassandra.mail.utils.MessageDeletedDuringFlagsUpdateException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MailboxCounters;
-import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
@@ -55,15 +52,11 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.OptionalConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 public class CassandraMessageMapper implements MessageMapper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageMapper.class);
     public static final MailboxCounters INITIAL_COUNTERS =  MailboxCounters.builder()
         .count(0L)
         .unseen(0L)
@@ -72,7 +65,6 @@ public class CassandraMessageMapper implements MessageMapper {
     private final CassandraModSeqProvider modSeqProvider;
     private final MailboxSession mailboxSession;
     private final CassandraUidProvider uidProvider;
-    private final int maxRetries;
     private final CassandraMessageDAO messageDAO;
     private final CassandraMessageIdDAO messageIdDAO;
     private final CassandraMessageIdToImapUidDAO imapUidDAO;
@@ -85,14 +77,13 @@ public class CassandraMessageMapper implements MessageMapper {
     private final CassandraDeletedMessageDAO deletedMessageDAO;
 
     public CassandraMessageMapper(CassandraUidProvider uidProvider, CassandraModSeqProvider modSeqProvider,
-                                  MailboxSession mailboxSession, int maxRetries, CassandraAttachmentMapper attachmentMapper,
+                                  MailboxSession mailboxSession, CassandraAttachmentMapper attachmentMapper,
                                   CassandraMessageDAO messageDAO, CassandraMessageIdDAO messageIdDAO, CassandraMessageIdToImapUidDAO imapUidDAO,
                                   CassandraMailboxCounterDAO mailboxCounterDAO, CassandraMailboxRecentsDAO mailboxRecentDAO, CassandraApplicableFlagDAO applicableFlagDAO,
                                   CassandraIndexTableHandler indexTableHandler, CassandraFirstUnseenDAO firstUnseenDAO, CassandraDeletedMessageDAO deletedMessageDAO) {
         this.uidProvider = uidProvider;
         this.modSeqProvider = modSeqProvider;
         this.mailboxSession = mailboxSession;
-        this.maxRetries = maxRetries;
         this.messageDAO = messageDAO;
         this.messageIdDAO = messageIdDAO;
         this.imapUidDAO = imapUidDAO;
@@ -278,7 +269,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
         return retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
                 .join()
-                .flatMap(message -> updateFlagsOnMessage(mailbox, flagUpdateCalculator, message, newModSeq))
+                .map(message -> tryMessageFlagsUpdate(flagUpdateCalculator, message, newModSeq))
                 .map((UpdatedFlags updatedFlags) -> indexTableHandler.updateIndexOnFlagsUpdate(mailboxId, updatedFlags)
                     .thenApply(voidValue -> updatedFlags))
                 .map(CompletableFuture::join)
@@ -325,76 +316,30 @@ public class CassandraMessageMapper implements MessageMapper {
                 imapUidDAO.insert(composedMessageIdWithMetaData));
     }
 
-    private Stream<UpdatedFlags> updateFlagsOnMessage(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModseq) {
-        return tryMessageFlagsUpdate(flagUpdateCalculator, message, newModseq)
-            .map(Stream::of)
-            .orElse(handleRetries(mailbox, flagUpdateCalculator, message, newModseq));
-    }
-
-    private Optional<UpdatedFlags> tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
-        long oldModSeq = message.getModSeq();
+    private UpdatedFlags tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
         Flags oldFlags = message.createFlags();
         Flags newFlags = flagUpdateCalculator.buildNewFlags(oldFlags);
 
         message.setFlags(newFlags);
         message.setModSeq(newModSeq);
-        if (updateFlags(message, oldModSeq)) {
-            return Optional.of(UpdatedFlags.builder()
-                .uid(message.getUid())
-                .modSeq(newModSeq)
-                .oldFlags(oldFlags)
-                .newFlags(newFlags)
-                .build());
-        } else {
-            return Optional.empty();
-        }
+        updateFlags(message, flagUpdateCalculator);
+
+        return UpdatedFlags.builder()
+            .uid(message.getUid())
+            .modSeq(newModSeq)
+            .oldFlags(oldFlags)
+            .newFlags(newFlags)
+            .build();
     }
 
-    private boolean updateFlags(MailboxMessage message, long oldModSeq) {
+    private Void updateFlags(MailboxMessage message, FlagsUpdateCalculator flagsUpdateCalculator) {
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(message.getMailboxId(), message.getMessageId(), message.getUid()))
                 .modSeq(message.getModSeq())
                 .flags(message.createFlags())
                 .build();
-        return imapUidDAO.updateMetadata(composedMessageIdWithMetaData, oldModSeq)
-            .thenCompose(success -> Optional.of(success)
-                .filter(b -> b)
-                .map((Boolean any) -> messageIdDAO.updateMetadata(composedMessageIdWithMetaData)
-                    .thenApply(v -> success))
-                .orElse(CompletableFuture.completedFuture(success)))
+        return imapUidDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator)
+            .thenCompose(any ->messageIdDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator))
             .join();
-    }
-
-    private Stream<UpdatedFlags> handleRetries(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
-        try {
-            return Stream.of(
-                new FunctionRunnerWithRetry(maxRetries)
-                    .executeAndRetrieveObject(() -> retryMessageFlagsUpdate(mailbox,
-                            message.getMessageId(),
-                            flagUpdateCalculator,
-                        newModSeq)));
-        } catch (MessageDeletedDuringFlagsUpdateException e) {
-            mailboxSession.getLog().warn(e.getMessage());
-            return Stream.of();
-        } catch (MailboxDeleteDuringUpdateException e) {
-            LOGGER.info("Mailbox {} was deleted during flag update", mailbox.getMailboxId());
-            return Stream.of();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    private Optional<UpdatedFlags> retryMessageFlagsUpdate(Mailbox mailbox, MessageId messageId, FlagsUpdateCalculator flagUpdateCalculator, long newModSeq) {
-        CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
-        ComposedMessageIdWithMetaData composedMessageIdWithMetaData = imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
-            .join()
-            .findFirst()
-            .orElseThrow(MailboxDeleteDuringUpdateException::new);
-        return tryMessageFlagsUpdate(flagUpdateCalculator,
-            messageDAO.retrieveMessages(ImmutableList.of(composedMessageIdWithMetaData), FetchType.Metadata, Optional.empty()).join()
-                    .findFirst()
-                    .map(pair -> pair.getLeft().toMailboxMessage(ImmutableList.of()))
-                    .orElseThrow(() -> new MessageDeletedDuringFlagsUpdateException(cassandraId, (CassandraMessageId) messageId)),
-            newModSeq);
     }
 }

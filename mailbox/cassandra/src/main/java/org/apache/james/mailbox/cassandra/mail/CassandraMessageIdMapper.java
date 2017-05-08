@@ -272,18 +272,18 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             newFlags,
             modSeqProvider.nextModSeq(mailboxSession, cassandraId));
 
-        return updateFlags(oldComposedId, newComposedId);
+        return updateFlags(oldComposedId, newComposedId, new FlagsUpdateCalculator(newFlags, updateMode));
     }
 
     private boolean identicalFlags(ComposedMessageIdWithMetaData oldComposedId, Flags newFlags) {
         return oldComposedId.getFlags().equals(newFlags);
     }
 
-    private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(ComposedMessageIdWithMetaData oldComposedId, ComposedMessageIdWithMetaData newComposedId) {
-        return imapUidDAO.updateMetadata(newComposedId, oldComposedId.getModSeq())
+    private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(ComposedMessageIdWithMetaData oldComposedId, ComposedMessageIdWithMetaData newComposedId, FlagsUpdateCalculator flagsUpdateCalculator) {
+        return imapUidDAO.updateMetadata(newComposedId, flagsUpdateCalculator)
             .thenCompose(updateSuccess -> Optional.of(updateSuccess)
                 .filter(b -> b)
-                .map((Boolean any) -> messageIdDAO.updateMetadata(newComposedId).thenApply(v -> updateSuccess))
+                .map((Boolean any) -> messageIdDAO.updateMetadata(newComposedId, flagsUpdateCalculator).thenApply(v -> updateSuccess))
                 .orElse(CompletableFuture.completedFuture(updateSuccess)))
             .thenApply(success -> Optional.of(success)
                 .filter(b -> b)

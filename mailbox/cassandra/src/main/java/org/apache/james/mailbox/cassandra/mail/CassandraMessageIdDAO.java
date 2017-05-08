@@ -56,9 +56,11 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId.Factory;
+import org.apache.james.mailbox.cassandra.mail.utils.FlagsUpdateHelper;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.store.FlagsUpdateCalculator;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -80,7 +82,6 @@ public class CassandraMessageIdDAO {
     private final PreparedStatement selectAllUids;
     private final PreparedStatement selectUidGte;
     private final PreparedStatement selectUidRange;
-    private final PreparedStatement update;
 
     @Inject
     public CassandraMessageIdDAO(Session session, CassandraMessageId.Factory messageIdFactory) {
@@ -88,7 +89,6 @@ public class CassandraMessageIdDAO {
         this.messageIdFactory = messageIdFactory;
         this.delete = prepareDelete(session);
         this.insert = prepareInsert(session);
-        this.update = prepareUpdate(session);
         this.select = prepareSelect(session);
         this.selectAllUids = prepareSelectAllUids(session);
         this.selectUidGte = prepareSelectUidGte(session);
@@ -116,21 +116,6 @@ public class CassandraMessageIdDAO {
                 .value(SEEN, bindMarker(SEEN))
                 .value(USER, bindMarker(USER))
                 .value(USER_FLAGS, bindMarker(USER_FLAGS)));
-    }
-
-    private PreparedStatement prepareUpdate(Session session) {
-        return session.prepare(update(TABLE_NAME)
-                .with(set(MOD_SEQ, bindMarker(MOD_SEQ)))
-                .and(set(ANSWERED, bindMarker(ANSWERED)))
-                .and(set(DELETED, bindMarker(DELETED)))
-                .and(set(DRAFT, bindMarker(DRAFT)))
-                .and(set(FLAGGED, bindMarker(FLAGGED)))
-                .and(set(RECENT, bindMarker(RECENT)))
-                .and(set(SEEN, bindMarker(SEEN)))
-                .and(set(USER, bindMarker(USER)))
-                .and(set(USER_FLAGS, bindMarker(USER_FLAGS)))
-                .where(eq(MAILBOX_ID, bindMarker(MAILBOX_ID)))
-                .and(eq(IMAP_UID, bindMarker(IMAP_UID))));
     }
 
     private PreparedStatement prepareSelect(Session session) {
@@ -185,21 +170,15 @@ public class CassandraMessageIdDAO {
                 .setSet(USER_FLAGS, ImmutableSet.copyOf(flags.getUserFlags())));
     }
 
-    public CompletableFuture<Void> updateMetadata(ComposedMessageIdWithMetaData composedMessageIdWithMetaData) {
-        ComposedMessageId composedMessageId = composedMessageIdWithMetaData.getComposedMessageId();
-        Flags flags = composedMessageIdWithMetaData.getFlags();
-        return cassandraAsyncExecutor.executeVoid(update.bind()
-                .setLong(MOD_SEQ, composedMessageIdWithMetaData.getModSeq())
-                .setBool(ANSWERED, flags.contains(Flag.ANSWERED))
-                .setBool(DELETED, flags.contains(Flag.DELETED))
-                .setBool(DRAFT, flags.contains(Flag.DRAFT))
-                .setBool(FLAGGED, flags.contains(Flag.FLAGGED))
-                .setBool(RECENT, flags.contains(Flag.RECENT))
-                .setBool(SEEN, flags.contains(Flag.SEEN))
-                .setBool(USER, flags.contains(Flag.USER))
-                .setSet(USER_FLAGS, ImmutableSet.copyOf(flags.getUserFlags()))
-                .setUUID(MAILBOX_ID, ((CassandraId) composedMessageId.getMailboxId()).asUuid())
-                .setLong(IMAP_UID, composedMessageId.getUid().asLong()));
+    public CompletableFuture<Void> updateMetadata(ComposedMessageIdWithMetaData composedMessageIdWithMetaData, FlagsUpdateCalculator flagsUpdateCalculator) {
+        CassandraId mailboxId = (CassandraId) composedMessageIdWithMetaData.getComposedMessageId().getMailboxId();
+
+        return cassandraAsyncExecutor.executeVoid(
+            FlagsUpdateHelper.updateFlags(flagsUpdateCalculator)
+                .apply(update(TABLE_NAME)
+                    .with(set(MOD_SEQ, composedMessageIdWithMetaData.getModSeq())))
+            .where(eq(MAILBOX_ID, mailboxId.asUuid()))
+            .and(eq(IMAP_UID, composedMessageIdWithMetaData.getComposedMessageId().getUid().asLong())));
     }
 
     public CompletableFuture<Optional<ComposedMessageIdWithMetaData>> retrieve(CassandraId mailboxId, MessageUid uid) {
