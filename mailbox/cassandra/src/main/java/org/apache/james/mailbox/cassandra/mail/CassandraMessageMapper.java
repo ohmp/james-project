@@ -271,8 +271,8 @@ public class CassandraMessageMapper implements MessageMapper {
 
         long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailboxId);
 
-        return retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
-            .join()
+        return messageIdDAO.retrieveMessages(mailboxId, set)
+                .join()
             .collect(JamesCollectors.chunker(UPDATE_BATCH_SIZE))
             .values()
             .stream()
@@ -326,28 +326,28 @@ public class CassandraMessageMapper implements MessageMapper {
                 imapUidDAO.insert(composedMessageIdWithMetaData));
     }
 
-    private CompletableFuture<UpdatedFlags> tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
-        Flags oldFlags = message.createFlags();
+    private CompletableFuture<UpdatedFlags> tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator,
+                                                                  ComposedMessageIdWithMetaData metadata, long newModSeq) {
+        Flags oldFlags = metadata.getFlags();
         Flags newFlags = flagUpdateCalculator.buildNewFlags(oldFlags);
 
-        message.setFlags(newFlags);
-        message.setModSeq(newModSeq);
-        return updateFlags(message, flagUpdateCalculator)
+        return updateFlags(
+            ComposedMessageIdWithMetaData.builder()
+                .composedMessageId(metadata.getComposedMessageId())
+                .modSeq(newModSeq)
+                .flags(flagUpdateCalculator.buildNewFlags(oldFlags))
+                .build(),
+            flagUpdateCalculator)
             .thenApply(any -> UpdatedFlags.builder()
-                .uid(message.getUid())
+                .uid(metadata.getComposedMessageId().getUid())
                 .modSeq(newModSeq)
                 .oldFlags(oldFlags)
                 .newFlags(newFlags)
                 .build());
     }
 
-    private CompletableFuture<Void> updateFlags(MailboxMessage message, FlagsUpdateCalculator flagsUpdateCalculator) {
-        ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
-                .composedMessageId(new ComposedMessageId(message.getMailboxId(), message.getMessageId(), message.getUid()))
-                .modSeq(message.getModSeq())
-                .flags(message.createFlags())
-                .build();
-        return imapUidDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator)
-            .thenCompose(any ->messageIdDAO.updateMetadata(composedMessageIdWithMetaData, flagsUpdateCalculator));
+    private CompletableFuture<Void> updateFlags(ComposedMessageIdWithMetaData newMetadata, FlagsUpdateCalculator flagsUpdateCalculator) {
+        return imapUidDAO.updateMetadata(newMetadata, flagsUpdateCalculator)
+            .thenCompose(any ->messageIdDAO.updateMetadata(newMetadata, flagsUpdateCalculator));
     }
 }
