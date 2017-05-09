@@ -19,13 +19,13 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.addAll;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageIdTable.FIELDS;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageIdTable.TABLE_NAME;
@@ -41,8 +41,10 @@ import static org.apache.james.mailbox.cassandra.table.Flag.SEEN;
 import static org.apache.james.mailbox.cassandra.table.Flag.USER;
 import static org.apache.james.mailbox.cassandra.table.Flag.USER_FLAGS;
 import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.MOD_SEQ;
+import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.MOD_SEQ_SET;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -106,7 +108,7 @@ public class CassandraMessageIdDAO {
         return session.prepare(insertInto(TABLE_NAME)
                 .value(MAILBOX_ID, bindMarker(MAILBOX_ID))
                 .value(IMAP_UID, bindMarker(IMAP_UID))
-                .value(MOD_SEQ, bindMarker(MOD_SEQ))
+                .value(MOD_SEQ_SET, bindMarker(MOD_SEQ_SET))
                 .value(MESSAGE_ID, bindMarker(MESSAGE_ID))
                 .value(ANSWERED, bindMarker(ANSWERED))
                 .value(DELETED, bindMarker(DELETED))
@@ -159,7 +161,7 @@ public class CassandraMessageIdDAO {
                 .setUUID(MAILBOX_ID, ((CassandraId) composedMessageId.getMailboxId()).asUuid())
                 .setLong(IMAP_UID, composedMessageId.getUid().asLong())
                 .setUUID(MESSAGE_ID, ((CassandraMessageId) composedMessageId.getMessageId()).get())
-                .setLong(MOD_SEQ, composedMessageIdWithMetaData.getModSeq())
+                .setSet(MOD_SEQ_SET, ImmutableSet.of(composedMessageIdWithMetaData.getModSeq()))
                 .setBool(ANSWERED, flags.contains(Flag.ANSWERED))
                 .setBool(DELETED, flags.contains(Flag.DELETED))
                 .setBool(DRAFT, flags.contains(Flag.DRAFT))
@@ -176,7 +178,7 @@ public class CassandraMessageIdDAO {
         return cassandraAsyncExecutor.executeVoid(
             FlagsUpdateHelper.updateFlags(flagsUpdateCalculator)
                 .apply(update(TABLE_NAME)
-                    .with(set(MOD_SEQ, composedMessageIdWithMetaData.getModSeq())))
+                    .with(addAll(MOD_SEQ_SET, ImmutableSet.of(composedMessageIdWithMetaData.getModSeq()))))
             .where(eq(MAILBOX_ID, mailboxId.asUuid()))
             .and(eq(IMAP_UID, composedMessageIdWithMetaData.getComposedMessageId().getUid().asLong())));
     }
@@ -243,7 +245,16 @@ public class CassandraMessageIdDAO {
                         messageIdFactory.of(row.getUUID(MESSAGE_ID)),
                         MessageUid.of(row.getLong(IMAP_UID))))
                 .flags(new FlagsExtractor(row).getFlags())
-                .modSeq(row.getLong(MOD_SEQ))
+                .modSeq(readModSeq(row))
                 .build();
+    }
+
+    private long readModSeq(Row row) {
+        long oldModSeq = row.getLong(MOD_SEQ);
+        Set<Long> set = row.getSet(MOD_SEQ_SET, Long.class);
+
+        return set.stream()
+            .reduce(Math::max)
+            .orElse(oldModSeq);
     }
 }

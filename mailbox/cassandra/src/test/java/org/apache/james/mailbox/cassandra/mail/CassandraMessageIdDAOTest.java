@@ -209,6 +209,36 @@ public class CassandraMessageIdDAOTest {
         Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
+    @Test
+    public void retrieveShouldAllowModSeqToBeMonotic() {
+        CassandraMessageId messageId = messageIdFactory.generate();
+        CassandraId mailboxId = CassandraId.timeBased();
+        MessageUid messageUid = MessageUid.of(1);
+
+        ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
+        int highestModSeq = 10;
+        testee.insert(ComposedMessageIdWithMetaData.builder()
+            .composedMessageId(composedMessageId)
+            .flags(new Flags(Flag.DRAFT))
+            .modSeq(highestModSeq)
+            .build())
+            .join();
+
+        ComposedMessageIdWithMetaData composedIdForUpdate = ComposedMessageIdWithMetaData.builder()
+            .composedMessageId(composedMessageId)
+            .flags(new FlagsBuilder().add(Flag.DRAFT, Flag.ANSWERED).build())
+            .modSeq(2)
+            .build();
+        FlagsUpdateCalculator flagsUpdateCalculator = new FlagsUpdateCalculator(new Flags(Flag.ANSWERED), MessageManager.FlagsUpdateMode.ADD);
+        testee.updateMetadata(composedIdForUpdate, flagsUpdateCalculator).join();
+
+        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        assertThat(message.get()).isEqualTo(ComposedMessageIdWithMetaData.builder()
+            .composedMessageId(composedMessageId)
+            .flags(new FlagsBuilder().add(Flag.DRAFT, Flag.ANSWERED).build())
+            .modSeq(highestModSeq)
+            .build());
+    }
 
     @Test
     public void updateShouldAcceptUpdateModeReplace() {
