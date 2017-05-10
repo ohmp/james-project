@@ -130,7 +130,7 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
                                           uidProvider,
                                           modSeqProvider,
                                           null,
-            (CassandraAttachmentMapper) createAttachmentMapper(mailboxSession),
+                                          (CassandraAttachmentMapper) createAttachmentMapper(mailboxSession),
                                           messageDAO,
                                           messageIdDAO,
                                           imapUidDAO,

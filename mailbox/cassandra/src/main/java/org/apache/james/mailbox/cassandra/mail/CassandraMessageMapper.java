@@ -272,7 +272,7 @@ public class CassandraMessageMapper implements MessageMapper {
         long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailboxId);
 
         return messageIdDAO.retrieveMessages(mailboxId, set)
-                .join()
+            .join()
             .collect(JamesCollectors.chunker(UPDATE_BATCH_SIZE))
             .values()
             .stream()
@@ -348,6 +348,6 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private CompletableFuture<Void> updateFlags(ComposedMessageIdWithMetaData newMetadata, FlagsUpdateCalculator flagsUpdateCalculator) {
         return imapUidDAO.updateMetadata(newMetadata, flagsUpdateCalculator)
-            .thenCompose(any ->messageIdDAO.updateMetadata(newMetadata, flagsUpdateCalculator));
+            .thenCompose(any -> messageIdDAO.updateMetadata(newMetadata, flagsUpdateCalculator));
     }
 }
