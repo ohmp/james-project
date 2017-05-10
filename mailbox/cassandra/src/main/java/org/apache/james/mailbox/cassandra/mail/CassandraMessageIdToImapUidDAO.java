@@ -179,13 +179,12 @@ public class CassandraMessageIdToImapUidDAO {
     }
 
     private CompletableFuture<ResultSet> selectStatement(CassandraMessageId messageId, Optional<CassandraId> mailboxId) {
-        if (mailboxId.isPresent()) {
-            return cassandraAsyncExecutor.execute(select.bind()
+        return cassandraAsyncExecutor.execute(
+            mailboxId.map(id -> select.bind()
                 .setUUID(MESSAGE_ID, messageId.get())
-                .setUUID(MAILBOX_ID, mailboxId.get().asUuid()));
-        }
-        return cassandraAsyncExecutor.execute(selectAll.bind()
-                .setUUID(MESSAGE_ID, messageId.get()));
+                .setUUID(MAILBOX_ID, id.asUuid()))
+            .orElse(selectAll.bind()
+                .setUUID(MESSAGE_ID, messageId.get())));
     }
 
     private long readModSeq(Row row) {
