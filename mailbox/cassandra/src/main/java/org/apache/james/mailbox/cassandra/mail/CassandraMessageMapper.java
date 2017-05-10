@@ -273,9 +273,12 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public Iterator<UpdatedFlags> updateFlags(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MessageRange set) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+
+        long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailboxId);
+
         return retrieveMessages(retrieveMessageIds(mailboxId, set), FetchType.Metadata, Optional.empty())
                 .join()
-                .flatMap(message -> updateFlagsOnMessage(mailbox, flagUpdateCalculator, message))
+                .flatMap(message -> updateFlagsOnMessage(mailbox, flagUpdateCalculator, message, newModSeq))
                 .map((UpdatedFlags updatedFlags) -> indexTableHandler.updateIndexOnFlagsUpdate(mailboxId, updatedFlags)
                     .thenApply(voidValue -> updatedFlags))
                 .map(CompletableFuture::join)
@@ -322,47 +325,29 @@ public class CassandraMessageMapper implements MessageMapper {
                 imapUidDAO.insert(composedMessageIdWithMetaData));
     }
 
-    private Stream<UpdatedFlags> updateFlagsOnMessage(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message) {
-        return tryMessageFlagsUpdate(flagUpdateCalculator, mailbox, message)
+    private Stream<UpdatedFlags> updateFlagsOnMessage(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModseq) {
+        return tryMessageFlagsUpdate(flagUpdateCalculator, message, newModseq)
             .map(Stream::of)
-            .orElse(handleRetries(mailbox, flagUpdateCalculator, message));
+            .orElse(handleRetries(mailbox, flagUpdateCalculator, message, newModseq));
     }
 
-    private Optional<UpdatedFlags> tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, Mailbox mailbox, MailboxMessage message) {
-        try {
-            long oldModSeq = message.getModSeq();
-            Flags oldFlags = message.createFlags();
-            Flags newFlags = flagUpdateCalculator.buildNewFlags(oldFlags);
+    private Optional<UpdatedFlags> tryMessageFlagsUpdate(FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
+        long oldModSeq = message.getModSeq();
+        Flags oldFlags = message.createFlags();
+        Flags newFlags = flagUpdateCalculator.buildNewFlags(oldFlags);
 
-            boolean involveFlagsChanges = !identicalFlags(oldFlags, newFlags);
-            long newModSeq = generateNewModSeqIfNeeded(mailbox, oldModSeq, involveFlagsChanges);
-
-            message.setFlags(newFlags);
-            message.setModSeq(newModSeq);
-            if (updateFlags(message, oldModSeq)) {
-                return Optional.of(UpdatedFlags.builder()
-                    .uid(message.getUid())
-                    .modSeq(newModSeq)
-                    .oldFlags(oldFlags)
-                    .newFlags(newFlags)
-                    .build());
-            } else {
-                return Optional.empty();
-            }
-        } catch (MailboxException e) {
-            throw Throwables.propagate(e);
+        message.setFlags(newFlags);
+        message.setModSeq(newModSeq);
+        if (updateFlags(message, oldModSeq)) {
+            return Optional.of(UpdatedFlags.builder()
+                .uid(message.getUid())
+                .modSeq(newModSeq)
+                .oldFlags(oldFlags)
+                .newFlags(newFlags)
+                .build());
+        } else {
+            return Optional.empty();
         }
-    }
-
-    private long generateNewModSeqIfNeeded(Mailbox mailbox, long oldModSeq, boolean involveFlagsChanges) throws MailboxException {
-        if (involveFlagsChanges) {
-            return modSeqProvider.nextModSeq(mailboxSession, mailbox);
-        }
-        return oldModSeq;
-    }
-
-    private boolean identicalFlags(Flags oldFlags, Flags newFlags) {
-        return oldFlags.equals(newFlags);
     }
 
     private boolean updateFlags(MailboxMessage message, long oldModSeq) {
@@ -380,13 +365,14 @@ public class CassandraMessageMapper implements MessageMapper {
             .join();
     }
 
-    private Stream<UpdatedFlags> handleRetries(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message) {
+    private Stream<UpdatedFlags> handleRetries(Mailbox mailbox, FlagsUpdateCalculator flagUpdateCalculator, MailboxMessage message, long newModSeq) {
         try {
             return Stream.of(
                 new FunctionRunnerWithRetry(maxRetries)
                     .executeAndRetrieveObject(() -> retryMessageFlagsUpdate(mailbox,
                             message.getMessageId(),
-                            flagUpdateCalculator)));
+                            flagUpdateCalculator,
+                        newModSeq)));
         } catch (MessageDeletedDuringFlagsUpdateException e) {
             mailboxSession.getLog().warn(e.getMessage());
             return Stream.of();
@@ -398,17 +384,17 @@ public class CassandraMessageMapper implements MessageMapper {
         }
     }
 
-    private Optional<UpdatedFlags> retryMessageFlagsUpdate(Mailbox mailbox, MessageId messageId, FlagsUpdateCalculator flagUpdateCalculator) {
+    private Optional<UpdatedFlags> retryMessageFlagsUpdate(Mailbox mailbox, MessageId messageId, FlagsUpdateCalculator flagUpdateCalculator, long newModSeq) {
         CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
             .join()
             .findFirst()
             .orElseThrow(MailboxDeleteDuringUpdateException::new);
         return tryMessageFlagsUpdate(flagUpdateCalculator,
-                mailbox,
-                messageDAO.retrieveMessages(ImmutableList.of(composedMessageIdWithMetaData), FetchType.Metadata, Optional.empty()).join()
+            messageDAO.retrieveMessages(ImmutableList.of(composedMessageIdWithMetaData), FetchType.Metadata, Optional.empty()).join()
                     .findFirst()
                     .map(pair -> pair.getLeft().toMailboxMessage(ImmutableList.of()))
-                    .orElseThrow(() -> new MessageDeletedDuringFlagsUpdateException(cassandraId, (CassandraMessageId) messageId)));
+                    .orElseThrow(() -> new MessageDeletedDuringFlagsUpdateException(cassandraId, (CassandraMessageId) messageId)),
+            newModSeq);
     }
 }
