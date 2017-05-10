@@ -53,7 +53,7 @@ public class FlagsUpdateHelper {
         return Flag.FLAG_TO_STRING_MAP.keySet().stream()
             .filter(flagsUpdateCalculator::isFlagModified)
             .map(flag -> flagAssignment(flagsUpdateCalculator, mode, flag))
-            .reduce((f, g) -> (u -> f.apply(g.apply(u))))
+            .reduce(Function::compose)
             .orElse(Function.identity());
     }
 

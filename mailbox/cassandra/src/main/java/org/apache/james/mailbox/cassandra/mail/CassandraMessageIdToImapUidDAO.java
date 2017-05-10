@@ -41,7 +41,6 @@ import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.MOD_SE
 import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.MOD_SEQ_SET;
 import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.TABLE_NAME;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -67,21 +66,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 public class CassandraMessageIdToImapUidDAO {
-
-    public static final Map<Flag, String> FLAG_TO_PROPERTY = ImmutableMap.<Flag, String>builder()
-        .put(Flag.ANSWERED, ANSWERED)
-        .put(Flag.DELETED, DELETED)
-        .put(Flag.DRAFT, DRAFT)
-        .put(Flag.RECENT, RECENT)
-        .put(Flag.SEEN, SEEN)
-        .put(Flag.FLAGGED, FLAGGED)
-        .build();
-    public static final boolean SET = true;
-    public static final boolean UNSET = false;
 
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final Factory messageIdFactory;
