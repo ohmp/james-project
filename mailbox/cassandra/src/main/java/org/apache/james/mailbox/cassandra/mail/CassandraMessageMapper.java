@@ -331,6 +331,15 @@ public class CassandraMessageMapper implements MessageMapper {
         Flags oldFlags = metadata.getFlags();
         Flags newFlags = flagUpdateCalculator.buildNewFlags(oldFlags);
 
+        UpdatedFlags.Builder resultBuilder = UpdatedFlags.builder()
+            .uid(metadata.getComposedMessageId().getUid())
+            .oldFlags(oldFlags)
+            .newFlags(newFlags);
+        if (oldFlags.equals(newFlags)) {
+            return CompletableFuture.completedFuture(resultBuilder
+                .modSeq(metadata.getModSeq())
+                .build());
+        }
         return updateFlags(
             ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(metadata.getComposedMessageId())
@@ -338,11 +347,8 @@ public class CassandraMessageMapper implements MessageMapper {
                 .flags(flagUpdateCalculator.buildNewFlags(oldFlags))
                 .build(),
             flagUpdateCalculator)
-            .thenApply(any -> UpdatedFlags.builder()
-                .uid(metadata.getComposedMessageId().getUid())
+            .thenApply(any -> resultBuilder
                 .modSeq(newModSeq)
-                .oldFlags(oldFlags)
-                .newFlags(newFlags)
                 .build());
     }
 
