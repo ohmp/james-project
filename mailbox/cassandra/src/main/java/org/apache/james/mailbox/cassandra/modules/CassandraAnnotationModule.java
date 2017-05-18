@@ -44,7 +44,8 @@ public class CassandraAnnotationModule implements CassandraModule {
                     .ifNotExists()
                     .addPartitionKey(CassandraAnnotationTable.MAILBOX_ID, timeuuid())
                     .addClusteringColumn(CassandraAnnotationTable.KEY, text())
-                    .addColumn(CassandraAnnotationTable.VALUE, text()).withOptions()
+                    .addColumn(CassandraAnnotationTable.VALUE, text())
+                    .withOptions()
                     .compactionOptions(SchemaBuilder.leveledStrategy())
                     .caching(SchemaBuilder.KeyCaching.ALL,
                         SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))));

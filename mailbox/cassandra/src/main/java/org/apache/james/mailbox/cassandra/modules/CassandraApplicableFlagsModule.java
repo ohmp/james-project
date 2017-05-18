@@ -52,7 +52,8 @@ public class CassandraApplicableFlagsModule implements CassandraModule {
                     .addColumn(Flag.DRAFT, cboolean())
                     .addColumn(Flag.FLAGGED, cboolean())
                     .addColumn(Flag.SEEN, cboolean())
-                    .addColumn(Flag.USER_FLAGS, set(text())).withOptions()
+                    .addColumn(Flag.USER_FLAGS, set(text()))
+                    .withOptions()
                     .compactionOptions(SchemaBuilder.leveledStrategy())
                     .caching(SchemaBuilder.KeyCaching.ALL,
                         SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))));
