@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -218,7 +219,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
         return FluentFutureStream.of(deletedMessageDAO.retrieveDeletedMessage(mailboxId, messageRange))
             .completableFuture()
-            .thenApply(JamesCollectors.chunk(EXPUNGE_BATCH_SIZE))
+            .thenApply(stream -> stream.collect(JamesCollectors.chunker(EXPUNGE_BATCH_SIZE)))
             .thenCompose(chunkedExpungedUids ->
                 CompletableFutureUtil.chainAll(chunkedExpungedUids,
                     uidChunk ->  expungeUidChunk(mailboxId, uidChunk)))
@@ -227,7 +228,7 @@ public class CassandraMessageMapper implements MessageMapper {
             .collect(Guavate.toImmutableMap(MailboxMessage::getUid, SimpleMessageMetaData::new));
     }
 
-    private CompletableFuture<Stream<SimpleMailboxMessage>> expungeUidChunk(CassandraId mailboxId, List<MessageUid> uidChunk) {
+    private CompletableFuture<Stream<SimpleMailboxMessage>> expungeUidChunk(CassandraId mailboxId, Collection<MessageUid> uidChunk) {
         return FluentFutureStream.of(uidChunk.stream()
             .map(uid -> messageIdDAO.retrieve(mailboxId, uid)))
             .flatMap(OptionalConverter::toStream)
@@ -315,12 +316,11 @@ public class CassandraMessageMapper implements MessageMapper {
         Long newModSeq = modSeqProvider.nextModSeq(mailboxId).join().orElseThrow(() -> new RuntimeException("ModSeq generation failed for mailbox " + mailboxId.asUuid()));
 
         return reduceResult(toBeUpdated.collect(JamesCollectors.chunker(UPDATE_FLAGS_BATCH_SIZE))
-            .values().stream()
             .map(uidChunk -> performUpdatesForChunk(mailboxId, flagsUpdateCalculator, newModSeq, uidChunk))
             .map(CompletableFuture::join));
     }
 
-    private CompletableFuture<FlagsUpdateStageResult> performUpdatesForChunk(CassandraId mailboxId, FlagsUpdateCalculator flagsUpdateCalculator, Long newModSeq, List<ComposedMessageIdWithMetaData> uidChunk) {
+    private CompletableFuture<FlagsUpdateStageResult> performUpdatesForChunk(CassandraId mailboxId, FlagsUpdateCalculator flagsUpdateCalculator, Long newModSeq, Collection<ComposedMessageIdWithMetaData> uidChunk) {
         Stream<CompletableFuture<FlagsUpdateStageResult>> updateMetaDataFuture =
             uidChunk.stream().map(oldMetadata -> tryFlagsUpdate(flagsUpdateCalculator, newModSeq, oldMetadata));
 
