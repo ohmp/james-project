@@ -127,7 +127,7 @@ public class FlagsUpdateStageResultTest {
     public void keepSuccessShouldDiscardFailedUids() {
         FlagsUpdateStageResult flagsUpdateStageResult = new FlagsUpdateStageResult(ImmutableList.of(UID), ImmutableList.of(UPDATED_FLAGS));
 
-        assertThat(flagsUpdateStageResult.keepSuccess())
+        assertThat(flagsUpdateStageResult.keepSucceded())
             .isEqualTo(FlagsUpdateStageResult.success(UPDATED_FLAGS));
     }
 

@@ -46,8 +46,8 @@ public class FlagsUpdateStageResult {
 
     @VisibleForTesting
     FlagsUpdateStageResult(List<MessageUid> failed, List<UpdatedFlags> succeeded) {
-        this.failed = failed;
-        this.succeeded = succeeded;
+        this.failed = ImmutableList.copyOf(failed);
+        this.succeeded = ImmutableList.copyOf(succeeded);
     }
 
     public List<MessageUid> getFailed() {
@@ -70,7 +70,7 @@ public class FlagsUpdateStageResult {
                 .build());
     }
 
-    public FlagsUpdateStageResult keepSuccess() {
+    public FlagsUpdateStageResult keepSucceded() {
         return new FlagsUpdateStageResult(ImmutableList.of(), succeeded);
     }
 
