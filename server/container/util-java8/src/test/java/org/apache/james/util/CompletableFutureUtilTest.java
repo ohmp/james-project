@@ -363,19 +363,19 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void reduceShouldEmptyAccumulatorWhenNoValue() {
-        long emptyAccumulator = 0L;
+    public void reduceShouldIdentityAccumulatorWhenNoValue() {
+        long identityAccumulator = 0L;
         assertThat(
             CompletableFutureUtil.reduce(
                 (i, j) -> i + j,
                 CompletableFutureUtil.<Long>allOfArray(),
-                emptyAccumulator)
+                identityAccumulator)
                 .join())
-            .isEqualTo(emptyAccumulator);
+            .isEqualTo(identityAccumulator);
     }
 
     @Test
-    public void reduceShouldWorkWithEmptyAccumulator() {
+    public void reduceShouldWorkWithIdentityAccumulator() {
         assertThat(
             CompletableFutureUtil.reduce(
                 (i, j) -> i + j,
