@@ -286,7 +286,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
         FlagsUpdateStageResult firstResult = runUpdateStage(mailboxId, toBeUpdated, flagUpdateCalculator);
         FlagsUpdateStageResult finalResult = handleUpdatesStagedRetry(mailboxId, flagUpdateCalculator, firstResult);
-        if (!finalResult.getFailed().isEmpty()) {
+        if (finalResult.containsFailedResults()) {
             LOGGER.error("Can not update following UIDs {} for mailbox {}", finalResult.getFailed(), mailboxId.asUuid());
         }
         return finalResult.getSucceeded().iterator();
@@ -295,7 +295,7 @@ public class CassandraMessageMapper implements MessageMapper {
     private FlagsUpdateStageResult handleUpdatesStagedRetry(CassandraId mailboxId, FlagsUpdateCalculator flagUpdateCalculator, FlagsUpdateStageResult firstResult) {
         FlagsUpdateStageResult globalResult = firstResult;
         int retryCount = 0;
-        while (retryCount < maxRetries && !globalResult.getFailed().isEmpty()) {
+        while (retryCount < maxRetries && globalResult.containsFailedResults()) {
             retryCount++;
             globalResult = globalResult.keepSucceded()
                 .merge(retryUpdatesStage(mailboxId, flagUpdateCalculator, globalResult.getFailed()));
