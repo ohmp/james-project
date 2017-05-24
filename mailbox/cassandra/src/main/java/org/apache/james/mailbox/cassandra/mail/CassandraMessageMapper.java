@@ -297,8 +297,8 @@ public class CassandraMessageMapper implements MessageMapper {
         int retryCount = 0;
         while (retryCount < maxRetries && globalResult.containsFailedResults()) {
             retryCount++;
-            globalResult = globalResult.keepSucceded()
-                .merge(retryUpdatesStage(mailboxId, flagUpdateCalculator, globalResult.getFailed()));
+            FlagsUpdateStageResult stageResult = retryUpdatesStage(mailboxId, flagUpdateCalculator, globalResult.getFailed());
+            globalResult = globalResult.keepSucceded().merge(stageResult);
         }
         return globalResult;
     }
