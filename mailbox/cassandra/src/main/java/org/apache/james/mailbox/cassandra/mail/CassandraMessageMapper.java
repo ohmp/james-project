@@ -315,9 +315,10 @@ public class CassandraMessageMapper implements MessageMapper {
     private FlagsUpdateStageResult runUpdateStage(CassandraId mailboxId, Stream<ComposedMessageIdWithMetaData> toBeUpdated, FlagsUpdateCalculator flagsUpdateCalculator) {
         Long newModSeq = modSeqProvider.nextModSeq(mailboxId).join().orElseThrow(() -> new RuntimeException("ModSeq generation failed for mailbox " + mailboxId.asUuid()));
 
-        return reduceResult(toBeUpdated.collect(JamesCollectors.chunker(UPDATE_FLAGS_BATCH_SIZE))
+        return toBeUpdated.collect(JamesCollectors.chunker(UPDATE_FLAGS_BATCH_SIZE))
             .map(uidChunk -> performUpdatesForChunk(mailboxId, flagsUpdateCalculator, newModSeq, uidChunk))
-            .map(CompletableFuture::join));
+            .map(CompletableFuture::join)
+            .reduce(FlagsUpdateStageResult.none(), FlagsUpdateStageResult::merge);
     }
 
     private CompletableFuture<FlagsUpdateStageResult> performUpdatesForChunk(CassandraId mailboxId, FlagsUpdateCalculator flagsUpdateCalculator, Long newModSeq, Collection<ComposedMessageIdWithMetaData> uidChunk) {
@@ -325,8 +326,7 @@ public class CassandraMessageMapper implements MessageMapper {
             uidChunk.stream().map(oldMetadata -> tryFlagsUpdate(flagsUpdateCalculator, newModSeq, oldMetadata));
 
         return FluentFutureStream.of(updateMetaDataFuture)
-            .completableFuture()
-            .thenApply(this::reduceResult)
+            .reduce(FlagsUpdateStageResult.none(), FlagsUpdateStageResult::merge)
             .thenCompose(result -> updateIndexesForUpdatesResult(mailboxId, result));
     }
 
@@ -336,11 +336,6 @@ public class CassandraMessageMapper implements MessageMapper {
                 .map((UpdatedFlags updatedFlags) -> indexTableHandler.updateIndexOnFlagsUpdate(mailboxId, updatedFlags)))
             .completableFuture()
             .thenApply(any -> result);
-    }
-
-    private FlagsUpdateStageResult reduceResult(Stream<FlagsUpdateStageResult> stream) {
-        return stream.reduce(FlagsUpdateStageResult::merge)
-            .orElse(FlagsUpdateStageResult.none());
     }
 
     @Override
@@ -416,15 +411,15 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     private CompletableFuture<Boolean> updateFlags(ComposedMessageIdWithMetaData oldMetadata, Flags newFlags, long newModSeq) {
-        ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
+        ComposedMessageIdWithMetaData newMetadata = ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(oldMetadata.getComposedMessageId())
                 .modSeq(newModSeq)
                 .flags(newFlags)
                 .build();
-        return imapUidDAO.updateMetadata(composedMessageIdWithMetaData, oldMetadata.getModSeq())
+        return imapUidDAO.updateMetadata(newMetadata, oldMetadata.getModSeq())
             .thenCompose(success -> Optional.of(success)
                 .filter(b -> b)
-                .map((Boolean any) -> messageIdDAO.updateMetadata(composedMessageIdWithMetaData)
+                .map((Boolean any) -> messageIdDAO.updateMetadata(newMetadata)
                     .thenApply(v -> success))
                 .orElse(CompletableFuture.completedFuture(success)));
     }

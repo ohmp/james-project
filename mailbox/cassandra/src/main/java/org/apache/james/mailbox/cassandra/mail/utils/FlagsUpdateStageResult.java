@@ -41,13 +41,13 @@ public class FlagsUpdateStageResult {
         return new FlagsUpdateStageResult(ImmutableList.of(), ImmutableList.of());
     }
 
-    private final List<MessageUid> failed;
-    private final List<UpdatedFlags> succeeded;
+    private final ImmutableList<MessageUid> failed;
+    private final ImmutableList<UpdatedFlags> succeeded;
 
     @VisibleForTesting
-    FlagsUpdateStageResult(List<MessageUid> failed, List<UpdatedFlags> succeeded) {
-        this.failed = ImmutableList.copyOf(failed);
-        this.succeeded = ImmutableList.copyOf(succeeded);
+    FlagsUpdateStageResult(ImmutableList<MessageUid> failed, ImmutableList<UpdatedFlags> succeeded) {
+        this.failed = failed;
+        this.succeeded = succeeded;
     }
 
     public List<MessageUid> getFailed() {
