@@ -190,6 +190,15 @@ public interface MessageManager {
     MetaData getMetaData(boolean resetRecent, MailboxSession mailboxSession, MessageManager.MetaData.FetchGroup fetchGroup) throws MailboxException;
 
     /**
+     * Offers direct access to UIDs. This allows per implementation optimisation for retrieving the whole UIDs of a mailbox.
+     *
+     * @param session MailboxSession for the user performing the request.
+     * @return Iterator of MessageUids in this mailbox. They are not necessarily sorted.
+     * @throws MailboxException
+     */
+    Iterator<MessageUid> getUids(MailboxSession session) throws MailboxException;
+
+    /**
      * Meta data about the current state of the mailbox.
      */
     interface MetaData {

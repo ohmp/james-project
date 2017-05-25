@@ -84,8 +84,9 @@ import com.google.common.collect.ImmutableList;
 public class MailboxEventAnalyserTest {
 
     private static final long BASE_SESSION_ID = 99;
+    public static final MessageUid MESSAGE_UID = MessageUid.of(1);
 
-    
+
     private MailboxPath mailboxPath = new MailboxPath("namespace", "user", "name");
     private final MailboxManager mockManager = new MailboxManager() {
 
@@ -176,6 +177,11 @@ public class MailboxEventAnalyserTest {
         public MessageManager getMailbox(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
             return new MessageManager() {
 
+                @Override
+                public Iterator<MessageUid> getUids(MailboxSession session) throws MailboxException {
+                    return ImmutableList.of(MESSAGE_UID).iterator();
+                }
+
                 public long getMessageCount(MailboxSession mailboxSession) throws MailboxException {
                     return 1;
                 }
@@ -235,7 +241,7 @@ public class MailboxEventAnalyserTest {
 
                                 @Override
                                 public MessageUid getUid() {
-                                    return MessageUid.of(1);
+                                    return MESSAGE_UID;
                                 }
 
                                 @Override

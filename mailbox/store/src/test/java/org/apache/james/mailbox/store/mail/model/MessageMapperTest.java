@@ -1070,6 +1070,31 @@ public abstract class MessageMapperTest {
                 .build());
     }
 
+    @Test
+    public void getUidsShouldReturnUidsOfMessagesInTheMailbox() throws Exception {
+        saveMessages();
+
+        assertThat(messageMapper.getUids(benwaInboxMailbox))
+            .containsOnly(message1.getUid(),
+                message2.getUid(),
+                message3.getUid(),
+                message4.getUid(),
+                message5.getUid());
+    }
+
+    @Test
+    public void getUidsShouldNotReturnUidsOfExpungedMessages() throws Exception {
+        saveMessages();
+
+        messageMapper.updateFlags(benwaInboxMailbox,
+            new FlagsUpdateCalculator(new Flags(Flag.DELETED), FlagsUpdateMode.ADD),
+            MessageRange.range(message2.getUid(), message4.getUid()));
+        messageMapper.expungeMarkedForDeletionInMailbox(benwaInboxMailbox, MessageRange.all());
+
+        assertThat(messageMapper.getUids(benwaInboxMailbox))
+            .containsOnly(message1.getUid(), message5.getUid());
+    }
+
     private Map<MessageUid, MessageMetaData> markThenPerformExpunge(MessageRange range) throws MailboxException {
         messageMapper.updateFlags(benwaInboxMailbox, new FlagsUpdateCalculator(new Flags(Flags.Flag.DELETED), FlagsUpdateMode.REPLACE), MessageRange.one(message1.getUid()));
         messageMapper.updateFlags(benwaInboxMailbox, new FlagsUpdateCalculator(new Flags(Flags.Flag.DELETED), FlagsUpdateMode.REPLACE), MessageRange.one(message4.getUid()));

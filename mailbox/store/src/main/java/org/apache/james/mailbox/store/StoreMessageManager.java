@@ -872,4 +872,16 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         return mapperFactory.getMessageMapper(session)
             .getApplicableFlag(mailbox);
     }
+
+    @Override
+    public Iterator<MessageUid> getUids(MailboxSession session) throws MailboxException {
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+
+        return messageMapper.execute(new Mapper.Transaction<Iterator<MessageUid>>() {
+            @Override
+            public Iterator<MessageUid> run() throws MailboxException {
+                return messageMapper.getUids(mailbox);
+            }
+        });
+    }
 }
