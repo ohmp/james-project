@@ -39,11 +39,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.model.MessageRange;
-import org.apache.james.mailbox.model.MessageResult;
-import org.apache.james.mailbox.model.MessageResultIterator;
 import org.apache.james.mailbox.model.UpdatedFlags;
 
 import com.google.common.base.Optional;
@@ -96,21 +92,20 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     }
     
     private UidMsnMapper getUidMsnMapper(MailboxSession mailboxSession , MessageManager messageManager) {
-                UidMsnMapper uidMsnMapper = new UidMsnMapper();
-                try {
-                    MessageResultIterator messages = messageManager.getMessages(MessageRange.all(), FetchGroupImpl.MINIMAL, mailboxSession);
+        UidMsnMapper uidMsnMapper = new UidMsnMapper();
+        try {
+            Iterator<MessageUid> uids = messageManager.getUids(mailboxSession);
 
-                    synchronized (SelectedMailboxImpl.this) {
-                        while(messages.hasNext()) {
-                            MessageResult mr = messages.next();
-                            uidMsnMapper.addUid(mr.getUid());
-                        }
-                    }
-                } catch (MailboxException e) {
-                    throw Throwables.propagate(e);
+            synchronized (SelectedMailboxImpl.this) {
+                while(uids.hasNext()) {
+                    uidMsnMapper.addUid(uids.next());
                 }
+            }
+        } catch (MailboxException e) {
+            throw Throwables.propagate(e);
+        }
 
-                return uidMsnMapper;
+        return uidMsnMapper;
     }
 
     @Override
@@ -307,7 +302,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
         return Collections.unmodifiableSet(new TreeSet<MessageUid>(expungedUids));
         
     }
-    
+
     public synchronized Flags getApplicableFlags() {
         return new Flags(applicableFlags);
     }
