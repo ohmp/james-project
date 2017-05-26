@@ -74,7 +74,7 @@ public class UidMsnMapper {
         msnToUid.clear();
     }
 
-    public void addUid(MessageUid uid) {
+    public synchronized void addUid(MessageUid uid) {
         this.addMapping(nextMsn(), uid);
     }
 

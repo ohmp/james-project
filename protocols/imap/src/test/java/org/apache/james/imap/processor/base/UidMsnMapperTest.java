@@ -22,7 +22,10 @@ package org.apache.james.imap.processor.base;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.guava.api.Assertions.assertThat;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -212,6 +215,85 @@ public class UidMsnMapperTest {
                 1, messageUid1,
                 2, messageUid2,
                 3, messageUid4));
+    }
+
+    @Test
+    public void addAndRemoveShouldHaveGoodConcurrentBehaviorWellWhenMixed() throws Exception {
+        final int initialCount = 1000;
+        for (int i = 1; i <= initialCount; i++) {
+            testee.addUid(MessageUid.of(i));
+        }
+
+        int threadCount = 2;
+        ConcurrentTestRunner concurrentTestRunner = new ConcurrentTestRunner(threadCount, initialCount,
+            new ConcurrentTestRunner.BiConsumer() {
+                @Override
+                public void consume(int threadNumber, int step) throws Exception {
+                    if (threadNumber == 0) {
+                        testee.remove(MessageUid.of(step + 1));
+                    } else {
+                        testee.addUid(MessageUid.of(initialCount + step + 1));
+                    }
+                }
+            });
+        concurrentTestRunner.run();
+        concurrentTestRunner.awaitTermination(10, TimeUnit.SECONDS);
+
+        ImmutableBiMap.Builder<Integer, MessageUid> resultBuilder = ImmutableBiMap.builder();
+        for(int i = 1; i <= initialCount; i++) {
+            resultBuilder.put(i, MessageUid.of(initialCount + i));
+        }
+        assertThat(testee.getInternals().entrySet())
+            .containsOnlyElementsOf(resultBuilder.build().entrySet());
+    }
+
+    @Test
+    public void addShouldHaveGoodConcurrentBehavior() throws Exception {
+        final int operationCount = 1000;
+        int threadCount = 2;
+
+        ConcurrentTestRunner concurrentTestRunner = new ConcurrentTestRunner(threadCount, operationCount,
+            new ConcurrentTestRunner.BiConsumer() {
+                @Override
+                public void consume(int threadNumber, int step) throws Exception {
+                    testee.addUid(MessageUid.of((threadNumber * operationCount) + (step + 1)));
+                }
+            });
+        concurrentTestRunner.run();
+        concurrentTestRunner.awaitTermination(10, TimeUnit.SECONDS);
+
+        ImmutableBiMap.Builder<Integer, MessageUid> resultBuilder = ImmutableBiMap.builder();
+        for(int i = 1; i <= threadCount * operationCount; i++) {
+            resultBuilder.put(i, MessageUid.of(i));
+        }
+        assertThat(testee.getInternals().entrySet())
+            .containsOnlyElementsOf(resultBuilder.build().entrySet());
+    }
+
+    @Test
+    public void removeShouldHaveGoodConcurrentBehaviorWellWhenMixed() throws Exception {
+        final int operationCount = 1000;
+        int threadCount = 2;
+        for (int i = 1; i <= operationCount * (threadCount + 1); i++) {
+            testee.addUid(MessageUid.of(i));
+        }
+
+        ConcurrentTestRunner concurrentTestRunner = new ConcurrentTestRunner(threadCount, operationCount,
+            new ConcurrentTestRunner.BiConsumer() {
+                @Override
+                public void consume(int threadNumber, int step) throws Exception {
+                    testee.remove(MessageUid.of((threadNumber * operationCount) + (step + 1)));
+                }
+            });
+        concurrentTestRunner.run();
+        concurrentTestRunner.awaitTermination(10, TimeUnit.SECONDS);
+
+        ImmutableBiMap.Builder<Integer, MessageUid> resultBuilder = ImmutableBiMap.builder();
+        for(int i = 1; i <= operationCount; i++) {
+            resultBuilder.put(i, MessageUid.of((threadCount * operationCount) + i));
+        }
+        assertThat(testee.getInternals().entrySet())
+            .containsOnlyElementsOf(resultBuilder.build().entrySet());
     }
 
 }
