@@ -218,6 +218,45 @@ public class UidMsnMapperTest {
     }
 
     @Test
+    public void addUidShouldCommute() {
+        testee.addUid(messageUid1);
+        testee.addUid(messageUid3);
+        testee.addUid(messageUid2);
+        testee.addUid(messageUid4);
+
+        assertThat(testee.getInternals().entrySet())
+            .containsOnlyElementsOf(ImmutableBiMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addUidShouldWorkWhenInsertInFirstPositon() {
+        testee.addUid(messageUid2);
+        testee.addUid(messageUid3);
+        testee.addUid(messageUid4);
+        testee.addUid(messageUid1);
+
+        assertThat(testee.getInternals().entrySet())
+            .containsOnlyElementsOf(ImmutableBiMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addUidShouldBeIdempotent() {
+        testee.addUid(messageUid1);
+        testee.addUid(messageUid1);
+
+        assertThat(testee.getInternals())
+            .isEqualTo(ImmutableBiMap.of(1, messageUid1));
+    }
+
+    @Test
     public void addAndRemoveShouldHaveGoodConcurrentBehaviorWellWhenMixed() throws Exception {
         final int initialCount = 1000;
         for (int i = 1; i <= initialCount; i++) {

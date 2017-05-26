@@ -19,10 +19,14 @@
 
 package org.apache.james.imap.processor.base;
 
+import java.util.List;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import org.apache.james.mailbox.MessageUid;
 
@@ -75,7 +79,41 @@ public class UidMsnMapper {
     }
 
     public synchronized void addUid(MessageUid uid) {
-        this.addMapping(nextMsn(), uid);
+        if (isLastUid(uid)) {
+            addMapping(nextMsn(), uid);
+        } else {
+            addUidInMiddle(uid);
+        }
+    }
+
+    private boolean isLastUid(MessageUid uid) {
+        return msnToUid.isEmpty() ||
+            uid.asLong() > msnToUid.get(getLastMsn()).asLong();
+    }
+
+    private boolean alreadyContains(MessageUid uid) {
+        return msnToUid.containsValue(uid);
+    }
+
+    private void addUidInMiddle(MessageUid uid) {
+        List<MessageUid> aboveUids = removeAndGetAboveUidSortedInIncreasingOrder(uid);
+        addMapping(nextMsn(), uid);
+        for (MessageUid aboveUid : aboveUids) {
+            addMapping(nextMsn(), aboveUid);
+        }
+    }
+
+    private List<MessageUid> removeAndGetAboveUidSortedInIncreasingOrder(MessageUid uid) {
+        ImmutableList.Builder<MessageUid> result = ImmutableList.builder();
+        int position = getLastMsn();
+        Optional<MessageUid> maxUid = getUid(position);
+        while (maxUid.isPresent() && uid.asLong() < maxUid.get().asLong()) {
+            msnToUid.remove(position);
+            result.add(maxUid.get());
+            position--;
+            maxUid = getUid(position);
+        }
+        return Lists.reverse(result.build());
     }
 
     @VisibleForTesting
@@ -84,7 +122,7 @@ public class UidMsnMapper {
     }
 
     private synchronized void addMapping(Integer msn, MessageUid uid) {
-        if (msnToUid.inverse().get(uid) == null) {
+        if (!msnToUid.containsValue(uid)) {
             msnToUid.forcePut(msn, uid);
         }
     }
