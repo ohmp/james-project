@@ -70,14 +70,14 @@ public class CassandraIndexTableHandler {
             addRecentOnSave(mailboxId, message),
             incrementUnseenOnSave(mailboxId, flags),
             mailboxCounterDAO.incrementCount(mailboxId),
-            applicableFlagDAO.updateApplicableFlags(mailboxId, flags));
+            applicableFlagDAO.updateApplicableFlags(mailboxId, new Flags(), flags));
     }
 
     public CompletableFuture<Void> updateIndexOnFlagsUpdate(CassandraId mailboxId, UpdatedFlags updatedFlags) {
         return CompletableFuture.allOf(manageUnseenMessageCountsOnFlagsUpdate(mailboxId, updatedFlags),
                                        manageRecentOnFlagsUpdate(mailboxId, updatedFlags),
                                        updateFirstUnseenOnFlagsUpdate(mailboxId, updatedFlags),
-                                       applicableFlagDAO.updateApplicableFlags(mailboxId, updatedFlags.getNewFlags()),
+                                       applicableFlagDAO.updateApplicableFlags(mailboxId, updatedFlags.getOldFlags(), updatedFlags.getNewFlags()),
                                        updateDeletedOnFlagsUpdate(mailboxId, updatedFlags));
     }
 
