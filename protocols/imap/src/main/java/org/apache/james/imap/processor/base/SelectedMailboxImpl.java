@@ -91,18 +91,15 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
         uidMsnConverter = getUidMsnMapper(mailboxSession, messageManager);
     }
     
-    private UidMsnConverter getUidMsnMapper(MailboxSession mailboxSession , MessageManager messageManager) {
+    private UidMsnConverter getUidMsnMapper(MailboxSession mailboxSession , MessageManager messageManager) throws MailboxException {
         UidMsnConverter uidMsnConverter = new UidMsnConverter();
-        try {
-            Iterator<MessageUid> uids = messageManager.getUids(mailboxSession);
 
-            synchronized (SelectedMailboxImpl.this) {
-                while(uids.hasNext()) {
-                    uidMsnConverter.addUid(uids.next());
-                }
+        Iterator<MessageUid> uids = messageManager.getUids(mailboxSession);
+
+        synchronized (SelectedMailboxImpl.this) {
+            while(uids.hasNext()) {
+                uidMsnConverter.addUid(uids.next());
             }
-        } catch (MailboxException e) {
-            throw Throwables.propagate(e);
         }
 
         return uidMsnConverter;
