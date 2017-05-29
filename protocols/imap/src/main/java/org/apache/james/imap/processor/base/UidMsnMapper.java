@@ -20,6 +20,8 @@
 package org.apache.james.imap.processor.base;
 
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
@@ -35,54 +37,101 @@ public class UidMsnMapper {
     public final static int FIRST_MSN = 1;
 
     private final HashBiMap<Integer, MessageUid> msnToUid;
+    private final ReadWriteLock readWriteLock;
 
     public UidMsnMapper() {
+        readWriteLock = new ReentrantReadWriteLock();
         msnToUid = HashBiMap.create();
     }
 
     public Optional<Integer> getMsn(MessageUid uid) {
-        return Optional.fromNullable(msnToUid.inverse().get(uid));
+        readWriteLock.readLock().lock();
+        try {
+            return Optional.fromNullable(msnToUid.inverse().get(uid));
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
     public Optional<MessageUid> getUid(int msn) {
-        return Optional.fromNullable(msnToUid.get(msn));
+        readWriteLock.readLock().lock();
+        try {
+            return Optional.fromNullable(msnToUid.get(msn));
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
     public Optional<MessageUid> getLastUid() {
-        return getUid(getLastMsn());
+        readWriteLock.readLock().lock();
+        try {
+            return getUid(getLastMsn());
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
     public Optional<MessageUid> getFirstUid() {
-        return getUid(FIRST_MSN);
+        readWriteLock.readLock().lock();
+        try {
+            return getUid(FIRST_MSN);
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
     public int getNumMessage() {
-        return msnToUid.size();
+        readWriteLock.readLock().lock();
+        try {
+            return msnToUid.size();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
-    public synchronized void remove(MessageUid uid) {
-        int msn = getMsn(uid).get();
-        msnToUid.remove(msn);
+    public void remove(MessageUid uid) {
+        readWriteLock.writeLock().lock();
+        try {
+            int msn = getMsn(uid).get();
+            msnToUid.remove(msn);
 
-        for (int aMsn = msn + 1; aMsn <= getNumMessage() + 1; aMsn++) {
-            MessageUid aUid = msnToUid.remove(aMsn);
-            addMapping(aMsn - 1, aUid);
+            for (int aMsn = msn + 1; aMsn <= getNumMessage() + 1; aMsn++) {
+                MessageUid aUid = msnToUid.remove(aMsn);
+                addMapping(aMsn - 1, aUid);
+            }
+        } finally {
+            readWriteLock.writeLock().unlock();
         }
     }
 
     public boolean isEmpty() {
-        return msnToUid.isEmpty();
+        readWriteLock.readLock().lock();
+        try {
+            return msnToUid.isEmpty();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
-    public synchronized void clear() {
-        msnToUid.clear();
+    public void clear() {
+        readWriteLock.writeLock().lock();
+        try {
+            msnToUid.clear();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
     }
 
-    public synchronized void addUid(MessageUid uid) {
-        if (isLastUid(uid)) {
-            addMapping(nextMsn(), uid);
-        } else {
-            addUidInMiddle(uid);
+    public void addUid(MessageUid uid) {
+        readWriteLock.writeLock().lock();
+        try {
+            if (isLastUid(uid)) {
+                addMapping(nextMsn(), uid);
+            } else {
+                addUidInMiddle(uid);
+            }
+        } finally {
+            readWriteLock.writeLock().unlock();
         }
     }
 
@@ -121,7 +170,7 @@ public class UidMsnMapper {
         return ImmutableBiMap.copyOf(msnToUid);
     }
 
-    private synchronized void addMapping(Integer msn, MessageUid uid) {
+    private void addMapping(Integer msn, MessageUid uid) {
         if (!msnToUid.containsValue(uid)) {
             msnToUid.forcePut(msn, uid);
         }
