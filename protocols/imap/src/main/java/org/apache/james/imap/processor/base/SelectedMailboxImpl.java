@@ -43,7 +43,6 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.UpdatedFlags;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 
 /**
  * Default implementation of {@link SelectedMailbox}
@@ -88,10 +87,10 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
 
         MessageManager messageManager = mailboxManager.getMailbox(path, mailboxSession);
         applicableFlags = messageManager.getApplicableFlags(mailboxSession);
-        uidMsnConverter = getUidMsnMapper(mailboxSession, messageManager);
+        uidMsnConverter = getUidMsnConverter(mailboxSession, messageManager);
     }
     
-    private UidMsnConverter getUidMsnMapper(MailboxSession mailboxSession , MessageManager messageManager) throws MailboxException {
+    private UidMsnConverter getUidMsnConverter(MailboxSession mailboxSession , MessageManager messageManager) throws MailboxException {
         UidMsnConverter uidMsnConverter = new UidMsnConverter();
 
         Iterator<MessageUid> uids = messageManager.getUids(mailboxSession);
