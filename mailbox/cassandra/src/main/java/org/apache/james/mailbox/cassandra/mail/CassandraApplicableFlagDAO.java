@@ -71,15 +71,11 @@ public class CassandraApplicableFlagDAO {
                 rowOptional.map(row -> new FlagsExtractor(row).getApplicableFlags()));
     }
 
-    public CompletableFuture<Void> updateApplicableFlags(CassandraId cassandraId, Flags oldFlags, Flags newFlags) {
-        ImmutableSet<String> oldUserFlags = ImmutableSet.copyOf(oldFlags.getUserFlags());
-        ImmutableSet<String> newUserFlags = ImmutableSet.copyOf(newFlags.getUserFlags());
-        Sets.SetView<String> addedUserFlags = Sets.difference(newUserFlags, oldUserFlags);
-
-        if (addedUserFlags.isEmpty()) {
+    public CompletableFuture<Void> updateApplicableFlags(CassandraId cassandraId, Set<String> toBeAdded) {
+        if (toBeAdded.isEmpty()) {
             return CompletableFuture.completedFuture(null);
         }
-        return cassandraAsyncExecutor.executeVoid(updateQuery(cassandraId, addedUserFlags));
+        return cassandraAsyncExecutor.executeVoid(updateQuery(cassandraId, toBeAdded));
     }
 
     private Update.Where updateQuery(CassandraId cassandraId, Set<String> userFlags) {
