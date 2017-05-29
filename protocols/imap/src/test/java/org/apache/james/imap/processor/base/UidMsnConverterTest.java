@@ -31,8 +31,8 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableBiMap;
 
-public class UidMsnMapperTest {
-    private UidMsnMapper testee;
+public class UidMsnConverterTest {
+    private UidMsnConverter testee;
     private MessageUid messageUid1;
     private MessageUid messageUid2;
     private MessageUid messageUid3;
@@ -40,7 +40,7 @@ public class UidMsnMapperTest {
 
     @Before
     public void setUp() {
-        testee = new UidMsnMapper();
+        testee = new UidMsnConverter();
         messageUid1 = MessageUid.of(1);
         messageUid2 = MessageUid.of(2);
         messageUid3 = MessageUid.of(3);

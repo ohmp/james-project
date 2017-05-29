@@ -32,14 +32,14 @@ import com.google.common.collect.Lists;
 
 import org.apache.james.mailbox.MessageUid;
 
-public class UidMsnMapper {
+public class UidMsnConverter {
 
     public final static int FIRST_MSN = 1;
 
     private final HashBiMap<Integer, MessageUid> msnToUid;
     private final ReadWriteLock readWriteLock;
 
-    public UidMsnMapper() {
+    public UidMsnConverter() {
         readWriteLock = new ReentrantReadWriteLock();
         msnToUid = HashBiMap.create();
     }

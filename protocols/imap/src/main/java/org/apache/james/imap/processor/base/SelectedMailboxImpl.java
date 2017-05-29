@@ -64,7 +64,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     private final Set<MessageUid> flagUpdateUids = new TreeSet<MessageUid>();
     private final Flags.Flag uninterestingFlag = Flags.Flag.RECENT;
     private final Set<MessageUid> expungedUids = new TreeSet<MessageUid>();
-    private final UidMsnMapper uidMsnMapper;
+    private final UidMsnConverter uidMsnConverter;
 
     private boolean isDeletedByOtherSession = false;
     private boolean sizeChanged = false;
@@ -88,24 +88,24 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
 
         MessageManager messageManager = mailboxManager.getMailbox(path, mailboxSession);
         applicableFlags = messageManager.getApplicableFlags(mailboxSession);
-        uidMsnMapper = getUidMsnMapper(mailboxSession, messageManager);
+        uidMsnConverter = getUidMsnMapper(mailboxSession, messageManager);
     }
     
-    private UidMsnMapper getUidMsnMapper(MailboxSession mailboxSession , MessageManager messageManager) {
-        UidMsnMapper uidMsnMapper = new UidMsnMapper();
+    private UidMsnConverter getUidMsnMapper(MailboxSession mailboxSession , MessageManager messageManager) {
+        UidMsnConverter uidMsnConverter = new UidMsnConverter();
         try {
             Iterator<MessageUid> uids = messageManager.getUids(mailboxSession);
 
             synchronized (SelectedMailboxImpl.this) {
                 while(uids.hasNext()) {
-                    uidMsnMapper.addUid(uids.next());
+                    uidMsnConverter.addUid(uids.next());
                 }
             }
         } catch (MailboxException e) {
             throw Throwables.propagate(e);
         }
 
-        return uidMsnMapper;
+        return uidMsnConverter;
     }
 
     @Override
@@ -120,12 +120,12 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
 
     @Override
     public synchronized Optional<MessageUid> getFirstUid() {
-        return uidMsnMapper.getFirstUid();
+        return uidMsnConverter.getFirstUid();
     }
 
     @Override
     public synchronized Optional<MessageUid> getLastUid() {
-        return uidMsnMapper.getLastUid();
+        return uidMsnConverter.getLastUid();
     }
 
     public synchronized void deselect() {
@@ -139,7 +139,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
             }
         }
         
-        uidMsnMapper.clear();
+        uidMsnConverter.clear();
         flagUpdateUids.clear();
 
         expungedUids.clear();
@@ -209,7 +209,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     @Override
     public synchronized  int remove(MessageUid uid) {
         final int result = msn(uid);
-        uidMsnMapper.remove(uid);
+        uidMsnConverter.remove(uid);
         return result;
     }
 
@@ -330,7 +330,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
                     final List<MessageUid> uids = ((Added) event).getUids();
                     SelectedMailbox sm = session.getSelected();
                     for (MessageUid uid : uids) {
-                        uidMsnMapper.addUid(uid);
+                        uidMsnConverter.addUid(uid);
                         if (sm != null) {
                             sm.addRecent(uid);
                         }
@@ -405,7 +405,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
 
     @Override
     public synchronized int msn(MessageUid uid) {
-        return uidMsnMapper.getMsn(uid).or(NO_SUCH_MESSAGE);
+        return uidMsnConverter.getMsn(uid).or(NO_SUCH_MESSAGE);
     }
 
     @Override
@@ -414,11 +414,11 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
             return Optional.absent();
         }
 
-        return uidMsnMapper.getUid(msn);
+        return uidMsnConverter.getUid(msn);
     }
 
     
     public synchronized long existsCount() {
-        return uidMsnMapper.getNumMessage();
+        return uidMsnConverter.getNumMessage();
     }
 }
