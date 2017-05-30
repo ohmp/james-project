@@ -92,18 +92,12 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     }
     
     private UidMsnConverter getUidMsnConverter(MailboxSession mailboxSession , MessageManager messageManager) throws MailboxException {
-        UidMsnConverter uidMsnConverter = new UidMsnConverter();
-
         SearchQuery searchQuery = new SearchQuery(SearchQuery.all());
 
         synchronized (SelectedMailboxImpl.this) {
             Iterator<MessageUid> uids = messageManager.search(searchQuery, mailboxSession);
-            while(uids.hasNext()) {
-                uidMsnConverter.addUid(uids.next());
-            }
+            return new UidMsnConverter(uids);
         }
-
-        return uidMsnConverter;
     }
 
     @Override

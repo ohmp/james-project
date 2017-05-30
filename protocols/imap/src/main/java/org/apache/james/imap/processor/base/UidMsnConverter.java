@@ -19,38 +19,48 @@
 
 package org.apache.james.imap.processor.base;
 
-import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+
+import org.apache.james.mailbox.MessageUid;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import org.apache.james.mailbox.MessageUid;
+import com.google.common.collect.Ordering;
 
 public class UidMsnConverter {
 
     public final static int FIRST_MSN = 1;
 
-    private final HashBiMap<Integer, MessageUid> msnToUid;
+    private final ArrayList<MessageUid> uids;
 
-    public UidMsnConverter() {
-        msnToUid = HashBiMap.create();
+    public UidMsnConverter(Iterator<MessageUid> iterator) {
+        uids = Lists.newArrayList(iterator);
+        Collections.sort(uids);
     }
 
     public synchronized Optional<Integer> getMsn(MessageUid uid) {
-        return Optional.fromNullable(msnToUid.inverse().get(uid));
+        if (!uids.contains(uid)) {
+            return Optional.absent();
+        }
+        int position = Ordering.explicit(uids).binarySearch(uids, uid);
+        return Optional.of(position + 1);
     }
 
     public synchronized Optional<MessageUid> getUid(int msn) {
-        return Optional.fromNullable(msnToUid.get(msn));
+        if (msn <= uids.size() && msn > 0) {
+            return Optional.of(uids.get(msn - 1));
+        }
+        return Optional.absent();
     }
 
     public synchronized Optional<MessageUid> getLastUid() {
+        if (uids.isEmpty()) {
+            return Optional.absent();
+        }
         return getUid(getLastMsn());
     }
 
@@ -59,78 +69,46 @@ public class UidMsnConverter {
     }
 
     public synchronized int getNumMessage() {
-        return msnToUid.size();
+        return uids.size();
     }
 
     public synchronized void remove(MessageUid uid) {
-        int msn = getMsn(uid).get();
-        msnToUid.remove(msn);
-
-        for (int aMsn = msn + 1; aMsn <= getNumMessage() + 1; aMsn++) {
-            MessageUid aUid = msnToUid.remove(aMsn);
-            addMapping(aMsn - 1, aUid);
-        }
+        uids.remove(uid);
     }
 
     public synchronized boolean isEmpty() {
-        return msnToUid.isEmpty();
+        return uids.isEmpty();
     }
 
     public synchronized void clear() {
-        msnToUid.clear();
+        uids.clear();
     }
 
     public synchronized void addUid(MessageUid uid) {
+        if (uids.contains(uid)) {
+            return;
+        }
         if (isLastUid(uid)) {
-            addMapping(nextMsn(), uid);
+            uids.add(uid);
         } else {
-            addUidInMiddle(uid);
+            uids.add(uid);
+            Collections.sort(uids);
         }
     }
 
     private boolean isLastUid(MessageUid uid) {
-        return msnToUid.isEmpty() ||
-            uid.asLong() > msnToUid.get(getLastMsn()).asLong();
-    }
-
-    private boolean alreadyContains(MessageUid uid) {
-        return msnToUid.containsValue(uid);
-    }
-
-    private void addUidInMiddle(MessageUid uid) {
-        List<MessageUid> aboveUids = removeAndGetAboveUidSortedInIncreasingOrder(uid);
-        addMapping(nextMsn(), uid);
-        for (MessageUid aboveUid : aboveUids) {
-            addMapping(nextMsn(), aboveUid);
-        }
-    }
-
-    private List<MessageUid> removeAndGetAboveUidSortedInIncreasingOrder(MessageUid uid) {
-        ImmutableList.Builder<MessageUid> result = ImmutableList.builder();
-        int position = getLastMsn();
-        Optional<MessageUid> maxUid = getUid(position);
-        while (maxUid.isPresent() && uid.compareTo(maxUid.get()) < 0) {
-            msnToUid.remove(position);
-            result.add(maxUid.get());
-            position--;
-            maxUid = getUid(position);
-        }
-        return Lists.reverse(result.build());
+        Optional<MessageUid> lastUid = getLastUid();
+        return !lastUid.isPresent() ||
+            lastUid.get().compareTo(uid) < 0;
     }
 
     @VisibleForTesting
-    ImmutableBiMap<Integer, MessageUid> getInternals() {
-        return ImmutableBiMap.copyOf(msnToUid);
-    }
-
-    private void addMapping(Integer msn, MessageUid uid) {
-        if (!msnToUid.containsValue(uid)) {
-            msnToUid.forcePut(msn, uid);
+    ImmutableBiMap<Integer, MessageUid> getConvertion() {
+        ImmutableBiMap.Builder<Integer, MessageUid> result = ImmutableBiMap.builder();
+        for (int i = 0; i < uids.size(); i++) {
+            result.put(i + 1, uids.get(i));
         }
-    }
-
-    private int nextMsn() {
-        return getNumMessage() + FIRST_MSN;
+        return result.build();
     }
 
     private int getLastMsn() {

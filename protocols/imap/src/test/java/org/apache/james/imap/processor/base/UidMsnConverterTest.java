@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
 
 public class UidMsnConverterTest {
     private UidMsnConverter testee;
@@ -40,7 +41,7 @@ public class UidMsnConverterTest {
 
     @Before
     public void setUp() {
-        testee = new UidMsnConverter();
+        testee = new UidMsnConverter(ImmutableList.<MessageUid>of().iterator());
         messageUid1 = MessageUid.of(1);
         messageUid2 = MessageUid.of(2);
         messageUid3 = MessageUid.of(3);
@@ -49,6 +50,12 @@ public class UidMsnConverterTest {
 
     @Test
     public void getUidShouldReturnEmptyIfNoMessageWithTheGivenMessageNumber() {
+        assertThat(testee.getUid(1))
+            .isAbsent();
+    }
+
+    @Test
+    public void getUidShouldReturnEmptyIfZero() {
         assertThat(testee.getUid(0))
             .isAbsent();
     }
@@ -150,7 +157,7 @@ public class UidMsnConverterTest {
         testee.addUid(messageUid4);
         testee.addUid(messageUid2);
 
-        assertThat(testee.getInternals())
+        assertThat(testee.getConvertion())
             .isEqualTo(ImmutableBiMap.of(
                 1, messageUid1,
                 2, messageUid2,
@@ -178,7 +185,7 @@ public class UidMsnConverterTest {
 
         testee.remove(messageUid1);
 
-        assertThat(testee.getInternals())
+        assertThat(testee.getConvertion())
             .isEqualTo(ImmutableBiMap.of(
                 1, messageUid2,
                 2, messageUid3,
@@ -194,7 +201,7 @@ public class UidMsnConverterTest {
 
         testee.remove(messageUid4);
 
-        assertThat(testee.getInternals())
+        assertThat(testee.getConvertion())
             .isEqualTo(ImmutableBiMap.of(
                 1, messageUid1,
                 2, messageUid2,
@@ -210,7 +217,7 @@ public class UidMsnConverterTest {
 
         testee.remove(messageUid3);
 
-        assertThat(testee.getInternals())
+        assertThat(testee.getConvertion())
             .isEqualTo(ImmutableBiMap.of(
                 1, messageUid1,
                 2, messageUid2,
@@ -224,7 +231,7 @@ public class UidMsnConverterTest {
         testee.addUid(messageUid2);
         testee.addUid(messageUid4);
 
-        assertThat(testee.getInternals().entrySet())
+        assertThat(testee.getConvertion().entrySet())
             .containsOnlyElementsOf(ImmutableBiMap.of(
                 1, messageUid1,
                 2, messageUid2,
@@ -239,7 +246,7 @@ public class UidMsnConverterTest {
         testee.addUid(messageUid4);
         testee.addUid(messageUid1);
 
-        assertThat(testee.getInternals().entrySet())
+        assertThat(testee.getConvertion().entrySet())
             .containsOnlyElementsOf(ImmutableBiMap.of(
                 1, messageUid1,
                 2, messageUid2,
@@ -252,7 +259,7 @@ public class UidMsnConverterTest {
         testee.addUid(messageUid1);
         testee.addUid(messageUid1);
 
-        assertThat(testee.getInternals())
+        assertThat(testee.getConvertion())
             .isEqualTo(ImmutableBiMap.of(1, messageUid1));
     }
 
@@ -282,7 +289,7 @@ public class UidMsnConverterTest {
         for(int i = 1; i <= initialCount; i++) {
             resultBuilder.put(i, MessageUid.of(initialCount + i));
         }
-        assertThat(testee.getInternals().entrySet())
+        assertThat(testee.getConvertion().entrySet())
             .containsOnlyElementsOf(resultBuilder.build().entrySet());
     }
 
@@ -305,7 +312,7 @@ public class UidMsnConverterTest {
         for(int i = 1; i <= threadCount * operationCount; i++) {
             resultBuilder.put(i, MessageUid.of(i));
         }
-        assertThat(testee.getInternals().entrySet())
+        assertThat(testee.getConvertion().entrySet())
             .containsOnlyElementsOf(resultBuilder.build().entrySet());
     }
 
@@ -331,7 +338,7 @@ public class UidMsnConverterTest {
         for(int i = 1; i <= operationCount; i++) {
             resultBuilder.put(i, MessageUid.of((threadCount * operationCount) + i));
         }
-        assertThat(testee.getInternals().entrySet())
+        assertThat(testee.getConvertion().entrySet())
             .containsOnlyElementsOf(resultBuilder.build().entrySet());
     }
 
