@@ -109,7 +109,7 @@ public class UidMsnConverter {
         ImmutableList.Builder<MessageUid> result = ImmutableList.builder();
         int position = getLastMsn();
         Optional<MessageUid> maxUid = getUid(position);
-        while (maxUid.isPresent() && uid.asLong() < maxUid.get().asLong()) {
+        while (maxUid.isPresent() && uid.compareTo(maxUid.get()) < 0) {
             msnToUid.remove(position);
             result.add(maxUid.get());
             position--;
