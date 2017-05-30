@@ -37,101 +37,54 @@ public class UidMsnConverter {
     public final static int FIRST_MSN = 1;
 
     private final HashBiMap<Integer, MessageUid> msnToUid;
-    private final ReadWriteLock readWriteLock;
 
     public UidMsnConverter() {
-        readWriteLock = new ReentrantReadWriteLock();
         msnToUid = HashBiMap.create();
     }
 
-    public Optional<Integer> getMsn(MessageUid uid) {
-        readWriteLock.readLock().lock();
-        try {
-            return Optional.fromNullable(msnToUid.inverse().get(uid));
-        } finally {
-            readWriteLock.readLock().unlock();
+    public synchronized Optional<Integer> getMsn(MessageUid uid) {
+        return Optional.fromNullable(msnToUid.inverse().get(uid));
+    }
+
+    public synchronized Optional<MessageUid> getUid(int msn) {
+        return Optional.fromNullable(msnToUid.get(msn));
+    }
+
+    public synchronized Optional<MessageUid> getLastUid() {
+        return getUid(getLastMsn());
+    }
+
+    public synchronized Optional<MessageUid> getFirstUid() {
+        return getUid(FIRST_MSN);
+    }
+
+    public synchronized int getNumMessage() {
+        return msnToUid.size();
+    }
+
+    public synchronized void remove(MessageUid uid) {
+        int msn = getMsn(uid).get();
+        msnToUid.remove(msn);
+
+        for (int aMsn = msn + 1; aMsn <= getNumMessage() + 1; aMsn++) {
+            MessageUid aUid = msnToUid.remove(aMsn);
+            addMapping(aMsn - 1, aUid);
         }
     }
 
-    public Optional<MessageUid> getUid(int msn) {
-        readWriteLock.readLock().lock();
-        try {
-            return Optional.fromNullable(msnToUid.get(msn));
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
+    public synchronized boolean isEmpty() {
+        return msnToUid.isEmpty();
     }
 
-    public Optional<MessageUid> getLastUid() {
-        readWriteLock.readLock().lock();
-        try {
-            return getUid(getLastMsn());
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
+    public synchronized void clear() {
+        msnToUid.clear();
     }
 
-    public Optional<MessageUid> getFirstUid() {
-        readWriteLock.readLock().lock();
-        try {
-            return getUid(FIRST_MSN);
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-
-    public int getNumMessage() {
-        readWriteLock.readLock().lock();
-        try {
-            return msnToUid.size();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-
-    public void remove(MessageUid uid) {
-        readWriteLock.writeLock().lock();
-        try {
-            int msn = getMsn(uid).get();
-            msnToUid.remove(msn);
-
-            for (int aMsn = msn + 1; aMsn <= getNumMessage() + 1; aMsn++) {
-                MessageUid aUid = msnToUid.remove(aMsn);
-                addMapping(aMsn - 1, aUid);
-            }
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-    }
-
-    public boolean isEmpty() {
-        readWriteLock.readLock().lock();
-        try {
-            return msnToUid.isEmpty();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-
-    public void clear() {
-        readWriteLock.writeLock().lock();
-        try {
-            msnToUid.clear();
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-    }
-
-    public void addUid(MessageUid uid) {
-        readWriteLock.writeLock().lock();
-        try {
-            if (isLastUid(uid)) {
-                addMapping(nextMsn(), uid);
-            } else {
-                addUidInMiddle(uid);
-            }
-        } finally {
-            readWriteLock.writeLock().unlock();
+    public synchronized void addUid(MessageUid uid) {
+        if (isLastUid(uid)) {
+            addMapping(nextMsn(), uid);
+        } else {
+            addUidInMiddle(uid);
         }
     }
 
