@@ -459,7 +459,8 @@ public abstract class AbstractCombinationManagerTest {
             .get(0)
             .getUid();
 
-        assertThat(messageManager2.getUids(session))
+        SearchQuery searchQuery = new SearchQuery(SearchQuery.all());
+        assertThat(messageManager2.search(searchQuery, session))
             .hasSize(1)
             .containsOnly(uid2);
     }
@@ -471,7 +472,8 @@ public abstract class AbstractCombinationManagerTest {
 
         messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
-        assertThat(messageManager1.getUids(session)).isEmpty();
+        SearchQuery searchQuery = new SearchQuery(SearchQuery.all());
+        assertThat(messageManager1.search(searchQuery, session)).isEmpty();
     }
 
     private Predicate<MessageResult> messageInMailbox2() {

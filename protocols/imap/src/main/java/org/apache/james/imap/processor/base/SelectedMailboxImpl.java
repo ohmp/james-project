@@ -40,6 +40,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.UpdatedFlags;
 
 import com.google.common.base.Optional;
@@ -93,9 +94,10 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     private UidMsnConverter getUidMsnConverter(MailboxSession mailboxSession , MessageManager messageManager) throws MailboxException {
         UidMsnConverter uidMsnConverter = new UidMsnConverter();
 
-        Iterator<MessageUid> uids = messageManager.getUids(mailboxSession);
+        SearchQuery searchQuery = new SearchQuery(SearchQuery.all());
 
         synchronized (SelectedMailboxImpl.this) {
+            Iterator<MessageUid> uids = messageManager.search(searchQuery, mailboxSession);
             while(uids.hasNext()) {
                 uidMsnConverter.addUid(uids.next());
             }

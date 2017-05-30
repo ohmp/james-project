@@ -177,11 +177,6 @@ public class MailboxEventAnalyserTest {
         public MessageManager getMailbox(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
             return new MessageManager() {
 
-                @Override
-                public Iterator<MessageUid> getUids(MailboxSession session) throws MailboxException {
-                    return ImmutableList.of(MESSAGE_UID).iterator();
-                }
-
                 public long getMessageCount(MailboxSession mailboxSession) throws MailboxException {
                     return 1;
                 }
@@ -201,7 +196,7 @@ public class MailboxEventAnalyserTest {
 
                 @Override
                 public Iterator<MessageUid> search(SearchQuery searchQuery, MailboxSession mailboxSession) throws MailboxException {
-                    throw new UnsupportedOperationException("Not implemented");
+                    return ImmutableList.of(MESSAGE_UID).iterator();
                 }
 
                 @Override
