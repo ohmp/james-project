@@ -255,6 +255,22 @@ public class UidMsnConverterTest {
     }
 
     @Test
+    public void constructorWithOutOfOrderIteratorShouldLeadToValidConvertion() {
+        testee = new UidMsnConverter(ImmutableList.of(messageUid2,
+            messageUid3,
+            messageUid4,
+            messageUid1)
+            .iterator());
+
+        assertThat(testee.getConvertion().entrySet())
+            .containsOnlyElementsOf(ImmutableBiMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
     public void addUidShouldBeIdempotent() {
         testee.addUid(messageUid1);
         testee.addUid(messageUid1);
