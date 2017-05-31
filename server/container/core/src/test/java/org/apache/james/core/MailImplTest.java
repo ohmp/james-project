@@ -41,7 +41,7 @@ public class MailImplTest {
         MailImpl mail = new MailImpl();
 
         helperTestInitialState(mail);
-        helperTestMessageSize(mail, 0); // MimeMessageWrapper default is 0
+        assertThat(mail.getMessageSize()).isEqualTo(0);
 
         assertThat(mail.getMessage()).as("Checking there is an initial message").isNull();
         assertThat(mail.getSender()).as("Checking there is an initial sender").isNull();
@@ -57,7 +57,7 @@ public class MailImplTest {
         MailImpl mail = new MailImpl(name, senderMailAddress, recepients);
 
         helperTestInitialState(mail); // MimeMessageWrapper default is 0
-        helperTestMessageSize(mail, 0); // MimeMessageWrapper default is 0
+        assertThat(mail.getMessageSize()).isEqualTo(0);
         assertThat(mail.getMessage()).as("No initial message when not specified").isNull();
         assertThat(mail.getSender().asString()).as("Sender should match original value").isEqualTo(sender);
         assertThat(mail.getName()).as("Name should be the specified one").isEqualTo(name);
@@ -86,7 +86,7 @@ public class MailImplTest {
         MailImpl mail = new MailImpl(name, senderMailAddress, recepients, mimeMessage);
 
         helperTestInitialState(mail);
-        helperTestMessageSize(mail, 0);
+        assertThat(mail.getMessageSize()).isEqualTo(0);
         assertThat(mail.getMessage().getMessageID()).isEqualTo(mimeMessage.getMessageID());
         assertThat(mail.getSender().asString()).isEqualTo(sender);
         assertThat(mail.getName()).isEqualTo(name);
@@ -101,7 +101,7 @@ public class MailImplTest {
         assertThat(mail).as("duplicate method should return different objects").isNotSameAs(duplicate);
 
         helperTestInitialState(duplicate);
-        helperTestMessageSize(duplicate, 0);
+        assertThat(mail.getMessageSize()).isEqualTo(0);
     }
 
     @Test
@@ -248,12 +248,4 @@ public class MailImplTest {
         assertThat(mail.getState()).as("Expecting default initial state").isEqualTo(Mail.DEFAULT);
     }
 
-    protected void helperTestMessageSize(Mail mail, int expectedMsgSize) throws MessagingException {
-        try {
-            assertThat(mail.getMessageSize()).isEqualTo(expectedMsgSize);
-        } catch (NullPointerException e) {
-            // current behavior. *BUT*, shouldn't this method return more
-            // gracefully?!
-        }
-    }
 }

@@ -366,6 +366,9 @@ public class MailImpl implements Disposable, Mail {
      */
     @Override
     public long getMessageSize() throws MessagingException {
+        if (message == null) {
+            return 0;
+        }
         return MimeMessageUtil.getMessageSize(message);
     }
 
