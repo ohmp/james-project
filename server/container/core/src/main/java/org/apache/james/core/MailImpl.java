@@ -19,17 +19,6 @@
 
 package org.apache.james.core;
 
-import org.apache.james.lifecycle.api.Disposable;
-import org.apache.james.lifecycle.api.LifecycleUtil;
-import org.apache.mailet.Mail;
-import org.apache.mailet.MailAddress;
-import org.apache.mailet.PerRecipientHeaders;
-import org.apache.mailet.PerRecipientHeaders.Header;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.ParseException;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,15 +28,25 @@ import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.ParseException;
+
+import org.apache.james.lifecycle.api.Disposable;
+import org.apache.james.lifecycle.api.LifecycleUtil;
+import org.apache.mailet.Mail;
+import org.apache.mailet.MailAddress;
+import org.apache.mailet.PerRecipientHeaders;
+import org.apache.mailet.PerRecipientHeaders.Header;
 
 /**
  * <p>
@@ -127,7 +126,7 @@ public class MailImpl implements Disposable, Mail {
         setState(Mail.DEFAULT);
         attributes = new HashMap<String, Object>();
         perRecipientSpecificHeaders = new PerRecipientHeaders();
-        recipients = new HashSet<MailAddress>();
+        recipients = new LinkedHashSet<MailAddress>();
     }
 
     /**
@@ -413,7 +412,7 @@ public class MailImpl implements Disposable, Mail {
      */
     @Override
     public void setRecipients(Collection<MailAddress> recipients) {
-        this.recipients = new HashSet<MailAddress>(recipients);
+        this.recipients = new LinkedHashSet<MailAddress>(recipients);
     }
 
     /**
