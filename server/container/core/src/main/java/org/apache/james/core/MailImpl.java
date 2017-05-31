@@ -411,7 +411,7 @@ public class MailImpl implements Disposable, Mail {
      */
     @Override
     public void setRecipients(Collection<MailAddress> recipients) {
-        this.recipients = recipients;
+        this.recipients = new ArrayList<MailAddress>(recipients);
     }
 
     /**
