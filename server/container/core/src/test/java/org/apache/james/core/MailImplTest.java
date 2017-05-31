@@ -268,4 +268,12 @@ public class MailImplTest {
         assertThat(readObject).isEqualToComparingFieldByField(initialMail);
     }
 
+    @Test
+    public void mailImplShouldDeduplicateRecipientsInEnvelope() throws Exception {
+        MailImpl mail = new MailImpl();
+        mail.setRecipients(ImmutableList.of(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.ANY_AT_JAMES));
+
+        assertThat(mail.getRecipients()).containsExactly(MailAddressFixture.ANY_AT_JAMES);
+    }
+
 }

@@ -43,8 +43,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -91,7 +93,7 @@ public class MailImpl implements Disposable, Mail {
     /**
      * The collection of recipients to whom this mail was sent.
      */
-    private Collection<MailAddress> recipients;
+    private Set<MailAddress> recipients;
     /**
      * The identifier for this mail message
      */
@@ -125,7 +127,7 @@ public class MailImpl implements Disposable, Mail {
         setState(Mail.DEFAULT);
         attributes = new HashMap<String, Object>();
         perRecipientSpecificHeaders = new PerRecipientHeaders();
-        recipients = new ArrayList<MailAddress>();
+        recipients = new HashSet<MailAddress>();
     }
 
     /**
@@ -411,7 +413,7 @@ public class MailImpl implements Disposable, Mail {
      */
     @Override
     public void setRecipients(Collection<MailAddress> recipients) {
-        this.recipients = new ArrayList<MailAddress>(recipients);
+        this.recipients = new HashSet<MailAddress>(recipients);
     }
 
     /**
@@ -505,7 +507,7 @@ public class MailImpl implements Disposable, Mail {
         } catch (ParseException pe) {
             throw new IOException("Error parsing sender address: " + pe.getMessage());
         }
-        recipients = (Collection<MailAddress>) in.readObject();
+        recipients = (Set<MailAddress>) in.readObject();
         state = (String) in.readObject();
         errorMessage = (String) in.readObject();
         name = (String) in.readObject();
