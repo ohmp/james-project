@@ -125,6 +125,7 @@ public class MailImpl implements Disposable, Mail {
         setState(Mail.DEFAULT);
         attributes = new HashMap<String, Object>();
         perRecipientSpecificHeaders = new PerRecipientHeaders();
+        recipients = new ArrayList<MailAddress>();
     }
 
     /**
@@ -139,11 +140,9 @@ public class MailImpl implements Disposable, Mail {
         this();
         this.name = name;
         this.sender = sender;
-        this.recipients = null;
 
         // Copy the recipient list
         if (recipients != null) {
-            this.recipients = new ArrayList<MailAddress>();
             this.recipients.addAll(recipients);
         }
     }

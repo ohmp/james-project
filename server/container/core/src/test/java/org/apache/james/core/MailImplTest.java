@@ -237,12 +237,7 @@ public class MailImplTest {
         assertThat(mail.hasAttributes()).as("Expecting no initial attributes").isFalse();
         assertThat(mail.getErrorMessage()).as("Expecting no initial error").isNull();
         assertThat(mail.getLastUpdated()).as("Expecting initial last update set").isNotNull();
-        try {
-            mail.getRecipients().isEmpty();
-        } catch (NullPointerException e) {
-            // current behavior. *BUT*, shouldn't this method better return with
-            // an empty list?!
-        }
+        assertThat(mail.getRecipients()).isEmpty();
         assertThat(mail.getRemoteAddr()).as("initial remote address should be localhost ip").isEqualTo("127.0.0.1");
         assertThat(mail.getRemoteHost()).as("initial remote host should be localhost").isEqualTo("localhost");
         assertThat(mail.getState()).as("Expecting default initial state").isEqualTo(Mail.DEFAULT);
