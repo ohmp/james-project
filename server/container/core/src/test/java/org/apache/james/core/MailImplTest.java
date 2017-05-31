@@ -21,6 +21,9 @@ package org.apache.james.core;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import javax.mail.MessagingException;
@@ -29,8 +32,12 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
+import org.apache.mailet.PerRecipientHeaders;
+import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.MailUtil;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 public class MailImplTest {
 
@@ -241,6 +248,24 @@ public class MailImplTest {
         assertThat(mail.getRemoteAddr()).as("initial remote address should be localhost ip").isEqualTo("127.0.0.1");
         assertThat(mail.getRemoteHost()).as("initial remote host should be localhost").isEqualTo("localhost");
         assertThat(mail.getState()).as("Expecting default initial state").isEqualTo(Mail.DEFAULT);
+    }
+
+    @Test
+    public void mailImplShouldBeSerializable() throws Exception {
+        MailImpl initialMail = new MailImpl();
+        initialMail.setRecipients(ImmutableList.of(MailAddressFixture.ANY_AT_JAMES));
+        initialMail.addSpecificHeaderForRecipient(
+            PerRecipientHeaders.Header.builder()
+                .name("name")
+                .value("value")
+                .build(),
+            MailAddressFixture.ANY_AT_JAMES);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        new ObjectOutputStream(outputStream).writeObject(initialMail);
+        MailImpl readObject = (MailImpl) new ObjectInputStream(new ByteArrayInputStream(outputStream.toByteArray())).readObject();
+
+        assertThat(readObject).isEqualToComparingFieldByField(initialMail);
     }
 
 }

@@ -492,7 +492,7 @@ public class MailImpl implements Disposable, Mail {
      * @throws ClassCastException     if the serialized objects are not of the appropriate type
      */
     @SuppressWarnings("unchecked")
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
             Object obj = in.readObject();
             if (obj == null) {
@@ -523,6 +523,7 @@ public class MailImpl implements Disposable, Mail {
                 throw ode;
             }
         }
+        perRecipientSpecificHeaders = (PerRecipientHeaders) in.readObject();
     }
 
     /**
@@ -541,6 +542,7 @@ public class MailImpl implements Disposable, Mail {
         out.writeObject(remoteAddr);
         out.writeObject(lastUpdated);
         out.writeObject(attributes);
+        out.writeObject(perRecipientSpecificHeaders);
     }
 
     @Override
