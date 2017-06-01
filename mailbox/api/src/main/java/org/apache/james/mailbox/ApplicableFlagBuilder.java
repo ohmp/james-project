@@ -25,7 +25,8 @@ import com.google.common.annotations.VisibleForTesting;
 public class ApplicableFlagBuilder {
 
     @VisibleForTesting
-    static final Flags DEFAULT_APPLICABLE_FLAGS = FlagsBuilder.builder().add(Flags.Flag.ANSWERED,
+    static final Flags DEFAULT_APPLICABLE_FLAGS = FlagsBuilder.builder().add(
+        Flags.Flag.ANSWERED,
         Flags.Flag.DELETED,
         Flags.Flag.DRAFT,
         Flags.Flag.FLAGGED,
