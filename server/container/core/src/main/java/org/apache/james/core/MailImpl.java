@@ -141,11 +141,7 @@ public class MailImpl implements Disposable, Mail {
         this();
         this.name = name;
         this.sender = sender;
-
-        // Copy the recipient list
-        if (recipients != null) {
-            this.recipients.addAll(recipients);
-        }
+        this.recipients.addAll(recipients);
     }
 
     /**
