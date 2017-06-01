@@ -26,12 +26,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.extractor.ParsedContent;
 import org.apache.james.mailbox.extractor.TextExtractor;
 
@@ -46,6 +44,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -80,7 +79,8 @@ public class TikaTextExtractor implements TextExtractor {
         return objectMapper.readValue(json, ContentAndMetadata.class);
     }
 
-    @VisibleForTesting static class ContentAndMetadataDeserializer extends JsonDeserializer<ContentAndMetadata> {
+    @VisibleForTesting
+    static class ContentAndMetadataDeserializer extends JsonDeserializer<ContentAndMetadata> {
 
         @Override
         public ContentAndMetadata deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
@@ -88,22 +88,22 @@ public class TikaTextExtractor implements TextExtractor {
             Preconditions.checkState(treeNode.isArray() && treeNode.size() == 1, "The response should have only one element");
             Preconditions.checkState(treeNode.get(0).isObject(), "The element should be a Json object");
             ObjectNode node = (ObjectNode) treeNode.get(0);
-            return ContentAndMetadata.from(ImmutableList.copyOf(node.fields()).stream()
-                .map(entry -> Pair.of(entry.getKey(), asListOfString(entry.getValue())))
-                .collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
+            return ContentAndMetadata.from(ImmutableList.copyOf(node.fields())
+                .stream()
+                .collect(Guavate.toImmutableMap(Entry::getKey, entry -> asListOfString(entry.getValue()))));
         }
 
         @VisibleForTesting List<String> asListOfString(JsonNode jsonNode) {
             if (jsonNode.isArray()) {
                 return ImmutableList.copyOf(jsonNode.elements()).stream()
-                    .map(node -> node.asText())
-                    .collect(Collectors.toList());
+                    .map(JsonNode::asText)
+                    .collect(Guavate.toImmutableList());
             }
             return ImmutableList.of(jsonNode.asText());
         }
-        
+
     }
-    
+
     private static class ContentAndMetadata {
 
         private static final String TIKA_HEADER = "X-TIKA";
@@ -113,11 +113,11 @@ public class TikaTextExtractor implements TextExtractor {
             return new ContentAndMetadata(content(contentAndMetadataMap),
                     contentAndMetadataMap.entrySet().stream()
                         .filter(allHeadersButTika())
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                        .collect(Guavate.toImmutableMap(Entry::getKey, Entry::getValue)));
         }
 
         private static Predicate<? super Entry<String, List<String>>> allHeadersButTika() {
-            return entry -> { return !entry.getKey().startsWith(TIKA_HEADER); };
+            return entry -> !entry.getKey().startsWith(TIKA_HEADER);
         }
 
         private static String content(Map<String, List<String>> contentAndMetadataMap) {
