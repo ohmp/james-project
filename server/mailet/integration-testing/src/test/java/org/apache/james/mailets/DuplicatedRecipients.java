@@ -70,7 +70,12 @@ public class DuplicatedRecipients {
 
         jamesServer = new TemporaryJamesServer(temporaryFolder, mailetContainer);
         Duration slowPacedPollInterval = Duration.FIVE_HUNDRED_MILLISECONDS;
-        calmlyAwait = Awaitility.with().pollInterval(slowPacedPollInterval).and().with().pollDelay(slowPacedPollInterval).await();
+        calmlyAwait = Awaitility.with()
+            .pollInterval(slowPacedPollInterval)
+            .and()
+            .with()
+            .pollDelay(slowPacedPollInterval)
+            .await();
     }
 
     @After
