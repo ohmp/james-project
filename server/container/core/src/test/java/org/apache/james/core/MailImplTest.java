@@ -44,24 +44,24 @@ public class MailImplTest {
     private static final Session NO_SESSION = null;
 
     @Test
-    public void testConstr1() throws MessagingException {
+    public void constructor1ShouldBuildEmailWithExpectedFields() throws MessagingException {
         MailImpl mail = new MailImpl();
 
         helperTestInitialState(mail);
         assertThat(mail.getMessageSize()).isEqualTo(0);
 
-        assertThat(mail.getMessage()).as("Checking there is an initial message").isNull();
+        assertThat(mail.getMessage()).as("Checking there is no initial message").isNull();
         assertThat(mail.getSender()).as("Checking there is an initial sender").isNull();
         assertThat(mail.getName()).as("Checking there is an initial name").isNull();
     }
 
     @Test
-    public void testConstr2() throws MessagingException {
-        ArrayList<MailAddress> recepients = new ArrayList<MailAddress>();
+    public void constructor2ShouldBuildEmailWithExpectedFields() throws MessagingException {
+        ArrayList<MailAddress> recipients = new ArrayList<MailAddress>();
         String name = MailUtil.newId();
         String sender = "sender@localhost";
         MailAddress senderMailAddress = new MailAddress(sender);
-        MailImpl mail = new MailImpl(name, senderMailAddress, recepients);
+        MailImpl mail = new MailImpl(name, senderMailAddress, recipients);
 
         helperTestInitialState(mail); // MimeMessageWrapper default is 0
         assertThat(mail.getMessageSize()).isEqualTo(0);
@@ -71,12 +71,12 @@ public class MailImplTest {
     }
 
     @Test
-    public void setMessageShouldaddAMessage() throws MessagingException {
-        ArrayList<MailAddress> recepients = new ArrayList<MailAddress>();
+    public void setMessageShouldAddAMessage() throws MessagingException {
+        ArrayList<MailAddress> recipients = new ArrayList<MailAddress>();
         String name = MailUtil.newId();
         String sender = "sender@localhost";
         MailAddress senderMailAddress = new MailAddress(sender);
-        MailImpl mail = new MailImpl(name, senderMailAddress, recepients);
+        MailImpl mail = new MailImpl(name, senderMailAddress, recipients);
 
         mail.setMessage(new MimeMessage(NO_SESSION));
 
@@ -84,13 +84,13 @@ public class MailImplTest {
     }
 
     @Test
-    public void testConstr3() throws MessagingException {
-        ArrayList<MailAddress> recepients = new ArrayList<MailAddress>();
+    public void constructor3ShouldBuildEmailWithExpectedFields() throws MessagingException {
+        ArrayList<MailAddress> recipients = new ArrayList<MailAddress>();
         String name = MailUtil.newId();
         String sender = "sender@localhost";
         MailAddress senderMailAddress = new MailAddress(sender);
         MimeMessage mimeMessage = new MimeMessage(NO_SESSION, new ByteArrayInputStream(new byte[0]));
-        MailImpl mail = new MailImpl(name, senderMailAddress, recepients, mimeMessage);
+        MailImpl mail = new MailImpl(name, senderMailAddress, recipients, mimeMessage);
 
         helperTestInitialState(mail);
         assertThat(mail.getMessageSize()).isEqualTo(0);
