@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -30,13 +31,16 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.MailUtil;
+import org.apache.mailet.base.test.MimeMessageBuilder;
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 
 public class MailImplTest {
@@ -252,7 +256,12 @@ public class MailImplTest {
 
     @Test
     public void mailImplShouldBeSerializable() throws Exception {
-        MailImpl initialMail = new MailImpl();
+        MailAddress sender = MailAddressFixture.ANY_AT_JAMES;
+        ImmutableList<MailAddress> recipients = ImmutableList.of(MailAddressFixture.ANY_AT_LOCAL);
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(
+            new ByteArrayInputStream("subject: default mail\r\n\r\nAwesome body"
+                .getBytes(Charsets.UTF_8)));
+        MailImpl initialMail = new MailImpl("name", sender, recipients, message);
         initialMail.setRecipients(ImmutableList.of(MailAddressFixture.ANY_AT_JAMES));
         initialMail.addSpecificHeaderForRecipient(
             PerRecipientHeaders.Header.builder()
@@ -265,7 +274,14 @@ public class MailImplTest {
         new ObjectOutputStream(outputStream).writeObject(initialMail);
         MailImpl readObject = (MailImpl) new ObjectInputStream(new ByteArrayInputStream(outputStream.toByteArray())).readObject();
 
-        assertThat(readObject).isEqualToComparingFieldByField(initialMail);
+        assertThat(getMessageAsString(readObject.getMessage()))
+            .isEqualTo(getMessageAsString(message));
+    }
+
+    private String getMessageAsString(MimeMessage message) throws IOException, MessagingException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        message.writeTo(os);
+        return IOUtils.toString(new ByteArrayInputStream(os.toByteArray()), Charsets.UTF_8);
     }
 
     @Test

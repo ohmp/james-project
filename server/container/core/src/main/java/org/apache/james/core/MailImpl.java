@@ -34,10 +34,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 
@@ -489,7 +491,7 @@ public class MailImpl implements Disposable, Mail {
      * @throws ClassCastException     if the serialized objects are not of the appropriate type
      */
     @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, MessagingException {
         try {
             Object obj = in.readObject();
             if (obj == null) {
@@ -521,6 +523,7 @@ public class MailImpl implements Disposable, Mail {
             }
         }
         perRecipientSpecificHeaders = (PerRecipientHeaders) in.readObject();
+        message = new MimeMessageCopyOnWriteProxy(new MimeMessage(Session.getDefaultInstance(new Properties()), in));
     }
 
     /**
@@ -529,7 +532,7 @@ public class MailImpl implements Disposable, Mail {
      * @param out the ObjectOutputStream to which the object is written
      * @throws IOException if an error occurs while writing to the stream
      */
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(ObjectOutputStream out) throws IOException, MessagingException {
         out.writeObject(sender);
         out.writeObject(recipients);
         out.writeObject(state);
@@ -540,6 +543,7 @@ public class MailImpl implements Disposable, Mail {
         out.writeObject(lastUpdated);
         out.writeObject(attributes);
         out.writeObject(perRecipientSpecificHeaders);
+        message.writeTo(out);
     }
 
     @Override
