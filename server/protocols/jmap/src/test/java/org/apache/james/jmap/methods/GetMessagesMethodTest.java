@@ -69,6 +69,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
@@ -497,6 +498,12 @@ public class GetMessagesMethodTest {
             .properties(ImmutableList.of("mailboxIds"))
             .build();
 
-        testee.process(request, clientId, session);
+        List<JmapResponse> responses = testee.process(request, clientId, session).collect(Guavate.toImmutableList());
+
+        assertThat(responses).hasSize(1);
+        Method.Response response = responses.get(0).getResponse();
+        assertThat(response).isInstanceOf(GetMessagesResponse.class);
+        GetMessagesResponse getMessagesResponse = (GetMessagesResponse) response;
+        assertThat(getMessagesResponse.list()).hasSize(1);
     }
 }
