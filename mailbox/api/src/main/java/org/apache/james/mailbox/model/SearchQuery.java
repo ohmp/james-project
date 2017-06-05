@@ -35,6 +35,7 @@ import org.apache.james.mailbox.MessageUid;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
 /**
  * <p>
@@ -1866,7 +1867,8 @@ public class SearchQuery implements Serializable {
         private final DateResolution dateResolution;
 
         public DateOperator(DateComparator type, Date date, DateResolution dateResolution) {
-            super();
+            Preconditions.checkNotNull(date);
+            Preconditions.checkNotNull(dateResolution);
             this.type = type;
             this.date = date;
             this.dateResolution = dateResolution;
