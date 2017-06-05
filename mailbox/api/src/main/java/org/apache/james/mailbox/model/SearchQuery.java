@@ -732,6 +732,18 @@ public class SearchQuery implements Serializable {
         return new CustomFlagCriterion(flag, BooleanOperator.unset());
     }
 
+    public SearchQuery() {
+        this(new ArrayList<Criterion>());
+    }
+
+    public SearchQuery(Criterion... criteria) {
+        this(Arrays.asList(criteria));
+    }
+
+    public SearchQuery(List<Criterion> criterias) {
+        this.criterias = criterias;
+    }
+
     /**
      * Creates a filter matching all messages.
      * 
@@ -743,7 +755,7 @@ public class SearchQuery implements Serializable {
 
     private final Set<MessageUid> recentMessageUids = new HashSet<MessageUid>();
 
-    private final List<Criterion> criterias = new ArrayList<Criterion>();
+    private final List<Criterion> criterias;
 
     private List<Sort> sorts = Collections.singletonList(new Sort(Sort.SortClause.Uid, false));
 
