@@ -36,6 +36,7 @@ import org.apache.james.mailbox.MessageUid;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 /**
  * <p>
@@ -739,7 +740,7 @@ public class SearchQuery implements Serializable {
     }
 
     public SearchQuery(Criterion... criteria) {
-        this(Arrays.asList(criteria));
+        this(ImmutableList.copyOf(Arrays.asList(criteria)));
     }
 
     public SearchQuery(List<Criterion> criterias) {
