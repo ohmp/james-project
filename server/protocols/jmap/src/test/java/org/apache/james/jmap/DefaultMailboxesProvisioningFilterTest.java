@@ -70,7 +70,7 @@ public class DefaultMailboxesProvisioningFilterTest {
         new ConcurrentTestRunner(threadCount, operationCount,
             (threadNumber, step) -> sut.createMailboxesIfNeeded(session))
             .run()
-            .noExceptions()
+            .assertNoException()
             .awaitTermination(10, TimeUnit.SECONDS);
 
         assertThat(mailboxManager.list(session))
