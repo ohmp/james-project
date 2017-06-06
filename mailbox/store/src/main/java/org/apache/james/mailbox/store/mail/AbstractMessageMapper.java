@@ -52,6 +52,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
             return input.getUid();
         }
     };
+
     private static final int UNLIMITED = -1;
 
     protected final MailboxSession mailboxSession;
