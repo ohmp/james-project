@@ -40,7 +40,7 @@ import com.google.common.base.Objects;
 public class InMemoryMailboxMapper implements MailboxMapper {
     
     private static final int INITIAL_SIZE = 128;
-    private final Map<InMemoryId, Mailbox> mailboxesById;
+    private final ConcurrentHashMap<InMemoryId, Mailbox> mailboxesById;
     private final AtomicLong mailboxIdGenerator = new AtomicLong();
 
     public InMemoryMailboxMapper() {
@@ -116,10 +116,10 @@ public class InMemoryMailboxMapper implements MailboxMapper {
             id = InMemoryId.of(mailboxIdGenerator.incrementAndGet());
             ((SimpleMailbox) mailbox).setMailboxId(id);
         }
-        if (isPathAlreadyUsedByAnotherMailbox(mailbox)) {
+        Mailbox previousMailbox = mailboxesById.putIfAbsent(id, mailbox);
+        if (previousMailbox != null) {
             throw new MailboxExistsException(mailbox.getName());
         }
-        mailboxesById.put(id, mailbox);
         return mailbox.getMailboxId();
     }
 
