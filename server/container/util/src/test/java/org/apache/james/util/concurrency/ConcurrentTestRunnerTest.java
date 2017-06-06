@@ -167,7 +167,7 @@ public class ConcurrentTestRunnerTest {
 
         concurrentTestRunner.awaitTermination(DEFAULT_AWAIT_TIME, TimeUnit.MILLISECONDS);
 
-        concurrentTestRunner.noExceptions();
+        concurrentTestRunner.assertNoException();
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ConcurrentTestRunnerTest {
         concurrentTestRunner.awaitTermination(DEFAULT_AWAIT_TIME, TimeUnit.MILLISECONDS);
 
         expectedException.expect(ExecutionException.class);
-        concurrentTestRunner.noExceptions();
+        concurrentTestRunner.assertNoException();
     }
 
     @Test
@@ -201,6 +201,28 @@ public class ConcurrentTestRunnerTest {
                 public void consume(int threadNumber, int step) throws Exception {
                     queue.add(threadNumber + ":" + step);
                     throw new RuntimeException();
+                }
+            })
+            .run();
+
+        assertThat(concurrentTestRunner.awaitTermination(DEFAULT_AWAIT_TIME, TimeUnit.MILLISECONDS)).isTrue();
+        assertThat(queue).containsOnly("0:0", "0:1", "1:0", "1:1");
+    }
+
+    @Test
+    public void runShouldPerformAllOperationsEvenOnOccasionalExceptions() throws Exception {
+        int operationCount = 2;
+        int threadCount = 2;
+        final ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<String>();
+
+        ConcurrentTestRunner concurrentTestRunner = new ConcurrentTestRunner(threadCount, operationCount,
+            new ConcurrentTestRunner.BiConsumer() {
+                @Override
+                public void consume(int threadNumber, int step) throws Exception {
+                    queue.add(threadNumber + ":" + step);
+                    if ((threadNumber + step) % 2 == 0) {
+                        throw new RuntimeException();
+                    }
                 }
             })
             .run();

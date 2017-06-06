@@ -96,7 +96,7 @@ public class ConcurrentTestRunner {
         return this;
     }
 
-    public ConcurrentTestRunner noExceptions() throws ExecutionException, InterruptedException {
+    public ConcurrentTestRunner assertNoException() throws ExecutionException, InterruptedException {
         for (Future future: futures) {
             future.get();
         }
