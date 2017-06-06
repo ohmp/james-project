@@ -66,7 +66,7 @@ public class InMemoryMailboxMapper implements MailboxMapper {
         if (result == null) {
             throw new MailboxNotFoundException(path);
         } else {
-            return result;
+            return new SimpleMailbox(result);
         }
     }
 
@@ -74,7 +74,7 @@ public class InMemoryMailboxMapper implements MailboxMapper {
         InMemoryId mailboxId = (InMemoryId)id;
         for (Mailbox mailbox: mailboxesByPath.values()) {
             if (mailbox.getMailboxId().equals(mailboxId)) {
-                return mailbox;
+                return new SimpleMailbox(mailbox);
             }
         }
         throw new MailboxNotFoundException(mailboxId.serialize());
@@ -88,7 +88,7 @@ public class InMemoryMailboxMapper implements MailboxMapper {
         List<Mailbox> results = new ArrayList<Mailbox>();
         for (Mailbox mailbox: mailboxesByPath.values()) {
             if (mailboxMatchesRegex(mailbox, path, regex)) {
-                results.add(mailbox);
+                results.add(new SimpleMailbox(mailbox));
             }
         }
         return results;
@@ -108,6 +108,13 @@ public class InMemoryMailboxMapper implements MailboxMapper {
         if (id == null) {
             id = InMemoryId.of(mailboxIdGenerator.incrementAndGet());
             ((SimpleMailbox) mailbox).setMailboxId(id);
+        } else {
+            try {
+                Mailbox mailboxWithPreviousName = findMailboxById(id);
+                mailboxesByPath.remove(mailboxWithPreviousName.generateAssociatedPath());
+            } catch (MailboxNotFoundException e) {
+                // No need to remove the previous mailbox
+            }
         }
         Mailbox previousMailbox = mailboxesByPath.putIfAbsent(mailbox.generateAssociatedPath(), mailbox);
         if (previousMailbox != null) {
