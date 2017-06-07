@@ -171,7 +171,7 @@ public class ConcurrentTestRunnerTest {
     }
 
     @Test
-    public void runShouldThrowOnExceptions() throws Exception {
+    public void assertNoExceptionShouldThrowOnExceptions() throws Exception {
         int operationCount = 2;
         int threadCount = 2;
 
