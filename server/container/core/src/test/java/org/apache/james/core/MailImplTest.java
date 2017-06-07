@@ -119,7 +119,6 @@ public class MailImplTest {
     public void duplicateShouldNotChangeOriginalMailName() throws MessagingException {
         String newName = "aNewName";
         MailImpl mail = new MailImpl();
-        assertThat(mail.getName()).as("before + after names should differ").isNotEqualTo(newName);
 
         mail.duplicate(newName);
 
