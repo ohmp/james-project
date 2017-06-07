@@ -84,7 +84,7 @@ public class DuplicatedRecipients {
     }
 
     @Test
-    public void simpleMailShouldBeSent() throws Exception {
+    public void mailShouldNotBeDuplicatedWhenDuplicatedRecipient() throws Exception {
         String from = "user@" + DEFAULT_DOMAIN;
         String recipient = "user2@" + DEFAULT_DOMAIN;
         String mailboxName = "INBOX";
