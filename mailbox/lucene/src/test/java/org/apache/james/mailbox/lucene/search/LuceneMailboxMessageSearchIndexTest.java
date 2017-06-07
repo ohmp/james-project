@@ -21,7 +21,6 @@ package org.apache.james.mailbox.lucene.search;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -471,7 +470,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnSentDateShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.SentDate, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.SentDate, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid4, uid1);
@@ -489,7 +488,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnSubjectShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.BaseSubject, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.BaseSubject, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid1, uid4);
@@ -507,7 +506,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnMailboxFromShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.MailboxFrom, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.MailboxFrom, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid4, uid1);
@@ -525,7 +524,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnMailboxCCShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.MailboxCc, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.MailboxCc, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid1, uid3, uid4);
@@ -543,7 +542,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnMailboxToShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.MailboxTo, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.MailboxTo, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid4, uid1, uid3);
@@ -561,7 +560,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnDisplayToShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.DisplayTo, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.DisplayTo, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid4, uid1, uid3);
@@ -579,7 +578,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnDisplayFromShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.DisplayFrom, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.DisplayFrom, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid4, uid1);
@@ -597,7 +596,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnArrivalDateShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.Arrival, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.Arrival, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid1, uid4);
@@ -615,7 +614,7 @@ public class LuceneMailboxMessageSearchIndexTest {
     @Test
     public void sortOnSizeShouldReturnWellOrderedResults() throws Exception {
         SearchQuery query = new SearchQuery(SearchQuery.all());
-        query.setSorts(ImmutableList.of(new Sort(SortClause.Size, Order.NORMAL)));
+        query.setSorts(ImmutableList.of(new Sort(SortClause.Size, Order.NATURAL)));
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid4, uid1);

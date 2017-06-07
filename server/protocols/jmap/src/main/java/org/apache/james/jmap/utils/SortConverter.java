@@ -74,7 +74,7 @@ public class SortConverter {
             case DESC_ORDERING:
                 return Order.REVERSE;
             case ASC_ORDERING:
-                return Order.NORMAL;
+                return Order.NATURAL;
         }
         throw new IllegalArgumentException("Unknown sorting order: " + order + " should be one of [asc, desc]");
     }

@@ -73,7 +73,7 @@ public class SearchQuery implements Serializable {
 
         public enum Order {
             REVERSE,
-            NORMAL
+            NATURAL
         }
 
         /**
@@ -177,7 +177,7 @@ public class SearchQuery implements Serializable {
          * @param sortClause
          */
         public Sort(SortClause sortClause) {
-            this(sortClause, Order.NORMAL);
+            this(sortClause, Order.NATURAL);
         }
 
         /**
@@ -765,7 +765,7 @@ public class SearchQuery implements Serializable {
 
     private final List<Criterion> criterias;
 
-    private List<Sort> sorts = Collections.singletonList(new Sort(Sort.SortClause.Uid, Sort.Order.NORMAL));
+    private List<Sort> sorts = Collections.singletonList(new Sort(Sort.SortClause.Uid, Sort.Order.NATURAL));
 
     public void andCriteria(Criterion crit) {
         criterias.add(crit);

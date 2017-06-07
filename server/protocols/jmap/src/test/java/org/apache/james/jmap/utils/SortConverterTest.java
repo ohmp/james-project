@@ -96,7 +96,7 @@ public class SortConverterTest {
     @Test
     public void convertToSortsShouldSupportAscOrder() {
         assertThat(SortConverter.convertToSorts(ImmutableList.of("date asc")))
-            .containsExactly(new Sort(SortClause.SentDate, Order.NORMAL));
+            .containsExactly(new Sort(SortClause.SentDate, Order.NATURAL));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class SortConverterTest {
     @Test
     public void convertToSortsShouldSupportMultipleSorts() {
         assertThat(SortConverter.convertToSorts(ImmutableList.of("date asc", "id desc")))
-            .containsExactly(new Sort(SortClause.SentDate, Order.NORMAL),
+            .containsExactly(new Sort(SortClause.SentDate, Order.NATURAL),
                 new Sort(SortClause.Id, Order.REVERSE));
     }
 }
