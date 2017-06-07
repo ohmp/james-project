@@ -745,7 +745,7 @@ public class SearchQuery implements Serializable {
     }
 
     public SearchQuery(Criterion... criteria) {
-        this(ImmutableList.copyOf(Arrays.asList(criteria)));
+        this(ImmutableList.copyOf(criteria));
     }
 
     public SearchQuery(List<Criterion> criterias) {
