@@ -39,7 +39,7 @@ import com.github.steveash.guavate.Guavate;
 public class DefaultMailboxesProvisioningFilterTest {
 
     public static final String USERNAME = "username";
-    private DefaultMailboxesProvisioningFilter sut;
+    private DefaultMailboxesProvisioningFilter testee;
     private MailboxSession session;
     private MailboxManager mailboxManager;
 
@@ -49,12 +49,12 @@ public class DefaultMailboxesProvisioningFilterTest {
 
         InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(new SimpleGroupMembershipResolver());
-        sut = new DefaultMailboxesProvisioningFilter(mailboxManager, new NoopMetricFactory());
+        testee = new DefaultMailboxesProvisioningFilter(mailboxManager, new NoopMetricFactory());
     }
 
     @Test
     public void createMailboxesIfNeededShouldCreateSystemMailboxes() throws Exception {
-        sut.createMailboxesIfNeeded(session);
+        testee.createMailboxesIfNeeded(session);
 
         assertThat(mailboxManager.list(session))
             .containsOnlyElementsOf(DefaultMailboxes.DEFAULT_MAILBOXES
@@ -68,7 +68,7 @@ public class DefaultMailboxesProvisioningFilterTest {
         int threadCount = 10;
         int operationCount = 1;
         new ConcurrentTestRunner(threadCount, operationCount,
-            (threadNumber, step) -> sut.createMailboxesIfNeeded(session))
+            (threadNumber, step) -> testee.createMailboxesIfNeeded(session))
             .run()
             .assertNoException()
             .awaitTermination(10, TimeUnit.SECONDS);
