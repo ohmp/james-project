@@ -302,7 +302,7 @@ public class UidMsnConverterTest {
         concurrentTestRunner.awaitTermination(10, TimeUnit.SECONDS);
 
         ImmutableBiMap.Builder<Integer, MessageUid> resultBuilder = ImmutableBiMap.builder();
-        for(int i = 1; i <= initialCount; i++) {
+        for (int i = 1; i <= initialCount; i++) {
             resultBuilder.put(i, MessageUid.of(initialCount + i));
         }
         assertThat(testee.getConvertion().entrySet())
@@ -325,7 +325,7 @@ public class UidMsnConverterTest {
         concurrentTestRunner.awaitTermination(10, TimeUnit.SECONDS);
 
         ImmutableBiMap.Builder<Integer, MessageUid> resultBuilder = ImmutableBiMap.builder();
-        for(int i = 1; i <= threadCount * operationCount; i++) {
+        for (int i = 1; i <= threadCount * operationCount; i++) {
             resultBuilder.put(i, MessageUid.of(i));
         }
         assertThat(testee.getConvertion().entrySet())
@@ -351,7 +351,7 @@ public class UidMsnConverterTest {
         concurrentTestRunner.awaitTermination(10, TimeUnit.SECONDS);
 
         ImmutableBiMap.Builder<Integer, MessageUid> resultBuilder = ImmutableBiMap.builder();
-        for(int i = 1; i <= operationCount; i++) {
+        for (int i = 1; i <= operationCount; i++) {
             resultBuilder.put(i, MessageUid.of((threadCount * operationCount) + i));
         }
         assertThat(testee.getConvertion().entrySet())
