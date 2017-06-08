@@ -100,11 +100,11 @@
 
         <dl>
             <dt><strong>tika.host</strong></dt>
-            <dd>IP or domain name of your Tika server. Defaults to 127.0.0.1</dd>
+            <dd>IP or domain name of your Tika server. The default value is 127.0.0.1</dd>
             <dt><strong>tika.port</strong></dt>
-            <dd>Port of your tika server. Defaults to 9998</dd>
+            <dd>Port of your tika server. The default value is 9998</dd>
             <dt><strong>tika.timeoutInMillis</strong></dt>
-            <dd>Timeout when issuing request to the tika server. Default is 3 seconds.</dd>
+            <dd>Timeout when issuing request to the tika server. The default value is 3 seconds.</dd>
         </dl>
 
         Note: You can launch a tika server using this command line:
