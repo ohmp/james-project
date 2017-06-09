@@ -38,7 +38,10 @@ import org.apache.james.modules.server.MailboxRoutesModule;
 import org.apache.james.modules.server.NoJwtModule;
 import org.apache.james.modules.server.RawPostDequeueDecoratorModule;
 import org.apache.james.modules.server.WebAdminServerModule;
+import org.apache.james.queue.api.MailQueueFactory;
+import org.apache.james.queue.file.FileMailQueueFactory;
 
+import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -59,7 +62,7 @@ public class JPAJamesServerMain {
         new JPAMailboxModule(),
         new JPADataModule(),
         new SieveFileRepositoryModule(),
-        new ActiveMQQueueModule(),
+        binder -> binder.bind(MailQueueFactory.class).to(FileMailQueueFactory.class),
         new RawPostDequeueDecoratorModule(),
         new MailboxModule(),
         new NoJwtModule(),

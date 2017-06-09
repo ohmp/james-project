@@ -54,7 +54,7 @@ public class LuceneSearchMailboxModule extends AbstractModule {
     protected void configure() {
         bind(SimpleMessageSearchIndex.class).in(Scopes.SINGLETON);
         bind(MessageSearchIndex.class).to(SimpleMessageSearchIndex.class);
-        bind(ListeningMessageSearchIndex.class).toInstance(new ListeningMessageSearchIndex() {
+        bind(ListeningMessageSearchIndex.class).toInstance(new ListeningMessageSearchIndex(null) {
             @Override
             public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
 
