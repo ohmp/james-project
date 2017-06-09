@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.mailbox.maildir;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -41,7 +43,7 @@ public class MaildirMailboxSessionMapperFactory extends
 
     private final MaildirStore store;
 
-    
+    @Inject
     public MaildirMailboxSessionMapperFactory(MaildirStore store) {
         this.store = store;
     }

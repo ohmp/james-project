@@ -25,6 +25,7 @@ import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailbox.lucene.search.LuceneMessageSearchIndex;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
+import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -37,9 +38,8 @@ public class LuceneSearchMailboxModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(LuceneMessageSearchIndex.class).in(Scopes.SINGLETON);
-        bind(MessageSearchIndex.class).to(LuceneMessageSearchIndex.class);
-        bind(ListeningMessageSearchIndex.class).to(LuceneMessageSearchIndex.class);
+        bind(SimpleMessageSearchIndex.class).in(Scopes.SINGLETON);
+        bind(MessageSearchIndex.class).to(SimpleMessageSearchIndex.class);
     }
 
     @Provides
