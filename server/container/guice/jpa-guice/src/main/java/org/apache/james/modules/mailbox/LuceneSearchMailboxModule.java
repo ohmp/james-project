@@ -20,9 +20,23 @@
 package org.apache.james.modules.mailbox;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.lucene.search.LuceneMessageSearchIndex;
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
+import org.apache.james.mailbox.model.SearchQuery;
+import org.apache.james.mailbox.model.UpdatedFlags;
+import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
@@ -40,6 +54,47 @@ public class LuceneSearchMailboxModule extends AbstractModule {
     protected void configure() {
         bind(SimpleMessageSearchIndex.class).in(Scopes.SINGLETON);
         bind(MessageSearchIndex.class).to(SimpleMessageSearchIndex.class);
+        bind(ListeningMessageSearchIndex.class).toInstance(new ListeningMessageSearchIndex() {
+            @Override
+            public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
+
+            }
+
+            @Override
+            public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
+
+            }
+
+            @Override
+            public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
+
+            }
+
+            @Override
+            public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
+
+            }
+
+            @Override
+            public ListenerType getType() {
+                return ListenerType.EACH_NODE;
+            }
+
+            @Override
+            public Iterator<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) throws MailboxException {
+                return null;
+            }
+
+            @Override
+            public List<MessageId> search(MailboxSession session, MultimailboxesSearchQuery searchQuery, long limit) throws MailboxException {
+                return null;
+            }
+
+            @Override
+            public EnumSet<MailboxManager.SearchCapabilities> getSupportedCapabilities() {
+                return null;
+            }
+        });
     }
 
     @Provides
