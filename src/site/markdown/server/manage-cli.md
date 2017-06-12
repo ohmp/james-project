@@ -1,7 +1,7 @@
 Manage James via the Command Line
 =================================
 
-With any distribution, James is packed with a command line client.
+With any packaging, James is packed with a command line client.
 
 To use it enter, for Spring distrubution:
 
@@ -35,6 +35,8 @@ You can remove a domain:
 {cli} RemoveDomain domain.tld
 ```
 
+(Note: associated users are not removed automatically)
+
 Check if a domain is handled:
 
 ```
@@ -49,7 +51,7 @@ And list your domains:
 
 ## Managing users
 
-Users are accounts on the mail server. James can maintain mailboxes for these mailaddress.
+Users are accounts on the mail server. James can maintain mailboxes for them.
 
 You can add a user:
 
@@ -65,7 +67,9 @@ You can delete a user:
 {cli} RemoveUser user@domain.tld
 ```
 
-And reset its password:
+(Note: associated mailboxes are not removed automatically)
+
+And change a user password:
 
 ```
 {cli} SetPassword user@domain.tld password
@@ -85,7 +89,7 @@ An administrator can perform some basic operation on user mailboxes.
 
 Note on mailbox formatting: mailboxes are composed of three parts.
 
- - The namespace, indicating what kind of mailbox it is. (Shared or not?). The value for users mailboxes is #private
+ - The namespace, indicating what kind of mailbox it is. (Shared or not?). The value for users mailboxes is #private . Note that for now no other values are supported as James do not support shared mailboxes.
  - The username.
  - And finally mailbox name. Be aware that '.' serves as mailbox hierarchy delimiter.
 
@@ -117,10 +121,10 @@ And finally can create a specific mailbox:
 
 A mapping is a recipient rewritting rule. There is several kind of rewritting rules:
 
- - address mapping: rewritte a given mail address into an other one.
+ - address mapping: rewrite a given mail address into an other one.
  - regex mapping.
 
-You can manage address mapping like this:
+You can manage address mapping like (redirects email from user@domain.tld to redirected@domain.new, then deletes the mapping):
 
 ```
 {cli} AddAddressMapping redirected domain.new user@domain.tld
@@ -150,7 +154,7 @@ And all mappings defined on the server:
 
 Quotas are limitations on a group of mailboxes. They can limit the **size** or the **messages count** in a group of mailboxes.
 
-James groups by defaults mailboxes by user (but it can be overridden), and labels each groups with a quotaroot.
+James groups by defaults mailboxes by user (but it can be overridden), and labels each group with a quotaroot.
 
 To get the quotaroot a given mailbox belongs to:
 
@@ -201,7 +205,12 @@ And for the storage space available:
 {cli} SetMaxStorageQuota quotaroot value
 ```
 
-With value being an integer. Please note the use of units for storage (K, M, G).
+With value being an integer. Please note the use of units for storage (K, M, G). For instance:
+
+
+```
+{cli} SetMaxStorageQuota someone@apache.org 4G
+```
 
 Moreover, James allows to specify defaults maximum values, at the server level. Note: syntax is similar to what was exposed previously.
 
@@ -214,11 +223,11 @@ Moreover, James allows to specify defaults maximum values, at the server level. 
 
 ## Re-indexing
 
-James allow you to index your data in an indexer, for making search faster. Both ElasticSearch and Lucene are supported.
+James allow you to index your data in a search engine, for making search faster. Both ElasticSearch and Lucene are supported.
 
-For some reasons, you might want to re-index your documents (inconsistencies across datastore, migrations).
+For some reasons, you might want to re-index your mails (inconsistencies across datastore, migrations).
 
-To reindex all mail of all mailboxes of all users, type:
+To re-index all mails of all mailboxes of all users, type:
 
 ```
 {cli} ReindexAll
@@ -232,12 +241,13 @@ And for a precise mailbox:
 
 ## Sieve scripts quota
 
-James allow you to configure a Sieve mailet, and stores Sieve scripts. You can update them via the ManageSieve protocol,
-or via the ManageSieveMailet.
+James implements Sieve (RFC-5228). Your users can then writte scripts and upload them to the server. Thus they can
+define the desired behavior upon email reception. James defines a Sieve mailet for this, and stores Sieve scripts. You
+can update them via the ManageSieve protocol, or via the ManageSieveMailet.
 
 You can define quota for the total size of Sieve scripts, per user.
 
-Syntax is similar to what as exposed for quotas. For defaults values:
+Syntax is similar to what was exposed for quotas. For defaults values:
 
 ```
 {cli} GetSieveQuota
@@ -253,7 +263,7 @@ And for specific user quotas:
 {cli} RemoveSieveUserQuota user@domain.tld
 ```
 
-## Changing of mailbox implementation
+## Switching of mailbox implementation
 
 Migration is experimental for now. You would need to customize **Spring** configuration to add a new mailbox manager with a different bean name.
 
@@ -262,3 +272,5 @@ You can then copy data accross mailbox managers using:
 ```
 {cli} CopyMailbox srcBean dstBean
 ```
+
+You will then need to reconfigure James to use the new mailbox manager.
