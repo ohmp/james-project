@@ -56,7 +56,7 @@
 
         <section name="Manage Domains via JMX">
 
-            <p>Use and JMX client to access the DomainList management function.</p>
+            <p>Use a JMX client to access the DomainList management function.</p>
 
             <p>The managed objects are exposed from localhost only (for security reasons) on the following URL:</p>
 
