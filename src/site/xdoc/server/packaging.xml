@@ -25,12 +25,12 @@
 
     <body>
 
-        <section name="Packaging available">
+        <section name="Available packaging options">
             <p>James components are assembled in various way, called packaging.</p>
 
             <ul>The packaging you choose will influence:
                 <li>Your java requirement</li>
-                <li>The protocol you supports</li>
+                <li>The protocol the mail server supports</li>
                 <li>The components you can use</li>
             </ul>
 
@@ -38,16 +38,20 @@
 
             <ul>To help you doing this, here is a list of available packages:
                 <li><a href="https://github.com/apache/james-project/tree/master/server/app">Spring</a>: Allows you to
-                    choose across various available implementation for each component. Requires more configuration effort.</li>
+                    choose across various available implementations for each component. Requires more configuration effort.</li>
                 <li><a href="https://github.com/apache/james-project/tree/master/server/container/guice/cassandra-guice">
-                    Cassandra-guice</a>: Ships a James server storing emails in Cassandra and ElasticSearch.</li>
+                    Cassandra-guice</a>: Ships a James server storing emails in Cassandra and index them in ElasticSearch.</li>
                 <li><a href="https://github.com/apache/james-project/tree/master/server/container/guice/cassandra-ldap-guice">
-                    Cassandra-guice-ldap</a>: Ships a James server storing emails in Cassandra and ElasticSearch. User are retrieved from a LDAP.</li>
+                    Cassandra-guice-ldap</a>: Ships a James server storing emails in Cassandra and index them in ElasticSearch. User are authenticated against a LDAP server.</li>
                 <li><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-guice">
-                    Jpa-Guice</a>: Ships a James server storing emails in JPA (derby by default) and Lucene.</li>
+                    Jpa-Guice</a>: Ships a James server storing emails in a SQL database (derby by default) accessed with JPA and Lucene to index emails.</li>
                 <li><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp">
-                    Jpa-Smtp</a>: A tiny SMTP server shiped without mailbox, using JPA to store data.</li>
+                    Jpa-Smtp</a>: A tiny SMTP server shiped without mailbox, using SQL database to store data, accessed by JPA.</li>
             </ul>
+
+            <p>Note: Especially using Guice, one can easily define new modules for existing James components, as well as
+            for third party code. Note that building your own combination of components will lead to an untested and unsupported server.
+            </p>
         </section>
 
         <section name="Support matrix">
