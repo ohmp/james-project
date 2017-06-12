@@ -1,11 +1,11 @@
 Web administration for JAMES
 ============================
 
-The web administration supports for now the CRUD operations on the domains, the users and the users mailboxes, and quotas, as described in the following sections.
+The web administration supports for now the CRUD operations on the domains,the users, their mailboxes and their quotas, as described in the following sections.
 
-**WARNING**: This API allow authentication only via the use of JWT. It means that, otherwise, an administrator should ensure an attacker can not use this API.
+**WARNING**: This API allow authentication only via the use of JWT. If not configured with JWT, an administrator should ensure an attacker can not use this API.
 
-Please also note **webadmin** is only enabled with **Guice**. You can not use it when using James with **Spring**.
+Please also note **webadmin** is only enabled with **Guice**. You can not use it when using James with **Spring**, as the required injections are not implemented.
 
 ## Administrating domains
 
