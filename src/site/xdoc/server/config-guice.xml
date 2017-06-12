@@ -27,7 +27,7 @@
 
   <section name="Guice configure Apache James Server">
 
-    <p>Such configuration Only applies for Guice packaging.</p>
+    <p>Such configuration only applies to Guice packaging.</p>
 
     <p>You are encouraged to contribute by developing a new backend guice module.
        Have a look to the <i>james-server-cassandra-guice</i> artifact. This can easily be done
@@ -35,7 +35,7 @@
     </p>
 
     <p>We provide a tested configuration for docker environment, for each Guice artifact, which can be a good base for your own configuration.
-    Have a look on <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice">GitHub</a>. </p>
+       Have a look on <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice">GitHub</a>. </p>
 
     <p>You can/must configure James for the following:</p>
 
