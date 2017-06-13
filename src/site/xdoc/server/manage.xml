@@ -40,7 +40,7 @@
       <ul>You can do this:
           <li>Using <a href="manage-cli.html">The command line client</a></li>
           <li>Using <a href="manage-webadmin.html">The web REST interface</a> (Guice only)</li>
-          <li>Using <a href="manage-cli.html">The JMX interface</a> (Experimental)</li>
+          <li>Using <a href="manage-jmx.html">The JMX interface</a> (Experimental)</li>
       </ul>
 
   </section>
