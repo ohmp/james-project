@@ -249,7 +249,7 @@ Moreover, James allows to specify defaults maximum values, at the server level. 
 
 ## Re-indexing
 
-James allow you to index your data in a search engine, for making search faster. Both ElasticSearch and Lucene are supported.
+James allow you to index your emails in a search engine, for making search faster. Both ElasticSearch and Lucene are supported.
 
 For some reasons, you might want to re-index your mails (inconsistencies across datastore, migrations).
 
