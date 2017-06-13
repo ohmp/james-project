@@ -47,7 +47,7 @@ curl -XGET http://ip:port/domains/domainName
 
 Response codes:
 
- - 204: The domains exists
+ - 204: The domain exists
  - 404: The domain does not exist
  - 500: Internal error while accessing the domains
 
@@ -252,7 +252,7 @@ Response codes:
 It removes the limitation, and the quota becomes UNILIMITED.
 
 ```
-curl -XPUT http://ip:port/quota/count -d '1024000000'
+curl -XDELETE http://ip:port/quota/count
 ```
 
 Response codes:
@@ -296,7 +296,7 @@ Response codes:
 It removes the limitation, and the quota becomes UNILIMITED.
 
 ```
-curl -XPUT http://ip:port/quota/size -d '1024000000'
+curl -XDELETE http://ip:port/quota/size
 ```
 
 Response codes:
