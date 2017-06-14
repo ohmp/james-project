@@ -37,8 +37,8 @@
     <p> For Guice based packaging, you are encouraged to take a look at default configuration of the
       <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice">James docker images</a>.</p>
 
-    <p>Please note that configuration is dependent of the packaging you chose. Some configuration files are specific to
-    some back-ends, to some protocols. Please also note that some configuration file are not required for Guice. In this
+    <p>Please note that the configuration is dependent of the packaging you have chosen. Some configuration files are specific to
+    some back-ends, to some protocols. Please also note that some configuration files are not required for Guice. In this
     case, it will be specified.</p>
        
     <p>You can/must configure James for the following:</p>
