@@ -27,9 +27,9 @@
 
 <section name="James Provided Extensions">
 
-  <subsection name="Provided Mailet">
+  <subsection name="Provided Mailet and Matchers">
   
-    <p>See the <a href="dev-provided-mailets.html">provided mailets</a> page for more information.</p>
+    <p>See the <a href="dev-provided-mailets.html">provided mailets and matchers</a> page for more information.</p>
 
       <!--
       Page dev-provided-mailets.xml ommited from sources.
@@ -39,12 +39,6 @@
 
       You then need to ensure page have the rights menu and move it to the website server folder.
       -->
-  
-  </subsection>
- 
-  <subsection name="Provided  Matcher">
-  
-    <p>See the <a href="dev-provided-mailets.html">provided matchers</a> page for more information.</p>
   
   </subsection>
  
