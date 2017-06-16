@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
  * includes one matcher in the composition, the normal recommended use. @See
  * CompositeMatcher interface.
  *
- * @return Collectiom of Recipient from the Negated composition of the child
+ * @return Collection of Recipients from the Negated composition of the child
  *         Matcher(s).
  */
 public class Not extends GenericCompositeMatcher {
