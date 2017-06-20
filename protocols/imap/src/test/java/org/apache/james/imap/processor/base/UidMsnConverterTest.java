@@ -178,7 +178,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void removeShouldKeepAValidMappingWhenDeletingBeginning() {
+    public void removeShouldKeepAMonoticMSNToUIDConversionMappingWhenDeletingBeginning() {
         testee.addUid(messageUid1);
         testee.addUid(messageUid2);
         testee.addUid(messageUid3);
@@ -194,7 +194,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void removeShouldKeepAValidMappingWhenDeletingEnd() {
+    public void removeShouldKeepAMonoticMSNToUIDConversionMappingWhenDeletingEnd() {
         testee.addUid(messageUid1);
         testee.addUid(messageUid2);
         testee.addUid(messageUid3);
@@ -210,7 +210,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void removeShouldKeepAValidMappingWhenDeletingMiddle() {
+    public void removeShouldKeepAMonoticMSNToUIDConversionMappingWhenDeletingMiddle() {
         testee.addUid(messageUid1);
         testee.addUid(messageUid2);
         testee.addUid(messageUid3);
@@ -241,7 +241,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void addUidShouldLeadToValidConversionWhenInsertInFirstPosition() {
+    public void addUidShouldLeadToMonoticMSNToUIDConversionWhenInsertInFirstPosition() {
         testee.addUid(messageUid2);
         testee.addUid(messageUid3);
         testee.addUid(messageUid4);
@@ -256,8 +256,26 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void addAllShouldLeadToValidConversion() {
-        testee.addAll(ImmutableList.of(messageUid1,
+    public void addAllShouldLeadToMonoticMSNToUIDConversion() {
+        testee.addAll(ImmutableList.of(
+            messageUid1,
+            messageUid2,
+            messageUid3,
+            messageUid4));
+
+        assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
+            .containsExactlyElementsOf(ImmutableMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addAllShouldRemoveDuplicates() {
+        testee.addAll(ImmutableList.of(
+            messageUid1,
+            messageUid2,
             messageUid2,
             messageUid3,
             messageUid4));
@@ -274,7 +292,8 @@ public class UidMsnConverterTest {
     public void addAllShouldDeduplicateElements() {
         testee.addUid(messageUid1);
 
-        testee.addAll(ImmutableList.of(messageUid1,
+        testee.addAll(ImmutableList.of(
+            messageUid1,
             messageUid2,
             messageUid3,
             messageUid4));
@@ -321,8 +340,9 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void addAllWithOutOfOrderIteratorShouldLeadToValidConversion() {
-        testee.addAll(ImmutableList.of(messageUid2,
+    public void addAllWithOutOfOrderIteratorShouldLeadToMonoticMSNToUIDConversion() {
+        testee.addAll(ImmutableList.of(
+            messageUid2,
             messageUid3,
             messageUid4,
             messageUid1));
@@ -345,7 +365,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void addAndRemoveShouldLeadToValidConversionWhenMixed() throws Exception {
+    public void addAndRemoveShouldLeadToMonoticMSNToUIDConversionWhenMixed() throws Exception {
         final int initialCount = 1000;
         for (int i = 1; i <= initialCount; i++) {
             testee.addUid(MessageUid.of(i));
@@ -375,7 +395,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void addShouldLeadToValidConversionWhenConcurrent() throws Exception {
+    public void addShouldLeadToMonoticMSNToUIDConversionWhenConcurrent() throws Exception {
         final int operationCount = 1000;
         int threadCount = 2;
 
@@ -398,7 +418,7 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void removeShouldLeadToValidConversionWhenConcurrent() throws Exception {
+    public void removeShouldLeadToMonoticMSNToUIDConversionWhenConcurrent() throws Exception {
         final int operationCount = 1000;
         int threadCount = 2;
         for (int i = 1; i <= operationCount * (threadCount + 1); i++) {
