@@ -52,7 +52,6 @@ import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -65,7 +64,7 @@ import com.google.common.collect.ImmutableList;
 public class SelectedMailboxImplTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SelectedMailboxImplTest.class);
-    public static final MessageUid MESSAGE_UID_5 = MessageUid.of(5);
+    private static final MessageUid MESSAGE_UID_5 = MessageUid.of(5);
 
     private ExecutorService executorService;
     private MailboxManager mailboxManager;
@@ -98,7 +97,6 @@ public class SelectedMailboxImplTest {
         executorService.shutdownNow();
     }
 
-    @Ignore
     @Test
     public void concurrentEventShouldNotSkipUidEmmitedDuringInitialization() throws Exception {
         final AtomicInteger success = new AtomicInteger(0);
@@ -114,7 +112,6 @@ public class SelectedMailboxImplTest {
         assertThat(selectedMailbox.getLastUid().get()).isEqualTo(MESSAGE_UID_5);
     }
 
-    @Ignore
     @Test
     public void concurrentEventShouldBeSupportedDuringInitialisation() throws Exception {
         final AtomicInteger success = new AtomicInteger(0);

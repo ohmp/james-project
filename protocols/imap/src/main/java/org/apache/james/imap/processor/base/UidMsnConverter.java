@@ -21,7 +21,8 @@ package org.apache.james.imap.processor.base;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 import org.apache.james.mailbox.MessageUid;
 
@@ -35,8 +36,16 @@ public class UidMsnConverter {
 
     @VisibleForTesting final ArrayList<MessageUid> uids;
 
-    public UidMsnConverter(Iterator<MessageUid> iterator) {
-        uids = Lists.newArrayList(iterator);
+    public UidMsnConverter() {
+        this.uids = Lists.newArrayList();
+    }
+
+    public synchronized void addAll(List<MessageUid> iterator) {
+        LinkedHashSet<MessageUid> messageUids = new LinkedHashSet<MessageUid>();
+        messageUids.addAll(uids);
+        messageUids.addAll(iterator);
+        uids.clear();
+        uids.addAll(messageUids);
         Collections.sort(uids);
     }
 

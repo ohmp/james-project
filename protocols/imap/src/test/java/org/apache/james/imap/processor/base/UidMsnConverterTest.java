@@ -42,7 +42,7 @@ public class UidMsnConverterTest {
 
     @Before
     public void setUp() {
-        testee = new UidMsnConverter(ImmutableList.<MessageUid>of().iterator());
+        testee = new UidMsnConverter();
         messageUid1 = MessageUid.of(1);
         messageUid2 = MessageUid.of(2);
         messageUid3 = MessageUid.of(3);
@@ -233,7 +233,7 @@ public class UidMsnConverterTest {
         testee.addUid(messageUid4);
 
         assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
-            .containsOnlyElementsOf(ImmutableMap.of(
+            .containsExactlyElementsOf(ImmutableMap.of(
                 1, messageUid1,
                 2, messageUid2,
                 3, messageUid3,
@@ -248,7 +248,7 @@ public class UidMsnConverterTest {
         testee.addUid(messageUid1);
 
         assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
-            .containsOnlyElementsOf(ImmutableMap.of(
+            .containsExactlyElementsOf(ImmutableMap.of(
                 1, messageUid1,
                 2, messageUid2,
                 3, messageUid3,
@@ -256,15 +256,79 @@ public class UidMsnConverterTest {
     }
 
     @Test
-    public void constructorWithOutOfOrderIteratorShouldLeadToValidConversion() {
-        testee = new UidMsnConverter(ImmutableList.of(messageUid2,
+    public void addAllShouldLeadToValidConversion() {
+        testee.addAll(ImmutableList.of(messageUid1,
+            messageUid2,
             messageUid3,
-            messageUid4,
-            messageUid1)
-            .iterator());
+            messageUid4));
 
         assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
-            .containsOnlyElementsOf(ImmutableMap.of(
+            .containsExactlyElementsOf(ImmutableMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addAllShouldDeduplicateElements() {
+        testee.addUid(messageUid1);
+
+        testee.addAll(ImmutableList.of(messageUid1,
+            messageUid2,
+            messageUid3,
+            messageUid4));
+
+        assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
+            .containsExactlyElementsOf(ImmutableMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addAllShouldMergeWithPreviousData() {
+        testee.addUid(messageUid1);
+
+        testee.addAll(ImmutableList.of(messageUid2,
+            messageUid3,
+            messageUid4));
+
+        assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
+            .containsExactlyElementsOf(ImmutableMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addAllShouldMergeAndDeduplicatePreviousData() {
+        testee.addUid(messageUid1);
+        testee.addUid(messageUid3);
+
+        testee.addAll(ImmutableList.of(messageUid2,
+            messageUid3,
+            messageUid4));
+
+        assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
+            .containsExactlyElementsOf(ImmutableMap.of(
+                1, messageUid1,
+                2, messageUid2,
+                3, messageUid3,
+                4, messageUid4).entrySet());
+    }
+
+    @Test
+    public void addAllWithOutOfOrderIteratorShouldLeadToValidConversion() {
+        testee.addAll(ImmutableList.of(messageUid2,
+            messageUid3,
+            messageUid4,
+            messageUid1));
+
+        assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
+            .containsExactlyElementsOf(ImmutableMap.of(
                 1, messageUid1,
                 2, messageUid2,
                 3, messageUid3,
@@ -307,7 +371,7 @@ public class UidMsnConverterTest {
             resultBuilder.put(i, MessageUid.of(initialCount + i));
         }
         assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
-            .containsOnlyElementsOf(resultBuilder.build().entrySet());
+            .containsExactlyElementsOf(resultBuilder.build().entrySet());
     }
 
     @Test
@@ -330,7 +394,7 @@ public class UidMsnConverterTest {
             resultBuilder.put(i, MessageUid.of(i));
         }
         assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
-            .containsOnlyElementsOf(resultBuilder.build().entrySet());
+            .containsExactlyElementsOf(resultBuilder.build().entrySet());
     }
 
     @Test
@@ -356,7 +420,7 @@ public class UidMsnConverterTest {
             resultBuilder.put(i, MessageUid.of((threadCount * operationCount) + i));
         }
         assertThat(mapTesteeInternalDataToMsnByUid().entrySet())
-            .containsOnlyElementsOf(resultBuilder.build().entrySet());
+            .containsExactlyElementsOf(resultBuilder.build().entrySet());
     }
 
     private Map<Integer, MessageUid> mapTesteeInternalDataToMsnByUid() {
