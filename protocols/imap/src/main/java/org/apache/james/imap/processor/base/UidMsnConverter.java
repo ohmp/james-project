@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.james.mailbox.MessageUid;
 
@@ -40,13 +41,12 @@ public class UidMsnConverter {
         this.uids = Lists.newArrayList();
     }
 
-    public synchronized void addAll(List<MessageUid> iterator) {
-        LinkedHashSet<MessageUid> messageUids = new LinkedHashSet<MessageUid>();
-        messageUids.addAll(uids);
-        messageUids.addAll(iterator);
+    public synchronized void addAll(List<MessageUid> addedUids) {
+        TreeSet<MessageUid> tmp = new TreeSet<MessageUid>();
+        tmp.addAll(uids);
+        tmp.addAll(addedUids);
         uids.clear();
-        uids.addAll(messageUids);
-        Collections.sort(uids);
+        uids.addAll(tmp);
     }
 
     public synchronized Optional<Integer> getMsn(MessageUid uid) {
