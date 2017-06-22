@@ -37,12 +37,15 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
+import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.util.FluentFutureStream;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.utils.UUIDs;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 public class CassandraBlobMapper {
 
@@ -57,14 +60,22 @@ public class CassandraBlobMapper {
     public CompletableFuture<UUID> write(byte[] data) {
         UUID uuid = UUIDs.timeBased();
         return FluentFutureStream.of(
-            computeBlobParts(data)
-                .map(pair ->
-                    executor.executeVoid(insertInto(CassandraBlobModule.TABLE_NAME)
-                        .value(CassandraBlobModule.ID, uuid)
-                        .value(CassandraBlobModule.PART, pair.getKey())
-                        .value(CassandraBlobModule.DATA, pair.getValue()))))
+            computeBlobParts(data).map(pair -> savePart(uuid, pair)))
             .completableFuture()
         .thenApply(any -> uuid);
+    }
+
+    private CompletableFuture<Void> savePart(UUID uuid, Pair<Integer, ByteBuffer> pair) {
+        UUID partUuid = UUIDs.timeBased();
+        return executor.executeVoid(
+            insertInto(CassandraBlobModule.PART_TABLE_NAME)
+                .value(CassandraBlobModule.PART, partUuid)
+                .value(CassandraBlobModule.DATA, pair.getValue()))
+            .thenCompose(any -> executor.executeVoid(
+                insertInto(CassandraBlobModule.BLOB_TABLE_NAME)
+                    .value(CassandraBlobModule.ID, uuid)
+                    .value(CassandraBlobModule.POSITION, pair.getKey())
+                    .value(CassandraBlobModule.PART, partUuid)));
     }
 
     private Stream<Pair<Integer, ByteBuffer>> computeBlobParts(byte[] data) {
@@ -85,25 +96,32 @@ public class CassandraBlobMapper {
     }
 
     public InputStream read(UUID id) {
+        ImmutableMap<Long, UUID> partIds = CassandraUtils.convertToStream(executor.execute(
+            select().from(CassandraBlobModule.BLOB_TABLE_NAME)
+                .where(eq(CassandraBlobModule.ID, id)))
+            .join())
+            .map(row -> Pair.of(row.getLong(CassandraBlobModule.POSITION), row.getUUID(CassandraBlobModule.PART)))
+            .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
         return new SequenceInputStream(
-            new CassandraBackedInputStreamEnumeration(
-                i -> readPart(id, i)));
+                new CassandraBackedInputStreamEnumeration(i -> readPart(partIds.get(i))));
     }
 
-    public CompletableFuture<Optional<Row>> readPart(UUID uuid, int part) {
-        return executor.executeSingleRow(select().from(CassandraBlobModule.TABLE_NAME)
-            .where(eq(CassandraBlobModule.ID, uuid))
-            .and(eq(CassandraBlobModule.PART, part)));
+    public CompletableFuture<Optional<Row>> readPart(UUID partId) {
+        if (partId == null) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        return executor.executeSingleRow(select().from(CassandraBlobModule.PART_TABLE_NAME)
+            .where(eq(CassandraBlobModule.PART, partId)));
     }
 
     public static class CassandraBackedInputStreamEnumeration implements Enumeration<InputStream> {
 
-        private final Function<Integer, CompletableFuture<Optional<Row>>> partFetcher;
-        private int nextPartOffset;
+        private final Function<Long, CompletableFuture<Optional<Row>>> partFetcher;
+        private long nextPartOffset;
         private CompletableFuture<Optional<Row>> preFetch;
         private Optional<Row> nextRow;
 
-        public CassandraBackedInputStreamEnumeration(Function<Integer, CompletableFuture<Optional<Row>>> partFetcher) {
+        public CassandraBackedInputStreamEnumeration(Function<Long, CompletableFuture<Optional<Row>>> partFetcher) {
             this.partFetcher = partFetcher;
             this.nextPartOffset = 0;
             this.nextRow = Optional.empty();

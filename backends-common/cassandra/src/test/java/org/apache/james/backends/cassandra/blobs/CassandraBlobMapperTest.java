@@ -50,7 +50,6 @@ public class CassandraBlobMapperTest {
     @After
     public void tearDown() {
         cassandra.clearAllTables();
-        cassandra.close();
     }
 
     @Test

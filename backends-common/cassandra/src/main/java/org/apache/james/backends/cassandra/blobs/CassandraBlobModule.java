@@ -31,19 +31,28 @@ import com.google.common.collect.ImmutableList;
 
 public class CassandraBlobModule implements CassandraModule{
 
-    public static final String TABLE_NAME = "blobs";
+    public static final String BLOB_TABLE_NAME = "blobs";
     public static final String ID = "id";
+    public static final String POSITION = "position";
     public static final String PART = "part";
+
+    public static final String PART_TABLE_NAME = "parts";
     public static final String DATA = "data";
 
     @Override
     public List<CassandraTable> moduleTables() {
-        return ImmutableList.of(new CassandraTable(TABLE_NAME,
-            SchemaBuilder.createTable(TABLE_NAME)
-                .ifNotExists()
-                .addPartitionKey(ID, DataType.timeuuid())
-                .addClusteringColumn(PART, DataType.bigint())
-                .addColumn(DATA, DataType.blob())));
+        return ImmutableList.of(
+            new CassandraTable(BLOB_TABLE_NAME,
+                SchemaBuilder.createTable(BLOB_TABLE_NAME)
+                    .ifNotExists()
+                    .addPartitionKey(ID, DataType.timeuuid())
+                    .addClusteringColumn(POSITION, DataType.bigint())
+                    .addColumn(PART, DataType.timeuuid())),
+            new CassandraTable(PART_TABLE_NAME,
+                SchemaBuilder.createTable(PART_TABLE_NAME)
+                    .ifNotExists()
+                    .addPartitionKey(PART, DataType.timeuuid())
+                    .addColumn(DATA, DataType.blob())));
     }
 
     @Override
