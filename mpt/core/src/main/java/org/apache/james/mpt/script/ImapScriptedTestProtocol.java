@@ -5,7 +5,6 @@ import org.apache.james.mpt.api.ImapHostSystem;
 
 public class ImapScriptedTestProtocol extends GenericSimpleScriptedTestProtocol<ImapHostSystem, ImapScriptedTestProtocol> {
 
-
     private static class CreateMailbox implements PrepareCommand<ImapHostSystem> {
 
         final MailboxPath mailboxPath;
