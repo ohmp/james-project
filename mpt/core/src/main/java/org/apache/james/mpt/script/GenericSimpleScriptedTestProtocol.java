@@ -185,7 +185,7 @@ public class GenericSimpleScriptedTestProtocol<T extends HostSystem, SELF extend
         fileName = scriptDirectory + fileName;
         
         // Need to find local resource.
-        InputStream is = this.getClass().getResourceAsStream(fileName);
+        InputStream is = ClassLoader.getSystemResourceAsStream(fileName);
 
         if (is == null) {
             throw new Exception("Test Resource '" + fileName + "' not found.");
