@@ -19,16 +19,15 @@
 
 package org.apache.james.mpt.imapmailbox.suite;
 
-import java.util.Locale;
-
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
+import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class PartialFetch implements ImapTestConstants {
+public abstract class PartialFetch extends LocaleParametrizedTest implements ImapTestConstants {
 
     protected abstract ImapHostSystem createImapHostSystem();
     
@@ -40,93 +39,31 @@ public abstract class PartialFetch implements ImapTestConstants {
         system = createImapHostSystem();
         simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
                 .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
+                .withLocale(locale);
         BasicImapCommands.welcome(simpleScriptedTestProtocol);
         BasicImapCommands.authenticate(simpleScriptedTestProtocol);
         BasicImapCommands.prepareMailbox(simpleScriptedTestProtocol);
     }
     
     @Test
-    public void testBodyPartialFetchUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("BodyPartialFetch");
+    public void testBodyPartialFetch() throws Exception {
+        simpleScriptedTestProtocol.run("BodyPartialFetch");
     }
 
     @Test
-    public void testBodyPartialFetchIT() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("BodyPartialFetch");
+    public void testTextPartialFetch() throws Exception {
+        simpleScriptedTestProtocol.run("TextPartialFetch");
     }
 
     @Test
-    public void testBodyPartialFetchKO() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("BodyPartialFetch");
+    public void testMimePartialFetch() throws Exception {
+        simpleScriptedTestProtocol.run("MimePartialFetch");
     }
 
     @Test
-    public void testTextPartialFetchUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("TextPartialFetch");
+    public void testHeaderPartialFetch() throws Exception {
+        simpleScriptedTestProtocol.run("HeaderPartialFetch");
     }
 
-    @Test
-    public void testTextPartialFetchKO() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("TextPartialFetch");
-    }
 
-    @Test
-    public void testTextPartialFetchIT() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("TextPartialFetch");
-    }
-
-    @Test
-    public void testMimePartialFetchUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("MimePartialFetch");
-    }
-
-    @Test
-    public void testMimePartialFetchIT() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("MimePartialFetch");
-    }
-
-    @Test
-    public void testMimePartialFetchKO() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("MimePartialFetch");
-    }
-
-    @Test
-    public void testHeaderPartialFetchUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("HeaderPartialFetch");
-    }
-
-    @Test
-    public void testHeaderPartialFetchIT() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("HeaderPartialFetch");
-    }
-
-    @Test
-    public void testHeaderPartialFetchKO() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("HeaderPartialFetch");
-    }
 }

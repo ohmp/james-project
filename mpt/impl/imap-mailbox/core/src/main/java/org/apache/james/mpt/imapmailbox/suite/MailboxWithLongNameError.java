@@ -48,9 +48,7 @@ public abstract class MailboxWithLongNameError implements ImapTestConstants {
 
     @Test
     public void testWithLongMailboxNameUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("CreateErrorWithLongName");
+        simpleScriptedTestProtocol.run("CreateErrorWithLongName");
     }
 
 }

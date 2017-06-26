@@ -19,21 +19,20 @@
 
 package org.apache.james.mpt.imapmailbox.suite;
 
-import java.util.Locale;
-
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
+import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class AuthenticatePlain implements ImapTestConstants {
-    
+public abstract class AuthenticatePlain extends LocaleParametrizedTest implements ImapTestConstants {
+
     protected abstract ImapHostSystem createImapHostSystem();
-    
+
     private ImapHostSystem system;
     private SimpleScriptedTestProtocol simpleScriptedTestProtocol;
 
@@ -42,35 +41,16 @@ public abstract class AuthenticatePlain implements ImapTestConstants {
         system = createImapHostSystem();
         simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
                 .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
+                .withLocale(locale);
         BasicImapCommands.welcome(simpleScriptedTestProtocol);
     }
     
     @Test
-    public void testAuthenticatePlainUS() throws Exception {
+    public void testAuthenticatePlain() throws Exception {
         system.addUser("delegate", "123456");
         system.createMailbox(new MailboxPath(MailboxConstants.USER_NAMESPACE, "delegate", "delegate"));
         system.createMailbox(new MailboxPath(MailboxConstants.USER_NAMESPACE, "imapuser", "imapuser"));
         simpleScriptedTestProtocol.run("AuthenticatePlain");
     }
 
-    @Test
-    public void testAuthenticatePlainITALY() throws Exception {
-        system.addUser("delegate", "123456");
-        system.createMailbox(new MailboxPath(MailboxConstants.USER_NAMESPACE, "delegate", "delegate"));
-        system.createMailbox(new MailboxPath(MailboxConstants.USER_NAMESPACE, "imapuser", "imapuser"));
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("AuthenticatePlain");
-    }
-
-    @Test
-    public void testAuthenticatePlainKOREA() throws Exception {
-        system.addUser("delegate", "123456");
-        system.createMailbox(new MailboxPath(MailboxConstants.USER_NAMESPACE, "delegate", "delegate"));
-        system.createMailbox(new MailboxPath(MailboxConstants.USER_NAMESPACE, "imapuser", "imapuser"));
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("AuthenticatePlain");
-    }
 }

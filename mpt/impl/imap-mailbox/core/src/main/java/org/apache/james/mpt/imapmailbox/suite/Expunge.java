@@ -24,11 +24,12 @@ import java.util.Locale;
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
+import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class Expunge implements ImapTestConstants {
+public abstract class Expunge extends LocaleParametrizedTest implements ImapTestConstants {
 
     protected abstract ImapHostSystem createImapHostSystem();
     
@@ -40,7 +41,7 @@ public abstract class Expunge implements ImapTestConstants {
         system = createImapHostSystem();
         simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
                 .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
+                .withLocale(locale);
         BasicImapCommands.welcome(simpleScriptedTestProtocol);
         BasicImapCommands.authenticate(simpleScriptedTestProtocol);
         BasicImapCommands.prepareMailbox(simpleScriptedTestProtocol);
@@ -48,22 +49,7 @@ public abstract class Expunge implements ImapTestConstants {
 
     @Test
     public void testBasicExpungeUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("ExpungeBasics");
+        simpleScriptedTestProtocol.run("ExpungeBasics");
     }
-    
-    @Test
-    public void testBasicExpungeIT() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("ExpungeBasics");
-    }
-    
-    @Test
-    public void testBasicExpungeKO() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("ExpungeBasics");
-    }
+
 }

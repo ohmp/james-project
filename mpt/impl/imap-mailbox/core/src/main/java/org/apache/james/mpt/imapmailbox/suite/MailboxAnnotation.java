@@ -51,23 +51,17 @@ public abstract class MailboxAnnotation implements ImapTestConstants {
     }
     
     @Test
-    public void testAnnotationUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("Annotation");
+    public void testAnnotation() throws Exception {
+        simpleScriptedTestProtocol.run("Annotation");
     }
 
     @Test
-    public void testAnnotationWithLimitationUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("AnnotationWithLimitation");
+    public void testAnnotationWithLimitation() throws Exception {
+        simpleScriptedTestProtocol.run("AnnotationWithLimitation");
     }
 
     @Test
     public void testAnnotationWithBinaryValue() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("AnnotationWithBinaryData");
+        simpleScriptedTestProtocol.run("AnnotationWithBinaryData");
     }
 }

@@ -47,9 +47,7 @@ public abstract class UidSearchOnIndex implements ImapTestConstants {
     
     @Test
     public void testSearchAtomsUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("UidSearchAtomsIndexer");
+        simpleScriptedTestProtocol.run("UidSearchAtomsIndexer");
     }
 
 }

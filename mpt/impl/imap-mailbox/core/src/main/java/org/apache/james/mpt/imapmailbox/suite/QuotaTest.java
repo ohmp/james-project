@@ -61,8 +61,6 @@ public abstract class QuotaTest implements ImapTestConstants {
     @Test
     public void testQuotaScript() throws Exception {
         system.setQuotaLimits(MAX_MESSAGE_QUOTA, MAX_STORAGE_QUOTA);
-        simpleScriptedTestProtocol
-            .withLocale(Locale.CANADA)
-            .run("Quota");
+        simpleScriptedTestProtocol.run("Quota");
     }
 }

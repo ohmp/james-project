@@ -50,9 +50,7 @@ public abstract class UserFlagsSupport implements ImapTestConstants {
     @Test
     public void testUserFlagsSupport() throws Exception {
         Assume.assumeTrue(system.supports(ImapFeatures.Feature.USER_FLAGS_SUPPORT));
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("UserFlagsSupport");
+        simpleScriptedTestProtocol.run("UserFlagsSupport");
     }
 
 }

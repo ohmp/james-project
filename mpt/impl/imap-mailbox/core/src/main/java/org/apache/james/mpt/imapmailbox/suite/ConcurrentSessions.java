@@ -19,16 +19,15 @@
 
 package org.apache.james.mpt.imapmailbox.suite;
 
-import java.util.Locale;
-
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
+import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class ConcurrentSessions implements ImapTestConstants {
+public abstract class ConcurrentSessions extends LocaleParametrizedTest implements ImapTestConstants {
 
     protected abstract ImapHostSystem createImapHostSystem();
     
@@ -39,169 +38,54 @@ public abstract class ConcurrentSessions implements ImapTestConstants {
     public void setUp() throws Exception {
         system = createImapHostSystem();
         simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
-                .withUser(USER, PASSWORD);
+                .withUser(USER, PASSWORD)
+                .withLocale(locale);
         BasicImapCommands.welcome(simpleScriptedTestProtocol);
         BasicImapCommands.authenticate(simpleScriptedTestProtocol);
     }
 
     @Test
     public void testConcurrentExpungeResponseUS() throws Exception {
-          simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentExpungeResponse");
-    }
-
-    @Test
-    public void testConcurrentExpungeResponseITALY() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentExpungeResponse");
-    }
-
-    @Test
-    public void testConcurrentExpungeResponseKOREA() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentExpungeResponse");
+          simpleScriptedTestProtocol.run("ConcurrentExpungeResponse");
     }
 
     @Test
     public void testConcurrentCrossExpungeUS() throws Exception {
-          simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentCrossExpunge");
-    }
-    
-    @Test
-    public void testConcurrentCrossExpungeITALY() throws Exception {
-          simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentCrossExpunge");
-    }
-    
-    @Test
-    public void testConcurrentCrossExpungeKOREA() throws Exception {
-          simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentCrossExpunge");
+          simpleScriptedTestProtocol.run("ConcurrentCrossExpunge");
     }
     
     @Test
     public void testConcurrentRenameSelectedSubUS() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentRenameSelectedSub");
+        simpleScriptedTestProtocol.run("ConcurrentRenameSelectedSub");
     }
 
     @Test
     public void testConcurrentExistsResponseUS() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentExistsResponse");
+        simpleScriptedTestProtocol.run("ConcurrentExistsResponse");
     }
 
     @Test
     public void testConcurrentDeleteSelectedUS() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentDeleteSelected");
+        simpleScriptedTestProtocol.run("ConcurrentDeleteSelected");
     }
 
     @Test
     public void testConcurrentFetchResponseUS() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentFetchResponse");
+        simpleScriptedTestProtocol.run("ConcurrentFetchResponse");
     }
 
     @Test
     public void testConcurrentRenameSelectedUS() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentRenameSelected");
-    }
-
-    @Test
-    public void testConcurrentRenameSelectedSubKOREA() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentRenameSelectedSub");
-    }
-    
-    @Test
-    public void testConcurrentExistsResponseKOREA() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentExistsResponse");
-    }
-
-    @Test
-    public void testConcurrentDeleteSelectedKOREA() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentDeleteSelected");
-    }
-
-    @Test
-    public void testConcurrentFetchResponseKOREA() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentFetchResponse");
-    }
-
-    @Test
-    public void testConcurrentRenameSelectedKOREA() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.KOREA)
-              .run("ConcurrentRenameSelected");
-    }
-
-    @Test
-    public void testConcurrentRenameSelectedSubITALY() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentRenameSelectedSub");
-    }
-    
-    @Test
-    public void testConcurrentExistsResponseITALY() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentExistsResponse");
-    }
-
-    @Test
-    public void testConcurrentDeleteSelectedITALY() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentDeleteSelected");
-    }
-
-    @Test
-    public void testConcurrentFetchResponseITALY() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentFetchResponse");
-    }
-
-    @Test
-    public void testConcurrentRenameSelectedITALY() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.ITALY)
-              .run("ConcurrentRenameSelected");
+        simpleScriptedTestProtocol.run("ConcurrentRenameSelected");
     }
 
     @Test
     public void expungeShouldNotBreakUIDToMSNMapping() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentExpungeUIDToMSNMapping");
+        simpleScriptedTestProtocol.run("ConcurrentExpungeUIDToMSNMapping");
     }
 
     @Test
     public void appendShouldNotBreakUIDToMSNMapping() throws Exception {
-        simpleScriptedTestProtocol
-              .withLocale(Locale.US)
-              .run("ConcurrentAppendUIDToMSNMapping");
+        simpleScriptedTestProtocol.run("ConcurrentAppendUIDToMSNMapping");
     }
 }

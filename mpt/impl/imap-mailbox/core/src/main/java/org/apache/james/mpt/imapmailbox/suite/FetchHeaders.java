@@ -19,16 +19,15 @@
 
 package org.apache.james.mpt.imapmailbox.suite;
 
-import java.util.Locale;
-
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
+import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class FetchHeaders implements ImapTestConstants {
+public abstract class FetchHeaders extends LocaleParametrizedTest implements ImapTestConstants {
 
     protected abstract ImapHostSystem createImapHostSystem();
     
@@ -40,51 +39,20 @@ public abstract class FetchHeaders implements ImapTestConstants {
         system = createImapHostSystem();
         simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
                 .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
+                .withLocale(locale);
         BasicImapCommands.welcome(simpleScriptedTestProtocol);
         BasicImapCommands.authenticate(simpleScriptedTestProtocol);
         BasicImapCommands.prepareMailbox(simpleScriptedTestProtocol);
     }
 
     @Test
-    public void testFetchHeaderFieldsUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("FetchHeaderFields");
+    public void testFetchHeaderFields() throws Exception {
+        simpleScriptedTestProtocol.run("FetchHeaderFields");
     }
 
     @Test
-    public void testFetchHeaderFieldsITALY() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("FetchHeaderFields");
+    public void testFetchHeaderFieldsNot() throws Exception {
+        simpleScriptedTestProtocol.run("FetchHeaderFieldsNot");
     }
 
-    @Test
-    public void testFetchHeaderFieldsKOREA() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("FetchHeaderFields");
-    }
-
-    @Test
-    public void testFetchHeaderFieldsNotUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("FetchHeaderFieldsNot");
-    }
-
-    @Test
-    public void testFetchHeaderFieldsNotITALY() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("FetchHeaderFieldsNot");
-    }
-
-    @Test
-    public void testFetchHeaderFieldsNotKOREA() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("FetchHeaderFieldsNot");
-    }
 }

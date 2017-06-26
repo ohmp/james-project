@@ -17,37 +17,25 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mpt.imapmailbox.suite;
+package org.apache.james.mpt.imapmailbox.suite.base;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 
-import org.apache.james.mpt.api.ImapHostSystem;
-import org.apache.james.mpt.imapmailbox.ImapTestConstants;
-import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
-import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public abstract class MailboxWithLongNameSuccess implements ImapTestConstants {
-
-    protected abstract ImapHostSystem createImapHostSystem();
-    
-    private ImapHostSystem system;
-    private SimpleScriptedTestProtocol simpleScriptedTestProtocol;
-
-    @Before
-    public void setUp() throws Exception {
-        system = createImapHostSystem();
-        simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
-                .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
-        BasicImapCommands.welcome(simpleScriptedTestProtocol);
-        BasicImapCommands.authenticate(simpleScriptedTestProtocol);
+@RunWith(Parameterized.class)
+public abstract class LocaleParametrizedTest {
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            { Locale.US }, { Locale.KOREA }, { Locale.ITALY }
+        });
     }
-    
-    @Test
-    public void testWithLongMailboxNameUS() throws Exception {
-        simpleScriptedTestProtocol.run("CreateSuccessWithLongName");
-    }
+
+    @Parameterized.Parameter
+    public Locale locale;
 
 }

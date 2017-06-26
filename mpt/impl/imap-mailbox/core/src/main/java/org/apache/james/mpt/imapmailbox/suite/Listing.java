@@ -19,16 +19,15 @@
 
 package org.apache.james.mpt.imapmailbox.suite;
 
-import java.util.Locale;
-
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
+import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class Listing implements ImapTestConstants {
+public abstract class Listing extends LocaleParametrizedTest implements ImapTestConstants {
 
     protected abstract ImapHostSystem createImapHostSystem();
     
@@ -46,43 +45,12 @@ public abstract class Listing implements ImapTestConstants {
 
     @Test
     public void testListPlusUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("ListPlus");
+        simpleScriptedTestProtocol.run("ListPlus");
     }
     
     @Test
     public void testListPercentWildcardUS() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("ListPercentWildcard");
+        simpleScriptedTestProtocol.run("ListPercentWildcard");
     }
 
-    @Test
-    public void testListPlusKOREA() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("ListPlus");
-    }
-    
-    @Test
-    public void testListPercentWildcardKOREA() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.KOREA)
-            .run("ListPercentWildcard");
-    }
-    
-    @Test
-    public void testListPlusITALY() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("ListPlus");
-    }
-    
-    @Test
-    public void testListPercentWildcardITALY() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.ITALY)
-            .run("ListPercentWildcard");
-    }
 }
