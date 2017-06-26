@@ -24,24 +24,34 @@ import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
 import org.apache.james.mpt.imapmailbox.suite.base.LocaleParametrizedTest;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+
 public abstract class UidSearch extends LocaleParametrizedTest implements ImapTestConstants {
 
-    protected abstract ImapHostSystem createImapHostSystem();
+    protected abstract Module retrieveModule();
     
     private ImapHostSystem system;
     private SimpleScriptedTestProtocol simpleScriptedTestProtocol;
 
     @Before
     public void setUp() throws Exception {
-        system = createImapHostSystem();
+        system = Guice.createInjector(retrieveModule()).getInstance(ImapHostSystem.class);
         simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/imap/scripts/", system)
                 .withUser(USER, PASSWORD)
                 .withLocale(locale);
         BasicImapCommands.welcome(simpleScriptedTestProtocol);
         BasicImapCommands.authenticate(simpleScriptedTestProtocol);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        system.afterTest();
     }
 
     @Test
