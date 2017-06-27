@@ -123,7 +123,7 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
     }
 
     @Test
-    public void termsBetweenElasticSearchAndLuceneLimitDueTuNonAsciiCharsShouldNotMakeIndexingFail() throws Exception {
+    public void termsBetweenElasticSearchAndLuceneLimitDueTuNonAsciiCharsShouldBeTruncated() throws Exception {
         MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, USERNAME, INBOX);
         MockMailboxSession session = new MockMailboxSession(USERNAME);
         MessageManager messageManager = storeMailboxManager.getMailbox(mailboxPath, session);
@@ -187,6 +187,24 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
         embeddedElasticSearch.awaitForElasticSearch();
 
         assertThat(messageManager.search(new SearchQuery(SearchQuery.bodyContains("matchMe")), session))
+            .containsExactly(composedMessageId.getUid());
+    }
+
+    @Test
+    public void reasonableLongTermShouldNotBeIgnored() throws Exception {
+        MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, USERNAME, INBOX);
+        MockMailboxSession session = new MockMailboxSession(USERNAME);
+        MessageManager messageManager = storeMailboxManager.getMailbox(mailboxPath, session);
+
+        String recipient = "benwa@linagora.com";
+        String reasonableLongTerm = "dichlorodiphényltrichloroéthane";
+        ComposedMessageId composedMessageId = messageManager.appendMessage(new ByteArrayInputStream(("To: " + recipient + "\n" +
+            "\n" +
+            reasonableLongTerm).getBytes(Charsets.UTF_8)), new Date(), session, IS_RECENT, new Flags());
+
+        embeddedElasticSearch.awaitForElasticSearch();
+
+        assertThat(messageManager.search(new SearchQuery(SearchQuery.bodyContains(reasonableLongTerm)), session))
             .containsExactly(composedMessageId.getUid());
     }
 }
