@@ -46,6 +46,10 @@ public class ReadOnlyUsersLDAPRepositoryTest {
 
     @Before
     public void setup() throws Exception {
+        startLdapContainer();
+    }
+
+    private void startLdapContainer() {
         ldapContainer = LdapGenericContainer.builder()
                 .domain(DOMAIN)
                 .password(ADMIN_PASSWORD)
@@ -139,7 +143,7 @@ public class ReadOnlyUsersLDAPRepositoryTest {
         } catch (Exception e) {
             LOGGER.info("This exception is expected as we shut down the LDAP and forced its use", e);
         }
-        setup();
+        startLdapContainer();
 
         assertThat(ldapRepository.test(JAMES_USER_MAIL, PASSWORD)).isTrue();
     }
