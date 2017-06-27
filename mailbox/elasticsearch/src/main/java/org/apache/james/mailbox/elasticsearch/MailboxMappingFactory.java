@@ -27,7 +27,6 @@ import static org.apache.james.backends.es.NodeMappingFactory.FORMAT;
 import static org.apache.james.backends.es.NodeMappingFactory.IGNORE_ABOVE;
 import static org.apache.james.backends.es.NodeMappingFactory.INDEX;
 import static org.apache.james.backends.es.NodeMappingFactory.LONG;
-import static org.apache.james.backends.es.NodeMappingFactory.LUCENE_LIMIT;
 import static org.apache.james.backends.es.NodeMappingFactory.NESTED;
 import static org.apache.james.backends.es.NodeMappingFactory.NOT_ANALYZED;
 import static org.apache.james.backends.es.NodeMappingFactory.PROPERTIES;
@@ -76,6 +75,8 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import com.google.common.base.Throwables;
 
 public class MailboxMappingFactory {
+
+    private static final int MAXIMUM_TERM_LENGTH = 4096;
 
     public static XContentBuilder getMappingContent() {
         try {
@@ -258,7 +259,7 @@ public class MailboxMappingFactory {
                                     .startObject(RAW)
                                         .field(TYPE, STRING)
                                         .field(ANALYZER, CASE_INSENSITIVE)
-                                        .field(IGNORE_ABOVE, LUCENE_LIMIT)
+                                        .field(IGNORE_ABOVE, MAXIMUM_TERM_LENGTH)
                                     .endObject()
                                 .endObject()
                             .endObject()
@@ -269,7 +270,7 @@ public class MailboxMappingFactory {
                                     .startObject(RAW)
                                         .field(TYPE, STRING)
                                         .field(ANALYZER, CASE_INSENSITIVE)
-                                        .field(IGNORE_ABOVE, LUCENE_LIMIT)
+                                        .field(IGNORE_ABOVE, MAXIMUM_TERM_LENGTH)
                                     .endObject()
                                 .endObject()
                             .endObject()
@@ -281,7 +282,7 @@ public class MailboxMappingFactory {
                             .startObject(TEXT)
                                 .field(TYPE, STRING)
                                 .field(ANALYZER, SNOWBALL)
-                                .field(IGNORE_ABOVE, LUCENE_LIMIT)
+                                .field(IGNORE_ABOVE, MAXIMUM_TERM_LENGTH)
                             .endObject()
                         .endObject()
                     .endObject()
