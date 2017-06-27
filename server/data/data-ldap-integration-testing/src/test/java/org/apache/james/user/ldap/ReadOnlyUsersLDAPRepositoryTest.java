@@ -121,11 +121,29 @@ public class ReadOnlyUsersLDAPRepositoryTest {
         startUsersRepository(ldapRepositoryConfiguration());
         assertThat(ldapRepository.test(UNKNOWN, PASSWORD)).isFalse();
     }
+
     @Test
     public void knownUserShouldBeAbleToLogInWhenPasswordIsCorrectWithVirtualHosting() throws Exception {
         startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
         assertThat(ldapRepository.test(JAMES_USER_MAIL, PASSWORD)).isTrue();
     }
+
+    @Test
+    public void testShouldStillWorksAfterRestartingLDAP() throws Exception {
+        startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
+        ldapRepository.test(JAMES_USER_MAIL, PASSWORD);
+
+        ldapContainer.stop();
+        try {
+            ldapRepository.test(JAMES_USER_MAIL, PASSWORD);
+        } catch (Exception e) {
+            LOGGER.info("This exception is expected as we shut down the LDAP and forced its use", e);
+        }
+        setup();
+
+        assertThat(ldapRepository.test(JAMES_USER_MAIL, PASSWORD)).isTrue();
+    }
+
 
     @Test
     public void knownUserShouldNotBeAbleToLogInWhenPasswordIsNotCorrectWithVirtualHosting() throws Exception {
