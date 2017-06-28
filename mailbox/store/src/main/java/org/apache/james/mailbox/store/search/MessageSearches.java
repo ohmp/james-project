@@ -75,6 +75,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 
 /**
  * Utility methods to help perform search operations.
@@ -251,7 +252,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
     }
 
     private InputStream textHeaders(MailboxMessage message) throws MimeIOException, IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream(Ints.checkedCast(message.getFullContentOctets()));
         new DefaultMessageWriter()
             .writeHeader(buildTextHeaders(message), out);
         return new ByteArrayInputStream(out.toByteArray());

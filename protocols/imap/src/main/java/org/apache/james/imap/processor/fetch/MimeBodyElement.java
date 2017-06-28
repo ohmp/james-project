@@ -30,6 +30,8 @@ import org.apache.james.imap.message.response.FetchResponse.BodyElement;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MessageResult;
 
+import com.google.common.primitives.Ints;
+
 
 /**
  * {@link BodyElement} which represent a MIME element specified by for example (BODY[1.MIME])
@@ -49,7 +51,6 @@ public class MimeBodyElement implements BodyElement {
         this.name = name;
         this.headers = headers;
         this.size = calculateSize(headers);
-        
     }
 
     /**
@@ -88,7 +89,7 @@ public class MimeBodyElement implements BodyElement {
      * @see org.apache.james.imap.message.response.FetchResponse.BodyElement#getInputStream()
      */
     public InputStream getInputStream() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream(Ints.checkedCast(size));
 
         for (MessageResult.Header header : headers) {
             try {

@@ -692,7 +692,7 @@ public class MimeMessageWrapper extends MimeMessage implements Disposable {
                 } else {
                     // the body was changed so we have no other solution to copy
                     // it into memory first :(
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    ByteArrayOutputStream out = new ByteArrayOutputStream(getSize());
                     writeTo(out);
                     return new ByteArrayInputStream(out.toByteArray());
                 }

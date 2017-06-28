@@ -27,6 +27,8 @@ import java.io.InputStream;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.google.common.primitives.Ints;
+
 /**
  * Provide an {@link InputStream} over an {@link MimeMessage}
  */
@@ -57,8 +59,7 @@ public class MimeMessageInputStream extends InputStream {
         if (tryCast && m instanceof MimeMessageWrapper) {
             in = ((MimeMessageWrapper) m).getMessageInputStream();
         } else {
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ByteArrayOutputStream out = new ByteArrayOutputStream(Ints.checkedCast(MimeMessageUtil.getMessageSize(m)));
             try {
                 message.writeTo(out);
                 in = new ByteArrayInputStream(out.toByteArray());

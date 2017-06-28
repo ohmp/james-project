@@ -30,6 +30,9 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.util.List;
 
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
+
 /**
  * Abstract base class for {@link Content} implementations which hold the headers and 
  * the body a email
@@ -62,7 +65,7 @@ public class FullByteContent implements Content {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream(Ints.checkedCast(size));
         for (Header header : headers) {
             if (header != null) {
                 try {
