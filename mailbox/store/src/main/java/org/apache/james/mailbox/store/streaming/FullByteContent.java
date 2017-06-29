@@ -18,11 +18,6 @@
  ****************************************************************/
 package org.apache.james.mailbox.store.streaming;
 
-import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.model.Content;
-import org.apache.james.mailbox.model.MessageResult;
-import org.apache.james.mailbox.model.MessageResult.Header;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,8 +25,11 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.util.List;
 
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
+import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.Content;
+import org.apache.james.mailbox.model.MessageResult;
+import org.apache.james.mailbox.model.MessageResult.Header;
+import org.apache.james.util.io.ExposedByteArrayOutputStream;
 
 /**
  * Abstract base class for {@link Content} implementations which hold the headers and 
@@ -65,7 +63,7 @@ public class FullByteContent implements Content {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream(Ints.checkedCast(size));
+        ByteArrayOutputStream out = new ExposedByteArrayOutputStream(size);
         for (Header header : headers) {
             if (header != null) {
                 try {

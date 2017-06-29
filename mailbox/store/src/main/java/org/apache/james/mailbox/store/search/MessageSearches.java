@@ -69,6 +69,7 @@ import org.apache.james.mime4j.message.HeaderImpl;
 import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.james.mime4j.util.MimeUtil;
 import org.apache.james.mime4j.utils.search.MessageMatcher;
+import org.apache.james.util.io.ExposedByteArrayOutputStream;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -252,7 +253,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
     }
 
     private InputStream textHeaders(MailboxMessage message) throws MimeIOException, IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream(Ints.checkedCast(message.getFullContentOctets()));
+        ByteArrayOutputStream out = new ExposedByteArrayOutputStream(Ints.checkedCast(message.getFullContentOctets()));
         new DefaultMessageWriter()
             .writeHeader(buildTextHeaders(message), out);
         return new ByteArrayInputStream(out.toByteArray());
