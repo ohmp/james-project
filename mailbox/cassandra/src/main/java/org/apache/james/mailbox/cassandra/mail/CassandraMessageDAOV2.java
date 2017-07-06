@@ -148,7 +148,7 @@ public class CassandraMessageDAOV2 {
             CompletableFuture<Optional<BlobId>> headerContent = blobsDAO.save(
                 IOUtils.toByteArray(
                     message.getHeaderContent(),
-                    message.getFullContentOctets() - message.getBodyOctets()));
+                    message.getHeaderOctets()));
 
             return bodyContent.thenCompose(bodyContentId ->
                     headerContent.thenApply(headerContentId ->
@@ -163,7 +163,7 @@ public class CassandraMessageDAOV2 {
         return insert.bind()
                 .setUUID(MESSAGE_ID, messageId.get())
                 .setTimestamp(INTERNAL_DATE, message.getInternalDate())
-                .setInt(BODY_START_OCTET, (int) (message.getFullContentOctets() - message.getBodyOctets()))
+                .setInt(BODY_START_OCTET, (int) (message.getHeaderOctets()))
                 .setLong(FULL_CONTENT_OCTETS, message.getFullContentOctets())
                 .setLong(BODY_OCTECTS, message.getBodyOctets())
                 .setString(BODY_CONTENT, pair.getLeft().map(BlobId::getId).orElse(DEFAULT_OBJECT_VALUE))
