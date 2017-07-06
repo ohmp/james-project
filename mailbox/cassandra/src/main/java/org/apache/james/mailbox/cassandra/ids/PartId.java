@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.ids;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -26,6 +27,8 @@ import com.google.common.base.Strings;
 
 public class PartId {
     public static PartId create(BlobId blobId, int position) {
+        Preconditions.checkNotNull(blobId);
+        Preconditions.checkArgument(position >= 0, "Position needs to be positive");
         return new PartId(blobId.getId() + "-" + position);
     }
 
@@ -36,7 +39,8 @@ public class PartId {
 
     private final String id;
 
-    private PartId(String id) {
+    @VisibleForTesting
+    PartId(String id) {
         this.id = id;
     }
 

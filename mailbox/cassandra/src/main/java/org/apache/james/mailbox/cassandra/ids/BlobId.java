@@ -21,6 +21,7 @@ package org.apache.james.mailbox.cassandra.ids;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -39,7 +40,8 @@ public class BlobId {
 
     private final String id;
 
-    private BlobId(String id) {
+    @VisibleForTesting
+    BlobId(String id) {
         this.id = id;
     }
 
