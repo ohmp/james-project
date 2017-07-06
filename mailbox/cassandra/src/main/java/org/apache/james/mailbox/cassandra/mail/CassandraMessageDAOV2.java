@@ -85,6 +85,7 @@ public class CassandraMessageDAOV2 {
     public static final int CHUNK_SIZE_ON_READ = 100;
     public static final long DEFAULT_LONG_VALUE = 0L;
     public static final String DEFAULT_OBJECT_VALUE = null;
+    private static final byte[] EMPTY_BYTE_ARRAY = {};
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraTypesProvider typesProvider;
     private final CassandraBlobsDAO blobsDAO;
@@ -303,7 +304,7 @@ public class CassandraMessageDAOV2 {
                 return row -> getBodyContent(row)
                         .thenApply(data -> Bytes.concat(new byte[row.getInt(BODY_START_OCTET)], data));
             case Metadata:
-                return row -> CompletableFuture.completedFuture(new byte[]{});
+                return row -> CompletableFuture.completedFuture(EMPTY_BYTE_ARRAY);
             default:
                 throw new RuntimeException("Unknown FetchType " + fetchType);
         }
