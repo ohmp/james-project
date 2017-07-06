@@ -29,7 +29,6 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.B
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -39,6 +38,7 @@ import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.ids.BlobId;
 import org.apache.james.mailbox.cassandra.ids.PartId;
+import org.apache.james.mailbox.cassandra.mail.utils.DataChunker;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.OptionalConverter;
@@ -62,10 +62,12 @@ public class CassandraBlobsDAO {
     private final PreparedStatement delete;
     private final PreparedStatement select;
     private final PreparedStatement selectPart;
+    private final DataChunker dataChunker;
 
     @Inject
     public CassandraBlobsDAO(Session session) {
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
+        this.dataChunker = new DataChunker();
         this.insert = prepareInsert(session);
         this.delete = prepareDelete(session);
         this.select = prepareSelect(session);
@@ -173,36 +175,10 @@ public class CassandraBlobsDAO {
     }
 
     private CompletableFuture<Stream<Pair<Integer, PartId>>> saveBlobParts(byte[] data, BlobId blobId) {
-        int size = data.length;
-        int fullChunkCount = size / CHUNK_SIZE;
-
-        CompletableFuture<Stream<Pair<Integer, PartId>>> regularPartsFuture =
-            saveRegularBlobParts(data, blobId, fullChunkCount);
-        CompletableFuture<Stream<Pair<Integer, PartId>>> finalPartFuture =
-            saveFinalByteBuffer(data, fullChunkCount * CHUNK_SIZE, fullChunkCount, blobId);
-
-        return regularPartsFuture.thenCompose(regularParts ->
-            finalPartFuture.thenApply(
-                finalPart-> Stream.concat(regularParts, finalPart)));
-    }
-
-    private CompletableFuture<Stream<Pair<Integer, PartId>>> saveRegularBlobParts(byte[] data, BlobId blobId, int fullChunkCount) {
-        return FluentFutureStream.of(IntStream.range(0, fullChunkCount)
-                .mapToObj(i -> Pair.of(i, writePart(getWrap(data, i * CHUNK_SIZE, CHUNK_SIZE), blobId, i)))
-                .map(pair -> pair.getRight()
-                    .thenApply(partId -> Pair.of(pair.getLeft(), partId))))
+        return FluentFutureStream.of(
+            dataChunker.chunk(data, CHUNK_SIZE)
+                .map(pair -> writePart(pair.getRight(), blobId, pair.getKey())
+                    .thenApply(partId -> Pair.of(pair.getKey(), partId))))
             .completableFuture();
-    }
-
-    private CompletableFuture<Stream<Pair<Integer, PartId>>> saveFinalByteBuffer(byte[] data, int offset, int index, BlobId blobId) {
-        if (offset == data.length) {
-            return CompletableFuture.completedFuture(Stream.of());
-        }
-        return writePart(getWrap(data, offset, data.length - offset), blobId, index)
-            .thenApply(partId -> Stream.of(Pair.of(index, partId)));
-    }
-
-    private ByteBuffer getWrap(byte[] data, int offset, int length) {
-        return ByteBuffer.wrap(data, offset, length);
     }
 }
