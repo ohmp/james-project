@@ -31,15 +31,17 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.ids.BlobId;
 import org.apache.james.mailbox.cassandra.ids.PartId;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.util.OptionalConverter;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -48,6 +50,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Bytes;
 
 public class CassandraBlobsDAO {
@@ -107,31 +110,44 @@ public class CassandraBlobsDAO {
             return CompletableFuture.completedFuture(Optional.empty());
         }
         BlobId blobId = BlobId.forPayload(data);
-        return FluentFutureStream.of(
-            saveBlobParts(data, blobId)
-                .map(pair ->
-                    cassandraAsyncExecutor.executeVoid(insert.bind()
-                        .setString(Blobs.ID, blobId.getId())
-                        .setLong(Blobs.POSITION, pair.getKey())
-                        .setString(Blobs.PART, pair.getValue().getId()))))
-            .completableFuture()
+        return saveBlobParts(data, blobId)
+            .thenCompose(partIds -> saveBlobPartsReferences(blobId, partIds))
             .thenApply(any -> Optional.of(blobId));
     }
 
-    public CompletableFuture<byte[]> read(BlobId blobId) {
-        return readBlob(blobId)
-            .thenApply(resultSet -> CassandraUtils.convertToStream(resultSet)
-                .map(row -> Pair.of(row.getLong(Blobs.POSITION), PartId.from(row.getString(Blobs.PART))))
-                .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue)))
-            .thenCompose(positionToIds -> CompletableFutureUtil.chainAll(
-                positionToIds.values().stream(),
-                this::readPart))
-            .thenApply(this::readRows);
+    private CompletableFuture<Stream<Void>> saveBlobPartsReferences(BlobId blobId, Stream<Pair<Integer, PartId>> stream) {
+        return FluentFutureStream.of(stream.map(pair ->
+            cassandraAsyncExecutor.executeVoid(insert.bind()
+                .setString(Blobs.ID, blobId.getId())
+                .setLong(Blobs.POSITION, pair.getKey())
+                .setString(Blobs.PART, pair.getValue().getId()))))
+            .completableFuture();
     }
 
-    private byte[] readRows(Stream<Optional<Row>> rows) {
-        ImmutableList<byte[]> parts = rows.filter(Optional::isPresent)
-            .map(row -> rowToData(row.get()))
+    public CompletableFuture<byte[]> read(BlobId blobId) {
+        return cassandraAsyncExecutor.execute(
+            select.bind()
+                .setString(Blobs.ID, blobId.getId()))
+            .thenApply(this::toPartIds)
+            .thenCompose(this::toDataParts)
+            .thenApply(this::concatenateDataParts);
+    }
+
+    private CompletableFuture<Stream<Optional<Row>>> toDataParts(ImmutableMap<Long, PartId> positionToIds) {
+        return CompletableFutureUtil.chainAll(
+            positionToIds.values().stream(),
+            this::readPart);
+    }
+
+    private ImmutableMap<Long, PartId> toPartIds(ResultSet resultSet) {
+        return CassandraUtils.convertToStream(resultSet)
+            .map(row -> Pair.of(row.getLong(Blobs.POSITION), PartId.from(row.getString(Blobs.PART))))
+            .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+    }
+
+    private byte[] concatenateDataParts(Stream<Optional<Row>> rows) {
+        ImmutableList<byte[]> parts = rows.flatMap(OptionalConverter::toStream)
+            .map(this::rowToData)
             .collect(Guavate.toImmutableList());
 
         return Bytes.concat(parts.toArray(new byte[parts.size()][]));
@@ -143,42 +159,47 @@ public class CassandraBlobsDAO {
         return data;
     }
 
-    public CompletableFuture<ResultSet> readBlob(BlobId blobId) {
-        return cassandraAsyncExecutor.execute(select.bind()
-                .setString(Blobs.ID, blobId.getId()));
-    }
-
     private CompletableFuture<Optional<Row>> readPart(PartId partId) {
-        if (partId == null) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
         return cassandraAsyncExecutor.executeSingleRow(selectPart.bind()
                 .setString(BlobParts.ID, partId.getId()));
     }
 
-    private PartId writePart(ByteBuffer data, BlobId blobId, int position) {
+    private CompletableFuture<PartId> writePart(ByteBuffer data, BlobId blobId, int position) {
         PartId partId = PartId.create(blobId, position);
-        cassandraAsyncExecutor.executeVoid(insertPart.bind()
+        return cassandraAsyncExecutor.executeVoid(insertPart.bind()
                 .setString(BlobParts.ID, partId.getId())
-                .setBytes(BlobParts.DATA, data));
-        return partId;
+                .setBytes(BlobParts.DATA, data))
+            .thenApply(any -> partId);
     }
 
-    private Stream<Pair<Integer, PartId>> saveBlobParts(byte[] data, BlobId blobId) {
+    private CompletableFuture<Stream<Pair<Integer, PartId>>> saveBlobParts(byte[] data, BlobId blobId) {
         int size = data.length;
         int fullChunkCount = size / CHUNK_SIZE;
 
-        return Stream.concat(
-                IntStream.range(0, fullChunkCount)
-                        .mapToObj(i -> Pair.of(i, writePart(getWrap(data, i * CHUNK_SIZE, CHUNK_SIZE), blobId, i))),
-                saveFinalByteBuffer(data, fullChunkCount * CHUNK_SIZE, fullChunkCount, blobId));
+        CompletableFuture<Stream<Pair<Integer, PartId>>> regularPartsFuture =
+            saveRegularBlobParts(data, blobId, fullChunkCount);
+        CompletableFuture<Stream<Pair<Integer, PartId>>> finalPartFuture =
+            saveFinalByteBuffer(data, fullChunkCount * CHUNK_SIZE, fullChunkCount, blobId);
+
+        return regularPartsFuture.thenCompose(regularParts ->
+            finalPartFuture.thenApply(
+                finalPart-> Stream.concat(regularParts, finalPart)));
     }
 
-    private Stream<Pair<Integer, PartId>> saveFinalByteBuffer(byte[] data, int offset, int index, BlobId blobId) {
+    private CompletableFuture<Stream<Pair<Integer, PartId>>> saveRegularBlobParts(byte[] data, BlobId blobId, int fullChunkCount) {
+        return FluentFutureStream.of(IntStream.range(0, fullChunkCount)
+                .mapToObj(i -> Pair.of(i, writePart(getWrap(data, i * CHUNK_SIZE, CHUNK_SIZE), blobId, i)))
+                .map(pair -> pair.getRight()
+                    .thenApply(partId -> Pair.of(pair.getLeft(), partId))))
+            .completableFuture();
+    }
+
+    private CompletableFuture<Stream<Pair<Integer, PartId>>> saveFinalByteBuffer(byte[] data, int offset, int index, BlobId blobId) {
         if (offset == data.length) {
-            return Stream.of();
+            return CompletableFuture.completedFuture(Stream.of());
         }
-        return Stream.of(Pair.of(index, writePart(getWrap(data, offset, data.length - offset), blobId, index)));
+        return writePart(getWrap(data, offset, data.length - offset), blobId, index)
+            .thenApply(partId -> Stream.of(Pair.of(index, partId)));
     }
 
     private ByteBuffer getWrap(byte[] data, int offset, int length) {
