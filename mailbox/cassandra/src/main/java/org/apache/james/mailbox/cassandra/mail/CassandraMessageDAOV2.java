@@ -50,9 +50,9 @@ import javax.mail.util.SharedByteArrayInputStream;
 
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
-import org.apache.james.mailbox.cassandra.BlobId;
-import org.apache.james.mailbox.cassandra.CassandraMessageId;
-import org.apache.james.mailbox.cassandra.Limit;
+import org.apache.james.mailbox.cassandra.ids.BlobId;
+import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.mail.utils.Limit;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.Attachments;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.Properties;
 import org.apache.james.mailbox.exception.MailboxException;

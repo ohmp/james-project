@@ -25,21 +25,18 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.BlobParts;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.Blobs;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
+
 import java.nio.ByteBuffer;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
-import org.apache.james.mailbox.cassandra.BlobId;
-import org.apache.james.mailbox.cassandra.PartId;
+import org.apache.james.mailbox.cassandra.ids.BlobId;
+import org.apache.james.mailbox.cassandra.ids.PartId;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,10 +46,8 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.utils.UUIDs;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Bytes;
 
 public class CassandraBlobsDAO {
