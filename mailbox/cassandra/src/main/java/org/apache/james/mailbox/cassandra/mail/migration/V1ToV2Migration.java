@@ -50,7 +50,9 @@ public class V1ToV2Migration {
         this.attachmentLoader = new AttachmentLoader(attachmentMapper);
     }
 
-    public CompletableFuture<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> handleVersioning(CassandraMessageDAOV2.MessageResult result) {
+    public CompletableFuture<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>
+            moveFromV1toV2(CassandraMessageDAOV2.MessageResult result) {
+
         if (result.isFound()) {
             return CompletableFuture.completedFuture(result.message());
         }
