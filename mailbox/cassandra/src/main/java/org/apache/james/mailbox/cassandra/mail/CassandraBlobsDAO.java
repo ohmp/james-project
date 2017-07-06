@@ -55,7 +55,7 @@ import com.google.common.primitives.Bytes;
 
 public class CassandraBlobsDAO {
 
-    public static final int CHUNK_SIZE = 1024;
+    public static final int CHUNK_SIZE = 1024 * 100;
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement insert;
     private final PreparedStatement insertPart;
