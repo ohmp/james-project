@@ -28,7 +28,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.event.EventFactory;
-import org.apache.james.mailbox.store.event.EventFactory.AddedImpl;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -77,10 +76,17 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
                     EventFactory.AddedImpl added = (EventFactory.AddedImpl) event;
                     final Mailbox mailbox = added.getMailbox();
 
-                    if (added.isSingleMessage()) {
-                        addMessage(session, added, mailbox);
-                    } else {
-                        addMessages(session, added, mailbox);
+                    for (MessageUid next : (Iterable<MessageUid>) added.getUids()) {
+                        Iterator<MailboxMessage> messages = factory.getMessageMapper(session).findInMailbox(mailbox, MessageRange.one(next), FetchType.Full, -1);
+                        while (messages.hasNext()) {
+                            MailboxMessage message = messages.next();
+                            try {
+                                add(session, mailbox, message);
+                            } catch (MailboxException e) {
+                                session.getLog().error("Unable to index message " + message.getUid() + " for mailbox " + mailbox, e);
+                            }
+                        }
+
                     }
                 } else if (event instanceof EventFactory.ExpungedImpl) {
                     EventFactory.ExpungedImpl expunged = (EventFactory.ExpungedImpl) event;
@@ -104,29 +110,6 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
             }
         } catch (MailboxException e) {
             session.getLog().error("Unable to update index", e);
-        }
-    }
-
-    private void addMessage(MailboxSession session, AddedImpl added, Mailbox mailbox) {
-        MailboxMessage message = added.getMessage().get();
-        try {
-            add(session, mailbox, message);
-        } catch (MailboxException e) {
-            session.getLog().debug("Unable to index message " + message.getUid() + " for mailbox " + mailbox, e);
-        }
-    }
-
-    private void addMessages(final MailboxSession session, EventFactory.AddedImpl added, final Mailbox mailbox) throws MailboxException {
-        for (MessageUid next : (Iterable<MessageUid>) added.getUids()) {
-            Iterator<MailboxMessage> messages = factory.getMessageMapper(session).findInMailbox(mailbox, MessageRange.one(next), FetchType.Full, -1);
-            while (messages.hasNext()) {
-                MailboxMessage message = messages.next();
-                try {
-                    add(session, mailbox, message);
-                } catch (MailboxException e) {
-                    session.getLog().error("Unable to index message " + message.getUid() + " for mailbox " + mailbox, e);
-                }
-            }
         }
     }
 

@@ -32,7 +32,6 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
-import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -79,10 +78,6 @@ public class MailboxEventDispatcher {
                 .put(messageMetaData.getUid(), messageMetaData)
                 .build();
         added(session, metaDataMap, mailbox);
-    }
-
-    public void added(MailboxSession session, MailboxMessage message, MessageMetaData messageMetaData, Mailbox mailbox) {
-        listener.event(eventFactory.added(session, message, messageMetaData, mailbox));
     }
 
     /**
