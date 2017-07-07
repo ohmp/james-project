@@ -802,9 +802,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         ImmutableMap.Builder<MessageUid, MailboxMessage> messagesMap = ImmutableMap.builder();
         for(MailboxMessage message: originalRows.getEntriesSeen()) {
-            ImmutableMailboxMessage copy = immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message);
-            copy.setUid(message.getUid());
-            messagesMap.put(message.getUid(), copy);
+            messagesMap.put(message.getUid(), immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message));
         }
         dispatcher.added(session, copiedUids, to.getMailboxEntity(), messagesMap.build());
 
@@ -819,9 +817,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         ImmutableMap.Builder<MessageUid, MailboxMessage> messagesMap = ImmutableMap.builder();
         for(MailboxMessage message: originalRows.getEntriesSeen()) {
-            ImmutableMailboxMessage copy = immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message);
-            copy.setUid(message.getUid());
-            messagesMap.put(message.getUid(), copy);
+            messagesMap.put(message.getUid(), immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message));
         }
         dispatcher.added(session, moveUids, to.getMailboxEntity(), messagesMap.build());
         dispatcher.expunged(session, collectMetadata(moveResult.getOriginalMessages()), getMailboxEntity());
