@@ -20,6 +20,8 @@
 package org.apache.james.mailbox.cassandra.mail.migration;
 
 import java.util.Optional;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -44,13 +46,13 @@ public class V1ToV2MigrationThread implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1ToV2MigrationThread.class);
 
-    private final EvictingQueue<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> messagesToBeMigrated;
+    private final BlockingQueue<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> messagesToBeMigrated;
     private final CassandraMessageDAO messageDAOV1;
     private final CassandraMessageDAOV2 messageDAOV2;
     private final AttachmentLoader attachmentLoader;
     private final CassandraConfiguration cassandraConfiguration;
 
-    public V1ToV2MigrationThread(EvictingQueue<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> messagesToBeMigrated,
+    public V1ToV2MigrationThread(BlockingQueue<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> messagesToBeMigrated,
                                  CassandraMessageDAO messageDAOV1, CassandraMessageDAOV2 messageDAOV2, AttachmentLoader attachmentLoader,
                                  CassandraConfiguration cassandraConfiguration) {
         this.messagesToBeMigrated = messagesToBeMigrated;
@@ -77,11 +79,6 @@ public class V1ToV2MigrationThread implements Runnable {
             Optional<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> poll = poll();
             if (poll.isPresent()) {
                 return poll.get();
-            }
-            try {
-                Thread.sleep(cassandraConfiguration.getV1ToV2PollingDelay());
-            } catch (InterruptedException e) {
-                Throwables.propagate(e);
             }
         }
     }
