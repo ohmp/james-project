@@ -192,6 +192,54 @@ public class CassandraConfigurationTest {
     }
 
     @Test
+    public void v1toV2ThreadCountShouldThrowOnZero() {
+        expectedException.expect(IllegalArgumentException.class);
+
+        CassandraConfiguration.builder()
+            .v1ToV2ThreadCount(0);
+    }
+
+    @Test
+    public void v1toV2ThreadCountShouldThrowOnNegative() {
+        expectedException.expect(IllegalArgumentException.class);
+
+        CassandraConfiguration.builder()
+            .v1ToV2ThreadCount(-1);
+    }
+
+    @Test
+    public void v1toV2QueueLengthShouldThrowOnZero() {
+        expectedException.expect(IllegalArgumentException.class);
+
+        CassandraConfiguration.builder()
+            .v1ToV2QueueLength(0);
+    }
+
+    @Test
+    public void v1toV2QueueLengthShouldThrowOnNegative() {
+        expectedException.expect(IllegalArgumentException.class);
+
+        CassandraConfiguration.builder()
+            .v1ToV2QueueLength(-1);
+    }
+
+    @Test
+    public void v1toV2PollingDelayShouldThrowOnZero() {
+        expectedException.expect(IllegalArgumentException.class);
+
+        CassandraConfiguration.builder()
+            .v1ToV2PollingDelay(0);
+    }
+
+    @Test
+    public void v1toV2PollingDelayShouldThrowOnNegative() {
+        expectedException.expect(IllegalArgumentException.class);
+
+        CassandraConfiguration.builder()
+            .v1ToV2PollingDelay(-1);
+    }
+
+    @Test
     public void builderShouldCreateTheRightObject() {
         int aclMaxRetry = 1;
         int modSeqMaxRetry = 2;
