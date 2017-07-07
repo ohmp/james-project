@@ -63,7 +63,7 @@ public class V1ToV2Migration {
         this.cassandraConfiguration = cassandraConfiguration;
         this.migrationExecutor = Executors.newFixedThreadPool(cassandraConfiguration.getV1ToV2ThreadCount());
         boolean ensureFifoOrder = false;
-        this.messagesToBeMigrated =new ArrayBlockingQueue<>(cassandraConfiguration.getV1ToV2QueueLength(), ensureFifoOrder);
+        this.messagesToBeMigrated = new ArrayBlockingQueue<>(cassandraConfiguration.getV1ToV2QueueLength(), ensureFifoOrder);
         IntStream.range(0, cassandraConfiguration.getV1ToV2ThreadCount())
             .mapToObj(i -> new V1ToV2MigrationThread(messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader, cassandraConfiguration))
             .forEach(migrationExecutor::execute);
