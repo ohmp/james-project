@@ -120,11 +120,11 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     private CompletableFuture<Stream<SimpleMailboxMessage>> filterMessagesWithExistingMailbox(Stream<SimpleMailboxMessage> stream) {
-        return FluentFutureStream.ofNestedStreams(stream.map(this::mailboxExists))
+        return FluentFutureStream.ofOptionals(stream.map(this::keepMessageIfMailboxExists))
             .completableFuture();
     }
 
-    private CompletableFuture<Stream<SimpleMailboxMessage>> mailboxExists(SimpleMailboxMessage message) {
+    private CompletableFuture<Optional<SimpleMailboxMessage>> keepMessageIfMailboxExists(SimpleMailboxMessage message) {
         CassandraId cassandraId = (CassandraId) message.getMailboxId();
         return mailboxDAO.retrieveMailbox(cassandraId)
             .thenApply(optional -> {
@@ -132,9 +132,10 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
                     LOGGER.info("Mailbox {} have been deleted but message {} is still attached to it.",
                         cassandraId,
                         message.getMailboxId());
-                    return Stream.empty();
+                    return Optional.empty();
                 }
-                return Stream.of(message);
+
+                return Optional.of(message);
             });
     }
 
