@@ -31,6 +31,7 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.modules.CassandraRegistrationModule;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.mailbox.store.TestIdDeserializer;
@@ -147,7 +148,8 @@ public class CassandraBasedRegisteredDistributedMailboxDelegatingListenerTest {
     public void mailboxEventListenersShouldBeTriggeredIfRegistered() throws Exception {
         SimpleMailbox simpleMailbox = new SimpleMailbox(MAILBOX_PATH_1, 42);
         simpleMailbox.setMailboxId(TestId.of(52));
-        final MailboxListener.Event event = new EventFactory().added(mailboxSession, new TreeMap<>(), simpleMailbox, EMPTY_MESSAGE_CACHE);
+        TreeMap<MessageUid, MessageMetaData> uids = new TreeMap<>();
+        final MailboxListener.Event event = new EventFactory().added(mailboxSession, uids, simpleMailbox, EMPTY_MESSAGE_CACHE);
 
         registeredDelegatingMailboxListener1.event(event);
 
@@ -160,7 +162,8 @@ public class CassandraBasedRegisteredDistributedMailboxDelegatingListenerTest {
     public void onceEventListenersShouldBeTriggeredOnceAcrossTheCluster() {
         SimpleMailbox simpleMailbox = new SimpleMailbox(MAILBOX_PATH_1, 42);
         simpleMailbox.setMailboxId(TestId.of(52));
-        final MailboxListener.Event event = new EventFactory().added(mailboxSession, new TreeMap<>(), simpleMailbox, EMPTY_MESSAGE_CACHE);
+        TreeMap<MessageUid, MessageMetaData> uids = new TreeMap<>();
+        final MailboxListener.Event event = new EventFactory().added(mailboxSession, uids, simpleMailbox, EMPTY_MESSAGE_CACHE);
 
         registeredDelegatingMailboxListener1.event(event);
 
