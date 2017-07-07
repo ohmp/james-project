@@ -173,9 +173,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     
     private BatchSizes batchSizes = BatchSizes.defaultValues();
 
+    private final ImmutableMailboxMessage.Factory immutableMailboxMessageFactory;
+
     public StoreMessageManager(MailboxSessionMapperFactory mapperFactory, MessageSearchIndex index, MailboxEventDispatcher dispatcher, 
             MailboxPathLocker locker, Mailbox mailbox, MailboxACLResolver aclResolver, GroupMembershipResolver groupMembershipResolver,
-            QuotaManager quotaManager, QuotaRootResolver quotaRootResolver, MessageParser messageParser, MessageId.Factory messageIdFactory, BatchSizes batchSizes) 
+            QuotaManager quotaManager, QuotaRootResolver quotaRootResolver, MessageParser messageParser, MessageId.Factory messageIdFactory, BatchSizes batchSizes,
+            ImmutableMailboxMessage.Factory immutableMailboxMessageFactory) 
                     throws MailboxException {
         this.mailbox = mailbox;
         this.dispatcher = dispatcher;
@@ -189,6 +192,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         this.messageParser = messageParser;
         this.messageIdFactory = messageIdFactory;
         this.batchSizes = batchSizes;
+        this.immutableMailboxMessageFactory = immutableMailboxMessageFactory;
     }
 
     protected Factory getMessageIdFactory() {
@@ -798,7 +802,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         ImmutableMap.Builder<MessageUid, MailboxMessage> messagesMap = ImmutableMap.builder();
         for(MailboxMessage message: originalRows.getEntriesSeen()) {
-            SimpleMailboxMessage copy = SimpleMailboxMessage.copy(to.getMailboxEntity().getMailboxId(), message);
+            ImmutableMailboxMessage copy = immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message);
             copy.setUid(message.getUid());
             messagesMap.put(message.getUid(), copy);
         }
@@ -815,7 +819,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         ImmutableMap.Builder<MessageUid, MailboxMessage> messagesMap = ImmutableMap.builder();
         for(MailboxMessage message: originalRows.getEntriesSeen()) {
-            SimpleMailboxMessage copy = SimpleMailboxMessage.copy(to.getMailboxEntity().getMailboxId(), message);
+            ImmutableMailboxMessage copy = immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message);
             copy.setUid(message.getUid());
             messagesMap.put(message.getUid(), copy);
         }
