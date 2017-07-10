@@ -44,14 +44,14 @@ public class EventFactory {
 
     public final class AddedImpl extends MailboxListener.Added implements MailboxAware {
         private final Map<MessageUid, MessageMetaData> added;
-        private final Map<MessageUid, MailboxMessage> cachedMessages;
+        private final Map<MessageUid, MailboxMessage> availableMessages;
         private final Mailbox mailbox;
 
-        public AddedImpl(MailboxSession session, Mailbox mailbox, SortedMap<MessageUid, MessageMetaData> uids, Map<MessageUid, MailboxMessage> cachedMessages) {
+        public AddedImpl(MailboxSession session, Mailbox mailbox, SortedMap<MessageUid, MessageMetaData> uids, Map<MessageUid, MailboxMessage> availableMessages) {
             super(session, new StoreMailboxPath(mailbox));
             this.added = ImmutableMap.copyOf(uids);
             this.mailbox = mailbox;
-            this.cachedMessages = ImmutableMap.copyOf(cachedMessages);
+            this.availableMessages = ImmutableMap.copyOf(availableMessages);
         }
 
         public List<MessageUid> getUids() {
@@ -66,8 +66,8 @@ public class EventFactory {
             return mailbox;
         }
 
-        public Map<MessageUid, MailboxMessage> getCachedMessages() {
-            return cachedMessages;
+        public Map<MessageUid, MailboxMessage> getAvailableMessages() {
+            return availableMessages;
         }
     }
 

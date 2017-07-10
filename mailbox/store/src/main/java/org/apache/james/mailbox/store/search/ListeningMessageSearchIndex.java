@@ -110,7 +110,7 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
     }
 
     private Optional<MailboxMessage> retrieveMailboxMessage(MailboxSession session, EventFactory.AddedImpl added, Mailbox mailbox, MessageUid next) {
-        Optional<MailboxMessage> firstChoice = Optional.fromNullable(added.getCachedMessages().get(next));
+        Optional<MailboxMessage> firstChoice = Optional.fromNullable(added.getAvailableMessages().get(next));
         if (firstChoice.isPresent()) {
             return firstChoice;
         } else {
