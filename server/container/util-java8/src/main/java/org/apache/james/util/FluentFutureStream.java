@@ -160,7 +160,7 @@ public class FluentFutureStream<T> {
     }
 
     /**
-     * educes the underlying stream. Reduced value is supplied as a Future, as an empty value is specified.
+     * Reduces the underlying stream. Reduced value is supplied as a Future, as an empty value is specified.
      */
     public CompletableFuture<T> reduce(T emptyAccumulator, BinaryOperator<T> combiner) {
         return CompletableFutureUtil.reduce(combiner, completableFuture, emptyAccumulator);
