@@ -34,6 +34,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.store.mail.model.FlagsBuilder;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
 
@@ -71,7 +72,8 @@ public class ImmutableMailboxMessage implements MailboxMessage {
                         message.isDraft(),
                         message.isFlagged(),
                         message.isRecent(),
-                        message.isSeen());
+                        message.isSeen(),
+                        message.createFlags().getUserFlags());
             } catch (IOException e) {
                 throw new MailboxException("Unable to parse message", e);
             }
@@ -110,31 +112,33 @@ public class ImmutableMailboxMessage implements MailboxMessage {
     private final boolean flagged;
     private final boolean recent;
     private final boolean seen;
+    private final String[] userFlags;
 
     private ImmutableMailboxMessage(MessageId messageId, Date internalDate, InputStream bodyContent, String mediaType, String subType, long bodyOctets, long fullContentOctets, Long textualLineCount, InputStream headerContent,
-            InputStream fullContent, List<Property> properties, List<MessageAttachment> attachments, MailboxId mailboxId, MessageUid uid, long modSeq, boolean answered, boolean deleted, boolean draft, boolean flagged, boolean recent,
-            boolean seen) {
-                this.messageId = messageId;
-                this.internalDate = internalDate;
-                this.bodyContent = bodyContent;
-                this.mediaType = mediaType;
-                this.subType = subType;
-                this.bodyOctets = bodyOctets;
-                this.fullContentOctets = fullContentOctets;
-                this.textualLineCount = textualLineCount;
-                this.headerContent = headerContent;
-                this.fullContent = fullContent;
-                this.properties = properties;
-                this.attachments = attachments;
-                this.mailboxId = mailboxId;
-                this.uid = uid;
-                this.modSeq = modSeq;
-                this.answered = answered;
-                this.deleted = deleted;
-                this.draft = draft;
-                this.flagged = flagged;
-                this.recent = recent;
-                this.seen = seen;
+                                    InputStream fullContent, List<Property> properties, List<MessageAttachment> attachments, MailboxId mailboxId, MessageUid uid, long modSeq, boolean answered, boolean deleted, boolean draft, boolean flagged, boolean recent,
+                                    boolean seen, String[] userFlags) {
+        this.messageId = messageId;
+        this.internalDate = internalDate;
+        this.bodyContent = bodyContent;
+        this.mediaType = mediaType;
+        this.subType = subType;
+        this.bodyOctets = bodyOctets;
+        this.fullContentOctets = fullContentOctets;
+        this.textualLineCount = textualLineCount;
+        this.headerContent = headerContent;
+        this.fullContent = fullContent;
+        this.properties = properties;
+        this.attachments = attachments;
+        this.mailboxId = mailboxId;
+        this.uid = uid;
+        this.modSeq = modSeq;
+        this.answered = answered;
+        this.deleted = deleted;
+        this.draft = draft;
+        this.flagged = flagged;
+        this.recent = recent;
+        this.seen = seen;
+        this.userFlags = userFlags;
     }
 
     public MessageId getMessageId() {
@@ -243,7 +247,7 @@ public class ImmutableMailboxMessage implements MailboxMessage {
 
     @Override
     public Flags createFlags() {
-        throw new NotImplementedException();
+        return FlagsBuilder.createFlags(this, userFlags);
     }
 
 }
