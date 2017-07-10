@@ -51,7 +51,7 @@ public class EventFactory {
             super(session, new StoreMailboxPath(mailbox));
             this.added = ImmutableMap.copyOf(uids);
             this.mailbox = mailbox;
-            this.cachedMessages = cachedMessages;
+            this.cachedMessages = ImmutableMap.copyOf(cachedMessages);
         }
 
         public List<MessageUid> getUids() {
