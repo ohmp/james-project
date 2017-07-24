@@ -120,5 +120,7 @@ public class V1ToV2Migration implements Migration {
         messageDAOV2.save(rawMessage)
             .thenCompose(any -> messageDAOV1.delete(messageId))
             .join();
+
+        LOGGER.info("{} migrated", rawMessage.getMessageId());
     }
 }
