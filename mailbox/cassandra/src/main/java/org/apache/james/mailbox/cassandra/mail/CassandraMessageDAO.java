@@ -156,7 +156,7 @@ public class CassandraMessageDAO {
         return cassandraUtils.convertToStream(
             cassandraAsyncExecutor.execute(selectAll.bind())
                 .join())
-            .map(CassandraMessageDAO::fromRow);
+            .map(this::fromRow);
     }
 
     public CompletableFuture<Void> save(MailboxMessage message) throws MailboxException {
@@ -250,7 +250,7 @@ public class CassandraMessageDAO {
         return Pair.of(messageWithoutAttachment, retrieveAttachments(row, fetchType));
     }
 
-    private static PropertyBuilder retrievePropertyBuilder(Row row) {
+    private PropertyBuilder retrievePropertyBuilder(Row row) {
         PropertyBuilder property = new PropertyBuilder(
             row.getList(PROPERTIES, UDTValue.class).stream()
                 .map(x -> new SimpleProperty(x.getString(Properties.NAMESPACE), x.getString(Properties.NAME), x.getString(Properties.VALUE)))
@@ -259,7 +259,7 @@ public class CassandraMessageDAO {
         return property;
     }
 
-    private static Stream<MessageAttachmentRepresentation> retrieveAttachments(Row row, FetchType fetchType) {
+    private Stream<MessageAttachmentRepresentation> retrieveAttachments(Row row, FetchType fetchType) {
         switch (fetchType) {
         case Full:
         case Body:
@@ -271,12 +271,12 @@ public class CassandraMessageDAO {
         }
     }
 
-    private static Stream<MessageAttachmentRepresentation> attachmentByIds(List<UDTValue> udtValues) {
+    private Stream<MessageAttachmentRepresentation> attachmentByIds(List<UDTValue> udtValues) {
         return udtValues.stream()
-            .map(CassandraMessageDAO::messageAttachmentByIdFrom);
+            .map(this::messageAttachmentByIdFrom);
     }
 
-    private static MessageAttachmentRepresentation messageAttachmentByIdFrom(UDTValue udtValue) {
+    private MessageAttachmentRepresentation messageAttachmentByIdFrom(UDTValue udtValue) {
         return MessageAttachmentRepresentation.builder()
                 .attachmentId(AttachmentId.from(udtValue.getString(Attachments.ID)))
                 .name(udtValue.getString(Attachments.NAME))
@@ -328,13 +328,13 @@ public class CassandraMessageDAO {
         return Bytes.concat(new byte[row.getInt(BODY_START_OCTET)], getFieldContent(BODY_CONTENT, row));
     }
 
-    private static byte[] getFieldContent(String field, Row row) {
+    private byte[] getFieldContent(String field, Row row) {
         byte[] headerContent = new byte[row.getBytes(field).remaining()];
         row.getBytes(field).get(headerContent);
         return headerContent;
     }
 
-    public static RawMessage fromRow(Row row) {
+    private RawMessage fromRow(Row row) {
         return new RawMessage(
             row.getTimestamp(INTERNAL_DATE),
             new CassandraMessageId.Factory().of(row.getUUID(MESSAGE_ID)),
