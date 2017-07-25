@@ -166,7 +166,7 @@ public class V1ToV2MigrationTest {
     }
 
     @Test
-    public void ruwShouldMigrateMessages() throws Exception {
+    public void runShouldMigrateMessages() throws Exception {
         SimpleMailboxMessage originalMessage = createMessage(messageId, CONTENT, BODY_START,
             new PropertyBuilder(), ImmutableList.of());
         messageDAOV1.save(originalMessage).join();
@@ -181,7 +181,7 @@ public class V1ToV2MigrationTest {
     }
 
     @Test
-    public void ruwShouldBeIdempotent() throws Exception {
+    public void runShouldBeIdempotent() throws Exception {
         SimpleMailboxMessage originalMessage = createMessage(messageId, CONTENT, BODY_START,
             new PropertyBuilder(), ImmutableList.of());
         messageDAOV1.save(originalMessage).join();
@@ -198,7 +198,7 @@ public class V1ToV2MigrationTest {
     }
 
     @Test
-    public void ruwShouldSucceedWhenOneMessage() throws Exception {
+    public void runShouldSucceedWhenOneMessage() throws Exception {
         SimpleMailboxMessage originalMessage = createMessage(messageId, CONTENT, BODY_START,
             new PropertyBuilder(), ImmutableList.of());
         messageDAOV1.save(originalMessage).join();
@@ -207,7 +207,7 @@ public class V1ToV2MigrationTest {
     }
 
     @Test
-    public void ruwShouldSucceedWhenNoMessages() throws Exception {
+    public void runShouldSucceedWhenNoMessages() throws Exception {
         assertThat(testee.run()).isTrue();
     }
 

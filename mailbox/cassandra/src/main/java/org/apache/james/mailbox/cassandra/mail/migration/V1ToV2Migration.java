@@ -123,7 +123,7 @@ public class V1ToV2Migration implements Migration {
                 .thenCompose(any -> messageDAOV1.delete(messageId))
                 .join();
 
-            LOGGER.info("{} migrated", rawMessage.getMessageId());
+            LOGGER.debug("{} migrated", rawMessage.getMessageId());
 
             return true;
         } catch (Exception e) {
