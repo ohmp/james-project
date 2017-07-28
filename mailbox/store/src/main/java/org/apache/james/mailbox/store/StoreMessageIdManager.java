@@ -208,7 +208,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         for (Map.Entry<QuotaRoot, Integer> entry : messageCountByQuotaRoot.entrySet()) {
             if (entry.getValue() > 0) {
                 new QuotaChecker(quotaManager.getMessageQuota(entry.getKey()), quotaManager.getStorageQuota(entry.getKey()), entry.getKey())
-                    .tryAddition(entry.getValue(), mailboxMessage.getFullContentOctets());
+                    .tryAddition(entry.getValue(), entry.getValue() * mailboxMessage.getFullContentOctets());
             }
         }
     }
