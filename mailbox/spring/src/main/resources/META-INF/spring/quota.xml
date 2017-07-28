@@ -45,14 +45,14 @@
 
     <bean id="noQuotaManager" class="org.apache.james.mailbox.store.quota.NoQuotaManager" lazy-init="true"/>
     <bean id="storeQuotaManager" class="org.apache.james.mailbox.store.quota.StoreQuotaManager" lazy-init="true">
-        <constructor-arg index="0" ref="maxQuotaManager"/>
-        <constructor-arg index="1" ref="quotaRootResolver"/>
+        <constructor-arg index="0" ref="currentQuotaManager"/>
+        <constructor-arg index="1" ref="maxQuotaManager"/>
     </bean>
 
     <bean id="noQuotaUpdater" class="org.apache.james.mailbox.store.quota.NoQuotaUpdater" lazy-init="true"/>
     <bean id="eventQuotaUpdater" class="org.apache.james.mailbox.store.quota.ListeningCurrentQuotaUpdater" lazy-init="true">
-        <constructor-arg index="0" ref="quotaRootResolver"/>
-        <constructor-arg index="1" ref="currentQuotaManager"/>
+        <constructor-arg index="0" ref="currentQuotaManager"/>
+        <constructor-arg index="1" ref="quotaRootResolver"/>
     </bean>
 
 </beans>
