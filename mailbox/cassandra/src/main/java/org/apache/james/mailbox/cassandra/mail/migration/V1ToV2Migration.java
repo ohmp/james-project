@@ -20,6 +20,7 @@
 package org.apache.james.mailbox.cassandra.mail.migration;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -121,6 +122,10 @@ public class V1ToV2Migration implements Migration {
     public MigrationResult run() {
         try {
             return messageDAOV1.readAll()
+                .map(messageDAOV1::read)
+                .map(CompletableFuture::join)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::migrate)
                 .reduce(MigrationResult.COMPLETED, Migration::combine);
         } catch (Exception e) {

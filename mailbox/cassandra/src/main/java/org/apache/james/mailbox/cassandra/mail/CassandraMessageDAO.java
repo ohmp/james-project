@@ -123,7 +123,7 @@ public class CassandraMessageDAO {
     }
 
     private PreparedStatement prepareSelectAll(Session session) {
-        return session.prepare(select().from(TABLE_NAME));
+        return session.prepare(select(MESSAGE_ID).from(TABLE_NAME));
     }
 
     private PreparedStatement prepareSelect(Session session, String[] fields) {
@@ -152,11 +152,19 @@ public class CassandraMessageDAO {
                 .where(eq(MESSAGE_ID, bindMarker(MESSAGE_ID))));
     }
 
-    public Stream<RawMessage> readAll() {
+    public Stream<MessageId> readAll() {
         return cassandraUtils.convertToStream(
             cassandraAsyncExecutor.execute(selectAll.bind().setFetchSize(cassandraConfiguration.getV1ReadFetchSize()))
                 .join())
-            .map(this::fromRow);
+            .map(row -> new CassandraMessageId.Factory().of(row.getUUID(MESSAGE_ID)));
+    }
+
+    public CompletableFuture<Optional<RawMessage>> read(MessageId messageId) {
+        CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
+
+        return cassandraAsyncExecutor.executeSingleRow(selectFields.bind()
+            .setUUID(MESSAGE_ID, cassandraMessageId.get()))
+            .thenApply(optional -> optional.map(this::fromRow));
     }
 
     public CompletableFuture<Void> save(MailboxMessage message) throws MailboxException {
