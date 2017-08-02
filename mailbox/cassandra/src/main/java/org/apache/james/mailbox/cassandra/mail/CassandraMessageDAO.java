@@ -157,7 +157,9 @@ public class CassandraMessageDAO {
 
     public Stream<MessageId> readAll() {
         return cassandraUtils.convertToStream(
-            cassandraAsyncExecutor.execute(selectAll.bind().setFetchSize(cassandraConfiguration.getV1ReadFetchSize()))
+            cassandraAsyncExecutor.execute(selectAll.bind()
+                .setFetchSize(cassandraConfiguration.getV1ReadFetchSize())
+                .setReadTimeoutMillis(60000))
                 .join())
             .map(row -> new CassandraMessageId.Factory().of(row.getUUID(MESSAGE_ID)));
     }
