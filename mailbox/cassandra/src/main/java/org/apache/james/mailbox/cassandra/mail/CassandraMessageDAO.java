@@ -97,7 +97,7 @@ public class CassandraMessageDAO {
     private final PreparedStatement selectHeaders;
     private final PreparedStatement selectFields;
     private final PreparedStatement selectBody;
-    private final PreparedStatement selectByBatch;
+    private final PreparedStatement selectAll;
     private CassandraUtils cassandraUtils;
     private final CassandraConfiguration cassandraConfiguration;
 
@@ -113,7 +113,7 @@ public class CassandraMessageDAO {
         this.selectFields = prepareSelect(session, FIELDS);
         this.selectBody = prepareSelect(session, BODY);
         this.cassandraConfiguration = cassandraConfiguration;
-        this.selectByBatch = prepareSelectBatch(session, cassandraConfiguration);
+        this.selectAll = prepareSelectAll(session);
         this.cassandraUtils = cassandraUtils;
     }
 
@@ -122,9 +122,8 @@ public class CassandraMessageDAO {
         this(session, typesProvider, CassandraConfiguration.DEFAULT_CONFIGURATION, CassandraUtils.WITH_DEFAULT_CONFIGURATION);
     }
 
-    private PreparedStatement prepareSelectBatch(Session session, CassandraConfiguration cassandraConfiguration) {
-        return session.prepare(select().from(TABLE_NAME)
-            .limit(cassandraConfiguration.getFetchNextPageInAdvanceRow()));
+    private PreparedStatement prepareSelectAll(Session session) {
+        return session.prepare(select().from(TABLE_NAME));
     }
 
     private PreparedStatement prepareSelect(Session session, String[] fields) {
@@ -153,13 +152,11 @@ public class CassandraMessageDAO {
                 .where(eq(MESSAGE_ID, bindMarker(MESSAGE_ID))));
     }
 
-    public List<RawMessage> readBatch() {
+    public Stream<RawMessage> readAll() {
         return cassandraUtils.convertToStream(
-            cassandraAsyncExecutor.execute(selectByBatch.bind()
-                .setFetchSize(cassandraConfiguration.getV1ReadFetchSize()))
+            cassandraAsyncExecutor.execute(selectAll.bind().setFetchSize(cassandraConfiguration.getV1ReadFetchSize()))
                 .join())
-            .map(this::fromRow)
-            .collect(Guavate.toImmutableList());
+            .map(this::fromRow);
     }
 
     public CompletableFuture<Void> save(MailboxMessage message) throws MailboxException {
