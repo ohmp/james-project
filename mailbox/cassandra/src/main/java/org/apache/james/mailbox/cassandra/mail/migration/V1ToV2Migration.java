@@ -24,6 +24,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -46,11 +47,13 @@ import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 public class V1ToV2Migration implements Migration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1ToV2MigrationThread.class);
+    private static final long WAIT_TIME_ON_MIGRATION_FAILURE = TimeUnit.SECONDS.toMillis(10);
 
     private final CassandraMessageDAO messageDAOV1;
     private final CassandraMessageDAOV2 messageDAOV2;
@@ -116,9 +119,23 @@ public class V1ToV2Migration implements Migration {
 
     @Override
     public MigrationResult run() {
-        return messageDAOV1.readAll()
-            .map(this::migrate)
-            .reduce(MigrationResult.COMPLETED, Migration::combine);
+        try {
+            return messageDAOV1.readAll()
+                .map(this::migrate)
+                .reduce(MigrationResult.COMPLETED, Migration::combine);
+        } catch (Exception e) {
+            LOGGER.error("Error while migrating", e);
+            waitRandom();
+            return run();
+        }
+    }
+
+    private void waitRandom() {
+        try {
+            Thread.sleep(WAIT_TIME_ON_MIGRATION_FAILURE);
+        } catch (InterruptedException e1) {
+            throw Throwables.propagate(e1);
+        }
     }
 
     private MigrationResult migrate(CassandraMessageDAO.RawMessage rawMessage) {
