@@ -75,6 +75,8 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -89,6 +91,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.primitives.Bytes;
 
 public class CassandraMessageDAO {
+    public static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageDAO.class);
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraTypesProvider typesProvider;
     private final PreparedStatement insert;
@@ -159,12 +162,17 @@ public class CassandraMessageDAO {
             .map(row -> new CassandraMessageId.Factory().of(row.getUUID(MESSAGE_ID)));
     }
 
-    public CompletableFuture<Optional<RawMessage>> read(MessageId messageId) {
+    public Optional<RawMessage> read(MessageId messageId) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
 
-        return cassandraAsyncExecutor.executeSingleRow(selectFields.bind()
+        Optional<RawMessage> result = cassandraAsyncExecutor.executeSingleRow(selectFields.bind()
             .setUUID(MESSAGE_ID, cassandraMessageId.get()))
-            .thenApply(optional -> optional.map(this::fromRow));
+            .thenApply(optional -> optional.map(this::fromRow))
+            .join();
+        if (!result.isPresent()) {
+            LOGGER.error("Could not retrieve " + messageId);
+        }
+        return result;
     }
 
     public CompletableFuture<Void> save(MailboxMessage message) throws MailboxException {

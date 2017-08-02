@@ -123,9 +123,6 @@ public class V1ToV2Migration implements Migration {
         try {
             return messageDAOV1.readAll()
                 .map(messageDAOV1::read)
-                .map(CompletableFuture::join)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
                 .map(this::migrate)
                 .reduce(MigrationResult.COMPLETED, Migration::combine);
         } catch (Exception e) {
@@ -143,19 +140,22 @@ public class V1ToV2Migration implements Migration {
         }
     }
 
-    private MigrationResult migrate(CassandraMessageDAO.RawMessage rawMessage) {
+    private MigrationResult migrate(Optional<CassandraMessageDAO.RawMessage> rawMessage) {
+        if (!rawMessage.isPresent()) {
+            return MigrationResult.PARTIAL;
+        }
         try {
-            CassandraMessageId messageId = (CassandraMessageId) rawMessage.getMessageId();
+            CassandraMessageId messageId = (CassandraMessageId) rawMessage.get().getMessageId();
 
-            messageDAOV2.save(rawMessage)
+            messageDAOV2.save(rawMessage.get())
                 .thenCompose(any -> messageDAOV1.delete(messageId))
                 .join();
 
-            LOGGER.debug("{} migrated", rawMessage.getMessageId());
+            LOGGER.debug("{} migrated", rawMessage.get().getMessageId());
 
             return MigrationResult.COMPLETED;
         } catch (Exception e) {
-            LOGGER.warn("Error while migrating {}", rawMessage.getMessageId(), e);
+            LOGGER.warn("Error while migrating {}", rawMessage.get().getMessageId(), e);
 
             return MigrationResult.PARTIAL;
         }
