@@ -43,6 +43,8 @@ public class CassandraFirstUnseenModule implements CassandraModule {
                 .addPartitionKey(CassandraFirstUnseenTable.MAILBOX_ID, DataType.timeuuid())
                 .addClusteringColumn(CassandraFirstUnseenTable.UID, DataType.bigint())
                 .withOptions()
+                .comment("Denormalisation table. Allow to quickly retrieve the first UNSEEN UID of a specific mailbox." +
+                    " This is a SELECT optimisation.")
                 .compactionOptions(SchemaBuilder.leveledStrategy())
                 .caching(SchemaBuilder.KeyCaching.ALL,
                     SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
