@@ -20,11 +20,13 @@
 package org.apache.james.mailbox.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.guava.api.Assertions.assertThat;
 
-import org.apache.james.mailbox.model.Cid;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import com.google.common.base.Optional;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -84,6 +86,63 @@ public class CidTest {
     public void fromShouldNotRemoveTagsWhenNotStartTag() {
         Cid cid = Cid.from("123>");
         assertThat(cid.getValue()).isEqualTo("123>");
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldReturnAbsentWhenNull() {
+        assertThat(Cid.fromRelaxedNoUnwrap(null))
+            .isAbsent();
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldReturnAbsentWhenEmpty() {
+        assertThat(Cid.fromRelaxedNoUnwrap(""))
+            .isAbsent();
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldReturnAbsentWhenBlank() {
+        assertThat(Cid.fromRelaxedNoUnwrap("     "))
+            .isAbsent();
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldReturnAbsentWhenEmptyAfterRemoveTags() {
+        Optional<Cid> actual = Cid.fromRelaxedNoUnwrap("<>");
+        assertThat(actual).isPresent();
+        assertThat(actual.get().getValue()).isEqualTo("<>");
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldReturnAbsentWhenBlankAfterRemoveTags() {
+        Optional<Cid> actual = Cid.fromRelaxedNoUnwrap("<   >");
+        assertThat(actual).isPresent();
+        assertThat(actual.get().getValue()).isEqualTo("<   >");
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldRemoveTagsWhenExists() {
+        Optional<Cid> actual = Cid.fromRelaxedNoUnwrap("<123>");
+        assertThat(actual).isPresent();
+        assertThat(actual.get().getValue()).isEqualTo("<123>");
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldNotRemoveTagsWhenNone() {
+        assertThat(Cid.fromRelaxedNoUnwrap("123"))
+            .contains(Cid.from("123"));
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldNotRemoveTagsWhenNotEndTag() {
+        assertThat(Cid.fromRelaxedNoUnwrap("<123"))
+            .contains(Cid.from("<123"));
+    }
+
+    @Test
+    public void fromRelaxedNoUnwrapShouldNotRemoveTagsWhenNotStartTag() {
+        assertThat(Cid.fromRelaxedNoUnwrap("123>"))
+            .contains(Cid.from("123>"));
     }
 
     @Test

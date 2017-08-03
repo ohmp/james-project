@@ -23,6 +23,7 @@ package org.apache.james.mailbox.model;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 public class Cid {
@@ -45,6 +46,16 @@ public class Cid {
             throw new IllegalArgumentException("'cidAsString' is mandatory");
         }
         return unwrapCid;
+    }
+
+    public static Optional<Cid> fromRelaxedNoUnwrap(String cidAsString) {
+        if (cidAsString == null) {
+            return Optional.absent();
+        }
+        if (StringUtils.isBlank(cidAsString)) {
+            return Optional.absent();
+        }
+        return Optional.of(new Cid(cidAsString));
     }
 
     private static boolean isWrappedWithAngleBrackets(String cidAsString) {
