@@ -77,7 +77,7 @@ public class RemoveMimeHeaderByPrefixTest {
     }
 
     @Test
-    public void serviceShouldRemoveAllPrefixedHeader() throws MessagingException {
+    public void serviceShouldRemoveAllPrefixedHeaders() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("prefix", PREFIX)
@@ -116,6 +116,7 @@ public class RemoveMimeHeaderByPrefixTest {
             .contains(HEADER_NAME_NO_PREFIX)
             .doesNotContain(HEADER_NAME_PREFIX_1);
     }
+
     @Test
     public void exactMatchOfPrefixShouldBeAllowed() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
