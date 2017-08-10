@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.transport.mailets.utils.MimeMessageUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.apache.mailet.base.test.FakeMail;
@@ -70,7 +71,9 @@ public class RemoveMimeHeaderByPrefixTest {
 
         mailet.service(mail);
 
-        assertThat(mail.getMessage().getHeader(HEADER_NAME_PREFIX_1)).isNull();
+        assertThat(new MimeMessageUtils(mail.getMessage()).toHeaderList())
+            .extracting("name")
+            .doesNotContain(HEADER_NAME_PREFIX_1);
     }
 
     @Test
@@ -88,8 +91,9 @@ public class RemoveMimeHeaderByPrefixTest {
 
         mailet.service(mail);
 
-        assertThat(mail.getMessage().getHeader(HEADER_NAME_PREFIX_1)).isNull();
-        assertThat(mail.getMessage().getHeader(HEADER_NAME_PREFIX_2)).isNull();
+        assertThat(new MimeMessageUtils(mail.getMessage()).toHeaderList())
+            .extracting("name")
+            .doesNotContain(HEADER_NAME_PREFIX_1, HEADER_NAME_PREFIX_2);
     }
 
     @Test
@@ -107,7 +111,10 @@ public class RemoveMimeHeaderByPrefixTest {
 
         mailet.service(mail);
 
-        assertThat(mail.getMessage().getHeader(HEADER_NAME_NO_PREFIX)).isNotEmpty();
+        assertThat(new MimeMessageUtils(mail.getMessage()).toHeaderList())
+            .extracting("name")
+            .contains(HEADER_NAME_NO_PREFIX)
+            .doesNotContain(HEADER_NAME_PREFIX_1);
     }
     @Test
     public void exactMatchOfPrefixShouldBeAllowed() throws MessagingException {
@@ -124,6 +131,9 @@ public class RemoveMimeHeaderByPrefixTest {
 
         mailet.service(mail);
 
+        assertThat(new MimeMessageUtils(mail.getMessage()).toHeaderList())
+            .extracting("name")
+            .doesNotContain(PREFIX);
         assertThat(mail.getMessage().getHeader(PREFIX)).isNull();
     }
 
