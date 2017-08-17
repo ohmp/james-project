@@ -121,16 +121,15 @@ public class CassandraMailboxMapper implements MailboxMapper {
 
         return FluentFutureStream.of(mailboxPathDAO.listUserMailboxes(path.getNamespace(), path.getUser()))
             .filter(idAndPath -> regex.matcher(idAndPath.getMailboxPath().getName()).matches())
-            .map(CassandraMailboxPathDAO.CassandraIdAndPath::getCassandraId)
             .thenFlatComposeOnOptional(this::retrieveMailbox)
             .join()
             .collect(Guavate.toImmutableList());
     }
 
-    private CompletableFuture<Optional<SimpleMailbox>> retrieveMailbox(CassandraId id) {
-        return mailboxDAO.retrieveMailbox(id)
+    private CompletableFuture<Optional<SimpleMailbox>> retrieveMailbox(CassandraMailboxPathDAO.CassandraIdAndPath idAndPath) {
+        return mailboxDAO.retrieveMailbox(idAndPath.getCassandraId())
             .thenApply(optional -> OptionalConverter.ifEmpty(optional,
-                () -> LOGGER.warn("Could not retrieve mailbox {}. You might have denormalisation problems", id)));
+                () -> LOGGER.warn("Could not retrieve mailbox {} with path {} in mailbox table.", idAndPath.getCassandraId(), idAndPath.getMailboxPath())));
     }
 
     @Override
