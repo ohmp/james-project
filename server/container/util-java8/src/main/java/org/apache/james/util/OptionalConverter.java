@@ -29,12 +29,10 @@ public class OptionalConverter {
     }
 
     public static <T> Optional<T> ifEmpty(Optional<T> optional, Operation operation) {
-        return optional
-            .map(Optional::of)
-            .orElseGet(() -> {
-                operation.perform();
-                return Optional.empty();
-            });
+        if (!optional.isPresent()) {
+            operation.perform();
+        }
+        return optional;
     }
 
     public static <T> Optional<T> fromGuava(com.google.common.base.Optional<T> guava) {
