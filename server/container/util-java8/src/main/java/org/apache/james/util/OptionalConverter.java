@@ -23,6 +23,20 @@ import java.util.stream.Stream;
 
 public class OptionalConverter {
 
+    @FunctionalInterface
+    public interface Operation {
+        void perform();
+    }
+
+    public static <T> Optional<T> ifEmpty(Optional<T> optional, Operation operation) {
+        return optional
+            .map(Optional::of)
+            .orElseGet(() -> {
+                operation.perform();
+                return Optional.empty();
+            });
+    }
+
     public static <T> Optional<T> fromGuava(com.google.common.base.Optional<T> guava) {
         return Optional.ofNullable(guava.orNull());
     }
