@@ -192,11 +192,11 @@ public class ClusterBuilder {
 
     private Collection<Host> getServersFromHostAndPort() {
         String host = this.host.orElseGet(() -> {
-            LOGGER.warn("No cassandra host specified. Falling back to {}", DEFAULT_CLUSTER_IP);
+            LOGGER.info("No cassandra host specified. Falling back to {}", DEFAULT_CLUSTER_IP);
             return DEFAULT_CLUSTER_IP;
         });
         int port = this.port.orElseGet(() -> {
-            LOGGER.warn("No cassandra port specified. Falling back to {}", DEFAULT_CASSANDRA_PORT);
+            LOGGER.info("No cassandra port specified. Falling back to {}", DEFAULT_CASSANDRA_PORT);
             return DEFAULT_CASSANDRA_PORT;
         });
 
