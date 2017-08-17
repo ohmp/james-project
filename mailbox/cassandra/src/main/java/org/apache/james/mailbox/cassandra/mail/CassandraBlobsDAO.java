@@ -49,6 +49,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Bytes;
 
@@ -116,7 +117,7 @@ public class CassandraBlobsDAO {
     }
 
     private CompletableFuture<Integer> saveBlobParts(byte[] data, BlobId blobId) {
-        return FluentFutureStream.<Pair<Integer, Void>> of(
+        return FluentFutureStream.of(
             dataChunker.chunk(data, configuration.getBlobPartSize())
                 .map(pair -> writePart(pair.getRight(), blobId, pair.getKey())
                     .thenApply(partId -> Pair.of(pair.getKey(), partId))))
@@ -150,15 +151,15 @@ public class CassandraBlobsDAO {
             select.bind()
                 .setString(BlobTable.ID, blobId.getId()))
             .thenCompose(row -> toDataParts(row, blobId))
-            .thenApply(rows -> concatenateDataParts(rows, blobId));
+            .thenApply(this::concatenateDataParts);
     }
 
-    private CompletableFuture<Stream<Pair<Integer, Optional<Row>>>> toDataParts(Optional<Row> blobRowOptional, BlobId blobId) {
+    private CompletableFuture<Stream<BlobPart>> toDataParts(Optional<Row> blobRowOptional, BlobId blobId) {
         return blobRowOptional.map(blobRow -> {
             int numOfChunk = blobRow.getInt(BlobTable.NUMBER_OF_CHUNK);
             return FluentFutureStream.of(
                 IntStream.range(0, numOfChunk)
-                    .mapToObj(position -> readPart(blobId, position).thenApply(value -> Pair.of(position, value))))
+                    .mapToObj(position -> readPart(blobId, position)))
                 .completableFuture();
         }).orElseGet(() -> {
             LOGGER.warn("Could not retrieve blob metadata for {}", blobId);
@@ -166,9 +167,11 @@ public class CassandraBlobsDAO {
         });
     }
 
-    private byte[] concatenateDataParts(Stream<Pair<Integer, Optional<Row>>> rows, BlobId blobId) {
-        ImmutableList<byte[]> parts = rows
-            .map(pair -> OptionalConverter.ifEmpty(pair.getValue(), () -> LOGGER.warn("Missing blob part for blobId {} and position {}", blobId, pair.getKey())))
+    private byte[] concatenateDataParts(Stream<BlobPart> blobParts) {
+        ImmutableList<byte[]> parts = blobParts
+            .map(blobPart -> OptionalConverter.ifEmpty(
+                blobPart.row,
+                () -> LOGGER.warn("Missing blob part for blobId {} and position {}", blobPart.blobId, blobPart.position)))
             .flatMap(OptionalConverter::toStream)
             .map(this::rowToData)
             .collect(Guavate.toImmutableList());
@@ -182,10 +185,25 @@ public class CassandraBlobsDAO {
         return data;
     }
 
-    private CompletableFuture<Optional<Row>> readPart(BlobId blobId, int position) {
+    private CompletableFuture<BlobPart> readPart(BlobId blobId, int position) {
         return cassandraAsyncExecutor.executeSingleRow(
             selectPart.bind()
                 .setString(BlobTable.ID, blobId.getId())
-                .setInt(BlobParts.CHUNK_NUMBER, position));
+                .setInt(BlobParts.CHUNK_NUMBER, position))
+            .thenApply(row -> new BlobPart(blobId, position, row));
+    }
+
+    private static class BlobPart {
+        private final BlobId blobId;
+        private final int position;
+        private final Optional<Row> row;
+
+        public BlobPart(BlobId blobId, int position, Optional<Row> row) {
+            Preconditions.checkNotNull(blobId);
+            Preconditions.checkArgument(position >= 0, "position need to be positive");
+            this.blobId = blobId;
+            this.position = position;
+            this.row = row;
+        }
     }
 }
