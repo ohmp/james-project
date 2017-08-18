@@ -50,7 +50,7 @@ public class CassandraMailboxModule implements CassandraModule {
                     .addColumn(CassandraMailboxTable.NAME, text())
                     .addColumn(CassandraMailboxTable.UIDVALIDITY, bigint())
                     .withOptions()
-                    .comment("Holds the mailboxes list.")
+                    .comment("Holds the mailboxes information.")
                     .caching(SchemaBuilder.KeyCaching.ALL,
                         SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))),
             new CassandraTable(CassandraMailboxPathTable.TABLE_NAME,

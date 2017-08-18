@@ -44,7 +44,7 @@ public class CassandraSchemaVersionModule implements CassandraModule {
                     .addPartitionKey(CassandraSchemaVersionTable.KEY, timeuuid())
                     .addClusteringColumn(CassandraSchemaVersionTable.VALUE, cint())
                     .withOptions()
-                    .comment("Holds the versions of the schema used.")));
+                    .comment("Holds the history of the versions of the schema used.")));
     }
 
 

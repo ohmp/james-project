@@ -48,7 +48,7 @@ public class CassandraAclModule implements CassandraModule {
                     .addColumn(CassandraACLTable.ACL, text())
                     .addColumn(CassandraACLTable.VERSION, bigint())
                     .withOptions()
-                    .comment("Holds mailbox ACL")
+                    .comment("Holds mailbox ACLs")
                     .caching(SchemaBuilder.KeyCaching.ALL,
                         SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))));
         types = ImmutableList.of();

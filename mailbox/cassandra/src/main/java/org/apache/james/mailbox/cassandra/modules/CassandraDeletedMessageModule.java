@@ -46,8 +46,7 @@ public class CassandraDeletedMessageModule implements CassandraModule {
                 .addPartitionKey(MAILBOX_ID, DataType.timeuuid())
                 .addClusteringColumn(UID, DataType.bigint())
                 .withOptions()
-                .comment("Denormalisation table. Allow to retrieve UID marked as DELETED in specific mailboxes to" +
-                    " increase EXPUNGE performance.")
+                .comment("Denormalisation table. Allows to retrieve UID marked as DELETED in specific mailboxes.")
                 .compactionOptions(SchemaBuilder.leveledStrategy())
                 .caching(SchemaBuilder.KeyCaching.ALL,
                     SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))));

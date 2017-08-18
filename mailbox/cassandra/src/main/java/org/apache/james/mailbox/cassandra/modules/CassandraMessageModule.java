@@ -68,7 +68,7 @@ public class CassandraMessageModule implements CassandraModule {
                     .addColumn(Flag.USER, cboolean())
                     .addColumn(Flag.USER_FLAGS, set(text()))
                     .withOptions()
-                    .comment("Holds mailbox context per message ID, for JMAP")
+                    .comment("Holds mailbox and flags for each message, lookup by message ID")
                     .compactionOptions(SchemaBuilder.leveledStrategy())
                     .caching(SchemaBuilder.KeyCaching.ALL,
                         SchemaBuilder.rows(CACHED_IMAP_UID_ROWS))),
@@ -88,7 +88,7 @@ public class CassandraMessageModule implements CassandraModule {
                     .addColumn(Flag.USER, cboolean())
                     .addColumn(Flag.USER_FLAGS, set(text()))
                     .withOptions()
-                    .comment("Holds mailbox context per mailbox ID + UID, for IMAP")
+                    .comment("Holds mailbox and flags for each message, lookup by mailbox ID + UID")
                     .compactionOptions(SchemaBuilder.leveledStrategy())
                     .caching(SchemaBuilder.KeyCaching.ALL,
                         SchemaBuilder.rows(CACHED_MESSAGE_ID_ROWS))),
@@ -121,7 +121,7 @@ public class CassandraMessageModule implements CassandraModule {
                     .addUDTListColumn(CassandraMessageV2Table.ATTACHMENTS, SchemaBuilder.frozen(CassandraMessageV2Table.ATTACHMENTS))
                     .addUDTListColumn(CassandraMessageV2Table.PROPERTIES, SchemaBuilder.frozen(CassandraMessageV2Table.PROPERTIES))
                     .withOptions()
-                    .comment("Used to store messages metadata, independently of any mailboxes. Content of messages is stored " +
+                    .comment("Holds message metadata, independently of any mailboxes. Content of messages is stored " +
                         "in `blobs` and `blobparts` tables.")));
         types = ImmutableList.of(
             new CassandraType(CassandraMessageV1Table.PROPERTIES,

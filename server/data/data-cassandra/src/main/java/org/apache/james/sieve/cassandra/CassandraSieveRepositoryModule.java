@@ -55,28 +55,28 @@ public class CassandraSieveRepositoryModule implements CassandraModule {
                     .addColumn(CassandraSieveTable.IS_ACTIVE, cboolean())
                     .addColumn(CassandraSieveTable.SIZE, bigint())
                     .withOptions()
-                    .comment("Stores SIEVE scripts.")),
+                    .comment("Holds SIEVE scripts.")),
             new CassandraTable(CassandraSieveSpaceTable.TABLE_NAME,
                 SchemaBuilder.createTable(CassandraSieveSpaceTable.TABLE_NAME)
                     .ifNotExists()
                     .addPartitionKey(CassandraSieveSpaceTable.USER_NAME, text())
                     .addColumn(CassandraSieveSpaceTable.SPACE_USED, counter())
                     .withOptions()
-                    .comment("Stores current space occupied by SIEVE scripts.")),
+                    .comment("Holds per user current space occupied by SIEVE scripts.")),
             new CassandraTable(CassandraSieveQuotaTable.TABLE_NAME,
                 SchemaBuilder.createTable(CassandraSieveQuotaTable.TABLE_NAME)
                     .ifNotExists()
                     .addPartitionKey(CassandraSieveQuotaTable.USER_NAME, text())
                     .addColumn(CassandraSieveQuotaTable.QUOTA, bigint())
                     .withOptions()
-                    .comment("Stores per user limitations for SIEVE script storage.")),
+                    .comment("Holds per user size limitations for SIEVE script storage.")),
             new CassandraTable(CassandraSieveClusterQuotaTable.TABLE_NAME,
                 SchemaBuilder.createTable(CassandraSieveClusterQuotaTable.TABLE_NAME)
                     .ifNotExists()
                     .addPartitionKey(CassandraSieveClusterQuotaTable.NAME, text())
                     .addColumn(CassandraSieveClusterQuotaTable.VALUE, bigint())
                         .withOptions()
-                        .comment("Stores default limitations for SIEVE script storage.")),
+                        .comment("Holds default size limitations for SIEVE script storage.")),
             new CassandraTable(CassandraSieveActiveTable.TABLE_NAME,
                 SchemaBuilder.createTable(CassandraSieveActiveTable.TABLE_NAME)
                     .ifNotExists()
@@ -84,7 +84,7 @@ public class CassandraSieveRepositoryModule implements CassandraModule {
                     .addColumn(CassandraSieveActiveTable.SCRIPT_NAME, text())
                     .addColumn(CassandraSieveActiveTable.DATE, timestamp())
                     .withOptions()
-                    .comment("Denormalisation table. Allows per user fast active SIEVE script retrieval.")));
+                    .comment("Denormalisation table. Allows per user direct active SIEVE script retrieval.")));
         types = ImmutableList.of();
     }
 

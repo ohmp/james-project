@@ -48,7 +48,7 @@ public class CassandraAttachmentModule implements CassandraModule {
                     .addColumn(CassandraAttachmentTable.TYPE, text())
                     .addColumn(CassandraAttachmentTable.SIZE, bigint())
                     .withOptions()
-                    .comment("Stores attachment for fast JMAP retrieval")));
+                    .comment("Holds attachment for fast attachment retrieval")));
         types = ImmutableList.of();
     }
 

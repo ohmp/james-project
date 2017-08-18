@@ -43,8 +43,8 @@ public class CassandraBlobModule implements CassandraModule {
                     .addPartitionKey(BlobTable.ID, DataType.text())
                     .addClusteringColumn(BlobTable.NUMBER_OF_CHUNK, DataType.cint())
                     .withOptions()
-                    .comment("Holds information for retrieving all blob parts composing this blob (size). " +
-                        "This tables stores messages` headers and bodies.")),
+                    .comment("Holds information for retrieving all blob parts composing this blob. " +
+                        "Messages` headers and bodies are stored as blobparts.")),
             new CassandraTable(BlobTable.BlobParts.TABLE_NAME,
                 SchemaBuilder.createTable(BlobTable.BlobParts.TABLE_NAME)
                     .ifNotExists()
@@ -53,7 +53,7 @@ public class CassandraBlobModule implements CassandraModule {
                     .addColumn(BlobTable.BlobParts.DATA, DataType.blob())
                     .withOptions()
                     .comment("Holds blob parts composing blobs ." +
-                        "This tables stores messages` headers and bodies.")));
+                        "Messages` headers and bodies are stored, chunked in blobparts.")));
         types = ImmutableList.of();
     }
 

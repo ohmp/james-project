@@ -46,7 +46,7 @@ public class CassandraUsersRepositoryModule implements CassandraModule {
                         .addColumn(CassandraUserTable.PASSWORD, text())
                         .addColumn(CassandraUserTable.ALGORITHM, text())
                         .withOptions()
-                        .comment("Stores user of this James server (if applicable)")));
+                        .comment("Holds users of this James server.")));
         types = ImmutableList.of();
     }
 
