@@ -74,11 +74,11 @@ public class JCRSubscriptionMapper extends AbstractJCRScalingMapper implements S
                 List<String> newValues = new ArrayList<>();
                 for (Value value : values) {
                     String m = value.getString();
-                    if (m.equals(sub.getMailbox()) == false) {
+                    if (!m.equals(sub.getMailbox())) {
                         newValues.add(m);
                     }
                 }
-                if (newValues.isEmpty() == false) {
+                if (!newValues.isEmpty()) {
                     prop.setValue(newValues.toArray(new String[newValues.size()]));
                 } else {
                     prop.remove();

@@ -54,7 +54,7 @@ public class CompressProcessor extends AbstractChainedProcessor<CompressRequest>
             if (obj != null) {
                 responder.respond(factory.taggedNo(request.getTag(), request.getCommand(), HumanReadableText.COMPRESS_ALREADY_ACTIVE));
             } else {
-                if (request.getAlgorithm().equalsIgnoreCase(ALGO) == false) {
+                if (!request.getAlgorithm().equalsIgnoreCase(ALGO)) {
                     responder.respond(factory.taggedBad(request.getTag(), request.getCommand(), HumanReadableText.ILLEGAL_ARGUMENTS));
                 } else {
                     responder.respond(factory.taggedOk(request.getTag(), request.getCommand(), HumanReadableText.DEFLATE_ACTIVE));

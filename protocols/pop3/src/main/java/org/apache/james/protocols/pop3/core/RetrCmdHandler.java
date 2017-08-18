@@ -82,7 +82,7 @@ public class RetrCmdHandler implements CommandHandler<POP3Session> {
                 List<String> deletedUidList = (List<String>) session.getAttachment(POP3Session.DELETED_UID_LIST, State.Transaction);
 
                 String uid = data.getUid();
-                if (deletedUidList.contains(uid) == false) {
+                if (!deletedUidList.contains(uid)) {
                     InputStream content = session.getUserMailbox().getMessage(uid);
 
                     if (content != null) {

@@ -47,16 +47,16 @@ public abstract class AbstractValidRcptHandler implements RcptHook {
         if (session.isRelayingAllowed()) {
             // check if the domain is local, if so we still want to check if the recipient is valid or not as we want to fail fast in such cases
             if (isLocalDomain(session, rcpt.getDomain())) {
-                if (isValidRecipient(session, rcpt) == false) {
+                if (!isValidRecipient(session, rcpt)) {
                     reject = true;
                 }
             }
         } else {
-            if (isLocalDomain(session, rcpt.getDomain()) == false) {
+            if (!isLocalDomain(session, rcpt.getDomain())) {
                 session.getLogger().debug("Unknown domain " + rcpt.getDomain() + " so reject it");
 
             } else {
-                if (isValidRecipient(session, rcpt) == false) {
+                if (!isValidRecipient(session, rcpt)) {
                     reject= true;
                 }
             }

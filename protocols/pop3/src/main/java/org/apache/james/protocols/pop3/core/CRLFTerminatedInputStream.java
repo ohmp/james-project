@@ -44,7 +44,7 @@ public class CRLFTerminatedInputStream extends FilterInputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        if (endOfStream == false) {
+        if (!endOfStream) {
 
             int r = in.read(b, off, len);
             if (r == -1) {
@@ -89,7 +89,7 @@ public class CRLFTerminatedInputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        if (endOfStream == false) {
+        if (!endOfStream) {
             int i = super.read();
             if (i == -1) {
                 endOfStream = true;

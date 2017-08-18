@@ -424,7 +424,7 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
         long lowVal = range.getLowVal();
         long highVal = range.getHighVal();
 
-        if (useUids == false) {
+        if (!useUids) {
             return msnRangeToMessageRange(selected, lowVal, highVal);
         } else {
             if (selected.existsCount() <= 0) {

@@ -61,7 +61,7 @@ public class StlsCmdHandler implements CommandHandler<POP3Session>, CapaCapabili
     public Response onCommand(POP3Session session, Request request) {
         // check if starttls is supported, the state is the right one and it was
         // not started before
-        if (session.isStartTLSSupported() && session.getHandlerState() == POP3Session.AUTHENTICATION_READY && session.isTLSStarted() == false) {
+        if (session.isStartTLSSupported() && session.getHandlerState() == POP3Session.AUTHENTICATION_READY && !session.isTLSStarted()) {
             return BEGIN_TLS;
         } else {
             return POP3Response.ERR;

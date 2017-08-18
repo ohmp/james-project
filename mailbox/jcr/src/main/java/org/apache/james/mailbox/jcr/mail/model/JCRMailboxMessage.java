@@ -289,7 +289,7 @@ public class JCRMailboxMessage implements MailboxMessage, JCRImapConstants, Pers
         // so if it is persistent we don'T need to set all the of this.
         //
         // This also fix https://issues.apache.org/jira/browse/IMAP-159
-        if (isPersistent() == false) {
+        if (!isPersistent()) {
             node.setProperty(SIZE_PROPERTY, getFullContentOctets());
             node.setProperty(MAILBOX_UUID_PROPERTY, getMailboxId().serialize());
             node.setProperty(UID_PROPERTY, getUid().asLong());

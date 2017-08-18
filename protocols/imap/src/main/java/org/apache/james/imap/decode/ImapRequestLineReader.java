@@ -343,9 +343,9 @@ public abstract class ImapRequestLineReader {
         StringBuffer atom = new StringBuffer();
 
         char next = nextWordChar();
-        while (!isWhitespace(next) && (stripParen == false || next != ')')) {
+        while (!isWhitespace(next) && (!stripParen || next != ')')) {
             if (validator.isValid(next)) {
-                if (stripParen == false || next != '(') {
+                if (!stripParen || next != '(') {
                     atom.append(next);
                 }
                 consume();

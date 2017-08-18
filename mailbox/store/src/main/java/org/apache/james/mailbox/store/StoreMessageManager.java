@@ -544,13 +544,13 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         Flag[] systemFlags = flags.getSystemFlags();
         for (Flag f : systemFlags) {
-            if (f != Flag.RECENT && permFlags.contains(f) == false) {
+            if (f != Flag.RECENT && !permFlags.contains(f)) {
                 flags.remove(f);
             }
         }
         // if the permFlags contains the special USER flag we can skip this as
         // all user flags are allowed
-        if (permFlags.contains(Flags.Flag.USER) == false) {
+        if (!permFlags.contains(Flag.USER)) {
             String[] uFlags = flags.getUserFlags();
             for (String uFlag : uFlags) {
                 if (permFlags.contains(uFlag) == false) {
