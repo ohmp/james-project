@@ -96,7 +96,7 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
     public Response onCommand(SMTPSession session, Request request) {
         Response response = super.onCommand(session, request);
         // Check if the response was not ok
-        if (!response.getRetCode().equals(SMTPRetCode.MAIL_OK)) {
+        if (response.getRetCode().equals(SMTPRetCode.MAIL_OK) == false) {
             // cleanup the session
             session.setAttachment(SMTPSession.SENDER, null,  State.Transaction);
         }

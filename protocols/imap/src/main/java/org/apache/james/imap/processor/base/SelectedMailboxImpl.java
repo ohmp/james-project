@@ -212,7 +212,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
             result = false;
         }
         // See if we need to check the user flags
-        if (!result) {
+        if (result == false) {
             final Iterator<String> userIt = updated.userFlagIterator();
             result = userIt.hasNext();
         }

@@ -103,7 +103,7 @@ public class MockMailboxSession implements MailboxSession{
     }
 
     public boolean isOpen() {
-        return !close;
+        return close == false;
     }
 
 	public char getPathDelimiter() {

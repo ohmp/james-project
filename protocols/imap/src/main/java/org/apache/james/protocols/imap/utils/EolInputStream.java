@@ -62,7 +62,7 @@ public class EolInputStream extends FilterInputStream {
     }
 
     private void eol(int i) throws IOException {
-        if (i == -1 && !eolCalled) {
+        if (i == -1 && eolCalled == false) {
             reader.eol();
             eolCalled = true;
         }

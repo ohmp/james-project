@@ -72,7 +72,7 @@ public class UidlCmdHandler implements CommandHandler<POP3Session>, CapaCapabili
 
                     for (int i = 0; i < uidList.size(); i++) {
                         MessageMetaData metadata = uidList.get(i);
-                        if (!deletedUidList.contains(metadata.getUid())) {
+                        if (deletedUidList.contains(metadata.getUid()) == false) {
                             StringBuilder responseBuffer = new StringBuilder().append(i + 1).append(" ").append(metadata.getUid(identifier));
                             response.appendLine(responseBuffer.toString());
                         }
@@ -91,7 +91,7 @@ public class UidlCmdHandler implements CommandHandler<POP3Session>, CapaCapabili
                             return  new POP3Response(POP3Response.ERR_RESPONSE, responseBuffer.toString());
                         }
 
-                        if (!deletedUidList.contains(metadata.getUid())) {
+                        if (deletedUidList.contains(metadata.getUid()) == false) {
                             StringBuilder responseBuffer = new StringBuilder(64).append(num).append(" ").append(metadata.getUid(identifier));
                             response = new POP3Response(POP3Response.OK_RESPONSE, responseBuffer.toString());
                         } else {

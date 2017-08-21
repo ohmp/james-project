@@ -127,7 +127,7 @@ public abstract class AbstractAsyncServer implements ProtocolServer{
      * @see org.apache.james.protocols.api.ProtocolServer#unbind()
      */
     public synchronized void unbind() {
-        if (!started) return;
+        if (started == false) return;
         ChannelPipelineFactory factory = bootstrap.getPipelineFactory();
         if (factory instanceof ExternalResourceReleasable) {
             ((ExternalResourceReleasable) factory).releaseExternalResources();

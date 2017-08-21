@@ -77,10 +77,10 @@ public class ListCmdHandler implements CommandHandler<POP3Session> {
                 long size = 0;
                 int count = 0;
                 List<MessageMetaData> validResults = new ArrayList<>();
-                if (!uidList.isEmpty()) {
+                if (uidList.isEmpty() == false) {
 
                     for (MessageMetaData data : uidList) {
-                        if (!deletedUidList.contains(data.getUid())) {
+                        if (deletedUidList.contains(data.getUid()) == false) {
                             size += data.getSize();
                             count++;
                             validResults.add(data);
@@ -106,7 +106,7 @@ public class ListCmdHandler implements CommandHandler<POP3Session> {
                         return  new POP3Response(POP3Response.ERR_RESPONSE, responseBuffer.toString());
                     }
                     
-                    if (!deletedUidList.contains(data.getUid())) {
+                    if (deletedUidList.contains(data.getUid()) == false) {
                         StringBuilder responseBuffer = new StringBuilder(64).append(num).append(" ").append(data.getSize());
                         response = new POP3Response(POP3Response.OK_RESPONSE, responseBuffer.toString());
                     } else {

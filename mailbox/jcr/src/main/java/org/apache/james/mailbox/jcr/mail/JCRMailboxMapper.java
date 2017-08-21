@@ -171,7 +171,7 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
             if (node == null) {
                 Node rootNode = getSession().getRootNode();
                 Node mailboxNode;
-                if (!rootNode.hasNode(MAILBOXES_PATH)) {
+                if (rootNode.hasNode(MAILBOXES_PATH) == false) {
                     mailboxNode = rootNode.addNode(MAILBOXES_PATH);
                     mailboxNode.addMixin(JcrConstants.MIX_LOCKABLE);
                     getSession().save();

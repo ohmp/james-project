@@ -81,7 +81,7 @@ public class NamespaceProcessor extends AbstractMailboxProcessor<NamespaceReques
     private List<NamespaceResponse.Namespace> buildOtherUsersSpaces(MailboxSession mailboxSession,  ImapSession session) {
         final String otherUsersSpace = mailboxSession.getOtherUsersSpace();
         final List<NamespaceResponse.Namespace> otherUsersSpaces;
-        if (!session.supportMultipleNamespaces() || otherUsersSpace == null) {
+        if (session.supportMultipleNamespaces() == false || otherUsersSpace == null) {
             otherUsersSpaces = null;
         } else {
             otherUsersSpaces = new ArrayList<>(1);

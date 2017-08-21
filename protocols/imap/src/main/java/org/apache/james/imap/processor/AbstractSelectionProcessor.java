@@ -134,7 +134,7 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
         // 
         // See IMAP-345
         int retryCount = 0;
-        while(!unseen(responder, firstUnseen, selected, ImapSessionUtils.getMailboxSession(session))) {
+        while(unseen(responder, firstUnseen, selected, ImapSessionUtils.getMailboxSession(session)) == false) {
             // if we not was able to get find the unseen within 5 retries we should just not send it
             if (retryCount == 5) {
                 if (session.getLog().isInfoEnabled()) {
@@ -452,7 +452,7 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
      */
     public void enable(ImapMessage message, Responder responder, ImapSession session, String capability) throws EnableException {
 
-        if (!EnableProcessor.getEnabledCapabilities(session).contains(capability)) {
+        if (EnableProcessor.getEnabledCapabilities(session).contains(capability) == false) {
             SelectedMailbox sm = session.getSelected();
             // Send a HIGHESTMODSEQ response if the there was a select mailbox before and the client just enabled
             // QRESYNC or CONDSTORE
