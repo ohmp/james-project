@@ -16,50 +16,41 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.model;
 
-import java.util.Arrays;
-import java.util.Optional;
+package org.apache.james.jmap;
 
-import com.google.common.base.Preconditions;
+import java.io.Closeable;
+import java.io.IOException;
 
-public enum MailboxProperty implements Property {
-    ID("id"),
-    NAME("name"),
-    PARENT_ID("parentId"),
-    ROLE("role"),
-    SORT_ORDER("sortOrder"),
-    MUST_BE_ONLY_MAILBOX("mustBeOnlyMailbox"),
-    MAY_READ_ITEMS("mayReadItems"),
-    MAY_ADD_ITEMS("mayAddItems"),
-    MAY_REMOVE_ITEMS("mayRemoveItems"),
-    MAY_CREATE_CHILD("mayCreateChild"),
-    MAY_RENAME("mayRename"),
-    MAY_DELETE("mayDelete"),
-    TOTAL_MESSAGES("totalMessages"),
-    UNREAD_MESSAGES("unreadMessages"),
-    TOTAL_THREADS("totalThreads"),
-    UNREAD_THREADS("unreadThreads");
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
-    private final String fieldName;
+import org.apache.james.util.MDCBuilder;
 
-    MailboxProperty(String fieldName) {
-        this.fieldName = fieldName;
-    }
+public class MDCFilter implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
 
-    public String asFieldName() {
-        return fieldName;
-    }
-
-    public static Optional<MailboxProperty> findProperty(String value) {
-        Preconditions.checkNotNull(value);
-        return Arrays.stream(values())
-            .filter(element -> element.fieldName.equals(value))
-            .findAny();
     }
 
     @Override
-    public String toString() {
-        return fieldName;
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        try (Closeable closeable =
+                 MDCBuilder.create()
+                     .addContext(MDCBuilder.PROTOCOL, "JMAP")
+                     .addContext(MDCBuilder.IP, request.getRemoteAddr())
+                     .addContext(MDCBuilder.HOST, request.getRemoteHost())
+                     .build()) {
+            chain.doFilter(request, response);
+        }
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

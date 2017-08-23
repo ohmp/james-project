@@ -52,4 +52,9 @@ public class MailboxCreationId {
     public int hashCode() {
         return Objects.hashCode(creationId);
     }
+
+    @Override
+    public String toString() {
+        return creationId;
+    }
 }
