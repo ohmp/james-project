@@ -202,7 +202,7 @@ public class MailAttributesListToMimeHeadersTest {
     }
 
     @Test
-    public void test() throws MessagingException {
+    public void shouldFilterAttributeOfWrongClass() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping",
@@ -226,7 +226,7 @@ public class MailAttributesListToMimeHeadersTest {
 
 
     @Test
-    public void test2() throws MessagingException {
+    public void shouldFilterAttributeElementsOfWrongClass() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
