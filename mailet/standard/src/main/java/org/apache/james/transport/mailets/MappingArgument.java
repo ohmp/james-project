@@ -41,14 +41,18 @@ public class MappingArgument {
             return ImmutableMap.of();
         }
 
-        return Splitter.on(',').splitToList(mapping)
+        return Splitter.on(',')
+            .omitEmptyStrings()
+            .splitToList(mapping)
             .stream()
             .map(MappingArgument::parseKeyValue)
             .collect(Guavate.toImmutableMap(Pair::getLeft, Pair::getRight));
     }
 
     private static Pair<String, String> parseKeyValue(String keyValue) {
-        List<String> pair = Splitter.on(';').trimResults().splitToList(keyValue);
+        List<String> pair = Splitter.on(';')
+            .trimResults()
+            .splitToList(keyValue);
 
         if (pair.size() != 2) {
             throw new IllegalArgumentException(CONFIGURATION_ERROR_MESSAGE);

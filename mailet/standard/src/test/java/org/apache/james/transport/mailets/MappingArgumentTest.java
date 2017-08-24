@@ -40,13 +40,13 @@ public class MappingArgumentTest {
     }
 
     @Test
-    public void parseShouldFailIfCalledWithBadSyntax() throws MessagingException {
+    public void parseShouldFailIfCalledWhenMissingMappingParts() throws MessagingException {
         expectedException.expect(IllegalArgumentException.class);
         MappingArgument.parse("key1;value1,key2");
     }
 
     @Test
-    public void parseShouldFailIfCalledWithBadSyntax2() throws MessagingException {
+    public void parseShouldFailIfCalledWhenExtraMappingParts() throws MessagingException {
         expectedException.expect(IllegalArgumentException.class);
         MappingArgument.parse("key1;value1,key2;value1;value3");
     }
@@ -73,5 +73,23 @@ public class MappingArgumentTest {
     public void parseShouldWorkForValidParsingWithMoreThanOneKey() throws MessagingException {
         assertThat(MappingArgument.parse("key1;value1,key2;value2"))
             .containsExactly(MapEntry.entry("key1", "value1"), MapEntry.entry("key2", "value2"));
+    }
+
+    @Test
+    public void parserShouldTrimSpacesAroundSemiColon() throws MessagingException {
+        assertThat(MappingArgument.parse("key1;    value1"))
+            .containsExactly(MapEntry.entry("key1", "value1"));
+    }
+
+    @Test
+    public void parserShouldTrimSpacesAroundComa() throws MessagingException {
+        assertThat(MappingArgument.parse("key1;value1,  key2;value2"))
+            .containsExactly(MapEntry.entry("key1", "value1"), MapEntry.entry("key2", "value2"));
+    }
+
+    @Test
+    public void parserShouldNotFailWhenExtraComa() throws MessagingException {
+        assertThat(MappingArgument.parse("key1;value1,"))
+            .containsExactly(MapEntry.entry("key1", "value1"));
     }
 }
