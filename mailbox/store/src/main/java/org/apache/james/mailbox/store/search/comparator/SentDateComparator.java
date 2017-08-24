@@ -58,7 +58,7 @@ public class SentDateComparator extends AbstractHeaderComparator {
         }
     }
 
-    @VisibleForTesting
+     @VisibleForTesting
      static String sanitizeDateStringHeaderValue(String value) {
         // Some sent e-mail have this form : Wed,  3 Jun 2015 09:05:46 +0000 (UTC)
         // Java 8 Time library RFC_1123_DATE_TIME corresponds to Wed,  3 Jun 2015 09:05:46 +0000 only

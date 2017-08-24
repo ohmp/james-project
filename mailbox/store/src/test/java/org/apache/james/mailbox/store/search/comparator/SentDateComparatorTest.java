@@ -46,6 +46,20 @@ public class SentDateComparatorTest {
     }
 
     @Test
+    public void sanitizeDateStringHeaderValueShouldRemoveBrackets() {
+        assertThat(
+            SentDateComparator.sanitizeDateStringHeaderValue("invalid (removeMe)"))
+            .isEqualTo("invalid");
+    }
+
+    @Test
+    public void sanitizeDateStringHeaderValueShouldKeepUnclosedBrackets() {
+        assertThat(
+            SentDateComparator.sanitizeDateStringHeaderValue("invalid (removeMe"))
+            .isEqualTo("invalid (removeMe");
+    }
+
+    @Test
     public void sanitizeDateStringHeaderValueShouldNotChangeEmptyString() {
         assertThat(
             SentDateComparator.sanitizeDateStringHeaderValue(""))
