@@ -68,18 +68,18 @@ public class MailAttributesListToMimeHeaders extends GenericMailet {
         try {
             MimeMessage message = mail.getMessage();
             attributeNameToHeader.entrySet()
-                .forEach(entry -> addAttributeToHeaders(mail, message, entry));
+                .forEach(entry -> addAttributeToHeader(mail, message, entry));
             message.saveChanges();
         } catch (MessagingException e) {
             LOGGER.warn("Exception while adding headers", e);
         }
     }
 
-    private void addAttributeToHeaders(Mail mail, MimeMessage message, Entry<String, String> entry) {
+    private void addAttributeToHeader(Mail mail, MimeMessage message, Entry<String, String> entry) {
         Serializable attribute = mail.getAttribute(entry.getKey());
         if (attribute instanceof Collection) {
             Optional<Collection> values = Optional.of((Collection) attribute);
-            addCollectionToHeaders(message, entry.getValue(), values);
+            addCollectionToHeader(message, entry.getValue(), values);
         } else {
             if (attribute != null) {
                 LOGGER.warn("Can not add {} to headers. Expecting class Collection but got {}.", attribute, attribute.getClass());
@@ -87,13 +87,13 @@ public class MailAttributesListToMimeHeaders extends GenericMailet {
         }
     }
 
-    private void addCollectionToHeaders(MimeMessage message, String headerName, Optional<Collection> values) {
+    private void addCollectionToHeader(MimeMessage message, String headerName, Optional<Collection> values) {
         OptionalConverter.toStream(values)
             .flatMap(Collection::stream)
-            .forEach(value -> addValueToHeaders(message, headerName, value));
+            .forEach(value -> addValueToHeader(message, headerName, value));
     }
 
-    private void addValueToHeaders(MimeMessage message, String headerName, Object value) {
+    private void addValueToHeader(MimeMessage message, String headerName, Object value) {
         try {
             if (value instanceof String) {
                 message.addHeader(headerName, (String) value);
