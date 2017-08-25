@@ -1174,7 +1174,7 @@ public abstract class AbstractMessageSearchIndexTest {
     }
 
     @Test
-    public void searchShouldOrderBySentDateThenInternalInternalDateWhenSortOnSentDateAndNonHomogeneousCorrespondingHeader() throws Exception {
+    public void searchShouldOrderBySentDateThenInternalDateWhenSortOnSentDateAndNonHomogeneousCorrespondingHeader() throws Exception {
         MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, USERNAME, "sentDate");
         storeMailboxManager.createMailbox(mailboxPath, session);
 
