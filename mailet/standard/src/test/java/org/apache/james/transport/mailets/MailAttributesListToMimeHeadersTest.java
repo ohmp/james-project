@@ -180,7 +180,7 @@ public class MailAttributesListToMimeHeadersTest {
     }
 
     @Test
-    public void shouldNotRemovePreviousAttributeValueWhenAttributeAlreadyPresent() throws MessagingException {
+    public void shouldNotRemovePreviousHeaderValueWhenHeaderAlreadyPresent() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
                 .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
