@@ -81,7 +81,7 @@ public class MDN {
         multipart.setSubType("report");
         multipart.addBodyPart(computeHumanReadablePart());
         multipart.addBodyPart(computeReportPart());
-        // Part 3: The optional third part, the original message is omitted.
+        // The optional third part, the original message is omitted.
         // We don't want to propogate over-sized, virus infected or
         // other undesirable mail!
         // There is the option of adding a Text/RFC822-Headers part, which
