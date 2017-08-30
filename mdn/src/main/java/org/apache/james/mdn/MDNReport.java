@@ -215,7 +215,7 @@ public class MDNReport {
         return gatewayField;
     }
 
-    public List<Error> getErrorField() {
+    public List<Error> getErrorFields() {
         return errorFields;
     }
 
