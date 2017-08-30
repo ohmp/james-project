@@ -28,10 +28,8 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 import org.apache.james.mdn.MDN;
-import org.apache.james.mdn.MDNFactory;
 import org.apache.james.mdn.MDNReport;
 import org.apache.james.mdn.action.mode.DispositionActionMode;
 import org.apache.james.mdn.fields.Disposition;
