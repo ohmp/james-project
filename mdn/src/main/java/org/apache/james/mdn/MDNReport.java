@@ -35,7 +35,7 @@ import org.apache.james.mdn.fields.OriginalMessageId;
 import org.apache.james.mdn.fields.OriginalRecipient;
 import org.apache.james.mdn.fields.ReportingUserAgent;
 import org.apache.james.mdn.fields.Text;
-import org.apache.james.util.OptionalConverter;
+import org.apache.james.util.OptionalUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -237,7 +237,7 @@ public class MDNReport {
             definedFields,
             Stream.concat(errors,
                 extentions))
-            .flatMap(OptionalConverter::toStream)
+            .flatMap(OptionalUtils::toStream)
             .map(Field::formattedValue)
             .collect(Collectors.joining(LINE_END)) + LINE_END;
     }
