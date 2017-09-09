@@ -73,7 +73,10 @@ public class CassandraAttachmentDAO {
     }
 
     private PreparedStatement prepareDelete(Session session) {
-        return session.prepare(delete().from(TABLE_NAME).where(eq(ID, bindMarker(ID))));
+        return session.prepare(
+            delete()
+                .from(TABLE_NAME)
+                .where(eq(ID, bindMarker(ID))));
     }
 
     private PreparedStatement prepareInsert(Session session) {
