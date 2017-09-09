@@ -25,8 +25,11 @@ import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
 import org.apache.james.mailbox.cassandra.mail.CassandraBlobsDAO;
 import org.apache.james.mailbox.model.Attachment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AttachmentV2Migration implements Migration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AttachmentV2Migration.class);
     private final CassandraAttachmentDAO attachmentDAOV1;
     private final CassandraAttachmentDAOV2 attachmentDAOV2;
     private final CassandraBlobsDAO blobsDAO;
@@ -42,9 +45,14 @@ public class AttachmentV2Migration implements Migration {
 
     @Override
     public MigrationResult run() {
-        return attachmentDAOV1.retrieveAll()
-            .map(this::migrateAttachment)
-            .reduce(MigrationResult.COMPLETED, Migration::combine);
+        try {
+            return attachmentDAOV1.retrieveAll()
+                .map(this::migrateAttachment)
+                .reduce(MigrationResult.COMPLETED, Migration::combine);
+        } catch (Exception e) {
+            LOGGER.error("Error while performing attachment V2 migration", e);
+            return MigrationResult.PARTIAL;
+        }
     }
 
     private MigrationResult migrateAttachment(Attachment attachment) {
@@ -56,6 +64,7 @@ public class AttachmentV2Migration implements Migration {
                 .join();
             return MigrationResult.COMPLETED;
         } catch (Exception e) {
+            LOGGER.error("Error while performing attachment V2 migration", e);
             return MigrationResult.PARTIAL;
         }
     }
