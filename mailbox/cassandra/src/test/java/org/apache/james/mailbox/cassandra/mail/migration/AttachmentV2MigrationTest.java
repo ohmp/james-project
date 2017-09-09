@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.init.CassandraConfiguration;
 import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.ids.BlobId;
@@ -63,7 +64,9 @@ public class AttachmentV2MigrationTest {
             cassandraServer.getIp(),
             cassandraServer.getBindingPort());
 
-        attachmentDAO = new CassandraAttachmentDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+        attachmentDAO = new CassandraAttachmentDAO(cassandra.getConf(),
+            CassandraUtils.WITH_DEFAULT_CONFIGURATION,
+            CassandraConfiguration.DEFAULT_CONFIGURATION);
         attachmentDAOV2 = new CassandraAttachmentDAOV2(cassandra.getConf());
         blobsDAO = new CassandraBlobsDAO(cassandra.getConf());
 
