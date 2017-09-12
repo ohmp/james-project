@@ -63,7 +63,7 @@ public class BlobTest {
     }
 
     @Test
-    public void buildShouldThrowOnContentType() {
+    public void buildShouldThrowOnMissingContentType() {
         assertThatThrownBy(() ->
             Blob.builder()
                 .id(ID)
@@ -73,7 +73,7 @@ public class BlobTest {
     }
 
     @Test
-    public void buildShouldThrowOnPayload() {
+    public void buildShouldThrowOnMissingPayload() {
         assertThatThrownBy(() ->
             Blob.builder()
                 .id(ID)

@@ -36,9 +36,6 @@ public class Blob {
         private String contentType;
 
         private Builder() {
-            blobId = null;
-            payload = null;
-            contentType = null;
         }
 
         public Builder id(BlobId id) {
