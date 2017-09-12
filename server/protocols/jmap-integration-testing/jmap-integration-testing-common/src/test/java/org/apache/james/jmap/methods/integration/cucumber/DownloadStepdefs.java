@@ -144,14 +144,14 @@ public class DownloadStepdefs {
     }
 
     @When("^\"([^\"]*)\" downloads \"([^\"]*)\"$")
-    public void downloads(String username, String attachmentId) throws Throwable {
-        String blobId = Optional.ofNullable(blobIdByAttachmentId.get(attachmentId))
-            .orElse(Optional.ofNullable(inputToMessageId.get(attachmentId))
+    public void downloads(String username, String blobId) throws Throwable {
+        String attachmentIdOrMessageId = Optional.ofNullable(blobIdByAttachmentId.get(blobId))
+            .orElse(Optional.ofNullable(inputToMessageId.get(blobId))
                 .map(MessageId::serialize)
                 .orElse(null));
 
-        URIBuilder uriBuilder = mainStepdefs.baseUri().setPath("/download/" + blobId);
-        response = authenticatedDownloadRequest(uriBuilder, blobId, username).execute().returnResponse();
+        URIBuilder uriBuilder = mainStepdefs.baseUri().setPath("/download/" + attachmentIdOrMessageId);
+        response = authenticatedDownloadRequest(uriBuilder, attachmentIdOrMessageId, username).execute().returnResponse();
     }
 
     private Request authenticatedDownloadRequest(URIBuilder uriBuilder, String blobId, String username) throws URISyntaxException {
