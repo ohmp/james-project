@@ -110,10 +110,10 @@ public class CassandraAttachmentDAO {
     public Stream<Attachment> retrieveAll() {
         return cassandraUtils.convertToStream(
             cassandraAsyncExecutor.execute(
-            selectAllStatement.bind()
-                .setReadTimeoutMillis(configuration.getAttachmentV2MigrationReadTimeout())
-                .setFetchSize(1))
-            .join())
+                selectAllStatement.bind()
+                    .setReadTimeoutMillis(configuration.getAttachmentV2MigrationReadTimeout())
+                    .setFetchSize(1))
+                .join())
             .map(this::attachment);
     }
 
