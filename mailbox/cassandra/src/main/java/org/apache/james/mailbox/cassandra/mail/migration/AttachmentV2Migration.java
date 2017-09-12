@@ -50,7 +50,7 @@ public class AttachmentV2Migration implements Migration {
                 .map(this::migrateAttachment)
                 .reduce(MigrationResult.COMPLETED, Migration::combine);
         } catch (Exception e) {
-            LOGGER.error("Error while performing attachment V2 migration", e);
+            LOGGER.error("Error while performing attachmentDAO V2 migration", e);
             return MigrationResult.PARTIAL;
         }
     }
@@ -64,7 +64,7 @@ public class AttachmentV2Migration implements Migration {
                 .join();
             return MigrationResult.COMPLETED;
         } catch (Exception e) {
-            LOGGER.error("Error while performing attachment V2 migration", e);
+            LOGGER.error("Error while performing attachmentDAO V2 migration", e);
             return MigrationResult.PARTIAL;
         }
     }
