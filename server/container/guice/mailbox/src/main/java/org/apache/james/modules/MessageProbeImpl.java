@@ -17,44 +17,37 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.store.probe;
+package org.apache.james.modules;
 
-import java.io.InputStream;
 import java.util.Collection;
-import java.util.Date;
 
-import javax.mail.Flags;
+import javax.inject.Inject;
 
-import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.AttachmentManager;
+import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.model.AttachmentId;
-import org.apache.james.mailbox.model.ComposedMessageId;
-import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
+import org.apache.james.mailbox.store.probe.MessageProbe;
+import org.apache.james.utils.GuiceProbe;
 
-public interface MailboxProbe {
+public class MessageProbeImpl implements GuiceProbe, MessageProbe {
 
-    void createMailbox(String namespace, String user, String name);
+    private final MailboxManager mailboxManager;
+    private final AttachmentManager attachmentManager;
 
-    Mailbox getMailbox(String namespace, String user, String name);
+    @Inject
+    private MessageProbeImpl(MailboxManager mailboxManager, AttachmentManager attachmentManager) {
+        this.mailboxManager = mailboxManager;
+        this.attachmentManager = attachmentManager;
+    }
 
-    Collection<String> listUserMailboxes(String user);
-
-    void deleteMailbox(String namespace, String user, String name);
-
-    void importEmlFileToMailbox(String namespace, String user, String name, String emlpath) throws Exception;
-
-    ComposedMessageId appendMessage(String username, MailboxPath mailboxPath, InputStream message, Date internalDate,
-            boolean isRecent, Flags flags) throws MailboxException;
-
-    void copyMailbox(String srcBean, String dstBean) throws Exception;
-
-    void deleteUserMailboxesNames(String user) throws Exception;
-
-    void reIndexMailbox(String namespace, String user, String name) throws Exception;
-
-    void reIndexAll() throws Exception;
-
-    Collection<String> listSubscriptions(String user) throws Exception;
+    @Override
+    public Collection<MessageId> getRelatedMessageIds(AttachmentId attachmentId, String user) throws Exception {
+        MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
+        return attachmentManager.getRelatedMessageIds(attachmentId, mailboxSession);
+    }
 
 }
