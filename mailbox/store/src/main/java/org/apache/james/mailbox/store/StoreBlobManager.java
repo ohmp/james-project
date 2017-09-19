@@ -71,24 +71,15 @@ public class StoreBlobManager implements BlobManager {
     private Optional<Blob> getBlobFromAttachment(BlobId blobId, MailboxSession mailboxSession) throws MailboxException {
         try {
             AttachmentId attachmentId = AttachmentId.from(blobId);
-            if (userHasAccessToAttachment(attachmentId, mailboxSession)) {
-                return Optional.of(attachmentManager.getAttachment(attachmentId, mailboxSession).toBlob());
-            }
+            return Optional.of(attachmentManager.getAttachment(attachmentId, mailboxSession).toBlob());
         } catch (AttachmentNotFoundException e) {
             return Optional.empty();
         }
-        return Optional.empty();
-    }
-
-    private boolean userHasAccessToAttachment(AttachmentId attachmentId, MailboxSession mailboxSession) throws MailboxException {
-        return !messageIdManager
-            .accessibleMessages(attachmentManager.getRelatedMessageIds(attachmentId, mailboxSession), mailboxSession)
-            .isEmpty();
     }
 
     private Optional<Blob> getBlobFromMessage(BlobId blobId, MailboxSession mailboxSession) {
         return retrieveMessageId(blobId)
-                .flatMap(messageId -> loadMessageAsBlob(blobId, messageId, mailboxSession))
+                .flatMap(messageId -> loadMessageAsBlob(messageId, mailboxSession))
                 .map(Throwing.function(
                     blob -> Blob.builder()
                         .id(blobId)
@@ -105,7 +96,7 @@ public class StoreBlobManager implements BlobManager {
         }
     }
 
-    private Optional<InputStream> loadMessageAsBlob(BlobId blobId, MessageId messageId, MailboxSession mailboxSession)  {
+    private Optional<InputStream> loadMessageAsBlob(MessageId messageId, MailboxSession mailboxSession)  {
         try {
             return messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.FULL_CONTENT, mailboxSession)
                 .stream()
