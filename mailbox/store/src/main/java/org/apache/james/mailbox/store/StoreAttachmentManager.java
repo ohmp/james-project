@@ -42,6 +42,12 @@ import com.google.common.base.Throwables;
 public class StoreAttachmentManager implements AttachmentManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreAttachmentManager.class);
 
+    public enum Access {
+        Authorized,
+        Unreferenced,
+        Forbidden
+    }
+
     private final AttachmentMapperFactory attachmentMapperFactory;
     private final MessageIdManager messageIdManager;
 
@@ -53,7 +59,7 @@ public class StoreAttachmentManager implements AttachmentManager {
 
     @Override
     public Attachment getAttachment(AttachmentId attachmentId, MailboxSession mailboxSession) throws MailboxException, AttachmentNotFoundException {
-        if (!userHasAccessToAttachment(attachmentId, mailboxSession)) {
+        if (userHasAccessToAttachment(attachmentId, mailboxSession) == Access.Forbidden) {
             throw new AttachmentNotFoundException(attachmentId.getId());
         }
         return attachmentMapperFactory.getAttachmentMapper(mailboxSession).getAttachment(attachmentId);
@@ -62,7 +68,7 @@ public class StoreAttachmentManager implements AttachmentManager {
     @Override
     public List<Attachment> getAttachments(List<AttachmentId> attachmentIds, MailboxSession mailboxSession) throws MailboxException {
         List<AttachmentId> accessibleAttachmentIds = attachmentIds.stream()
-            .filter(attachmentId -> userHasAccessToAttachment(attachmentId, mailboxSession))
+            .filter(attachmentId -> userHasAccessToAttachment(attachmentId, mailboxSession) != Access.Forbidden)
             .collect(Guavate.toImmutableList());
 
         return attachmentMapperFactory.getAttachmentMapper(mailboxSession).getAttachments(accessibleAttachmentIds);
@@ -78,11 +84,19 @@ public class StoreAttachmentManager implements AttachmentManager {
         attachmentMapperFactory.getAttachmentMapper(mailboxSession).storeAttachmentsForMessage(attachments, ownerMessageId);
     }
 
-    private boolean userHasAccessToAttachment(AttachmentId attachmentId, MailboxSession mailboxSession) {
+    private Access userHasAccessToAttachment(AttachmentId attachmentId, MailboxSession mailboxSession) {
         try {
-            return !messageIdManager
-                .accessibleMessages(getRelatedMessageIds(attachmentId, mailboxSession), mailboxSession)
+            Collection<MessageId> relatedMessageIds = getRelatedMessageIds(attachmentId, mailboxSession);
+            if (relatedMessageIds.isEmpty()) {
+                return Access.Unreferenced;
+            }
+            boolean hasAuthorizedMessageIds = messageIdManager
+                .accessibleMessages(relatedMessageIds, mailboxSession)
                 .isEmpty();
+            if (hasAuthorizedMessageIds) {
+                return Access.Authorized;
+            }
+            return Access.Forbidden;
         } catch (MailboxException e) {
             LOGGER.warn("Error while checking attachment related accessible message ids", e);
             throw Throwables.propagate(e);
