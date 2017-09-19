@@ -82,7 +82,7 @@ public class InMemoryMessageIdManager implements MessageIdManager {
         return getUsersMailboxIds(mailboxSession)
             .stream()
             .flatMap(Throwing.function(mailboxId -> retrieveMailboxMessages(mailboxId, messageIds, FetchGroupImpl.MINIMAL, mailboxSession)))
-            .map(message -> message.getMessageId())
+            .map(MessageResult::getMessageId)
             .collect(Guavate.toImmutableSet());
     }
 
