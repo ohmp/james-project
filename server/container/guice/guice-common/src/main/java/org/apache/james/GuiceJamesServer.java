@@ -28,6 +28,8 @@ import org.apache.james.onami.lifecycle.Stager;
 import org.apache.james.utils.ConfigurationsPerformer;
 import org.apache.james.utils.GuiceProbe;
 import org.apache.james.utils.GuiceProbeProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 import com.google.inject.Guice;
@@ -38,6 +40,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.util.Modules;
 
 public class GuiceJamesServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GuiceJamesServer.class);
 
     protected final Module module;
     private Stager<PreDestroy> preDestroy;
@@ -63,11 +66,18 @@ public class GuiceJamesServer {
     }
 
     public void start() throws Exception {
-        Injector injector = Guice.createInjector(module);
-        preDestroy = injector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
-        injector.getInstance(ConfigurationsPerformer.class).initModules();
-        guiceProbeProvider = injector.getInstance(GuiceProbeProvider.class);
-        isStarted = true;
+        try {
+            Injector injector = Guice.createInjector(module);
+            preDestroy = injector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
+            injector.getInstance(ConfigurationsPerformer.class).initModules();
+            guiceProbeProvider = injector.getInstance(GuiceProbeProvider.class);
+            isStarted = true;
+        } catch (Exception e) {
+            LOGGER.error("Error while starting James. Stopping server.", e);
+            stop();
+            throw e;
+        }
+
     }
 
     public void stop() {
