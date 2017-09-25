@@ -20,13 +20,16 @@
 package org.apache.james.mailbox.store.json;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static org.apache.james.mailbox.model.SimpleMailboxACL.Right.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxACL.Rfc4314Rights;
 import org.junit.Test;
 
 import net.javacrumbs.jsonunit.core.Option;
@@ -37,25 +40,26 @@ public class SimpleMailboxACLJsonConverterTest {
         private final Map<SimpleMailboxACL.MailboxACLEntryKey, MailboxACL.MailboxACLRights> map;
 
         public ACLMapBuilder() {
-            map = new HashMap<>();
+            map = new LinkedHashMap<>();
         }
 
         public ACLMapBuilder addSingleUserEntryToMap() {
-            SimpleMailboxACL.Rfc4314Rights rights = new SimpleMailboxACL.Rfc4314Rights(false, true, true, true, false, true, false, true, true, true, true);
+            Rfc4314Rights rights = new Rfc4314Rights(CreateMailbox, DeleteMailbox, DeleteMessages, Lookup, Post, Read, WriteSeenFlag, WriteSeenFlag);
             SimpleMailboxACL.MailboxACLEntryKey key = new SimpleMailboxACL.SimpleMailboxACLEntryKey("user", MailboxACL.NameType.user, true);
             map.put(key, rights);
             return this;
         }
 
         public ACLMapBuilder addSingleSpecialEntryToMap() {
-            SimpleMailboxACL.Rfc4314Rights rights = new SimpleMailboxACL.Rfc4314Rights(false, false, true, true, false, true, false, true, false, true, true);
+            Rfc4314Rights rights = new Rfc4314Rights(DeleteMailbox, DeleteMessages, Lookup, Post, Write, WriteSeenFlag);
             SimpleMailboxACL.MailboxACLEntryKey key = new SimpleMailboxACL.SimpleMailboxACLEntryKey("special", MailboxACL.NameType.special, true);
             map.put(key, rights);
             return this;
         }
 
         public ACLMapBuilder addSingleGroupEntryToMap() {
-            SimpleMailboxACL.Rfc4314Rights rights = new SimpleMailboxACL.Rfc4314Rights(false, false, true, true, false, true, false, true, true, true, true);
+
+            Rfc4314Rights rights = new Rfc4314Rights(DeleteMailbox, DeleteMessages, Lookup, Post, Read, Write, WriteSeenFlag);
             SimpleMailboxACL.MailboxACLEntryKey key = new SimpleMailboxACL.SimpleMailboxACLEntryKey("group", MailboxACL.NameType.group, true);
             map.put(key, rights);
             return this;

@@ -35,12 +35,12 @@ public class SimpleMailboxACLJsonConverter {
 
     interface Rfc4314RightsMixIn {
         @JsonValue
-        int getValue();
+        int serializeAsInteger();
     }
 
     static class ACLKeyDeserializer extends KeyDeserializer {
         @Override
-        public Object deserializeKey(String key, DeserializationContext deserializationContext ) throws IOException {
+        public Object deserializeKey(String key, DeserializationContext deserializationContext) throws IOException {
             return new SimpleMailboxACL.SimpleMailboxACLEntryKey(key);
         }
     }

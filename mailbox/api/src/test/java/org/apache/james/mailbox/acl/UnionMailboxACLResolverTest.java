@@ -164,178 +164,178 @@ public class UnionMailboxACLResolverTest {
     @Test
     public void testHasRightNullUser() throws UnsupportedRightException {
 
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
-
-        
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
+
+        
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
         
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
     }
 
     @Test
     public void testHasRightNullUserGlobals() throws UnsupportedRightException {
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_2, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, SimpleMailboxACL.EMPTY, USER_2, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, SimpleMailboxACL.EMPTY, USER_2, false));
-        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, SimpleMailboxACL.EMPTY, USER_2, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, SimpleMailboxACL.EMPTY, USER_2, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_2, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, SimpleMailboxACL.EMPTY, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, SimpleMailboxACL.EMPTY, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, SimpleMailboxACL.EMPTY, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(null, groupMembershipResolver, SimpleMailboxACL.Right.Read, SimpleMailboxACL.EMPTY, USER_2, false));
     }
     
 
     @Test
     public void testHasRightUserSelfOwner() throws UnsupportedRightException {
 
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_1, false));
-
-        
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
-
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_1, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_1, false));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_1, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_1, false));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_1, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_1, false));
+
+        
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
+
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_1, false));
         
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_1, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_1, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_1, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_1, false));
 
     }
     
@@ -343,167 +343,167 @@ public class UnionMailboxACLResolverTest {
     @Test
     public void testHasRightUserNotOwner() throws UnsupportedRightException {
 
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_2, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_2, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_2, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_2, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_2, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_2, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_2, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_2, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_2, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_2, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, USER_2, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, USER_2, false));
-
-        
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_2, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_2, false));
-
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_2, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_2, false));
-
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_2, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_2, false));
-
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_2, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_2, false));
-
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, USER_2, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, USER_2, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, USER_2, false));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_2, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_2, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_2, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_2, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_2, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_2, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_2, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_2, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_2, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_2, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_2, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, USER_2, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, USER_2, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, USER_2, false));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_2, false));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_2, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_2, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_2, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_2, false));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_2, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_2, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_2, false));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_2, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_2, false));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_2, false));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_2, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_2, false));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_2, false));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, USER_2, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, USER_2, false));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, USER_2, false));
+
+        
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_2, false));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_2, false));
+
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_2, false));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_2, false));
+
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_2, false));
+
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_2, false));
+
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, USER_2, false));
         
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_2, false));
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_2, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_2, false));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_2, false));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_2, false));
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_2, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_2, false));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_2, false));
 
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_2, false));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_2, false));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_2, false));
 
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_2, false));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_2, false));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_2, false));
 
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, USER_2, false));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, USER_2, false));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, USER_2, false));
 
     }
     @Test
     public void testHasRightUserMemberOfOwnerGroup() throws UnsupportedRightException {
 
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_1, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_1, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_1, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_1, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_1, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_1, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_1, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_1, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_1, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_1, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_1, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_1, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_1, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_1, true));
-
-        
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_1, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_1, true));
-
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_1, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_1, true));
-
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_1, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_1, true));
-
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_1, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_1, true));
-
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_1, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_1, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_1, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_1, true));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_1, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_1, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_1, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_1, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_1, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_1, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_1, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_1, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_1, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_1, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_1, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_1, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_1, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_1, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_1, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_1, true));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_1, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_1, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_1, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_1, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_1, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_1, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_1, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_1, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_1, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_1, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_1, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_1, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_1, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_1, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_1, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_1, true));
+
+        
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_1, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_1, true));
+
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_1, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_1, true));
+
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_1, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_1, true));
+
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_1, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_1, true));
+
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_1, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_1, true));
         
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_1, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_1, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_1, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_1, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_1, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_1, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_1, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_1, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_1, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_1, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_1, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_1, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_1, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_1, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_1, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_1, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_1, true));
 
     }    
     
@@ -511,84 +511,84 @@ public class UnionMailboxACLResolverTest {
     @Test
     public void testHasRightUserNotMemberOfOwnerGroup() throws UnsupportedRightException {
 
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_2, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_2, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_2, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_2, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_2, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_2, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_2, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_2, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_2, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_2, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_2, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_2, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1Read, GROUP_2, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, user1ReadNegative, GROUP_2, true));
-
-        
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_2, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_2, true));
-
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_2, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_2, true));
-
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_2, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_2, true));
-
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_2, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_2, true));
-
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1Read, GROUP_2, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, group1ReadNegative, GROUP_2, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1Read, GROUP_2, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, user1ReadNegative, GROUP_2, true));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_2, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_2, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_2, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_2, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_2, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_2, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_2, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_2, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_2, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_2, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_2, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_2, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyRead, GROUP_2, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, anybodyReadNegative, GROUP_2, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1Read, GROUP_2, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, group1ReadNegative, GROUP_2, true));
 
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_2, true));
-        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_2, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_2, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_2, true));
-        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_2, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_2, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_2, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_2, true));
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_2, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_2, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_2, true));
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_2, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedRead, GROUP_2, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, authenticatedReadNegative, GROUP_2, true));
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyRead, GROUP_2, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, anybodyReadNegative, GROUP_2, true));
+
+        
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_2, true));
+        Assert.assertFalse(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_2, true));
+
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_2, true));
+        Assert.assertFalse(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_2, true));
+
+        Assert.assertTrue(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_2, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_2, true));
+
+        Assert.assertTrue(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_2, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_2, true));
+
+        Assert.assertTrue(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedRead, GROUP_2, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, authenticatedReadNegative, GROUP_2, true));
         
         
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_2, true));
-        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_2, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_2, true));
+        Assert.assertTrue(anyoneReadListGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_2, true));
 
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_2, true));
-        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_2, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_2, true));
+        Assert.assertTrue(authenticatedReadListWriteGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_2, true));
 
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_2, true));
-        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_2, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_2, true));
+        Assert.assertFalse(ownerFullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_2, true));
 
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_2, true));
-        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_2, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_2, true));
+        Assert.assertFalse(noGlobals.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_2, true));
 
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerRead, GROUP_2, true));
-        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, Rfc4314Rights.r_Read_RIGHT, ownerReadNegative, GROUP_2, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerRead, GROUP_2, true));
+        Assert.assertFalse(negativeGroup2FullGlobal.hasRight(USER_1, groupMembershipResolver, SimpleMailboxACL.Right.Read, ownerReadNegative, GROUP_2, true));
 
     }
 
