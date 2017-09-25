@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.james.mailbox.exception.UnsupportedRightException;
@@ -381,9 +382,8 @@ public class SimpleMailboxACL implements MailboxACL {
                 } catch (UnsupportedRightException e) {
                     throw new RuntimeException(e);
                 }
-            } else {
-                return false;
             }
+            return false;
         }
 
         /** 
@@ -414,16 +414,6 @@ public class SimpleMailboxACL implements MailboxACL {
         }
 
         /**
-         * Returns {@link #value}.
-         * 
-         * @see java.lang.Object#hashCode()
-         */
-        @Override
-        public int hashCode() {
-            return value;
-        }
-
-        /**
          * @see org.apache.james.mailbox.model.MailboxACL.MailboxACLRights#isEmpty()
          */
         @Override
@@ -446,21 +436,11 @@ public class SimpleMailboxACL implements MailboxACL {
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Iterable#iterator()
-         */
         @Override
         public Iterator<MailboxACLRight> iterator() {
             return new Rfc4314RightsIterator();
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.apache.james.mailbox.MailboxACL.MailboxACLRights#serialize()
-         */
         @Override
         public String serialize() {
             StringBuilder result = new StringBuilder(FIELD_COUNT);
@@ -482,13 +462,6 @@ public class SimpleMailboxACL implements MailboxACL {
             return serialize();
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.apache.james.mailbox.MailboxACL.MailboxACLRights#union(org.apache
-         * .james.mailbox.MailboxACL.MailboxACLRights)
-         */
         @Override
         public MailboxACLRights union(MailboxACLRights toAdd) throws UnsupportedRightException {
             if (this.value == EMPTY_MASK) {
@@ -527,21 +500,11 @@ public class SimpleMailboxACL implements MailboxACL {
             this(new SimpleMailboxACLEntryKey(key), new Rfc4314Rights(value));
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Map.Entry#getKey()
-         */
         @Override
         public MailboxACLEntryKey getKey() {
             return key;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Map.Entry#getValue()
-         */
         @Override
         public MailboxACLRights getValue() {
             return value;
@@ -554,7 +517,7 @@ public class SimpleMailboxACL implements MailboxACL {
          */
         @Override
         public MailboxACLRights setValue(MailboxACLRights value) {
-            throw new java.lang.UnsupportedOperationException("Fields of " + MailboxACLRights.class.getName() + " are read only.");
+            throw new UnsupportedOperationException("Fields of " + MailboxACLRights.class.getName() + " are read only.");
         }
 
     }
@@ -579,7 +542,6 @@ public class SimpleMailboxACL implements MailboxACL {
             return new SimpleMailboxACLEntryKey(name, NameType.user, negative);
         }
 
-        private final int hash;
         private final String name;
         private final NameType nameType;
         private final boolean negative;
@@ -628,9 +590,6 @@ public class SimpleMailboxACL implements MailboxACL {
                 }
                 this.nameType = nt;
             }
-
-            this.hash = hash();
-
         }
 
         public SimpleMailboxACLEntryKey(String name, NameType nameType, boolean negative) {
@@ -644,57 +603,33 @@ public class SimpleMailboxACL implements MailboxACL {
             this.name = name;
             this.nameType = nameType;
             this.negative = negative;
-            this.hash = hash();
         }
 
         @Override
         public boolean equals(Object o) {
             if (o instanceof MailboxACLEntryKey) {
                 MailboxACLEntryKey other = (MailboxACLEntryKey) o;
-                return this.name.equals(other.getName()) && this.nameType.equals(other.getNameType()) && this.negative == other.isNegative();
-            } else {
-                return false;
+                return Objects.equals(this.name, other.getName())
+                    && Objects.equals(this.nameType, other.getNameType())
+                    && Objects.equals(this.negative, other.isNegative());
             }
+            return false;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.apache.james.mailbox.MailboxACL.MailboxACLEntryKey#getName()
-         */
+
         public String getName() {
             return name;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.apache.james.mailbox.MailboxACL.MailboxACLEntryKey#getNameType()
-         */
         public NameType getNameType() {
             return nameType;
         }
 
-        private int hash() {
-            final int PRIME = 31;
-            int hash = negative ? 1 : 0;
-            hash = PRIME * hash + nameType.hashCode();
-            hash = PRIME * hash + name.hashCode();
-            return hash;
-        }
-
         @Override
-        public int hashCode() {
-            return hash;
+        public final int hashCode() {
+            return Objects.hash(negative, nameType, name);
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.apache.james.mailbox.MailboxACL.MailboxACLEntryKey#isNegative()
-         */
         public boolean isNegative() {
             return negative;
         }
@@ -752,37 +687,24 @@ public class SimpleMailboxACL implements MailboxACL {
             this.value = value;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
-        public boolean equals(Object o) {
-            if (o instanceof MailboxACLRight) {
-                return ((MailboxACLRight) o).getValue() == this.value;
+        public final boolean equals(Object o) {
+            if (o instanceof SimpleMailboxACLRight) {
+                SimpleMailboxACLRight that = (SimpleMailboxACLRight) o;
+
+                return Objects.equals(this.value, that.value);
             }
             return false;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.apache.james.mailbox.MailboxACL.MailboxACLRight#getValue()
-         */
         @Override
         public char getValue() {
             return value;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode() {
-            return (int) value;
+            return Objects.hash(value);
         }
 
         /**
@@ -824,24 +746,20 @@ public class SimpleMailboxACL implements MailboxACL {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof SimpleMailboxACLCommand)) return false;
+        public final boolean equals(Object o) {
+            if (o instanceof SimpleMailboxACLCommand) {
+                SimpleMailboxACLCommand that = (SimpleMailboxACLCommand) o;
 
-            SimpleMailboxACLCommand that = (SimpleMailboxACLCommand) o;
-
-            if (key != null ? !key.equals(that.key) : that.key != null) return false;
-            if (editMode != that.editMode) return false;
-            return !(rights != null ? !rights.equals(that.rights) : that.rights != null);
-
+                return Objects.equals(this.key, that.key)
+                    && Objects.equals(this.editMode, that.editMode)
+                    && Objects.equals(this.rights, that.rights);
+            }
+            return false;
         }
 
         @Override
-        public int hashCode() {
-            int result = key != null ? key.hashCode() : 0;
-            result = 31 * result + (editMode != null ? editMode.hashCode() : 0);
-            result = 31 * result + (rights != null ? rights.hashCode() : 0);
-            return result;
+        public final int hashCode() {
+            return Objects.hash(key, editMode, rights);
         }
     }
 
@@ -951,27 +869,27 @@ public class SimpleMailboxACL implements MailboxACL {
 
         Map<MailboxACLEntryKey, MailboxACLRights> m = new HashMap<>(props.size() + props.size() / 2 + 1);
 
-        if (props != null) {
-            for (Map.Entry<Object, Object> prop : props.entrySet()) {
-                m.put(new SimpleMailboxACLEntryKey((String) prop.getKey()), new Rfc4314Rights((String) prop.getValue()));
-            }
+        for (Map.Entry<Object, Object> prop : props.entrySet()) {
+            m.put(new SimpleMailboxACLEntryKey((String) prop.getKey()), new Rfc4314Rights((String) prop.getValue()));
         }
 
         entries = Collections.unmodifiableMap(m);
     }
 
-    /**
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object o) {
         if (o instanceof MailboxACL) {
             MailboxACL acl = (MailboxACL) o;
-            Map<MailboxACLEntryKey, MailboxACLRights> ens = acl.getEntries();
-            return entries == ens || (entries != null && entries.equals(ens));
+            return Objects.equals(this.getEntries(), acl.getEntries());
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entries);
+    }
+
 
     @Override
     public MailboxACL apply(MailboxACLCommand aclUpdate) throws UnsupportedRightException {
@@ -1043,14 +961,6 @@ public class SimpleMailboxACL implements MailboxACL {
     @Override
     public Map<MailboxACLEntryKey, MailboxACLRights> getEntries() {
         return entries;
-    }
-
-    /**
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        return entries == null ? 0 : entries.hashCode();
     }
 
     /**
