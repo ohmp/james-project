@@ -30,6 +30,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.mock.MockMailboxSession;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLCommand;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLEntryKey;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLRight;
@@ -208,6 +209,10 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
 
         @Override
         public void setRights(MailboxPath mailboxPath, MailboxACLCommand mailboxACLCommand, MailboxSession session) throws MailboxException {
+        }
+
+        @Override
+        public void resetRights(MailboxPath mailboxPath, MailboxACL mailboxACL, MailboxSession session) throws MailboxException {
         }
 
         @Override

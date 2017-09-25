@@ -24,33 +24,43 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BinaryOperator;
 
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxACL.MailboxACLRights;
+import org.apache.james.mailbox.model.SimpleMailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxACL.Rfc4314Rights;
+import org.apache.james.mailbox.model.SimpleMailboxACL.SimpleMailboxACLEntryKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 public class Rights {
     public enum Right {
-        Administer('a'),
-        Expunge('e'),
-        Insert('i'),
-        Lookup('l'),
-        Read('r'),
-        Seen('s'),
-        T_Delete('t'),
-        Write('w');
+        Administer('a', SimpleMailboxACL.Rfc4314Rights.a_Administer_RIGHT),
+        Expunge('e', SimpleMailboxACL.Rfc4314Rights.e_PerformExpunge_RIGHT),
+        Insert('i', SimpleMailboxACL.Rfc4314Rights.i_Insert_RIGHT),
+        Lookup('l', SimpleMailboxACL.Rfc4314Rights.l_Lookup_RIGHT),
+        Read('r', SimpleMailboxACL.Rfc4314Rights.r_Read_RIGHT),
+        Seen('s', SimpleMailboxACL.Rfc4314Rights.s_WriteSeenFlag_RIGHT),
+        T_Delete('t', SimpleMailboxACL.Rfc4314Rights.t_DeleteMessages_RIGHT),
+        Write('w', SimpleMailboxACL.Rfc4314Rights.w_Write_RIGHT);
 
         private final char imapRight;
+        private final MailboxACL.MailboxACLRight right;
 
-        Right(char imapRight) {
+        Right(char imapRight, MailboxACL.MailboxACLRight right) {
             this.imapRight = imapRight;
+            this.right = right;
         }
 
         @JsonValue
@@ -58,11 +68,16 @@ public class Rights {
             return imapRight;
         }
 
+        public MailboxACL.MailboxACLRight getRight() {
+            return right;
+        }
+
         public static boolean exists(char c) {
             return Arrays.stream(values())
                 .anyMatch(right -> right.getImapRight() == c);
         }
 
+   //     @JsonCreator
         public static Right forChar(char c) {
             return Arrays.stream(values())
                 .filter(right -> right.getImapRight() == c)
@@ -74,6 +89,7 @@ public class Rights {
     public static class Username {
         private final String value;
 
+     //   @JsonCreator
         public Username(String value) {
             this.value = value;
         }
@@ -177,6 +193,7 @@ public class Rights {
 
     private final Multimap<Username, Right> rights;
 
+    @JsonCreator
     public Rights(Multimap<Username, Right> rights) {
         this.rights = rights;
     }
@@ -184,6 +201,30 @@ public class Rights {
     @JsonAnyGetter
     public Map<Username, Collection<Right>> getRights() {
         return rights.asMap();
+    }
+
+    public MailboxACL toMailboxAcl() {
+        BinaryOperator<MailboxACL> union = Throwing.binaryOperator(MailboxACL::union);
+
+        return rights.asMap()
+            .entrySet()
+            .stream()
+            .map(entrie -> new SimpleMailboxACL(
+                ImmutableMap.of(
+                    SimpleMailboxACLEntryKey.createUser(entrie.getKey().value),
+                    toMailboxAclRights(entrie.getValue()))))
+            .map(any -> (MailboxACL) any)
+            .reduce(new SimpleMailboxACL(), union);
+    }
+
+    private MailboxACLRights toMailboxAclRights(Collection<Right> rights) {
+        BinaryOperator<MailboxACLRights> union = Throwing.binaryOperator(MailboxACLRights::union);
+
+        return rights.stream()
+            .map(Right::getRight)
+            .map(Throwing.function(Rfc4314Rights::new))
+            .map(any -> (MailboxACLRights) any)
+            .reduce(new Rfc4314Rights(), union);
     }
 
     @Override
