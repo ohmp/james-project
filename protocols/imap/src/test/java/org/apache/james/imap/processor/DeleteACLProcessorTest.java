@@ -113,7 +113,7 @@ public class DeleteACLProcessorTest {
 
         deleteACLRequest = new DeleteACLRequest("TAG", ImapCommand.anyStateCommand("Name"), MAILBOX_NAME, USER_1);
 
-        user1Key = new SimpleMailboxACLEntryKey(USER_1);
+        user1Key = SimpleMailboxACLEntryKey.deserialize(USER_1);
     }
     
     @Test

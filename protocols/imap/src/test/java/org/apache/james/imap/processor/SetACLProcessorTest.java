@@ -118,7 +118,7 @@ public class SetACLProcessorTest {
 
         replaceACLRequest = new SetACLRequest("TAG", ImapCommand.anyStateCommand("Name"), MAILBOX_NAME, USER_1, SET_RIGHTS);
 
-        user1Key = new SimpleMailboxACLEntryKey(USER_1);
+        user1Key = SimpleMailboxACLEntryKey.deserialize(USER_1);
         setRights = new Rfc4314Rights(SET_RIGHTS);
     }
     

@@ -120,7 +120,7 @@ public class SetACLProcessor extends AbstractMailboxProcessor<SetACLRequest> imp
             }
             else {
                 
-                MailboxACLEntryKey key = new SimpleMailboxACLEntryKey(identifier);
+                MailboxACLEntryKey key = SimpleMailboxACLEntryKey.deserialize(identifier);
                 
                 // FIXME check if identifier is a valid user or group
                 // FIXME Servers, when processing a command that has an identifier as a

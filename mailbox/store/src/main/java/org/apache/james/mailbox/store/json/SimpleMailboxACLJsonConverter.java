@@ -19,17 +19,17 @@
 
 package org.apache.james.mailbox.store.json;
 
+import java.io.IOException;
+
+import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxACL;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.apache.james.mailbox.model.MailboxACL;
-import org.apache.james.mailbox.model.SimpleMailboxACL;
-
-import java.io.IOException;
 
 public class SimpleMailboxACLJsonConverter {
 
@@ -41,7 +41,7 @@ public class SimpleMailboxACLJsonConverter {
     static class ACLKeyDeserializer extends KeyDeserializer {
         @Override
         public Object deserializeKey(String key, DeserializationContext deserializationContext) throws IOException {
-            return new SimpleMailboxACL.SimpleMailboxACLEntryKey(key);
+            return SimpleMailboxACL.SimpleMailboxACLEntryKey.deserialize(key);
         }
     }
 

@@ -116,7 +116,7 @@ public class ListRightsProcessorTest {
 
         listRightsRequest = new ListRightsRequest("TAG", ImapCommand.anyStateCommand("Name"), MAILBOX_NAME, USER_1);
 
-        user1Key = new SimpleMailboxACLEntryKey(USER_1);
+        user1Key = SimpleMailboxACLEntryKey.deserialize(USER_1);
         listRights = new MailboxACLRights[] {new Rfc4314Rights("ae"), new Rfc4314Rights("i"), new Rfc4314Rights("k")};
     }
     

@@ -25,6 +25,7 @@ import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.NameType;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
 import org.apache.james.mailbox.model.SimpleMailboxACL.Rfc4314Rights;
+import org.apache.james.mailbox.model.SimpleMailboxACL.SimpleMailboxACLEntry;
 import org.apache.james.mailbox.model.SimpleMailboxACL.SimpleMailboxACLEntryKey;
 import org.junit.Assert;
 import org.junit.Before;
@@ -69,34 +70,34 @@ public class UnionMailboxACLResolverTest {
         group1Key = SimpleMailboxACLEntryKey.createGroup(GROUP_1);
         group2Key = SimpleMailboxACLEntryKey.createGroup(GROUP_2);
         
-        MailboxACL acl = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.AUTHENTICATED_KEY, SimpleMailboxACL.FULL_RIGHTS) });
+        MailboxACL acl = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.AUTHENTICATED_KEY, SimpleMailboxACL.FULL_RIGHTS));
         authenticatedReadListWriteGlobal = new UnionMailboxACLResolver(acl, acl);
-        acl = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.ANYBODY_KEY, new Rfc4314Rights("rl")) });
+        acl = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.ANYBODY_KEY, new Rfc4314Rights("rl")));
         anyoneReadListGlobal = new UnionMailboxACLResolver(acl, acl);
-        acl = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.OWNER_KEY, SimpleMailboxACL.FULL_RIGHTS) });
+        acl = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.OWNER_KEY, SimpleMailboxACL.FULL_RIGHTS));
         ownerFullGlobal = new UnionMailboxACLResolver(acl, acl);
         noGlobals = new UnionMailboxACLResolver(SimpleMailboxACL.EMPTY, SimpleMailboxACL.EMPTY);
-        acl = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(new SimpleMailboxACLEntryKey(GROUP_2, NameType.group, true), SimpleMailboxACL.FULL_RIGHTS) });
-        negativeGroup2FullGlobal = new UnionMailboxACLResolver(acl, new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(new SimpleMailboxACLEntryKey(GROUP_2, NameType.group, true), SimpleMailboxACL.FULL_RIGHTS) }));
+        acl = new SimpleMailboxACL(new SimpleMailboxACLEntry(new SimpleMailboxACLEntryKey(GROUP_2, NameType.group, true), SimpleMailboxACL.FULL_RIGHTS));
+        negativeGroup2FullGlobal = new UnionMailboxACLResolver(acl, new SimpleMailboxACL(new SimpleMailboxACLEntry(new SimpleMailboxACLEntryKey(GROUP_2, NameType.group, true), SimpleMailboxACL.FULL_RIGHTS)));
 
         groupMembershipResolver = new SimpleGroupMembershipResolver();
         groupMembershipResolver.addMembership(GROUP_1, USER_1);
         groupMembershipResolver.addMembership(GROUP_2, USER_2);
 
-        user1Read = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(user1Key, new Rfc4314Rights("r")) });
-        user1ReadNegative = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACLEntryKey.createUser(USER_1, true), new Rfc4314Rights("r")) });
+        user1Read = new SimpleMailboxACL(new SimpleMailboxACLEntry(user1Key, new Rfc4314Rights("r")));
+        user1ReadNegative = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACLEntryKey.createUser(USER_1, true), new Rfc4314Rights("r")));
 
-        group1Read = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(group1Key, new Rfc4314Rights("r")) });
-        group1ReadNegative = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACLEntryKey.createGroup(GROUP_1, true), new Rfc4314Rights("r")) });
+        group1Read = new SimpleMailboxACL(new SimpleMailboxACLEntry(group1Key, new Rfc4314Rights("r")));
+        group1ReadNegative = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACLEntryKey.createGroup(GROUP_1, true), new Rfc4314Rights("r")));
 
-        anybodyRead = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.ANYBODY_KEY, new Rfc4314Rights("r")) });
-        anybodyReadNegative = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.ANYBODY_NEGATIVE_KEY, new Rfc4314Rights("r")) });
+        anybodyRead = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.ANYBODY_KEY, new Rfc4314Rights("r")));
+        anybodyReadNegative = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.ANYBODY_NEGATIVE_KEY, new Rfc4314Rights("r")));
 
-        authenticatedRead = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.AUTHENTICATED_KEY, new Rfc4314Rights("r")) });
-        authenticatedReadNegative = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.AUTHENTICATED_NEGATIVE_KEY, new Rfc4314Rights("r")) });
+        authenticatedRead = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.AUTHENTICATED_KEY, new Rfc4314Rights("r")));
+        authenticatedReadNegative = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.AUTHENTICATED_NEGATIVE_KEY, new Rfc4314Rights("r")));
 
-        ownerRead = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.OWNER_KEY, new Rfc4314Rights("r")) });
-        ownerReadNegative = new SimpleMailboxACL(new SimpleMailboxACL.SimpleMailboxACLEntry[] { new SimpleMailboxACL.SimpleMailboxACLEntry(SimpleMailboxACL.OWNER_NEGATIVE_KEY, new Rfc4314Rights("r")) });
+        ownerRead = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.OWNER_KEY, new Rfc4314Rights("r")));
+        ownerReadNegative = new SimpleMailboxACL(new SimpleMailboxACLEntry(SimpleMailboxACL.OWNER_NEGATIVE_KEY, new Rfc4314Rights("r")));
 
     }
 
