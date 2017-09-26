@@ -31,10 +31,6 @@ import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxACL;
-import org.apache.james.mailbox.model.MailboxACL.MailboxACLCommand;
-import org.apache.james.mailbox.model.MailboxACL.MailboxACLEntryKey;
-import org.apache.james.mailbox.model.MailboxACL.MailboxACLRight;
-import org.apache.james.mailbox.model.MailboxACL.MailboxACLRights;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
 import org.apache.james.mailbox.model.MailboxId;
@@ -193,22 +189,22 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
         }
 
         @Override
-        public boolean hasRight(MailboxPath mailboxPath, MailboxACLRight right, MailboxSession session) throws MailboxException {
+        public boolean hasRight(MailboxPath mailboxPath, MailboxACL.Right right, MailboxSession session) throws MailboxException {
             return false;
         }
 
         @Override
-        public MailboxACLRights myRights(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
+        public MailboxACL.Rfc4314Rights myRights(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
             return null;
         }
 
         @Override
-        public MailboxACLRights[] listRigths(MailboxPath mailboxPath, MailboxACLEntryKey identifier, MailboxSession session) throws MailboxException {
+        public MailboxACL.Rfc4314Rights[] listRigths(MailboxPath mailboxPath, MailboxACL.EntryKey identifier, MailboxSession session) throws MailboxException {
             return null;
         }
 
         @Override
-        public void setRights(MailboxPath mailboxPath, MailboxACLCommand mailboxACLCommand, MailboxSession session) throws MailboxException {
+        public void setRights(MailboxPath mailboxPath, MailboxACL.ACLCommand mailboxACLCommand, MailboxSession session) throws MailboxException {
         }
 
         @Override

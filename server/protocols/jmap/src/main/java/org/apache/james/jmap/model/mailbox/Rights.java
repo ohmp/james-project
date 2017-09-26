@@ -27,10 +27,9 @@ import java.util.Objects;
 import java.util.function.BinaryOperator;
 
 import org.apache.james.mailbox.model.MailboxACL;
-import org.apache.james.mailbox.model.MailboxACL.MailboxACLRights;
-import org.apache.james.mailbox.model.SimpleMailboxACL;
-import org.apache.james.mailbox.model.SimpleMailboxACL.Rfc4314Rights;
-import org.apache.james.mailbox.model.SimpleMailboxACL.SimpleMailboxACLEntryKey;
+import org.apache.james.mailbox.model.MailboxACL.EntryKey;
+import org.apache.james.mailbox.model.MailboxACL.NameType;
+import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,25 +39,24 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 public class Rights {
     public enum Right {
-        Administer('a', SimpleMailboxACL.Rfc4314Rights.a_Administer_RIGHT),
-        Expunge('e', SimpleMailboxACL.Rfc4314Rights.e_PerformExpunge_RIGHT),
-        Insert('i', SimpleMailboxACL.Rfc4314Rights.i_Insert_RIGHT),
-        Lookup('l', SimpleMailboxACL.Rfc4314Rights.l_Lookup_RIGHT),
-        Read('r', SimpleMailboxACL.Rfc4314Rights.r_Read_RIGHT),
-        Seen('s', SimpleMailboxACL.Rfc4314Rights.s_WriteSeenFlag_RIGHT),
-        T_Delete('t', SimpleMailboxACL.Rfc4314Rights.t_DeleteMessages_RIGHT),
-        Write('w', SimpleMailboxACL.Rfc4314Rights.w_Write_RIGHT);
+        Administer('a', MailboxACL.Right.Administer),
+        Expunge('e', MailboxACL.Right.PerformExpunge),
+        Insert('i', MailboxACL.Right.Insert),
+        Lookup('l', MailboxACL.Right.Lookup),
+        Read('r', MailboxACL.Right.Read),
+        Seen('s', MailboxACL.Right.WriteSeenFlag),
+        T_Delete('t', MailboxACL.Right.DeleteMessages),
+        Write('w', MailboxACL.Right.Write);
 
         private final char imapRight;
-        private final MailboxACL.MailboxACLRight right;
+        private final MailboxACL.Right right;
 
-        Right(char imapRight, MailboxACL.MailboxACLRight right) {
+        Right(char imapRight, MailboxACL.Right right) {
             this.imapRight = imapRight;
             this.right = right;
         }
@@ -68,7 +66,7 @@ public class Rights {
             return imapRight;
         }
 
-        public MailboxACL.MailboxACLRight getRight() {
+        public MailboxACL.Right getRight() {
             return right;
         }
 
@@ -158,10 +156,10 @@ public class Rights {
             .build();
     }
 
-    private static List<Right> fromACL(MailboxACL.MailboxACLRights rights) {
-        return ImmutableList.copyOf(rights)
+    private static List<Right> fromACL(Rfc4314Rights rights) {
+        return rights.list()
             .stream()
-            .map(MailboxACL.MailboxACLRight::getValue)
+            .map(MailboxACL.Right::asCharacter)
             .filter(Rights::existingChar)
             .map(Right::forChar)
             .collect(Guavate.toImmutableList());
@@ -175,12 +173,12 @@ public class Rights {
         return true;
     }
 
-    private static boolean isUser(MailboxACL.MailboxACLEntryKey key) {
+    private static boolean isUser(EntryKey key) {
         if (key.isNegative()) {
             LOGGER.warn("Negative keys are not supported");
             return false;
         }
-        if (key.getNameType() != MailboxACL.NameType.user) {
+        if (key.getNameType() != NameType.user) {
             LOGGER.warn(key.getNameType() + " is not sopported. Onlu 'user' is.");
             return false;
         }
@@ -209,21 +207,19 @@ public class Rights {
         return rights.asMap()
             .entrySet()
             .stream()
-            .map(entrie -> new SimpleMailboxACL(
+            .map(entrie -> new MailboxACL(
                 ImmutableMap.of(
-                    SimpleMailboxACLEntryKey.createUser(entrie.getKey().value),
+                    EntryKey.createUser(entrie.getKey().value),
                     toMailboxAclRights(entrie.getValue()))))
-            .map(any -> (MailboxACL) any)
-            .reduce(new SimpleMailboxACL(), union);
+            .reduce(new MailboxACL(), union);
     }
 
-    private MailboxACLRights toMailboxAclRights(Collection<Right> rights) {
-        BinaryOperator<MailboxACLRights> union = Throwing.binaryOperator(MailboxACLRights::union);
+    private Rfc4314Rights toMailboxAclRights(Collection<Right> rights) {
+        BinaryOperator<Rfc4314Rights> union = Throwing.binaryOperator(Rfc4314Rights::union);
 
         return rights.stream()
             .map(Right::getRight)
             .map(Throwing.function(Rfc4314Rights::new))
-            .map(any -> (MailboxACLRights) any)
             .reduce(new Rfc4314Rights(), union);
     }
 
