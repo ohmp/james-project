@@ -179,6 +179,12 @@ public class MailboxACL {
             this(copyOf(Arrays.asList(rights)));
         }
 
+        // JSON Deserialization
+        @SuppressWarnings("unused")
+        private Rfc4314Rights(String serializedRfc4314Rights) throws UnsupportedRightException {
+            this(rightListFromSerializedRfc4314Rights(serializedRfc4314Rights));
+        }
+
         public static Rfc4314Rights fromSerializedRfc4314Rights(String serializedRfc4314Rights) throws UnsupportedRightException {
             return new Rfc4314Rights(rightListFromSerializedRfc4314Rights(serializedRfc4314Rights));
         }
