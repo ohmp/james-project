@@ -31,8 +31,11 @@ import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.model.MailboxACL.Entry;
 import org.apache.james.mailbox.model.MailboxACL.EntryKey;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
+import org.assertj.core.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @author Peter Palaga
@@ -224,4 +227,31 @@ public class MailboxACLTest {
             .isEqualTo(MailboxACL.EMPTY);
     }
 
+    @Test
+    public void usersACLShouldReturnEmptyMapWhenEmpty() {
+        assertThat(MailboxACL.EMPTY.usersACL())
+            .isEmpty();
+    }
+
+    @Test
+    public void usersACLShouldReturnEmptyMapWhenNoUserEntry() {
+        MailboxACL mailboxACL = new MailboxACL(
+                ImmutableMap.of(EntryKey.createGroup("group"), MailboxACL.FULL_RIGHTS,
+                    EntryKey.createGroup("group2"), MailboxACL.NO_RIGHTS));
+        assertThat(mailboxACL.usersACL())
+            .isEmpty();
+    }
+
+    @Test
+    public void usersACLShouldReturnOnlyUsersMapWhenSomeUserEntries() throws Exception {
+        MailboxACL.Rfc4314Rights rights = MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("aei");
+        MailboxACL mailboxACL = new MailboxACL(
+                ImmutableMap.of(EntryKey.createUser("user1"), MailboxACL.FULL_RIGHTS,
+                    EntryKey.createGroup("group"), MailboxACL.FULL_RIGHTS,
+                    EntryKey.createUser("user2"), rights,
+                    EntryKey.createGroup("group2"), MailboxACL.NO_RIGHTS));
+        assertThat(mailboxACL.usersACL())
+            .containsOnly(MapEntry.entry("user1", MailboxACL.FULL_RIGHTS),
+                    MapEntry.entry("user2", rights));
+    }
 }

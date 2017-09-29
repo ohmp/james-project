@@ -503,6 +503,10 @@ public class MailboxACL {
         public String toString() {
             return serialize();
         }
+
+        public boolean isUser() {
+            return nameType.equals(NameType.user);
+        }
     }
 
 
@@ -878,4 +882,10 @@ public class MailboxACL {
         return union(new MailboxACL(new Entry(key, mailboxACLRights)));
     }
 
+    public Map<String, Rfc4314Rights> usersACL() {
+        return this.entries.entrySet().stream()
+            .filter(entry -> entry.getKey().isUser())
+            .map(entry -> Pair.of(entry.getKey().getName(), entry.getValue()))
+            .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+    }
 }
