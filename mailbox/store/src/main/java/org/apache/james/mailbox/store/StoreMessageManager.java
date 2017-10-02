@@ -823,11 +823,10 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
      * the connected user.
      */
     @VisibleForTesting static MailboxACL filteredForSession(Mailbox mailbox, MailboxACL acl, MailboxSession mailboxSession) throws UnsupportedRightException {
-        String userName = mailboxSession.getUser().getUserName();
-        if (mailbox.getUser().equals(userName)) {
+        if (mailboxSession.getUser().isSameUser(mailbox.getUser())) {
             return acl;
         }
-        MailboxACL.EntryKey userAsKey = MailboxACL.EntryKey.createUser(userName);
+        MailboxACL.EntryKey userAsKey = MailboxACL.EntryKey.createUser(mailboxSession.getUser().getUserName());
         Rfc4314Rights rights = acl.getEntries().getOrDefault(userAsKey, new Rfc4314Rights());
         if (rights.contains(MailboxACL.Right.Administer)) {
             return acl;
