@@ -27,6 +27,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
@@ -34,6 +35,7 @@ import org.apache.james.mailbox.jpa.JPAId;
 import org.apache.james.mailbox.jpa.JPATransactionalMapper;
 import org.apache.james.mailbox.jpa.mail.model.JPAMailbox;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
@@ -228,5 +230,10 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     @Override
     public void setACL(Mailbox mailbox, MailboxACL mailboxACL) throws MailboxException {
         mailbox.setACL(mailboxACL);
+    }
+
+    @Override
+    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+        throw new NotImplementedException();
     }
 }
