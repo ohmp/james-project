@@ -39,36 +39,26 @@ import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.junit.Test;
 
 public abstract class AbstractMessageManagerTest {
-    public static final Flags FLAGS = new Flags();
 
-    private static final MessageUid messageUid1 = MessageUid.of(111);
-    private static final MessageUid messageUid2 = MessageUid.of(222);
+    private static final boolean NO_RESET_RECENT = false;
 
     private MessageManagerTestSystem testSystem;
     private MailboxManager mailboxManager;
-    private Mailbox mailbox1;
-    private Mailbox mailbox2;
-    private Mailbox mailbox3;
-    private Mailbox mailbox4;
     private MailboxSession session;
     private MailboxSession otherSession;
-    private MailboxSession systemSession;
-    private MailboxSession thirdSession;
 
     protected abstract MessageManagerTestSystem createTestSystem() throws Exception;
 
     public void setUp() throws Exception {
         session = new MockMailboxSession(USER);
         otherSession = new MockMailboxSession(OTHER_USER);
-        thirdSession = new MockMailboxSession(THIRD_USER);
-        systemSession = new MockMailboxSession("systemuser", SessionType.System);
         testSystem = createTestSystem();
         mailboxManager = testSystem.getMailboxManager();
 
-        mailbox1 = testSystem.createMailbox(MAILBOX_PATH1, session);
-        mailbox2 = testSystem.createMailbox(MailboxFixture.MAILBOX_PATH2, session);
-        mailbox3 = testSystem.createMailbox(MailboxFixture.MAILBOX_PATH3, session);
-        mailbox4 = testSystem.createMailbox(MailboxFixture.MAILBOX_PATH4, otherSession);
+        testSystem.createMailbox(MAILBOX_PATH1, session);
+        testSystem.createMailbox(MailboxFixture.MAILBOX_PATH2, session);
+        testSystem.createMailbox(MailboxFixture.MAILBOX_PATH3, session);
+        testSystem.createMailbox(MailboxFixture.MAILBOX_PATH4, otherSession);
     }
 
     @Test
@@ -77,10 +67,9 @@ public abstract class AbstractMessageManagerTest {
         mailboxManager.applyRightsCommand(MAILBOX_PATH1, MailboxACL.command().forUser(THIRD_USER).rights(MailboxACL.Right.Read).asAddition(), session);
         MessageManager messageManager = mailboxManager.getMailbox(MAILBOX_PATH1, session);
 
-        MessageManager.MetaData actual = messageManager.getMetaData(false, session, MessageManager.MetaData.FetchGroup.NO_COUNT);
+        MessageManager.MetaData actual = messageManager.getMetaData(NO_RESET_RECENT, session, MessageManager.MetaData.FetchGroup.NO_COUNT);
         assertThat(actual.getACL().getEntries()).containsKeys(MailboxACL.EntryKey.createUser(OTHER_USER), MailboxACL.EntryKey.createUser(THIRD_USER));
     }
-
 
     @Test
     public void getMetadataShouldNotExposeOtherUsersWhenSessionIsNotOwner() throws Exception {
@@ -88,7 +77,7 @@ public abstract class AbstractMessageManagerTest {
         mailboxManager.applyRightsCommand(MAILBOX_PATH1, MailboxACL.command().forUser(THIRD_USER).rights(MailboxACL.Right.Read).asAddition(), session);
         MessageManager messageManager = mailboxManager.getMailbox(MAILBOX_PATH1, session);
 
-        MessageManager.MetaData actual = messageManager.getMetaData(false, otherSession, MessageManager.MetaData.FetchGroup.NO_COUNT);
+        MessageManager.MetaData actual = messageManager.getMetaData(NO_RESET_RECENT, otherSession, MessageManager.MetaData.FetchGroup.NO_COUNT);
         assertThat(actual.getACL().getEntries()).containsOnlyKeys(MailboxACL.EntryKey.createUser(OTHER_USER));
     }
 
