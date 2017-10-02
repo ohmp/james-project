@@ -29,6 +29,7 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.util.ISO9075;
@@ -40,6 +41,7 @@ import org.apache.james.mailbox.jcr.AbstractJCRScalingMapper;
 import org.apache.james.mailbox.jcr.MailboxSessionJCRRepository;
 import org.apache.james.mailbox.jcr.mail.model.JCRMailbox;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
@@ -258,5 +260,10 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
     @Override
     public void setACL(Mailbox mailbox, MailboxACL mailboxACL) throws MailboxException {
         mailbox.setACL(mailboxACL);
+    }
+
+    @Override
+    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+        throw new NotImplementedException();
     }
 }

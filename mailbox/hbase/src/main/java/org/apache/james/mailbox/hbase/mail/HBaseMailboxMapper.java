@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
@@ -55,6 +56,7 @@ import org.apache.james.mailbox.hbase.HBaseId;
 import org.apache.james.mailbox.hbase.HBaseNonTransactionalMapper;
 import org.apache.james.mailbox.hbase.mail.model.HBaseMailbox;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
@@ -421,5 +423,10 @@ public class HBaseMailboxMapper extends HBaseNonTransactionalMapper implements M
     @Override
     public void setACL(Mailbox mailbox, MailboxACL mailboxACL) throws MailboxException {
         mailbox.setACL(mailboxACL);
+    }
+
+    @Override
+    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+        throw new NotImplementedException();
     }
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
@@ -35,6 +36,7 @@ import org.apache.james.mailbox.maildir.MaildirId;
 import org.apache.james.mailbox.maildir.MaildirMessageName;
 import org.apache.james.mailbox.maildir.MaildirStore;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -345,5 +347,10 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         MaildirFolder folder = maildirStore.createMaildirFolder(mailbox);
         folder.setACL(session, mailboxACL);
         mailbox.setACL(mailboxACL);
+    }
+
+    @Override
+    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+        throw new NotImplementedException();
     }
 }
