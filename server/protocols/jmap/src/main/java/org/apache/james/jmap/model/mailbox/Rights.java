@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.model.mailbox;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -31,6 +30,7 @@ import java.util.function.BinaryOperator;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.EntryKey;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
+import org.apache.james.util.GuavaUtils;
 import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +41,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 public class Rights {
     public enum Right {
@@ -54,7 +52,7 @@ public class Rights {
         Lookup(MailboxACL.Right.Lookup),
         Read(MailboxACL.Right.Read),
         Seen(MailboxACL.Right.WriteSeenFlag),
-        T_Delete(MailboxACL.Right.DeleteMessages),
+        DeleteMessages(MailboxACL.Right.DeleteMessages),
         Write(MailboxACL.Right.Write);
 
         private final MailboxACL.Right right;
@@ -73,7 +71,7 @@ public class Rights {
         }
 
         public static Optional<Right> forRight(MailboxACL.Right right) {
-            return OptionalUtils.ifEmpty(
+            return OptionalUtils.peekOnEmpty(
                 Arrays.stream(values())
                     .filter(jmapRight -> jmapRight.right == right)
                     .findAny(),
@@ -189,10 +187,8 @@ public class Rights {
     private final Multimap<Username, Right> rights;
 
     @JsonCreator
-    public Rights(Map<Username, Collection<Right>> rights) {
-        this(
-            ImmutableListMultimap.copyOf(
-                Multimaps.newListMultimap(rights, ArrayList::new)));
+    public Rights(Map<Username, List<Right>> rights) {
+        this(GuavaUtils.toMultimap(rights));
     }
 
     private Rights(Multimap<Username, Right> rights) {

@@ -89,7 +89,7 @@ public class RightsTest {
     @Test
     public void forCharShouldReturnRightWhenT() {
         assertThat(Rights.Right.forChar('t'))
-            .isEqualTo(Rights.Right.T_Delete);
+            .isEqualTo(Rights.Right.DeleteMessages);
     }
 
     @Test
@@ -123,7 +123,7 @@ public class RightsTest {
 
         assertThat(Rights.fromACL(acl))
             .isEqualTo(Rights.builder()
-                .delegateTo(new Rights.Username("user"), Rights.Right.Administer, Rights.Right.Expunge, Rights.Right.T_Delete)
+                .delegateTo(new Rights.Username("user"), Rights.Right.Administer, Rights.Right.Expunge, Rights.Right.DeleteMessages)
                 .build());
     }
 
@@ -134,7 +134,7 @@ public class RightsTest {
 
         assertThat(Rights.fromACL(acl))
             .isEqualTo(Rights.builder()
-                .delegateTo(new Rights.Username("user"), Rights.Right.Administer, Rights.Right.Expunge, Rights.Right.T_Delete)
+                .delegateTo(new Rights.Username("user"), Rights.Right.Administer, Rights.Right.Expunge, Rights.Right.DeleteMessages)
                 .build());
     }
 
@@ -151,7 +151,7 @@ public class RightsTest {
         String user1 = "user1";
         String user2 = "user2";
         Rights rights = Rights.builder()
-            .delegateTo(new Rights.Username(user1), Rights.Right.Administer, Rights.Right.T_Delete)
+            .delegateTo(new Rights.Username(user1), Rights.Right.Administer, Rights.Right.DeleteMessages)
             .delegateTo(new Rights.Username(user2), Rights.Right.Expunge, Rights.Right.Lookup)
             .build();
 
