@@ -1309,7 +1309,7 @@ public abstract class SetMailboxesMethodTest {
     }
 
     @Test
-    public void updateShouldCreateStoredDataWhenSettingNewACL() {
+    public void updateShouldApplyWhenSettingNewACL() {
         String myBox = "myBox";
         String user = "user";
         jmapServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, username, myBox);
