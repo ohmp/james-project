@@ -19,6 +19,7 @@
 
 package org.apache.james.jmap.model.mailbox;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +28,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.EntryKey;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
@@ -41,8 +41,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 public class Rights {
     public enum Right {
@@ -66,7 +68,7 @@ public class Rights {
             return right.asCharacter();
         }
 
-        public MailboxACL.Right getRight() {
+        public MailboxACL.Right toMailboxRight() {
             return right;
         }
 
@@ -170,11 +172,11 @@ public class Rights {
 
     private static boolean isSupported(EntryKey key) {
         if (key.isNegative()) {
-            LOGGER.warn("Negative keys are not supported");
+            LOGGER.info("Negative keys are not supported");
             return false;
         }
         if (key.getNameType() != MailboxACL.NameType.user) {
-            LOGGER.warn(key.getNameType() + " is not supported. Only 'user' is.");
+            LOGGER.info(key.getNameType() + " is not supported. Only 'user' is.");
             return false;
         }
         return true;
@@ -187,11 +189,10 @@ public class Rights {
     private final Multimap<Username, Right> rights;
 
     @JsonCreator
-    public Rights(Map<Username, List<Right>> rights) {
-        this(rights.entrySet()
-            .stream()
-            .flatMap(e -> e.getValue().stream().map(value -> Pair.of(e.getKey(), value)))
-            .collect(Guavate.toImmutableListMultimap(Pair::getKey, Pair::getValue)));
+    public Rights(Map<Username, Collection<Right>> rights) {
+        this(
+            ImmutableListMultimap.copyOf(
+                Multimaps.newListMultimap(rights, ArrayList::new)));
     }
 
     private Rights(Multimap<Username, Right> rights) {
@@ -220,7 +221,7 @@ public class Rights {
         BinaryOperator<Rfc4314Rights> union = Throwing.binaryOperator(Rfc4314Rights::union);
 
         return rights.stream()
-            .map(Right::getRight)
+            .map(Right::toMailboxRight)
             .map(Throwing.function(Rfc4314Rights::new))
             .reduce(new Rfc4314Rights(), union);
     }
