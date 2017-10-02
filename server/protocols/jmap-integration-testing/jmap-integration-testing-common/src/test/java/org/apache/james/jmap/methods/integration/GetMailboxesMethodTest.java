@@ -28,8 +28,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -62,7 +60,6 @@ import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,6 +85,7 @@ public abstract class GetMailboxesMethodTest {
     private AccessToken accessToken;
     private String alice;
     private String bob;
+    private String cedric;
     private GuiceJamesServer jmapServer;
     private MailboxProbe mailboxProbe;
     private ACLProbe aclProbe;
@@ -110,6 +108,7 @@ public abstract class GetMailboxesMethodTest {
         String domain = "domain.tld";
         alice = "alice@" + domain;
         bob = "bob@" + domain;
+        cedric = "cedric@" + domain;
         String password = "password";
         DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(domain);
@@ -512,9 +511,11 @@ public abstract class GetMailboxesMethodTest {
     public void getMailboxesShouldReturnMailboxesWhenShared() throws Exception {
         String mailboxName = "name";
         MailboxId bobMailbox = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, bob, mailboxName);
-        aclProbe.replaceRights(MailboxPath.forUser(bob, mailboxName), alice, new Rfc4314Rights(Right.Read));
+        MailboxPath bobMailboxPath = MailboxPath.forUser(bob, mailboxName);
+        aclProbe.replaceRights(bobMailboxPath, alice, new Rfc4314Rights(Right.Read));
+        aclProbe.replaceRights(bobMailboxPath, cedric, new Rfc4314Rights(Right.Read));
 
-        Map<String, String> mailbox = given()
+        Map<String, String> sharedWith = given()
             .header("Authorization", accessToken.serialize())
             .body("[[\"getMailboxes\", {\"ids\": [\"" + bobMailbox.serialize() + "\"]}, \"#0\"]]")
         .when()
@@ -525,10 +526,9 @@ public abstract class GetMailboxesMethodTest {
             .body(ARGUMENTS + ".list.name", hasSize(1))
         .extract()
             .jsonPath()
-            .get(FIRST_MAILBOX);
+            .get(FIRST_MAILBOX + ".sharedWith");
 
-        assertThat(mailbox).doesNotContainKey("sharedWith");
-
+        assertThat(sharedWith).containsOnlyKeys(alice);
     }
 
 
