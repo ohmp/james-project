@@ -147,7 +147,7 @@ public class RightsTest {
     }
 
     @Test
-    public void toMailboxActShouldReturnActConversion() throws Exception {
+    public void toMailboxAclShouldReturnAclConversion() throws Exception {
         String user1 = "user1";
         String user2 = "user2";
         Rights rights = Rights.builder()
