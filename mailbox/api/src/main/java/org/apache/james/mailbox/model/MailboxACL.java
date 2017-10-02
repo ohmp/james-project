@@ -541,13 +541,13 @@ public class MailboxACL {
             public Builder rights(Right... rights) throws UnsupportedRightException {
                 this.rights =
                     Optional.ofNullable(this.rights)
-                        .orElse(Rfc4314Rights.empty())
+                        .orElse(new Rfc4314Rights())
                         .union(new Rfc4314Rights(rights));
                 return this;
             }
 
             public Builder noRights() {
-                this.rights = Rfc4314Rights.empty();
+                this.rights = new Rfc4314Rights();
                 return this;
             }
 
@@ -822,6 +822,7 @@ public class MailboxACL {
                     .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue)));
         } else {
             return Optional.ofNullable(replacement)
+                .filter(rights -> !rights.isEmpty())
                 .map(replacementValue ->  new MailboxACL(
                     ImmutableMap.<EntryKey, Rfc4314Rights>builder()
                         .putAll(entries)
