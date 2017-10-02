@@ -69,7 +69,7 @@ public class GuavaUtilsTest {
     }
 
     @Test
-    public void toMultimapShouldHandleCorrectlyEmptyList() {
+    public void shouldStripEntriesWithEmptyList() {
         assertThat(GuavaUtils.toMultimap(ImmutableMap
             .<String, List<String>>builder()
             .put("k1", ImmutableList.of())
