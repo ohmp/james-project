@@ -68,4 +68,13 @@ public class GuavaUtilsTest {
                 .asMap());
     }
 
+    @Test
+    public void toMultimapShouldHandleCorrectlyEmptyList() {
+        assertThat(GuavaUtils.toMultimap(ImmutableMap
+            .<String, List<String>>builder()
+            .put("k1", ImmutableList.of())
+            .build())
+            .asMap())
+            .isEqualTo(ImmutableListMultimap.of().asMap());
+    }
 }
