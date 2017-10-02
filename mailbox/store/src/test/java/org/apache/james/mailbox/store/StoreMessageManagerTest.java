@@ -46,7 +46,6 @@ public class StoreMessageManagerTest {
         assertThat(actual).isEqualTo(acl);
     }
 
-
     @Test
     public void filteredForSessionShouldBeIdentityWhenAdmin() throws UnsupportedRightException {
         MailboxACL acl = new MailboxACL()
