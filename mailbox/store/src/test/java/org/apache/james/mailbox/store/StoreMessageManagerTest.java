@@ -19,10 +19,10 @@
 
 package org.apache.james.mailbox.store;
 
-import static org.apache.james.mailbox.manager.MailboxManagerFixture.MAILBOX_PATH1;
-import static org.apache.james.mailbox.manager.MailboxManagerFixture.OTHER_USER;
-import static org.apache.james.mailbox.manager.MailboxManagerFixture.THIRD_USER;
-import static org.apache.james.mailbox.manager.MailboxManagerFixture.USER;
+import static org.apache.james.mailbox.fixture.MailboxFixture.MAILBOX_PATH1;
+import static org.apache.james.mailbox.fixture.MailboxFixture.OTHER_USER;
+import static org.apache.james.mailbox.fixture.MailboxFixture.THIRD_USER;
+import static org.apache.james.mailbox.fixture.MailboxFixture.USER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.mailbox.exception.UnsupportedRightException;
