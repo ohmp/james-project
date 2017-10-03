@@ -29,7 +29,6 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.jackrabbit.util.ISO9075;
@@ -46,6 +45,8 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * JCR implementation of a MailboxMapper
@@ -264,6 +265,6 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
 
     @Override
     public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
-        throw new NotImplementedException();
+        return ImmutableList.of();
     }
 }

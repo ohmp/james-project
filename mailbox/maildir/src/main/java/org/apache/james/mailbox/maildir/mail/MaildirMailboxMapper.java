@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
@@ -46,6 +45,8 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.mailbox.store.transaction.NonTransactionalMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 public class MaildirMailboxMapper extends NonTransactionalMapper implements MailboxMapper {
 
@@ -351,6 +352,6 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
 
     @Override
     public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
-        throw new NotImplementedException();
+        return ImmutableList.of();
     }
 }

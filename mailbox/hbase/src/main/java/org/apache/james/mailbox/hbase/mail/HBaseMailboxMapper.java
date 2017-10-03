@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
@@ -61,6 +60,8 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Data access management for mailbox.
@@ -427,6 +428,6 @@ public class HBaseMailboxMapper extends HBaseNonTransactionalMapper implements M
 
     @Override
     public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
-        throw new NotImplementedException();
+        return ImmutableList.of();
     }
 }

@@ -27,7 +27,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
@@ -42,6 +41,7 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Data access management for mailbox.
@@ -234,6 +234,6 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
 
     @Override
     public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
-        throw new NotImplementedException();
+        return ImmutableList.of();
     }
 }
