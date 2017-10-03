@@ -67,8 +67,8 @@ public class MailboxPath {
     /**
      * Create a {@link MailboxPath} in the prive namespace of the specified user
      */
-    public static MailboxPath forUser(String username, String fullmailboxname) {
-        return new MailboxPath(MailboxConstants.USER_NAMESPACE, username, fullmailboxname);
+    public static MailboxPath forUser(String username, String mailboxName) {
+        return new MailboxPath(MailboxConstants.USER_NAMESPACE, username, mailboxName);
 
     }
 
