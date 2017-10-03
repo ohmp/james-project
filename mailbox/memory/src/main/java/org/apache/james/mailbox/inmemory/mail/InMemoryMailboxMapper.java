@@ -20,10 +20,10 @@ package org.apache.james.mailbox.inmemory.mail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
@@ -167,7 +167,12 @@ public class InMemoryMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
-        throw new NotImplementedException();
+    public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
+        return mailboxesByPath.values()
+            .stream()
+            .filter(mailbox -> Optional.ofNullable(mailbox.getACL().usersACL().get(userName))
+                .map(rights -> rights.contains(right))
+                .orElse(false))
+            .collect(Guavate.toImmutableList());
     }
 }

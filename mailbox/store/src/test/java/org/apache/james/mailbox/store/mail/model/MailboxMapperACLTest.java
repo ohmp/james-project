@@ -272,7 +272,8 @@ public abstract class MailboxMapperACLTest {
                 .rights(rights)
                 .build());
 
-        assertThat(mailboxMapper.findMailboxes("user1", Right.Administer)).containsOnly(benwaInboxMailbox.getMailboxId());
+        assertThat(mailboxMapper.findMailboxes("user1", Right.Administer))
+            .containsOnly(benwaInboxMailbox);
     }
 
     @Test
@@ -293,7 +294,8 @@ public abstract class MailboxMapperACLTest {
                 .rights(newRights)
                 .build());
 
-        assertThat(mailboxMapper.findMailboxes("user1", Right.Read)).containsOnly(benwaInboxMailbox.getMailboxId());
+        assertThat(mailboxMapper.findMailboxes("user1", Right.Read))
+            .containsOnly(benwaInboxMailbox);
     }
 
     @Test
@@ -315,8 +317,10 @@ public abstract class MailboxMapperACLTest {
                 .rights(user2Rights)
                 .build());
 
-        assertThat(mailboxMapper.findMailboxes("user1", Right.Administer)).containsOnly(benwaInboxMailbox.getMailboxId());
-        assertThat(mailboxMapper.findMailboxes("user2", Right.Read)).containsOnly(benwaInboxMailbox.getMailboxId());
+        assertThat(mailboxMapper.findMailboxes("user1", Right.Administer))
+            .containsOnly(benwaInboxMailbox);
+        assertThat(mailboxMapper.findMailboxes("user2", Right.Read))
+            .containsOnly(benwaInboxMailbox);
     }
 
 }

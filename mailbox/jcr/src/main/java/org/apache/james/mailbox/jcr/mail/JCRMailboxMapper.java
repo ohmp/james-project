@@ -263,7 +263,7 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
     }
 
     @Override
-    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+    public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
         throw new NotImplementedException();
     }
 }

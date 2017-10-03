@@ -40,7 +40,6 @@ import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
-import org.apache.james.mailbox.model.MailboxId;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
@@ -129,8 +128,8 @@ public class CassandraUserMailboxRightsDAO {
                 rowOptional.map(Throwing.function(row -> Rfc4314Rights.fromSerializedRfc4314Rights(row.getString(RIGHTS)))));
     }
 
-    public CompletableFuture<Map<MailboxId, Rfc4314Rights>> retrieveUser(String userName) {
-        Function<Row, Pair<MailboxId, Rfc4314Rights>> toPair = Throwing.function(row -> 
+    public CompletableFuture<Map<CassandraId, Rfc4314Rights>> retrieveUser(String userName) {
+        Function<Row, Pair<CassandraId, Rfc4314Rights>> toPair = Throwing.function(row ->
             Pair.of(CassandraId.of(row.getUUID(MAILBOX_ID)), Rfc4314Rights.fromSerializedRfc4314Rights(row.getString(RIGHTS))));
 
         return cassandraAsyncExecutor.execute(

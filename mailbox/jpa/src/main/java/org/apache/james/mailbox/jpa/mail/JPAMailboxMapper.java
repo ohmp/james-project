@@ -233,7 +233,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     }
 
     @Override
-    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+    public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
         throw new NotImplementedException();
     }
 }

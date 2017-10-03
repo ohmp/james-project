@@ -426,7 +426,7 @@ public class HBaseMailboxMapper extends HBaseNonTransactionalMapper implements M
     }
 
     @Override
-    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+    public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
         throw new NotImplementedException();
     }
 }

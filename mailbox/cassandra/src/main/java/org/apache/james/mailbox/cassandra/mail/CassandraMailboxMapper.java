@@ -21,12 +21,14 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -266,12 +268,19 @@ public class CassandraMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
-        return userMailboxRightsDAO.retrieveUser(userName).join()
-                .entrySet().stream()
-                .filter(Throwing.predicate(entry -> entry.getValue().contains(right)))
-                .map(entry -> entry.getKey())
-                .collect(Guavate.toImmutableList());
+    public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
+        return FluentFutureStream.of(userMailboxRightsDAO.retrieveUser(userName)
+            .thenApply(map -> toAuthorizedMailboxIds(map, right)))
+            .thenFlatComposeOnOptional(this::retrieveMailbox)
+            .join()
+            .collect(Guavate.toImmutableList());
+    }
+
+    private Stream<CassandraId> toAuthorizedMailboxIds(Map<CassandraId, MailboxACL.Rfc4314Rights> map, Right right) {
+        return map.entrySet()
+            .stream()
+            .filter(Throwing.predicate(entry -> entry.getValue().contains(right)))
+            .map(Map.Entry::getKey);
     }
 
 }
