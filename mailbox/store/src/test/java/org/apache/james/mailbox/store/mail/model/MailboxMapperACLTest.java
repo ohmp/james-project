@@ -334,6 +334,21 @@ public abstract class MailboxMapperACLTest {
     }
 
     @Test
+    public void findMailboxesShouldNotReportDeletedMailboxes() throws MailboxException {
+        EntryKey key = EntryKey.createUser("user");
+        Rfc4314Rights initialRights = new Rfc4314Rights(Right.Administer);
+        mailboxMapper.updateACL(benwaInboxMailbox,
+            MailboxACL.command()
+                .key(key)
+                .rights(initialRights)
+                .asReplacement());
+        mailboxMapper.delete(benwaInboxMailbox);
+
+        assertThat(mailboxMapper.findMailboxes("user", Right.Administer))
+            .isEmpty();
+    }
+
+    @Test
     public void setACLShouldStoreMultipleUsersRights() throws MailboxException {
         EntryKey user1 = EntryKey.createUser("user1");
         EntryKey user2 = EntryKey.createUser("user2");
