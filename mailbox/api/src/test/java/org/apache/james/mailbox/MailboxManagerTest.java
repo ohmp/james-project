@@ -33,6 +33,7 @@ import org.apache.james.mailbox.exception.AnnotationException;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.mock.MockMailboxManager;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
 import org.apache.james.mailbox.model.MailboxId;
@@ -436,4 +437,31 @@ public abstract class MailboxManagerTest {
         builder.add(MailboxAnnotation.newInstance(new MailboxAnnotationKey("/private/comment4"), "AnyValue"));
 
         mailboxManager.updateAnnotations(inbox, session, builder.build());
-    }}
+    }
+
+    @Test
+    public void searchShouldIncludeDelegatedMailboxes() throws MailboxException {
+        Assume.assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.RightSearch));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+        MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
+        MailboxPath inbox1 = MailboxPath.inbox(session1);
+        mailboxManager.createMailbox(inbox1, session1);
+        mailboxManager.setRights(inbox1,
+            MailboxACL.EMPTY.apply(MailboxACL.command()
+                .forUser(USER_2)
+                .rights(MailboxACL.Right.Read)
+                .asAddition()),
+            session1);
+
+        MailboxQuery mailboxQuery = MailboxQuery.builder()
+            .mailboxSession(session2)
+            .matchesAll()
+            .build();
+
+        List<MailboxMetaData> mailboxMetaData = mailboxManager.search(mailboxQuery, session2);
+
+        assertThat(mailboxMetaData)
+            .extracting(MailboxMetaData::getPath)
+            .containsOnly(inbox1);
+    }
+}
