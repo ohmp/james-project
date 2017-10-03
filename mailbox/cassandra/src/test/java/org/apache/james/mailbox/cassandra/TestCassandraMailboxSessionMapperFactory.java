@@ -68,7 +68,9 @@ public class TestCassandraMailboxSessionMapperFactory {
             cassandraBlobsDAO,
             new CassandraAttachmentMessageIdDAO(session, factory, CassandraUtils.WITH_DEFAULT_CONFIGURATION),
             new CassandraAttachmentOwnerDAO(session, CassandraUtils.WITH_DEFAULT_CONFIGURATION),
-            new CassandraACLMapper(session, CassandraConfiguration.DEFAULT_CONFIGURATION),
+            new CassandraACLMapper(session,
+                new CassandraUserMailboxRightsDAO(session, CassandraUtils.WITH_DEFAULT_CONFIGURATION),
+                CassandraConfiguration.DEFAULT_CONFIGURATION),
             new CassandraUserMailboxRightsDAO(session, CassandraUtils.WITH_DEFAULT_CONFIGURATION),
             CassandraUtils.WITH_DEFAULT_CONFIGURATION,
             CassandraConfiguration.DEFAULT_CONFIGURATION);

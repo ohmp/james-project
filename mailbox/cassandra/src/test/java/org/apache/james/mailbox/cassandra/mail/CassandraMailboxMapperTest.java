@@ -67,7 +67,9 @@ public class CassandraMailboxMapperTest {
             mailboxDAO,
             mailboxPathDAO,
             userMailboxRightsDAO,
-            new CassandraACLMapper(cassandra.getConf(), CassandraConfiguration.DEFAULT_CONFIGURATION),
+            new CassandraACLMapper(cassandra.getConf(),
+                new CassandraUserMailboxRightsDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION),
+                CassandraConfiguration.DEFAULT_CONFIGURATION),
             CassandraConfiguration.DEFAULT_CONFIGURATION);
     }
 

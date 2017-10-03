@@ -32,14 +32,18 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
+import org.apache.james.mailbox.acl.ACLChange;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
+import org.apache.james.util.FluentFutureStream;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
@@ -52,7 +56,6 @@ public class CassandraUserMailboxRightsDAO {
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraUtils cassandraUtils;
     private final PreparedStatement delete;
-    private final PreparedStatement deleteUser;
     private final PreparedStatement insert;
     private final PreparedStatement select;
     private final PreparedStatement selectUser;
@@ -62,7 +65,6 @@ public class CassandraUserMailboxRightsDAO {
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         this.cassandraUtils = cassandraUtils;
         this.delete = prepareDelete(session);
-        this.deleteUser = prepareDeleteUser(session);
         this.insert = prepareInsert(session);
         this.select = prepareSelect(session);
         this.selectUser = prepareSelectUser(session);
@@ -73,12 +75,6 @@ public class CassandraUserMailboxRightsDAO {
             .from(TABLE_NAME)
             .where(eq(USER_NAME, bindMarker(USER_NAME)))
             .and(eq(MAILBOX_ID, bindMarker(MAILBOX_ID))));
-    }
-
-    private PreparedStatement prepareDeleteUser(Session session) {
-        return session.prepare(QueryBuilder.delete()
-            .from(TABLE_NAME)
-            .where(eq(USER_NAME, bindMarker(USER_NAME))));
     }
 
     private PreparedStatement prepareInsert(Session session) {
@@ -101,22 +97,30 @@ public class CassandraUserMailboxRightsDAO {
             .where(eq(USER_NAME, bindMarker(USER_NAME))));
     }
 
-    public CompletableFuture<Void> delete(String userName, CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeVoid(delete.bind()
-            .setString(USER_NAME, userName)
-            .setUUID(MAILBOX_ID, mailboxId.asUuid()));
+    public CompletableFuture<Void> update(CassandraId cassandraId, ACLChange aclChange) {
+        return CompletableFuture.allOf(
+            addAll(cassandraId, aclChange.addedEntries()),
+            removeAll(cassandraId, aclChange.removedEntries()),
+            addAll(cassandraId, aclChange.changedEntries()));
     }
 
-    public CompletableFuture<Void> deleteUser(String userName) {
-        return cassandraAsyncExecutor.executeVoid(deleteUser.bind()
-            .setString(USER_NAME, userName));
+    private CompletableFuture<Stream<Void>> removeAll(CassandraId cassandraId, Stream<MailboxACL.Entry> removedEntries) {
+        return FluentFutureStream.of(removedEntries
+            .map(entry -> cassandraAsyncExecutor.executeVoid(
+                delete.bind()
+                    .setString(USER_NAME, entry.getKey().getName())
+                    .setUUID(MAILBOX_ID, cassandraId.asUuid()))))
+        .completableFuture();
     }
 
-    public CompletableFuture<Void> save(String userName, CassandraId mailboxId, Rfc4314Rights rights) {
-        return cassandraAsyncExecutor.executeVoid(insert.bind()
-            .setString(USER_NAME, userName)
-            .setUUID(MAILBOX_ID, mailboxId.asUuid())
-            .setString(RIGHTS, rights.serialize()));
+    private CompletableFuture<Stream<Void>> addAll(CassandraId cassandraId, Stream<MailboxACL.Entry> addedEntries) {
+        return FluentFutureStream.of(addedEntries
+            .map(entry -> cassandraAsyncExecutor.executeVoid(
+                insert.bind()
+                    .setString(USER_NAME, entry.getKey().getName())
+                    .setUUID(MAILBOX_ID, cassandraId.asUuid())
+                    .setString(RIGHTS, entry.getValue().serialize()))))
+        .completableFuture();
     }
 
     public CompletableFuture<Optional<Rfc4314Rights>> retrieve(String userName, CassandraId mailboxId) {

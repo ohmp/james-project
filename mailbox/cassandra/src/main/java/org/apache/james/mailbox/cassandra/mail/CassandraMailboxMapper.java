@@ -224,17 +224,12 @@ public class CassandraMailboxMapper implements MailboxMapper {
     public void updateACL(Mailbox mailbox, MailboxACL.ACLCommand mailboxACLCommand) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
         cassandraACLMapper.updateACL(cassandraId, mailboxACLCommand);
-        if (mailboxACLCommand.getEntryKey().isUser()) {
-            userMailboxRightsDAO.save(mailboxACLCommand.getEntryKey().getName(), cassandraId, mailboxACLCommand.getRights());
-        }
     }
 
     @Override
     public void setACL(Mailbox mailbox, MailboxACL mailboxACL) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
         cassandraACLMapper.setACL(cassandraId, mailboxACL);
-        mailboxACL.usersACL()
-            .forEach((userName, rights) -> userMailboxRightsDAO.save(userName, cassandraId, rights));
     }
 
     @Override
