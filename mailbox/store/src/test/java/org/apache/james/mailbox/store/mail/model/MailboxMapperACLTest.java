@@ -254,9 +254,8 @@ public abstract class MailboxMapperACLTest {
         mailboxMapper.updateACL(benwaInboxMailbox,
             MailboxACL.command()
                 .key(key)
-                .mode(MailboxACL.EditMode.REPLACE)
                 .rights(rights)
-                .build());
+                .asReplacement());
 
         assertThat(mailboxMapper.findMailboxes("user", Right.Read)).isEmpty();
     }
@@ -281,23 +280,21 @@ public abstract class MailboxMapperACLTest {
         mailboxMapper.updateACL(benwaInboxMailbox,
             MailboxACL.command()
                 .key(key)
-                .mode(MailboxACL.EditMode.REPLACE)
                 .rights(initialRights)
-                .build());
+                .asReplacement());
         Rfc4314Rights newRights = new Rfc4314Rights(Right.Read);
         mailboxMapper.updateACL(benwaInboxMailbox,
             MailboxACL.command()
                 .key(key)
-                .mode(MailboxACL.EditMode.REPLACE)
                 .rights(newRights)
-                .build());
+                .asReplacement());
 
         assertThat(mailboxMapper.findMailboxes("user", Right.Read))
             .containsOnly(benwaInboxMailbox);
     }
 
     @Test
-    public void findMailboxesShouldNotReportDeletedACL() throws MailboxException {
+    public void findMailboxesShouldNotReportDeletedACLViaReplace() throws MailboxException {
         EntryKey key = EntryKey.createUser("user");
         Rfc4314Rights initialRights = new Rfc4314Rights(Right.Administer);
         mailboxMapper.updateACL(benwaInboxMailbox,
@@ -312,6 +309,25 @@ public abstract class MailboxMapperACLTest {
                 .mode(MailboxACL.EditMode.REPLACE)
                 .rights(new Rfc4314Rights())
                 .build());
+
+        assertThat(mailboxMapper.findMailboxes("user", Right.Administer))
+            .isEmpty();
+    }
+
+    @Test
+    public void findMailboxesShouldNotReportDeletedACLViaRemove() throws MailboxException {
+        EntryKey key = EntryKey.createUser("user");
+        Rfc4314Rights initialRights = new Rfc4314Rights(Right.Administer);
+        mailboxMapper.updateACL(benwaInboxMailbox,
+            MailboxACL.command()
+                .key(key)
+                .rights(initialRights)
+                .asReplacement());
+        mailboxMapper.updateACL(benwaInboxMailbox,
+            MailboxACL.command()
+                .key(key)
+                .rights(initialRights)
+                .asRemoval());
 
         assertThat(mailboxMapper.findMailboxes("user", Right.Administer))
             .isEmpty();
