@@ -1621,7 +1621,7 @@ public abstract class SetMailboxesMethodTest {
                     "  [ \"setMailboxes\"," +
                     "    {" +
                     "      \"update\": {" +
-                    "        \"" + mailboxId + "\" : {" +
+                    "        \"" + mailboxId.serialize() + "\" : {" +
                     "          \"parentId\" : \"" + newParentMailboxId.serialize() + "\"" +
                     "        }" +
                     "      }" +
