@@ -122,7 +122,7 @@ public class CachingMailboxMapper implements MailboxMapper {
 	}
 
     @Override
-    public List<MailboxId> findMailboxes(String userName, Right right) throws MailboxException {
+    public List<Mailbox> findMailboxes(String userName, Right right) throws MailboxException {
         return underlying.findMailboxes(userName, right);
     }
 
