@@ -107,7 +107,7 @@ public class MailboxFactory {
 
         Rights rights = Rights.fromACL(metaData.getACL())
             .removeEntriesFor(Username.forMailboxPath(messageManager.getMailboxPath()));
-        Username username = new Username(mailboxSession.getUser().getUserName());
+        Username username = Username.fromSession(mailboxSession);
 
         return Mailbox.builder()
             .id(messageManager.getId())
