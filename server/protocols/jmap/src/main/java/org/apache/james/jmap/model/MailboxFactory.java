@@ -104,7 +104,6 @@ public class MailboxFactory {
         MailboxCounters mailboxCounters = messageManager.getMailboxCounters(mailboxSession);
         MessageManager.MetaData metaData = messageManager.getMetaData(NO_RESET_RECENT, mailboxSession, MessageManager.MetaData.FetchGroup.NO_COUNT);
 
-        System.out.println(messageManager.getMailboxPath());
         Rights rights = Rights.fromACL(metaData.getACL())
             .removeEntriesFor(Username.forMailboxPath(messageManager.getMailboxPath()));
         return Mailbox.builder()
