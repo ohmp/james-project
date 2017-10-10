@@ -21,12 +21,9 @@ package org.apache.james.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -34,23 +31,6 @@ import org.junit.Test;
 import com.github.steveash.guavate.Guavate;
 
 public class FluentFutureStreamTest {
-
-    @Test
-    public void test() throws IOException {
-        Supplier<Closeable> p = () -> (Closeable) () -> System.out.println("close");
-        try (Closeable c = p.get()) {
-            System.out.println("Biz");
-            try {
-                throw new Exception();
-            } catch (Exception e) {
-                System.out.println("auto managed");
-            }
-        } catch (Exception e) {
-            System.out.println("error");
-        } finally {
-            System.out.println("finaly");
-        }
-    }
 
     @Test
     public void ofFutureShouldConstructAFluentFutureStream() {
