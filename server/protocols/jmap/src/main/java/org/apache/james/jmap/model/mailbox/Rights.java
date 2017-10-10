@@ -211,7 +211,7 @@ public class Rights {
             rights.asMap()
                 .entrySet()
                 .stream()
-                .filter(entry -> entry.getKey().equals(username))
+                .filter(entry -> !entry.getKey().equals(username))
                 .flatMap(entry -> entry.getValue()
                     .stream()
                     .map(v -> Pair.of(entry.getKey(), v)))
