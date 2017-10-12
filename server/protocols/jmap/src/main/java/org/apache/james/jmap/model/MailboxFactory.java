@@ -129,11 +129,10 @@ public class MailboxFactory {
     }
 
     private MailboxNamespace getNamespace(MailboxPath mailboxPath, boolean isOwner) {
-            String mailboxPathUser = mailboxPath.getUser();
         if (isOwner) {
             return MailboxNamespace.personal();
         }
-        return MailboxNamespace.delegated(mailboxPathUser);
+        return MailboxNamespace.delegated(mailboxPath.getUser());
     }
 
     private boolean isSameUser(MailboxSession mailboxSession, MailboxPath mailboxPath) {
