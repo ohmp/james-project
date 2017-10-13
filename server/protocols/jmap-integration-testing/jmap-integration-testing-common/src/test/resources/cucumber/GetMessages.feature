@@ -357,7 +357,7 @@ Feature: GetMessages method
     And the keywords of the message is <keyword>
 
     Examples:
-      |flags                          |keyword                        |
+      |flags                               |keyword                |
       |"$Draft,@ert,t^a,op§,$user_flag"    |$Draft,$user_flag      |
 
   Scenario Outline: Retrieving message should display keywords without unsupported jmap flag
