@@ -103,7 +103,8 @@ Feature: Impact of IMAP on JMAP keywords consistency
     And the user has an open IMAP connection with mailbox "mailbox" selected
     And the user set flags via IMAP to "(\Flagged)" for all messages in mailbox "mailbox"
     When the user set flags on "m1" to "$Answered"
-    Then the user asks for message list in mailbox "mailbox" with flag "$Flagged"
-    And the message list is empty
-    And the user asks for message list in mailbox "source" with flag "$Flagged"
-    And the message list is empty
+    Then the user ask for messages "m1"
+    And no error is returned
+    And the list should contain 1 message
+    And the id of the message is "m1"
+    And the keywords of the message is "$Answered"

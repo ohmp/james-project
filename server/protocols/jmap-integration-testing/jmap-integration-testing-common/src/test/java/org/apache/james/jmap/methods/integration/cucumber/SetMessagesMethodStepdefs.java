@@ -109,7 +109,7 @@ public class SetMessagesMethodStepdefs {
     }
 
     @When("^the user set flags on \"([^\"]*)\" to \"([^\"]*)\"")
-    public void copyMessageToMailbox(String message, List<String> keywords) throws Throwable {
+    public void setFlags(String message, List<String> keywords) throws Throwable {
         String username = userStepdefs.lastConnectedUser;
         MessageId messageId = getMessagesMethodStepdefs.getMessageId(message);
         String keywordString = keywords
