@@ -64,3 +64,27 @@ Feature: Impact of IMAP on JMAP keywords consistency
     And the user set flags via IMAP to "(\Flagged)" for all messages in mailbox "mailbox"
     When the user asks for message list in mailbox "source" with flag "$Flagged"
     Then the message list is empty
+
+  Scenario: SetMessages should succeed to solve Keywords conflict introduced via IMAP upon flags addition
+    Given the user has a message "m1" in "source" mailbox with subject "My awesome subject", content "This is the content"
+    And the user copy "m1" from mailbox "source" to mailbox "mailbox"
+    And the user has an open IMAP connection with mailbox "mailbox" selected
+    And the user set flags via IMAP to "(\Flagged)" for all messages in mailbox "mailbox"
+    When the user set flags on "m1" to "$Flagged"
+    Then the user asks for message list in mailbox "mailbox" with flag "$Flagged"
+    And the message list has size 1
+    And the message list contains "m1"
+    And the user asks for message list in mailbox "source" with flag "$Flagged"
+    And the message list has size 1
+    And the message list contains "m1"
+    
+  Scenario: SetMessages should ignore Keywords conflict introduced via IMAP upon flags deletion
+    Given the user has a message "m1" in "source" mailbox with subject "My awesome subject", content "This is the content"
+    And the user copy "m1" from mailbox "source" to mailbox "mailbox"
+    And the user has an open IMAP connection with mailbox "mailbox" selected
+    And the user set flags via IMAP to "(\Flagged)" for all messages in mailbox "mailbox"
+    When the user set flags on "m1" to "$Answered"
+    Then the user asks for message list in mailbox "mailbox" with flag "$Flagged"
+    And the message list is empty
+    And the user asks for message list in mailbox "source" with flag "$Flagged"
+    And the message list is empty

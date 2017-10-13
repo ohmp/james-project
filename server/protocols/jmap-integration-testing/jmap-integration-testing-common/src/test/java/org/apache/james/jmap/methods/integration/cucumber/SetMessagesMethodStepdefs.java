@@ -19,6 +19,9 @@
 
 package org.apache.james.jmap.methods.integration.cucumber;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
 import org.apache.http.client.fluent.Request;
@@ -95,6 +98,35 @@ public class SetMessagesMethodStepdefs {
             "    \"#0\"" +
             "  ]" +
             "]";
+        Request.Post(mainStepdefs.baseUri().setPath("/jmap").build())
+            .addHeader("Authorization", userStepdefs.tokenByUser.get(username).serialize())
+            .bodyString(requestBody, org.apache.http.entity.ContentType.APPLICATION_JSON)
+            .execute()
+            .discardContent();
+    }
+
+    @When("^the user set flags on \"([^\"]*)\" to \"([^\"]*)\"")
+    public void copyMessageToMailbox(String message, List<String> keywords) throws Throwable {
+        String username = userStepdefs.lastConnectedUser;
+        MessageId messageId = getMessagesMethodStepdefs.getMessageId(message);
+        String keywordString = keywords
+            .stream()
+            .map(value -> "\"" + value + "\" : true")
+            .collect(Collectors.joining(","));
+
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\","+
+            "    {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "        \"keywords\": {" + keywordString + "}" +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+
+        System.out.println(requestBody);
         Request.Post(mainStepdefs.baseUri().setPath("/jmap").build())
             .addHeader("Authorization", userStepdefs.tokenByUser.get(username).serialize())
             .bodyString(requestBody, org.apache.http.entity.ContentType.APPLICATION_JSON)
