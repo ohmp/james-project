@@ -80,7 +80,7 @@ public class CommutativityCheckerTest {
     }
 
     @Test
-    public void findNonCommutativeInputShouldNotReturnDataWhenStable() throws Exception {
+    public void findNonCommutativeInputShouldNotReturnStableValues() throws Exception {
         Set<Integer> integers = ImmutableSet.of(0, 1, 2);
         BinaryOperator<Integer> nonCommutativeOperatorWithStableValues = (a, b) -> a * a + b;
         CommutativityChecker<Integer> commutativityChecker = new CommutativityChecker<>(integers, nonCommutativeOperatorWithStableValues);
