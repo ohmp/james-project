@@ -25,6 +25,7 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.paukov.combinatorics3.Generator;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
@@ -42,8 +43,10 @@ public class CommutativityChecker<T> {
     }
 
     public Set<Pair<T, T>> findNonCommutativeInput() {
-        return valuesToTest.stream()
-            .flatMap(this::combineWithValues)
+        return Generator.combination(valuesToTest)
+            .simple(2)
+            .stream()
+            .map(list -> Pair.of(list.get(0), list.get(1)))
             .filter(this::isNotCommutative)
             .collect(Guavate.toImmutableSet());
     }
@@ -54,19 +57,4 @@ public class CommutativityChecker<T> {
         return !leftThenRight.equals(rightThenLeft);
     }
 
-    private Stream<Pair<T, T>> combineWithValues(T value) {
-        return skipUntil(valuesToTest.stream(), value)
-            .filter(value2 -> value2 != value)
-            .map(value2 -> Pair.of(value, value2));
-    }
-
-    public Stream<T> skipUntil(Stream<T> stream, T value) {
-        AtomicInteger seenCount = new AtomicInteger(0);
-        return stream.filter(v -> {
-                if (v == value) {
-                    seenCount.incrementAndGet();
-                }
-                return seenCount.get() > 0;
-            });
-    }
 }
