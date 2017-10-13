@@ -73,6 +73,7 @@ public class SetMessagesMethodStepdefs {
             .bodyString(requestBody, ContentType.APPLICATION_JSON)
             .execute()
             .discardContent();
+        mainStepdefs.awaitMethod.run();
     }
 
     @When("^the user copy \"([^\"]*)\" from mailbox \"([^\"]*)\" to mailbox \"([^\"]*)\"")
@@ -104,6 +105,7 @@ public class SetMessagesMethodStepdefs {
             .bodyString(requestBody, ContentType.APPLICATION_JSON)
             .execute()
             .discardContent();
+        mainStepdefs.awaitMethod.run();
     }
 
     @When("^the user set flags on \"([^\"]*)\" to \"([^\"]*)\"")
@@ -131,5 +133,6 @@ public class SetMessagesMethodStepdefs {
                 ContentType.APPLICATION_JSON)
             .execute()
             .discardContent();
+        mainStepdefs.awaitMethod.run();
     }
 }
