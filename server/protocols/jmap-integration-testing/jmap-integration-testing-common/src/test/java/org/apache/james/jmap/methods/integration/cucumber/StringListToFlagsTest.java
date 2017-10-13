@@ -28,52 +28,52 @@ import org.apache.james.jmap.model.Keyword;
 import org.junit.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-public class FlagListToFlagsTest {
+public class StringListToFlagsTest {
     @Test
     public void fromFlagListShouldConvertAnwseredFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of(Keyword.ANSWERED.getFlagName())))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of(Keyword.ANSWERED.getFlagName())))
             .isEqualTo(new Flags(Flag.ANSWERED));
     }
 
     @Test
     public void fromFlagListShouldConvertSeenFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of(Keyword.SEEN.getFlagName())))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of(Keyword.SEEN.getFlagName())))
             .isEqualTo(new Flags(Flag.SEEN));
     }
 
     @Test
     public void fromFlagListShouldConvertDraftFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of(Keyword.DRAFT.getFlagName())))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of(Keyword.DRAFT.getFlagName())))
             .isEqualTo(new Flags(Flag.DRAFT));
     }
 
     @Test
     public void fromFlagListShouldConvertRecentFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of(Keyword.RECENT.getFlagName())))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of(Keyword.RECENT.getFlagName())))
             .isEqualTo(new Flags(Flag.RECENT));
     }
 
     @Test
     public void fromFlagListShouldConvertDeletedFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of(Keyword.DELETED.getFlagName())))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of(Keyword.DELETED.getFlagName())))
             .isEqualTo(new Flags(Flag.DELETED));
     }
 
     @Test
     public void fromFlagListShouldConvertFlaggedFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of(Keyword.FLAGGED.getFlagName())))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of(Keyword.FLAGGED.getFlagName())))
             .isEqualTo(new Flags(Flag.FLAGGED));
     }
 
     @Test
     public void fromFlagListShouldConvertValidJMAPFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of("$Any")))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of("$Any")))
             .isEqualTo(new Flags("$Any"));
     }
 
     @Test
     public void fromFlagListShouldConvertInvalidJMAPFlag() throws Exception {
-        assertThat(FlagListToFlags.fromFlagList(ImmutableList.of("op§")))
+        assertThat(StringListToFlags.fromFlagList(ImmutableList.of("op§")))
             .isEqualTo(new Flags("op§"));
     }
 

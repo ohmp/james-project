@@ -29,10 +29,10 @@ import org.apache.james.mailbox.FlagsBuilder;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
-public class FlagListToFlags {
+public class StringListToFlags {
     public static Flags fromFlagList(List<String> flagList) {
         ImmutableList<Flags> flags = flagList.stream()
-            .map(FlagListToFlags::toFlags)
+            .map(StringListToFlags::toFlags)
             .collect(Guavate.toImmutableList());
         return new FlagsBuilder().add(flags)
             .build();
