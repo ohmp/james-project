@@ -63,7 +63,7 @@ public class KeywordsCombinerTest {
     }
 
     @Test
-    public void applyShouldIntersectKeyword() {
+    public void applyShouldIntersectDraftKeyword() {
         KeywordsCombiner keywordsCombiner = new KeywordsCombiner();
 
         assertThat(keywordsCombiner.apply(
@@ -105,19 +105,28 @@ public class KeywordsCombinerTest {
 
     @Test
     public void keywordsCombinerShouldBeCommutative() {
-        assertThat(new CommutativityChecker<>(
-            ImmutableSet.of(
-                FACTORY.from(Keyword.ANSWERED),
-                FACTORY.from(Keyword.DELETED),
-                FACTORY.from(Keyword.DRAFT),
-                FACTORY.from(Keyword.FLAGGED),
-                FACTORY.from(Keyword.SEEN),
-                FACTORY.from(),
-                FACTORY.from(new Keyword("$Forwarded")),
-                FACTORY.from(new Keyword("$Any")),
-                FACTORY.from(Keyword.ANSWERED, Keyword.DELETED, Keyword.DRAFT, Keyword.FLAGGED, Keyword.SEEN, new Keyword("$Forwarded"), new Keyword("$Any"))),
-            new KeywordsCombiner())
-            .findNonCommutativeInput())
+        Keywords allKeyword = FACTORY.from(Keyword.ANSWERED,
+            Keyword.DELETED,
+            Keyword.DRAFT,
+            Keyword.FLAGGED,
+            Keyword.SEEN,
+            new Keyword("$Forwarded"),
+            new Keyword("$Any"));
+
+        ImmutableSet<Keywords> values = ImmutableSet.of(
+            FACTORY.from(Keyword.ANSWERED),
+            FACTORY.from(Keyword.DELETED),
+            FACTORY.from(Keyword.DRAFT),
+            FACTORY.from(Keyword.FLAGGED),
+            FACTORY.from(Keyword.SEEN),
+            FACTORY.from(),
+            FACTORY.from(new Keyword("$Forwarded")),
+            FACTORY.from(new Keyword("$Any")),
+            allKeyword);
+
+        assertThat(
+            new CommutativityChecker<>(values, new KeywordsCombiner())
+                .findNonCommutativeInput())
             .isEmpty();
     }
 }

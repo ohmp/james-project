@@ -32,6 +32,7 @@ import com.google.common.collect.Sets;
 
 public class KeywordsCombiner implements BinaryOperator<Keywords> {
     private static final ImmutableList<Keyword> KEYWORD_TO_INTERSECT = ImmutableList.of(Keyword.DRAFT);
+    private static final ImmutableList<Keyword> KEYWORD_NOT_TO_UNION = KEYWORD_TO_INTERSECT;
 
     private Keywords.KeywordsFactory keywordsFactory;
 
@@ -44,7 +45,7 @@ public class KeywordsCombiner implements BinaryOperator<Keywords> {
     public Keywords apply(Keywords keywords, Keywords keywords2) {
         return keywordsFactory
             .fromSet(Sets.union(
-                union(keywords.getKeywords(), keywords2.getKeywords(), KEYWORD_TO_INTERSECT),
+                union(keywords.getKeywords(), keywords2.getKeywords(), KEYWORD_NOT_TO_UNION),
                 intersect(keywords.getKeywords(), keywords2.getKeywords(), KEYWORD_TO_INTERSECT)));
     }
 
