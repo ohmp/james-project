@@ -18,10 +18,10 @@ Feature: Impact of IMAP on JMAP keywords consistency
     And the id of the message is "m1"
     And the keywords of the message is <keyword>
 
-  Examples:
-  |keyword                 | mailbox |
-  |$Flagged                | mailbox |
-  |$Flagged                | source  |
+    Examples:
+      |keyword                 | mailbox |
+      |$Flagged                | mailbox |
+      |$Flagged                | source  |
 
   Scenario Outline: GetMessages should intersect Draft when an inconsistency was created via IMAP
     Given the user has a message "m1" in "source" mailbox with subject "My awesome subject", content "This is the content"
@@ -77,7 +77,7 @@ Feature: Impact of IMAP on JMAP keywords consistency
     And the user asks for message list in mailbox "source" with flag "$Flagged"
     And the message list has size 1
     And the message list contains "m1"
-    
+
   Scenario: SetMessages should ignore Keywords conflict introduced via IMAP upon flags deletion
     Given the user has a message "m1" in "source" mailbox with subject "My awesome subject", content "This is the content"
     And the user copy "m1" from mailbox "source" to mailbox "mailbox"
