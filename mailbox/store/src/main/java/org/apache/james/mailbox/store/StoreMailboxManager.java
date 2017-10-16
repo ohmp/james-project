@@ -677,8 +677,7 @@ public class StoreMailboxManager implements MailboxManager {
 
     @Override
     public List<MailboxMetaData> search(MailboxQuery mailboxExpression, MailboxSession session) throws MailboxException {
-        Right right = Right.Lookup;
-        return searchMailboxes(mailboxExpression, session, right);
+        return searchMailboxes(mailboxExpression, session, Right.Lookup);
     }
 
     private List<MailboxMetaData> searchMailboxes(MailboxQuery mailboxExpression, MailboxSession session, Right right) throws MailboxException {
