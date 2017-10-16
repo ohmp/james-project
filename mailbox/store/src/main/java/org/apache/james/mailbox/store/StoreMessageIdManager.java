@@ -162,6 +162,8 @@ public class StoreMessageIdManager implements MessageIdManager {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
 
+        assertRightsOnMailboxes(mailboxIds, mailboxSession, MailboxACL.Right.Read);
+        
         List<MailboxMessage> mailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
             .stream()
             .filter(hasRightsOn(mailboxSession, MailboxACL.Right.Read))
