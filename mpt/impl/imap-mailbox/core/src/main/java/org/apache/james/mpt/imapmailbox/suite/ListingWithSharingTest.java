@@ -30,7 +30,7 @@ import org.apache.james.mpt.script.ImapScriptedTestProtocol;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class ListingWithSharing implements ImapTestConstants {
+public abstract class ListingWithSharingTest implements ImapTestConstants {
     public static final String OTHER_USER_NAME = "Boby";
     public static final String OTHER_USER_PASSWORD = "password";
     public static final MailboxPath OTHER_USER_SHARED_MAILBOX = MailboxPath.forUser( OTHER_USER_NAME, "sharedMailbox");

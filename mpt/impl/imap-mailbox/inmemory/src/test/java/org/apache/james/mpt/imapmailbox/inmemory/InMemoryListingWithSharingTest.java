@@ -17,32 +17,28 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mpt.imapmailbox.cassandra;
+package org.apache.james.mpt.imapmailbox.inmemory;
 
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mpt.api.ImapHostSystem;
-import org.apache.james.mpt.imapmailbox.suite.ListingWithSharing;
+import org.apache.james.mpt.imapmailbox.suite.ListingWithSharingTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class CassandraListingWithSharing extends ListingWithSharing {
-    @ClassRule
-    public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
+public class InMemoryListingWithSharingTest extends ListingWithSharingTest {
 
     private ImapHostSystem system;
 
     @Before
     public void setUp() throws Exception {
-        Injector injector = Guice.createInjector(new CassandraMailboxTestModule(cassandraServer.getIp(), cassandraServer.getBindingPort()));
+        Injector injector = Guice.createInjector(new InMemoryMailboxTestModule());
         system = injector.getInstance(ImapHostSystem.class);
         system.beforeTest();
         super.setUp();
     }
-
+    
     @Override
     protected ImapHostSystem createImapHostSystem() {
         return system;
@@ -52,4 +48,5 @@ public class CassandraListingWithSharing extends ListingWithSharing {
     public void tearDown() throws Exception {
         system.afterTest();
     }
+    
 }
