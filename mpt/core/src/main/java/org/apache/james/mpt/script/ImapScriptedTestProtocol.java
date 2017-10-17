@@ -25,7 +25,6 @@ import org.apache.james.mpt.api.ImapHostSystem;
 
 public class ImapScriptedTestProtocol extends GenericSimpleScriptedTestProtocol<ImapHostSystem, ImapScriptedTestProtocol> {
 
-
     private static class CreateMailbox implements PrepareCommand<ImapHostSystem> {
 
         final MailboxPath mailboxPath;
@@ -33,7 +32,8 @@ public class ImapScriptedTestProtocol extends GenericSimpleScriptedTestProtocol<
         CreateMailbox(MailboxPath mailboxPath) {
             this.mailboxPath = mailboxPath;
         }
-        
+
+        @Override
         public void prepare(ImapHostSystem system) throws Exception {
             system.createMailbox(mailboxPath);
         }
@@ -60,7 +60,7 @@ public class ImapScriptedTestProtocol extends GenericSimpleScriptedTestProtocol<
     public ImapScriptedTestProtocol(String scriptDirectory, ImapHostSystem hostSystem) throws Exception {
         super(scriptDirectory, hostSystem);
     }
-    
+
     public ImapScriptedTestProtocol withMailbox(MailboxPath mailboxPath) {
         return withPreparedCommand(new CreateMailbox(mailboxPath));
     }
