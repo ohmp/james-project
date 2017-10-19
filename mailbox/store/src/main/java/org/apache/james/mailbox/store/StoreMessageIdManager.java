@@ -156,8 +156,8 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private static class MessageMoves {
-        Set<MailboxId> previousMailboxIds;
-        Set<MailboxId> targetMailboxIds;
+        private final ImmutableSet<MailboxId> previousMailboxIds;
+        private final ImmutableSet<MailboxId> targetMailboxIds;
 
         MessageMoves(Collection<MailboxId> previousMailboxIds, Collection<MailboxId> targetMailboxIds) {
             this.previousMailboxIds = ImmutableSet.copyOf(previousMailboxIds);
