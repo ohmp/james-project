@@ -38,7 +38,7 @@ import org.junit.rules.ExpectedException;
 
 public class SystemMailboxesProviderImplTest {
 
-    private MailboxSession mailboxSession = new MockMailboxSession("user");
+    private MailboxSession mailboxSession = new MockMailboxSession(MailboxFixture.ALICE);
     private SystemMailboxesProviderImpl systemMailboxProvider;
 
     private MailboxManager mailboxManager;
