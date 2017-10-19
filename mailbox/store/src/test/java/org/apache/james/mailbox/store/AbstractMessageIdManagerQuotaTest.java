@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.store;
 
+import static org.apache.james.mailbox.fixture.MailboxFixture.ALICE;
+
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MailboxSession;
@@ -67,7 +69,7 @@ public abstract class AbstractMessageIdManagerQuotaTest {
         CurrentQuotaManager currentQuotaManager = createCurrentQuotaManager();
         QuotaManager quotaManager = createQuotaManager(maxQuotaManager, currentQuotaManager);
 
-        session = new MockMailboxSession("user");
+        session = new MockMailboxSession(ALICE);
         testingData = createTestSystem(quotaManager, currentQuotaManager);
         messageIdManager = testingData.getMessageIdManager();
 
