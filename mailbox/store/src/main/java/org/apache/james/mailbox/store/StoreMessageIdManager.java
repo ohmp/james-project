@@ -254,9 +254,9 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     private ImmutableSet<MailboxId> toMailboxIds(List<MailboxMessage> mailboxMessages) {
         return mailboxMessages
-                    .stream()
-                    .map(MailboxMessage::getMailboxId)
-                    .collect(Guavate.toImmutableSet());
+            .stream()
+            .map(MailboxMessage::getMailboxId)
+            .collect(Guavate.toImmutableSet());
     }
 
     protected MailboxMessage createMessage(Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, List<MessageAttachment> attachments, MailboxId mailboxId) throws MailboxException {
