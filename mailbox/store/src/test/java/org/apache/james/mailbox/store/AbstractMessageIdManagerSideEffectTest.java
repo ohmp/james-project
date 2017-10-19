@@ -88,9 +88,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         testingData = createTestSystem(quotaManager, dispatcher);
         messageIdManager = testingData.getMessageIdManager();
 
-        mailbox1 = testingData.createMailbox(MailboxFixture.MAILBOX_PATH1, session);
-        mailbox2 = testingData.createMailbox(MailboxFixture.MAILBOX_PATH2, session);
-        mailbox3 = testingData.createMailbox(MailboxFixture.MAILBOX_PATH3, session);
+        mailbox1 = testingData.createMailbox(MailboxFixture.INBOX_ALICE, session);
+        mailbox2 = testingData.createMailbox(MailboxFixture.OUTBOX_ALICE, session);
+        mailbox3 = testingData.createMailbox(MailboxFixture.SENT_ALICE, session);
     }
 
 
