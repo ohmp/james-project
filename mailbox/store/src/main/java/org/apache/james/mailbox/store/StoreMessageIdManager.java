@@ -69,6 +69,55 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class StoreMessageIdManager implements MessageIdManager {
+
+    private static class MessageMoves {
+        private final ImmutableSet<MailboxId> previousMailboxIds;
+        private final ImmutableSet<MailboxId> targetMailboxIds;
+
+        MessageMoves(Collection<MailboxId> previousMailboxIds, Collection<MailboxId> targetMailboxIds) {
+            this.previousMailboxIds = ImmutableSet.copyOf(previousMailboxIds);
+            this.targetMailboxIds = ImmutableSet.copyOf(targetMailboxIds);
+        }
+
+        boolean isChange() {
+            return !previousMailboxIds.equals(targetMailboxIds);
+        }
+
+        Set<MailboxId> addedMailboxIds() {
+            return Sets.difference(targetMailboxIds, previousMailboxIds);
+        }
+
+        Set<MailboxId> removedMailboxIds() {
+            return Sets.difference(previousMailboxIds, targetMailboxIds);
+        }
+    }
+
+    private static class MetadataWithMailboxId {
+        private final MessageMetaData messageMetaData;
+        private final MailboxId mailboxId;
+
+        public MetadataWithMailboxId(MessageMetaData messageMetaData, MailboxId mailboxId) {
+            this.messageMetaData = messageMetaData;
+            this.mailboxId = mailboxId;
+        }
+    }
+
+    private static class WrappedException extends RuntimeException {
+        private final MailboxException cause;
+
+        public WrappedException(MailboxException cause) {
+            this.cause = cause;
+        }
+
+        public MailboxException unwrap() throws MailboxException {
+            throw cause;
+        }
+    }
+
+    private static MetadataWithMailboxId toMetadataWithMailboxId(MailboxMessage message) {
+        return new MetadataWithMailboxId(new SimpleMessageMetaData(message), message.getMailboxId());
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreMessageIdManager.class);
 
     private final MailboxManager mailboxManager;
@@ -140,40 +189,17 @@ public class StoreMessageIdManager implements MessageIdManager {
 
         assertRightsOnMailboxes(mailboxIds, mailboxSession, Right.DeleteMessages);
 
-        ImmutableList<MetadataWithMailboxId> metadatasWithMailbox = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
+        ImmutableList<MetadataWithMailboxId> metadataWithMailbox = messageIdMapper
+            .find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
             .stream()
             .filter(inMailboxes(mailboxIds))
-            .map(mailboxMessage -> new MetadataWithMailboxId(
-                new SimpleMessageMetaData(mailboxMessage),
-                mailboxMessage.getMailboxId()))
+            .map(StoreMessageIdManager::toMetadataWithMailboxId)
             .collect(Guavate.toImmutableList());
 
         messageIdMapper.delete(messageId, mailboxIds);
 
-        for (MetadataWithMailboxId metadataWithMailboxId : metadatasWithMailbox) {
+        for (MetadataWithMailboxId metadataWithMailboxId : metadataWithMailbox) {
             dispatcher.expunged(mailboxSession, metadataWithMailboxId.messageMetaData, mailboxMapper.findMailboxById(metadataWithMailboxId.mailboxId));
-        }
-    }
-
-    private static class MessageMoves {
-        private final ImmutableSet<MailboxId> previousMailboxIds;
-        private final ImmutableSet<MailboxId> targetMailboxIds;
-
-        MessageMoves(Collection<MailboxId> previousMailboxIds, Collection<MailboxId> targetMailboxIds) {
-            this.previousMailboxIds = ImmutableSet.copyOf(previousMailboxIds);
-            this.targetMailboxIds = ImmutableSet.copyOf(targetMailboxIds);
-        }
-
-        boolean isChange() {
-            return !previousMailboxIds.equals(targetMailboxIds);
-        }
-
-        Set<MailboxId> addedMailboxIds() {
-            return Sets.difference(targetMailboxIds, previousMailboxIds);
-        }
-
-        Set<MailboxId> removedMailboxIds() {
-            return Sets.difference(previousMailboxIds, targetMailboxIds);
         }
     }
 
@@ -330,28 +356,6 @@ public class StoreMessageIdManager implements MessageIdManager {
         if (mailboxForbidden.isPresent()) {
             LOGGER.info("Mailbox with Id " + mailboxForbidden.get() + " does not belong to " + mailboxSession.getUser().getUserName());
             throw new MailboxNotFoundException(mailboxForbidden.get());
-        }
-    }
-
-    private static class MetadataWithMailboxId {
-        private final MessageMetaData messageMetaData;
-        private final MailboxId mailboxId;
-
-        public MetadataWithMailboxId(MessageMetaData messageMetaData, MailboxId mailboxId) {
-            this.messageMetaData = messageMetaData;
-            this.mailboxId = mailboxId;
-        }
-    }
-
-    private static class WrappedException extends RuntimeException {
-        private final MailboxException cause;
-
-        public WrappedException(MailboxException cause) {
-            this.cause = cause;
-        }
-
-        public MailboxException unwrap() throws MailboxException {
-            throw cause;
         }
     }
 }
