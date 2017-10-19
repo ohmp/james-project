@@ -74,20 +74,20 @@ public class StoreMessageIdManager implements MessageIdManager {
         private final ImmutableSet<MailboxId> previousMailboxIds;
         private final ImmutableSet<MailboxId> targetMailboxIds;
 
-        MessageMoves(Collection<MailboxId> previousMailboxIds, Collection<MailboxId> targetMailboxIds) {
+        public MessageMoves(Collection<MailboxId> previousMailboxIds, Collection<MailboxId> targetMailboxIds) {
             this.previousMailboxIds = ImmutableSet.copyOf(previousMailboxIds);
             this.targetMailboxIds = ImmutableSet.copyOf(targetMailboxIds);
         }
 
-        boolean isChange() {
+        public boolean isChange() {
             return !previousMailboxIds.equals(targetMailboxIds);
         }
 
-        Set<MailboxId> addedMailboxIds() {
+        public Set<MailboxId> addedMailboxIds() {
             return Sets.difference(targetMailboxIds, previousMailboxIds);
         }
 
-        Set<MailboxId> removedMailboxIds() {
+        public Set<MailboxId> removedMailboxIds() {
             return Sets.difference(previousMailboxIds, targetMailboxIds);
         }
     }
