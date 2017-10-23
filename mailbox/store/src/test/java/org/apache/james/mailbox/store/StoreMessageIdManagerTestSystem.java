@@ -108,6 +108,6 @@ public class StoreMessageIdManagerTestSystem extends MessageIdManagerTestSystem 
 
     @Override
     public void setACL(MailboxId mailboxId, MailboxACL mailboxACL, MailboxSession session) throws MailboxException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Not implemented");
     }
 }
