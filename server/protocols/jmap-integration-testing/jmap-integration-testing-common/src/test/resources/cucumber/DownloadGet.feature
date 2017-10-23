@@ -83,7 +83,7 @@ Feature: Download GET
     When "username1@domain.tld" downloads "1"
     Then the user should receive a not found response
 
-  Scenario: User cannot download attachment of another user when shared mailbox
+  Scenario: User can download attachment of another user when shared mailbox
     Given "username@domain.tld" mailbox "sharedMailbox" contains a message "1" with an attachment "2"
     And "username@domain.tld" shares its mailbox "sharedMailbox" with "username1@domain.tld"
     And a connected user "username1@domain.tld"
@@ -92,7 +92,7 @@ Feature: Download GET
     Then the user should receive that blob
     And the blob size is 3071
 
-  Scenario: User cannot download message blob of another user when shared mailbox
+  Scenario: User can download message blob of another user when shared mailbox
     Given "username@domain.tld" mailbox "sharedMailbox" contains a message "1" with an attachment "2"
     And "username@domain.tld" shares its mailbox "sharedMailbox" with "username1@domain.tld"
     And a connected user "username1@domain.tld"
