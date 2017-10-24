@@ -204,7 +204,7 @@ public class GetMessagesMethodStepdefs {
 
     @Given("^the user has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with two attachments$")
     public void appendHtmlMessageWithTwoAttachments(String messageName, String mailbox) throws Exception {
-        appendMessage(messageName,  mailbox,"eml/twoAttachments.eml");
+        appendMessage(messageName, mailbox, "eml/twoAttachments.eml");
     }
 
     @Given("^\"([^\"]*)\" has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with two attachments$")
