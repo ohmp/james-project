@@ -80,12 +80,24 @@ Feature: SetMessages method on shared folders
 
 # Flags update
 
-  Scenario: A delegated user can update delegated message flags when having "write" right
+  Scenario: A delegated user add keywords on a delegated message when having "write" right
     Given "bob@domain.tld" shares (his|her) mailbox "shared" with "alice@domain.tld" with "lrw" rights
     When "alice@domain.tld" sets flags "$Flagged" on message "mBob"
     Then "alice@domain.tld" should see message "mBob" with keywords $Flagged
 
-  Scenario: A delegated user can not update delegated message flags when missing "write" right
+  Scenario: A delegated user can not add keywords on a delegated message when missing "write" right
     Given "bob@domain.tld" shares (his|her) mailbox "shared" with "alice@domain.tld" with "latires" rights
     When "alice@domain.tld" sets flags "$Flagged" on message "mBob"
+    Then message "mBob" is not updated
+
+  Scenario: A delegated user remove keywords on a delegated message when having "write" right
+    Given "bob@domain.tld" shares (his|her) mailbox "shared" with "alice@domain.tld" with "lrw" rights
+    And "bob@domain.tld" sets flags "$Flagged" on message "mBob"
+    When "alice@domain.tld" sets flags "" on message "mBob"
+    Then "alice@domain.tld" should see message "mBob" without keywords
+
+  Scenario: A delegated user can not remove keywords on a delegated message when missing "write" right
+    Given "bob@domain.tld" shares (his|her) mailbox "shared" with "alice@domain.tld" with "latires" rights
+    And "bob@domain.tld" sets flags "$Flagged" on message "mBob"
+    When "alice@domain.tld" sets flags "" on message "mBob"
     Then message "mBob" is not updated
