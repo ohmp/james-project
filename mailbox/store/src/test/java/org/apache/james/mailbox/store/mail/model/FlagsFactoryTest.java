@@ -45,8 +45,8 @@ public class FlagsFactoryTest {
     }
 
     @Test
-    public void builderShouldThrowWhenNoFlagsProvided() {
-        assertThatThrownBy(() -> FlagsFactory.builder().build()).isInstanceOf(IllegalStateException.class);
+    public void builderShouldAllowEmptyFactory() {
+        assertThat(FlagsFactory.builder().build()).isEqualTo(emptyFlags);
     }
 
     @Test
@@ -54,7 +54,6 @@ public class FlagsFactoryTest {
         Flags actual = FlagsFactory.builder().addUserFlags("userFlag").build();
         assertThat(actual.getUserFlags()).containsOnly("userFlag");
     }
-
 
     @Test
     public void builderShouldNotRequireUserFlagsWhenFlagsInstanceDefined() {
@@ -101,5 +100,19 @@ public class FlagsFactoryTest {
         assertThat(actual).isNotNull();
     }
 
+    @Test
+    public void builderShouldFilterOnFlags() {
+        Flags actual = FlagsFactory.builder()
+            .flags(someFlags)
+            .filteringFlags(
+                FlagsFilter
+                    .builder()
+                    .systemFlagFilter(f -> f.equals(Flag.SEEN))
+                    .userFlagFilter(f -> f.equals("soCool"))
+                    .build())
+            .build();
+        assertThat(actual.getSystemFlags()).containsOnly(Flag.SEEN);
+        assertThat(actual.getUserFlags()).containsOnly("soCool");
+    }
 
 }

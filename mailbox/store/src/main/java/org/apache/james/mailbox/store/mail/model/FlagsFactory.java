@@ -25,8 +25,6 @@ import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
-import com.google.common.base.Preconditions;
-
 public class FlagsFactory {
 
     private static Flags asFlags(MailboxMessage mailboxMessage, String[] userFlags) {
@@ -68,6 +66,10 @@ public class FlagsFactory {
         return new Builder();
     }
 
+    public static Flags empty() {
+        return builder().build();
+    }
+
     public static class Builder {
 
         private final ArrayList<String> userFlags;
@@ -96,18 +98,16 @@ public class FlagsFactory {
         }
 
         public Flags build() {
-            Preconditions.checkState(flags.isPresent() || !userFlags.isEmpty());
-
             FlagsFilter flagsFilter = this.flagsFilter.orElse(FlagsFilter.noFilter());
-            Flags flags = this.flags.orElse(new Flags());
+            Flags flagsOrEmpty = this.flags.orElse(new Flags());
 
             Stream<Flags.Flag> flagStream =
-                toFlagStream(flags)
+                toFlagStream(flagsOrEmpty)
                     .filter(flagsFilter.getSystemFlagFilter());
             Stream<String> userFlagsStream =
                 Stream
                     .concat(
-                        toUserFlagSTream(flags),
+                        toUserFlagStream(flagsOrEmpty),
                         userFlags.stream())
                     .distinct()
                     .filter(flagsFilter.getUserFlagFilter());
@@ -122,7 +122,7 @@ public class FlagsFactory {
             return Arrays.stream(flags.getSystemFlags());
         }
 
-        private Stream<String> toUserFlagSTream(Flags flags) {
+        private Stream<String> toUserFlagStream(Flags flags) {
             return Arrays.stream(flags.getUserFlags());
         }
 

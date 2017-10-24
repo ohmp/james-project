@@ -280,7 +280,12 @@ public class SimpleMailboxMessage extends DelegatingMailboxMessage {
     }
 
     public SimpleMailboxMessage filterFlags(FlagsFilter filter) throws MailboxException {
-        Flags flags = FlagsFactory.builder().flags(createFlags()).addUserFlags(createUserFlags()).filteringFlags(filter).build();
+        Flags flags = FlagsFactory
+            .builder()
+            .flags(createFlags())
+            .addUserFlags(createUserFlags())
+            .filteringFlags(filter)
+            .build();
         return from(this).flags(flags).build();
     }
 
