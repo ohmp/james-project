@@ -44,7 +44,7 @@ public class MailboxStepdefs {
         mainStepdefs.mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, mailbox);
     }
 
-    @Given("^\"([^\"]*)\" shares \\(his\\|her\\) mailbox \"([^\"]*)\" with \"([^\"]*)\" with \"([^\"]*)\" rights$")
+    @Given("^\"([^\"]*)\" shares (?:his|her) mailbox \"([^\"]*)\" with \"([^\"]*)\" with \"([^\"]*)\" rights$")
     public void shareMailbox(String owner, String mailbox, String shareTo, String rights) throws Throwable {
         mainStepdefs.jmapServer.getProbe(ACLProbeImpl.class)
             .replaceRights(MailboxPath.forUser(owner, mailbox),
