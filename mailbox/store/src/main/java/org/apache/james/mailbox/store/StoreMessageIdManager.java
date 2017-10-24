@@ -39,6 +39,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
@@ -296,9 +297,18 @@ public class StoreMessageIdManager implements MessageIdManager {
 
         for (MailboxId mailboxId : mailboxIds) {
             SimpleMailboxMessage copy = SimpleMailboxMessage.copy(mailboxId, mailboxMessage);
+            copy.setFlags(sanitizedFlags(mailboxId, mailboxSession, mailboxMessage.createFlags()));
             save(mailboxSession, messageIdMapper, copy);
             dispatcher.added(mailboxSession, mailboxMapper.findMailboxById(mailboxId), copy);
         }
+    }
+
+    private Flags sanitizedFlags(MailboxId mailboxId, MailboxSession mailboxSession, Flags flags) throws MailboxException {
+        MailboxACL.Rfc4314Rights rights = mailboxManager.myRights(mailboxId, mailboxSession);
+        if (rights.contains(Right.Write)) {
+            return flags;
+        }
+        return new Flags();
     }
 
     private void save(MailboxSession mailboxSession, MessageIdMapper messageIdMapper, MailboxMessage mailboxMessage) throws MailboxException {
