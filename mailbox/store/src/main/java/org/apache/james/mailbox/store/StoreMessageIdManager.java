@@ -39,7 +39,6 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
-import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
 import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
@@ -54,6 +53,8 @@ import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
+import org.apache.james.mailbox.store.mail.model.FlagsFactory;
+import org.apache.james.mailbox.store.mail.model.FlagsFilter;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
@@ -296,22 +297,24 @@ public class StoreMessageIdManager implements MessageIdManager {
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
 
         for (MailboxId mailboxId : mailboxIds) {
-            SimpleMailboxMessage copy = SimpleMailboxMessage.copy(mailboxId, mailboxMessage);
-            copy.setFlags(filterFlags(mailboxId, mailboxMessage.createFlags(), mailboxSession));
+            boolean shouldPreserveFlags = mailboxManager.myRights(mailboxId, mailboxSession).contains(Right.Write);
+            SimpleMailboxMessage copy =
+                SimpleMailboxMessage.from(mailboxMessage)
+                    .mailboxId(mailboxId)
+                    .flags(
+                        FlagsFactory
+                            .builder()
+                            .flags(mailboxMessage.createFlags())
+                            .filteringFlags(
+                                FlagsFilter.builder()
+                                    .systemFlagFilter(f -> shouldPreserveFlags)
+                                    .userFlagFilter(f -> shouldPreserveFlags)
+                                    .build())
+                            .build())
+                    .build();
             save(mailboxSession, messageIdMapper, copy);
             dispatcher.added(mailboxSession, mailboxMapper.findMailboxById(mailboxId), copy);
         }
-    }
-
-    private Flags filterFlags(MailboxId mailboxId, Flags flags, MailboxSession mailboxSession) throws MailboxException {
-        if (shouldPreserveFlags(mailboxId, mailboxSession)) {
-            return flags;
-        }
-        return new Flags();
-    }
-
-    private boolean shouldPreserveFlags(MailboxId mailboxId, MailboxSession mailboxSession) throws MailboxException {
-        return mailboxManager.myRights(mailboxId, mailboxSession).contains(Right.Write);
     }
 
     private void save(MailboxSession mailboxSession, MessageIdMapper messageIdMapper, MailboxMessage mailboxMessage) throws MailboxException {
