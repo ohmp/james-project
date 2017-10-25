@@ -24,7 +24,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+import org.apache.james.backends.es.AliasInjectionConstants;
 import org.apache.james.backends.es.AliasName;
 import org.apache.james.backends.es.TypeName;
 import org.apache.james.backends.es.search.ScrollIterable;
@@ -64,7 +66,7 @@ public class ElasticSearchSearcher {
     @Inject
     public ElasticSearchSearcher(Client client, QueryConverter queryConverter,
                                  MailboxId.Factory mailboxIdFactory, MessageId.Factory messageIdFactory,
-                                 AliasName aliasName, TypeName typeName) {
+                                 @Named(AliasInjectionConstants.READ_ALIAS) AliasName aliasName, TypeName typeName) {
         this(client, queryConverter, DEFAULT_SIZE, mailboxIdFactory, messageIdFactory, aliasName, typeName);
     }
 
