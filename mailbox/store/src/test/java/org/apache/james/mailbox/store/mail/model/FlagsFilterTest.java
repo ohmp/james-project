@@ -60,4 +60,15 @@ public class FlagsFilterTest {
             .build();
         assertThat(listOfFlags.stream().filter(filter.getSystemFlagFilter())).isEqualTo(listOfFlags);
     }
+
+
+    @Test
+    public void buildWithBothFiltersShouldApplyFilterOnBothFlagTypes() {
+        FlagsFilter filter = FlagsFilter.builder()
+            .userFlagFilter(flag -> false)
+            .systemFlagFilter(flag -> false)
+            .build();
+        assertThat(listOfFlags.stream().filter(filter.getSystemFlagFilter())).isEmpty();
+        assertThat(listOfUserFlags.stream().filter(filter.getUserFlagFilter())).isEmpty();
+    }
 }
