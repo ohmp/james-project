@@ -55,8 +55,8 @@ public class ElasticSearchConfigurationTest {
 
         ElasticSearchConfiguration elasticSearchConfiguration = ElasticSearchConfiguration.fromProperties(configuration);
 
-        assertThat(elasticSearchConfiguration.getNbShards())
-            .isEqualTo(ElasticSearchConfiguration.DEFAULT_NB_SHARDS);
+        assertThat(elasticSearchConfiguration.getNbReplica())
+            .isEqualTo(ElasticSearchConfiguration.DEFAULT_NB_REPLICA);
     }
 
     @Test
@@ -205,7 +205,7 @@ public class ElasticSearchConfigurationTest {
     }
 
     @Test
-    public void getReadAliasNameShouldReturnConfiguredValueWhenTrue() throws ConfigurationException {
+    public void getIndexAttachmentShouldReturnConfiguredValueWhenTrue() throws ConfigurationException {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("elasticsearch.indexAttachments", true);
         configuration.addProperty("elasticsearch.hosts", "127.0.0.1");
@@ -217,7 +217,7 @@ public class ElasticSearchConfigurationTest {
     }
 
     @Test
-    public void getReadAliasNameShouldReturnConfiguredValueWhenFalse() throws ConfigurationException {
+    public void getIndexAttachmentShouldReturnConfiguredValueWhenFalse() throws ConfigurationException {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("elasticsearch.indexAttachments", false);
         configuration.addProperty("elasticsearch.hosts", "127.0.0.1");
@@ -227,6 +227,18 @@ public class ElasticSearchConfigurationTest {
         assertThat(elasticSearchConfiguration.getIndexAttachment())
             .isEqualTo(IndexAttachments.NO);
     }
+
+    @Test
+    public void getIndexAttachmentShouldReturnDefaultValueWhenMissing() throws ConfigurationException {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("elasticsearch.hosts", "127.0.0.1");
+
+        ElasticSearchConfiguration elasticSearchConfiguration = ElasticSearchConfiguration.fromProperties(configuration);
+
+        assertThat(elasticSearchConfiguration.getIndexAttachment())
+            .isEqualTo(IndexAttachments.YES);
+    }
+
 
     @Test
     public void getHostsShouldReturnConfiguredHostsWhenNoPort() throws ConfigurationException {
@@ -265,17 +277,6 @@ public class ElasticSearchConfigurationTest {
 
         assertThat(elasticSearchConfiguration.getHosts())
             .containsOnly(Host.from(hostname, port));
-    }
-
-    @Test
-    public void getIndexAttachmentShouldReturnDefaultValueWhenMissing() throws ConfigurationException {
-        PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("elasticsearch.hosts", "127.0.0.1");
-
-        ElasticSearchConfiguration elasticSearchConfiguration = ElasticSearchConfiguration.fromProperties(configuration);
-
-        assertThat(elasticSearchConfiguration.getIndexAttachment())
-            .isEqualTo(IndexAttachments.YES);
     }
 
     @Test
