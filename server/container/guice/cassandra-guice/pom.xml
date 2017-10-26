@@ -157,6 +157,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>james-server-guice-webadmin-elasticsearch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>james-server-guice-webadmin-data</artifactId>
         </dependency>
         <dependency>

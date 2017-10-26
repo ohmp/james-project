@@ -58,6 +58,7 @@
         <module>protocols/webadmin-data</module>
         <module>protocols/webadmin-mailbox</module>
         <module>protocols/webadmin-swagger</module>
+        <module>protocols/webadmin-elasticsearch</module>
     </modules>
 
     <dependencyManagement>
@@ -136,6 +137,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>james-server-guice-webadmin-data</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>james-server-guice-webadmin-elasticsearch</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

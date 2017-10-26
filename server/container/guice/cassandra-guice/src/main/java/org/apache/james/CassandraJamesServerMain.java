@@ -41,6 +41,7 @@ import org.apache.james.modules.server.ActiveMQQueueModule;
 import org.apache.james.modules.server.CassandraRoutesModule;
 import org.apache.james.modules.server.DataRoutesModules;
 import org.apache.james.modules.server.ElasticSearchMetricReporterModule;
+import org.apache.james.modules.server.ElasticSearchRoutesModule;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.modules.server.MailboxRoutesModule;
 import org.apache.james.modules.server.SwaggerRoutesModule;
@@ -54,6 +55,7 @@ public class CassandraJamesServerMain {
     public static final Module webadmin = Modules.combine(
         new CassandraRoutesModule(),
         new DataRoutesModules(),
+        new ElasticSearchRoutesModule(),
         new MailboxRoutesModule(),
         new SwaggerRoutesModule(),
         new WebAdminServerModule());
