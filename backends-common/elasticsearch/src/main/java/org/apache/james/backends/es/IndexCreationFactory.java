@@ -23,6 +23,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -36,10 +37,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 public class IndexCreationFactory {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexCreationFactory.class);
-    private static final int DEFAULT_NB_SHARDS = 1;
-    private static final int DEFAULT_NB_REPLICA = 0;
+
+    public static final int DEFAULT_NB_SHARDS = 1;
+    public static final int DEFAULT_NB_REPLICA = 0;
     public static final String CASE_INSENSITIVE = "case_insensitive";
 
     private IndexName indexName;
@@ -63,6 +64,13 @@ public class IndexCreationFactory {
     public IndexCreationFactory addAlias(AliasName aliasName) {
         Preconditions.checkNotNull(aliasName);
         this.aliases.add(aliasName);
+        return this;
+    }
+
+
+    public IndexCreationFactory addAliases(Collection<AliasName> aliasNames) {
+        Preconditions.checkNotNull(aliasNames);
+        this.aliases.addAll(aliasNames);
         return this;
     }
 
