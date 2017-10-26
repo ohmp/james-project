@@ -37,8 +37,7 @@ public class AliasName {
         if (o instanceof AliasName) {
             AliasName aliasName = (AliasName) o;
 
-            return Objects.equals(this.value, aliasName.value)
-                ;
+            return Objects.equals(this.value, aliasName.value);
         }
         return false;
     }
