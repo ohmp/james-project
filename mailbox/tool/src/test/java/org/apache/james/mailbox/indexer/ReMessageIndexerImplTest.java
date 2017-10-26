@@ -47,7 +47,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-public class ReIndexerImplTest {
+public class ReMessageIndexerImplTest {
 
     public static final MailboxPath INBOX = MailboxPath.forUser("benwa@apache.org", "INBOX");
     public static final int LIMIT = 0;

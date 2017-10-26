@@ -42,6 +42,7 @@ import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
 import org.apache.james.mailbox.elasticsearch.MailboxMappingFactoryV1;
 import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex;
+import org.apache.james.mailbox.elasticsearch.events.ElasticSearchMessageIndexer;
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
 import org.apache.james.mailbox.elasticsearch.query.CriterionConverter;
 import org.apache.james.mailbox.elasticsearch.query.QueryConverter;
@@ -101,21 +102,25 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
         InMemoryMailboxSessionMapperFactory factory = new InMemoryMailboxSessionMapperFactory();
         InMemoryMessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
 
-        ElasticSearchListeningMessageSearchIndex searchIndex = new ElasticSearchListeningMessageSearchIndex(
-            factory,
+        ElasticSearchMessageIndexer indexerDelegate = new ElasticSearchMessageIndexer(
             new ElasticSearchIndexer(client,
                 new DeleteByQueryPerformer(client, Executors.newSingleThreadExecutor(), MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS, MailboxElasticSearchConstants.MESSAGE_TYPE),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS,
                 MailboxElasticSearchConstants.MESSAGE_TYPE),
-            new ElasticSearchSearcherV1(client,
-                new QueryConverter(new CriterionConverter()), new InMemoryId.Factory(), messageIdFactory,
-                MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS, MailboxElasticSearchConstants.MESSAGE_TYPE),
             new MessageToElasticSearchJsonV1(new DefaultTextExtractor(), ZoneId.systemDefault(), IndexAttachments.YES));
 
         this.mailboxManager = new InMemoryIntegrationResources()
             .createMailboxManager(new SimpleGroupMembershipResolver(),
                 authenticator,
                 authorizator);
+        ElasticSearchSearcherV1 elasticSearchSearcherV1 = new ElasticSearchSearcherV1(client,
+            new QueryConverter(new CriterionConverter()), new InMemoryId.Factory(), messageIdFactory,
+            MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS, MailboxElasticSearchConstants.MESSAGE_TYPE);
+        ElasticSearchListeningMessageSearchIndex searchIndex = new ElasticSearchListeningMessageSearchIndex(
+            factory,
+            elasticSearchSearcherV1,
+            indexerDelegate);
+
         this.mailboxManager.setMessageSearchIndex(searchIndex);
         this.mailboxManager.addGlobalListener(searchIndex, new MockMailboxSession("admin"));
 

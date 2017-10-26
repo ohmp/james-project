@@ -18,27 +18,19 @@
  ****************************************************************/
 package org.apache.james.mailbox.elasticsearch.events;
 
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.james.backends.es.ElasticSearchIndexer;
 import org.apache.james.mailbox.MailboxManager.MessageCapabilities;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants;
-import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
-import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
-import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
@@ -51,7 +43,6 @@ import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -59,20 +50,17 @@ import com.google.common.collect.ImmutableList;
 public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSearchIndex {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ElasticSearchListeningMessageSearchIndex.class);
-    private final static String ID_SEPARATOR = ":";
 
-    private final ElasticSearchIndexer indexer;
     private final ElasticSearchSearcher searcher;
-    private final MessageToElasticSearchJson messageToElasticSearchJson;
+    private final ElasticSearchMessageIndexer messageIndexer;
 
     @Inject
-    public ElasticSearchListeningMessageSearchIndex(MessageMapperFactory factory, ElasticSearchIndexer indexer,
+    public ElasticSearchListeningMessageSearchIndex(MessageMapperFactory factory,
                                                     ElasticSearchSearcher searcher,
-                                                    MessageToElasticSearchJson messageToElasticSearchJson) {
+                                                    ElasticSearchMessageIndexer messageIndexer) {
         super(factory);
-        this.indexer = indexer;
-        this.messageToElasticSearchJson = messageToElasticSearchJson;
         this.searcher = searcher;
+        this.messageIndexer = messageIndexer;
     }
 
     @Override
@@ -113,92 +101,30 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             .collect(Guavate.toImmutableList());
     }
 
-    @Override
-    public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
-        try {
-            LOGGER.info("Indexing mailbox {}-{} of user {} on message {}",
-                    mailbox.getName(),
-                    mailbox.getMailboxId(),
-                    session.getUser().getUserName(),
-                    message.getUid());
-            indexer.indexMessage(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJson(message, ImmutableList.of(session.getUser())));
-        } catch (Exception e) {
-            try {
-                LOGGER.warn(String.format("Indexing mailbox %s-%s of user %s on message %s without attachments ",
-                        mailbox.getName(),
-                        mailbox.getMailboxId().serialize(),
-                        session.getUser().getUserName(),
-                        message.getUid().toString()),
-                    e);
-                indexer.indexMessage(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJsonWithoutAttachment(message, ImmutableList.of(session.getUser())));
-            } catch (JsonProcessingException e1) {
-                LOGGER.error(String.format("Error when indexing mailbox %s-%s of user %s on message %s without its attachment",
-                        mailbox.getName(),
-                        mailbox.getMailboxId().serialize(),
-                        session.getUser().getUserName(),
-                        message.getUid().toString()),
-                        e1);
-            }
-        }
-    }
-    
-    @Override
-    public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
-        try {
-            indexer.deleteMessages(expungedUids.stream()
-                .map(uid ->  indexIdFor(mailbox, uid))
-                .collect(Collectors.toList()));
-        } catch (Exception e) {
-            LOGGER.error(String.format("Error when deleting messages %s in mailbox %s from index",
-                mailbox.getMailboxId().serialize(),
-                ImmutableList.copyOf(expungedUids).toString()),
-                e);
-        }
-    }
-
-    @Override
-    public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
-        try {
-            indexer.deleteAllMatchingQuery(
-                termQuery(
-                    JsonMessageConstants.MAILBOX_ID,
-                    mailbox.getMailboxId().serialize()));
-        } catch (Exception e) {
-            LOGGER.error(String.format("Error when deleting all messages in mailbox %s", mailbox.getMailboxId().serialize()), e);
-        }
-    }
-
-    @Override
-    public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
-        try {
-            indexer.updateMessages(updatedFlagsList.stream()
-                .map(updatedFlags -> createUpdatedDocumentPartFromUpdatedFlags(mailbox, updatedFlags))
-                .collect(Collectors.toList()));
-        } catch (Exception e) {
-            LOGGER.error(String.format("Error when updating index on mailbox %s", mailbox.getMailboxId().serialize()), e);
-        }
-    }
-
-    private ElasticSearchIndexer.UpdatedRepresentation createUpdatedDocumentPartFromUpdatedFlags(Mailbox mailbox, UpdatedFlags updatedFlags) {
-        try {
-            return new ElasticSearchIndexer.UpdatedRepresentation(
-                indexIdFor(mailbox, updatedFlags.getUid()),
-                    messageToElasticSearchJson.getUpdatedJsonMessagePart(
-                        updatedFlags.getNewFlags(),
-                        updatedFlags.getModSeq()));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error while creating updatedDocumentParts", e);
-        }
-    }
-
-    private String indexIdFor(Mailbox mailbox, MessageUid uid) {
-        return String.join(ID_SEPARATOR, mailbox.getMailboxId().serialize(), String.valueOf(uid.asLong()));
-    }
-
     private void logIfNoMessageId(SearchResult searchResult) {
         if (!searchResult.getMessageId().isPresent()) {
             LOGGER.error("No messageUid for {} in mailbox {}", searchResult.getMessageUid(), searchResult.getMailboxId());
         }
+    }
+
+    @Override
+    public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
+        messageIndexer.add(session, mailbox, message);
+    }
+
+    @Override
+    public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
+        messageIndexer.delete(session, mailbox, expungedUids);
+    }
+
+    @Override
+    public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        messageIndexer.deleteAll(session, mailbox);
+    }
+
+    @Override
+    public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
+        messageIndexer.update(session, mailbox, updatedFlagsList);
     }
 
 }
