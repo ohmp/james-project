@@ -111,8 +111,8 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
         Client client = NodeMappingFactory.applyMapping(
             new IndexCreationFactory()
                 .useIndex(MailboxElasticSearchConstants.DEFAULT_MAILBOX_INDEX)
-                .addAlias( MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS)
-                .addAlias( MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS)
+                .addAlias(MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS)
+                .addAlias(MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS)
                 .createIndexAndAliases(new TestingClientProvider(embeddedElasticSearch.getNode()).get()),
             MailboxElasticSearchConstants.DEFAULT_MAILBOX_INDEX,
             MailboxElasticSearchConstants.MESSAGE_TYPE,
