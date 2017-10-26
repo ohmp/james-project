@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.elasticsearch;
 
+import java.net.URISyntaxException;
 import java.time.ZoneId;
 
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
@@ -30,16 +31,32 @@ import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.tika.TikaConfiguration;
+import org.apache.james.mailbox.tika.TikaContainer;
+import org.apache.james.mailbox.tika.TikaHttpClientImpl;
+import org.apache.james.mailbox.tika.TikaTextExtractor;
 import org.elasticsearch.client.Client;
+import org.junit.ClassRule;
+import org.testcontainers.shaded.com.google.common.base.Throwables;
 
 public class ElasticSearchV1IntegrationTestWithTika extends  ElasticSearchIntegrationTest {
 
     private static final int SEARCH_SIZE = 1;
 
+    @ClassRule
+    public static TikaContainer tika = new TikaContainer();
 
     @Override
     protected TextExtractor getTextExtractor() {
-        return null;
+        try {
+            return new TikaTextExtractor(new TikaHttpClientImpl(TikaConfiguration.builder()
+                .host(tika.getIp())
+                .port(tika.getPort())
+                .timeoutInMillis(tika.getTimeoutInMillis())
+                .build()));
+        } catch (URISyntaxException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override

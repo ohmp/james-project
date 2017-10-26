@@ -54,7 +54,8 @@ public class MessageToElasticSearchJsonV1 implements MessageToElasticSearchJson 
     }
 
     @Inject
-    public MessageToElasticSearchJsonV1(TextExtractor textExtractor, IndexAttachments indexAttachments, MailboxManager mailboxManager) {
+    public MessageToElasticSearchJsonV1(TextExtractor textExtractor,
+                                        IndexAttachments indexAttachments) {
         this(textExtractor, ZoneId.systemDefault(), indexAttachments);
     }
 
@@ -63,26 +64,29 @@ public class MessageToElasticSearchJsonV1 implements MessageToElasticSearchJson 
         Preconditions.checkNotNull(message);
 
         return mapper.writeValueAsString(IndexableMessage.builder()
-                .message(message)
-                .users(users)
-                .extractor(textExtractor)
-                .zoneId(zoneId)
-                .indexAttachments(indexAttachments)
-                .build());
+            .message(message)
+            .users(users)
+            .extractor(textExtractor)
+            .zoneId(zoneId)
+            .indexAttachments(indexAttachments)
+            .build());
     }
 
     @Override
     public String convertToJsonWithoutAttachment(MailboxMessage message, List<User> users) throws JsonProcessingException {
         return mapper.writeValueAsString(IndexableMessage.builder()
-                .message(message)
-                .users(users)
-                .extractor(textExtractor)
-                .zoneId(zoneId)
-                .indexAttachments(IndexAttachments.NO)
-                .build());
+            .message(message)
+            .users(users)
+            .extractor(textExtractor)
+            .zoneId(zoneId)
+            .indexAttachments(IndexAttachments.NO)
+            .build());
     }
 
-    @Override
+    public boolean handleIndexAttachment() {
+        return IndexAttachments.YES.equals(indexAttachments);
+    }
+
     public String getUpdatedJsonMessagePart(Flags flags, long modSeq) throws JsonProcessingException {
         Preconditions.checkNotNull(flags);
         return mapper.writeValueAsString(new MessageUpdateJson(flags, modSeq));

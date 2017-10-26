@@ -51,12 +51,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.apache.james.mailbox.store.search.AbstractMessageSearchIndexTest;
-import org.apache.james.mailbox.tika.TikaConfiguration;
-import org.apache.james.mailbox.tika.TikaContainer;
-import org.apache.james.mailbox.tika.TikaHttpClientImpl;
-import org.apache.james.mailbox.tika.TikaTextExtractor;
 import org.elasticsearch.client.Client;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -73,22 +68,10 @@ public abstract class ElasticSearchIntegrationTest extends AbstractMessageSearch
     private TemporaryFolder temporaryFolder = new TemporaryFolder();
     private EmbeddedElasticSearch embeddedElasticSearch= new EmbeddedElasticSearch(temporaryFolder, MailboxElasticSearchConstants.DEFAULT_MAILBOX_INDEX);
 
+    protected abstract TextExtractor getTextExtractor();
+
     @Rule
     public RuleChain ruleChain = RuleChain.outerRule(temporaryFolder).around(embeddedElasticSearch);
-
-    @ClassRule
-    public static TikaContainer tika = new TikaContainer();
-    private TikaTextExtractor textExtractor;
-
-    @Override
-    public void setUp() throws Exception {
-        textExtractor = new TikaTextExtractor(new TikaHttpClientImpl(TikaConfiguration.builder()
-                .host(tika.getIp())
-                .port(tika.getPort())
-                .timeoutInMillis(tika.getTimeoutInMillis())
-                .build()));
-        super.setUp();
-    }
 
     @Override
     protected void await() {
@@ -128,7 +111,7 @@ public abstract class ElasticSearchIntegrationTest extends AbstractMessageSearch
                     MailboxElasticSearchConstants.MESSAGE_TYPE),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS,
                 MailboxElasticSearchConstants.MESSAGE_TYPE),
-            provideMessageToElasticSearchJson(textExtractor,  ZoneId.of("Europe/Paris")));
+            provideMessageToElasticSearchJson(getTextExtractor(),  ZoneId.of("Europe/Paris")));
 
         ElasticSearchListeningMessageSearchIndex elasticSearchListeningMessageSearchIndex = new ElasticSearchListeningMessageSearchIndex(storeMailboxManager.getMapperFactory(),
             provideSearcher(client, new InMemoryId.Factory(), storeMailboxManager.getMessageIdFactory()),
