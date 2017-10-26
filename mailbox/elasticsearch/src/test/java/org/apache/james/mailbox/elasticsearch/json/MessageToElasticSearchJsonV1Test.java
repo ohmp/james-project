@@ -58,7 +58,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
-public class MessageToElasticSearchJsonTest {
+public class MessageToElasticSearchJsonV1Test {
 
     public static final int SIZE = 25;
     public static final int BODY_START_OCTET = 100;
@@ -94,7 +94,7 @@ public class MessageToElasticSearchJsonTest {
 
     @Test
     public void convertToJsonShouldThrowWhenNoUser() throws Exception {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
                 new DefaultTextExtractor(),
                 ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage spamMail = new SimpleMailboxMessage(MESSAGE_ID,
@@ -107,13 +107,13 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         ImmutableList<User> users = ImmutableList.of();
 
-        assertThatThrownBy(() -> messageToElasticSearchJson.convertToJson(spamMail, users))
+        assertThatThrownBy(() -> messageToElasticSearchJsonV1.convertToJson(spamMail, users))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void spamEmailShouldBeWellConvertedToJson() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage spamMail = new SimpleMailboxMessage(MESSAGE_ID,
@@ -126,14 +126,14 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         spamMail.setUid(UID);
         spamMail.setModSeq(MOD_SEQ);
-        assertThatJson(messageToElasticSearchJson.convertToJson(spamMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(spamMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/spamMail.json"), CHARSET));
     }
 
     @Test
     public void htmlEmailShouldBeWellConvertedToJson() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage htmlMail = new SimpleMailboxMessage(MESSAGE_ID,
@@ -146,14 +146,14 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         htmlMail.setModSeq(MOD_SEQ);
         htmlMail.setUid(UID);
-        assertThatJson(messageToElasticSearchJson.convertToJson(htmlMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(htmlMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/htmlMail.json"), CHARSET));
     }
 
     @Test
     public void pgpSignedEmailShouldBeWellConvertedToJson() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage pgpSignedMail = new SimpleMailboxMessage(MESSAGE_ID,
@@ -166,14 +166,14 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         pgpSignedMail.setModSeq(MOD_SEQ);
         pgpSignedMail.setUid(UID);
-        assertThatJson(messageToElasticSearchJson.convertToJson(pgpSignedMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(pgpSignedMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/pgpSignedMail.json"), CHARSET));
     }
 
     @Test
     public void simpleEmailShouldBeWellConvertedToJson() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage mail = new SimpleMailboxMessage(MESSAGE_ID,
@@ -186,7 +186,7 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         mail.setModSeq(MOD_SEQ);
         mail.setUid(UID);
-        assertThatJson(messageToElasticSearchJson.convertToJson(mail,
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(mail,
                 ImmutableList.of(new MockMailboxSession("user1").getUser(), new MockMailboxSession("user2").getUser())))
             .when(IGNORING_ARRAY_ORDER).when(IGNORING_VALUES)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/mail.json"), CHARSET));
@@ -194,7 +194,7 @@ public class MessageToElasticSearchJsonTest {
 
     @Test
     public void recursiveEmailShouldBeWellConvertedToJson() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage recursiveMail = new SimpleMailboxMessage(MESSAGE_ID, 
@@ -207,14 +207,14 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         recursiveMail.setModSeq(MOD_SEQ);
         recursiveMail.setUid(UID);
-        assertThatJson(messageToElasticSearchJson.convertToJson(recursiveMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(recursiveMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER).when(IGNORING_VALUES)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/recursiveMail.json"), CHARSET));
     }
 
     @Test
     public void emailWithNoInternalDateShouldUseNowDate() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage mailWithNoInternalDate = new SimpleMailboxMessage(MESSAGE_ID,
@@ -227,7 +227,7 @@ public class MessageToElasticSearchJsonTest {
                 MAILBOX_ID);
         mailWithNoInternalDate.setModSeq(MOD_SEQ);
         mailWithNoInternalDate.setUid(UID);
-        assertThatJson(messageToElasticSearchJson.convertToJson(mailWithNoInternalDate, ImmutableList.of(new MockMailboxSession("username").getUser())))
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(mailWithNoInternalDate, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER)
             .when(IGNORING_VALUES)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/recursiveMail.json"), CHARSET));
@@ -248,11 +248,11 @@ public class MessageToElasticSearchJsonTest {
         mailWithNoInternalDate.setUid(UID);
 
         // When
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"),
             IndexAttachments.YES);
-        String convertToJson = messageToElasticSearchJson.convertToJson(mailWithNoInternalDate, ImmutableList.of(new MockMailboxSession("username").getUser()));
+        String convertToJson = messageToElasticSearchJsonV1.convertToJson(mailWithNoInternalDate, ImmutableList.of(new MockMailboxSession("username").getUser()));
 
         // Then
         assertThatJson(convertToJson)
@@ -276,11 +276,11 @@ public class MessageToElasticSearchJsonTest {
         mailWithNoInternalDate.setUid(UID);
 
         // When
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"),
             IndexAttachments.NO);
-        String convertToJson = messageToElasticSearchJson.convertToJson(mailWithNoInternalDate, ImmutableList.of(new MockMailboxSession("username").getUser()));
+        String convertToJson = messageToElasticSearchJsonV1.convertToJson(mailWithNoInternalDate, ImmutableList.of(new MockMailboxSession("username").getUser()));
 
         // Then
         assertThatJson(convertToJson)
@@ -291,7 +291,7 @@ public class MessageToElasticSearchJsonTest {
 
     @Test(expected = NullPointerException.class)
     public void emailWithNoMailboxIdShouldThrow() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
         MailboxMessage mailWithNoMailboxId;
@@ -308,41 +308,41 @@ public class MessageToElasticSearchJsonTest {
         } catch (Exception exception) {
             throw Throwables.propagate(exception);
         }
-        messageToElasticSearchJson.convertToJson(mailWithNoMailboxId, ImmutableList.of(new MockMailboxSession("username").getUser()));
+        messageToElasticSearchJsonV1.convertToJson(mailWithNoMailboxId, ImmutableList.of(new MockMailboxSession("username").getUser()));
     }
 
     @Test
     public void getUpdatedJsonMessagePartShouldBehaveWellOnEmptyFlags() throws Exception {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"),
             IndexAttachments.YES);
-        assertThatJson(messageToElasticSearchJson.getUpdatedJsonMessagePart(new Flags(), MOD_SEQ))
+        assertThatJson(messageToElasticSearchJsonV1.getUpdatedJsonMessagePart(new Flags(), MOD_SEQ))
             .isEqualTo("{\"modSeq\":42,\"isAnswered\":false,\"isDeleted\":false,\"isDraft\":false,\"isFlagged\":false,\"isRecent\":false,\"userFlags\":[],\"isUnread\":true}");
     }
 
     @Test
     public void getUpdatedJsonMessagePartShouldBehaveWellOnNonEmptyFlags() throws Exception {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"),
             IndexAttachments.YES);
-        assertThatJson(messageToElasticSearchJson.getUpdatedJsonMessagePart(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.FLAGGED).add("user").build(), MOD_SEQ))
+        assertThatJson(messageToElasticSearchJsonV1.getUpdatedJsonMessagePart(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.FLAGGED).add("user").build(), MOD_SEQ))
             .isEqualTo("{\"modSeq\":42,\"isAnswered\":false,\"isDeleted\":true,\"isDraft\":false,\"isFlagged\":true,\"isRecent\":false,\"userFlags\":[\"user\"],\"isUnread\":true}");
     }
 
     @Test(expected = NullPointerException.class)
     public void getUpdatedJsonMessagePartShouldThrowIfFlagsIsNull() throws Exception {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"),
             IndexAttachments.YES);
-        messageToElasticSearchJson.getUpdatedJsonMessagePart(null, MOD_SEQ);
+        messageToElasticSearchJsonV1.getUpdatedJsonMessagePart(null, MOD_SEQ);
     }
 
     @Test
     public void spamEmailShouldBeWellConvertedToJsonWithApacheTika() throws IOException {
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
             textExtractor,
             ZoneId.of("Europe/Paris"),
             IndexAttachments.YES);
@@ -355,7 +355,7 @@ public class MessageToElasticSearchJsonTest {
             MAILBOX_ID);
         spamMail.setUid(UID);
         spamMail.setModSeq(MOD_SEQ);
-        assertThatJson(messageToElasticSearchJson.convertToJson(spamMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
+        assertThatJson(messageToElasticSearchJsonV1.convertToJson(spamMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER)
             .isEqualTo(IOUtils.toString(ClassLoader.getSystemResource("eml/nonTextual.json"), CHARSET));
     }
@@ -375,11 +375,11 @@ public class MessageToElasticSearchJsonTest {
         message.setUid(UID);
 
         // When
-        MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
+        MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1 = new MessageToElasticSearchJsonV1(
                 new DefaultTextExtractor(),
                 ZoneId.of("Europe/Paris"),
                 IndexAttachments.NO);
-        String convertToJsonWithoutAttachment = messageToElasticSearchJson.convertToJsonWithoutAttachment(message, ImmutableList.of(new MockMailboxSession("username").getUser()));
+        String convertToJsonWithoutAttachment = messageToElasticSearchJsonV1.convertToJsonWithoutAttachment(message, ImmutableList.of(new MockMailboxSession("username").getUser()));
 
         // Then
         assertThatJson(convertToJsonWithoutAttachment)

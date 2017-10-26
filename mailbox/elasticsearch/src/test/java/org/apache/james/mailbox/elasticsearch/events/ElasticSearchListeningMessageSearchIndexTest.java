@@ -37,8 +37,8 @@ import org.apache.james.backends.es.ElasticSearchIndexer.UpdatedRepresentation;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
-import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
+import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
+import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.UpdatedFlags;
@@ -68,7 +68,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     public static final String USERNAME = "username";
 
     private ElasticSearchIndexer indexer;
-    private MessageToElasticSearchJson messageToElasticSearchJson;
+    private MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1;
     private ElasticSearchListeningMessageSearchIndex testee;
     private MailboxSession session;
     private List<User> users;
@@ -77,12 +77,12 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     public void setup() throws JsonProcessingException {
 
         MessageMapperFactory mapperFactory = mock(MessageMapperFactory.class);
-        messageToElasticSearchJson = mock(MessageToElasticSearchJson.class);
-        ElasticSearchSearcher elasticSearchSearcher = mock(ElasticSearchSearcher.class);
+        messageToElasticSearchJsonV1 = mock(MessageToElasticSearchJsonV1.class);
+        ElasticSearchSearcherV1 elasticSearchSearcherV1 = mock(ElasticSearchSearcherV1.class);
 
         indexer = mock(ElasticSearchIndexer.class);
         
-        testee = new ElasticSearchListeningMessageSearchIndex(mapperFactory, indexer, elasticSearchSearcher, messageToElasticSearchJson);
+        testee = new ElasticSearchListeningMessageSearchIndex(mapperFactory, indexer, elasticSearchSearcherV1, messageToElasticSearchJsonV1);
         session = new MockMailboxSession(USERNAME);
         users = ImmutableList.of(session.getUser());
     }
@@ -95,7 +95,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .thenReturn(MAILBOX_ID);
         MailboxMessage message = mockedMessage(MESSAGE_UID);
         
-        when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
+        when(messageToElasticSearchJsonV1.convertToJson(eq(message), eq(users)))
             .thenReturn(EXPECTED_JSON_CONTENT);
         
         //When
@@ -115,10 +115,10 @@ public class ElasticSearchListeningMessageSearchIndexTest {
         
         MailboxMessage message = mockedMessage(MESSAGE_UID);
         
-        when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
+        when(messageToElasticSearchJsonV1.convertToJson(eq(message), eq(users)))
             .thenThrow(JsonProcessingException.class);
         
-        when(messageToElasticSearchJson.convertToJsonWithoutAttachment(eq(message), eq(users)))
+        when(messageToElasticSearchJsonV1.convertToJsonWithoutAttachment(eq(message), eq(users)))
             .thenReturn(EXPECTED_JSON_CONTENT);
         
         //When
@@ -144,10 +144,10 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .thenReturn(MAILBOX_ID);
         MailboxMessage message = mockedMessage(MESSAGE_UID);
         
-        when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
+        when(messageToElasticSearchJsonV1.convertToJson(eq(message), eq(users)))
             .thenThrow(JsonProcessingException.class);
         
-        when(messageToElasticSearchJson.convertToJsonWithoutAttachment(eq(message), eq(users)))
+        when(messageToElasticSearchJsonV1.convertToJsonWithoutAttachment(eq(message), eq(users)))
             .thenThrow(new JsonGenerationException("expected error"));
         
         //When
@@ -233,7 +233,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
         when(mailbox.getMailboxId())
             .thenReturn(MAILBOX_ID);
 
-        when(messageToElasticSearchJson.getUpdatedJsonMessagePart(any(Flags.class), any(Long.class)))
+        when(messageToElasticSearchJsonV1.getUpdatedJsonMessagePart(any(Flags.class), any(Long.class)))
             .thenReturn("json updated content");
         
         //When

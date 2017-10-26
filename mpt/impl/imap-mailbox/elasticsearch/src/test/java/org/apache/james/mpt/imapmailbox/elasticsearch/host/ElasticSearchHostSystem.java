@@ -40,12 +40,12 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
-import org.apache.james.mailbox.elasticsearch.MailboxMappingFactory;
+import org.apache.james.mailbox.elasticsearch.MailboxMappingFactoryV1;
 import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex;
-import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
+import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
 import org.apache.james.mailbox.elasticsearch.query.CriterionConverter;
 import org.apache.james.mailbox.elasticsearch.query.QueryConverter;
-import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
+import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxSessionMapperFactory;
@@ -96,7 +96,7 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
                 .createIndexAndAliases(new TestingClientProvider(embeddedElasticSearch.getNode()).get()),
             MailboxElasticSearchConstants.DEFAULT_MAILBOX_INDEX,
             MailboxElasticSearchConstants.MESSAGE_TYPE,
-            MailboxMappingFactory.getMappingContent());
+            new MailboxMappingFactoryV1().getMappingContent());
 
         InMemoryMailboxSessionMapperFactory factory = new InMemoryMailboxSessionMapperFactory();
         InMemoryMessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
@@ -107,10 +107,10 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
                 new DeleteByQueryPerformer(client, Executors.newSingleThreadExecutor(), MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS, MailboxElasticSearchConstants.MESSAGE_TYPE),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS,
                 MailboxElasticSearchConstants.MESSAGE_TYPE),
-            new ElasticSearchSearcher(client,
+            new ElasticSearchSearcherV1(client,
                 new QueryConverter(new CriterionConverter()), new InMemoryId.Factory(), messageIdFactory,
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS, MailboxElasticSearchConstants.MESSAGE_TYPE),
-            new MessageToElasticSearchJson(new DefaultTextExtractor(), ZoneId.systemDefault(), IndexAttachments.YES));
+            new MessageToElasticSearchJsonV1(new DefaultTextExtractor(), ZoneId.systemDefault(), IndexAttachments.YES));
 
         this.mailboxManager = new InMemoryIntegrationResources()
             .createMailboxManager(new SimpleGroupMembershipResolver(),

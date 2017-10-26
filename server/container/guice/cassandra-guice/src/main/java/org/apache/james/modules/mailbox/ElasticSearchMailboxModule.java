@@ -38,7 +38,12 @@ import org.apache.james.backends.es.TypeName;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
 import org.apache.james.mailbox.elasticsearch.MailboxMappingFactory;
+import org.apache.james.mailbox.elasticsearch.MailboxMappingFactoryV1;
 import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex;
+import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
+import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
+import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
+import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.utils.PropertiesProvider;
@@ -64,6 +69,10 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         bind(ElasticSearchListeningMessageSearchIndex.class).in(Scopes.SINGLETON);
         bind(MessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
         bind(ListeningMessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
+
+        bind(MailboxMappingFactory.class).to(MailboxMappingFactoryV1.class);
+        bind(ElasticSearchSearcher.class).to(ElasticSearchSearcherV1.class);
+        bind(MessageToElasticSearchJson.class).to(MessageToElasticSearchJsonV1.class);
     }
 
     @Provides
@@ -107,15 +116,18 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Provides
     @Singleton
     protected Client provideClient(ElasticSearchConfiguration configuration,
-                                           IndexCreationFactory indexCreationFactory,
-                                           AsyncRetryExecutor executor) throws ExecutionException, InterruptedException {
+                                   IndexCreationFactory indexCreationFactory,
+                                   MailboxMappingFactory mailboxMappingFactory,
+                                   AsyncRetryExecutor executor) throws ExecutionException, InterruptedException {
 
         return RetryExecutorUtil.retryOnExceptions(executor, configuration.getMaxRetries(), configuration.getMinDelay(), NoNodeAvailableException.class)
-            .getWithRetry(context -> connectToCluster(configuration, indexCreationFactory))
+            .getWithRetry(context -> connectToCluster(configuration, indexCreationFactory, mailboxMappingFactory))
             .get();
     }
 
-    private Client connectToCluster(ElasticSearchConfiguration configuration, IndexCreationFactory indexCreationFactory) {
+    private Client connectToCluster(ElasticSearchConfiguration configuration,
+                                    IndexCreationFactory indexCreationFactory,
+                                    MailboxMappingFactory mailboxMappingFactory) {
         LOGGER.info("Trying to connect to ElasticSearch service at {}", LocalDateTime.now());
 
         Client client = ClientProviderImpl.fromHosts(configuration.getHosts()).get();
@@ -124,7 +136,7 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         return NodeMappingFactory.applyMapping(client,
             configuration.getIndexName(),
             MailboxElasticSearchConstants.MESSAGE_TYPE,
-            MailboxMappingFactory.getMappingContent());
+            mailboxMappingFactory.getMappingContent());
     }
 
     @Provides

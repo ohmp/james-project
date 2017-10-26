@@ -36,7 +36,9 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants;
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
+import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
+import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
@@ -65,7 +67,8 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
 
     @Inject
     public ElasticSearchListeningMessageSearchIndex(MessageMapperFactory factory, ElasticSearchIndexer indexer,
-        ElasticSearchSearcher searcher, MessageToElasticSearchJson messageToElasticSearchJson) {
+                                                    ElasticSearchSearcher searcher,
+                                                    MessageToElasticSearchJson messageToElasticSearchJson) {
         super(factory);
         this.indexer = indexer;
         this.messageToElasticSearchJson = messageToElasticSearchJson;

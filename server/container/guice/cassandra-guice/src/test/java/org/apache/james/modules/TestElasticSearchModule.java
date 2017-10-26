@@ -26,7 +26,7 @@ import org.apache.james.backends.es.IndexCreationFactory;
 import org.apache.james.backends.es.NodeMappingFactory;
 import org.apache.james.backends.es.utils.TestingClientProvider;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
-import org.apache.james.mailbox.elasticsearch.MailboxMappingFactory;
+import org.apache.james.mailbox.elasticsearch.MailboxMappingFactoryV1;
 import org.elasticsearch.client.Client;
 
 import com.google.inject.AbstractModule;
@@ -58,6 +58,6 @@ public class TestElasticSearchModule extends AbstractModule{
         return NodeMappingFactory.applyMapping(client,
             MailboxElasticSearchConstants.DEFAULT_MAILBOX_INDEX,
             MailboxElasticSearchConstants.MESSAGE_TYPE,
-            MailboxMappingFactory.getMappingContent());
+            new MailboxMappingFactoryV1().getMappingContent());
     }
 }

@@ -38,14 +38,19 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex;
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
+import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
 import org.apache.james.mailbox.elasticsearch.query.CriterionConverter;
 import org.apache.james.mailbox.elasticsearch.query.QueryConverter;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
+import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
+import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.apache.james.mailbox.store.search.AbstractMessageSearchIndexTest;
@@ -63,10 +68,9 @@ import org.junit.rules.TemporaryFolder;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 
-public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest {
+public abstract class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest {
 
     private static final int BATCH_SIZE = 1;
-    private static final int SEARCH_SIZE = 1;
     private static final boolean IS_RECENT = true;
 
     private TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -94,6 +98,15 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
         embeddedElasticSearch.awaitForElasticSearch();
     }
 
+    protected abstract MailboxMappingFactory provideMappingFactory();
+
+    protected abstract ElasticSearchSearcher provideSearcher(Client client,
+                                                             MailboxId.Factory mailboxIdFactory,
+                                                             MessageId.Factory messageIdFactory);
+
+    protected abstract MessageToElasticSearchJson provideMessageToElasticSearchJson(TextExtractor textExtractor,
+                                                                                    ZoneId zoneId);
+
     @Override
     protected void initializeMailboxManager() throws Exception {
         Client client = NodeMappingFactory.applyMapping(
@@ -104,7 +117,7 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
                 .createIndexAndAliases(new TestingClientProvider(embeddedElasticSearch.getNode()).get()),
             MailboxElasticSearchConstants.DEFAULT_MAILBOX_INDEX,
             MailboxElasticSearchConstants.MESSAGE_TYPE,
-            MailboxMappingFactory.getMappingContent());
+            provideMappingFactory().getMappingContent());
 
         storeMailboxManager = new InMemoryIntegrationResources()
             .createMailboxManager(new SimpleGroupMembershipResolver());
@@ -120,11 +133,8 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
                     MailboxElasticSearchConstants.MESSAGE_TYPE),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS,
                 MailboxElasticSearchConstants.MESSAGE_TYPE),
-            new ElasticSearchSearcher(client, new QueryConverter(new CriterionConverter()), SEARCH_SIZE,
-                new InMemoryId.Factory(), storeMailboxManager.getMessageIdFactory(),
-                MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS,
-                MailboxElasticSearchConstants.MESSAGE_TYPE),
-            new MessageToElasticSearchJson(textExtractor, ZoneId.of("Europe/Paris"), IndexAttachments.YES));
+            provideSearcher(client, new InMemoryId.Factory(), storeMailboxManager.getMessageIdFactory()),
+            provideMessageToElasticSearchJson(textExtractor,  ZoneId.of("Europe/Paris")));
 
         messageIdManager = new StoreMessageIdManager(
             storeMailboxManager,
