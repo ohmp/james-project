@@ -28,7 +28,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.james.backends.es.AliasInjectionConstants;
+import org.apache.james.backends.es.ElasticSearchConstants;
 import org.apache.james.backends.es.AliasName;
 import org.apache.james.backends.es.ClientProviderImpl;
 import org.apache.james.backends.es.IndexCreationFactory;
@@ -86,12 +86,12 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         return configuration.getIndexName();
     }
 
-    @Provides @Named(AliasInjectionConstants.READ_ALIAS)
+    @Provides @Named(ElasticSearchConstants.READ_ALIAS)
     protected AliasName provideReadAliasName(ElasticSearchConfiguration configuration) {
         return configuration.getReadAliasName();
     }
 
-    @Provides @Named(AliasInjectionConstants.WRITE_ALIAS)
+    @Provides @Named(ElasticSearchConstants.WRITE_ALIAS)
     protected AliasName provideWriteAliasName(ElasticSearchConfiguration configuration) {
         return configuration.getWriteAliasName();
     }

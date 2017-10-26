@@ -94,7 +94,7 @@ public class ElasticSearchIndexer {
 
     @Inject
     public ElasticSearchIndexer(Client client, DeleteByQueryPerformer deleteByQueryPerformer,
-                                @Named(AliasInjectionConstants.WRITE_ALIAS) AliasName aliasName,
+                                @Named(ElasticSearchConstants.WRITE_ALIAS) AliasName aliasName,
                                 TypeName typeName) {
         this.client = client;
         this.deleteByQueryPerformer = deleteByQueryPerformer;
