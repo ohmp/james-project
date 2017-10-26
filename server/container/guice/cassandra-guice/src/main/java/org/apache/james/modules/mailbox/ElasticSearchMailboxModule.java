@@ -35,15 +35,13 @@ import org.apache.james.backends.es.IndexCreationFactory;
 import org.apache.james.backends.es.IndexName;
 import org.apache.james.backends.es.NodeMappingFactory;
 import org.apache.james.backends.es.TypeName;
+import org.apache.james.mailbox.elasticsearch.ElasticSearchComponentProvider;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
 import org.apache.james.mailbox.elasticsearch.MailboxMappingFactory;
-import org.apache.james.mailbox.elasticsearch.MailboxMappingFactoryV1;
 import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex;
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
-import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJsonV1;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
-import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcherV1;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.utils.PropertiesProvider;
@@ -69,14 +67,9 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         bind(ElasticSearchListeningMessageSearchIndex.class).in(Scopes.SINGLETON);
         bind(MessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
         bind(ListeningMessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
-
-        bind(MailboxMappingFactory.class).to(MailboxMappingFactoryV1.class);
-        bind(ElasticSearchSearcher.class).to(ElasticSearchSearcherV1.class);
-        bind(MessageToElasticSearchJson.class).to(MessageToElasticSearchJsonV1.class);
     }
 
-    @Provides
-    @Singleton
+    @Provides @Singleton
     private ElasticSearchConfiguration getElasticSearchConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
             PropertiesConfiguration configuration = propertiesProvider.getConfiguration(ELASTICSEARCH_CONFIGURATION_NAME);
@@ -102,8 +95,7 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         return configuration.getWriteAliasName();
     }
 
-    @Provides
-    @Singleton
+    @Provides @Singleton
     protected IndexCreationFactory provideIndexCreationFactory(ElasticSearchConfiguration configuration) {
         return new IndexCreationFactory()
             .useIndex(configuration.getIndexName())
@@ -113,8 +105,7 @@ public class ElasticSearchMailboxModule extends AbstractModule {
             .nbReplica(configuration.getNbReplica());
     }
 
-    @Provides
-    @Singleton
+    @Provides @Singleton
     protected Client provideClient(ElasticSearchConfiguration configuration,
                                    IndexCreationFactory indexCreationFactory,
                                    MailboxMappingFactory mailboxMappingFactory,
@@ -139,8 +130,25 @@ public class ElasticSearchMailboxModule extends AbstractModule {
             mailboxMappingFactory.getMappingContent());
     }
 
-    @Provides
-    @Singleton
+    @Provides @Singleton
+    private ElasticSearchSearcher provideSearcher(ElasticSearchConfiguration configuration,
+                                                  ElasticSearchComponentProvider componentProvider) {
+        return componentProvider.getSearcher(configuration.getSchemaVersion());
+    }
+
+    @Provides @Singleton
+    private MailboxMappingFactory provideMappingFactory(ElasticSearchConfiguration configuration,
+                                                        ElasticSearchComponentProvider componentProvider) {
+        return componentProvider.getMailboxMappingFactory(configuration.getSchemaVersion());
+    }
+
+    @Provides @Singleton
+    private MessageToElasticSearchJson provideMessageToElasticSearchJson(ElasticSearchConfiguration configuration,
+                                                        ElasticSearchComponentProvider componentProvider) {
+        return componentProvider.getMessageToElasticSearchJson(configuration.getSchemaVersion());
+    }
+
+    @Provides @Singleton
     public IndexAttachments provideIndexAttachments(ElasticSearchConfiguration configuration) {
         return configuration.getIndexAttachment();
     }
