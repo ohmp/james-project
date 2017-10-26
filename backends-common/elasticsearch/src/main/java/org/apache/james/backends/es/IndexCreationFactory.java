@@ -22,6 +22,7 @@ package org.apache.james.backends.es;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 public class IndexCreationFactory {
 
@@ -43,18 +43,18 @@ public class IndexCreationFactory {
     public static final String CASE_INSENSITIVE = "case_insensitive";
 
     private IndexName indexName;
-    private ImmutableList.Builder<AliasName> aliases;
+    private ArrayList<AliasName> aliases;
     private Optional<Integer> nbShards;
     private Optional<Integer> nbReplica;
 
     public IndexCreationFactory() {
         indexName = null;
-        aliases = ImmutableList.builder();
+        aliases = new ArrayList<>();
         nbShards = Optional.empty();
         nbReplica = Optional.empty();
     }
 
-    public IndexCreationFactory onIndex(IndexName indexName) {
+    public IndexCreationFactory useIndex(IndexName indexName) {
         Preconditions.checkNotNull(indexName);
         this.indexName = indexName;
         return this;
@@ -82,8 +82,7 @@ public class IndexCreationFactory {
             createIndexIfNeeded(client, indexName, generateSetting(
                 nbShards.orElse(DEFAULT_NB_SHARDS),
                 nbReplica.orElse(DEFAULT_NB_REPLICA)));
-            aliases.build()
-                .forEach(alias -> createAliasIfNeeded(client, indexName, alias));
+            aliases.forEach(alias -> createAliasIfNeeded(client, indexName, alias));
         } catch (IOException e) {
             LOGGER.error("Error while creating index : ", e);
         }
