@@ -48,6 +48,7 @@ public class ElasticSearchConfiguration {
     public static final String ELASTICSEARCH_RETRY_CONNECTION_MIN_DELAY = "elasticsearch.retryConnection.minDelay";
     public static final String ELASTICSEARCH_RETRY_CONNECTION_MAX_RETRIES = "elasticsearch.retryConnection.maxRetries";
     public static final String ELASTICSEARCH_INDEX_ATTACHMENTS = "elasticsearch.indexAttachments";
+    public static final String ELASTICSEARCH_SCHEMA_VERSION = "elasticsearch.schema.version";
 
     public static final int DEFAULT_CONNECTION_MAX_RETRIES = 7;
     public static final int DEFAULT_CONNECTION_MIN_DELAY = 3000;
@@ -56,6 +57,7 @@ public class ElasticSearchConfiguration {
     public static final int DEFAULT_NB_REPLICA = 0;
     public static final int DEFAULT_PORT = 9300;
     private static final String LOCALHOST = "127.0.0.1";
+    public static final int DEFAULT_SCHEMA_VERSION = 1;
     public static final Optional<Integer> DEFAULT_PORT_AS_OPTIONAL = Optional.of(DEFAULT_PORT);
 
     public static final ElasticSearchConfiguration DEFAULT_CONFIGURATION = new ElasticSearchConfiguration(
@@ -67,6 +69,7 @@ public class ElasticSearchConfiguration {
         DEFAULT_NB_REPLICA,
         DEFAULT_CONNECTION_MIN_DELAY,
         DEFAULT_CONNECTION_MAX_RETRIES,
+        DEFAULT_SCHEMA_VERSION,
         IndexAttachments.YES);
 
     public static ElasticSearchConfiguration fromProperties(PropertiesConfiguration configuration) throws ConfigurationException {
@@ -74,6 +77,7 @@ public class ElasticSearchConfiguration {
         int nbReplica = configuration.getInt(ELASTICSEARCH_NB_REPLICA, DEFAULT_NB_REPLICA);
         int maxRetries = configuration.getInt(ELASTICSEARCH_RETRY_CONNECTION_MAX_RETRIES, DEFAULT_CONNECTION_MAX_RETRIES);
         int minDelay = configuration.getInt(ELASTICSEARCH_RETRY_CONNECTION_MIN_DELAY, DEFAULT_CONNECTION_MIN_DELAY);
+        int schemaVersion = configuration.getInt(ELASTICSEARCH_SCHEMA_VERSION, DEFAULT_SCHEMA_VERSION);
         IndexAttachments indexAttachments = provideIndexAttachments(configuration);
         ImmutableList<Host> hosts = getHosts(configuration);
 
@@ -96,6 +100,7 @@ public class ElasticSearchConfiguration {
             nbReplica,
             minDelay,
             maxRetries,
+            schemaVersion,
             indexAttachments);
     }
 
@@ -149,11 +154,12 @@ public class ElasticSearchConfiguration {
     private final int nbReplica;
     private final int minDelay;
     private final int maxRetries;
+    private final int schemaVersion;
     private final IndexAttachments indexAttachment;
 
     public ElasticSearchConfiguration(ImmutableList<Host> hosts, IndexName indexName, AliasName readAliasName,
                                       AliasName writeAliasName, int nbShards, int nbReplica, int minDelay,
-                                      int maxRetries, IndexAttachments indexAttachment) {
+                                      int maxRetries, int schemaVersion, IndexAttachments indexAttachment) {
         this.hosts = hosts;
         this.indexName = indexName;
         this.readAliasName = readAliasName;
@@ -162,7 +168,12 @@ public class ElasticSearchConfiguration {
         this.nbReplica = nbReplica;
         this.minDelay = minDelay;
         this.maxRetries = maxRetries;
+        this.schemaVersion = schemaVersion;
         this.indexAttachment = indexAttachment;
+    }
+
+    public int getSchemaVersion() {
+        return schemaVersion;
     }
 
     public ImmutableList<Host> getHosts() {
@@ -210,6 +221,7 @@ public class ElasticSearchConfiguration {
                 && Objects.equals(this.nbReplica, that.nbReplica)
                 && Objects.equals(this.minDelay, that.minDelay)
                 && Objects.equals(this.maxRetries, that.maxRetries)
+                && Objects.equals(this.schemaVersion, that.schemaVersion)
                 && Objects.equals(this.indexAttachment, that.indexAttachment)
                 && Objects.equals(this.hosts, that.hosts)
                 && Objects.equals(this.indexName, that.indexName)
@@ -222,6 +234,6 @@ public class ElasticSearchConfiguration {
     @Override
     public final int hashCode() {
         return Objects.hash(hosts, indexName, readAliasName, writeAliasName, nbShards,
-            nbReplica, minDelay, maxRetries, indexAttachment);
+            nbReplica, minDelay, maxRetries, schemaVersion, indexAttachment);
     }
 }

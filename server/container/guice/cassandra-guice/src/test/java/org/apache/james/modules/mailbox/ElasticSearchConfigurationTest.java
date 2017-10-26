@@ -38,6 +38,29 @@ import com.google.common.collect.ImmutableList;
 public class ElasticSearchConfigurationTest {
 
     @Test
+    public void getSchemaVersionShouldReturnConfiguredValue() throws ConfigurationException {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        int value = 36;
+        configuration.addProperty("elasticsearch.schema.version", value);
+        configuration.addProperty("elasticsearch.hosts", "127.0.0.1");
+
+        ElasticSearchConfiguration elasticSearchConfiguration = ElasticSearchConfiguration.fromProperties(configuration);
+
+        assertThat(elasticSearchConfiguration.getSchemaVersion())
+            .isEqualTo(value);
+    }
+
+    @Test
+    public void getSchemaVersionShouldReturnDefaultValueWhenMissing() throws ConfigurationException {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("elasticsearch.hosts", "127.0.0.1");
+
+        ElasticSearchConfiguration elasticSearchConfiguration = ElasticSearchConfiguration.fromProperties(configuration);
+
+        assertThat(elasticSearchConfiguration.getSchemaVersion())
+            .isEqualTo(ElasticSearchConfiguration.DEFAULT_SCHEMA_VERSION);
+    }
+    @Test
     public void getNbReplicaShouldReturnConfiguredValue() throws ConfigurationException {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         int value = 36;
