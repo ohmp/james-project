@@ -38,6 +38,7 @@
         <module>webadmin-data</module>
         <module>webadmin-mailbox</module>
         <module>webadmin-swagger</module>
+        <module>webadmin-elasticsearch</module>
     </modules>
 
 </project>

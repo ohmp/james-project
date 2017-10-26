@@ -22,6 +22,8 @@ package org.apache.james.webadmin.utils;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 public class JsonExtractor<Request> {
 
@@ -30,6 +32,8 @@ public class JsonExtractor<Request> {
 
     public JsonExtractor(Class<Request> type) {
         this.objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new GuavaModule());
         this.type = type;
     }
 
