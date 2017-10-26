@@ -64,7 +64,7 @@ public class ElasticSearchMessageIndexer implements MessageIndexer {
                     mailbox.getMailboxId(),
                     session.getUser().getUserName(),
                     message.getUid());
-            indexer.indexMessage(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJson(message, ImmutableList.of(session.getUser())));
+            indexer.indexDocument(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJson(message, ImmutableList.of(session.getUser())));
         } catch (Exception e) {
             try {
                 LOGGER.warn(String.format("Indexing mailbox %s-%s of user %s on message %s without attachments ",
@@ -73,7 +73,7 @@ public class ElasticSearchMessageIndexer implements MessageIndexer {
                         session.getUser().getUserName(),
                         message.getUid().toString()),
                     e);
-                indexer.indexMessage(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJsonWithoutAttachment(message, ImmutableList.of(session.getUser())));
+                indexer.indexDocument(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJsonWithoutAttachment(message, ImmutableList.of(session.getUser())));
             } catch (JsonProcessingException e1) {
                 LOGGER.error(String.format("Error when indexing mailbox %s-%s of user %s on message %s without its attachment",
                         mailbox.getName(),
@@ -88,7 +88,7 @@ public class ElasticSearchMessageIndexer implements MessageIndexer {
     @Override
     public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
         try {
-            indexer.deleteMessages(expungedUids.stream()
+            indexer.deleteDocuments(expungedUids.stream()
                 .map(uid ->  indexIdFor(mailbox, uid))
                 .collect(Collectors.toList()));
         } catch (Exception e) {
@@ -114,7 +114,7 @@ public class ElasticSearchMessageIndexer implements MessageIndexer {
     @Override
     public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
         try {
-            indexer.updateMessages(updatedFlagsList.stream()
+            indexer.updateDocuments(updatedFlagsList.stream()
                 .map(updatedFlags -> createUpdatedDocumentPartFromUpdatedFlags(mailbox, updatedFlags))
                 .collect(Collectors.toList()));
         } catch (Exception e) {
