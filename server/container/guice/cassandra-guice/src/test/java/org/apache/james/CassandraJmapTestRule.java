@@ -37,6 +37,10 @@ public class CassandraJmapTestRule implements TestRule {
         return new CassandraJmapTestRule(new EmbeddedElasticSearchRule());
     }
 
+    public static CassandraJmapTestRule defaultTestRule(EmbeddedElasticSearchRule embeddedElasticSearchRule) {
+        return new CassandraJmapTestRule(embeddedElasticSearchRule);
+    }
+
     private GuiceModuleTestRule guiceModuleTestRule;
 
     public CassandraJmapTestRule(GuiceModuleTestRule... guiceModuleTestRule) {
