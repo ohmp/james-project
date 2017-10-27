@@ -19,10 +19,13 @@
 
 package org.apache.james.backends.es;
 
+import com.google.common.base.Preconditions;
+
 public class TypeName {
     private final String value;
 
     public TypeName(String value) {
+        Preconditions.checkNotNull(value);
         this.value = value;
     }
 

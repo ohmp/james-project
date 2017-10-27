@@ -21,10 +21,13 @@ package org.apache.james.backends.es;
 
 import java.util.Objects;
 
+import com.google.common.base.Preconditions;
+
 public class AliasName {
     private final String value;
 
     public AliasName(String value) {
+        Preconditions.checkNotNull(value);
         this.value = value;
     }
 

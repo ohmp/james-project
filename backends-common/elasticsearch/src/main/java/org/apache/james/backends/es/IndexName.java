@@ -21,10 +21,13 @@ package org.apache.james.backends.es;
 
 import java.util.Objects;
 
+import com.google.common.base.Preconditions;
+
 public class IndexName {
     private final String value;
 
     public IndexName(String value) {
+        Preconditions.checkNotNull(value);
         this.value = value;
     }
 
