@@ -17,23 +17,37 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules.server;
+package org.apache.james.webadmin.dto;
 
-import org.apache.james.webadmin.Routes;
-import org.apache.james.webadmin.routes.IndexCreationRoutes;
-import org.apache.james.webadmin.routes.IndexationRoutes;
-import org.apache.james.webadmin.routes.ReIndexationRoutes;
+import java.util.Objects;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.Multibinder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ElasticSearchRoutesModule extends AbstractModule {
+public class ReIndexationParameter {
+    private final int schemaVersion;
+
+    @JsonCreator
+    public ReIndexationParameter(@JsonProperty("schemaVersion") int schemaVersion) {
+        this.schemaVersion = schemaVersion;
+    }
+
+    public int getSchemaVersion() {
+        return schemaVersion;
+    }
 
     @Override
-    protected void configure() {
-        Multibinder<Routes> routesMultibinder = Multibinder.newSetBinder(binder(), Routes.class);
-        routesMultibinder.addBinding().to(IndexCreationRoutes.class);
-        routesMultibinder.addBinding().to(IndexationRoutes.class);
-        routesMultibinder.addBinding().to(ReIndexationRoutes.class);
+    public final boolean equals(Object o) {
+        if (o instanceof ReIndexationParameter) {
+            ReIndexationParameter that = (ReIndexationParameter) o;
+
+            return Objects.equals(this.schemaVersion, that.schemaVersion);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(schemaVersion);
     }
 }
