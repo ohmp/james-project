@@ -67,11 +67,13 @@ public class IndexCreationFactory {
     }
 
     public IndexCreationFactory nbShards(int nbShards) {
+        Preconditions.checkArgument(nbShards > 0, "You need the number of shards to be strictly positive");
         this.nbShards = Optional.of(nbShards);
         return this;
     }
 
     public IndexCreationFactory nbReplica(int nbReplica) {
+        Preconditions.checkArgument(nbReplica >= 0, "You need the number of replica to be positive");
         this.nbReplica = Optional.of(nbReplica);
         return this;
     }
