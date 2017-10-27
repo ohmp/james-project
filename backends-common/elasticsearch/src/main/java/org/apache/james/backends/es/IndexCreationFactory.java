@@ -42,6 +42,9 @@ public class IndexCreationFactory {
     public static final int DEFAULT_NB_SHARDS = 1;
     public static final int DEFAULT_NB_REPLICA = 0;
     public static final String CASE_INSENSITIVE = "case_insensitive";
+    public static final String KEEP_MAIL_AND_URL = "keep_mail_and_url";
+    public static final String SNOWBALL_KEEP_MAIL_AND_URL = "snowball_keep_mail_and_token";
+    public static final String ENGLISH_SNOWBALL = "english_snowball";
 
     private IndexName indexName;
     private ArrayList<AliasName> aliases;
@@ -142,6 +145,31 @@ public class IndexCreationFactory {
                             .field("tokenizer", "keyword")
                             .startArray("filter")
                                 .value("lowercase")
+                            .endArray()
+                        .endObject()
+                    .endObject()
+                    .startObject("analyzer")
+                        .startObject(KEEP_MAIL_AND_URL)
+                            .field("tokenizer", "uax_url_email")
+                            .startArray("filter")
+                                .value("lowercase")
+                                .value("stop")
+                            .endArray()
+                        .endObject()
+                    .endObject()
+                    .startObject("filter")
+                        .startObject(ENGLISH_SNOWBALL)
+                            .field("type", "snowball")
+                            .field("language", "English")
+                        .endObject()
+                    .endObject()
+                    .startObject("analyzer")
+                        .startObject(SNOWBALL_KEEP_MAIL_AND_URL)
+                        .field("tokenizer", "uax_url_email")
+                            .startArray("filter")
+                                .value("lowercase")
+                                .value("stop")
+                                .value(ENGLISH_SNOWBALL)
                             .endArray()
                         .endObject()
                     .endObject()
