@@ -425,6 +425,137 @@ Note that several calls to this endpoint will be run in a sequential pattern.
 
 If the server restarts during the migration, the migration is silently aborted.
 
+## ElascticSearch administration
+
+James with cassandra-guice packaging allow multiple administration operations on top of ElasticSearch.
+
+These steps allow (almost) zero downtime re-indexing and schema migration.
+
+A classical scenarion might be:
+
+ - I use ElasticSearch schema version 1 but want to switch to the schema version 2
+ - I start creating an additional index with a corresponding alias in James with schema version 2, via webadmin
+ - I start a new indexer to index upcoming changes to my new index, via webadmin
+ - I trigger a data re-indexation from the *mailbox* to my new index, via webadmin
+ - When done, whenever I want, I can re-configure James ElasticSearch configuration files to use the new index, and reboot it.
+
+The following document will describe the steps for these operations.
+
+### Creating a new Index
+
+```
+curl -XPUT http://ip:port/elasticsearch/index/index_name
+
+{
+   "schemaVersion" :2,
+   "nbShards": 6,
+   "nbReplica": 2,
+   "aliases": ["temp_alias_write2",""temp_alias_read2"],
+}
+```
+
+Response codes:
+
+ - 204: Success
+ - 400: Invalid payload.
+ - 500: Internal error.
+
+### Attaching an additional indexer to James
+
+A reboot is required to detach this indexer.
+
+It can trigger an arbitrary alias, with an arbitrary schemaVersion.
+
+```
+curl -XPUT http://ip:port/elasticsearch/indexation/temp_alias_write2
+
+{
+   "schemaVersion" :2
+}
+```
+
+Response codes:
+
+ - 204: Success
+ - 400: Invalid payload.
+ - 500: Internal error.
+
+
+### ReIndexing all the content
+
+A reboot is required to stop the task.
+
+As the result of running several reIndexing concurrently is indempotent with a
+indexer positionned for upcoming events, no concurrency is managed.
+
+It can trigger an arbitrary alias, with an arbitrary schemaVersion.
+
+```
+curl -XPUT http://ip:port/elasticsearch/reIndexation/temp_alias_write2
+
+{
+   "schemaVersion" :2
+}
+```
+
+Response codes:
+
+ - 204: Success
+ - 400: Invalid payload.
+ - 500: Internal error.
+
+Note: Logging will give you finner grained details, like failing mailboxes, failing messages so that you can correct
+re-indexing later on with finner grained re-indexing.
+
+### ReIndexing a specific mailbox
+
+A reboot is required to stop the task.
+
+As the result of running several reIndexing concurrently is indempotent with a
+indexer positionned for upcoming events, no concurrency is managed.
+
+It can trigger an arbitrary alias, with an arbitrary schemaVersion.
+
+```
+curl -XPUT http://ip:port/elasticsearch/reIndexation/temp_alias_write2/mailbox-id
+
+{
+   "schemaVersion" :2
+}
+```
+
+Response codes:
+
+ - 204: Success
+ - 400: Invalid payload.
+ - 500: Internal error.
+
+Note: Logging will give you finner grained details, like failing messages so that you can correct
+re-indexing later on with finner grained re-indexing.
+
+### ReIndexing a specific message
+
+A reboot is required to stop the task.
+
+As the result of running several reIndexing concurrently is indempotent with a
+indexer positionned for upcoming events, no concurrency is managed.
+
+It can trigger an arbitrary alias, with an arbitrary schemaVersion.
+
+```
+curl -XPUT http://ip:port/elasticsearch/reIndexation/temp_alias_write2/mailbox-id/uid
+
+{
+   "schemaVersion" :2
+}
+```
+
+Response codes:
+
+ - 204: Success
+ - 400: Invalid payload.
+ - 500: Internal error.
+
 ## Creating address group
 
 You can use **webadmin** to define address groups.
