@@ -76,7 +76,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             SearchCapabilities.FullText,
             SearchCapabilities.PartialEmailMatch);
 
-        if (messageToElasticSearchJson.handleIndexAttachment()) {
+        if (messageIndexer.supportsAttachments()) {
             supportedCapabilites.add(SearchCapabilities.Attachment);
         }
 

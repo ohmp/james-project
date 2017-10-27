@@ -122,6 +122,10 @@ public class ElasticSearchMessageIndexer implements MessageIndexer {
         }
     }
 
+    public boolean supportsAttachments() {
+        return messageToElasticSearchJson.handleIndexAttachment();
+    }
+
     private ElasticSearchIndexer.UpdatedRepresentation createUpdatedDocumentPartFromUpdatedFlags(Mailbox mailbox, UpdatedFlags updatedFlags) {
         try {
             return new ElasticSearchIndexer.UpdatedRepresentation(

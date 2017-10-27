@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.elasticsearch;
 
-import java.net.URISyntaxException;
 import java.time.ZoneId;
 
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
@@ -32,34 +31,14 @@ import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.extractor.DefaultTextExtractor;
-import org.apache.james.mailbox.tika.TikaConfiguration;
-import org.apache.james.mailbox.tika.TikaContainer;
-import org.apache.james.mailbox.tika.TikaHttpClientImpl;
-import org.apache.james.mailbox.tika.TikaTextExtractor;
 import org.elasticsearch.client.Client;
 import org.junit.Assume;
-import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.testcontainers.shaded.com.google.common.base.Throwables;
 
 public class ElasticSearchV1IntegrationTestWithoutTika extends  ElasticSearchIntegrationTest {
 
     private static final int SEARCH_SIZE = 1;
-
-
-    @ClassRule
-    public static TikaContainer tika = new TikaContainer();
-    private TikaTextExtractor textExtractor;
-
-    @Override
-    public void setUp() throws Exception {
-        textExtractor = new TikaTextExtractor(new TikaHttpClientImpl(TikaConfiguration.builder()
-            .host(tika.getIp())
-            .port(tika.getPort())
-            .timeoutInMillis(tika.getTimeoutInMillis())
-            .build()));
-        super.setUp();
-    }
 
     @Override
     protected TextExtractor getTextExtractor() {
@@ -90,6 +69,34 @@ public class ElasticSearchV1IntegrationTestWithoutTika extends  ElasticSearchInt
     @Override
     @Test
     public void searchWithPDFAttachmentShouldReturnMailsWhenAttachmentContentMatches() throws Exception {
+        Assume.assumeTrue(false);
+    }
+
+    @Override
+    @Test
+    @Ignore("See MAILBOX-314 and upgrade to ElasticSearch schema version 2")
+    public void sortOnFromShouldWork() throws Exception {
+        Assume.assumeTrue(false);
+    }
+
+    @Override
+    @Test
+    @Ignore("See MAILBOX-314 and upgrade to ElasticSearch schema version 2")
+    public void searchWithTextShouldReturnMailsWhenCcMatches() throws Exception {
+        Assume.assumeTrue(false);
+    }
+
+    @Override
+    @Test
+    @Ignore("See MAILBOX-314 and upgrade to ElasticSearch schema version 2")
+    public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecifiedWithDomainPartOfEmail() throws Exception {
+        Assume.assumeTrue(false);
+    }
+
+    @Override
+    @Test
+    @Ignore("See MAILBOX-314 and upgrade to ElasticSearch schema version 2")
+    public void searchShouldBeExactOnEmail() {
         Assume.assumeTrue(false);
     }
 }

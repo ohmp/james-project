@@ -25,7 +25,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.mail.Flags;
 
-import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.extractor.TextExtractor;
@@ -83,6 +82,7 @@ public class MessageToElasticSearchJsonV1 implements MessageToElasticSearchJson 
             .build());
     }
 
+    @Override
     public boolean handleIndexAttachment() {
         return IndexAttachments.YES.equals(indexAttachments);
     }

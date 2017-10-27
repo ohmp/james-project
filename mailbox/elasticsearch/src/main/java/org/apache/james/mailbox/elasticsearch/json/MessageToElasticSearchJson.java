@@ -35,4 +35,6 @@ public interface MessageToElasticSearchJson {
     String convertToJsonWithoutAttachment(MailboxMessage message, List<User> users) throws JsonProcessingException;
 
     String getUpdatedJsonMessagePart(Flags flags, long modSeq) throws JsonProcessingException;
+
+    boolean handleIndexAttachment();
 }

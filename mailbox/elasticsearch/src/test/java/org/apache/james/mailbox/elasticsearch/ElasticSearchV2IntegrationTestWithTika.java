@@ -42,7 +42,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.shaded.com.google.common.base.Throwables;
 
-public class ElasticSearchV1IntegrationTestWithTika extends  ElasticSearchIntegrationTest {
+public class ElasticSearchV2IntegrationTestWithTika extends  ElasticSearchIntegrationTest {
 
     private static final int SEARCH_SIZE = 1;
 
@@ -64,7 +64,7 @@ public class ElasticSearchV1IntegrationTestWithTika extends  ElasticSearchIntegr
 
     @Override
     protected MailboxMappingFactory provideMappingFactory() {
-        return new MailboxMappingFactoryV1();
+        return new MailboxMappingFactoryV2();
     }
 
     @Override

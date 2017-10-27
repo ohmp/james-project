@@ -30,19 +30,24 @@ public class ElasticSearchComponentProvider {
     private final ElasticSearchSearcherV1 elasticSearchSearcherV1;
     private final MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1;
     private final MailboxMappingFactoryV1 mailboxMappingFactoryV1;
+    private final MailboxMappingFactoryV2 mailboxMappingFactoryV2;
 
     @Inject
     public ElasticSearchComponentProvider(ElasticSearchSearcherV1 elasticSearchSearcherV1,
                                           MessageToElasticSearchJsonV1 messageToElasticSearchJsonV1,
-                                          MailboxMappingFactoryV1 mailboxMappingFactoryV1) {
+                                          MailboxMappingFactoryV1 mailboxMappingFactoryV1,
+                                          MailboxMappingFactoryV2 mailboxMappingFactoryV2) {
         this.elasticSearchSearcherV1 = elasticSearchSearcherV1;
         this.messageToElasticSearchJsonV1 = messageToElasticSearchJsonV1;
         this.mailboxMappingFactoryV1 = mailboxMappingFactoryV1;
+        this.mailboxMappingFactoryV2 = mailboxMappingFactoryV2;
     }
 
     public ElasticSearchSearcher getSearcher(int version) {
         switch (version) {
             case 1:
+                return elasticSearchSearcherV1;
+            case 2:
                 return elasticSearchSearcherV1;
             default:
                 throw new IllegalArgumentException("No searcher registered for version " + version);
@@ -53,6 +58,8 @@ public class ElasticSearchComponentProvider {
         switch (version) {
             case 1:
                 return messageToElasticSearchJsonV1;
+            case 2:
+                return messageToElasticSearchJsonV1;
             default:
                 throw new IllegalArgumentException("No MessageToElasticSearchJson registered for version " + version);
         }
@@ -62,6 +69,8 @@ public class ElasticSearchComponentProvider {
         switch (version) {
             case 1:
                 return mailboxMappingFactoryV1;
+            case 2:
+                return mailboxMappingFactoryV2;
             default:
                 throw new IllegalArgumentException("No MailboxMappingFactory registered for version " + version);
         }
