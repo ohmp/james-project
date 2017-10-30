@@ -25,6 +25,7 @@ import org.apache.james.modules.mailbox.ElasticSearchConfiguration;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.testcontainers.containers.wait.HttpWaitStrategy;
 
 import com.google.common.base.Throwables;
 import com.google.inject.Module;
@@ -34,6 +35,9 @@ public class DockerElasticSearchRule implements GuiceModuleTestRule {
 
     private static final int ELASTIC_SEARCH_PORT = 9300;
     public static final int ELASTIC_SEARCH_HTTP_PORT = 9200;
+    public static final HttpWaitStrategy WAIT_STRATEGY = new HttpWaitStrategy()
+        .forPath("/")
+        .forStatusCode(200);
 
     public ElasticSearchConfiguration getElasticSearchConfigurationForDocker() {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
@@ -45,7 +49,7 @@ public class DockerElasticSearchRule implements GuiceModuleTestRule {
         configuration.addProperty("elasticsearch.nb.replica", 0);
         configuration.addProperty("elasticsearch.retryConnection.maxRetries", 7);
         configuration.addProperty("elasticsearch.retryConnection.minDelay", 3000);
-        configuration.addProperty("elasticsearch.indexAttachments", false);
+        configuration.addProperty("elasticsearch.indexAttachments", true);
         configuration.addProperty("elasticsearch.http.host", getIp());
         configuration.addProperty("elasticsearch.http.port", elasticSearchContainer.getMappedPort(ELASTIC_SEARCH_HTTP_PORT));
         configuration.addProperty("elasticsearch.metrics.reports.enabled", true);
@@ -60,7 +64,8 @@ public class DockerElasticSearchRule implements GuiceModuleTestRule {
     }
 
     private SwarmGenericContainer elasticSearchContainer = new SwarmGenericContainer("elasticsearch:2.2.2")
-        .withExposedPorts(ELASTIC_SEARCH_HTTP_PORT, ELASTIC_SEARCH_PORT);
+        .withExposedPorts(ELASTIC_SEARCH_HTTP_PORT, ELASTIC_SEARCH_PORT)
+        .waitingFor(WAIT_STRATEGY);
 
     @Override
     public Statement apply(Statement base, Description description) {
@@ -80,10 +85,6 @@ public class DockerElasticSearchRule implements GuiceModuleTestRule {
 
     public String getIp() {
         return elasticSearchContainer.getHostIp();
-    }
-
-    public SwarmGenericContainer getElasticSearchContainer() {
-        return elasticSearchContainer;
     }
 
     public void pause() {

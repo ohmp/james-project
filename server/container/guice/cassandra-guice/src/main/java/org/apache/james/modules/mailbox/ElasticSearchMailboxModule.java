@@ -21,8 +21,10 @@ package org.apache.james.modules.mailbox;
 
 import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -35,6 +37,7 @@ import org.apache.james.backends.es.IndexCreationFactory;
 import org.apache.james.backends.es.IndexName;
 import org.apache.james.backends.es.NodeMappingFactory;
 import org.apache.james.backends.es.TypeName;
+import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailbox.elasticsearch.ElasticSearchComponentProvider;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
@@ -44,6 +47,7 @@ import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
+import org.apache.james.utils.ConfigurationPerformer;
 import org.apache.james.utils.PropertiesProvider;
 import org.apache.james.utils.RetryExecutorUtil;
 import org.elasticsearch.client.Client;
@@ -51,9 +55,11 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.google.inject.multibindings.Multibinder;
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
 public class ElasticSearchMailboxModule extends AbstractModule {
@@ -67,6 +73,10 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         bind(ElasticSearchListeningMessageSearchIndex.class).in(Scopes.SINGLETON);
         bind(MessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
         bind(ListeningMessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
+
+        Multibinder.newSetBinder(binder(), ConfigurationPerformer.class)
+            .addBinding()
+            .to(ElasticSearchMailboxModule.IndexCreator.class);
     }
 
     @Provides @Singleton
@@ -108,26 +118,18 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Provides @Singleton
     protected Client provideClient(ElasticSearchConfiguration configuration,
                                    IndexCreationFactory indexCreationFactory,
-                                   MailboxMappingFactory mailboxMappingFactory,
                                    AsyncRetryExecutor executor) throws ExecutionException, InterruptedException {
 
         return RetryExecutorUtil.retryOnExceptions(executor, configuration.getMaxRetries(), configuration.getMinDelay(), NoNodeAvailableException.class)
-            .getWithRetry(context -> connectToCluster(configuration, indexCreationFactory, mailboxMappingFactory))
+            .getWithRetry(context -> connectToCluster(configuration, indexCreationFactory))
             .get();
     }
 
     private Client connectToCluster(ElasticSearchConfiguration configuration,
-                                    IndexCreationFactory indexCreationFactory,
-                                    MailboxMappingFactory mailboxMappingFactory) {
+                                    IndexCreationFactory indexCreationFactory) {
         LOGGER.info("Trying to connect to ElasticSearch service at {}", LocalDateTime.now());
 
-        Client client = ClientProviderImpl.fromHosts(configuration.getHosts()).get();
-
-        indexCreationFactory.createIndexAndAliases(client);
-        return NodeMappingFactory.applyMapping(client,
-            configuration.getIndexName(),
-            MailboxElasticSearchConstants.MESSAGE_TYPE,
-            mailboxMappingFactory.getMappingContent());
+         return ClientProviderImpl.fromHosts(configuration.getHosts()).get();
     }
 
     @Provides @Singleton
@@ -151,6 +153,38 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Provides @Singleton
     public IndexAttachments provideIndexAttachments(ElasticSearchConfiguration configuration) {
         return configuration.getIndexAttachment();
+    }
+
+    public static class IndexCreator implements ConfigurationPerformer {
+        private final ElasticSearchConfiguration configuration;
+        private final IndexCreationFactory indexCreationFactory;
+        private final MailboxMappingFactory mailboxMappingFactory;
+        private final Client client;
+
+        @Inject
+        public IndexCreator(ElasticSearchConfiguration configuration,
+                            IndexCreationFactory indexCreationFactory,
+                            MailboxMappingFactory mailboxMappingFactory,
+                            Client client) {
+            this.configuration = configuration;
+            this.indexCreationFactory = indexCreationFactory;
+            this.mailboxMappingFactory = mailboxMappingFactory;
+            this.client = client;
+        }
+
+        @Override
+        public void initModule() {
+            indexCreationFactory.createIndexAndAliases(client);
+            NodeMappingFactory.applyMapping(client,
+                configuration.getIndexName(),
+                MailboxElasticSearchConstants.MESSAGE_TYPE,
+                mailboxMappingFactory.getMappingContent());
+        }
+
+        @Override
+        public List<Class<? extends Configurable>> forClasses() {
+            return ImmutableList.of();
+        }
     }
 
 }
