@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.mail.Flags;
 
 import org.apache.james.imap.api.ImapCommand;
@@ -387,14 +388,6 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
             sb.append(mailboxPath.getName());
         }
         return sb.toString();
-    }
-
-    protected String mailboxName(boolean relative, MailboxPath path, char delimiter) {
-        if (relative) {
-            return path.getName();
-        } else {
-            return joinMailboxPath(path, delimiter);
-        }
     }
 
     protected MailboxManager getMailboxManager() {
