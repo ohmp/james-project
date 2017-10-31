@@ -28,7 +28,7 @@ S: \* LIST \(\\HasNoChildren\) \".\" \"Other users\.Boby\.sharedMailbox\.child\"
 }
 S: a0 OK LIST completed.
 
-# Virtual mailbox "other users" is return as a base mailbox (when I have delegated mailboxes)
+# Virtual mailbox "other users" is returned as a base mailbox (when I have delegated mailboxes)
 C: a1 LIST "" "%"
 SUB {
 S: \* LIST \(\\Noselect \\HasChildren\) \"\.\" \"Other users\"
@@ -75,3 +75,12 @@ S: \* LIST \(\\HasChildren\) \".\" \"Other users\.Boby\.sharedMailbox\"
 S: \* LIST \(\\HasNoChildren\) \".\" \"Other users\.Boby\.sharedMailbox\.child\"
 }
 S: a6 OK LIST completed.
+
+# Shared mailbox with full path should be listed
+C: a7 LIST "" "Other users.Boby.sharedMailbox"
+S: \* LIST \(\\HasChildren\) \".\" \"Other users\.Boby\.sharedMailbox\"
+S: a7 OK LIST completed.
+
+# Shared mailbox without l right should not appear
+C: a8 LIST "" "Other users.Boby.noEnoughSharedMailbox"
+S: a8 OK LIST completed.

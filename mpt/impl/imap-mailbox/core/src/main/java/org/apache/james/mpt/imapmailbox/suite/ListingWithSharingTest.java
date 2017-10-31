@@ -35,6 +35,7 @@ public abstract class ListingWithSharingTest implements ImapTestConstants {
     private static final String OTHER_USER_PASSWORD = "password";
     private static final MailboxPath OTHER_USER_SHARED_MAILBOX = MailboxPath.forUser(OTHER_USER_NAME, "sharedMailbox");
     private static final MailboxPath OTHER_USER_SHARED_MAILBOX_CHILD = MailboxPath.forUser(OTHER_USER_NAME, "sharedMailbox.child");
+    private static final MailboxPath OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX = MailboxPath.forUser(OTHER_USER_NAME, "notEnoughSharedMailbox");
 
     protected abstract ImapHostSystem createImapHostSystem();
 
@@ -56,8 +57,10 @@ public abstract class ListingWithSharingTest implements ImapTestConstants {
         scriptedTestProtocol
             .withMailbox(OTHER_USER_SHARED_MAILBOX)
             .withMailbox(OTHER_USER_SHARED_MAILBOX_CHILD)
+            .withMailbox(OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX)
             .withRights(OTHER_USER_SHARED_MAILBOX, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("rl"))
             .withRights(OTHER_USER_SHARED_MAILBOX_CHILD, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("rl"))
+            .withRights(OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("r"))
             .withLocale(Locale.US)
             .run("ListWithSharedMailbox");
     }
