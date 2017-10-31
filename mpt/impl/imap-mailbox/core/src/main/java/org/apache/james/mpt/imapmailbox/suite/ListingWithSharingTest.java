@@ -28,14 +28,13 @@ import org.apache.james.mpt.imapmailbox.ImapTestConstants;
 import org.apache.james.mpt.imapmailbox.suite.base.BasicImapCommands;
 import org.apache.james.mpt.script.ImapScriptedTestProtocol;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class ListingWithSharingTest implements ImapTestConstants {
-    public static final String OTHER_USER_NAME = "Boby";
-    public static final String OTHER_USER_PASSWORD = "password";
-    public static final MailboxPath OTHER_USER_SHARED_MAILBOX = MailboxPath.forUser( OTHER_USER_NAME, "sharedMailbox");
-    public static final MailboxPath OTHER_USER_SHARED_MAILBOX_CHILD = MailboxPath.forUser( OTHER_USER_NAME, "sharedMailbox.child");
+    private static final String OTHER_USER_NAME = "Boby";
+    private static final String OTHER_USER_PASSWORD = "password";
+    private static final MailboxPath OTHER_USER_SHARED_MAILBOX = MailboxPath.forUser(OTHER_USER_NAME, "sharedMailbox");
+    private static final MailboxPath OTHER_USER_SHARED_MAILBOX_CHILD = MailboxPath.forUser(OTHER_USER_NAME, "sharedMailbox.child");
 
     protected abstract ImapHostSystem createImapHostSystem();
 
@@ -52,14 +51,13 @@ public abstract class ListingWithSharingTest implements ImapTestConstants {
         BasicImapCommands.authenticate(scriptedTestProtocol);
     }
 
-    @Ignore("We are changing the access logic, and path to mailbox name conversion logic hence this test is temporaly disabled")
     @Test
     public void testListWithSharedMailboxUS() throws Exception {
         scriptedTestProtocol
             .withMailbox(OTHER_USER_SHARED_MAILBOX)
             .withMailbox(OTHER_USER_SHARED_MAILBOX_CHILD)
-            .withRights(OTHER_USER_SHARED_MAILBOX, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("r"))
-            .withRights(OTHER_USER_SHARED_MAILBOX_CHILD, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("r"))
+            .withRights(OTHER_USER_SHARED_MAILBOX, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("rl"))
+            .withRights(OTHER_USER_SHARED_MAILBOX_CHILD, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("rl"))
             .withLocale(Locale.US)
             .run("ListWithSharedMailbox");
     }
