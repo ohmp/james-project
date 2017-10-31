@@ -29,12 +29,13 @@ import org.apache.james.mailbox.model.MailboxPath;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 public class PathConverter {
 
-    private static final int NAMESPACE = 0;
+    public static final String DELEGATED_MAILBOXES_BASE = "Other users";
+    private static final int BASE_PART = 0;
+    private static final int USER_PART = 1;
 
     public static PathConverter forSession(ImapSession session) {
         return new PathConverter(session);
@@ -47,49 +48,48 @@ public class PathConverter {
     }
 
     public MailboxPath buildFullPath(String mailboxName) {
-        if (Strings.isNullOrEmpty(mailboxName)) {
-            return buildDefaultPath();
-        }
-        if (isAbsolute(mailboxName)) {
-            return buildAbsolutePath(mailboxName);
-        } else {
-            return buildRelativePath(mailboxName);
-        }
-    }
-
-    private MailboxPath buildDefaultPath() {
-        return new MailboxPath("", "", "");
-    }
-
-    private boolean isAbsolute(String mailboxName) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(mailboxName));
-        return mailboxName.charAt(0) == MailboxConstants.NAMESPACE_PREFIX_CHAR;
-    }
-
-    private MailboxPath buildRelativePath(String mailboxName) {
-        return buildMailboxPath(MailboxConstants.USER_NAMESPACE, ImapSessionUtils.getUserName(session), mailboxName);
-    }
-
-    private MailboxPath buildAbsolutePath(String absolutePath) {
+        Preconditions.checkNotNull(mailboxName);
         char pathDelimiter = ImapSessionUtils.getMailboxSession(session).getPathDelimiter();
-        List<String> mailboxPathParts = Splitter.on(pathDelimiter).splitToList(absolutePath);
-        String namespace = mailboxPathParts.get(NAMESPACE);
-        String mailboxName = Joiner.on(pathDelimiter).join(Iterables.skip(mailboxPathParts, 1));
-        return buildMailboxPath(namespace, retrieveUserName(namespace), mailboxName);
+        List<String> mailboxNameParts = Splitter.on(pathDelimiter)
+            .splitToList(mailboxName);
+        if (isADelegatedMailboxName(mailboxNameParts)) {
+            return buildDelegatedMailboxPath(pathDelimiter, mailboxNameParts);
+        }
+        return buildPersonalMailboxPath(mailboxName);
     }
 
-    private String retrieveUserName(String namespace) {
-        if (namespace.equals(MailboxConstants.USER_NAMESPACE)) {
-            return ImapSessionUtils.getUserName(session);
-        }
-        return null;
+    private boolean isADelegatedMailboxName(List<String> mailboxNameParts) {
+        return mailboxNameParts.size() > 2
+            && mailboxNameParts.get(BASE_PART).equals(DELEGATED_MAILBOXES_BASE);
     }
 
-    private MailboxPath buildMailboxPath(String namespace, String user, String mailboxName) {
-        if (!namespace.equals(MailboxConstants.USER_NAMESPACE)) {
-            throw new DeniedAccessOnSharedMailboxException();
+    private MailboxPath buildDelegatedMailboxPath(char pathDelimiter, List<String> mailboxNameParts) {
+        return new MailboxPath(MailboxConstants.USER_NAMESPACE,
+            mailboxNameParts.get(USER_PART),
+            sanitizeMailboxName(
+                Joiner.on(pathDelimiter)
+                    .skipNulls()
+                    .join(Iterables.skip(mailboxNameParts, 2))));
+    }
+
+    private MailboxPath buildPersonalMailboxPath(String mailboxName) {
+        return new MailboxPath(MailboxConstants.USER_NAMESPACE,
+            ImapSessionUtils.getUserName(session),
+            sanitizeMailboxName(mailboxName));
+    }
+
+    public String buildMailboxName(MailboxPath mailboxPath) {
+        Preconditions.checkNotNull(mailboxPath);
+        char pathDelimiter = ImapSessionUtils.getMailboxSession(session).getPathDelimiter();
+        String userName = ImapSessionUtils.getUserName(session);
+        if (userName.equals(mailboxPath.getUser())) {
+            return mailboxPath.getName();
         }
-        return new MailboxPath(namespace, user, sanitizeMailboxName(mailboxName));
+        return DELEGATED_MAILBOXES_BASE +
+            pathDelimiter +
+            mailboxPath.getUser() +
+            pathDelimiter +
+            mailboxPath.getName();
     }
 
     private String sanitizeMailboxName(String mailboxName) {
