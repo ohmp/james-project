@@ -38,6 +38,7 @@ import org.apache.james.imap.api.process.MailboxTyper;
 import org.apache.james.imap.main.PathConverter;
 import org.apache.james.imap.message.request.ListRequest;
 import org.apache.james.imap.message.response.ListResponse;
+import org.apache.james.imap.processor.base.PrefixedRegex;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -46,7 +47,6 @@ import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxMetaData.Children;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.search.MailboxQuery;
-import org.apache.james.mailbox.model.search.PrefixedRegex;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
@@ -222,7 +222,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
 
         getMailboxManager()
             .search(
-                MailboxQuery.builder().build(),
+                MailboxQuery.allMailboxes(),
                 mailboxSession)
             .stream()
             .flatMap(metaData -> forMailboxMetadata(session, pathConverter, metaData))

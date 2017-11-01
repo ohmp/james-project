@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.model.search;
+package org.apache.james.imap.processor.base;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
