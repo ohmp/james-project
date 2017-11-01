@@ -21,7 +21,8 @@ package org.apache.james.mpt.imapmailbox.suite;
 
 import java.util.Locale;
 
-import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
+import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.ImapTestConstants;
@@ -58,10 +59,22 @@ public abstract class ListingWithSharingTest implements ImapTestConstants {
             .withMailbox(OTHER_USER_SHARED_MAILBOX)
             .withMailbox(OTHER_USER_SHARED_MAILBOX_CHILD)
             .withMailbox(OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX)
-            .withRights(OTHER_USER_SHARED_MAILBOX, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("rl"))
-            .withRights(OTHER_USER_SHARED_MAILBOX_CHILD, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("rl"))
-            .withRights(OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX, USER, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights("r"))
+            .withRights(OTHER_USER_SHARED_MAILBOX, USER,  new Rfc4314Rights(Right.Lookup, Right.Read))
+            .withRights(OTHER_USER_SHARED_MAILBOX_CHILD, USER, new Rfc4314Rights(Right.Lookup, Right.Read))
+            .withRights(OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX, USER, new Rfc4314Rights(Right.Read))
             .withLocale(Locale.US)
             .run("ListWithSharedMailbox");
+    }
+
+    @Test
+    public void listShouldNotDisplaySelectForNonReadableMailboxes() throws Exception {
+        scriptedTestProtocol
+            .withMailbox(OTHER_USER_SHARED_MAILBOX)
+            .withMailbox(OTHER_USER_SHARED_MAILBOX_CHILD)
+            .withMailbox(OTHER_USER_INSUFFICIENT_RIGHT_SHARED_MAILBOX)
+            .withRights(OTHER_USER_SHARED_MAILBOX, USER, new Rfc4314Rights(Right.Lookup))
+            .withRights(OTHER_USER_SHARED_MAILBOX_CHILD, USER, new Rfc4314Rights(Right.Lookup))
+            .withLocale(Locale.US)
+            .run("ListWithSharedMailboxAndNoLookup");
     }
 }
