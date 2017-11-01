@@ -39,16 +39,13 @@ public class NamespaceResponseEncoder extends AbstractChainedImapEncoder {
 
     @Override
     protected void doEncode(ImapMessage acceptableMessage, ImapResponseComposer composer, ImapSession session) throws IOException {
-        final NamespaceResponse response = (NamespaceResponse) acceptableMessage;
+        NamespaceResponse response = (NamespaceResponse) acceptableMessage;
         composer.untagged();
         composer.commandName(ImapConstants.NAMESPACE_COMMAND_NAME);
 
-        final List<NamespaceResponse.Namespace> personal = response.getPersonal();
-        encode(personal, composer);
-        final List<NamespaceResponse.Namespace> users = response.getUsers();
-        encode(users, composer);
-        final List<NamespaceResponse.Namespace> shared = response.getShared();
-        encode(shared, composer);
+        encode(response.getPersonal(), composer);
+        encode(response.getUsers(), composer);
+        encode(response.getShared(), composer);
 
         composer.end();
     }
