@@ -80,26 +80,27 @@ public class NamespaceProcessorTest {
     
     @Test
     public void testNamespaceResponseShouldContainPersonalAndUserSpaces() throws Exception {
-        subject = new NamespaceProcessor(mock(ImapProcessor.class),
-            mailboxManagerStub,
-            statusResponseStub,
-            new NoopMetricFactory(),
-            new NamespaceProcessor.NamespaceConfiguration() {
+        when(imapSessionStub.getNamespaceConfiguration())
+            .thenReturn(new ImapSession.NamespaceConfiguration() {
                 @Override
-                public List<NamespaceResponse.Namespace> personalNamespaces(char pathDelimiter) {
-                    return ImmutableList.of(new NamespaceResponse.Namespace(PERSONAL_PREFIX, pathDelimiter));
+                public String personalNamespace() {
+                    return PERSONAL_PREFIX;
                 }
 
                 @Override
-                public List<NamespaceResponse.Namespace> otherUsersNamespaces(char pathDelimiter) {
-                    return ImmutableList.of(new NamespaceResponse.Namespace(USERS_PREFIX, pathDelimiter));
+                public String otherUsersNamespace() {
+                    return USERS_PREFIX;
                 }
 
                 @Override
-                public List<NamespaceResponse.Namespace> sharedNamespacesNamespaces(char pathDelimiter) {
+                public List<String> sharedNamespacesNamespaces() {
                     return ImmutableList.of();
                 }
             });
+        subject = new NamespaceProcessor(mock(ImapProcessor.class),
+            mailboxManagerStub,
+            statusResponseStub,
+            new NoopMetricFactory());
 
         Responder responder = mock(Responder.class);
         subject.doProcess(namespaceRequest, responder, imapSessionStub);
@@ -110,26 +111,27 @@ public class NamespaceProcessorTest {
     
     @Test
     public void testNamespaceResponseShouldContainSharedSpaces() throws Exception {
+        when(imapSessionStub.getNamespaceConfiguration())
+            .thenReturn(new ImapSession.NamespaceConfiguration() {
+                @Override
+                public String personalNamespace() {
+                    return PERSONAL_PREFIX;
+                }
+
+                @Override
+                public String otherUsersNamespace() {
+                    return USERS_PREFIX;
+                }
+
+                @Override
+                public List<String> sharedNamespacesNamespaces() {
+                    return ImmutableList.of(SHARED_PREFIX);
+                }
+            });
         subject = new NamespaceProcessor(mock(ImapProcessor.class),
             mailboxManagerStub,
             statusResponseStub,
-            new NoopMetricFactory(),
-            new NamespaceProcessor.NamespaceConfiguration() {
-                @Override
-                public List<NamespaceResponse.Namespace> personalNamespaces(char pathDelimiter) {
-                    return ImmutableList.of(new NamespaceResponse.Namespace(PERSONAL_PREFIX, pathDelimiter));
-                }
-
-                @Override
-                public List<NamespaceResponse.Namespace> otherUsersNamespaces(char pathDelimiter) {
-                    return ImmutableList.of(new NamespaceResponse.Namespace(USERS_PREFIX, pathDelimiter));
-                }
-
-                @Override
-                public List<NamespaceResponse.Namespace> sharedNamespacesNamespaces(char pathDelimiter) {
-                    return ImmutableList.of(new NamespaceResponse.Namespace(SHARED_PREFIX, pathDelimiter));
-                }
-            });
+            new NoopMetricFactory());
 
         Responder responder = mock(Responder.class);
         subject.doProcess(namespaceRequest, responder, imapSessionStub);

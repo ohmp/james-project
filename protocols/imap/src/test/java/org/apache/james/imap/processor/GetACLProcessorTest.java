@@ -49,6 +49,7 @@ import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.metrics.api.NoopMetricFactory;
+import org.apache.james.protocols.imap.DefaultNamespaceConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -87,6 +88,8 @@ public class GetACLProcessorTest {
 
         getACLRequest = new GetACLRequest("TAG", ImapCommand.anyStateCommand("Name"), MAILBOX_NAME);
 
+
+        when(imapSession.getNamespaceConfiguration()).thenReturn(new DefaultNamespaceConfiguration());
         when(imapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY))
             .thenReturn(mailboxSession);
         when(imapSession.getState())

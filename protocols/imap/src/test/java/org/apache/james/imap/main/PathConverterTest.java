@@ -24,36 +24,58 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.protocols.imap.DefaultNamespaceConfiguration;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import com.google.common.collect.ImmutableList;
 
 public class PathConverterTest {
 
     private static final String USERNAME = "username";
     private static final char PATH_DELIMITER = '.';
     public static final String BOB = "bob";
+    public static final String PRIVATE_PREFIX = "#private";
+    public static final String DELEGATED_PREFIX = "#delegated";
+    public static final ImapSession.NamespaceConfiguration CUSTOM_NAMESPACE_CONFIGURATION = new ImapSession.NamespaceConfiguration() {
+        @Override
+        public String personalNamespace() {
+            return PRIVATE_PREFIX;
+        }
+
+        @Override
+        public String otherUsersNamespace() {
+            return DELEGATED_PREFIX;
+        }
+
+        @Override
+        public List<String> sharedNamespacesNamespaces() {
+            return ImmutableList.of();
+        }
+    };
+    public static final String MAILBOX_NAME = "toto";
 
     private ImapSession imapSession;
-    private MailboxSession mailboxSession;
     private PathConverter pathConverter;
-    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() {
         imapSession = mock(ImapSession.class);
-        mailboxSession = mock(MailboxSession.class);
+        MailboxSession mailboxSession = mock(MailboxSession.class);
         MailboxSession.User user = mock(MailboxSession.User.class);
-        pathConverter = PathConverter.forSession(imapSession);
         when(imapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mailboxSession);
+        when(imapSession.getNamespaceConfiguration()).thenReturn(new DefaultNamespaceConfiguration());
         when(mailboxSession.getUser()).thenReturn(user);
         when(mailboxSession.getPathDelimiter()).thenReturn(PATH_DELIMITER);
         when(user.getUserName()).thenReturn(USERNAME);
+        pathConverter = PathConverter.forSession(imapSession);
     }
 
     @Test
@@ -69,71 +91,70 @@ public class PathConverterTest {
     }
 
     @Test
-    public void buildFullPathShouldAcceptEmpty() {
+    public void buildFullPathShouldAcceptEmpty() throws MailboxNotFoundException {
         assertThat(pathConverter.buildFullPath(""))
             .isEqualTo(MailboxPath.forUser(USERNAME, ""));
     }
 
     @Test
-    public void buildFullPathShouldAcceptRelativeMailboxName() {
+    public void buildFullPathShouldAcceptRelativeMailboxName() throws MailboxNotFoundException {
         String mailboxName = "mailboxName";
         assertThat(pathConverter.buildFullPath(mailboxName))
             .isEqualTo(MailboxPath.forUser(USERNAME, mailboxName));
     }
 
     @Test
-    public void buildFullPathShouldAcceptDelegatedMailbox() {
+    public void buildFullPathShouldAcceptDelegatedMailbox() throws MailboxNotFoundException {
         String mailboxName = "mailboxName";
-        assertThat(pathConverter.buildFullPath(PathConverter.DELEGATED_MAILBOXES_BASE +
+        assertThat(pathConverter.buildFullPath(DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE +
                 PATH_DELIMITER + BOB + PATH_DELIMITER + mailboxName))
             .isEqualTo(MailboxPath.forUser(BOB, mailboxName));
     }
 
     @Test
-    public void buildFullPathShouldAcceptSubFolder() {
+    public void buildFullPathShouldAcceptSubFolder() throws MailboxNotFoundException {
         String mailboxName = "mailboxName" + PATH_DELIMITER + "subFolder";
         assertThat(pathConverter.buildFullPath(mailboxName))
             .isEqualTo(MailboxPath.forUser(USERNAME, mailboxName));
     }
 
     @Test
-    public void buildFullPathShouldAcceptDelegatedSubFolder() {
+    public void buildFullPathShouldAcceptDelegatedSubFolder() throws MailboxNotFoundException {
         String mailboxName = "mailboxName";
         String subFolder = "subFolder";
-        assertThat(pathConverter.buildFullPath(PathConverter.DELEGATED_MAILBOXES_BASE +
+        assertThat(pathConverter.buildFullPath(DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE +
             PATH_DELIMITER + BOB + PATH_DELIMITER + mailboxName +
             PATH_DELIMITER + subFolder))
             .isEqualTo(MailboxPath.forUser(BOB, mailboxName + PATH_DELIMITER + subFolder));
     }
 
     @Test
-    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxAndUserAndPathSeparator() {
+    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxAndUserAndPathSeparator() throws MailboxNotFoundException {
         assertThat(pathConverter.buildFullPath(
-            PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER))
+            DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER))
             .isEqualTo(MailboxPath.forUser(BOB, ""));
     }
 
     @Test
-    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxAndUser() {
+    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxAndUser() throws MailboxNotFoundException {
         assertThat(pathConverter.buildFullPath(
-            PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB))
-            .isEqualTo(MailboxPath.forUser(USERNAME, PathConverter.DELEGATED_MAILBOXES_BASE +
+            DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB))
+            .isEqualTo(MailboxPath.forUser(USERNAME, DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE +
                 PATH_DELIMITER + BOB));
     }
 
     @Test
-    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxAndPathDelimiter() {
+    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxAndPathDelimiter() throws MailboxNotFoundException {
         assertThat(pathConverter.buildFullPath(
-            PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER))
-            .isEqualTo(MailboxPath.forUser(USERNAME, PathConverter.DELEGATED_MAILBOXES_BASE +
-                PATH_DELIMITER));
+            DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER))
+            .isEqualTo(MailboxPath.forUser(USERNAME, DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE));
     }
 
     @Test
-    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxOnly() {
+    public void buildFullPathShouldSupportMailboxesWithDelegationVirtualMailboxOnly() throws MailboxNotFoundException {
         assertThat(pathConverter.buildFullPath(
-            PathConverter.DELEGATED_MAILBOXES_BASE))
-            .isEqualTo(MailboxPath.forUser(USERNAME, PathConverter.DELEGATED_MAILBOXES_BASE));
+            DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE))
+            .isEqualTo(MailboxPath.forUser(USERNAME, DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE));
     }
 
     @Test
@@ -146,7 +167,7 @@ public class PathConverterTest {
     @Test
     public void buildMailboxNameShouldAcceptDelegatedMailbox() {
         String mailboxName = "mailboxName";
-        String fullMailboxName = PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER + mailboxName;
+        String fullMailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER + mailboxName;
         assertThat(pathConverter.buildMailboxName(MailboxPath.forUser(BOB, mailboxName)))
             .isEqualTo(fullMailboxName);
     }
@@ -162,7 +183,7 @@ public class PathConverterTest {
     public void buildMailboxNameShouldAcceptAbsoluteUserPathWithSubFolder() {
         String mailboxName = "mailboxName";
         String subFolder = "subFolder";
-        String fullMailboxName = PathConverter.DELEGATED_MAILBOXES_BASE +
+        String fullMailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE +
             PATH_DELIMITER + BOB + PATH_DELIMITER + mailboxName +
             PATH_DELIMITER + subFolder;
         MailboxPath mailboxPath = MailboxPath.forUser(BOB, mailboxName + PATH_DELIMITER + subFolder);
@@ -172,7 +193,7 @@ public class PathConverterTest {
 
     @Test
     public void buildMailboxNameShouldSupportVirtualDelegationMailboxAndUserAndSeparator() {
-        String mailboxName = PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER;
+        String mailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER;
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, mailboxName);
         assertThat(pathConverter.buildMailboxName(mailboxPath))
             .isEqualTo(mailboxName);
@@ -180,7 +201,7 @@ public class PathConverterTest {
 
     @Test
     public void buildMailboxNameShouldSupportVirtualDelegationMailboxAndUser() {
-        String mailboxName = PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB;
+        String mailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB;
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, mailboxName);
         assertThat(pathConverter.buildMailboxName(mailboxPath))
             .isEqualTo(mailboxName);
@@ -188,7 +209,7 @@ public class PathConverterTest {
 
     @Test
     public void buildMailboxNameShouldSupportVirtualDelegationMailboxAndSeparator() {
-        String mailboxName = PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER;
+        String mailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER;
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, mailboxName);
         assertThat(pathConverter.buildMailboxName(mailboxPath))
             .isEqualTo(mailboxName);
@@ -196,7 +217,7 @@ public class PathConverterTest {
 
     @Test
     public void buildMailboxNameShouldSupportVirtualDelegationMailbox() {
-        String mailboxName = PathConverter.DELEGATED_MAILBOXES_BASE;
+        String mailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE;
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, mailboxName);
         assertThat(pathConverter.buildMailboxName(mailboxPath))
             .isEqualTo(mailboxName);
@@ -204,9 +225,73 @@ public class PathConverterTest {
 
     @Test
     public void buildMailboxNameShouldAcceptEmptyDelegatedMailboxName() {
-        String mailboxName = PathConverter.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB + PATH_DELIMITER;
+        String mailboxName = DefaultNamespaceConfiguration.DELEGATED_MAILBOXES_BASE + PATH_DELIMITER + BOB;
         MailboxPath mailboxPath = MailboxPath.forUser(BOB, "");
         assertThat(pathConverter.buildMailboxName(mailboxPath))
             .isEqualTo(mailboxName);
+    }
+
+    @Test
+    public void buildFullPathShouldHandlePrivateNamespace() throws MailboxNotFoundException {
+        when(imapSession.getNamespaceConfiguration())
+            .thenReturn(CUSTOM_NAMESPACE_CONFIGURATION);
+        pathConverter = PathConverter.forSession(imapSession);
+
+        assertThat(
+            pathConverter.buildFullPath(PRIVATE_PREFIX + PATH_DELIMITER + MAILBOX_NAME))
+            .isEqualTo(
+                MailboxPath.forUser(USERNAME, MAILBOX_NAME));
+    }
+
+    @Test
+    public void buildFullPathShouldReturnNotFoundWhenOutOfAllNamespace() {
+        when(imapSession.getNamespaceConfiguration())
+            .thenReturn(CUSTOM_NAMESPACE_CONFIGURATION);
+        pathConverter = PathConverter.forSession(imapSession);
+
+        assertThatThrownBy(() ->
+            pathConverter.buildFullPath(MAILBOX_NAME))
+            .isInstanceOf(MailboxNotFoundException.class);
+    }
+
+    @Test
+    public void buildFullPathShouldReturnMailboxPathWhenUsingSpecificUserNamespace() throws MailboxNotFoundException {
+        when(imapSession.getNamespaceConfiguration())
+            .thenReturn(CUSTOM_NAMESPACE_CONFIGURATION);
+        pathConverter = PathConverter.forSession(imapSession);
+
+        assertThat(
+            pathConverter.buildFullPath(DELEGATED_PREFIX + PATH_DELIMITER +
+                BOB + PATH_DELIMITER +
+                MAILBOX_NAME))
+            .isEqualTo(
+                MailboxPath.forUser(BOB, MAILBOX_NAME));
+    }
+
+    @Test
+    public void buildMailboxNameShouldAllowConversionFromPersonalPath() {
+        when(imapSession.getNamespaceConfiguration())
+            .thenReturn(CUSTOM_NAMESPACE_CONFIGURATION);
+        pathConverter = PathConverter.forSession(imapSession);
+
+        assertThat(
+            pathConverter.buildMailboxName(MailboxPath.forUser(BOB, MAILBOX_NAME)))
+            .isEqualTo(
+                DELEGATED_PREFIX + PATH_DELIMITER +
+                    BOB + PATH_DELIMITER +
+                    MAILBOX_NAME);
+    }
+
+    @Test
+    public void buildMailboxNameShouldAllowConversionFromDelegatedPath() {
+        when(imapSession.getNamespaceConfiguration())
+            .thenReturn(CUSTOM_NAMESPACE_CONFIGURATION);
+        pathConverter = PathConverter.forSession(imapSession);
+
+        assertThat(
+            pathConverter.buildMailboxName(MailboxPath.forUser(USERNAME, MAILBOX_NAME)))
+            .isEqualTo(
+                PRIVATE_PREFIX + PATH_DELIMITER +
+                    MAILBOX_NAME);
     }
 }

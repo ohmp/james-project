@@ -19,6 +19,8 @@
 
 package org.apache.james.imap.api.process;
 
+import java.util.List;
+
 import org.apache.james.imap.api.ImapSessionState;
 
 /**
@@ -29,6 +31,11 @@ import org.apache.james.imap.api.ImapSessionState;
  * @version $Revision: 109034 $
  */
 public interface ImapSession {
+    interface NamespaceConfiguration {
+        String personalNamespace();
+        String otherUsersNamespace();
+        List<String> sharedNamespacesNamespaces();
+    }
 
     /**
      * Logs out the session. Marks the connection for closure;
@@ -158,4 +165,5 @@ public interface ImapSession {
      */
     boolean isPlainAuthDisallowed();
 
+    NamespaceConfiguration getNamespaceConfiguration();
 }
