@@ -28,73 +28,46 @@ import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
-import org.apache.james.imap.main.PathConverter;
 import org.apache.james.imap.message.request.NamespaceRequest;
 import org.apache.james.imap.message.response.NamespaceResponse;
 import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
 /**
  * Processes a NAMESPACE command into a suitable set of responses.
  */
 public class NamespaceProcessor extends AbstractMailboxProcessor<NamespaceRequest> implements CapabilityImplementingProcessor {
-    public interface NamespaceConfiguration {
-        List<NamespaceResponse.Namespace> personalNamespaces(char pathDelimiter);
-        List<NamespaceResponse.Namespace> otherUsersNamespaces(char pathDelimiter);
-        List<NamespaceResponse.Namespace> sharedNamespacesNamespaces(char pathDelimiter);
-    }
-
-    public static class DefaultNamespaceConfiguration implements NamespaceConfiguration {
-        @Override
-        public List<NamespaceResponse.Namespace> personalNamespaces(char pathDelimiter) {
-            return ImmutableList.of(new NamespaceResponse.Namespace(
-                DEFAULT_PERSONAL_NAMESPACE,
-                pathDelimiter));
-        }
-
-        @Override
-        public List<NamespaceResponse.Namespace> otherUsersNamespaces(char pathDelimiter) {
-            return ImmutableList.of(new NamespaceResponse.Namespace(
-                PathConverter.DELEGATED_MAILBOXES_BASE,
-                pathDelimiter));
-        }
-
-        @Override
-        public List<NamespaceResponse.Namespace> sharedNamespacesNamespaces(char pathDelimiter) {
-            return ImmutableList.of();
-        }
-    }
-
     private static final List<String> CAPS = ImmutableList.of(SUPPORTS_NAMESPACES);
-    private static final String DEFAULT_PERSONAL_NAMESPACE = "";
 
-    private final NamespaceConfiguration namespaceConfiguration;
 
     public NamespaceProcessor(ImapProcessor next, MailboxManager mailboxManager, StatusResponseFactory factory,
                               MetricFactory metricFactory) {
-        this(next, mailboxManager, factory, metricFactory, new DefaultNamespaceConfiguration());
-    }
-
-    public NamespaceProcessor(ImapProcessor next, MailboxManager mailboxManager, StatusResponseFactory factory,
-                              MetricFactory metricFactory, NamespaceConfiguration configuration) {
         super(NamespaceRequest.class, next, mailboxManager, factory, metricFactory);
-        this.namespaceConfiguration = configuration;
     }
 
     @Override
     protected void doProcess(NamespaceRequest request, ImapSession session, String tag, ImapCommand command, Responder responder) {
-        MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
-        char pathDelimiter = mailboxSession.getPathDelimiter();
+        char pathDelimiter = ImapSessionUtils.getMailboxSession(session).getPathDelimiter();
         responder.respond( new NamespaceResponse(
-            namespaceConfiguration.personalNamespaces(pathDelimiter),
-            namespaceConfiguration.otherUsersNamespaces(pathDelimiter),
-            namespaceConfiguration.sharedNamespacesNamespaces(pathDelimiter)));
+            toNamespaces(session.getNamespaceConfiguration().personalNamespace(), pathDelimiter),
+            toNamespaces(session.getNamespaceConfiguration().otherUsersNamespace(), pathDelimiter),
+            toNamespaces(session.getNamespaceConfiguration().sharedNamespacesNamespaces(), pathDelimiter)));
         unsolicitedResponses(session, responder, false);
         okComplete(command, tag, responder);
+    }
+
+    public List<NamespaceResponse.Namespace> toNamespaces(String namespace, char pathDelimiter) {
+        return ImmutableList.of(new NamespaceResponse.Namespace(namespace, pathDelimiter));
+    }
+
+    public List<NamespaceResponse.Namespace> toNamespaces(List<String> namespaces, char pathDelimiter) {
+        return namespaces.stream()
+            .map(namespace -> new NamespaceResponse.Namespace(namespace, pathDelimiter))
+            .collect(Guavate.toImmutableList());
     }
 
     @Override

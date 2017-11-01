@@ -120,17 +120,19 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
             MailboxPath.forUser(user, mailboxName));
     }
 
-    public static Stream<ListAnswer> forMailboxMetadata(String username, PathConverter pathConverter, MailboxMetaData metaData) {
+    public static Stream<ListAnswer> forMailboxMetadata(ImapSession session, PathConverter pathConverter, MailboxMetaData metaData) {
+        String username = ImapSessionUtils.getUserName(session);
         if (username.equals(metaData.getPath().getUser())) {
             return Stream.of(fromMetadata(pathConverter, metaData));
         }
         char delimiter = metaData.getHierarchyDelimiter();
+        String otherUsersNamespace = session.getNamespaceConfiguration().otherUsersNamespace();
         return Stream.of(
             fromMetadata(pathConverter, metaData),
-            forVirtualMailboxWithChildren(delimiter, username, PathConverter.DELEGATED_MAILBOXES_BASE),
+            forVirtualMailboxWithChildren(delimiter, username, otherUsersNamespace),
             forVirtualMailboxWithChildren(delimiter,
                 username,
-                PathConverter.DELEGATED_MAILBOXES_BASE + delimiter + metaData.getPath().getUser()));
+                otherUsersNamespace + delimiter + metaData.getPath().getUser()));
     }
 
     public static ListAnswer fromMetadata(PathConverter pathConverter, MailboxMetaData metaData) {
@@ -194,10 +196,9 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                     responder,
                     mailboxTyper,
                     user,
-                    pathConverter,
                     mailboxSession);
             } else {
-                handleListRequests(user,
+                handleListRequests(
                     referenceName,
                     mailboxName,
                     session,
@@ -213,7 +214,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
         okComplete(command, tag, responder);
     }
 
-    private void handleListRequests(String user, String referenceName, String mailboxName, ImapSession session, Responder responder, MailboxTyper mailboxTyper, PathConverter pathConverter, MailboxSession mailboxSession) throws MailboxException {
+    private void handleListRequests(String referenceName, String mailboxName, ImapSession session, Responder responder, MailboxTyper mailboxTyper, PathConverter pathConverter, MailboxSession mailboxSession) throws MailboxException {
         PrefixedRegex expression = new PrefixedRegex(
             CharsetUtil.decodeModifiedUTF7(referenceName),
             CharsetUtil.decodeModifiedUTF7(mailboxName),
@@ -224,7 +225,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                 MailboxQuery.builder().build(),
                 mailboxSession)
             .stream()
-            .flatMap(metaData -> forMailboxMetadata(user, pathConverter, metaData))
+            .flatMap(metaData -> forMailboxMetadata(session, pathConverter, metaData))
             .filter(listAnswer -> expression.isExpressionMatch(listAnswer.getMailboxName()))
             .distinct()
             .forEach(listAnswer ->
@@ -233,11 +234,12 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                     getMailboxType(session, mailboxTyper, listAnswer.getMailboxPath())));
     }
 
-    private void handleHierarchyInformationRequests(String referenceName, ImapSession session, Responder responder, MailboxTyper mailboxTyper, String user, PathConverter pathConverter, MailboxSession mailboxSession) {
+    private void handleHierarchyInformationRequests(String referenceName, ImapSession session, Responder responder, MailboxTyper mailboxTyper, String user, MailboxSession mailboxSession) {
         // An empty mailboxName signifies a request for the hierarchy
         // delimiter and root name of the referenceName argument
-        if (referenceName.startsWith(PathConverter.DELEGATED_MAILBOXES_BASE)) {
-            MailboxPath rootPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, user, PathConverter.DELEGATED_MAILBOXES_BASE);
+        String otherUsersNamespace = session.getNamespaceConfiguration().otherUsersNamespace();
+        if (referenceName.startsWith(otherUsersNamespace)) {
+            MailboxPath rootPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, user, otherUsersNamespace);
             processResult(responder,
                 forVirtualMailbox(mailboxSession.getPathDelimiter(), user, rootPath.getName()),
                 getMailboxType(session, mailboxTyper, rootPath));
