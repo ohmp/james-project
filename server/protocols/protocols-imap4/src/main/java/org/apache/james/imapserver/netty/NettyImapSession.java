@@ -233,13 +233,6 @@ public class NettyImapSession implements ImapSession, NettyConstants {
     }
 
     /**
-     * @see org.apache.james.imap.api.process.ImapSession#supportMultipleNamespaces()
-     */
-    public boolean supportMultipleNamespaces() {
-        return false;
-    }
-
-    /**
      * @see org.apache.james.imap.api.process.ImapSession#isCompressionActive()
      */
     public boolean isCompressionActive() {

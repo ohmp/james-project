@@ -116,10 +116,6 @@ public class FakeImapSession implements ImapSession {
         return false;
     }
 
-    public boolean supportMultipleNamespaces() {
-        return false;
-    }
-
     public boolean isCompressionActive() {
         return false;
     }
