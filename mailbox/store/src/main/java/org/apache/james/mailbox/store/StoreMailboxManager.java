@@ -60,7 +60,6 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
-import org.apache.james.mailbox.model.search.MailboxNameExpression;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
@@ -646,11 +645,7 @@ public class StoreMailboxManager implements MailboxManager {
 
     @VisibleForTesting
     public static MailboxPath getPathLike(MailboxQuery mailboxQuery, MailboxSession mailboxSession) {
-        MailboxNameExpression nameExpression = mailboxQuery.getMailboxNameExpression();
-        String combinedName = nameExpression.getCombinedName()
-            .replace(nameExpression.getFreeWildcard(), SQL_WILDCARD_CHAR)
-            .replace(nameExpression.getLocalWildcard(), SQL_WILDCARD_CHAR)
-            + SQL_WILDCARD_CHAR;
+        String combinedName = String.valueOf(SQL_WILDCARD_CHAR);
         MailboxPath base = new MailboxPath(
             mailboxQuery.getNamespace().orElse(MailboxConstants.USER_NAMESPACE),
             mailboxQuery.getUser().orElse(mailboxSession.getUser().getUserName()),
@@ -715,7 +710,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private Stream<MailboxId> getAllReadableMailbox(MailboxSession session) throws MailboxException {
-        return searchMailboxes(MailboxQuery.builder().matchesAllMailboxNames().build(), session, Right.Read)
+        return searchMailboxes(MailboxQuery.allMailboxes(), session, Right.Read)
             .stream()
             .map(MailboxMetaData::getId);
     }
