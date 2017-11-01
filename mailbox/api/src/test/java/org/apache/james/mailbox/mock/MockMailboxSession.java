@@ -19,7 +19,6 @@
 package org.apache.james.mailbox.mock;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -76,20 +75,8 @@ public class MockMailboxSession implements MailboxSession {
         return attrs;
     }
 
-    public String getOtherUsersSpace() {
-        return null;
-    }
-
-    public String getPersonalSpace() {
-        return "";
-    }
-
     public long getSessionId() {
         return sessionId;
-    }
-
-    public Collection<String> getSharedSpaces() {
-        return new ArrayList<>();
     }
 
     public User getUser() {

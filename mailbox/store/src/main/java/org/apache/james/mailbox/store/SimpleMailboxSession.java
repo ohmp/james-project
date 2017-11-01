@@ -19,24 +19,17 @@
 
 package org.apache.james.mailbox.store;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.model.MailboxConstants;
 
 /**
  * Describes a mailbox session.
  */
 public class SimpleMailboxSession implements MailboxSession, MailboxSession.User {
-
-    private final Collection<String> sharedSpaces;
-    private final String otherUsersSpace;
-    private final String personalSpace;
     private final long sessionId;
     private final String userName;
     private final String password;
@@ -46,25 +39,12 @@ public class SimpleMailboxSession implements MailboxSession, MailboxSession.User
     private final SessionType type;
     private boolean open = true;
 
-    
     public SimpleMailboxSession(long sessionId, String userName, String password,
                                 List<Locale> localePreferences, char pathSeparator, SessionType type) {
-        this(sessionId, userName, password, localePreferences, new ArrayList<>(), null, pathSeparator, type);
-    }
-
-    public SimpleMailboxSession(long sessionId, String userName, String password,
-                                List<Locale> localePreferences, List<String> sharedSpaces, String otherUsersSpace, char pathSeparator, SessionType type) {
         this.sessionId = sessionId;
         this.userName = userName;
         this.password = password;
-        this.otherUsersSpace = otherUsersSpace;
-        this.sharedSpaces = sharedSpaces;
         this.type = type;
-        if (otherUsersSpace == null && (sharedSpaces == null || sharedSpaces.isEmpty())) {
-            this.personalSpace = "";
-        } else {
-            this.personalSpace = MailboxConstants.USER_NAMESPACE;
-        }
 
         this.localePreferences = localePreferences;
         this.attributes = new HashMap<>();
@@ -120,27 +100,6 @@ public class SimpleMailboxSession implements MailboxSession, MailboxSession.User
      */
     public String getUserName() {
         return userName;
-    }
-
-    /**
-     * @see org.apache.james.mailbox.MailboxSession#getOtherUsersSpace()
-     */
-    public String getOtherUsersSpace() {
-        return otherUsersSpace;
-    }
-
-    /**
-     * @see org.apache.james.mailbox.MailboxSession#getPersonalSpace()
-     */
-    public String getPersonalSpace() {
-        return personalSpace;
-    }
-
-    /**
-     * @see org.apache.james.mailbox.MailboxSession#getSharedSpaces()
-     */
-    public Collection<String> getSharedSpaces() {
-        return sharedSpaces;
     }
 
     /**

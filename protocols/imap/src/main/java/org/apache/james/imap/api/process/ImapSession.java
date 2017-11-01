@@ -151,13 +151,6 @@ public interface ImapSession {
     void popLineHandler();
     
     /**
-     * Return true if multiple namespaces are supported
-     * 
-     * @return multipleNamespaces
-     */
-    boolean supportMultipleNamespaces();
-    
-    /**
      * Return true if the login / authentication via plain username / password is
      * disallowed
      * 

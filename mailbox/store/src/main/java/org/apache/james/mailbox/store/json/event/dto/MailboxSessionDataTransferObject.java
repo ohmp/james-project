@@ -38,10 +38,6 @@ public class MailboxSessionDataTransferObject {
     @JsonProperty()
     private String username;
     @JsonProperty()
-    private List<String> sharedSpaces;
-    @JsonProperty()
-    private String otherUserSpace;
-    @JsonProperty()
     private char separator;
     @JsonProperty()
     private List<LocaleDataTransferObject> locales;
@@ -56,8 +52,6 @@ public class MailboxSessionDataTransferObject {
 
     public MailboxSessionDataTransferObject(MailboxSession session) {
         username = session.getUser().getUserName();
-        sharedSpaces = new ArrayList<>(session.getSharedSpaces());
-        otherUserSpace = session.getOtherUsersSpace();
         separator = session.getPathDelimiter();
         sessionType = extractSessionType(session);
         sessionId = session.getSessionId();
@@ -70,8 +64,6 @@ public class MailboxSessionDataTransferObject {
             username,
             "",
             retrieveLocales(),
-            sharedSpaces,
-            otherUserSpace,
             separator,
             retrieveSessionType());
     }
