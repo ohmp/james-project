@@ -35,26 +35,16 @@ import org.apache.james.mailbox.model.MailboxConstants;
 public class SimpleMailboxSession implements MailboxSession, MailboxSession.User {
 
     private final Collection<String> sharedSpaces;
-
     private final String otherUsersSpace;
-
     private final String personalSpace;
-    
     private final long sessionId;
-
     private final String userName;
-    
     private final String password;
-    
-    private boolean open = true;
-
     private final List<Locale> localePreferences;
-
     private final Map<Object, Object> attributes;
-    
     private final char pathSeparator;
-
     private final SessionType type;
+    private boolean open = true;
 
     
     public SimpleMailboxSession(long sessionId, String userName, String password,
