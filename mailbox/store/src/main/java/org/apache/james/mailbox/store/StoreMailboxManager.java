@@ -637,7 +637,9 @@ public class StoreMailboxManager implements MailboxManager {
         return mailboxes
             .stream()
             .filter(mailbox -> mailboxExpression.isPathMatch(mailbox.generateAssociatedPath()))
-            .map(mailbox -> toMailboxMetadata(session, mailboxes, mailbox))
+            .map(Throwing.function(
+                (Mailbox mailbox) -> toMailboxMetadata(session, mailboxes, mailbox))
+                .sneakyThrow())
             .sorted(new StandardMailboxMetaDataComparator())
             .collect(Guavate.toImmutableList());
     }
@@ -664,13 +666,21 @@ public class StoreMailboxManager implements MailboxManager {
         return mailboxMapper.findNonPersonalMailboxes(session.getUser().getUserName(), right).stream();
     }
 
-    private SimpleMailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox) {
+    private SimpleMailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox) throws MailboxException {
         return new SimpleMailboxMetaData(
             mailbox.generateAssociatedPath(),
             mailbox.getMailboxId(),
             getDelimiter(),
             computeChildren(session, mailboxes, mailbox),
-            Selectability.NONE);
+            computeSelectability(session, mailbox));
+    }
+
+    private Selectability computeSelectability(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        if (storeRightManager.hasRight(mailbox, Right.Read, session)) {
+            return Selectability.NONE;
+        } else {
+            return Selectability.NOSELECT;
+        }
     }
 
     private MailboxMetaData.Children computeChildren(MailboxSession session, List<Mailbox> potentialChildren, Mailbox mailbox) {

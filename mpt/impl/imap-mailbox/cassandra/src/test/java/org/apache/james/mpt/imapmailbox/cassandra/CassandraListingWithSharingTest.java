@@ -23,6 +23,7 @@ import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.cassandra.host.CassandraHostSystemRule;
 import org.apache.james.mpt.imapmailbox.suite.ListingWithSharingTest;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 
@@ -37,5 +38,10 @@ public class CassandraListingWithSharingTest extends ListingWithSharingTest {
     @Override
     protected ImapHostSystem createImapHostSystem() {
         return cassandraHostSystemRule.getImapHostSystem();
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        cassandraHostSystemRule.clean();
     }
 }
