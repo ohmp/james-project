@@ -76,7 +76,6 @@ public class MailboxEventAnalyserTest {
         }
     }
 
-
     private static final MessageUid MESSAGE_UID = MessageUid.of(1);
     private static final MockMailboxSession MAILBOX_SESSION = new MockMailboxSession("user");
     private static final MockMailboxSession OTHER_MAILBOX_SESSION = new MockMailboxSession("user");
