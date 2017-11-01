@@ -22,6 +22,7 @@ package org.apache.james.imap.processor;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapMessage;
@@ -37,6 +38,7 @@ import org.apache.james.imap.api.process.MailboxTyper;
 import org.apache.james.imap.main.PathConverter;
 import org.apache.james.imap.message.request.ListRequest;
 import org.apache.james.imap.message.response.ListResponse;
+import org.apache.james.imap.processor.base.PrefixedRegex;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -45,11 +47,12 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.search.MailboxQuery;
-import org.apache.james.mailbox.model.search.PrefixedRegex;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.steveash.guavate.Guavate;
 
 public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ListProcessor.class);
@@ -171,15 +174,19 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                     basePath = PathConverter.forSession(session).buildFullPath(finalReferencename);
                 }
 
-                results = getMailboxManager().search(
+                PrefixedRegex prefixedRegex = new PrefixedRegex(
+                    basePath.getName(),
+                    CharsetUtil.decodeModifiedUTF7(mailboxName),
+                    mailboxSession.getPathDelimiter());
+                results = getMailboxManager()
+                    .search(
                         MailboxQuery.builder()
                             .userAndNamespaceFrom(basePath)
-                            .expression(new PrefixedRegex(
-                                basePath.getName(),
-                                CharsetUtil.decodeModifiedUTF7(mailboxName),
-                                mailboxSession.getPathDelimiter()))
-                            .build()
-                        , mailboxSession);
+                            .build(),
+                        mailboxSession)
+                    .stream()
+                    .filter(metaData -> prefixedRegex.isExpressionMatch(metaData.getPath().getName()))
+                    .collect(Guavate.toImmutableList());
             }
 
             for (MailboxMetaData metaData : results) {
