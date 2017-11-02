@@ -127,12 +127,13 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
         }
         char delimiter = metaData.getHierarchyDelimiter();
         String otherUsersNamespace = session.getNamespaceConfiguration().otherUsersNamespace();
+        String sanitizedUserName = pathConverter.sanitizeUserName(metaData.getPath().getUser());
         return Stream.of(
             fromMetadata(pathConverter, metaData),
             forVirtualMailboxWithChildren(delimiter, username, otherUsersNamespace),
             forVirtualMailboxWithChildren(delimiter,
                 username,
-                otherUsersNamespace + delimiter + metaData.getPath().getUser()));
+                otherUsersNamespace + delimiter + sanitizedUserName));
     }
 
     public static ListAnswer fromMetadata(PathConverter pathConverter, MailboxMetaData metaData) {
