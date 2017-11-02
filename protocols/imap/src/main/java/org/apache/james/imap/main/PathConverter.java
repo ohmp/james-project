@@ -71,11 +71,26 @@ public class PathConverter {
 
     private MailboxPath buildDelegatedMailboxPath(List<String> mailboxNameParts) {
         return new MailboxPath(MailboxConstants.USER_NAMESPACE,
-            mailboxNameParts.get(USER_PART),
+            addDomainPartToAmbigusUserName(mailboxNameParts.get(USER_PART)),
             sanitizeMailboxName(
                 Joiner.on(pathDelimiter)
                     .skipNulls()
                     .join(Iterables.skip(mailboxNameParts, 2))));
+    }
+
+    private String addDomainPartToAmbigusUserName(String otherUserName) {
+        if (!otherUserName.contains("@")) {
+            return otherUserName + locateDomain(userName);
+        }
+        return otherUserName;
+    }
+
+    private String locateDomain(String name) {
+        int addressPartSeparator = name.indexOf('@');
+        if (addressPartSeparator >= 0) {
+            return name.substring(addressPartSeparator, name.length());
+        }
+        return "";
     }
 
     private MailboxPath buildPersonalMailboxPath(String mailboxName) throws MailboxNotFoundException {
@@ -98,8 +113,16 @@ public class PathConverter {
         return joinMailboxNameParts(
             ImmutableList.of(
                 namespaceConfiguration.otherUsersNamespace(),
-                mailboxPath.getUser(),
+                sanitizeUserName(mailboxPath.getUser()),
                 mailboxPath.getName()));
+    }
+
+    private String sanitizeUserName(String name) {
+        int addressPartSeparator = name.indexOf('@');
+        if (addressPartSeparator >= 0) {
+            return name.substring(0, addressPartSeparator);
+        }
+        return name;
     }
 
     private String joinMailboxNameParts(ImmutableList<String> mailboxNameParts) {
