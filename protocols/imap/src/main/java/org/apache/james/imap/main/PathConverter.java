@@ -117,7 +117,7 @@ public class PathConverter {
                 mailboxPath.getName()));
     }
 
-    private String sanitizeUserName(String name) {
+    public String sanitizeUserName(String name) {
         int addressPartSeparator = name.indexOf('@');
         if (addressPartSeparator >= 0) {
             return name.substring(0, addressPartSeparator);
