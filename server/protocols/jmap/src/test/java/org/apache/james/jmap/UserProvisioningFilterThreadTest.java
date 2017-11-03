@@ -18,6 +18,10 @@
  ****************************************************************/
 package org.apache.james.jmap;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.dnsservice.dnsjava.DNSJavaService;
+import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.metrics.api.NoopMetricFactory;
@@ -37,8 +41,12 @@ public class UserProvisioningFilterThreadTest {
     private MailboxSession session;
 
     @ThreadedBefore
-    public void before() {
+    public void before() throws ConfigurationException {
         usersRepository = new InMemoryUsersRepository();
+        usersRepository.setDomainList(new MemoryDomainList(
+            new DNSJavaService(
+                new NoopMetricFactory())));
+        usersRepository.configure(new DefaultConfigurationBuilder());
         session = new MockMailboxSession("username");
         sut = new UserProvisioningFilter(usersRepository, new NoopMetricFactory());
     }

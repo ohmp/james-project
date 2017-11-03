@@ -25,6 +25,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mpt.host.JamesManageSieveHostSystem;
@@ -37,6 +39,7 @@ public class FileHostSystem extends JamesManageSieveHostSystem {
 
     private static final String SIEVE_ROOT = FileSystem.FILE_PROTOCOL + "sieve";
     private static final FileSystem fileSystem = getFileSystem();
+    public static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
 
     private static FileSystem getFileSystem() {
         return new FileSystem() {
@@ -53,8 +56,10 @@ public class FileHostSystem extends JamesManageSieveHostSystem {
     }
 
     @Override
-    protected UsersRepository createUsersRepository() {
-        return MemoryUsersRepository.withoutVirtualHosting();
+    protected UsersRepository createUsersRepository() throws ConfigurationException {
+        MemoryUsersRepository usersRepository = MemoryUsersRepository.withoutVirtualHosting();
+        usersRepository.configure(NO_CONFIGURATION);
+        return usersRepository;
     }
 
     @Override

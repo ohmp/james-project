@@ -18,10 +18,16 @@
  ****************************************************************/
 package org.apache.james.user.lib;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.james.user.lib.mock.InMemoryUsersRepository;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,6 +35,8 @@ import org.junit.Test;
  * Tests the UserManagement
  */
 public class UsersRepositoryManagementTest {
+
+    private static final DefaultConfigurationBuilder EMPTY_CONFIGURATION = new DefaultConfigurationBuilder();
 
     private InMemoryUsersRepository m_mockUsersRepository;
     private UsersRepositoryManagement m_userManagement;
@@ -39,6 +47,8 @@ public class UsersRepositoryManagementTest {
 
         m_userManagement = new UsersRepositoryManagement();
         m_userManagement.setUsersRepository(m_mockUsersRepository);
+
+        m_mockUsersRepository.configure(EMPTY_CONFIGURATION);
     }
 
     @Test

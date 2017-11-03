@@ -24,7 +24,6 @@ import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -35,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.user.api.UsersRepository;
@@ -62,13 +62,14 @@ public class UsersRoutesTest {
 
     public static final String DOMAIN = "domain";
     public static final String USERNAME = "username@" + DOMAIN;
+    public static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
     private WebAdminServer webAdminServer;
 
     private void createServer(UsersRepository usersRepository) throws Exception {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
             new UserRoutes(new UserService(usersRepository), new JsonTransformer()));
-        webAdminServer.configure(NO_CONFIGURATION);
+        webAdminServer.configure(WebAdminServer.NO_CONFIGURATION);
         webAdminServer.await();
 
         RestAssured.requestSpecification = new RequestSpecBuilder()
@@ -94,6 +95,7 @@ public class UsersRoutesTest {
 
             MemoryUsersRepository usersRepository = MemoryUsersRepository.withVirtualHosting();
             usersRepository.setDomainList(domainList);
+            usersRepository.configure(NO_CONFIGURATION);
 
             createServer(usersRepository);
         }

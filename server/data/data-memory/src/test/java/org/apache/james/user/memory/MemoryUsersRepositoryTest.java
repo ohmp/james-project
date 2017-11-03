@@ -19,6 +19,12 @@
 
 package org.apache.james.user.memory;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.user.lib.AbstractUsersRepository;
 import org.apache.james.user.lib.AbstractUsersRepositoryTest;
 import org.junit.Before;
@@ -32,6 +38,11 @@ public class MemoryUsersRepositoryTest extends AbstractUsersRepositoryTest {
     
     @Override
     protected AbstractUsersRepository getUsersRepository() throws Exception {
-        return MemoryUsersRepository.withVirtualHosting();
+        MemoryUsersRepository memoryUsersRepository = MemoryUsersRepository.withVirtualHosting();
+        DomainList domainList = mock(DomainList.class);
+        when(domainList.containsDomain(anyString())).thenReturn(true);
+        memoryUsersRepository.setDomainList(domainList);
+        memoryUsersRepository.configure(new DefaultConfigurationBuilder());
+        return memoryUsersRepository;
     }
 }

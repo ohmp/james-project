@@ -19,6 +19,7 @@
 
 package org.apache.james.mpt.host;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.managesieve.core.CoreProcessor;
 import org.apache.james.managesieve.jsieve.Parser;
 import org.apache.james.managesieve.transcode.ArgumentParser;
@@ -48,7 +49,7 @@ public abstract class JamesManageSieveHostSystem implements ManageSieveHostSyste
     
     protected abstract SieveRepository createSieveRepository() throws Exception;
 
-    protected abstract UsersRepository createUsersRepository();
+    protected abstract UsersRepository createUsersRepository() throws ConfigurationException;
 
     @Override
     public boolean addUser(String user, String password) throws Exception {

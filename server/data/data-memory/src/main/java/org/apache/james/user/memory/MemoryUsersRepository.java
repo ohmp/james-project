@@ -66,6 +66,11 @@ public class MemoryUsersRepository extends AbstractUsersRepository {
     }
 
     @Override
+    protected boolean getDefaultVirtualHostingValue() {
+        return supportVirtualHosting;
+    }
+
+    @Override
     public void doConfigure(HierarchicalConfiguration config) throws ConfigurationException {
         algo = config.getString("algorithm", "MD5");
         super.doConfigure(config);

@@ -19,9 +19,12 @@
 
 package org.apache.james.mpt.managesieve.cassandra.host;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.mpt.host.JamesManageSieveHostSystem;
 import org.apache.james.sieve.cassandra.CassandraActiveScriptDAO;
 import org.apache.james.sieve.cassandra.CassandraSieveDAO;
@@ -32,9 +35,10 @@ import org.apache.james.sieverepository.api.SieveRepository;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.cassandra.CassandraUsersRepository;
 import org.apache.james.user.cassandra.CassandraUsersRepositoryModule;
+import org.apache.james.user.lib.AbstractUsersRepository;
+import org.mockito.Mockito;
 
 public class CassandraHostSystem extends JamesManageSieveHostSystem {
-    
     private final String cassandraHost;
     private final int cassandraPort;
     private CassandraCluster cassandra;
@@ -60,10 +64,18 @@ public class CassandraHostSystem extends JamesManageSieveHostSystem {
             new CassandraActiveScriptDAO(cassandra.getConf()));
     }
 
-    protected UsersRepository createUsersRepository() {
+    protected UsersRepository createUsersRepository() throws ConfigurationException {
         CassandraUsersRepository cassandraUsersRepository = new CassandraUsersRepository(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
-        cassandraUsersRepository.setEnableVirtualHosting(false);
+        cassandraUsersRepository.setDomainList(Mockito.mock(DomainList.class));
+        DefaultConfigurationBuilder configuration = getUserRepositoryConfiguration();
+        cassandraUsersRepository.configure(configuration);
         return cassandraUsersRepository;
+    }
+
+    private DefaultConfigurationBuilder getUserRepositoryConfiguration() {
+        DefaultConfigurationBuilder configuration = new DefaultConfigurationBuilder();
+        configuration.addProperty(AbstractUsersRepository.ENABLE_VIRTUAL_HOSTING, "false");
+        return configuration;
     }
 
 }

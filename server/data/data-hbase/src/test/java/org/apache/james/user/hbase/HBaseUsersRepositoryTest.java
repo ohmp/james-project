@@ -18,10 +18,15 @@
  ****************************************************************/
 package org.apache.james.user.hbase;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.mailbox.hbase.HBaseClusterSingleton;
 import org.apache.james.system.hbase.TablePool;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -76,6 +81,9 @@ public class HBaseUsersRepositoryTest extends AbstractUsersRepositoryTest {
     @Override
     protected AbstractUsersRepository getUsersRepository() throws Exception {
         HBaseUsersRepository userRepository = new HBaseUsersRepository();
+        DomainList domainList = mock(DomainList.class);
+        when(domainList.containsDomain(anyString())).thenReturn(true);
+        userRepository.setDomainList(domainList);
         userRepository.configure(new DefaultConfigurationBuilder());
         return userRepository;
     }

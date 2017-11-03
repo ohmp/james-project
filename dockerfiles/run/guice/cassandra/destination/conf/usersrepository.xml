@@ -22,5 +22,6 @@
     <algorithm>MD5</algorithm>
     <enableVirtualHosting>true</enableVirtualHosting>    
     <enableForwarding>true</enableForwarding>
+    <forbiddenCharactersInLocalParts>.</forbiddenCharactersInLocalParts>
 </usersrepository>
 

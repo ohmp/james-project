@@ -37,7 +37,8 @@
 -->
 <usersrepository name="LocalUsers" class="org.apache.james.user.jpa.JPAUsersRepository">
     <algorithm>MD5</algorithm>
-    <enableVirtualHosting>true</enableVirtualHosting>    
+    <enableVirtualHosting>true</enableVirtualHosting>
+    <forbiddenCharactersInLocalParts>.</forbiddenCharactersInLocalParts>
 </usersrepository>
 
 <!-- Read-Only LDAP based UsersRepository -->
@@ -58,7 +59,8 @@
     <ignoreCase>true</ignoreCase>
     <enableAliases>true</enableAliases>
     <enableForwarding>true</enableForwarding>
-    <enableVirtualHosting>false</enableVirtualHosting>    
+    <enableVirtualHosting>false</enableVirtualHosting>
+    <forbiddenCharactersInLocalParts>.</forbiddenCharactersInLocalParts>
 </usersrepository>
 -->
 
@@ -76,6 +78,7 @@
     <ignoreCase>true</ignoreCase>
     <enableAliases>true</enableAliases>
     <enableForwarding>true</enableForwarding>
-    <enableVirtualHosting>false</enableVirtualHosting>    
+    <enableVirtualHosting>false</enableVirtualHosting>
+    <forbiddenCharactersInLocalParts>.</forbiddenCharactersInLocalParts>
 </usersrepository>
 -->

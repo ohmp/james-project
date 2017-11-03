@@ -24,7 +24,6 @@ import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Matchers.anyString;
@@ -34,6 +33,7 @@ import static org.mockito.Mockito.mock;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
@@ -59,6 +59,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.filter.log.LogDetail;
 import com.jayway.restassured.http.ContentType;
+
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -69,6 +70,7 @@ public class GroupsRoutesTest {
     private static final String GROUP2 = "group2" + "@" + DOMAIN;
     private static final String USER_A = "a" + "@" + DOMAIN;
     private static final String USER_B = "b" + "@" + DOMAIN;
+    public static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
 
     private WebAdminServer webAdminServer;
 
@@ -76,7 +78,7 @@ public class GroupsRoutesTest {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
             groupsRoutes);
-        webAdminServer.configure(NO_CONFIGURATION);
+        webAdminServer.configure(WebAdminServer.NO_CONFIGURATION);
         webAdminServer.await();
 
         RestAssured.requestSpecification = new RequestSpecBuilder()
@@ -108,6 +110,7 @@ public class GroupsRoutesTest {
             domainList.addDomain(DOMAIN);
             usersRepository = MemoryUsersRepository.withVirtualHosting();
             usersRepository.setDomainList(domainList);
+            usersRepository.configure(NO_CONFIGURATION);
             createServer(new GroupsRoutes(memoryRecipientRewriteTable, usersRepository, domainList, new JsonTransformer()));
         }
 

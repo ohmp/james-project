@@ -33,6 +33,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.metrics.api.NoopMetricFactory;
@@ -55,6 +57,8 @@ public class UserProvisioningFilterTest {
     @Before
     public void setup() throws Exception {
         usersRepository = new InMemoryUsersRepository();
+        usersRepository.setDomainList(mock(DomainList.class));
+        usersRepository.configure(new DefaultConfigurationBuilder());
         sut = new UserProvisioningFilter(usersRepository, new NoopMetricFactory());
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);

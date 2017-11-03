@@ -48,6 +48,8 @@
         <dd>Algorithm to has passwords. Supported password algorithm are: MD5, SHA-256, SHA-512, NONE</dd>
         <dt><strong>enableVirtualHosting</strong></dt>
         <dd>true (default) or false. Defines if the usernames must (true) or may not contain (false) a domain part (user@domain.tld).</dd>
+          <dt><strong>forbiddenCharactersInLocalParts</strong></dt>
+          <dd>Characters to forbid in users local parts</dd>
       </dl>
 
     </subsection>
@@ -72,6 +74,8 @@
         <dd>true or false.</dd>
         <dt><strong>enableVirtualHosting</strong></dt>
         <dd>true (default) or false. Defines if the usernames must (true) or may not contain (false) a domain part (user@domain.tld).</dd>
+          <dt><strong>forbiddenCharactersInLocalParts</strong></dt>
+          <dd>Characters to forbid in users local parts</dd>
       </dl>
 
     </subsection>

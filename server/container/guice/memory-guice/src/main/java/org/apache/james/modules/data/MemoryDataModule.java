@@ -64,17 +64,23 @@ public class MemoryDataModule extends AbstractModule {
         private final ConfigurationProvider configurationProvider;
         private final MemoryDomainList memoryDomainList;
         private final MemoryRecipientRewriteTable memoryRecipientRewriteTable;
+        private final MemoryUsersRepository memoryUsersRepository;
 
         @Inject
-        public MemoryDataConfigurationPerformer(ConfigurationProvider configurationProvider, MemoryDomainList memoryDomainList, MemoryRecipientRewriteTable memoryRecipientRewriteTable) {
+        public MemoryDataConfigurationPerformer(ConfigurationProvider configurationProvider,
+                                                MemoryDomainList memoryDomainList,
+                                                MemoryRecipientRewriteTable memoryRecipientRewriteTable,
+                                                MemoryUsersRepository memoryUsersRepository) {
             this.configurationProvider = configurationProvider;
             this.memoryDomainList = memoryDomainList;
             this.memoryRecipientRewriteTable = memoryRecipientRewriteTable;
+            this.memoryUsersRepository = memoryUsersRepository;
         }
 
         @Override
         public void initModule() {
             try {
+                memoryUsersRepository.configure(configurationProvider.getConfiguration("usersrepository"));
                 memoryDomainList.configure(configurationProvider.getConfiguration("domainlist"));
                 memoryRecipientRewriteTable.configure(configurationProvider.getConfiguration("recipientrewritetable"));
             } catch (ConfigurationException e) {
