@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.store.SimpleMailboxSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class MailboxSessionDataTransferObject {
 
     public MailboxSessionDataTransferObject(MailboxSession session) {
         username = session.getUser().getUserName();
-        separator = session.getPathDelimiter();
+        separator = session.getPathDelimiter().getPathDelimiter();
         sessionType = extractSessionType(session);
         sessionId = session.getSessionId();
         locales = Lists.transform(session.getUser().getLocalePreferences(), LocaleDataTransferObject::new);
@@ -64,7 +65,7 @@ public class MailboxSessionDataTransferObject {
             username,
             "",
             retrieveLocales(),
-            separator,
+            new PathDelimiter(separator),
             retrieveSessionType());
     }
 

@@ -27,6 +27,7 @@ import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.MailboxType;
 import org.apache.james.imap.message.response.ListResponse;
 import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -36,7 +37,7 @@ import org.junit.Test;
 
 public class ListProcessorTest  {
     private static final String USER_1 = "user1";
-    private static final char PATH_DELIMITER = '.';
+    private static final PathDelimiter PATH_DELIMITER = MailboxConstants.DEFAULT_DELIMITER;
 
     private ListProcessor processor;
     private ImapProcessor.Responder responder;

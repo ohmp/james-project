@@ -34,6 +34,7 @@ import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.server.core.MimeMessageInputStream;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
 public class MailboxAppender {
@@ -52,12 +53,12 @@ public class MailboxAppender {
     }
 
     private String useSlashAsSeparator(String urlPath, MailboxSession session) throws MessagingException {
-        String destination = urlPath.replace('/', session.getPathDelimiter());
+        String destination = session.getPathDelimiter()
+            .removeTrailingSeparatorAtTheBeginning(session.getPathDelimiter()
+            .join(Splitter.on('/')
+                .split(urlPath)));
         if (Strings.isNullOrEmpty(destination)) {
             throw new MessagingException("Mail can not be delivered to empty folder");
-        }
-        if (destination.charAt(0) == session.getPathDelimiter()) {
-            destination = destination.substring(1);
         }
         return destination;
     }

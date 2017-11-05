@@ -45,6 +45,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.store.MailboxMetaData;
@@ -82,6 +83,7 @@ public class CopyProcessorTest {
         when(user.getUserName()).thenReturn("username");
         when(mockMailboxSession.getUser()).thenReturn(user);
         when(mockMailboxSession.getSessionId()).thenReturn(42L);
+        when(mockMailboxSession.getPathDelimiter()).thenReturn(MailboxConstants.DEFAULT_DELIMITER);
         when(mockImapSession.getNamespaceConfiguration()).thenReturn(new DefaultNamespaceConfiguration());
         when(mockImapSession.getState()).thenReturn(ImapSessionState.SELECTED);
         when(mockImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mockMailboxSession);

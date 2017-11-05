@@ -247,7 +247,10 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
             int msn = selected.msn(uid);
             if (msn == SelectedMailbox.NO_SUCH_MESSAGE) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("No message found with uid " + uid + " in the uid<->msn mapping for mailbox " + selected.getPath().getFullName(mailboxSession.getPathDelimiter()) +" , this may be because it was deleted by a concurrent session. So skip it..");
+                    LOGGER.debug("No message found with uid " + uid
+                        + " in the uid<->msn mapping for mailbox "
+                        + selected.getPath().getFullName(mailboxSession.getPathDelimiter())
+                        + " , this may be because it was deleted by a concurrent session. So skip it..");
                 }  
                     
 
