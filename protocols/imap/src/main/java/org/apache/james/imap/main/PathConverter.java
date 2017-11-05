@@ -23,14 +23,13 @@ import java.util.List;
 
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -44,7 +43,7 @@ public class PathConverter {
         return new PathConverter(session);
     }
 
-    private final char pathDelimiter;
+    private final PathDelimiter pathDelimiter;
     private final ImapSession.NamespaceConfiguration namespaceConfiguration;
     private final String userName;
 
@@ -56,8 +55,7 @@ public class PathConverter {
 
     public MailboxPath buildFullPath(String mailboxName) throws MailboxNotFoundException {
         Preconditions.checkNotNull(mailboxName);
-        List<String> mailboxNameParts = Splitter.on(pathDelimiter)
-            .splitToList(mailboxName);
+        List<String> mailboxNameParts = pathDelimiter.split(mailboxName);
         if (isADelegatedMailboxName(mailboxNameParts)) {
             return buildDelegatedMailboxPath(mailboxNameParts);
         }
@@ -73,9 +71,8 @@ public class PathConverter {
         return new MailboxPath(MailboxConstants.USER_NAMESPACE,
             addDomainPartToAmbigusUserName(mailboxNameParts.get(USER_PART)),
             sanitizeMailboxName(
-                Joiner.on(pathDelimiter)
-                    .skipNulls()
-                    .join(Iterables.skip(mailboxNameParts, 2))));
+                pathDelimiter.join(
+                    Iterables.skip(mailboxNameParts, 2))));
     }
 
     private String addDomainPartToAmbigusUserName(String otherUserName) {
@@ -126,8 +123,8 @@ public class PathConverter {
     }
 
     private String joinMailboxNameParts(ImmutableList<String> mailboxNameParts) {
-        return Joiner.on(pathDelimiter)
-            .join(mailboxNameParts
+        return pathDelimiter.join(
+            mailboxNameParts
                 .stream()
                 .filter(s -> !Strings.isNullOrEmpty(s))
                 .collect(Guavate.toImmutableList()));
@@ -143,10 +140,10 @@ public class PathConverter {
     }
 
     private String removeRedundantPathDelimiters(String name) {
-        Iterable<String> parts = Splitter.on(pathDelimiter)
-            .omitEmptyStrings()
-            .split(name);
-        return Joiner.on(pathDelimiter)
-            .join(parts);
+        return pathDelimiter.join(
+            pathDelimiter.split(name)
+            .stream()
+            .filter(s -> !s.isEmpty())
+            .collect(Guavate.toImmutableList()));
     }
 }

@@ -48,6 +48,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.store.MailboxMetaData;
@@ -71,7 +72,6 @@ public class MoveProcessorTest {
     private MailboxSession mockMailboxSession;
     private MailboxPath inbox;
     private MailboxPath selected;
-    private SelectedMailbox selectedMailbox;
 
     @Before
     public void setUp() {
@@ -90,13 +90,14 @@ public class MoveProcessorTest {
         when(user.getUserName()).thenReturn("username");
         when(mockMailboxSession.getUser()).thenReturn(user);
         when(mockMailboxSession.getSessionId()).thenReturn(42L);
+        when(mockMailboxSession.getPathDelimiter()).thenReturn(MailboxConstants.DEFAULT_DELIMITER);
 
         when(mockImapSession.getNamespaceConfiguration()).thenReturn(new DefaultNamespaceConfiguration());
         when(mockImapSession.getState()).thenReturn(ImapSessionState.SELECTED);
         when(mockImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mockMailboxSession);
         inbox = MailboxPath.inbox(mockMailboxSession);
         selected = new MailboxPath(inbox, "selected");
-        selectedMailbox = mock(SelectedMailbox.class);
+        SelectedMailbox selectedMailbox = mock(SelectedMailbox.class);
         when(selectedMailbox.getLastUid()).thenReturn(Optional.of(MessageUid.of(8)));
         when(selectedMailbox.existsCount()).thenReturn(8L);
         when(selectedMailbox.getPath()).thenReturn(selected);

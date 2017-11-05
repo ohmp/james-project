@@ -31,6 +31,7 @@ import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.message.request.NamespaceRequest;
 import org.apache.james.imap.message.response.NamespaceResponse;
 import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
 
@@ -51,7 +52,7 @@ public class NamespaceProcessor extends AbstractMailboxProcessor<NamespaceReques
 
     @Override
     protected void doProcess(NamespaceRequest request, ImapSession session, String tag, ImapCommand command, Responder responder) {
-        char pathDelimiter = ImapSessionUtils.getMailboxSession(session).getPathDelimiter();
+        PathDelimiter pathDelimiter = ImapSessionUtils.getMailboxSession(session).getPathDelimiter();
         responder.respond( new NamespaceResponse(
             toNamespaces(session.getNamespaceConfiguration().personalNamespace(), pathDelimiter),
             toNamespaces(session.getNamespaceConfiguration().otherUsersNamespace(), pathDelimiter),
@@ -60,11 +61,11 @@ public class NamespaceProcessor extends AbstractMailboxProcessor<NamespaceReques
         okComplete(command, tag, responder);
     }
 
-    public List<NamespaceResponse.Namespace> toNamespaces(String namespace, char pathDelimiter) {
+    public List<NamespaceResponse.Namespace> toNamespaces(String namespace, PathDelimiter pathDelimiter) {
         return ImmutableList.of(new NamespaceResponse.Namespace(namespace, pathDelimiter));
     }
 
-    public List<NamespaceResponse.Namespace> toNamespaces(List<String> namespaces, char pathDelimiter) {
+    public List<NamespaceResponse.Namespace> toNamespaces(List<String> namespaces, PathDelimiter pathDelimiter) {
         return namespaces.stream()
             .map(namespace -> new NamespaceResponse.Namespace(namespace, pathDelimiter))
             .collect(Guavate.toImmutableList());

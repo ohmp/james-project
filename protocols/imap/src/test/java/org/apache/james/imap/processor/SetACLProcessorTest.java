@@ -50,6 +50,7 @@ import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.EditMode;
 import org.apache.james.mailbox.model.MailboxACL.EntryKey;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.protocols.imap.DefaultNamespaceConfiguration;
@@ -100,6 +101,7 @@ public class SetACLProcessorTest {
             .thenReturn(mailboxSession);
         when(imapSession.getState())
             .thenReturn(ImapSessionState.AUTHENTICATED);
+        when(mailboxSession.getPathDelimiter()).thenReturn(MailboxConstants.DEFAULT_DELIMITER);
         when(mailboxSession.getUser())
             .thenReturn(user1);
         when(user1.getUserName())
