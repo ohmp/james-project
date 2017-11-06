@@ -22,10 +22,14 @@ Feature: Mailbox modification
   I want a mailbox to be modified when I modify it
   I want my mails to be kept when modifying a mailbox
 
+  As a James user
+  I can not use JMAP to create IMAP reserved mailboxes.
+
   Background:
     Given a domain named "domain.tld"
     And a connected user "username@domain.tld"
 
+# Mailbox modificaation should preserve content
   Scenario: Renaming a mailbox should keep messages
     Given mailbox "A" with 2 messages
     When renaming mailbox "A" to "B"
@@ -37,3 +41,23 @@ Feature: Mailbox modification
     And mailbox "B" with 4 messages
     When moving mailbox "A.B" to "B"
     Then mailbox "B.B" contains 3 messages
+
+# Mailbox reserved names
+  Scenario: I can not create the reserved mailbox for IMAP delegation
+    When "username@domain.tld" creates mailbox "Other users" with creation id "create-id01"
+    Then the mailbox with creation id "create-id01" is not created
+    And the mailbox with creation id "create-id01" has an error with type "invalidArguments" and a description "The mailbox name is reserved"
+
+  Scenario: I can not change the name of a mailbox into a reserved one
+    Given "username@domain.tld" creates mailbox "mailbox" with creation id "create-id01"
+    When "username@domain.tld" renames mailbox with creation id "create-id01" into "Other users"
+    Then the mailbox with creation id "create-id01" is not updated
+    And the mailbox updated with creation id "create-id01" has an error with type "invalidArguments" and a description "The mailbox name is reserved"
+
+  Scenario: I can not move a mailbox to a new parents if it leads to override a reserved name
+    Given "username@domain.tld" creates mailbox "parent" with creation id "create-id01"
+    And "username@domain.tld" creates mailbox "Other users" with creation id "create-id02" in parent mailbox with creation id "create-id01"
+    When "username@domain.tld" moves mailbox with creation id "create-id02" as an orphan mailbox
+    Then the mailbox with creation id "create-id02" is not updated
+    And the mailbox updated with creation id "create-id02" has an error with type "invalidArguments" and a description "The mailbox name is reserved"
+

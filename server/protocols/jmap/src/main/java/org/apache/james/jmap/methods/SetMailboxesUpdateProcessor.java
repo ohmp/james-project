@@ -46,6 +46,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.ReservedMailboxNameException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -57,7 +58,6 @@ import org.slf4j.LoggerFactory;
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
 
 public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
@@ -108,6 +108,11 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
             responseBuilder.notUpdated(mailboxId, SetError.builder()
                 .type("invalidArguments")
                 .description("The mailbox name length is too long")
+                .build());
+        }  catch (ReservedMailboxNameException e) {
+            responseBuilder.notUpdated(mailboxId, SetError.builder()
+                .type("invalidArguments")
+                .description("The mailbox name is reserved")
                 .build());
         } catch (MailboxNameException e) {
             responseBuilder.notUpdated(mailboxId, SetError.builder()

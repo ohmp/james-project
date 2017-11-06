@@ -23,7 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import javax.inject.Inject;
@@ -32,6 +34,8 @@ import javax.mail.Flags;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.jayway.awaitility.Awaitility;
@@ -49,16 +53,19 @@ public class SetMailboxesMethodStepdefs {
 
     private static final String NAME = "[0][0]";
     private static final String ARGUMENTS = "[0][1]";
+    public static final Logger LOGGER = LoggerFactory.getLogger(SetMailboxesMethodStepdefs.class);
 
     private final MainStepdefs mainStepdefs;
     private final UserStepdefs userStepdefs;
     private final HttpClient httpClient;
+    private final HashMap<String, String> creationIdToMailboxId;
 
     @Inject
     private SetMailboxesMethodStepdefs(MainStepdefs mainStepdefs, UserStepdefs userStepdefs, HttpClient httpClient) {
         this.mainStepdefs = mainStepdefs;
         this.userStepdefs = userStepdefs;
         this.httpClient = httpClient;
+        this.creationIdToMailboxId = new HashMap<>();
     }
 
     @Given("^mailbox \"([^\"]*)\" with (\\d+) messages$")
@@ -76,6 +83,93 @@ public class SetMailboxesMethodStepdefs {
                 + "testBody" + i;
         mainStepdefs.mailboxProbe.appendMessage(userStepdefs.getConnectedUser(), mailboxPath,
                 new ByteArrayInputStream(content.getBytes()), new Date(), false, new Flags());
+    }
+
+    @Given("^\"([^\"]*)\" creates mailbox \"([^\"]*)\" with creation id \"([^\"]*)\"$")
+    public void createMailbox(String username, String mailboxName, String creationId) throws Throwable {
+        userStepdefs.execWithUser(username, () -> {
+            httpClient.post("[" +
+                "  [ \"setMailboxes\"," +
+                "    {" +
+                "      \"create\": {" +
+                "        \"" + creationId + "\" : {" +
+                "          \"name\" : \"" + mailboxName + "\"" +
+                "        }" +
+                "      }" +
+                "    }," +
+                "    \"#0\"" +
+                "  ]" +
+                "]");
+            mainStepdefs.awaitMethod.run();
+            try {
+                String mailboxId = httpClient.jsonPath.read("[0][1].created." + creationId + ".id");
+                creationIdToMailboxId.put(creationId, mailboxId);
+            } catch (Exception e) {
+                LOGGER.warn("Could not read mailboxId attached to {}, skipping.", creationId, e);
+            }
+        });
+    }
+
+    @Given("^\"([^\"]*)\" creates mailbox \"([^\"]*)\" with creation id \"([^\"]*)\" in parent mailbox with creation id \"([^\"]*)\"$")
+    public void createMailbox(String username, String mailboxName, String creationId, String parentId) throws Throwable {
+        String parentMailboxId = creationIdToMailboxId.get(parentId);
+        userStepdefs.execWithUser(username, () -> {
+            httpClient.post("[" +
+                "  [ \"setMailboxes\"," +
+                "    {" +
+                "      \"create\": {" +
+                "        \"" + creationId + "\" : {" +
+                "          \"name\" : \"" + mailboxName + "\"," +
+                "          \"parentId\" : \"" + parentMailboxId + "\"" +
+                "        }" +
+                "      }" +
+                "    }," +
+                "    \"#0\"" +
+                "  ]" +
+                "]");
+            mainStepdefs.awaitMethod.run();
+            try {
+                String mailboxId = httpClient.jsonPath.read("[0][1].created." + creationId + ".id");
+                creationIdToMailboxId.put(creationId, mailboxId);
+            } catch (Exception e) {
+                LOGGER.warn("Could not read mailboxId attached to {}, skipping.", creationId, e);
+            }
+        });
+    }
+
+    @When("^\"([^\"]*)\" renames mailbox with creation id \"([^\"]*)\" into \"([^\"]*)\"$")
+    public void renamingMailboxViaJMAP(String username, String creationId, String newName) throws Exception {
+        userStepdefs.execWithUser(username, () -> httpClient.post("[" +
+            "  [ \"setMailboxes\"," +
+            "    {" +
+            "      \"update\": {" +
+            "        \"" + creationIdToMailboxId.get(creationId) + "\" : {" +
+            "          \"name\" : \"" + newName + "\"" +
+            "        }" +
+            "      }" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]"));
+    }
+
+    @When("^\"([^\"]*)\" moves mailbox with creation id \"([^\"]*)\" as an orphan mailbox$")
+    public void moveMailboxViaJMAPAsOrphan(String username, String creationId) throws Exception {
+        userStepdefs.execWithUser(username, () -> {
+            String requestBody = "[" +
+                "  [ \"setMailboxes\"," +
+                "    {" +
+                "      \"update\": {" +
+                "        \"" + creationIdToMailboxId.get(creationId) + "\" : {" +
+                "          \"parentId\" : null" +
+                "        }" +
+                "      }" +
+                "    }," +
+                "    \"#0\"" +
+                "  ]" +
+                "]";
+            httpClient.post(requestBody);
+        });
     }
 
     @When("^renaming mailbox \"([^\"]*)\" to \"([^\"]*)\"")
@@ -140,5 +234,35 @@ public class SetMailboxesMethodStepdefs {
 
             return jsonPath.<List<String>>read(ARGUMENTS + ".messageIds").size() == messageCount;
         });
+    }
+
+    @Then("^the mailbox with creation id \"([^\"]*)\" is not created$")
+    public void assertMailboxNotCreated(String creationId) throws Exception {
+        assertThat(httpClient.jsonPath.<Map<String, String>>read("[0][1].notCreated"))
+            .containsKeys(creationId);
+    }
+
+    @Then("^the mailbox with creation id \"([^\"]*)\" has an error with type \"([^\"]*)\" and a description \"([^\"]*)\"$")
+    public void assertMailboxCreationException(String creationId, String type, String description) throws Exception {
+        assertThat(httpClient.jsonPath.<String>read("[0][1].notCreated." + creationId + ".type"))
+            .isEqualTo(type);
+        assertThat(httpClient.jsonPath.<String>read("[0][1].notCreated." + creationId + ".description"))
+            .isEqualTo(description);
+
+    }
+
+    @Then("^the mailbox with creation id \"([^\"]*)\" is not updated")
+    public void assertMailboxNotUpdated(String creationId) throws Exception {
+        assertThat(httpClient.jsonPath.<Map<String, String>>read("[0][1].notUpdated"))
+            .containsKeys(creationIdToMailboxId.get(creationId));
+    }
+
+    @Then("^the mailbox updated with creation id \"([^\"]*)\" has an error with type \"([^\"]*)\" and a description \"([^\"]*)\"$")
+    public void assertMailboxUpdateException(String creationId, String type, String description) throws Exception {
+        String mailboxId = creationIdToMailboxId.get(creationId);
+        assertThat(httpClient.jsonPath.<String>read("[0][1].notUpdated." + mailboxId + ".type"))
+            .isEqualTo(type);
+        assertThat(httpClient.jsonPath.<String>read("[0][1].notUpdated." + mailboxId + ".description"))
+            .isEqualTo(description);
     }
 }

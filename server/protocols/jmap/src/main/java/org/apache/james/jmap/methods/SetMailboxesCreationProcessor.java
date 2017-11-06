@@ -44,6 +44,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.ReservedMailboxNameException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxId.Factory;
@@ -132,6 +133,11 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
             builder.notCreated(mailboxCreationId, SetError.builder()
                 .type("invalidArguments")
                 .description("The mailbox name length is too long")
+                .build());
+        }  catch (ReservedMailboxNameException e) {
+            builder.notCreated(mailboxCreationId, SetError.builder()
+                .type("invalidArguments")
+                .description("The mailbox name is reserved")
                 .build());
         } catch (MailboxNameException | MailboxParentNotFoundException e) {
             builder.notCreated(mailboxCreationId, SetError.builder()
