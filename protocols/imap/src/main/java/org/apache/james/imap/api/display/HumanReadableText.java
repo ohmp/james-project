@@ -79,6 +79,8 @@ public class HumanReadableText {
 
     public static final HumanReadableText FAILURE_MAILBOX_NAME = new HumanReadableText("org.apache.james.imap.ILLEGAL_ARGUMENTS", "too long mailbox name. Illegal arguments.");
 
+    public static final HumanReadableText FAILURE_RESERVED_MAILBOX_NAME = new HumanReadableText("org.apache.james.imap.ILLEGAL_ARGUMENTS", "Mailbox name is reserved. Illegal arguments.");
+
     public static final HumanReadableText FAILURE_MAIL_PARSE = new HumanReadableText("org.apache.james.imap.FAILURE_MAIL_PARSE", "failed. Mail cannot be parsed.");
 
     public static final HumanReadableText FAILURE_NO_SUCH_MAILBOX = new HumanReadableText("org.apache.james.imap.FAILURE_NO_SUCH_MAILBOX", "failed. No such mailbox.");

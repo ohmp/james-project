@@ -35,6 +35,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.ReservedMailboxNameException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.metrics.api.MetricFactory;
@@ -83,6 +84,11 @@ public class RenameProcessor extends AbstractMailboxProcessor<RenameRequest> {
                 LOGGER.debug("Rename from " + request.getExistingName() + " to " + request.getNewName() + " failed because the source mailbox not exists", e);
             }
             no(command, tag, responder, HumanReadableText.MAILBOX_NOT_FOUND);
+        }  catch (ReservedMailboxNameException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Reserved mailbox name: " + request.getNewName(), e);
+            }
+            taggedBad(command, tag, responder, HumanReadableText.FAILURE_RESERVED_MAILBOX_NAME);
         } catch (TooLongMailboxNameException e) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The mailbox name length is over limit: " + request.getNewName(), e);

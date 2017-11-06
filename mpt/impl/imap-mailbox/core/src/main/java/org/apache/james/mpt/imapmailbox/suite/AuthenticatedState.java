@@ -455,4 +455,11 @@ public abstract class AuthenticatedState extends BasicImapCommands {
             .withLocale(Locale.KOREA)
             .run("ListMailboxes");
     }
+
+    @Test
+    public void creatingReservedMailboxesShouldBeForbidden() throws Exception {
+        simpleScriptedTestProtocol
+            .withLocale(Locale.US)
+            .run("ReservedMailboxes");
+    }
 }
