@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,9 +35,11 @@ import java.util.List;
 
 import javax.mail.Flags;
 
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.net.pop3.POP3Client;
 import org.apache.commons.net.pop3.POP3MessageInfo;
 import org.apache.commons.net.pop3.POP3Reply;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.filesystem.api.mock.MockFileSystem;
 import org.apache.james.mailbox.MailboxManager;
@@ -62,6 +65,8 @@ import org.junit.Test;
 
 public class POP3ServerTest {
 
+    private static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
+
     private POP3TestConfiguration pop3Configuration;
     private final InMemoryUsersRepository usersRepository = new InMemoryUsersRepository();
     private POP3Client pop3Client = null;
@@ -79,6 +84,9 @@ public class POP3ServerTest {
         setUpServiceManager();
         setUpPOP3Server();
         pop3Configuration = new POP3TestConfiguration();
+
+        usersRepository.setDomainList(mock(DomainList.class));
+        usersRepository.configure(NO_CONFIGURATION);
     }
 
     @After

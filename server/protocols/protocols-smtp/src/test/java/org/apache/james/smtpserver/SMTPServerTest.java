@@ -42,6 +42,7 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.net.ProtocolCommandEvent;
 import org.apache.commons.net.ProtocolCommandListener;
 import org.apache.commons.net.smtp.SMTPClient;
@@ -81,6 +82,7 @@ import com.google.common.collect.ImmutableList;
 
 @SuppressWarnings("deprecation")
 public class SMTPServerTest {
+
 
     final class AlterableDNSServer implements DNSService {
 
@@ -167,6 +169,7 @@ public class SMTPServerTest {
         }
     }
 
+    private static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
     private static final long HALF_SECOND = 500;
     private static final int MAX_ITERATIONS = 10;
     private static final Logger LOGGER = LoggerFactory.getLogger(SMTPServerTest.class);
@@ -190,6 +193,9 @@ public class SMTPServerTest {
         // log.setLevel(SimpleLog.LOG_LEVEL_ALL);
         smtpConfiguration = new SMTPTestConfiguration();
         setUpSMTPServer();
+
+        usersRepository.setDomainList(mock(DomainList.class));
+        usersRepository.configure(NO_CONFIGURATION);
     }
 
     protected SMTPServer createSMTPServer(SmtpMetricsImpl smtpMetrics) {

@@ -20,12 +20,15 @@ package org.apache.james.smtpserver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.james.core.MailAddress;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.mock.SimpleDomainList;
 import org.apache.james.protocols.api.ProtocolSession.State;
 import org.apache.james.protocols.smtp.SMTPConfiguration;
@@ -43,19 +46,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ValidRcptHandlerTest {
-
-    private final static String VALID_DOMAIN = "localhost";
-    private final static String VALID_USER = "postmaster";
-    private final static String INVALID_USER = "invalid";
-    private final static String USER1 = "user1";
-    private final static String USER2 = "user2";
-    UsersRepository users;
-    ValidRcptHandler handler;
+    private static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
+    private static final String VALID_DOMAIN = "localhost";
+    private static final String VALID_USER = "postmaster";
+    private static final String INVALID_USER = "invalid";
+    private static final String USER1 = "user1";
+    private static final String USER2 = "user2";
+    private InMemoryUsersRepository users;
+    private ValidRcptHandler handler;
 
     @Before
     public void setUp() throws Exception {
 
         users = new InMemoryUsersRepository();
+        users.setDomainList(mock(DomainList.class));
+        users.configure(NO_CONFIGURATION);
         users.addUser(VALID_USER, "xxx");
         
         handler = new ValidRcptHandler();
