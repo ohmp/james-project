@@ -21,8 +21,6 @@ package org.apache.james.mpt.imapmailbox.jpa.host;
 
 import java.io.File;
 
-import javax.persistence.EntityManagerFactory;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.imap.api.process.ImapProcessor;
@@ -32,26 +30,14 @@ import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SubscriptionManager;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
-import org.apache.james.mailbox.acl.MailboxACLResolver;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
-import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.JPAMailboxFixture;
-import org.apache.james.mailbox.jpa.JPAMailboxSessionMapperFactory;
 import org.apache.james.mailbox.jpa.JPASubscriptionManager;
-import org.apache.james.mailbox.jpa.mail.JPAModSeqProvider;
-import org.apache.james.mailbox.jpa.mail.JPAUidProvider;
+import org.apache.james.mailbox.jpa.JpaMailboxManagerProvider;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.apache.james.mailbox.jpa.quota.JPAPerUserMaxQuotaManager;
 import org.apache.james.mailbox.jpa.quota.JpaCurrentQuotaManager;
-import org.apache.james.mailbox.store.JVMMailboxPathLocker;
-import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
-import org.apache.james.mailbox.store.StoreRightManager;
-import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
-import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
-import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.quota.DefaultQuotaRootResolver;
 import org.apache.james.mailbox.store.quota.ListeningCurrentQuotaUpdater;
 import org.apache.james.mailbox.store.quota.StoreQuotaManager;
@@ -86,27 +72,15 @@ public class JPAHostSystem extends JamesImapHostSystem {
     @Override
     public void beforeTest() throws Exception {
         super.beforeTest();
-        EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
-        JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
-        JPAUidProvider uidProvider = new JPAUidProvider(locker, entityManagerFactory);
-        JPAModSeqProvider modSeqProvider = new JPAModSeqProvider(locker, entityManagerFactory);
-        JPAMailboxSessionMapperFactory mapperFactory = new JPAMailboxSessionMapperFactory(entityManagerFactory, uidProvider, modSeqProvider);
+        mailboxManager = JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER,
+            MailboxManagerOptions.builder()
+                .withAuthorizator(authorizator)
+                .withAuthenticator(authenticator)
+                .build());
 
-        MailboxACLResolver aclResolver = new UnionMailboxACLResolver();
-        GroupMembershipResolver groupMembershipResolver = new SimpleGroupMembershipResolver();
-        MessageParser messageParser = new MessageParser();
-
-        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, aclResolver, groupMembershipResolver);
-        DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();
-        MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
-        StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
-        mailboxManager = new OpenJPAMailboxManager(mapperFactory, authenticator, authorizator,
-            messageParser, new DefaultMessageId.Factory(), delegatingListener,
-            mailboxEventDispatcher, annotationManager, storeRightManager);
-
-        DefaultQuotaRootResolver quotaRootResolver = new DefaultQuotaRootResolver(mapperFactory);
-        JpaCurrentQuotaManager currentQuotaManager = new JpaCurrentQuotaManager(entityManagerFactory);
-        maxQuotaManager = new JPAPerUserMaxQuotaManager(entityManagerFactory);
+        DefaultQuotaRootResolver quotaRootResolver = new DefaultQuotaRootResolver(mailboxManager.getMapperFactory());
+        JpaCurrentQuotaManager currentQuotaManager = new JpaCurrentQuotaManager(JPA_TEST_CLUSTER.getEntityManagerFactory());
+        maxQuotaManager = new JPAPerUserMaxQuotaManager(JPA_TEST_CLUSTER.getEntityManagerFactory());
         StoreQuotaManager storeQuotaManager = new StoreQuotaManager(currentQuotaManager, maxQuotaManager);
         ListeningCurrentQuotaUpdater quotaUpdater = new ListeningCurrentQuotaUpdater(currentQuotaManager, quotaRootResolver);
 
@@ -115,7 +89,7 @@ public class JPAHostSystem extends JamesImapHostSystem {
         mailboxManager.setQuotaRootResolver(quotaRootResolver);
         mailboxManager.init();
 
-        SubscriptionManager subscriptionManager = new JPASubscriptionManager(mapperFactory);
+        SubscriptionManager subscriptionManager = new JPASubscriptionManager(mailboxManager.getMapperFactory());
         
         final ImapProcessor defaultImapProcessorFactory = 
                 DefaultImapProcessorFactory.createDefaultProcessor(

@@ -19,42 +19,27 @@
 package org.apache.james.mpt.imapmailbox.jcr.host;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.jackrabbit.core.RepositoryImpl;
-import org.apache.jackrabbit.core.config.RepositoryConfig;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
 import org.apache.james.imap.main.DefaultImapDecoderFactory;
 import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
-import org.apache.james.mailbox.acl.MailboxACLResolver;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
-import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
-import org.apache.james.mailbox.jcr.GlobalMailboxSessionJCRRepository;
 import org.apache.james.mailbox.jcr.JCRMailboxManager;
-import org.apache.james.mailbox.jcr.JCRMailboxSessionMapperFactory;
+import org.apache.james.mailbox.jcr.JCRMailboxManagerProvider;
 import org.apache.james.mailbox.jcr.JCRSubscriptionManager;
-import org.apache.james.mailbox.jcr.JCRUtils;
-import org.apache.james.mailbox.jcr.mail.JCRModSeqProvider;
-import org.apache.james.mailbox.jcr.mail.JCRUidProvider;
-import org.apache.james.mailbox.store.JVMMailboxPathLocker;
-import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
-import org.apache.james.mailbox.store.StoreRightManager;
-import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
-import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
-import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.quota.DefaultQuotaRootResolver;
 import org.apache.james.mailbox.store.quota.NoQuotaManager;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.mpt.api.ImapFeatures;
 import org.apache.james.mpt.api.ImapFeatures.Feature;
 import org.apache.james.mpt.host.JamesImapHostSystem;
-import org.xml.sax.InputSource;
 
 public class JCRHostSystem extends JamesImapHostSystem {
 
@@ -68,47 +53,34 @@ public class JCRHostSystem extends JamesImapHostSystem {
     public static final String META_DATA_DIRECTORY = "target/user-meta-data";
     private static final ImapFeatures SUPPORTED_FEATURES = ImapFeatures.of(Feature.NAMESPACE_SUPPORT);
 
-    private RepositoryImpl repository;
+    private Optional<RepositoryImpl> repository;
     
     public JCRHostSystem() throws Exception {
 
         delete(new File(JACKRABBIT_HOME));
         
         try {
-            
+
             String user = "user";
             String pass = "pass";
             String workspace = null;
-            RepositoryConfig config = RepositoryConfig.create(new InputSource(this.getClass().getClassLoader().getResourceAsStream("test-repository.xml")), JACKRABBIT_HOME);
-            repository =  RepositoryImpl.create(config);
-            GlobalMailboxSessionJCRRepository sessionRepos = new GlobalMailboxSessionJCRRepository(repository, workspace, user, pass);
-            
-            // Register imap cnd file
-            JCRUtils.registerCnd(repository, workspace, user, pass);
 
-            JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
-            JCRUidProvider uidProvider = new JCRUidProvider(locker, sessionRepos);
-            JCRModSeqProvider modSeqProvider = new JCRModSeqProvider(locker, sessionRepos);
-            JCRMailboxSessionMapperFactory mf = new JCRMailboxSessionMapperFactory(sessionRepos, uidProvider, modSeqProvider);
+            if (!repository.isPresent()) {
+                repository = Optional.of(JCRMailboxManagerProvider.createRepository());
+            }
 
-            MailboxACLResolver aclResolver = new UnionMailboxACLResolver();
-            GroupMembershipResolver groupMembershipResolver = new SimpleGroupMembershipResolver();
-            MessageParser messageParser = new MessageParser();
-
-            StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, groupMembershipResolver);
-            DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();
-            MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
-            StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mf, storeRightManager);
-            mailboxManager = new JCRMailboxManager(mf, authenticator, authorizator, new JVMMailboxPathLocker(), messageParser,
-                    new DefaultMessageId.Factory(), mailboxEventDispatcher, delegatingListener,
-                    annotationManager, storeRightManager);
-            mailboxManager.init();
+            mailboxManager = JCRMailboxManagerProvider
+                .provideMailboxManager(user, pass, workspace, repository.get(),
+                    MailboxManagerOptions.builder()
+                        .withAuthenticator(authenticator)
+                        .withAuthorizator(authorizator)
+                        .build());
 
             final ImapProcessor defaultImapProcessorFactory = 
                     DefaultImapProcessorFactory.createDefaultProcessor(mailboxManager, 
-                            new JCRSubscriptionManager(mf), 
+                            new JCRSubscriptionManager(mailboxManager.getMapperFactory()),
                             new NoQuotaManager(), 
-                            new DefaultQuotaRootResolver(mf),
+                            new DefaultQuotaRootResolver(mailboxManager.getMapperFactory()),
                             new DefaultMetricFactory());
             resetUserMetaData();
             MailboxSession session = mailboxManager.createSystemSession("test");
@@ -144,10 +116,8 @@ public class JCRHostSystem extends JamesImapHostSystem {
     }
     
     private void shutdownRepository() throws Exception{
-        if (repository != null) {
-            repository.shutdown();
-            repository = null;
-        }
+        repository.ifPresent(RepositoryImpl::shutdown);
+        repository = Optional.empty();
     }
     
     private void delete(File home) throws Exception{

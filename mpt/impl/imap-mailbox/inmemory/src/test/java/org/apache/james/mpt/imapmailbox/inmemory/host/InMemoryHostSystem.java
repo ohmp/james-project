@@ -24,13 +24,13 @@ import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
 import org.apache.james.imap.main.DefaultImapDecoderFactory;
 import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.inmemory.quota.InMemoryCurrentQuotaManager;
 import org.apache.james.mailbox.inmemory.quota.InMemoryPerUserMaxQuotaManager;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.StoreSubscriptionManager;
 import org.apache.james.mailbox.store.quota.CurrentQuotaCalculator;
@@ -70,7 +70,10 @@ public class InMemoryHostSystem extends JamesImapHostSystem {
     public void beforeTest() throws Exception {
         super.beforeTest();
         this.mailboxManager = new InMemoryIntegrationResources()
-            .createMailboxManager(new SimpleGroupMembershipResolver(), authenticator, authorizator);
+            .createMailboxManager(MailboxManagerOptions.builder()
+                .withAuthenticator(authenticator)
+                .withAuthorizator(authorizator)
+                .build());
         QuotaRootResolver quotaRootResolver = new DefaultQuotaRootResolver(mailboxManager.getMapperFactory());
 
         perUserMaxQuotaManager = new InMemoryPerUserMaxQuotaManager();

@@ -24,14 +24,19 @@ import org.apache.james.mpt.imapmailbox.maildir.host.MaildirHostSystem;
 import org.apache.james.mpt.imapmailbox.suite.Condstore;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 public class MaildirCondstore extends Condstore {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private JamesImapHostSystem system;
 
     @Before
     public void setUp() throws Exception {
-        system = new MaildirHostSystem();
+        system = new MaildirHostSystem(temporaryFolder);
         system.beforeTest();
         super.setUp();
     }

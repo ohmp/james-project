@@ -45,11 +45,10 @@ import org.apache.james.filesystem.api.mock.MockFileSystem;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.store.FakeAuthorizator;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.pop3server.netty.POP3Server;
 import org.apache.james.protocols.api.utils.ProtocolServerUtils;
@@ -62,8 +61,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class POP3ServerTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(POP3ServerTest.class);
 
     private static final DefaultConfigurationBuilder NO_CONFIGURATION = new DefaultConfigurationBuilder();
 
@@ -718,16 +720,19 @@ public class POP3ServerTest {
         protocolHandlerChain = new MockProtocolHandlerLoader();
         protocolHandlerChain.put("usersrepository", UsersRepository.class, usersRepository);
 
+        MailboxManagerOptions options = MailboxManagerOptions.builder()
+            .withAuthenticator((userid, passwd) -> {
+                try {
+                    return usersRepository.test(userid, passwd.toString());
+                } catch (UsersRepositoryException e) {
+                    LOGGER.info("Error while authenticating {}", userid, e);
+                    return false;
+                }
+            })
+            .build();
+
         mailboxManager = new InMemoryIntegrationResources()
-            .createMailboxManager(new SimpleGroupMembershipResolver(),
-                (userid, passwd) -> {
-                    try {
-                        return usersRepository.test(userid, passwd.toString());
-                    } catch (UsersRepositoryException e) {
-                        e.printStackTrace();
-                        return false;
-                    }
-                }, FakeAuthorizator.defaultReject());
+            .createMailboxManager(options);
 
         protocolHandlerChain.put("mailboxmanager", MailboxManager.class, mailboxManager);
     

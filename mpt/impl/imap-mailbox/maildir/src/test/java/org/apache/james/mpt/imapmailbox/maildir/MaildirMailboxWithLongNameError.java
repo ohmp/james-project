@@ -25,15 +25,20 @@ import org.apache.james.mpt.imapmailbox.suite.MailboxWithLongNameError;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 @Ignore("MAILBOX-299 Maildir should fail gracefully when too long mailbox name")
 public class MaildirMailboxWithLongNameError extends MailboxWithLongNameError {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private ImapHostSystem system;
 
     @Before
     public void setUp() throws Exception {
-        system = new MaildirHostSystem();
+        system = new MaildirHostSystem(temporaryFolder);
         super.setUp();
     }
     

@@ -24,14 +24,19 @@ import org.apache.james.mpt.imapmailbox.maildir.host.MaildirHostSystem;
 import org.apache.james.mpt.imapmailbox.suite.Move;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 public class MaildirMove extends Move {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private ImapHostSystem system;
 
     @Before
     public void setUp() throws Exception {
-        system = new MaildirHostSystem();
+        system = new MaildirHostSystem(temporaryFolder);
         super.setUp();
     }
     

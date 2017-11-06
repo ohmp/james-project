@@ -26,21 +26,12 @@ import static org.mockito.Mockito.when;
 import java.io.InputStream;
 
 import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
-import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
-import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxSessionMapperFactory;
-import org.apache.james.mailbox.inmemory.InMemoryMessageId;
-import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.store.AbstractMailboxManagerAttachmentTest;
-import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.Authorizator;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
-import org.apache.james.mailbox.store.NoMailboxPathLocker;
-import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
-import org.apache.james.mailbox.store.StoreRightManager;
-import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
-import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
+import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.mail.AttachmentMapperFactory;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.junit.Before;
@@ -48,32 +39,29 @@ import org.junit.Before;
 public class InMemoryMailboxManagerAttachmentTest extends AbstractMailboxManagerAttachmentTest {
 
     private InMemoryMailboxSessionMapperFactory mailboxSessionMapperFactory;
-    private InMemoryMailboxManager mailboxManager;
-    private InMemoryMailboxManager parseFailingMailboxManager;
+    private StoreMailboxManager mailboxManager;
+    private StoreMailboxManager parseFailingMailboxManager;
 
 
     @Before
     public void setUp() throws Exception {
-        mailboxSessionMapperFactory = new InMemoryMailboxSessionMapperFactory();
-        Authenticator noAuthenticator = null;
-        Authorizator noAuthorizator = null;
-        MessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
-        GroupMembershipResolver groupMembershipResolver = null;
-        UnionMailboxACLResolver aclResolver = new UnionMailboxACLResolver();
-        StoreRightManager storeRightManager = new StoreRightManager(mailboxSessionMapperFactory, aclResolver, groupMembershipResolver);
 
-        DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();
-        MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
-        StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mailboxSessionMapperFactory, storeRightManager);
-        mailboxManager = new InMemoryMailboxManager(mailboxSessionMapperFactory, noAuthenticator, noAuthorizator, new NoMailboxPathLocker(),
-                new MessageParser(), messageIdFactory, mailboxEventDispatcher, delegatingListener, annotationManager, storeRightManager);
-        mailboxManager.init();
         MessageParser failingMessageParser = mock(MessageParser.class);
         when(failingMessageParser.retrieveAttachments(any(InputStream.class)))
             .thenThrow(new RuntimeException("Message parser set to fail"));
-        parseFailingMailboxManager = new InMemoryMailboxManager(mailboxSessionMapperFactory, noAuthenticator, noAuthorizator, new NoMailboxPathLocker(),
-            failingMessageParser, messageIdFactory, mailboxEventDispatcher, delegatingListener, annotationManager, storeRightManager);
-        parseFailingMailboxManager.init();
+
+        InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
+
+
+        mailboxSessionMapperFactory = inMemoryIntegrationResources.getMailboxSessionMapperFactory();
+
+        mailboxManager = inMemoryIntegrationResources
+            .createMailboxManager(MailboxManagerOptions.NONE);
+
+        parseFailingMailboxManager = inMemoryIntegrationResources
+            .createMailboxManager(MailboxManagerOptions.builder()
+                .withMessageParser(failingMessageParser)
+                .build());
         super.setUp();
     }
 
