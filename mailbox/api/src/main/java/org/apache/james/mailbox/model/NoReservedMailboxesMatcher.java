@@ -17,30 +17,13 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.protocols.imap;
+package org.apache.james.mailbox.model;
 
-import java.util.List;
+import org.apache.james.mailbox.PathDelimiter;
 
-import org.apache.james.imap.api.process.ImapSession;
-
-import com.google.common.collect.ImmutableList;
-
-public class DefaultNamespaceConfiguration implements ImapSession.NamespaceConfiguration {
-    public static final String DEFAULT_PERSONAL_NAMESPACE = "";
-    public static final String DELEGATED_MAILBOXES_BASE = "Other users";
-
+public class NoReservedMailboxesMatcher implements ReservedMailboxMatcher {
     @Override
-    public String personalNamespace() {
-        return DEFAULT_PERSONAL_NAMESPACE;
-    }
-
-    @Override
-    public String otherUsersNamespace() {
-        return DELEGATED_MAILBOXES_BASE;
-    }
-
-    @Override
-    public List<String> sharedNamespacesNamespaces() {
-        return ImmutableList.of();
+    public boolean isReserved(String mailboxName, PathDelimiter pathDelimiter) {
+        return false;
     }
 }
