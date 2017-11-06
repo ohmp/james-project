@@ -52,6 +52,7 @@ import org.apache.james.mailbox.hbase.HBaseId;
 import org.apache.james.mailbox.hbase.io.ChunkInputStream;
 import org.apache.james.mailbox.hbase.io.ChunkOutputStream;
 import org.apache.james.mailbox.hbase.mail.model.HBaseMailbox;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -59,6 +60,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * HBaseMailboxMapper unit tests.
@@ -76,7 +79,7 @@ public class HBaseMailboxMapperTest {
     private static final int NAMESPACES = 5;
     private static final int USERS = 5;
     private static final int MAILBOX_NO = 5;
-    private static final PathDelimiter SEPARATOR = new PathDelimiter('%');
+    private static final PathDelimiter SEPARATOR = MailboxConstants.DEFAULT_DELIMITER;
 
     @Before
     public void setUp() throws Exception {
@@ -246,6 +249,7 @@ public class HBaseMailboxMapperTest {
      * Test of hasChildren method, of class HBaseMailboxMapper.
      */
     private void testHasChildren() throws Exception {
+        System.out.println(ImmutableList.copyOf(pathsList));
         LOG.info("hasChildren");
         String oldName;
         for (MailboxPath path : pathsList) {
@@ -323,7 +327,7 @@ public class HBaseMailboxMapperTest {
             for (int j = 0; j < USERS; j++) {
                 for (int k = 0; k < MAILBOX_NO; k++) {
                     if (j == 3) {
-                        name = "test" + SEPARATOR + "subbox" + k;
+                        name = SEPARATOR.join("test", "subbox" + k);
                     } else {
                         name = "mailbox" + k;
                     }
