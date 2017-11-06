@@ -66,20 +66,14 @@ public class PathDelimiter {
     }
 
     public String removeTrailingSeparatorAtTheEnd(String name) {
-        if (name.length() == 0) {
-            return name;
-        }
-        if (name.charAt(name.length() - 1) == charDelimiter) {
+        if (name.endsWith(String.valueOf(charDelimiter))) {
             return name.substring(0, name.length() - 1);
         }
         return name;
     }
 
     public String removeTrailingSeparatorAtTheBeginning(String name) {
-        if (name.length() == 0) {
-            return name;
-        }
-        if (name.charAt(0) == charDelimiter) {
+        if (name.startsWith(String.valueOf(charDelimiter))) {
             return name.substring(1, name.length());
         }
         return name;
