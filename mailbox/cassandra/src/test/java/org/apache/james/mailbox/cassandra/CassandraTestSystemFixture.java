@@ -27,6 +27,7 @@ import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.quota.CassandraCurrentQuotaManager;
 import org.apache.james.mailbox.cassandra.quota.CassandraPerUserMaxQuotaManager;
+import org.apache.james.mailbox.model.NoReservedMailboxesMatcher;
 import org.apache.james.mailbox.quota.CurrentQuotaManager;
 import org.apache.james.mailbox.quota.MaxQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
@@ -60,10 +61,12 @@ public class CassandraTestSystemFixture {
         MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingMailboxListener);
         StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, new UnionMailboxACLResolver(), new SimpleGroupMembershipResolver());
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
+        NoReservedMailboxesMatcher reservedMailboxMatcher = new NoReservedMailboxesMatcher();
 
         CassandraMailboxManager cassandraMailboxManager = new CassandraMailboxManager(mapperFactory, mock(Authenticator.class), mock(Authorizator.class),
             new NoMailboxPathLocker(), new MessageParser(), new CassandraMessageId.Factory(),
-            mailboxEventDispatcher, delegatingMailboxListener, annotationManager, storeRightManager);
+            mailboxEventDispatcher, delegatingMailboxListener, annotationManager, storeRightManager,
+            reservedMailboxMatcher);
         cassandraMailboxManager.init();
 
         return cassandraMailboxManager;

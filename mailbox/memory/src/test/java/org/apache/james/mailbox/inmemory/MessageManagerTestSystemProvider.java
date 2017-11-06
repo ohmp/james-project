@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory;
 
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.store.MessageManagerTestSystem;
@@ -26,10 +25,8 @@ import org.apache.james.mailbox.store.StoreMailboxManager;
 
 public class MessageManagerTestSystemProvider {
 
-
     public static MessageManagerTestSystem createTestSystem() throws MailboxException {
-        InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
-        StoreMailboxManager mailboxManager = inMemoryIntegrationResources.createMailboxManager(new SimpleGroupMembershipResolver());
+        StoreMailboxManager mailboxManager = new InMemoryIntegrationResources().createMailboxManager();
 
         return new InMemoryMessageManagerTestSystem(mailboxManager);
     }

@@ -38,6 +38,7 @@ import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraSubscriptionModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
 import org.apache.james.mailbox.store.MailboxManagerOptions;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -71,12 +72,13 @@ public class CassandraMailboxManagerTest extends MailboxManagerTest {
     
 
     @Override
-    protected MailboxManager provideMailboxManager() {
+    protected MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) {
         return CassandraMailboxManagerProvider.provideMailboxManager(cassandra.getConf(),
             cassandra.getTypesProvider(),
             MailboxManagerOptions.builder()
                 .withAnnotationCountLimit(LIMIT_ANNOTATIONS)
                 .withAnnotationSizeLimit(LIMIT_ANNOTATION_SIZE)
+                .withReservedMailboxMatcher(reservedMailboxMatcher)
                 .build());
     }
 

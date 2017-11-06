@@ -21,6 +21,7 @@ package org.apache.james.mpt.imapmailbox.inmemory.host;
 
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
+import org.apache.james.imap.mailbox.NamespaceReservedMailboxMatcher;
 import org.apache.james.imap.main.DefaultImapDecoderFactory;
 import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
@@ -41,6 +42,7 @@ import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.mpt.api.ImapFeatures;
 import org.apache.james.mpt.api.ImapFeatures.Feature;
 import org.apache.james.mpt.host.JamesImapHostSystem;
+import org.apache.james.protocols.imap.DefaultNamespaceConfiguration;
 
 public class InMemoryHostSystem extends JamesImapHostSystem {
 
@@ -71,6 +73,7 @@ public class InMemoryHostSystem extends JamesImapHostSystem {
         super.beforeTest();
         this.mailboxManager = new InMemoryIntegrationResources()
             .createMailboxManager(MailboxManagerOptions.builder()
+                .withReservedMailboxMatcher(new NamespaceReservedMailboxMatcher(new DefaultNamespaceConfiguration()))
                 .withAuthenticator(authenticator)
                 .withAuthorizator(authorizator)
                 .build());

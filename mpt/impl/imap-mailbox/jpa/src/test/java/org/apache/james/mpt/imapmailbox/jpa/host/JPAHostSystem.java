@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
+import org.apache.james.imap.mailbox.NamespaceReservedMailboxMatcher;
 import org.apache.james.imap.main.DefaultImapDecoderFactory;
 import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
@@ -45,6 +46,7 @@ import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.mpt.api.ImapFeatures;
 import org.apache.james.mpt.api.ImapFeatures.Feature;
 import org.apache.james.mpt.host.JamesImapHostSystem;
+import org.apache.james.protocols.imap.DefaultNamespaceConfiguration;
 
 import com.google.common.collect.ImmutableList;
 

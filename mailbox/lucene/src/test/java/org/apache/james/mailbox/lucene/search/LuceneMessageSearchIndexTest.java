@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.lucene.search;
 
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
@@ -38,7 +37,7 @@ public class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest
     @Override
     protected void initializeMailboxManager() throws Exception {
         storeMailboxManager = new InMemoryIntegrationResources()
-            .createMailboxManager(new SimpleGroupMembershipResolver());
+            .createMailboxManager();
 
         messageIdManager = new StoreMessageIdManager(
             storeMailboxManager,

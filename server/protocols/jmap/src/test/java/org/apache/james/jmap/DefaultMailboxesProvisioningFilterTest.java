@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -46,8 +45,7 @@ public class DefaultMailboxesProvisioningFilterTest {
     public void before() throws Exception {
         session = new MockMailboxSession(USERNAME);
 
-        InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
-        mailboxManager = inMemoryIntegrationResources.createMailboxManager(new SimpleGroupMembershipResolver());
+        mailboxManager = new InMemoryIntegrationResources().createMailboxManager();
         testee = new DefaultMailboxesProvisioningFilter(mailboxManager, new NoopMetricFactory());
     }
 

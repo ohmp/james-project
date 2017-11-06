@@ -34,6 +34,8 @@ import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.store.FakeAuthenticator;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.SimpleMailboxMetaData;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.Before;
@@ -55,10 +57,19 @@ public class MailboxFactoryTest {
     private String otherUser;
     private MailboxFactory sut;
 
+    public static FakeAuthenticator createFakeAuthenticator() {
+        FakeAuthenticator fakeAuthenticator = new FakeAuthenticator();
+        fakeAuthenticator.addUser(ManagerTestResources.USER, ManagerTestResources.USER_PASS);
+        fakeAuthenticator.addUser(ManagerTestResources.OTHER_USER, ManagerTestResources.OTHER_USER_PASS);
+        return fakeAuthenticator;
+    }
+
     @Before
     public void setup() throws Exception {
-        InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
-        mailboxManager = inMemoryIntegrationResources.createMailboxManager(inMemoryIntegrationResources.createGroupMembershipResolver());
+        mailboxManager = new InMemoryIntegrationResources().createMailboxManager(
+            MailboxManagerOptions.builder()
+                .withAuthenticator(createFakeAuthenticator())
+                .build());
         user = ManagerTestResources.USER;
         otherUser = ManagerTestResources.OTHER_USER;
         mailboxSession = mailboxManager.login(user, ManagerTestResources.USER_PASS);

@@ -26,6 +26,7 @@ import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.apache.james.mailbox.store.MailboxManagerOptions;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.junit.After;
 import org.junit.Before;
 
@@ -40,12 +41,13 @@ public class JPAMailboxManagerTest extends MailboxManagerTest {
     }
     
     @Override
-    protected MailboxManager provideMailboxManager() {
+    protected MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) {
         if (!openJPAMailboxManager.isPresent()) {
             openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER,
                 MailboxManagerOptions.builder()
                     .withAnnotationCountLimit(LIMIT_ANNOTATIONS)
                     .withAnnotationSizeLimit(LIMIT_ANNOTATION_SIZE)
+                    .withReservedMailboxMatcher(reservedMailboxMatcher)
                     .build()));
         }
         return openJPAMailboxManager.get();

@@ -38,8 +38,7 @@ public class MailboxUtilsTest {
 
     @Before
     public void setup() throws Exception {
-        InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
-        mailboxManager = inMemoryIntegrationResources.createMailboxManager(inMemoryIntegrationResources.createGroupMembershipResolver());
+        mailboxManager = new InMemoryIntegrationResources().createMailboxManager();
         user = "user@domain.org";
         mailboxSession = mailboxManager.createSystemSession(user);
         sut = new MailboxUtils(mailboxManager);

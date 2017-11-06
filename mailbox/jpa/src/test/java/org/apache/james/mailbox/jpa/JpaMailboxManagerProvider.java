@@ -58,7 +58,7 @@ public class JpaMailboxManagerProvider {
             options.getMessageParser(),
             new DefaultMessageId.Factory(),
             delegatingListener, mailboxEventDispatcher, annotationManager,
-            storeRightManager);
+            storeRightManager, options.getReservedMailboxMatcher());
 
         try {
             openJPAMailboxManager.init();

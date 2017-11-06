@@ -44,6 +44,7 @@ import org.apache.james.mailbox.cassandra.modules.CassandraMailboxRecentsModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
+import org.apache.james.mailbox.model.NoReservedMailboxesMatcher;
 import org.apache.james.mailbox.store.AbstractMailboxManagerAttachmentTest;
 import org.apache.james.mailbox.store.Authenticator;
 import org.apache.james.mailbox.store.Authorizator;
@@ -112,14 +113,16 @@ public class CassandraMailboxManagerAttachmentTest extends AbstractMailboxManage
 
         mailboxManager = new CassandraMailboxManager(mailboxSessionMapperFactory,
             noAuthenticator, noAuthorizator, new NoMailboxPathLocker(), new MessageParser(),
-            messageIdFactory, mailboxEventDispatcher, delegatingMailboxListener, annotationManager, storeRightManager);
+            messageIdFactory, mailboxEventDispatcher, delegatingMailboxListener, annotationManager,
+            storeRightManager, new NoReservedMailboxesMatcher());
         mailboxManager.init();
         MessageParser failingMessageParser = mock(MessageParser.class);
         when(failingMessageParser.retrieveAttachments(any()))
             .thenThrow(new RuntimeException("Message parser set to fail"));
         parseFailingMailboxManager = new CassandraMailboxManager(mailboxSessionMapperFactory, noAuthenticator, noAuthorizator,
             new NoMailboxPathLocker(), failingMessageParser, messageIdFactory,
-            mailboxEventDispatcher, delegatingMailboxListener, annotationManager, storeRightManager);
+            mailboxEventDispatcher, delegatingMailboxListener, annotationManager, storeRightManager,
+            new NoReservedMailboxesMatcher());
         parseFailingMailboxManager.init();
     }
 

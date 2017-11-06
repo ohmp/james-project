@@ -24,6 +24,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.store.MailboxManagerOptions;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -42,9 +43,12 @@ public class FullUserMaildirMailboxManagerTest extends MailboxManagerTest {
     }
     
     @Override
-    protected MailboxManager provideMailboxManager() {
+    protected MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) {
         try {
-            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser", tmpFolder, MailboxManagerOptions.NONE);
+            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser", tmpFolder,
+                MailboxManagerOptions.builder()
+                    .withReservedMailboxMatcher(reservedMailboxMatcher)
+                    .build());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

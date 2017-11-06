@@ -27,6 +27,7 @@ import org.apache.james.mailbox.hbase.mail.HBaseMailboxMapper;
 import org.apache.james.mailbox.hbase.mail.model.HBaseMailbox;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.apache.james.mailbox.store.Authenticator;
 import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
@@ -54,9 +55,11 @@ public class HBaseMailboxManager extends StoreMailboxManager {
                                MailboxEventDispatcher dispatcher,
                                DelegatingMailboxListener delegatingMailboxListener,
                                StoreMailboxAnnotationManager annotationManager,
-                               StoreRightManager storeRightManager) {
+                               StoreRightManager storeRightManager,
+                               ReservedMailboxMatcher reservedMailboxMatcher) {
         super(mapperFactory, authenticator, authorizator, locker, messageParser, messageIdFactory,
-            annotationManager, dispatcher, delegatingMailboxListener, storeRightManager);
+            annotationManager, dispatcher, delegatingMailboxListener, storeRightManager,
+            reservedMailboxMatcher);
     }
 
     @Override

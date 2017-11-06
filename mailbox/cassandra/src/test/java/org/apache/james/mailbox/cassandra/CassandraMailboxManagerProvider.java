@@ -62,7 +62,9 @@ public class CassandraMailboxManagerProvider {
             options.getMessageParser(),
             messageIdFactory, mailboxEventDispatcher,
             delegatingMailboxListener,
-            annotationManager, storeRightManager);
+            annotationManager,
+            storeRightManager,
+            options.getReservedMailboxMatcher());
         try {
             manager.init();
         } catch (MailboxException e) {

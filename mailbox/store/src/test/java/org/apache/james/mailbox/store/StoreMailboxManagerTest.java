@@ -39,6 +39,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageId.Factory;
+import org.apache.james.mailbox.model.NoReservedMailboxesMatcher;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
@@ -80,7 +81,8 @@ public class StoreMailboxManagerTest {
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mockedMapperFactory, storeRightManager);
         storeMailboxManager = new StoreMailboxManager(mockedMapperFactory, authenticator, FakeAuthorizator.forUserAndAdmin(ADMIN, CURRENT_USER),
                 new JVMMailboxPathLocker(), new MessageParser(), messageIdFactory,
-                annotationManager, mailboxEventDispatcher, delegatingListener, storeRightManager);
+                annotationManager, mailboxEventDispatcher, delegatingListener, storeRightManager,
+                new NoReservedMailboxesMatcher());
         storeMailboxManager.init();
     }
 

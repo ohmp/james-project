@@ -29,6 +29,7 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.store.MailboxManagerOptions;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.junit.After;
 import org.junit.Before;
 
@@ -44,7 +45,7 @@ public class JCRMailboxManagerTest extends MailboxManagerTest {
     }
     
     @Override
-    protected MailboxManager provideMailboxManager() {
+    protected MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) {
         String user = "user";
         String pass = "pass";
         String workspace = null;
@@ -53,7 +54,11 @@ public class JCRMailboxManagerTest extends MailboxManagerTest {
             repository = Optional.of(JCRMailboxManagerProvider.createRepository());
         }
 
-        return JCRMailboxManagerProvider.provideMailboxManager(user, pass, workspace, repository.get(), MailboxManagerOptions.NONE);
+
+        return JCRMailboxManagerProvider.provideMailboxManager(user, pass, workspace, repository.get(),
+            MailboxManagerOptions.builder()
+                .withReservedMailboxMatcher(reservedMailboxMatcher)
+                .build());
     }
 
     @After

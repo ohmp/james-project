@@ -51,7 +51,8 @@ public class MaildirMailboxManagerProvider {
             options.getAuthorizator(),
             new JVMMailboxPathLocker(),
             options.getMessageParser(), new DefaultMessageId.Factory(), annotationManager,
-            mailboxEventDispatcher, delegatingListener, storeRightManager);
+            mailboxEventDispatcher, delegatingListener, storeRightManager,
+            options.getReservedMailboxMatcher());
         manager.init();
 
         return manager;

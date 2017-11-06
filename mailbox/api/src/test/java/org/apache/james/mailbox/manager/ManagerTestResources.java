@@ -30,7 +30,6 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.mock.MockMail;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -58,7 +57,6 @@ public class ManagerTestResources<T extends MailboxManager> {
 
     private MaxQuotaManager maxQuotaManager;
     private QuotaManager quotaManager;
-    private GroupMembershipResolver groupMembershipResolver;
     private QuotaRootResolver quotaRootResolver;
 
     private IntegrationResources<T> integrationResources;
@@ -66,8 +64,7 @@ public class ManagerTestResources<T extends MailboxManager> {
     public ManagerTestResources(IntegrationResources<T> integrationResources) throws Exception {
         this.integrationResources = integrationResources;
         maxQuotaManager = integrationResources.createMaxQuotaManager();
-        groupMembershipResolver = integrationResources.createGroupMembershipResolver();
-        mailboxManager = integrationResources.createMailboxManager(groupMembershipResolver);
+        mailboxManager = integrationResources.createMailboxManager();
         quotaRootResolver = integrationResources.createQuotaRootResolver(mailboxManager);
         quotaManager = integrationResources.createQuotaManager(maxQuotaManager, mailboxManager);
         integrationResources.init();
@@ -83,10 +80,6 @@ public class ManagerTestResources<T extends MailboxManager> {
         mailboxManager.createMailbox(inbox, session);
         mailboxManager.createMailbox(subFolder, session);
         messageManager = mailboxManager.getMailbox(inbox, session);
-    }
-
-    public GroupMembershipResolver getGroupMembershipResolver() {
-        return groupMembershipResolver;
     }
 
     public QuotaManager getQuotaManager() {

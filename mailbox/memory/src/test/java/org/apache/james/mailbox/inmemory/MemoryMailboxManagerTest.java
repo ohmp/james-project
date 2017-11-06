@@ -22,9 +22,14 @@ package org.apache.james.mailbox.inmemory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.Before;
 
 public class MemoryMailboxManagerTest extends MailboxManagerTest {
+    private static final int LIMIT_ANNOTATIONS = 3;
+    private static final int LIMIT_ANNOTATION_SIZE = 30;
 
     @Before
     public void setUp() throws Exception {
@@ -32,7 +37,13 @@ public class MemoryMailboxManagerTest extends MailboxManagerTest {
     }
     
     @Override
-    protected MailboxManager provideMailboxManager() throws MailboxException {
-        return MemoryMailboxManagerProvider.provideMailboxManager();
+    protected MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) throws MailboxException {
+        return new InMemoryIntegrationResources()
+            .createMailboxManager(
+                MailboxManagerOptions.builder()
+                    .withAnnotationCountLimit(LIMIT_ANNOTATIONS)
+                    .withAnnotationSizeLimit(LIMIT_ANNOTATION_SIZE)
+                    .withReservedMailboxMatcher(reservedMailboxMatcher)
+                    .build());
     }
 }

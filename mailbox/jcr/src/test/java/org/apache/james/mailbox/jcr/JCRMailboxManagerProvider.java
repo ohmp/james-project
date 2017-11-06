@@ -69,7 +69,7 @@ public class JCRMailboxManagerProvider {
         JCRMailboxManager manager = new JCRMailboxManager(mf, options.getAuthenticator(),
             options.getAuthorizator(), locker,
             options.getMessageParser(), new DefaultMessageId.Factory(), mailboxEventDispatcher, delegatingListener,
-            annotationManager, storeRightManager);
+            annotationManager, storeRightManager, options.getReservedMailboxMatcher());
 
         try {
             manager.init();

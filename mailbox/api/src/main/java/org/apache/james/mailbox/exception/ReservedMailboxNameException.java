@@ -17,23 +17,10 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.inmemory;
+package org.apache.james.mailbox.exception;
 
-import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
-import org.apache.james.mailbox.store.MailboxManagerOptions;
-
-public class MemoryMailboxManagerProvider {
-    private static final int LIMIT_ANNOTATIONS = 3;
-    private static final int LIMIT_ANNOTATION_SIZE = 30;
-
-    public static MailboxManager provideMailboxManager() throws MailboxException {
-        return new InMemoryIntegrationResources()
-            .createMailboxManager(MailboxManagerOptions.builder()
-                .withAnnotationCountLimit(LIMIT_ANNOTATIONS)
-                .withAnnotationSizeLimit(LIMIT_ANNOTATION_SIZE)
-                .build());
+public class ReservedMailboxNameException extends MailboxNameException {
+    public ReservedMailboxNameException(String message) {
+        super(message);
     }
-
 }

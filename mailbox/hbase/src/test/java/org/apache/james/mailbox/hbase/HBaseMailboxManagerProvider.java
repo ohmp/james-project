@@ -32,26 +32,23 @@ import static org.apache.james.mailbox.hbase.HBaseNames.SUBSCRIPTIONS_TABLE;
 import static org.apache.james.mailbox.hbase.HBaseNames.SUBSCRIPTION_CF;
 
 import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.hbase.mail.HBaseModSeqProvider;
 import org.apache.james.mailbox.hbase.mail.HBaseUidProvider;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
 import org.apache.james.mailbox.store.StoreRightManager;
 import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 
 import com.google.common.base.Throwables;
 
 public class HBaseMailboxManagerProvider {
-    public MailboxManager provideMailboxManager(HBaseClusterSingleton cluster) {
+    public MailboxManager provideMailboxManager(HBaseClusterSingleton cluster, MailboxManagerOptions options) {
         ensureTables(cluster);
 
         HBaseUidProvider uidProvider = new HBaseUidProvider(cluster.getConf());
@@ -59,23 +56,24 @@ public class HBaseMailboxManagerProvider {
         MessageId.Factory messageIdFactory = new DefaultMessageId.Factory();
         HBaseMailboxSessionMapperFactory mapperFactory = new HBaseMailboxSessionMapperFactory(cluster.getConf(),
             uidProvider, modSeqProvider, messageIdFactory);
-        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, new UnionMailboxACLResolver(), new SimpleGroupMembershipResolver());
+        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, new UnionMailboxACLResolver(), options.getGroupMembershipResolver());
 
-        Authenticator noAuthenticator = null;
-        Authorizator noAuthorizator = null;
         DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();
         MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
-        StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
+        StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager,
+            options.getLimitAnnotationCount(),
+            options.getLimitAnnotationSize());
         HBaseMailboxManager manager = new HBaseMailboxManager(mapperFactory,
-            noAuthenticator,
-            noAuthorizator,
+            options.getAuthenticator(),
+            options.getAuthorizator(),
             new JVMMailboxPathLocker(),
-            new MessageParser(),
+            options.getMessageParser(),
             messageIdFactory,
             mailboxEventDispatcher,
             delegatingListener,
             annotationManager,
-            storeRightManager);
+            storeRightManager,
+            options.getReservedMailboxMatcher());
 
         try {
             manager.init();

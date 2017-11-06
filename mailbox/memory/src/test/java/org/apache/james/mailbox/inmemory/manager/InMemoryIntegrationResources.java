@@ -20,8 +20,6 @@
 package org.apache.james.mailbox.inmemory.manager;
 
 import org.apache.james.mailbox.MessageIdManager;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
@@ -30,11 +28,9 @@ import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.quota.InMemoryCurrentQuotaManager;
 import org.apache.james.mailbox.inmemory.quota.InMemoryPerUserMaxQuotaManager;
 import org.apache.james.mailbox.manager.IntegrationResources;
-import org.apache.james.mailbox.manager.ManagerTestResources;
 import org.apache.james.mailbox.quota.MaxQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
-import org.apache.james.mailbox.store.FakeAuthenticator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
 import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
@@ -50,7 +46,6 @@ import org.apache.james.mailbox.store.quota.StoreQuotaManager;
 
 public class InMemoryIntegrationResources implements IntegrationResources<StoreMailboxManager> {
 
-    private SimpleGroupMembershipResolver groupMembershipResolver;
     private DefaultQuotaRootResolver quotaRootResolver;
     private final InMemoryMailboxSessionMapperFactory mailboxSessionMapperFactory;
 
@@ -59,17 +54,14 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
     }
 
     @Override
-    public StoreMailboxManager createMailboxManager(GroupMembershipResolver groupMembershipResolver) throws MailboxException {
-        return createMailboxManager(MailboxManagerOptions.builder()
-            .withGroupMembershipResolver(groupMembershipResolver)
-            .build());
+    public StoreMailboxManager createMailboxManager() throws MailboxException {
+        return createMailboxManager(MailboxManagerOptions.NONE);
     }
 
     public StoreMailboxManager createMailboxManager(MailboxManagerOptions options) throws MailboxException {
-        FakeAuthenticator fakeAuthenticator = new FakeAuthenticator();
-        fakeAuthenticator.addUser(ManagerTestResources.USER, ManagerTestResources.USER_PASS);
-        fakeAuthenticator.addUser(ManagerTestResources.OTHER_USER, ManagerTestResources.OTHER_USER_PASS);
-        StoreRightManager storeRightManager = new StoreRightManager(mailboxSessionMapperFactory, new UnionMailboxACLResolver(), groupMembershipResolver);
+        StoreRightManager storeRightManager = new StoreRightManager(mailboxSessionMapperFactory,
+            new UnionMailboxACLResolver(),
+            options.getGroupMembershipResolver());
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mailboxSessionMapperFactory,
             storeRightManager,
             options.getLimitAnnotationCount(),
@@ -87,7 +79,8 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
             mailboxEventDispatcher,
             delegatingListener,
             annotationManager,
-            storeRightManager);
+            storeRightManager,
+            options.getReservedMailboxMatcher());
         manager.init();
         return manager;
     }
@@ -110,8 +103,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
 
         InMemoryCurrentQuotaManager currentQuotaManager = new InMemoryCurrentQuotaManager(
             new CurrentQuotaCalculator(mailboxManager.getMapperFactory(), quotaRootResolver),
-            mailboxManager
-        );
+            mailboxManager);
 
         ListeningCurrentQuotaUpdater listeningCurrentQuotaUpdater = new ListeningCurrentQuotaUpdater(currentQuotaManager, quotaRootResolver);
         StoreQuotaManager quotaManager = new StoreQuotaManager(currentQuotaManager, maxQuotaManager);
@@ -124,12 +116,6 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
     @Override
     public MaxQuotaManager createMaxQuotaManager() throws Exception {
         return new InMemoryPerUserMaxQuotaManager();
-    }
-
-    @Override
-    public GroupMembershipResolver createGroupMembershipResolver() throws Exception {
-        groupMembershipResolver = new SimpleGroupMembershipResolver();
-        return groupMembershipResolver;
     }
 
     @Override

@@ -19,6 +19,7 @@
 package org.apache.james.mailbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -31,7 +32,9 @@ import javax.mail.Flags;
 import org.apache.james.mailbox.MailboxManager.MailboxCapabilities;
 import org.apache.james.mailbox.exception.AnnotationException;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.mock.MockMailboxManager;
+import org.apache.james.mailbox.exception.MailboxNameException;
+import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.manager.MailboxManagerFeeder;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
@@ -40,6 +43,8 @@ import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
+import org.apache.james.mailbox.model.NoReservedMailboxesMatcher;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.junit.Assume;
@@ -87,10 +92,10 @@ public abstract class MailboxManagerTest {
     private MailboxManager mailboxManager;
     private MailboxSession session;
 
-    protected abstract MailboxManager provideMailboxManager() throws MailboxException;
+    protected abstract MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) throws MailboxException;
 
     public void setUp() throws Exception {
-        this.mailboxManager = new MockMailboxManager(provideMailboxManager()).getMockMailboxManager();
+        this.mailboxManager = provideMailboxManager(new NoReservedMailboxesMatcher());
     }
 
     public void tearDown() throws Exception {
@@ -217,10 +222,12 @@ public abstract class MailboxManagerTest {
 
     @Test
     public void listShouldReturnMailboxes() throws MailboxException, UnsupportedEncodingException {
+        new MailboxManagerFeeder(mailboxManager).feed();
+
         session = mailboxManager.createSystemSession("manager");
         mailboxManager.startProcessingRequest(session);
         
-        assertThat(mailboxManager.list(session)).hasSize(MockMailboxManager.EXPECTED_MAILBOXES_COUNT);
+        assertThat(mailboxManager.list(session)).hasSize(MailboxManagerFeeder.EXPECTED_MAILBOXES_COUNT);
     }
 
     @Test
@@ -847,5 +854,108 @@ public abstract class MailboxManagerTest {
 
         assertThat(mailboxManager.search(mailboxQuery, session2))
             .isEmpty();
+    }
+
+    @Test
+    public void createMailboxShouldThrowOnReservedName() throws MailboxException {
+        String mailboxName = "mailbox";
+        mailboxManager = provideMailboxManager(
+            (name, pathDelimiter) -> mailboxName.equals(name));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+
+        assertThatThrownBy(() ->
+            mailboxManager.createMailbox(MailboxPath.forUser(USER_1, mailboxName), session1))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void createMailboxShouldNotCreateReservedName() throws MailboxException {
+        String mailboxName = "mailbox";
+        mailboxManager = provideMailboxManager(
+            (name, pathDelimiter) -> mailboxName.equals(name));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+
+        MailboxPath mailboxPath = MailboxPath.forUser(USER_1, mailboxName);
+        try {
+            mailboxManager.createMailbox(mailboxPath, session1);
+        } catch (MailboxNameException e) { /*Ignored*/}
+
+        assertThatThrownBy(() ->
+            mailboxManager.getMailbox(mailboxPath, session1))
+            .isInstanceOf(MailboxNotFoundException.class);
+    }
+
+    @Test
+    public void renameMailboxShouldThrowOnReservedName() throws MailboxException {
+        String mailboxName = "mailbox";
+        mailboxManager = provideMailboxManager(
+            (name, pathDelimiter) -> mailboxName.equals(name));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+        MailboxPath originPath = MailboxPath.forUser(USER_1, "origin");
+        mailboxManager.createMailbox(originPath, session1);
+
+        assertThatThrownBy(() ->
+            mailboxManager.renameMailbox(
+                originPath,
+                MailboxPath.forUser(USER_1, mailboxName),
+                session1))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void renameMailboxShouldNotPerformRenameOnReservedNames() throws MailboxException {
+        String mailboxName = "mailbox";
+        mailboxManager = provideMailboxManager(
+            (name, pathDelimiter) -> mailboxName.equals(name));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+        MailboxPath originPath = MailboxPath.forUser(USER_1, "origin");
+        mailboxManager.createMailbox(originPath, session1);
+
+        MailboxPath destinationPath = MailboxPath.forUser(USER_1, mailboxName);
+        try {
+            mailboxManager.renameMailbox(originPath, destinationPath, session1);
+        } catch (MailboxNameException e) { /*Ignored*/}
+
+        assertThatThrownBy(() ->
+            mailboxManager.getMailbox(destinationPath, session1))
+            .isInstanceOf(MailboxNotFoundException.class);
+        assertThat(mailboxManager.getMailbox(originPath, session1)).isNotNull();
+    }
+
+    @Test
+    public void createMailboxShouldThrowWhenParentMailboxHasAReservedName() throws MailboxException {
+        String mailboxName = "mailbox";
+        mailboxManager = provideMailboxManager(
+            (name, pathDelimiter) -> mailboxName.equals(name));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+        MailboxPath child = MailboxPath.forUser(USER_1,
+            mailboxManager.getDelimiter()
+                .join(mailboxName, "child"));
+
+        assertThatThrownBy(() ->
+            mailboxManager.createMailbox(child, session1))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void createMailboxShouldNotCreateAnythingWhenParentMailboxHasAReservedName() throws MailboxException {
+        String mailboxName = "mailbox";
+        mailboxManager = provideMailboxManager(
+            (name, pathDelimiter) -> mailboxName.equals(name));
+        MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+        MailboxPath child = MailboxPath.forUser(USER_1,
+            mailboxManager.getDelimiter()
+                .join(mailboxName, "child"));
+
+        try {
+            mailboxManager.createMailbox(child, session1);
+        } catch (MailboxNameException e) { /*Ignored*/}
+
+        assertThatThrownBy(() ->
+            mailboxManager.getMailbox(MailboxPath.forUser(USER_1, mailboxName), session1))
+            .isInstanceOf(MailboxNotFoundException.class);
+        assertThatThrownBy(() ->
+            mailboxManager.getMailbox(child, session1))
+            .isInstanceOf(MailboxNotFoundException.class);
     }
 }

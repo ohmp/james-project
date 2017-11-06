@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.inmemory.quota.InMemoryCurrentQuotaManager;
 import org.apache.james.mailbox.inmemory.quota.InMemoryPerUserMaxQuotaManager;
@@ -52,7 +51,7 @@ public class IsOverQuotaTest {
 
     @Before
     public void setUp() throws Exception {
-        mailboxManager = new InMemoryIntegrationResources().createMailboxManager(new SimpleGroupMembershipResolver());
+        mailboxManager = new InMemoryIntegrationResources().createMailboxManager();
 
         quotaRootResolver = new DefaultQuotaRootResolver(mailboxManager.getMapperFactory());
         maxQuotaManager = new InMemoryPerUserMaxQuotaManager();

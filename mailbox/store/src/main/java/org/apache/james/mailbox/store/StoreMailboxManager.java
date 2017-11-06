@@ -44,8 +44,10 @@ import org.apache.james.mailbox.StandardMailboxMetaDataComparator;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
+import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.NotAdminException;
+import org.apache.james.mailbox.exception.ReservedMailboxNameException;
 import org.apache.james.mailbox.exception.UserDoesNotExistException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
@@ -61,6 +63,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
@@ -100,6 +103,7 @@ import com.google.common.collect.Iterables;
 public class StoreMailboxManager implements MailboxManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreMailboxManager.class);
     public static final char SQL_WILDCARD_CHAR = '%';
+    public static final boolean WRITE_LOCK = true;
 
     private final MailboxEventDispatcher dispatcher;
     private final DelegatingMailboxListener delegatingListener;
@@ -135,13 +139,15 @@ public class StoreMailboxManager implements MailboxManager {
     private final MessageParser messageParser;
     private final Factory messageIdFactory;
     private final ImmutableMailboxMessage.Factory immutableMailboxMessageFactory;
+    private final ReservedMailboxMatcher reservedMailboxMatcher;
 
     @Inject
     public StoreMailboxManager(MailboxSessionMapperFactory mailboxSessionMapperFactory, Authenticator authenticator, Authorizator authorizator,
                                MailboxPathLocker locker, MessageParser messageParser,
                                MessageId.Factory messageIdFactory, MailboxAnnotationManager annotationManager,
                                MailboxEventDispatcher mailboxEventDispatcher,
-                               DelegatingMailboxListener delegatingListener, StoreRightManager storeRightManager) {
+                               DelegatingMailboxListener delegatingListener, StoreRightManager storeRightManager,
+                               ReservedMailboxMatcher reservedMailboxMatcher) {
         Preconditions.checkNotNull(delegatingListener);
         Preconditions.checkNotNull(mailboxEventDispatcher);
         Preconditions.checkNotNull(mailboxSessionMapperFactory);
@@ -157,6 +163,7 @@ public class StoreMailboxManager implements MailboxManager {
         this.dispatcher = mailboxEventDispatcher;
         this.immutableMailboxMessageFactory = new ImmutableMailboxMessage.Factory(this);
         this.storeRightManager = storeRightManager;
+        this.reservedMailboxMatcher = reservedMailboxMatcher;
     }
 
     public Factory getMessageIdFactory() {
@@ -484,26 +491,28 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
-    public Optional<MailboxId> createMailbox(MailboxPath mailboxPath, final MailboxSession mailboxSession)
+    public Optional<MailboxId> createMailbox(MailboxPath mailboxPath, MailboxSession mailboxSession)
             throws MailboxException {
         LOGGER.debug("createMailbox " + mailboxPath);
-        final int length = mailboxPath.getName().length();
-        if (length == 0) {
+        if (mailboxPath.getName().isEmpty()) {
             LOGGER.warn("Ignoring mailbox with empty name");
         } else {
             mailboxPath.setName(getDelimiter().removeTrailingSeparatorAtTheEnd(mailboxPath.getName()));
-            if (mailboxExists(mailboxPath, mailboxSession))
+            validateReservedNames(mailboxPath, mailboxSession);
+            if (mailboxExists(mailboxPath, mailboxSession)) {
                 throw new MailboxExistsException(mailboxPath.toString());
+            }
             // Create parents first
             // If any creation fails then the mailbox will not be created
             // TODO: transaction
-            final List<MailboxId> mailboxIds = new ArrayList<>();
-            for (final MailboxPath mailbox : mailboxPath.getHierarchyLevels(getDelimiter()))
+            List<MailboxId> mailboxIds = new ArrayList<>();
+            for (MailboxPath mailbox : mailboxPath.getHierarchyLevels(getDelimiter()))
 
                 locker.executeWithLock(mailboxSession, mailbox, (LockAwareExecution<Void>) () -> {
                     if (!mailboxExists(mailbox, mailboxSession)) {
-                        final Mailbox m = doCreateMailbox(mailbox, mailboxSession);
-                        final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
+                        validateReservedNames(mailbox, mailboxSession);
+                        Mailbox m = doCreateMailbox(mailbox, mailboxSession);
+                        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
                         mapper.execute(Mapper.toTransaction(() -> mailboxIds.add(mapper.save(m))));
 
                         // notify listeners
@@ -511,7 +520,7 @@ public class StoreMailboxManager implements MailboxManager {
                     }
                     return null;
 
-                }, true);
+                }, WRITE_LOCK);
 
             if (!mailboxIds.isEmpty()) {
                 return Optional.ofNullable(Iterables.getLast(mailboxIds));
@@ -557,10 +566,12 @@ public class StoreMailboxManager implements MailboxManager {
         // TODO put this into a serilizable transaction
         Mailbox mailbox = Optional.ofNullable(mapper.findMailboxByPath(from))
             .orElseThrow(() -> new MailboxNotFoundException(from));
+        validateReservedNames(to, session);
 
         mailbox.setNamespace(to.getNamespace());
         mailbox.setUser(to.getUser());
         mailbox.setName(to.getName());
+        validateReservedNames(mailbox.generateAssociatedPath(), session);
         mapper.save(mailbox);
 
         dispatcher.mailboxRenamed(session, from, mailbox);
@@ -575,6 +586,7 @@ public class StoreMailboxManager implements MailboxManager {
                 String subNewName = to.getName() + subOriginalName.substring(from.getName().length());
                 MailboxPath fromPath = new MailboxPath(children, subOriginalName);
                 sub.setName(subNewName);
+                validateReservedNames(sub.generateAssociatedPath(), session);
                 mapper.save(sub);
                 dispatcher.mailboxRenamed(session, fromPath, sub);
 
@@ -583,6 +595,12 @@ public class StoreMailboxManager implements MailboxManager {
             return null;
 
         }, true);
+    }
+
+    private void validateReservedNames(MailboxPath to, MailboxSession session) throws MailboxNameException {
+        if (reservedMailboxMatcher.isReserved(to.getName(), session.getPathDelimiter())) {
+            throw new ReservedMailboxNameException(to.getName());
+        }
     }
 
     @Override

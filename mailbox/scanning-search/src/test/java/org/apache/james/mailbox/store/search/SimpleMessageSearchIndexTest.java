@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.store.search;
 
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.store.StoreMessageIdManager;
@@ -34,7 +33,7 @@ public class SimpleMessageSearchIndexTest extends AbstractMessageSearchIndexTest
     @Override
     protected void initializeMailboxManager() throws Exception {
         storeMailboxManager = new InMemoryIntegrationResources()
-            .createMailboxManager(new SimpleGroupMembershipResolver());
+            .createMailboxManager();
 
         messageSearchIndex = new SimpleMessageSearchIndex(
             storeMailboxManager.getMapperFactory(),

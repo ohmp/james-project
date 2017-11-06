@@ -21,6 +21,7 @@ package org.apache.james.mailbox.hbase;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerStressTest;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.After;
 import org.junit.Ignore;
 
@@ -29,10 +30,9 @@ public class HBaseMailboxManagerStressTest extends MailboxManagerStressTest {
 
     private static final HBaseClusterSingleton CLUSTER = HBaseClusterSingleton.build();
 
-
     @Override
     protected MailboxManager provideManager() throws MailboxException {
-        return new HBaseMailboxManagerProvider().provideMailboxManager(CLUSTER);
+        return new HBaseMailboxManagerProvider().provideMailboxManager(CLUSTER, MailboxManagerOptions.NONE);
     }
 
     @After

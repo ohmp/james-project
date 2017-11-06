@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.mailbox.mock;
+package org.apache.james.mailbox.manager;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -28,6 +28,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.mock.MockMail;
 import org.apache.james.mailbox.model.MailboxPath;
 
 /**
@@ -151,7 +152,7 @@ public class MailboxManagerFeeder {
         getMockMailboxManager().createMailbox(mailboxPath, mailboxSession);
         MessageManager messageManager = getMockMailboxManager().getMailbox(mailboxPath, mailboxSession);
         for (int j=0; j < MESSAGE_PER_MAILBOX_COUNT; j++) {
-            messageManager.appendMessage(new ByteArrayInputStream(MockMail.MAIL_TEXT_PLAIN.getBytes("UTF-8")), 
+            messageManager.appendMessage(new ByteArrayInputStream(MockMail.MAIL_TEXT_PLAIN.getBytes("UTF-8")),
                     Calendar.getInstance().getTime(), 
                     mailboxSession, 
                     true, 

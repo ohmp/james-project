@@ -27,6 +27,7 @@ import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.apache.james.mailbox.store.Authenticator;
 import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -47,10 +48,12 @@ public class InMemoryMailboxManager extends StoreMailboxManager {
                                   MailboxPathLocker locker, MessageParser messageParser, MessageId.Factory messageIdFactory, MailboxEventDispatcher dispatcher,
                                   DelegatingMailboxListener delegatingMailboxListener,
                                   StoreMailboxAnnotationManager annotationManager,
-                                  StoreRightManager storeRightManager) {
+                                  StoreRightManager storeRightManager,
+                                  ReservedMailboxMatcher reservedMailboxMatcher) {
         super(mailboxSessionMapperFactory, authenticator, authorizator, locker, messageParser, messageIdFactory,
             annotationManager, dispatcher,
-            delegatingMailboxListener, storeRightManager);
+            delegatingMailboxListener, storeRightManager,
+            reservedMailboxMatcher);
     }
 
     @Override

@@ -20,6 +20,8 @@ package org.apache.james.mailbox.hbase;
 
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerTest;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.After;
 import org.junit.Ignore;
 
@@ -29,8 +31,11 @@ public class HBaseMailboxManagerTest extends MailboxManagerTest {
     private static final HBaseClusterSingleton CLUSTER = HBaseClusterSingleton.build();
 
     @Override
-    protected MailboxManager provideMailboxManager() {
-        return new HBaseMailboxManagerProvider().provideMailboxManager(CLUSTER);
+    protected MailboxManager provideMailboxManager(ReservedMailboxMatcher reservedMailboxMatcher) {
+        return new HBaseMailboxManagerProvider().provideMailboxManager(CLUSTER,
+            MailboxManagerOptions.builder()
+                .withReservedMailboxMatcher(reservedMailboxMatcher)
+                .build());
     }
 
     @After

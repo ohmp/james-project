@@ -30,6 +30,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.ReservedMailboxMatcher;
 import org.apache.james.mailbox.store.Authenticator;
 import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
@@ -55,7 +56,8 @@ public class CassandraMailboxManager extends StoreMailboxManager {
                                    MailboxPathLocker locker, MessageParser messageParser,
                                    MessageId.Factory messageIdFactory,
                                    MailboxEventDispatcher mailboxEventDispatcher, DelegatingMailboxListener delegatingMailboxListener,
-                                   StoreMailboxAnnotationManager annotationManager, StoreRightManager storeRightManager) {
+                                   StoreMailboxAnnotationManager annotationManager, StoreRightManager storeRightManager,
+                                   ReservedMailboxMatcher reservedMailboxMatcher) {
         super(mapperFactory,
             authenticator,
             authorizator,
@@ -65,7 +67,8 @@ public class CassandraMailboxManager extends StoreMailboxManager {
             annotationManager,
             mailboxEventDispatcher,
             delegatingMailboxListener,
-            storeRightManager);
+            storeRightManager,
+            reservedMailboxMatcher);
         this.locker = locker;
         this.mapperFactory = mapperFactory;
     }

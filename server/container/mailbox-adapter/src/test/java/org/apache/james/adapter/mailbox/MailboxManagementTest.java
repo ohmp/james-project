@@ -28,7 +28,6 @@ import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -58,7 +57,7 @@ public class MailboxManagementTest {
     @Before
     public void setUp() throws Exception {
         StoreMailboxManager mailboxManager = new InMemoryIntegrationResources()
-            .createMailboxManager(new SimpleGroupMembershipResolver());
+            .createMailboxManager();
         mapperFactory = mailboxManager.getMapperFactory();
 
         mailboxManagerManagement = new MailboxManagerManagement();

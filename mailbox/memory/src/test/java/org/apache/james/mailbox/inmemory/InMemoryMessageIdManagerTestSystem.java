@@ -29,7 +29,6 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.MailboxACL;
@@ -50,7 +49,7 @@ public class InMemoryMessageIdManagerTestSystem extends MessageIdManagerTestSyst
 
     public static InMemoryMessageIdManagerTestSystem create() throws MailboxException {
         InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
-        StoreMailboxManager mailboxManager = inMemoryIntegrationResources.createMailboxManager(new SimpleGroupMembershipResolver());
+        StoreMailboxManager mailboxManager = inMemoryIntegrationResources.createMailboxManager();
         return new InMemoryMessageIdManagerTestSystem(
             inMemoryIntegrationResources.createMessageIdManager(mailboxManager),
             mailboxManager);

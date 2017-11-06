@@ -28,6 +28,7 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
+import org.apache.james.imap.mailbox.NamespaceReservedMailboxMatcher;
 import org.apache.james.imap.main.DefaultImapDecoderFactory;
 import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
@@ -55,6 +56,7 @@ import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.mpt.api.ImapFeatures;
 import org.apache.james.mpt.api.ImapFeatures.Feature;
 import org.apache.james.mpt.host.JamesImapHostSystem;
+import org.apache.james.protocols.imap.DefaultNamespaceConfiguration;
 
 public class HBaseHostSystem extends JamesImapHostSystem {
 
@@ -111,10 +113,11 @@ public class HBaseHostSystem extends JamesImapHostSystem {
         MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
         StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, aclResolver, groupMembershipResolver);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
+        NamespaceReservedMailboxMatcher reservedMailboxMatcher = new NamespaceReservedMailboxMatcher(new DefaultNamespaceConfiguration());
         mailboxManager = new HBaseMailboxManager(mapperFactory, authenticator, authorizator,
             new JVMMailboxPathLocker(), messageParser,
             messageIdFactory, mailboxEventDispatcher, delegatingListener,
-            annotationManager, storeRightManager);
+            annotationManager, storeRightManager, reservedMailboxMatcher);
         mailboxManager.init();
 
         SubscriptionManager subscriptionManager = new StoreSubscriptionManager(mapperFactory);
