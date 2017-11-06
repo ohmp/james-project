@@ -21,7 +21,6 @@ package org.apache.james.mailbox;
 import java.util.List;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
@@ -106,8 +105,6 @@ public class PathDelimiter {
 
     @Override
     public final String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("charDelimiter", charDelimiter)
-            .toString();
+        return "{\"charDelimiter\": '" + charDelimiter + "'}";
     }
 }
