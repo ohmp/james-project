@@ -55,7 +55,7 @@ public class MailboxAppender {
 
     private String fromUrlToMailboxName(String urlPath, MailboxSession session) throws MessagingException {
         String destination = session.getPathDelimiter()
-            .removeTrailingSeparatorAtTheBeginning(session.getPathDelimiter()
+            .removeHeadingSeparatorAtTheBeginning(session.getPathDelimiter()
             .join(SLASH_PATH_DELIMITER.split(urlPath)));
         if (Strings.isNullOrEmpty(destination)) {
             throw new MessagingException("Mail can not be delivered to empty folder");

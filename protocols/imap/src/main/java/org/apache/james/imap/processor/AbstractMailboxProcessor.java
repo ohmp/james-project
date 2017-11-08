@@ -384,7 +384,7 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
      */
     private String joinMailboxPath(MailboxPath mailboxPath, PathDelimiter delimiter) {
         return delimiter.join(
-            StreamUtils.concat(
+            StreamUtils.flatten(
                 ImmutableList.of(
                     toStreamOfNotNullNorEmpty(mailboxPath.getNamespace()),
                     toStreamOfNotNullNorEmpty(mailboxPath.getUser()),

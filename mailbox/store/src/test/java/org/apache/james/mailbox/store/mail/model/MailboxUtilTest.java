@@ -42,7 +42,7 @@ public class MailboxUtilTest {
     }
 
     @Test
-    public void isMailboxChildOfShouldReturnReturnFalseWhenBelongsToOverUser() {
+    public void isMailboxChildOfShouldReturnFalseWhenBelongsToOtherUser() {
         Mailbox mailbox1 = new SimpleMailbox(
             MailboxPath.forUser("user", "inbox"), UID_VALIDITY);
         Mailbox mailbox2 = new SimpleMailbox(
@@ -62,7 +62,7 @@ public class MailboxUtilTest {
     }
 
     @Test
-    public void isMailboxChildOfShouldReturnFalseOnPrefixMisMatch() {
+    public void isMailboxChildOfShouldReturnFalseOnPrefixMismatch() {
         Mailbox mailbox1 = new SimpleMailbox(
             MailboxPath.forUser("user", "inbax"), UID_VALIDITY);
         Mailbox mailbox2 = new SimpleMailbox(

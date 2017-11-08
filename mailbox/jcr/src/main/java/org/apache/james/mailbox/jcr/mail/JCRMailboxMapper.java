@@ -223,7 +223,7 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
                     .getQueryManager();
             String queryString = "/jcr:root/" + MAILBOXES_PATH + "/" + ISO9075.encodePath(mailbox.getNamespace()) 
                     + "//element(*,jamesMailbox:mailbox)[jcr:like(@"
-                    + JCRMailbox.NAME_PROPERTY + ",'" + delimiter.appendDelimiter(name) + "%') and @" + JCRMailbox.NAMESPACE_PROPERTY +"='" + namespace + "' and @" + JCRMailbox.USER_PROPERTY + "='" + user + "']";
+                    + JCRMailbox.NAME_PROPERTY + ",'" + delimiter.join(name, "%") + "') and @" + JCRMailbox.NAMESPACE_PROPERTY +"='" + namespace + "' and @" + JCRMailbox.USER_PROPERTY + "='" + user + "']";
             QueryResult result = manager.createQuery(queryString, XPATH_LANGUAGE)
                     .execute();
             NodeIterator it = result.getNodes();

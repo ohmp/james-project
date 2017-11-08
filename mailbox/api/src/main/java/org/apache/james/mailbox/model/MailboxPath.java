@@ -21,15 +21,11 @@ package org.apache.james.mailbox.model;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.PathDelimiter;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 
 /**
  * The path to a mailbox.
@@ -139,13 +135,8 @@ public class MailboxPath {
      * @return list of hierarchy levels
      */
     public List<MailboxPath> getHierarchyLevels(PathDelimiter pathDelimiter) {
-        if (Strings.isNullOrEmpty(name)) {
-            return ImmutableList.of(this);
-        }
-        List<String> nameParts = pathDelimiter.split(name);
-        return IntStream.range(1, nameParts.size() + 1)
-            .mapToObj(i -> pathDelimiter.join(Iterables.limit(nameParts, i)))
-            .map(mailboxName -> new MailboxPath(namespace, user, mailboxName))
+        return pathDelimiter.getHierarchyLevels(name)
+            .map(name -> new MailboxPath(namespace, user, name))
             .collect(Guavate.toImmutableList());
     }
 

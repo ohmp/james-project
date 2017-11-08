@@ -60,7 +60,7 @@ public class PrefixedRegex implements MailboxNameExpression {
     @Override
     public String getCombinedName() {
         String sanitizedPrefix = pathDelimiter.removeTrailingSeparatorAtTheEnd(prefix);
-        String sanitizedRegex = pathDelimiter.removeTrailingSeparatorAtTheBeginning(regex);
+        String sanitizedRegex = pathDelimiter.removeHeadingSeparatorAtTheBeginning(regex);
         return pathDelimiter.join(
             Stream.of(sanitizedPrefix, sanitizedRegex)
                 .filter(s -> !s.isEmpty())
@@ -89,7 +89,7 @@ public class PrefixedRegex implements MailboxNameExpression {
         if (token.equals("*")) {
             return ".*";
         } else if (token.equals("%")) {
-            return "[^" + Pattern.quote(String.valueOf(pathDelimiter.getPathDelimiter())) + "]*";
+            return "[^" + pathDelimiter.toPattern() + "]*";
         } else {
             return Pattern.quote(token);
         }

@@ -46,6 +46,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxUtil;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
@@ -204,8 +205,11 @@ public class CassandraMailboxMapper implements MailboxMapper {
     public boolean hasChildren(Mailbox mailbox, PathDelimiter delimiter) {
         return mailboxPathDAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser())
             .thenApply(stream -> stream
-                .anyMatch(idAndPath -> idAndPath.getMailboxPath().getName()
-                    .startsWith(delimiter.appendDelimiter(mailbox.getName()))))
+                .anyMatch(idAndPath ->
+                        MailboxUtil.isChildren(
+                            idAndPath.getMailboxPath().getName(),
+                            mailbox.getName(),
+                            delimiter)))
             .join();
     }
 

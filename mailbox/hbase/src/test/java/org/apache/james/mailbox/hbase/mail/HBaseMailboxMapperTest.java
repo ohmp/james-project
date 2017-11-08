@@ -61,8 +61,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * HBaseMailboxMapper unit tests.
  *
@@ -249,7 +247,6 @@ public class HBaseMailboxMapperTest {
      * Test of hasChildren method, of class HBaseMailboxMapper.
      */
     private void testHasChildren() throws Exception {
-        System.out.println(ImmutableList.copyOf(pathsList));
         LOG.info("hasChildren");
         String oldName;
         for (MailboxPath path : pathsList) {

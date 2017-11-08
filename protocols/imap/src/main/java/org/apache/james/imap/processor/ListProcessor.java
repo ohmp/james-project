@@ -113,13 +113,9 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                 if (referenceName.length() > 0 && referenceName.charAt(0) == MailboxConstants.NAMESPACE_PREFIX_CHAR) {
                     // A qualified reference name - get the root element
                     isRelative = false;
-                    int firstDelimiter = mailboxSession.getPathDelimiter().firstIndex(referenceName);
-                    if (firstDelimiter == -1) {
-                        referenceRoot = referenceName;
-                    } else {
-                        referenceRoot = referenceName.substring(0, firstDelimiter);
-                    }
-                    referenceRoot = CharsetUtil.decodeModifiedUTF7(referenceRoot);
+                    referenceRoot = CharsetUtil.decodeModifiedUTF7(
+                        mailboxSession.getPathDelimiter()
+                            .getFirstPathPart(referenceName));
                 } else {
                     // A relative reference name, return "" to indicate it is
                     // non-rooted

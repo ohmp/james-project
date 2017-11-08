@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
 
 public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
@@ -262,7 +261,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
     private String getCurrentMailboxName(MailboxPath originMailboxPath, MailboxSession mailboxSession) {
         return mailboxSession.getPathDelimiter()
-            .getSimpleName(originMailboxPath.getName());
+            .getLastPathPart(originMailboxPath.getName());
     }
 
 }

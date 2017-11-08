@@ -110,7 +110,7 @@ public class MailboxFactory {
 
         return Mailbox.builder()
             .id(messageManager.getId())
-            .name(mailboxSession.getPathDelimiter().getSimpleName(mailboxPath.getName()))
+            .name(mailboxSession.getPathDelimiter().getLastPathPart(mailboxPath.getName()))
             .parentId(getParentIdFromMailboxPath(mailboxPath, userMailboxesMetadata, mailboxSession).orElse(null))
             .role(role)
             .unreadMessages(mailboxCounters.getUnseen())

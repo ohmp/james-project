@@ -98,13 +98,10 @@ public class LSubProcessor extends AbstractSubscriptionProcessor<LsubRequest> {
                 mailboxResponses.add(mailboxName);
             }
         } else {
-            int lastDelimiter = delimiter.lastIndex(mailboxName);
-            if (lastDelimiter > 0) {
-                String parentMailbox = mailboxName.substring(0, lastDelimiter);
-                if (!mailboxes.contains(parentMailbox)) {
-                    respond(responder, expression, parentMailbox, false, mailboxes, mailboxResponses, delimiter);
-                }
-            }
+            delimiter.getParent(mailboxName)
+                .filter(parentName -> !mailboxes.contains(parentName))
+                .ifPresent(parentName -> respond(responder, expression, parentName,
+                    false, mailboxes, mailboxResponses, delimiter));
         }
     }
 

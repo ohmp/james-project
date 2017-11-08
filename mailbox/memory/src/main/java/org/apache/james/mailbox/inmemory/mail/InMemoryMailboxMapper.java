@@ -36,6 +36,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxUtil;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 
 import com.github.steveash.guavate.Guavate;
@@ -136,15 +137,9 @@ public class InMemoryMailboxMapper implements MailboxMapper {
      * @see org.apache.james.mailbox.store.mail.MailboxMapper#hasChildren(org.apache.james.mailbox.store.mail.model.Mailbox, char)
      */
     public boolean hasChildren(Mailbox mailbox, PathDelimiter delimiter) throws MailboxException {
-        String mailboxName = delimiter.appendDelimiter(mailbox.getName());
         return mailboxesByPath.values()
             .stream()
-            .anyMatch(box -> belongsToSameUser(mailbox, box) && box.getName().startsWith(mailboxName));
-    }
-
-    private boolean belongsToSameUser(Mailbox mailbox, Mailbox otherMailbox) {
-        return Objects.equal(mailbox.getNamespace(), otherMailbox.getNamespace())
-            && Objects.equal(mailbox.getUser(), otherMailbox.getUser());
+            .anyMatch(box -> MailboxUtil.isMailboxChildOf(box, mailbox, delimiter));
     }
 
     /**
