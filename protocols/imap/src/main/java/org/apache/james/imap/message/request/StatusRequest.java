@@ -20,19 +20,20 @@ package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.message.StatusDataItems;
+import org.apache.james.imap.message.model.MailboxName;
 
 public class StatusRequest extends AbstractImapRequest {
-    private final String mailboxName;
+    private final MailboxName mailboxName;
 
     private final StatusDataItems statusDataItems;
 
-    public StatusRequest(ImapCommand command, String mailboxName, StatusDataItems statusDataItems, String tag) {
+    public StatusRequest(ImapCommand command, MailboxName mailboxName, StatusDataItems statusDataItems, String tag) {
         super(tag, command);
         this.mailboxName = mailboxName;
         this.statusDataItems = statusDataItems;
     }
 
-    public final String getMailboxName() {
+    public final MailboxName getMailboxName() {
         return mailboxName;
     }
 

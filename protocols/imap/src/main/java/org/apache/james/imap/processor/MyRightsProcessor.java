@@ -31,6 +31,7 @@ import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.main.PathConverter;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.MyRightsRequest;
 import org.apache.james.imap.message.response.MyRightsResponse;
 import org.apache.james.mailbox.MailboxManager;
@@ -63,9 +64,9 @@ public class MyRightsProcessor extends AbstractMailboxProcessor<MyRightsRequest>
     @Override
     protected void doProcess(MyRightsRequest message, ImapSession session, String tag, ImapCommand command, Responder responder) {
 
-        final MailboxManager mailboxManager = getMailboxManager();
-        final MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
-        final String mailboxName = message.getMailboxName();
+        MailboxManager mailboxManager = getMailboxManager();
+        MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
+        MailboxName mailboxName = message.getMailboxName();
         try {
 
             MailboxPath mailboxPath = PathConverter.forSession(session).buildFullPath(mailboxName);

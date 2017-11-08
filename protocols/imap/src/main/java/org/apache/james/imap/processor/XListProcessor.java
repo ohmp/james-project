@@ -31,6 +31,7 @@ import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.api.process.MailboxType;
 import org.apache.james.imap.api.process.MailboxTyper;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.ListRequest;
 import org.apache.james.imap.message.request.XListRequest;
 import org.apache.james.imap.message.response.XListResponse;
@@ -82,7 +83,7 @@ public class XListProcessor extends ListProcessor implements CapabilityImplement
     }
 
     @Override
-    protected ImapResponseMessage createResponse(boolean noInferior, boolean noSelect, boolean marked, boolean unmarked, boolean hasChildren, boolean hasNoChildren, String mailboxName, PathDelimiter delimiter, MailboxType type) {
+    protected ImapResponseMessage createResponse(boolean noInferior, boolean noSelect, boolean marked, boolean unmarked, boolean hasChildren, boolean hasNoChildren, MailboxName mailboxName, PathDelimiter delimiter, MailboxType type) {
         return new XListResponse(noInferior, noSelect, marked, unmarked, hasChildren, hasNoChildren, mailboxName, delimiter, type);
     }
 }

@@ -20,6 +20,7 @@ package org.apache.james.imap.decode.parser;
 
 import java.util.Optional;
 
+import org.apache.james.core.MailAddress;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
@@ -27,6 +28,7 @@ import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.CreateRequest;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.protocols.imap.DecodingException;
@@ -47,15 +49,15 @@ public class CreateCommandParser extends AbstractImapCommandParser {
      * org.apache.james.imap.api.process.ImapSession)
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        String mailboxName = request.mailbox();
+        MailboxName mailboxName = new MailboxName(request.mailbox());
 
         MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
         request.eol();
 
-        return new CreateRequest(command, getSanitizedMailboxName( mailboxName, mailboxSession), tag);
+        return new CreateRequest(command, getSanitizedMailboxName(mailboxName, mailboxSession), tag);
     }
 
-    private String getSanitizedMailboxName(String mailboxName, MailboxSession mailboxSession) {
+    private MailboxName getSanitizedMailboxName(MailboxName mailboxName, MailboxSession mailboxSession) {
 
         // Check if we have an mailboxsession. This is a workaround for
         // IMAP-240:
@@ -67,7 +69,8 @@ public class CreateCommandParser extends AbstractImapCommandParser {
 
         return Optional.ofNullable(mailboxSession)
             .map(MailboxSession::getPathDelimiter)
-            .map(pathDelimiter -> pathDelimiter.removeTrailingSeparatorAtTheEnd(mailboxName))
+            .map(pathDelimiter -> pathDelimiter.removeTrailingSeparatorAtTheEnd(mailboxName.getValue()))
+            .map(MailboxName::new)
             .orElse(mailboxName);
     }
 

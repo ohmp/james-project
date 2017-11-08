@@ -17,34 +17,42 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.imap.decode.parser;
+package org.apache.james.imap.message.model;
 
-import org.apache.james.imap.api.ImapCommand;
-import org.apache.james.imap.api.ImapConstants;
-import org.apache.james.imap.api.ImapMessage;
-import org.apache.james.imap.api.process.ImapSession;
-import org.apache.james.imap.decode.ImapRequestLineReader;
-import org.apache.james.imap.decode.base.AbstractImapCommandParser;
-import org.apache.james.imap.message.model.MailboxName;
-import org.apache.james.imap.message.request.MyRightsRequest;
-import org.apache.james.protocols.imap.DecodingException;
+import java.util.Objects;
 
-/**
- * MYRIGHTS Parser
- * 
- * @author Peter Palaga
- */
-public class MyRightsCommandParser extends AbstractImapCommandParser {
+import com.google.common.base.MoreObjects;
 
-    public MyRightsCommandParser() {
-        super(ImapCommand.authenticatedStateCommand(ImapConstants.MYRIGHTS_COMMAND_NAME));
+public class MailboxName {
+    private final String value;
+
+    public MailboxName(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
     }
 
     @Override
-    protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        MailboxName mailboxName = new MailboxName(request.mailbox());
-        request.eol();
-        return new MyRightsRequest(tag, command, mailboxName);
+    public final boolean equals(Object o) {
+        if (o instanceof MailboxName) {
+            MailboxName that = (MailboxName) o;
+
+            return Objects.equals(this.value, that.value);
+        }
+        return false;
     }
 
+    @Override
+    public final int hashCode() {
+        return Objects.hash(value);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("value", value)
+            .toString();
+    }
 }

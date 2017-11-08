@@ -30,6 +30,7 @@ import org.apache.james.imap.api.display.HumanReadableText;
 import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.LsubRequest;
 import org.apache.james.imap.message.response.LSubResponse;
 import org.apache.james.imap.processor.base.MailboxNameExpression;
@@ -44,6 +45,8 @@ import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.steveash.guavate.Guavate;
 
 public class LSubProcessor extends AbstractSubscriptionProcessor<LsubRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LSubProcessor.class);
@@ -76,7 +79,8 @@ public class LSubProcessor extends AbstractSubscriptionProcessor<LsubRequest> {
 
     private void listSubscriptions(ImapSession session, Responder responder, String referenceName, String mailboxName) throws SubscriptionException, MailboxException {
         MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
-        Collection<String> mailboxes = getSubscriptionManager().subscriptions(mailboxSession);
+        Collection<MailboxName> mailboxes = getSubscriptionManager().subscriptions(mailboxSession)
+            .stream().map(MailboxName::new).collect(Guavate.toImmutableList());
 
         String decodedMailName = CharsetUtil.decodeModifiedUTF7(referenceName);
 
@@ -84,23 +88,23 @@ public class LSubProcessor extends AbstractSubscriptionProcessor<LsubRequest> {
             decodedMailName,
             CharsetUtil.decodeModifiedUTF7(mailboxName),
             mailboxSession.getPathDelimiter());
-        Collection<String> mailboxResponses = new ArrayList<>();
+        Collection<MailboxName> mailboxResponses = new ArrayList<>();
 
-        for (String mailbox : mailboxes) {
+        for (MailboxName mailbox : mailboxes) {
             respond(responder, expression, mailbox, true, mailboxes, mailboxResponses, mailboxSession.getPathDelimiter());
         }
     }
 
-    private void respond(Responder responder, MailboxNameExpression expression, String mailboxName, boolean originalSubscription, Collection<String> mailboxes, Collection<String> mailboxResponses, PathDelimiter delimiter) {
-        if (expression.isExpressionMatch(mailboxName)) {
+    private void respond(Responder responder, MailboxNameExpression expression, MailboxName mailboxName, boolean originalSubscription, Collection<MailboxName> mailboxes, Collection<MailboxName> mailboxResponses, PathDelimiter delimiter) {
+        if (expression.isExpressionMatch(mailboxName.getValue())) {
             if (!mailboxResponses.contains(mailboxName)) {
                 responder.respond(new LSubResponse(mailboxName, !originalSubscription, delimiter));
                 mailboxResponses.add(mailboxName);
             }
         } else {
-            int lastDelimiter = delimiter.lastIndex(mailboxName);
+            int lastDelimiter = delimiter.lastIndex(mailboxName.getValue());
             if (lastDelimiter > 0) {
-                String parentMailbox = mailboxName.substring(0, lastDelimiter);
+                MailboxName parentMailbox = new MailboxName(mailboxName.getValue().substring(0, lastDelimiter));
                 if (!mailboxes.contains(parentMailbox)) {
                     respond(responder, expression, parentMailbox, false, mailboxes, mailboxResponses, delimiter);
                 }

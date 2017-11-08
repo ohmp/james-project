@@ -20,6 +20,7 @@
 package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.message.model.MailboxName;
 
 /**
  * DELETEACL Request.
@@ -28,9 +29,9 @@ import org.apache.james.imap.api.ImapCommand;
  */
 public class DeleteACLRequest extends AbstractImapRequest {
     private final String identifier;
-    private final String mailboxName;
+    private final MailboxName mailboxName;
 
-    public DeleteACLRequest(String tag, ImapCommand command, String mailboxName, String identifier) {
+    public DeleteACLRequest(String tag, ImapCommand command, MailboxName mailboxName, String identifier) {
         super(tag, command);
         this.mailboxName = mailboxName;
         this.identifier = identifier;
@@ -40,7 +41,7 @@ public class DeleteACLRequest extends AbstractImapRequest {
         return identifier;
     }
 
-    public String getMailboxName() {
+    public MailboxName getMailboxName() {
         return mailboxName;
     }
 

@@ -36,6 +36,7 @@ import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.main.PathConverter;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.GetAnnotationRequest;
 import org.apache.james.imap.message.response.AnnotationResponse;
 import org.apache.james.mailbox.MailboxManager;
@@ -80,7 +81,7 @@ public class GetAnnotationProcessor extends AbstractMailboxProcessor<GetAnnotati
     }
 
     private void proceed(GetAnnotationRequest message, ImapSession session, String tag, ImapCommand command, Responder responder) throws MailboxException {
-        String mailboxName = message.getMailboxName();
+        MailboxName mailboxName = message.getMailboxName();
         Optional<Integer> maxsize = message.getMaxsize();
         MailboxPath mailboxPath = PathConverter.forSession(session).buildFullPath(mailboxName);
 
@@ -90,7 +91,7 @@ public class GetAnnotationProcessor extends AbstractMailboxProcessor<GetAnnotati
         respond(tag, command, responder, mailboxName, mailboxAnnotations, maxsize, maximumOversizedSize);
     }
 
-    private void respond(String tag, ImapCommand command, Responder responder, String mailboxName,
+    private void respond(String tag, ImapCommand command, Responder responder, MailboxName mailboxName,
                          List<MailboxAnnotation> mailboxAnnotations, Optional<Integer> maxsize, Optional<Integer> maximumOversizedSize) {
         if (maximumOversizedSize.isPresent()) {
             responder.respond(new AnnotationResponse(mailboxName, filterItemsBySize(mailboxAnnotations, maxsize)));

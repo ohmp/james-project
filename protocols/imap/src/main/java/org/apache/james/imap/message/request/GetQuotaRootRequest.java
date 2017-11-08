@@ -20,6 +20,7 @@
 package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.message.model.MailboxName;
 
 /**
  * GETQUOTAROOT Request
@@ -27,14 +28,14 @@ import org.apache.james.imap.api.ImapCommand;
  * @author Tellier Benoit
  */
 public class GetQuotaRootRequest extends AbstractImapRequest {
-    private final String mailboxName;
+    private final MailboxName mailboxName;
 
-    public GetQuotaRootRequest(String tag, ImapCommand command, String mailboxName) {
+    public GetQuotaRootRequest(String tag, ImapCommand command, MailboxName mailboxName) {
         super(tag, command);
         this.mailboxName = mailboxName;
     }
 
-    public String getMailboxName() {
+    public MailboxName getMailboxName() {
         return mailboxName;
     }
 

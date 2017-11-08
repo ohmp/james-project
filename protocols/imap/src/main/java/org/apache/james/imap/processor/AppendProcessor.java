@@ -37,6 +37,7 @@ import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.api.process.SelectedMailbox;
 import org.apache.james.imap.main.PathConverter;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.AppendRequest;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -67,7 +68,7 @@ public class AppendProcessor extends AbstractMailboxProcessor<AppendRequest> {
      * org.apache.james.imap.api.process.ImapProcessor.Responder)
      */
     protected void doProcess(AppendRequest request, ImapSession session, String tag, ImapCommand command, Responder responder) {
-        String mailboxName = request.getMailboxName();
+        MailboxName mailboxName = request.getMailboxName();
         InputStream messageIn = request.getMessage();
         Date datetime = request.getDatetime();
         Flags flags = request.getFlags();

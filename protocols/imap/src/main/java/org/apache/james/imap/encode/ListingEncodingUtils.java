@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.process.MailboxType;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.response.AbstractListingResponse;
 import org.apache.james.mailbox.PathDelimiter;
 
@@ -34,10 +35,10 @@ import org.apache.james.mailbox.PathDelimiter;
 public class ListingEncodingUtils {
 
     public static void encodeListingResponse(String responseTypeName, ImapResponseComposer composer, AbstractListingResponse response) throws IOException {
-        final List<String> attributes = getNameAttributes(response);
+        List<String> attributes = getNameAttributes(response);
 
-        final String name = response.getName();
-        final PathDelimiter hierarchyDelimiter = response.getHierarchyDelimiter();
+        MailboxName name = response.getName();
+        PathDelimiter hierarchyDelimiter = response.getHierarchyDelimiter();
                 
         composer.untagged();
         composer.message(responseTypeName);
@@ -54,7 +55,7 @@ public class ListingEncodingUtils {
         } else {
         	composer.quote(Character.toString(hierarchyDelimiter.getPathDelimiter()));
         }
-        composer.mailbox(name);
+        composer.mailbox(name.getValue());
 
         composer.end();
     }

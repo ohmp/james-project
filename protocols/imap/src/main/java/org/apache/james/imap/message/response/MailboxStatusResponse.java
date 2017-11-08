@@ -20,6 +20,7 @@
 package org.apache.james.imap.message.response;
 
 import org.apache.james.imap.api.message.response.ImapResponseMessage;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.mailbox.MessageUid;
 
 /**
@@ -37,11 +38,11 @@ public class MailboxStatusResponse implements ImapResponseMessage {
 
     private final Long unseen;
 
-    private final String mailbox;
+    private final MailboxName mailbox;
 
     private final Long highestModSeq;
 
-    public MailboxStatusResponse(Long messages, Long recent, MessageUid uidNext, Long highestModSeq, Long uidValidity, Long unseen, String mailbox) {
+    public MailboxStatusResponse(Long messages, Long recent, MessageUid uidNext, Long highestModSeq, Long uidValidity, Long unseen, MailboxName mailbox) {
         super();
         this.messages = messages;
         this.recent = recent;
@@ -103,7 +104,7 @@ public class MailboxStatusResponse implements ImapResponseMessage {
      * 
      * @return the mailbox name, not null
      */
-    public final String getMailbox() {
+    public final MailboxName getMailbox() {
         return mailbox;
     }
     

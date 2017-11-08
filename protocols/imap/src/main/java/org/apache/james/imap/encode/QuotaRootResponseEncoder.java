@@ -23,6 +23,7 @@ import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.encode.base.AbstractChainedImapEncoder;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.response.QuotaRootResponse;
 
 import java.io.IOException;
@@ -41,12 +42,12 @@ public class QuotaRootResponseEncoder extends AbstractChainedImapEncoder {
         QuotaRootResponse quotaRootResponse = (QuotaRootResponse) acceptableMessage;
 
         String quotaRoot = quotaRootResponse.getQuotaRoot();
-        String mailbox = quotaRootResponse.getMailboxName();
+        MailboxName mailbox = quotaRootResponse.getMailboxName();
 
 
         composer.untagged();
         composer.commandName(ImapConstants.QUOTAROOT_RESPONSE_NAME);
-        composer.mailbox(mailbox == null ? "" : mailbox);
+        composer.mailbox(mailbox == null ? "" : mailbox.getValue());
         composer.message(quotaRoot == null ? "" : quotaRoot);
         composer.end();
     }

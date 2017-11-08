@@ -28,6 +28,7 @@ import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.AppendRequest;
 import org.apache.james.protocols.imap.DecodingException;
 
@@ -74,7 +75,7 @@ public class AppendCommandParser extends AbstractImapCommandParser {
      * org.apache.james.imap.api.process.ImapSession)
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        String mailboxName = request.mailbox();
+        MailboxName mailboxName = new MailboxName(request.mailbox());
         Flags flags = optionalAppendFlags(request);
         if (flags == null) {
             flags = new Flags();

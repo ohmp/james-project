@@ -3,6 +3,7 @@ package org.apache.james.imap.decode.parser;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.message.IdRange;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.MoveRequest;
 
 /**
@@ -16,7 +17,7 @@ public class MoveCommandParser extends AbstractMessageRangeCommandParser {
 
 	@Override
 	protected MoveRequest createRequest(ImapCommand command, String tag,
-			boolean useUids, IdRange[] idSet, String mailboxName) {
+			boolean useUids, IdRange[] idSet, MailboxName mailboxName) {
 		return new MoveRequest(command, idSet, mailboxName, useUids, tag);
 	}
 

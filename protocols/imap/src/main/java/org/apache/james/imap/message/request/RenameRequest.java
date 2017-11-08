@@ -19,23 +19,23 @@
 package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.message.model.MailboxName;
 
 public class RenameRequest extends AbstractImapRequest {
-    private final String existingName;
+    private final MailboxName existingName;
+    private final MailboxName newName;
 
-    private final String newName;
-
-    public RenameRequest(ImapCommand command, String existingName, String newName, String tag) {
+    public RenameRequest(ImapCommand command, MailboxName existingName, MailboxName newName, String tag) {
         super(tag, command);
         this.existingName = existingName;
         this.newName = newName;
     }
 
-    public final String getExistingName() {
+    public final MailboxName getExistingName() {
         return existingName;
     }
 
-    public final String getNewName() {
+    public final MailboxName getNewName() {
         return newName;
     }
 }

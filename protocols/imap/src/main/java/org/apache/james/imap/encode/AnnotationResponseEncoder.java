@@ -27,6 +27,7 @@ import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.encode.base.AbstractChainedImapEncoder;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.response.AnnotationResponse;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.slf4j.Logger;
@@ -46,7 +47,9 @@ public class AnnotationResponseEncoder extends AbstractChainedImapEncoder {
         composer.untagged();
         composer.commandName(ImapConstants.ANNOTATION_RESPONSE_NAME);
 
-        composer.quote(Optional.ofNullable(response.getMailboxName()).orElse(""));
+        composer.quote(Optional.ofNullable(response.getMailboxName())
+            .map(MailboxName::getValue)
+            .orElse(""));
         composeAnnotations(composer, session, response.getMailboxAnnotations());
 
         composer.end();

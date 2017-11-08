@@ -22,6 +22,7 @@ package org.apache.james.imap.message.response;
 import java.util.Objects;
 
 import org.apache.james.imap.api.process.MailboxType;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.mailbox.PathDelimiter;
 
 /**
@@ -43,11 +44,11 @@ public abstract class AbstractListingResponse {
 
     private final PathDelimiter hierarchyDelimiter;
 
-    private final String name;
+    private final MailboxName name;
 
     private final MailboxType type;
 
-    public AbstractListingResponse(boolean noInferiors, boolean noSelect, boolean marked, boolean unmarked, boolean hasChildren, boolean hasNoChildren, String name, PathDelimiter hierarchyDelimiter, MailboxType type) {
+    public AbstractListingResponse(boolean noInferiors, boolean noSelect, boolean marked, boolean unmarked, boolean hasChildren, boolean hasNoChildren, MailboxName name, PathDelimiter hierarchyDelimiter, MailboxType type) {
         super();
         this.noInferiors = noInferiors;
         this.noSelect = noSelect;
@@ -83,7 +84,7 @@ public abstract class AbstractListingResponse {
      * 
      * @return name of the listed mailbox, not null
      */
-    public final String getName() {
+    public final MailboxName getName() {
         return name;
     }
 

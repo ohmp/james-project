@@ -20,6 +20,7 @@
 package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.message.model.MailboxName;
 
 /**
  * SETACL Request.
@@ -28,10 +29,10 @@ import org.apache.james.imap.api.ImapCommand;
  */
 public class SetACLRequest extends AbstractImapRequest {
     private final String identifier;
-    private final String mailboxName;
+    private final MailboxName mailboxName;
     private final String rights;
 
-    public SetACLRequest(String tag, ImapCommand command, String mailboxName, String identifier, String rights) {
+    public SetACLRequest(String tag, ImapCommand command, MailboxName mailboxName, String identifier, String rights) {
         super(tag, command);
         this.mailboxName = mailboxName;
         this.identifier = identifier;
@@ -42,7 +43,7 @@ public class SetACLRequest extends AbstractImapRequest {
         return identifier;
     }
 
-    public String getMailboxName() {
+    public MailboxName getMailboxName() {
         return mailboxName;
     }
 

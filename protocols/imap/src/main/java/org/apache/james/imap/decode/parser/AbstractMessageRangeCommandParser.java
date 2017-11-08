@@ -24,6 +24,7 @@ import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.AbstractMessageRangeRequest;
 import org.apache.james.protocols.imap.DecodingException;
 
@@ -37,9 +38,9 @@ public abstract class AbstractMessageRangeCommandParser extends AbstractUidComma
         IdRange[] idSet = request.parseIdRange(session);
         String mailboxName = request.mailbox();
         request.eol();
-        return createRequest(command, tag, useUids, idSet, mailboxName);
+        return createRequest(command, tag, useUids, idSet, new MailboxName(mailboxName));
     }
 
-    abstract protected AbstractMessageRangeRequest createRequest(ImapCommand command, String tag, boolean useUids, IdRange[] idSet, String mailboxName);
+    abstract protected AbstractMessageRangeRequest createRequest(ImapCommand command, String tag, boolean useUids, IdRange[] idSet, MailboxName mailboxName);
 
 }

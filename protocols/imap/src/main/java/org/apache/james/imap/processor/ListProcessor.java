@@ -37,6 +37,7 @@ import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.api.process.MailboxType;
 import org.apache.james.imap.api.process.MailboxTyper;
 import org.apache.james.imap.main.PathConverter;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.ListRequest;
 import org.apache.james.imap.message.response.ListResponse;
 import org.apache.james.imap.processor.base.PrefixedRegex;
@@ -59,10 +60,10 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
         private final PathDelimiter delimiter;
         private final Children inferiors;
         private final MailboxMetaData.Selectability selectability;
-        private final String mailboxName;
+        private final MailboxName mailboxName;
         private final MailboxPath mailboxPath;
 
-        public ListAnswer(PathDelimiter delimiter, Children inferiors, MailboxMetaData.Selectability selectability, String mailboxName, MailboxPath mailboxPath) {
+        public ListAnswer(PathDelimiter delimiter, Children inferiors, MailboxMetaData.Selectability selectability, MailboxName mailboxName, MailboxPath mailboxPath) {
             this.delimiter = delimiter;
             this.inferiors = inferiors;
             this.selectability = selectability;
@@ -86,7 +87,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
             return selectability;
         }
 
-        public String getMailboxName() {
+        public MailboxName getMailboxName() {
             return mailboxName;
         }
 
@@ -106,20 +107,20 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
         }
     }
 
-    public static ListAnswer forVirtualMailbox(PathDelimiter delimiter, String user, String mailboxName) {
+    public static ListAnswer forVirtualMailbox(PathDelimiter delimiter, String user, MailboxName mailboxName) {
         return new ListAnswer(delimiter,
             Children.CHILDREN_ALLOWED_BUT_UNKNOWN,
             MailboxMetaData.Selectability.NOSELECT,
             mailboxName,
-            MailboxPath.forUser(user, mailboxName));
+            MailboxPath.forUser(user, mailboxName.getValue()));
     }
 
-    public static ListAnswer forVirtualMailboxWithChildren(PathDelimiter delimiter, String user, String mailboxName) {
+    public static ListAnswer forVirtualMailboxWithChildren(PathDelimiter delimiter, String user, MailboxName mailboxName) {
         return new ListAnswer(delimiter,
             Children.HAS_CHILDREN,
             MailboxMetaData.Selectability.NOSELECT,
             mailboxName,
-            MailboxPath.forUser(user, mailboxName));
+            MailboxPath.forUser(user, mailboxName.getValue()));
     }
 
     public static Stream<ListAnswer> forMailboxMetadata(ImapSession session, PathConverter pathConverter, MailboxMetaData metaData) {
@@ -132,10 +133,10 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
         String sanitizedUserName = User.fromUsername(metaData.getPath().getUser()).getLocalPart();
         return Stream.of(
             fromMetadata(pathConverter, metaData),
-            forVirtualMailboxWithChildren(delimiter, username, otherUsersNamespace),
+            forVirtualMailboxWithChildren(delimiter, username, new MailboxName(otherUsersNamespace)),
             forVirtualMailboxWithChildren(delimiter,
                 username,
-                delimiter.join(otherUsersNamespace, sanitizedUserName)));
+                new MailboxName(delimiter.join(otherUsersNamespace, sanitizedUserName))));
     }
 
     public static ListAnswer fromMetadata(PathConverter pathConverter, MailboxMetaData metaData) {
@@ -172,7 +173,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
             MAILBOX_TYPER);
     }
 
-    protected ImapResponseMessage createResponse(boolean noInferior, boolean noSelect, boolean marked, boolean unmarked, boolean hasChildren, boolean hasNoChildren, String mailboxName, PathDelimiter delimiter, MailboxType type) {
+    protected ImapResponseMessage createResponse(boolean noInferior, boolean noSelect, boolean marked, boolean unmarked, boolean hasChildren, boolean hasNoChildren, MailboxName mailboxName, PathDelimiter delimiter, MailboxType type) {
         return new ListResponse(noInferior, noSelect, marked, unmarked, hasChildren, hasNoChildren, mailboxName, delimiter);
     }
 
@@ -229,7 +230,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                 mailboxSession)
             .stream()
             .flatMap(metaData -> forMailboxMetadata(session, pathConverter, metaData))
-            .filter(listAnswer -> expression.isExpressionMatch(listAnswer.getMailboxName()))
+            .filter(listAnswer -> expression.isExpressionMatch(listAnswer.getMailboxName().getValue()))
             .distinct()
             .forEach(listAnswer ->
                 processResult(responder,
@@ -244,13 +245,13 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
         if (referenceName.startsWith(otherUsersNamespace)) {
             MailboxPath rootPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, user, otherUsersNamespace);
             processResult(responder,
-                forVirtualMailbox(mailboxSession.getPathDelimiter(), user, rootPath.getName()),
+                forVirtualMailbox(mailboxSession.getPathDelimiter(), user, new MailboxName(rootPath.getName())),
                 getMailboxType(session, mailboxTyper, rootPath));
         } else {
             // Get the mailbox for the user reference name.
             MailboxPath rootPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, user, "");
             processResult(responder,
-                forVirtualMailbox(mailboxSession.getPathDelimiter(), user, rootPath.getName()),
+                forVirtualMailbox(mailboxSession.getPathDelimiter(), user, new MailboxName(rootPath.getName())),
                 getMailboxType(session, mailboxTyper, rootPath));
         }
     }

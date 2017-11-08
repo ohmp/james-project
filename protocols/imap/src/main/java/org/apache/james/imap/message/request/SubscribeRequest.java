@@ -19,16 +19,17 @@
 package org.apache.james.imap.message.request;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.message.model.MailboxName;
 
 public class SubscribeRequest extends AbstractImapRequest {
-    private final String mailboxName;
+    private final MailboxName mailboxName;
 
-    public SubscribeRequest(ImapCommand command, String mailboxName, String tag) {
+    public SubscribeRequest(ImapCommand command, MailboxName mailboxName, String tag) {
         super(tag, command);
         this.mailboxName = mailboxName;
     }
 
-    public final String getMailboxName() {
+    public final MailboxName getMailboxName() {
         return mailboxName;
     }
 }

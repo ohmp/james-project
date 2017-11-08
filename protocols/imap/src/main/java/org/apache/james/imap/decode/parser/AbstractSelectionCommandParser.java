@@ -28,6 +28,7 @@ import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.ImapRequestLineReader.CharacterValidator;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.AbstractMailboxSelectionRequest;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.protocols.imap.DecodingException;
@@ -44,7 +45,7 @@ public abstract class AbstractSelectionCommandParser extends AbstractImapCommand
 
     
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        final String mailboxName = request.mailbox();
+        MailboxName mailboxName = new MailboxName(request.mailbox());
         boolean condstore = false;
         Long lastKnownUidValidity = null;
         Long knownModSeq = null;
@@ -230,5 +231,5 @@ public abstract class AbstractSelectionCommandParser extends AbstractImapCommand
     /**
      * Create a new {@link AbstractMailboxSelectionRequest} for the given arguments
      */
-    protected abstract AbstractMailboxSelectionRequest createRequest(ImapCommand command, String mailboxName, boolean condstore, Long lastKnownUidValidity, Long knownModSeq, UidRange[] uidSet, UidRange[] knownUidSet, IdRange[] knownSequenceSet, String tag);
+    protected abstract AbstractMailboxSelectionRequest createRequest(ImapCommand command, MailboxName mailboxName, boolean condstore, Long lastKnownUidValidity, Long knownModSeq, UidRange[] uidSet, UidRange[] knownUidSet, IdRange[] knownSequenceSet, String tag);
 }

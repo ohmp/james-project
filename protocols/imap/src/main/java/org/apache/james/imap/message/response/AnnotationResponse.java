@@ -24,20 +24,21 @@ import java.util.List;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import org.apache.james.imap.api.message.response.ImapResponseMessage;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 
 import com.google.common.base.Objects;
 
 public class AnnotationResponse implements ImapResponseMessage {
-    private final String mailboxName;
+    private final MailboxName mailboxName;
     private final List<MailboxAnnotation> mailboxAnnotations;
 
-    public AnnotationResponse(String mailboxName, List<MailboxAnnotation> mailboxAnnotations) {
+    public AnnotationResponse(MailboxName mailboxName, List<MailboxAnnotation> mailboxAnnotations) {
         this.mailboxName = mailboxName;
         this.mailboxAnnotations = ImmutableList.copyOf(mailboxAnnotations);
     }
 
-    public String getMailboxName() {
+    public MailboxName getMailboxName() {
         return mailboxName;
     }
 

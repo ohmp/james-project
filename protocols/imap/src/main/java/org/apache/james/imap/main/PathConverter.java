@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -55,13 +56,13 @@ public class PathConverter {
         userName = ImapSessionUtils.getUserName(session);
     }
 
-    public MailboxPath buildFullPath(String mailboxName) throws MailboxNotFoundException {
+    public MailboxPath buildFullPath(MailboxName mailboxName) throws MailboxNotFoundException {
         Preconditions.checkNotNull(mailboxName);
-        List<String> mailboxNameParts = pathDelimiter.split(mailboxName);
+        List<String> mailboxNameParts = pathDelimiter.split(mailboxName.getValue());
         if (isADelegatedMailboxName(mailboxNameParts)) {
             return buildDelegatedMailboxPath(mailboxNameParts);
         }
-        return buildPersonalMailboxPath(mailboxName);
+        return buildPersonalMailboxPath(mailboxName.getValue());
     }
 
     private boolean isADelegatedMailboxName(List<String> mailboxNameParts) {
@@ -94,19 +95,19 @@ public class PathConverter {
         throw new MailboxNotFoundException(mailboxName);
     }
 
-    public String buildMailboxName(MailboxPath mailboxPath) {
+    public MailboxName buildMailboxName(MailboxPath mailboxPath) {
         Preconditions.checkNotNull(mailboxPath);
         if (userName.equals(mailboxPath.getUser())) {
-            return joinMailboxNameParts(
+            return new MailboxName(joinMailboxNameParts(
                 ImmutableList.of(
                     namespaceConfiguration.personalNamespace(),
-                    mailboxPath.getName()));
+                    mailboxPath.getName())));
         }
-        return joinMailboxNameParts(
+        return new MailboxName(joinMailboxNameParts(
             ImmutableList.of(
                 namespaceConfiguration.otherUsersNamespace(),
                 User.fromUsername(mailboxPath.getUser()).getLocalPart(),
-                mailboxPath.getName()));
+                mailboxPath.getName())));
     }
 
     private String joinMailboxNameParts(ImmutableList<String> mailboxNameParts) {

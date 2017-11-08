@@ -30,6 +30,7 @@ import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.main.PathConverter;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.ListRightsRequest;
 import org.apache.james.imap.message.response.ListRightsResponse;
 import org.apache.james.mailbox.MailboxManager;
@@ -65,10 +66,10 @@ public class ListRightsProcessor extends AbstractMailboxProcessor<ListRightsRequ
     @Override
     protected void doProcess(ListRightsRequest message, ImapSession session, String tag, ImapCommand command, Responder responder) {
 
-        final MailboxManager mailboxManager = getMailboxManager();
-        final MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
-        final String mailboxName = message.getMailboxName();
-        final String identifier = message.getIdentifier();
+        MailboxManager mailboxManager = getMailboxManager();
+        MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
+        MailboxName mailboxName = message.getMailboxName();
+        String identifier = message.getIdentifier();
         try {
 
             MailboxPath mailboxPath = PathConverter.forSession(session).buildFullPath(mailboxName);

@@ -37,6 +37,7 @@ import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.api.process.SearchResUtil;
 import org.apache.james.imap.api.process.SelectedMailbox;
 import org.apache.james.imap.main.PathConverter;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.AbstractMailboxSelectionRequest;
 import org.apache.james.imap.message.response.ExistsResponse;
 import org.apache.james.imap.message.response.RecentResponse;
@@ -84,9 +85,9 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
      * org.apache.james.imap.api.process.ImapProcessor.Responder)
      */
     protected void doProcess(M request, ImapSession session, String tag, ImapCommand command, Responder responder) {
-        final String mailboxName = request.getMailboxName();
+        MailboxName mailboxName = request.getMailboxName();
         try {
-            final MailboxPath fullMailboxPath = PathConverter.forSession(session).buildFullPath(mailboxName);
+            MailboxPath fullMailboxPath = PathConverter.forSession(session).buildFullPath(mailboxName);
 
             respond(tag, command, session, fullMailboxPath, request, responder);
            

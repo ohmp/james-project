@@ -29,6 +29,7 @@ import org.apache.james.imap.api.display.HumanReadableText;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.SetAnnotationRequest;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
@@ -44,7 +45,7 @@ public class SetAnnotationCommandParser extends AbstractImapCommandParser {
     @Override
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session)
             throws DecodingException {
-        String mailboxName = request.mailbox();
+        MailboxName mailboxName = new MailboxName(request.mailbox());
         ImmutableList.Builder<MailboxAnnotation> listMailboxAnnotations = ImmutableList.<MailboxAnnotation>builder();
 
         if (request.nextWordChar() == '(') {

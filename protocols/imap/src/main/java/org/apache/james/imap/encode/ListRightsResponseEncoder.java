@@ -25,6 +25,7 @@ import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.encode.base.AbstractChainedImapEncoder;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.response.ListRightsResponse;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
 
@@ -50,9 +51,9 @@ public class ListRightsResponseEncoder extends AbstractChainedImapEncoder {
         final ListRightsResponse listRightsResponse = (ListRightsResponse) acceptableMessage;
         composer.untagged();
         composer.commandName(ImapConstants.LISTRIGHTS_RESPONSE_NAME);
-        
-        String mailboxName = listRightsResponse.getMailboxName();
-        composer.mailbox(mailboxName == null ? "" : mailboxName);
+
+        MailboxName mailboxName = listRightsResponse.getMailboxName();
+        composer.mailbox(mailboxName == null ? "" : mailboxName.getValue());
         
         String identifier = listRightsResponse.getIdentifier();
         composer.quote(identifier);

@@ -27,7 +27,6 @@ import org.apache.james.imap.api.message.request.ImapRequest;
 import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.api.process.ImapSession;
-import org.apache.james.imap.main.PathConverter;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.BadCredentialsException;
@@ -35,7 +34,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.NotAdminException;
 import org.apache.james.mailbox.exception.UserDoesNotExistException;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.metrics.api.MetricFactory;
@@ -71,7 +69,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
                         authenticationAttempt.getPassword());
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
-                    provisionInbox(session, mailboxManager, mailboxSession);
+                    provisionInbox(mailboxManager, mailboxSession);
                     okComplete(command, tag, responder);
                 } catch (BadCredentialsException e) {
                     authFailure = true;
@@ -101,7 +99,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
                         authenticationAttempt.getDelegateUserName().get());
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
-                    provisionInbox(session, mailboxManager, mailboxSession);
+                    provisionInbox(mailboxManager, mailboxSession);
                     okComplete(command, tag, responder);
                 } catch (BadCredentialsException e) {
                     authFailure = true;
@@ -128,8 +126,8 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         }
     }
 
-    private void provisionInbox(ImapSession session, MailboxManager mailboxManager, MailboxSession mailboxSession) throws MailboxException {
-        final MailboxPath inboxPath = PathConverter.forSession(session).buildFullPath(MailboxConstants.INBOX);
+    private void provisionInbox(MailboxManager mailboxManager, MailboxSession mailboxSession) throws MailboxException {
+        MailboxPath inboxPath = MailboxPath.inbox(mailboxSession);
         if (mailboxManager.mailboxExists(inboxPath, mailboxSession)) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("INBOX exists. No need to create it.");

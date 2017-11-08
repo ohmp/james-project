@@ -27,6 +27,7 @@ import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.ImapRequestLineReader.CharacterValidator;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.StatusRequest;
 import org.apache.james.protocols.imap.DecodingException;
 
@@ -86,8 +87,8 @@ public class StatusCommandParser extends AbstractImapCommandParser {
      * org.apache.james.imap.api.process.ImapSession)
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        final String mailboxName = request.mailbox();
-        final StatusDataItems statusDataItems = statusDataItems(request);
+        MailboxName mailboxName = new MailboxName(request.mailbox());
+        StatusDataItems statusDataItems = statusDataItems(request);
         request.eol();
         return new StatusRequest(command, mailboxName, statusDataItems, tag);
     }

@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
 
 import com.google.common.base.Preconditions;
@@ -32,7 +33,7 @@ public class GetAnnotationRequest extends AbstractImapRequest {
     public static class Builder {
         private String tag;
         private ImapCommand command;
-        private String mailboxName;
+        private MailboxName mailboxName;
         private Set<MailboxAnnotationKey> keys;
         private Optional<Integer> maxsize;
         private Depth depth;
@@ -53,7 +54,7 @@ public class GetAnnotationRequest extends AbstractImapRequest {
             return this;
         }
 
-        public Builder mailboxName(String mailboxName) {
+        public Builder mailboxName(MailboxName mailboxName) {
             Preconditions.checkNotNull(mailboxName);
             this.mailboxName = mailboxName;
             return this;
@@ -97,7 +98,7 @@ public class GetAnnotationRequest extends AbstractImapRequest {
         return new Builder();
     }
 
-    private final String mailboxName;
+    private final MailboxName mailboxName;
     private final Set<MailboxAnnotationKey> keys;
     private final Optional<Integer> maxsize;
     private final Depth depth;
@@ -110,7 +111,7 @@ public class GetAnnotationRequest extends AbstractImapRequest {
         this.keys = builder.keys;
     }
 
-    public String getMailboxName() {
+    public MailboxName getMailboxName() {
         return mailboxName;
     }
 

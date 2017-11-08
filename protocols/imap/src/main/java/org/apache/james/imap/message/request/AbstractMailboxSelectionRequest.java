@@ -23,6 +23,7 @@ import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.UidRange;
 import org.apache.james.imap.api.message.request.ImapRequest;
+import org.apache.james.imap.message.model.MailboxName;
 
 /**
  * {@link ImapRequest} which selects a Mailbox. 
@@ -32,7 +33,7 @@ import org.apache.james.imap.api.message.request.ImapRequest;
 public abstract class AbstractMailboxSelectionRequest extends AbstractImapRequest {
 
 
-    private final String mailboxName;
+    private final MailboxName mailboxName;
     private final boolean condstore;
     private final Long lastKnownUidValidity;
     private final Long knownModSeq;
@@ -40,7 +41,7 @@ public abstract class AbstractMailboxSelectionRequest extends AbstractImapReques
     private final UidRange[] knownUidSet;
     private final IdRange[] knownSequenceSet;
 
-    public AbstractMailboxSelectionRequest(ImapCommand command, String mailboxName, boolean condstore, Long lastKnownUidValidity, Long knownModSeq, UidRange[] uidSet, UidRange[] knownUidSet, IdRange[] knownSequenceSet, String tag) {
+    public AbstractMailboxSelectionRequest(ImapCommand command, MailboxName mailboxName, boolean condstore, Long lastKnownUidValidity, Long knownModSeq, UidRange[] uidSet, UidRange[] knownUidSet, IdRange[] knownSequenceSet, String tag) {
         super(tag, command);
         this.mailboxName = mailboxName;
         this.condstore = condstore;
@@ -59,7 +60,7 @@ public abstract class AbstractMailboxSelectionRequest extends AbstractImapReques
      * 
      * @return mailboxName
      */
-    public final String getMailboxName() {
+    public final MailboxName getMailboxName() {
         return mailboxName;
     }
     

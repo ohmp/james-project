@@ -24,6 +24,7 @@ import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
+import org.apache.james.imap.message.model.MailboxName;
 import org.apache.james.imap.message.request.RenameRequest;
 import org.apache.james.protocols.imap.DecodingException;
 
@@ -43,8 +44,8 @@ public class RenameCommandParser extends AbstractImapCommandParser {
      * org.apache.james.imap.api.process.ImapSession)
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        final String existingName = request.mailbox();
-        final String newName = request.mailbox();
+        MailboxName existingName = new MailboxName(request.mailbox());
+        MailboxName newName = new MailboxName(request.mailbox());
         request.eol();
         return new RenameRequest(command, existingName, newName, tag);
     }
