@@ -24,14 +24,19 @@ import org.apache.james.mpt.imapmailbox.maildir.host.MaildirHostSystem;
 import org.apache.james.mpt.imapmailbox.suite.QuotaTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 public class MaildirQuotaTest extends QuotaTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private ImapHostSystem system;
 
     @Before
     public void setUp() throws Exception {
-        system = new MaildirHostSystem();
+        system = new MaildirHostSystem(temporaryFolder);
         super.setUp();
     }
     

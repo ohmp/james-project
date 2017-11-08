@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -43,7 +44,7 @@ public class FullUserMaildirMailboxManagerTest extends MailboxManagerTest {
     @Override
     protected MailboxManager provideMailboxManager() {
         try {
-            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser", tmpFolder);
+            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser", tmpFolder, MailboxManagerOptions.NONE);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

@@ -21,6 +21,7 @@ package org.apache.james.mailbox.maildir;
 
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerStressTest;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -39,7 +40,7 @@ public class FullUserMaildirMailboxManagerStressTest extends MailboxManagerStres
     @Override
     protected MailboxManager provideManager() {
         try {
-            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser", tmpFolder);
+            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser", tmpFolder, MailboxManagerOptions.NONE);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
