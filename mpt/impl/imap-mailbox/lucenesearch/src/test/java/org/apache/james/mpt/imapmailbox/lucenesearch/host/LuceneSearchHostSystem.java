@@ -22,8 +22,6 @@ package org.apache.james.mpt.imapmailbox.lucenesearch.host;
 import java.io.File;
 import java.io.IOException;
 
-import javax.persistence.EntityManagerFactory;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.backends.jpa.JpaTestCluster;
@@ -34,28 +32,14 @@ import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SubscriptionManager;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
-import org.apache.james.mailbox.acl.MailboxACLResolver;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
-import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.JPAId;
 import org.apache.james.mailbox.jpa.JPAId.Factory;
 import org.apache.james.mailbox.jpa.JPAMailboxFixture;
-import org.apache.james.mailbox.jpa.JPAMailboxSessionMapperFactory;
 import org.apache.james.mailbox.jpa.JPASubscriptionManager;
-import org.apache.james.mailbox.jpa.mail.JPAModSeqProvider;
-import org.apache.james.mailbox.jpa.mail.JPAUidProvider;
+import org.apache.james.mailbox.jpa.JpaMailboxManagerProvider;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.apache.james.mailbox.lucene.search.LuceneMessageSearchIndex;
-import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.JVMMailboxPathLocker;
-import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
-import org.apache.james.mailbox.store.StoreRightManager;
-import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
-import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
-import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.quota.DefaultQuotaRootResolver;
 import org.apache.james.mailbox.store.quota.NoQuotaManager;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
@@ -104,51 +88,35 @@ public class LuceneSearchHostSystem extends JamesImapHostSystem {
     }
 
     private void initFields() {
-        EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
-        JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
-        JPAUidProvider uidProvider = new JPAUidProvider(locker, entityManagerFactory);
-        JPAModSeqProvider modSeqProvider = new JPAModSeqProvider(locker, entityManagerFactory);
-        JPAMailboxSessionMapperFactory factory = new JPAMailboxSessionMapperFactory(entityManagerFactory, uidProvider, modSeqProvider);
-
+        mailboxManager = JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER,
+            MailboxManagerOptions.builder()
+                .withAuthenticator(authenticator)
+                .withAuthorizator(authorizator)
+                .build());
         try {
             JPAId.Factory mailboxIdFactory = new Factory();
             FSDirectory fsDirectory = FSDirectory.open(tempFile);
-            MessageId.Factory messageIdFactory = new DefaultMessageId.Factory();
 
-            MailboxACLResolver aclResolver = new UnionMailboxACLResolver();
-            GroupMembershipResolver groupMembershipResolver = new SimpleGroupMembershipResolver();
-            MessageParser messageParser = new MessageParser();
-
-            StoreRightManager storeRightManager = new StoreRightManager(factory, aclResolver, groupMembershipResolver);
-
-            DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();
-            MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
-            StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(factory, storeRightManager);
-            mailboxManager = new OpenJPAMailboxManager(factory, authenticator, authorizator,
-                messageParser, new DefaultMessageId.Factory(), delegatingListener,
-                mailboxEventDispatcher, annotationManager, storeRightManager);
-
-            LuceneMessageSearchIndex searchIndex = new LuceneMessageSearchIndex(factory, mailboxIdFactory, fsDirectory, messageIdFactory);
+            LuceneMessageSearchIndex searchIndex = new LuceneMessageSearchIndex(mailboxManager.getMapperFactory(),
+                mailboxIdFactory, fsDirectory, mailboxManager.getMessageIdFactory());
             searchIndex.setEnableSuffixMatch(true);
             mailboxManager.setMessageSearchIndex(searchIndex);
 
-            mailboxManager.init();
-
-            SubscriptionManager subscriptionManager = new JPASubscriptionManager(factory);
+            SubscriptionManager subscriptionManager = new JPASubscriptionManager(mailboxManager.getMapperFactory());
 
             final ImapProcessor defaultImapProcessorFactory =
                 DefaultImapProcessorFactory.createDefaultProcessor(
                     mailboxManager,
                     subscriptionManager,
                     new NoQuotaManager(),
-                    new DefaultQuotaRootResolver(factory),
+                    new DefaultQuotaRootResolver(mailboxManager.getMapperFactory()),
                     new DefaultMetricFactory());
 
             configure(new DefaultImapDecoderFactory().buildImapDecoder(),
                 new DefaultImapEncoderFactory().buildImapEncoder(),
                 defaultImapProcessorFactory);
 
-        } catch (IOException | MailboxException e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }

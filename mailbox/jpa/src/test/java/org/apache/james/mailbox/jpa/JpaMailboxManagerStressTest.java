@@ -26,6 +26,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerStressTest;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.After;
 import org.junit.Before;
 
@@ -42,7 +43,7 @@ public class JpaMailboxManagerStressTest extends MailboxManagerStressTest {
     @Override
     protected MailboxManager provideManager() {
         if (!openJPAMailboxManager.isPresent()) {
-            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER));
+            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, MailboxManagerOptions.NONE));
         }
         return openJPAMailboxManager.get();
     }
