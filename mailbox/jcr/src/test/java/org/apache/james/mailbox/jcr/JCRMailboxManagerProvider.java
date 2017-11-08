@@ -21,22 +21,18 @@ package org.apache.james.mailbox.jcr;
 
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
-import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
-import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jcr.mail.JCRModSeqProvider;
 import org.apache.james.mailbox.jcr.mail.JCRUidProvider;
-import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
 import org.apache.james.mailbox.store.StoreRightManager;
 import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
-import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.xml.sax.InputSource;
 
 import com.google.common.base.Throwables;
@@ -54,7 +50,9 @@ public class JCRMailboxManagerProvider {
         }
     }
 
-    public static JCRMailboxManager provideMailboxManager(String user, String pass, String workspace, RepositoryImpl repository) {
+    public static JCRMailboxManager provideMailboxManager(String user, String pass,
+                                                          String workspace, RepositoryImpl repository,
+                                                          MailboxManagerOptions options) {
         JCRUtils.registerCnd(repository, workspace, user, pass);
         MailboxSessionJCRRepository sessionRepos = new GlobalMailboxSessionJCRRepository(repository, workspace, user, pass);
         JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
@@ -63,17 +61,14 @@ public class JCRMailboxManagerProvider {
         JCRMailboxSessionMapperFactory mf = new JCRMailboxSessionMapperFactory(sessionRepos, uidProvider, modSeqProvider);
 
         MailboxACLResolver aclResolver = new UnionMailboxACLResolver();
-        GroupMembershipResolver groupMembershipResolver = new SimpleGroupMembershipResolver();
-        MessageParser messageParser = new MessageParser();
 
-        Authenticator noAuthenticator = null;
-        Authorizator noAuthorizator = null;
-        StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, groupMembershipResolver);
+        StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, options.getGroupMembershipResolver());
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mf, storeRightManager);
         DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();
         MailboxEventDispatcher mailboxEventDispatcher = new MailboxEventDispatcher(delegatingListener);
-        JCRMailboxManager manager = new JCRMailboxManager(mf, noAuthenticator, noAuthorizator, locker,
-            messageParser, new DefaultMessageId.Factory(), mailboxEventDispatcher, delegatingListener,
+        JCRMailboxManager manager = new JCRMailboxManager(mf, options.getAuthenticator(),
+            options.getAuthorizator(), locker,
+            options.getMessageParser(), new DefaultMessageId.Factory(), mailboxEventDispatcher, delegatingListener,
             annotationManager, storeRightManager);
 
         try {

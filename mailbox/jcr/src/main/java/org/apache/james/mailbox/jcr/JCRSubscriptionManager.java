@@ -20,6 +20,7 @@ package org.apache.james.mailbox.jcr;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.jcr.user.model.JCRSubscription;
+import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.StoreSubscriptionManager;
 import org.apache.james.mailbox.store.user.model.Subscription;
 
@@ -29,6 +30,10 @@ import org.apache.james.mailbox.store.user.model.Subscription;
 public class JCRSubscriptionManager extends StoreSubscriptionManager implements JCRImapConstants {
 
     public JCRSubscriptionManager(JCRMailboxSessionMapperFactory mapperFactory) {
+        super(mapperFactory);
+    }
+
+    public JCRSubscriptionManager(MailboxSessionMapperFactory mapperFactory) {
         super(mapperFactory);
     }
 
