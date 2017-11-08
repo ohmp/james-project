@@ -59,8 +59,8 @@ public class MailboxFactoryTest {
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(inMemoryIntegrationResources.createGroupMembershipResolver());
         user = ManagerTestResources.USER;
         otherUser = ManagerTestResources.OTHER_USER;
-        mailboxSession = mailboxManager.login(user, ManagerTestResources.USER_PASS);
-        otherMailboxSession = mailboxManager.login(otherUser, ManagerTestResources.OTHER_USER_PASS);
+        mailboxSession = mailboxManager.createSystemSession(user);
+        otherMailboxSession = mailboxManager.createSystemSession(otherUser);
         sut = new MailboxFactory(mailboxManager);
     }
 

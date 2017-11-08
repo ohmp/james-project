@@ -41,7 +41,7 @@ public class MailboxUtilsTest {
         InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(inMemoryIntegrationResources.createGroupMembershipResolver());
         user = "user@domain.org";
-        mailboxSession = mailboxManager.login(user, "pass");
+        mailboxSession = mailboxManager.createSystemSession(user);
         sut = new MailboxUtils(mailboxManager);
     }
     @Test

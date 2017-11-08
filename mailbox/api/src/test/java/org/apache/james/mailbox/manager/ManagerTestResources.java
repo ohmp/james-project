@@ -71,7 +71,7 @@ public class ManagerTestResources<T extends MailboxManager> {
         quotaRootResolver = integrationResources.createQuotaRootResolver(mailboxManager);
         quotaManager = integrationResources.createQuotaManager(maxQuotaManager, mailboxManager);
         integrationResources.init();
-        session = mailboxManager.login(USER, USER_PASS);
+        session = mailboxManager.createSystemSession(USER);
         inbox = MailboxPath.inbox(session);
         subFolder = new MailboxPath(inbox, "INBOX.SUB");
 
