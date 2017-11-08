@@ -33,7 +33,7 @@ public class StreamUtilsTest {
     @Test
     public void concatShouldReturnEmptyWhenEmptyStreams() {
         assertThat(
-            StreamUtils.<Integer>concat(ImmutableList.of())
+            StreamUtils.<Integer>flatten(ImmutableList.of())
                 .collect(Guavate.toImmutableList()))
             .isEmpty();
     }
@@ -41,7 +41,7 @@ public class StreamUtilsTest {
     @Test
     public void concatShouldPreserveSingleStreams() {
         assertThat(
-            StreamUtils.concat(ImmutableList.of(
+            StreamUtils.flatten(ImmutableList.of(
                 Stream.of(1, 2, 3)))
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3);
@@ -50,11 +50,31 @@ public class StreamUtilsTest {
     @Test
     public void concatShouldMergeSeveralStreamsTogether() {
         assertThat(
-            StreamUtils.concat(ImmutableList.of(
+            StreamUtils.flatten(ImmutableList.of(
                 Stream.of(1, 2, 3),
                 Stream.of(4, 5)))
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void concatShouldAcceptEmptyStreams() {
+        assertThat(
+            StreamUtils.flatten(ImmutableList.of(
+                Stream.of()))
+                .collect(Guavate.toImmutableList()))
+            .isEmpty();
+    }
+
+    @Test
+    public void concatShouldMergeEmptyStreamsWithOtherData() {
+        assertThat(
+            StreamUtils.flatten(ImmutableList.of(
+                Stream.of(1, 2),
+                Stream.of(),
+                Stream.of(3)))
+                .collect(Guavate.toImmutableList()))
+            .containsExactly(1, 2, 3);
     }
 
 }
