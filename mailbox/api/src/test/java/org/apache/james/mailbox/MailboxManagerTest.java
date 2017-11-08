@@ -61,6 +61,9 @@ import com.google.common.collect.ImmutableSet;
  */
 public abstract class MailboxManagerTest {
 
+    protected static final int LIMIT_ANNOTATIONS = 3;
+    protected static final int LIMIT_ANNOTATION_SIZE = 30;
+
     public final static String USER_1 = "USER_1";
     public final static String USER_2 = "USER_2";
     private static final int DEFAULT_MAXIMUM_LIMIT = 256;
