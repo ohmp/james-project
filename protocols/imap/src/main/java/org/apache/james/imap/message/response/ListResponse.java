@@ -20,6 +20,7 @@ package org.apache.james.imap.message.response;
 
 import org.apache.james.imap.api.message.response.ImapResponseMessage;
 import org.apache.james.imap.api.process.MailboxType;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.model.MailboxMetaData;
 
 /**
@@ -27,7 +28,7 @@ import org.apache.james.mailbox.model.MailboxMetaData;
  */
 public final class ListResponse extends AbstractListingResponse implements ImapResponseMessage {
 
-    public ListResponse(MailboxMetaData.Children children, MailboxMetaData.Selectability selectability, String name, char hierarchyDelimiter) {
+    public ListResponse(MailboxMetaData.Children children, MailboxMetaData.Selectability selectability, String name, PathDelimiter hierarchyDelimiter) {
         super(children, selectability, name, hierarchyDelimiter, MailboxType.OTHER);
     }
 

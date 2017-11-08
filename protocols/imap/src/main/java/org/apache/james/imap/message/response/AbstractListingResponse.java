@@ -22,6 +22,7 @@ package org.apache.james.imap.message.response;
 import java.util.Objects;
 
 import org.apache.james.imap.api.process.MailboxType;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.model.MailboxMetaData;
 
 import com.google.common.base.MoreObjects;
@@ -31,12 +32,12 @@ public abstract class AbstractListingResponse {
     private final MailboxMetaData.Children children;
     private final MailboxMetaData.Selectability selectability;
     private final String name;
-    private final char hierarchyDelimiter;
+    private final PathDelimiter hierarchyDelimiter;
     private final MailboxType type;
 
     public AbstractListingResponse(MailboxMetaData.Children children,
                                    MailboxMetaData.Selectability selectability,
-                                   String name, char hierarchyDelimiter, MailboxType type) {
+                                   String name, org.apache.james.mailbox.PathDelimiter hierarchyDelimiter, MailboxType type) {
         super();
         this.children = children;
         this.selectability = selectability;
@@ -50,7 +51,7 @@ public abstract class AbstractListingResponse {
      * 
      * @return hierarchy delimiter, or Character.UNASSIGNED if no hierarchy exists
      */
-    public final char getHierarchyDelimiter() {
+    public final PathDelimiter getHierarchyDelimiter() {
         return hierarchyDelimiter;
     }
 

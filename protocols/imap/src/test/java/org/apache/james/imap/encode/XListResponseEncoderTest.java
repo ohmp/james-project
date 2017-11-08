@@ -27,8 +27,8 @@ import org.apache.james.imap.api.process.MailboxType;
 import org.apache.james.imap.encode.base.ByteImapResponseWriter;
 import org.apache.james.imap.encode.base.ImapResponseComposerImpl;
 import org.apache.james.imap.message.response.LSubResponse;
-import org.apache.james.imap.message.response.ListResponse;
 import org.apache.james.imap.message.response.XListResponse;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
@@ -43,7 +43,7 @@ public class XListResponseEncoderTest {
     private ImapResponseComposer composer = new ImapResponseComposerImpl(writer);
 
     private Mockery context = new JUnit4Mockery();
-    
+
     @Before
     public void setUp() throws Exception {
         encoder = new XListResponseEncoder(context.mock(ImapEncoder.class));
@@ -56,14 +56,14 @@ public class XListResponseEncoderTest {
                 MailboxMetaData.Children.HAS_CHILDREN,
                 MailboxMetaData.Selectability.NONE,
                 "name",
-                '.',
+                MailboxConstants.DEFAULT_DELIMITER,
                 MailboxType.INBOX)))
         .isTrue();
     }
 
     @Test
     public void encoderShouldNotAcceptLsubResponse() {
-        assertThat(encoder.isAcceptable(new LSubResponse("name", true, '.'))).isFalse();
+        assertThat(encoder.isAcceptable(new LSubResponse("name", true, MailboxConstants.DEFAULT_DELIMITER))).isFalse();
         assertFalse(encoder.isAcceptable(context.mock(ImapMessage.class)));
         assertFalse(encoder.isAcceptable(null));
     }
@@ -85,7 +85,7 @@ public class XListResponseEncoderTest {
                 MailboxMetaData.Children.HAS_CHILDREN,
                 MailboxMetaData.Selectability.NONE,
                 "name",
-                '.',
+                MailboxConstants.DEFAULT_DELIMITER,
                 MailboxType.INBOX),
             composer,
             new FakeImapSession());

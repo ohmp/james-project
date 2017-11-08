@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.model.MailboxConstants;
+import org.apache.james.mailbox.PathDelimiter;
 
 /**
  * Describes a mailbox session.
@@ -51,19 +52,19 @@ public class SimpleMailboxSession implements MailboxSession, MailboxSession.User
     private final List<Locale> localePreferences;
 
     private final Map<Object, Object> attributes;
-    
-    private final char pathSeparator;
+
+    private final PathDelimiter pathDelimiter;
 
     private final SessionType type;
 
     
     public SimpleMailboxSession(long sessionId, String userName, String password,
-                                List<Locale> localePreferences, char pathSeparator, SessionType type) {
+                                List<Locale> localePreferences, PathDelimiter pathSeparator, SessionType type) {
         this(sessionId, userName, password, localePreferences, new ArrayList<>(), null, pathSeparator, type);
     }
 
     public SimpleMailboxSession(long sessionId, String userName, String password,
-                                List<Locale> localePreferences, List<String> sharedSpaces, String otherUsersSpace, char pathSeparator, SessionType type) {
+                                List<Locale> localePreferences, List<String> sharedSpaces, String otherUsersSpace, PathDelimiter pathSeparator, SessionType type) {
         this.sessionId = sessionId;
         this.userName = userName;
         this.password = password;
@@ -78,7 +79,7 @@ public class SimpleMailboxSession implements MailboxSession, MailboxSession.User
 
         this.localePreferences = localePreferences;
         this.attributes = new HashMap<>();
-        this.pathSeparator = pathSeparator;
+        this.pathDelimiter = pathSeparator;
     }
 
 
@@ -174,11 +175,9 @@ public class SimpleMailboxSession implements MailboxSession, MailboxSession.User
         return password;
     }
 
-    /**
-     * @see org.apache.james.mailbox.MailboxSession#getPathDelimiter()
-     */
-    public char getPathDelimiter() {
-        return pathSeparator;
+    @Override
+    public PathDelimiter getPathDelimiter() {
+        return pathDelimiter;
     }
 
     /**

@@ -20,13 +20,14 @@ package org.apache.james.imap.message.response;
 
 import org.apache.james.imap.api.message.response.ImapResponseMessage;
 import org.apache.james.imap.api.process.MailboxType;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.model.MailboxMetaData;
 
 /**
  * Values an IMAP4rev1 <code>LIST</code> response.
  */
 public final class LSubResponse extends AbstractListingResponse implements ImapResponseMessage {
-    public LSubResponse(String name, boolean noSelect, char delimiter) {
+    public LSubResponse(String name, boolean noSelect, PathDelimiter delimiter) {
         super(MailboxMetaData.Children.CHILDREN_ALLOWED_BUT_UNKNOWN, fromNoSelect(noSelect), name, delimiter, MailboxType.OTHER);
     }
 

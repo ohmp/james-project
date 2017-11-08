@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.junit.Before;
@@ -37,7 +38,7 @@ import org.junit.rules.ExpectedException;
 public class PathConverterTest {
 
     private static final String USERNAME = "username";
-    private static final char PATH_DELIMITER = '.';
+    private static final PathDelimiter PATH_DELIMITER = MailboxConstants.DEFAULT_DELIMITER;
 
     private ImapSession imapSession;
     private MailboxSession mailboxSession;
@@ -98,7 +99,7 @@ public class PathConverterTest {
 
     @Test
     public void buildFullPathShouldAcceptUserNamespaceAndDelimiter() {
-        assertThat(pathConverter.buildFullPath(MailboxConstants.USER_NAMESPACE + PATH_DELIMITER))
+        assertThat(pathConverter.buildFullPath(PATH_DELIMITER.join(MailboxConstants.USER_NAMESPACE , "")))
             .isEqualTo(MailboxPath.forUser(USERNAME, ""));
     }
 
@@ -113,7 +114,7 @@ public class PathConverterTest {
     @Test
     public void buildFullPathShouldAcceptFullAbsoluteUserPath() {
         String mailboxName = "mailboxName";
-        assertThat(pathConverter.buildFullPath(MailboxConstants.USER_NAMESPACE + PATH_DELIMITER + mailboxName))
+        assertThat(pathConverter.buildFullPath(PATH_DELIMITER.join(MailboxConstants.USER_NAMESPACE , mailboxName)))
             .isEqualTo(MailboxPath.forUser(USERNAME, mailboxName));
     }
 
@@ -136,7 +137,7 @@ public class PathConverterTest {
     @Test
     public void buildFullPathShouldAcceptAbsoluteUserPathWithSubFolder() {
         String mailboxName = "mailboxName.subFolder";
-        assertThat(pathConverter.buildFullPath(MailboxConstants.USER_NAMESPACE + PATH_DELIMITER + mailboxName))
+        assertThat(pathConverter.buildFullPath(PATH_DELIMITER.join(MailboxConstants.USER_NAMESPACE , mailboxName)))
             .isEqualTo(MailboxPath.forUser(USERNAME, mailboxName));
     }
 

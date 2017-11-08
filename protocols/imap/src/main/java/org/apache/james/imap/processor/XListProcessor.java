@@ -36,6 +36,7 @@ import org.apache.james.imap.message.request.XListRequest;
 import org.apache.james.imap.message.response.XListResponse;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.model.MailboxMetaData;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.metrics.api.MetricFactory;
 
 import com.google.common.collect.ImmutableList;
@@ -82,7 +83,7 @@ public class XListProcessor extends ListProcessor implements CapabilityImplement
     }
 
     @Override
-    protected ImapResponseMessage createResponse(MailboxMetaData.Children children, MailboxMetaData.Selectability selectability, String name, char hierarchyDelimiter, MailboxType type) {
+    protected ImapResponseMessage createResponse(MailboxMetaData.Children children, MailboxMetaData.Selectability selectability, String name, PathDelimiter hierarchyDelimiter, MailboxType type) {
         return new XListResponse(children, selectability, name, hierarchyDelimiter, type);
     }
 }

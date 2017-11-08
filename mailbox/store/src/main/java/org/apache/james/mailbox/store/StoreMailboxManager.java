@@ -39,6 +39,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSession.SessionType;
 import org.apache.james.mailbox.MailboxSessionIdGenerator;
 import org.apache.james.mailbox.MessageManager;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.StandardMailboxMetaDataComparator;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -354,7 +355,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
-    public char getDelimiter() {
+    public PathDelimiter getDelimiter() {
         return MailboxConstants.DEFAULT_DELIMITER;
     }
 
@@ -491,8 +492,7 @@ public class StoreMailboxManager implements MailboxManager {
         if (length == 0) {
             LOGGER.warn("Ignoring mailbox with empty name");
         } else {
-            if (mailboxPath.getName().charAt(length - 1) == getDelimiter())
-                mailboxPath.setName(mailboxPath.getName().substring(0, length - 1));
+            mailboxPath.setName(getDelimiter().removeTrailingSeparatorAtTheEnd(mailboxPath.getName()));
             if (mailboxExists(mailboxPath, mailboxSession))
                 throw new MailboxExistsException(mailboxPath.toString());
             // Create parents first
@@ -567,7 +567,8 @@ public class StoreMailboxManager implements MailboxManager {
         dispatcher.mailboxRenamed(session, from, mailbox);
 
         // rename submailboxes
-        MailboxPath children = new MailboxPath(from.getNamespace(), from.getUser(), from.getName() + getDelimiter() + "%");
+        MailboxPath children = new MailboxPath(from.getNamespace(), from.getUser(), getDelimiter()
+            .join(from.getName(), "%"));
         locker.executeWithLock(session, children, (LockAwareExecution<Void>) () -> {
             List<Mailbox> subMailboxes = mapper.findMailboxWithPathLike(children);
             for (Mailbox sub : subMailboxes) {

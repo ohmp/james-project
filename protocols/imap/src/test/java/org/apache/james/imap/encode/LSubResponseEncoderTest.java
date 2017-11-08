@@ -20,15 +20,13 @@
 package org.apache.james.imap.encode;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.encode.base.ByteImapResponseWriter;
 import org.apache.james.imap.encode.base.ImapResponseComposerImpl;
 import org.apache.james.imap.message.response.LSubResponse;
 import org.apache.james.imap.message.response.ListResponse;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
@@ -50,13 +48,13 @@ public class LSubResponseEncoderTest  {
 
     @Test
     public void encoderShouldNotAcceptListResponse() {
-        assertThat(encoder.isAcceptable(new ListResponse(MailboxMetaData.Children.HAS_CHILDREN, MailboxMetaData.Selectability.NOSELECT, "name", '.')))
+        assertThat(encoder.isAcceptable(new ListResponse(MailboxMetaData.Children.HAS_CHILDREN, MailboxMetaData.Selectability.NOSELECT, "name", MailboxConstants.DEFAULT_DELIMITER)))
             .isFalse();
     }
 
     @Test
     public void encoderShouldAcceptLsubResponse() {
-        assertThat(encoder.isAcceptable(new LSubResponse("name", true, '.'))).isTrue();
+        assertThat(encoder.isAcceptable(new LSubResponse("name", true, MailboxConstants.DEFAULT_DELIMITER))).isTrue();
     }
 
     @Test
@@ -71,7 +69,7 @@ public class LSubResponseEncoderTest  {
 
     @Test
     public void encoderShouldIncludeLSUBCommand() throws Exception {
-        encoder.encode(new LSubResponse("name", true, '.'), composer, new FakeImapSession());
+        encoder.encode(new LSubResponse("name", true, MailboxConstants.DEFAULT_DELIMITER), composer, new FakeImapSession());
         assertThat(writer.getString()).startsWith("* LSUB");
     }
 

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.james.mailbox.MailboxSession.SessionType;
+import org.apache.james.mailbox.PathDelimiter;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.junit.Test;
@@ -33,7 +35,7 @@ public class GroupFolderResolverTest {
     private static final long UID_VALIDITY = 9999;
     private List<Locale> localePreferences = null;
     private List<String> sharedSpaces = null;
-    private char pathSeparator = ' ';
+    private PathDelimiter pathSeparator = MailboxConstants.DEFAULT_DELIMITER;
     
     @Test
     public void isGroupFolderShouldReturnFalseWhenMailboxNamespaceIsNull() {

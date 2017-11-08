@@ -20,15 +20,14 @@
 package org.apache.james.imap.encode;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.encode.base.ByteImapResponseWriter;
 import org.apache.james.imap.encode.base.ImapResponseComposerImpl;
 import org.apache.james.imap.message.response.LSubResponse;
 import org.apache.james.imap.message.response.ListResponse;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
@@ -51,13 +50,13 @@ public class ListResponseEncoderTest {
 
     @Test
     public void encoderShouldAcceptListResponse() {
-        assertThat(encoder.isAcceptable(new ListResponse(MailboxMetaData.Children.HAS_CHILDREN, MailboxMetaData.Selectability.NONE, "name", '.')))
+        assertThat(encoder.isAcceptable(new ListResponse(MailboxMetaData.Children.HAS_CHILDREN, MailboxMetaData.Selectability.NONE, "name", MailboxConstants.DEFAULT_DELIMITER)))
         .isTrue();
     }
 
     @Test
     public void encoderShouldNotAcceptLsubResponse() {
-        assertThat(encoder.isAcceptable(new LSubResponse("name", true, '.'))).isFalse();
+        assertThat(encoder.isAcceptable(new LSubResponse("name", true, MailboxConstants.DEFAULT_DELIMITER))).isFalse();
         assertFalse(encoder.isAcceptable(context.mock(ImapMessage.class)));
         assertFalse(encoder.isAcceptable(null));
     }
@@ -74,7 +73,7 @@ public class ListResponseEncoderTest {
 
     @Test
 	public void encoderShouldIncludeListCommand() throws Exception {
-        encoder.encode(new ListResponse(MailboxMetaData.Children.HAS_CHILDREN, MailboxMetaData.Selectability.NONE, "name", '.'), composer, new FakeImapSession());
+        encoder.encode(new ListResponse(MailboxMetaData.Children.HAS_CHILDREN, MailboxMetaData.Selectability.NONE, "name", MailboxConstants.DEFAULT_DELIMITER), composer, new FakeImapSession());
         assertThat(writer.getString()).startsWith("* LIST");
     }
 }

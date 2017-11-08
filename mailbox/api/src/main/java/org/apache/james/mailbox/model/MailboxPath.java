@@ -19,13 +19,17 @@
 
 package org.apache.james.mailbox.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.PathDelimiter;
 
+import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 /**
  * The path to a mailbox.
@@ -134,19 +138,15 @@ public class MailboxPath {
      * @param delimiter
      * @return list of hierarchy levels
      */
-    public List<MailboxPath> getHierarchyLevels(char delimiter) {
-        if (name == null) {
+    public List<MailboxPath> getHierarchyLevels(PathDelimiter pathDelimiter) {
+        if (Strings.isNullOrEmpty(name)) {
             return ImmutableList.of(this);
         }
-        ArrayList<MailboxPath> levels = new ArrayList<>();
-        int index = name.indexOf(delimiter);
-        while (index >= 0) {
-            final String levelname = name.substring(0, index);
-            levels.add(new MailboxPath(namespace, user, levelname));
-            index = name.indexOf(delimiter, ++index);
-        }
-        levels.add(this);
-        return levels;
+        List<String> nameParts = pathDelimiter.split(name);
+        return IntStream.range(1, nameParts.size() + 1)
+            .mapToObj(i -> pathDelimiter.join(Iterables.limit(nameParts, i)))
+            .map(mailboxName -> new MailboxPath(namespace, user, mailboxName))
+            .collect(Guavate.toImmutableList());
     }
 
     public String asString() {
@@ -208,8 +208,8 @@ public class MailboxPath {
      * @param delimiter
      * @return fullName
      */
-    public String getFullName(char delimiter) {
-        return namespace + delimiter + name;
+    public String getFullName(PathDelimiter pathDelimiter) {
+        return pathDelimiter.join(namespace, name);
     }
 
 }

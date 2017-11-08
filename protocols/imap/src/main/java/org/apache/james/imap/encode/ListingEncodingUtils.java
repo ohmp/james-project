@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.process.MailboxType;
 import org.apache.james.imap.message.response.AbstractListingResponse;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.model.MailboxMetaData;
 
 import com.google.common.collect.ImmutableList;
@@ -45,11 +46,11 @@ public class ListingEncodingUtils {
         composer.end();
     }
 
-    private static void writeDelimiter(ImapResponseComposer composer, char hierarchyDelimiter) throws IOException {
-        if (hierarchyDelimiter == Character.UNASSIGNED) {
+    private static void writeDelimiter(ImapResponseComposer composer, PathDelimiter hierarchyDelimiter) throws IOException {
+        if (hierarchyDelimiter.getPathDelimiter() == Character.UNASSIGNED) {
         	composer.nil();
         } else {
-        	composer.quote(Character.toString(hierarchyDelimiter));
+        	composer.quote(Character.toString(hierarchyDelimiter.getPathDelimiter()));
         }
     }
 

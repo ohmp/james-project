@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
+
 import javax.mail.Flags;
 
 import org.apache.james.imap.api.ImapCommand;
@@ -54,6 +56,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageManager.MetaData;
 import org.apache.james.mailbox.MessageManager.MetaData.FetchGroup;
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.PathDelimiter;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MessageRangeException;
 import org.apache.james.mailbox.model.FetchGroupImpl;
@@ -65,8 +68,13 @@ import org.apache.james.mailbox.model.MessageResultIterator;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
+import org.apache.james.util.StreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends AbstractChainedProcessor<M> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMailboxProcessor.class);
@@ -247,7 +255,10 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
             int msn = selected.msn(uid);
             if (msn == SelectedMailbox.NO_SUCH_MESSAGE) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("No message found with uid " + uid + " in the uid<->msn mapping for mailbox " + selected.getPath().getFullName(mailboxSession.getPathDelimiter()) +" , this may be because it was deleted by a concurrent session. So skip it..");
+                    LOGGER.debug("No message found with uid " + uid
+                        + " in the uid<->msn mapping for mailbox "
+                        + selected.getPath().getFullName(mailboxSession.getPathDelimiter())
+                        + " , this may be because it was deleted by a concurrent session. So skip it..");
                 }  
                     
 
@@ -371,25 +382,22 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
      * @param mailboxPath
      * @return
      */
-    private String joinMailboxPath(MailboxPath mailboxPath, char delimiter) {
-        StringBuffer sb = new StringBuffer("");
-        if (mailboxPath.getNamespace() != null && !mailboxPath.getNamespace().equals("")) {
-            sb.append(mailboxPath.getNamespace());
-        }
-        if (mailboxPath.getUser() != null && !mailboxPath.getUser().equals("")) {
-            if (sb.length() > 0)
-                sb.append(delimiter);
-            sb.append(mailboxPath.getUser());
-        }
-        if (mailboxPath.getName() != null && !mailboxPath.getName().equals("")) {
-            if (sb.length() > 0)
-                sb.append(delimiter);
-            sb.append(mailboxPath.getName());
-        }
-        return sb.toString();
+    private String joinMailboxPath(MailboxPath mailboxPath, PathDelimiter delimiter) {
+        return delimiter.join(
+            StreamUtils.concat(
+                ImmutableList.of(
+                    toStreamOfNotNullNorEmpty(mailboxPath.getNamespace()),
+                    toStreamOfNotNullNorEmpty(mailboxPath.getUser()),
+                    toStreamOfNotNullNorEmpty(mailboxPath.getName())))
+            .collect(Guavate.toImmutableList()));
     }
 
-    protected String mailboxName(boolean relative, MailboxPath path, char delimiter) {
+    private Stream<String> toStreamOfNotNullNorEmpty(String value) {
+        return Stream.of(value)
+                .filter(s -> !Strings.isNullOrEmpty(s));
+    }
+
+    protected String mailboxName(boolean relative, MailboxPath path, PathDelimiter delimiter) {
         if (relative) {
             return path.getName();
         } else {
