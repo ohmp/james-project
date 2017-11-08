@@ -22,7 +22,6 @@ package org.apache.james.mailbox.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.james.mailbox.PathDelimiter;
 import org.junit.Test;
 
 public class MailboxPathTest {

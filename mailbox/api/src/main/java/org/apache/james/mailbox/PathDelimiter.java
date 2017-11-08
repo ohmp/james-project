@@ -19,11 +19,16 @@
 package org.apache.james.mailbox;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 public class PathDelimiter {
@@ -50,20 +55,28 @@ public class PathDelimiter {
         return splitter.splitToList(path);
     }
 
-    public String getSimpleName(String path) {
+    public String getLastPathPart(String path) {
         return Iterables.getLast(split(path));
     }
 
+    public String getFirstPathPart(String path) {
+        return split(path).get(0);
+    }
+
     public boolean containsPathDelimiter(String name) {
-        return name.indexOf(charDelimiter) > -1;
+        return name.contains(String.valueOf(charDelimiter));
     }
 
-    public int lastIndex(String name) {
-        return name.lastIndexOf(charDelimiter);
-    }
-
-    public int firstIndex(String name) {
-        return name.indexOf(charDelimiter);
+    public Optional<String> getParent(String name) {
+        List<String> parts = split(name);
+        if (parts.size() == 1) {
+            return Optional.empty();
+        }
+        return Optional.of(
+            join(
+                Iterables.limit(
+                    parts,
+                    parts.size() - 1)));
     }
 
     public String appendDelimiter(String name) {
@@ -77,15 +90,32 @@ public class PathDelimiter {
         return name;
     }
 
-    public String removeTrailingSeparatorAtTheBeginning(String name) {
+    public String removeHeadingSeparatorAtTheBeginning(String name) {
         if (name.startsWith(String.valueOf(charDelimiter))) {
             return name.substring(1, name.length());
         }
         return name;
     }
 
+    public Stream<String> getHierarchyLevels(String name) {
+        if (Strings.isNullOrEmpty(name)) {
+            return Stream.of(name);
+        }
+        ImmutableList.Builder<String> seenParts = ImmutableList.builder();
+        return split(name)
+            .stream()
+            .map(part -> {
+                seenParts.add(part);
+                return join(seenParts.build());
+            });
+    }
+
     public char getPathDelimiter() {
         return charDelimiter;
+    }
+
+    public String toPattern() {
+        return Pattern.quote(String.valueOf(charDelimiter));
     }
     
     @Override

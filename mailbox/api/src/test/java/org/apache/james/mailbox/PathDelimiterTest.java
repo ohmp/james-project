@@ -21,8 +21,12 @@ package org.apache.james.mailbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.junit.Test;
+
+import com.github.steveash.guavate.Guavate;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -35,37 +39,105 @@ public class PathDelimiterTest {
     }
 
     @Test
-    public void getSimpleNameShouldReturnMailboxNameWhenRootMailbox() throws Exception {
+    public void getLastPathPartShouldReturnMailboxNameWhenRootMailbox() throws Exception {
         String expected = "mailbox";
-        String name = MailboxConstants.DEFAULT_DELIMITER.getSimpleName(expected);
+        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart(expected);
         assertThat(name).isEqualTo(expected);
     }
 
     @Test
-    public void getSimpleNameShouldReturnMailboxNameWhenChildMailbox() throws Exception {
+    public void getLastPathPartShouldReturnMailboxNameWhenChildMailbox() throws Exception {
         String expected = "mailbox";
-        String name = MailboxConstants.DEFAULT_DELIMITER.getSimpleName("inbox." + expected);
+        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart("inbox." + expected);
         assertThat(name).isEqualTo(expected);
     }
 
     @Test
-    public void getSimpleNameShouldReturnMailboxNameWhenChildOfChildMailbox() throws Exception {
+    public void getLastPathPartShouldReturnMailboxNameWhenChildOfChildMailbox() throws Exception {
         String expected = "mailbox";
-        String name = MailboxConstants.DEFAULT_DELIMITER.getSimpleName("inbox.children." + expected);
+        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart("inbox.children." + expected);
         assertThat(name).isEqualTo(expected);
     }
 
     @Test
-    public void getSimpleNameShouldAcceptEmptyChildren() throws Exception {
+    public void getLastPathPartShouldAcceptEmptyChildren() throws Exception {
         String expected = "";
-        String name = MailboxConstants.DEFAULT_DELIMITER.getSimpleName("inbox.children." + expected);
+        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart("inbox.children." + expected);
         assertThat(name).isEqualTo(expected);
     }
 
     @Test
-    public void getSimpleNameShouldAcceptEmpty() throws Exception {
+    public void getLastPathPartShouldAcceptEmpty() throws Exception {
         String expected = "";
-        String name = MailboxConstants.DEFAULT_DELIMITER.getSimpleName(expected);
+        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart(expected);
+        assertThat(name).isEqualTo(expected);
+    }
+
+    @Test
+    public void getParentShouldReturnEmptyWhenTopLevelMailbox() throws Exception {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getParent("mailbox"))
+            .isEmpty();
+    }
+
+    @Test
+    public void getParentShouldReturnEffectiveParent() throws Exception {
+        String expected = "inbox";
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getParent(expected + ".mailbox"))
+            .contains(expected);
+    }
+
+    @Test
+    public void getParentShouldReturnEffectiveParentWhenParentIsNotTopLevel() throws Exception {
+        String expected = "inbox.children";
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getParent(expected + ".mailbox"))
+            .contains(expected);
+    }
+
+    @Test
+    public void getParentPartShouldAcceptEmptyChildren() throws Exception {
+        String expected = "";
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getParent(expected + ".mailbox"))
+            .contains("");
+    }
+
+    @Test
+    public void getLastPathPartShouldReturnEmptyOnEmptyString() throws Exception {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getParent(""))
+            .isEmpty();
+    }
+
+    @Test
+    public void getFirstPathPartShouldReturnMailboxNameWhenRootMailbox() throws Exception {
+        String expected = "mailbox";
+        String name = MailboxConstants.DEFAULT_DELIMITER.getFirstPathPart(expected);
+        assertThat(name).isEqualTo(expected);
+    }
+
+    @Test
+    public void getFirstPathPartShouldReturnMailboxNameWhenChildMailbox() throws Exception {
+        String expected = "inbox";
+        String name = MailboxConstants.DEFAULT_DELIMITER.getFirstPathPart(expected + ".mailbox");
+        assertThat(name).isEqualTo(expected);
+    }
+
+    @Test
+    public void getFirstPathPartShouldReturnMailboxNameWhenChildOfChildMailbox() throws Exception {
+        String expected = "inbox";
+        String name = MailboxConstants.DEFAULT_DELIMITER.getFirstPathPart(expected + ".children.mailbox");
+        assertThat(name).isEqualTo(expected);
+    }
+
+    @Test
+    public void getFirstPathPartShouldAcceptEmptyChildren() throws Exception {
+        String expected = "";
+        String name = MailboxConstants.DEFAULT_DELIMITER.getFirstPathPart(expected + ".inbox.children");
+        assertThat(name).isEqualTo(expected);
+    }
+
+    @Test
+    public void getFirstPathPartShouldAcceptEmpty() throws Exception {
+        String expected = "";
+        String name = MailboxConstants.DEFAULT_DELIMITER.getFirstPathPart(expected);
         assertThat(name).isEqualTo(expected);
     }
 
@@ -266,100 +338,83 @@ public class PathDelimiterTest {
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheBeginningShouldAcceptEmpty() {
+    public void removeHeadingSeparatorAtTheBeginningShouldAcceptEmpty() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheBeginning(""))
+            .removeHeadingSeparatorAtTheBeginning(""))
             .isEqualTo("");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheBeginningShouldDoNothingWhenNoSeparator() {
+    public void removeHeadingSeparatorAtTheBeginningShouldDoNothingWhenNoSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheBeginning("aa"))
+            .removeHeadingSeparatorAtTheBeginning("aa"))
             .isEqualTo("aa");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheBeginningShouldDoNothingWhenMiddleSeparator() {
+    public void removeHeadingSeparatorAtTheBeginningShouldDoNothingWhenMiddleSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheBeginning("a.a"))
+            .removeHeadingSeparatorAtTheBeginning("a.a"))
             .isEqualTo("a.a");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheBeginningShouldReturnBaseNameWhenStartingByDelimiter() {
+    public void removeHeadingSeparatorAtTheBeginningShouldReturnBaseNameWhenStartingByDelimiter() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheBeginning(".aa"))
+            .removeHeadingSeparatorAtTheBeginning(".aa"))
             .isEqualTo("aa");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheBeginningShouldRemoveSeparatorOnlyOnce() {
+    public void removeHeadingSeparatorAtTheBeginningShouldRemoveSeparatorOnlyOnce() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheBeginning("..aa"))
+            .removeHeadingSeparatorAtTheBeginning("..aa"))
             .isEqualTo(".aa");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheBeginningShouldDoNothingWhenSeparatorAtTheEnd() {
+    public void removeHeadingSeparatorAtTheBeginningShouldDoNothingWhenSeparatorAtTheEnd() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheBeginning("aa."))
+            .removeHeadingSeparatorAtTheBeginning("aa."))
             .isEqualTo("aa.");
     }
 
     @Test
-    public void lastIndexShouldReturnLastDelimiterPosition() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .lastIndex("a.a.a"))
-            .isEqualTo(3);
+    public void getHierarchyLevelsShouldBeOrdered() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getHierarchyLevels("inbox.folder.subfolder")
+            .collect(Guavate.toImmutableList()))
+            .containsExactly(
+                "inbox",
+                "inbox.folder",
+                "inbox.folder.subfolder");
     }
 
     @Test
-    public void lastIndexShouldAcceptSeparatorOnly() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .lastIndex("."))
-            .isEqualTo(0);
+    public void getHierarchyLevelsShouldReturnNameWhenOneLevel() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getHierarchyLevels("inbox")
+            .collect(Guavate.toImmutableList()))
+            .containsExactly(
+                "inbox");
     }
 
     @Test
-    public void lastIndexShouldReturnMalusOneWhenNoDelimiter() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .lastIndex("aa"))
-            .isEqualTo(-1);
+    public void getHierarchyLevelsShouldReturnNameWhenEmptyName() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getHierarchyLevels("")
+            .collect(Guavate.toImmutableList()))
+            .containsExactly("");
     }
 
     @Test
-    public void lastIndexShouldAcceptEmpty() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .firstIndex(""))
-            .isEqualTo(-1);
+    public void getHierarchyLevelsShouldReturnNameWhenNullName() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.getHierarchyLevels(null)
+            .map(Optional::ofNullable)
+            .collect(Guavate.toImmutableList()))
+            .containsExactly(Optional.empty());
     }
 
     @Test
-    public void firstIndexndexShouldReturnLastDelimiterPosition() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .firstIndex("a.a.a"))
-            .isEqualTo(1);
-    }
-
-    @Test
-    public void firstIndexndexShouldAcceptSeparatorOnly() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .firstIndex("."))
-            .isEqualTo(0);
-    }
-
-    @Test
-    public void firstIndexShouldReturnMalusOneWhenNoDelimiter() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .firstIndex("aa"))
-            .isEqualTo(-1);
-    }
-
-    @Test
-    public void firstIndexShouldAcceptEmpty() {
-        assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .firstIndex(""))
-            .isEqualTo(-1);
+    public void toPatternShouldQuoteDelimiter() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.toPattern())
+            .isEqualTo("\\Q.\\E");
     }
 }
