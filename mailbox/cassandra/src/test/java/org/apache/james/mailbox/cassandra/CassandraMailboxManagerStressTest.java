@@ -38,6 +38,7 @@ import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraSubscriptionModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
+import org.apache.james.mailbox.store.MailboxManagerOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -73,7 +74,9 @@ public class CassandraMailboxManagerStressTest extends MailboxManagerStressTest 
     
     @Override
     protected MailboxManager provideManager() {
-        return CassandraMailboxManagerProvider.provideMailboxManager(cassandra.getConf(), cassandra.getTypesProvider());
+        return CassandraMailboxManagerProvider.provideMailboxManager(cassandra.getConf(),
+            cassandra.getTypesProvider(),
+            MailboxManagerOptions.NONE);
     }
 
     @After
