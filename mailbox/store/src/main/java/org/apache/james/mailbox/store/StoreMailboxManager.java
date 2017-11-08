@@ -643,12 +643,10 @@ public class StoreMailboxManager implements MailboxManager {
 
     @VisibleForTesting
     public static MailboxPath getPathLike(MailboxQuery mailboxQuery, MailboxSession mailboxSession) {
-        String combinedName = String.valueOf(SQL_WILDCARD_CHAR);
-        MailboxPath base = new MailboxPath(
+        return new MailboxPath(
             mailboxQuery.getNamespace().orElse(MailboxConstants.USER_NAMESPACE),
             mailboxQuery.getUser().orElse(mailboxSession.getUser().getUserName()),
-            combinedName);
-        return new MailboxPath(base, combinedName);
+            String.valueOf(SQL_WILDCARD_CHAR));
     }
 
     private Stream<Mailbox> getDelegatedMailboxes(MailboxMapper mailboxMapper, MailboxQuery mailboxQuery,
