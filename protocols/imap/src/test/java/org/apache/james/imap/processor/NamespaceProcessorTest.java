@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.james.core.JamesConstants;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapSessionState;
 import org.apache.james.imap.api.ImapSessionUtils;
@@ -37,7 +38,6 @@ import org.apache.james.imap.message.request.NamespaceRequest;
 import org.apache.james.imap.message.response.NamespaceResponse;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -90,7 +90,7 @@ public class NamespaceProcessorTest {
             allowing(mailboxSessionStub).getPersonalSpace(); will(returnValue(PERSONAL_PREFIX));
             allowing(mailboxSessionStub).getOtherUsersSpace(); will(returnValue(USERS_PREFIX));
             allowing(mailboxSessionStub).getSharedSpaces();will(returnValue(new ArrayList<String>()));
-            allowing(mailboxSessionStub).getPathDelimiter();will(returnValue(MailboxConstants.DEFAULT_DELIMITER));
+            allowing(mailboxSessionStub).getPathDelimiter();will(returnValue(JamesConstants.DEFAULT_DELIMITER));
             allowing(imapSessionStub).getState();will(returnValue(ImapSessionState.AUTHENTICATED));
             allowing(statusResponseStub).taggedOk(
                     with(any(String.class)), with(any(ImapCommand.class)), 
@@ -118,7 +118,7 @@ public class NamespaceProcessorTest {
             allowing(mailboxSessionStub).getPersonalSpace(); will(returnValue(PERSONAL_PREFIX));
             allowing(mailboxSessionStub).getOtherUsersSpace(); will(returnValue(USERS_PREFIX));
             allowing(mailboxSessionStub).getSharedSpaces();will(returnValue(Arrays.asList(SHARED_PREFIX)));
-            allowing(mailboxSessionStub).getPathDelimiter();will(returnValue(MailboxConstants.DEFAULT_DELIMITER));
+            allowing(mailboxSessionStub).getPathDelimiter();will(returnValue(JamesConstants.DEFAULT_DELIMITER));
             allowing(imapSessionStub).getState();will(returnValue(ImapSessionState.AUTHENTICATED));
             allowing(statusResponseStub).taggedOk(
                     with(any(String.class)), with(any(ImapCommand.class)), 
@@ -132,7 +132,7 @@ public class NamespaceProcessorTest {
         
         
         final List<NamespaceResponse.Namespace> sharedSpaces = new ArrayList<>();
-        sharedSpaces.add(new NamespaceResponse.Namespace(SHARED_PREFIX, MailboxConstants.DEFAULT_DELIMITER));
+        sharedSpaces.add(new NamespaceResponse.Namespace(SHARED_PREFIX, JamesConstants.DEFAULT_DELIMITER));
         final NamespaceResponse response = buildResponse(sharedSpaces);
         
         final Responder responderMock = expectResponse(response);
@@ -143,9 +143,9 @@ public class NamespaceProcessorTest {
     private NamespaceResponse buildResponse(List<NamespaceResponse.Namespace> sharedSpaces) {
        
         final List<NamespaceResponse.Namespace> personalSpaces = new ArrayList<>();
-        personalSpaces.add(new NamespaceResponse.Namespace(PERSONAL_PREFIX, MailboxConstants.DEFAULT_DELIMITER));
+        personalSpaces.add(new NamespaceResponse.Namespace(PERSONAL_PREFIX, JamesConstants.DEFAULT_DELIMITER));
         final List<NamespaceResponse.Namespace> otherUsersSpaces = new ArrayList<>();
-        otherUsersSpaces.add(new NamespaceResponse.Namespace(USERS_PREFIX, MailboxConstants.DEFAULT_DELIMITER));
+        otherUsersSpaces.add(new NamespaceResponse.Namespace(USERS_PREFIX, JamesConstants.DEFAULT_DELIMITER));
 
         return new NamespaceResponse(personalSpaces, otherUsersSpaces, sharedSpaces);
     }

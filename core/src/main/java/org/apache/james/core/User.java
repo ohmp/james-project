@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.james.mailbox.model.MailboxConstants;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -32,7 +30,7 @@ import com.google.common.base.Strings;
 
 public class User {
 
-    private static final String DEFAULT_DELIMITER = String.valueOf(MailboxConstants.DEFAULT_DELIMITER);
+    private static final String DEFAULT_DELIMITER = String.valueOf(JamesConstants.DEFAULT_DELIMITER);
 
     public static User fromUsername(String username) {
         Preconditions.checkNotNull(username);

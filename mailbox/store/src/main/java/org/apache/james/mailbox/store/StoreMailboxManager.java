@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.james.core.JamesConstants;
 import org.apache.james.mailbox.MailboxAnnotationManager;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxManager;
@@ -355,7 +356,7 @@ public class StoreMailboxManager implements MailboxManager {
 
     @Override
     public char getDelimiter() {
-        return MailboxConstants.DEFAULT_DELIMITER;
+        return JamesConstants.DEFAULT_DELIMITER;
     }
 
     /**
