@@ -116,8 +116,8 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         assertThatThrownBy(() ->
-            ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "ADDUSER", "user.name@domain", PASSWORD}))
-            .hasMessage("User name local part can not contain '.'");
+            ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "ADDUSER", "user.name@" + DOMAIN, PASSWORD}))
+            .hasMessage("username can not contain default delimiter '.'");
 
         assertThat(dataProbe.listUsers()).doesNotContain(MAIL_ADDRESS);
     }

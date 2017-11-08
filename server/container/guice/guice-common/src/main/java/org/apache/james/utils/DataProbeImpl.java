@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.james.core.User;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.rrt.api.RecipientRewriteTable;
@@ -52,7 +53,12 @@ public class DataProbeImpl implements GuiceProbe, DataProbe {
 
     @Override
     public void addUser(String userName, String password) throws Exception {
+        validateUsername(userName);
         usersRepository.addUser(userName, password);
+    }
+
+    private void validateUsername(String userName) {
+        User.fromUsername(userName);
     }
 
     @Override
