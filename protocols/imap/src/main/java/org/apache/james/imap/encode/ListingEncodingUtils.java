@@ -47,10 +47,10 @@ public class ListingEncodingUtils {
     }
 
     private static void writeDelimiter(ImapResponseComposer composer, PathDelimiter hierarchyDelimiter) throws IOException {
-        if (hierarchyDelimiter.getPathDelimiter() == Character.UNASSIGNED) {
+        if (hierarchyDelimiter.isUndefined()) {
         	composer.nil();
         } else {
-        	composer.quote(Character.toString(hierarchyDelimiter.getPathDelimiter()));
+        	composer.quote(hierarchyDelimiter.asString());
         }
     }
 

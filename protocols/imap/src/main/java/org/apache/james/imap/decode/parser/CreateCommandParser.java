@@ -67,7 +67,7 @@ public class CreateCommandParser extends AbstractImapCommandParser {
 
         return Optional.ofNullable(mailboxSession)
             .map(MailboxSession::getPathDelimiter)
-            .map(pathDelimiter -> pathDelimiter.removeTrailingSeparatorAtTheEnd(mailboxName))
+            .map(pathDelimiter -> pathDelimiter.removeTrailingSeparator(mailboxName))
             .orElse(mailboxName);
     }
 

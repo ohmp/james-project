@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.mailbox.store.mail.model;
 
+import java.util.Objects;
+
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.PathDelimiter;
 
@@ -28,13 +30,14 @@ public class MailboxUtil {
     }
 
     public static boolean isMailboxChildOf(Mailbox mailbox, Mailbox potentialParent, PathDelimiter delimiter) {
-        return mailbox.getNamespace().equals(potentialParent.getNamespace())
-            && mailbox.getUser().equals(potentialParent.getUser())
+        return Objects.equals(mailbox.getNamespace(), potentialParent.getNamespace())
+            && Objects.equals(mailbox.getUser(), potentialParent.getUser())
             && isChildren(potentialParent.getName(), mailbox.getName(), delimiter);
     }
 
     public static boolean isChildren(String potentialParent, String potentialChild, PathDelimiter pathDelimiter) {
         return pathDelimiter.getHierarchyLevels(potentialChild)
+            .filter(s -> !s.equals(potentialChild))
             .anyMatch(potentialParent::equals);
     }
 }

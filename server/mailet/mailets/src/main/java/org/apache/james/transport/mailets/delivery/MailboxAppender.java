@@ -53,10 +53,11 @@ public class MailboxAppender {
         return append(mail, user, fromUrlToMailboxName(folder, session), session);
     }
 
-    private String fromUrlToMailboxName(String urlPath, MailboxSession session) throws MessagingException {
-        String destination = session.getPathDelimiter()
-            .removeHeadingSeparatorAtTheBeginning(session.getPathDelimiter()
-            .join(SLASH_PATH_DELIMITER.split(urlPath)));
+    private String fromUrlToMailboxName(String mailboxNameWithSlash, MailboxSession session) throws MessagingException {
+        PathDelimiter pathDelimiter = session.getPathDelimiter();
+        String destination = pathDelimiter.removeHeadingSeparator(
+            pathDelimiter.join(
+                SLASH_PATH_DELIMITER.split(mailboxNameWithSlash)));
         if (Strings.isNullOrEmpty(destination)) {
             throw new MessagingException("Mail can not be delivered to empty folder");
         }

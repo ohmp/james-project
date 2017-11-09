@@ -207,8 +207,8 @@ public class CassandraMailboxMapper implements MailboxMapper {
             .thenApply(stream -> stream
                 .anyMatch(idAndPath ->
                         MailboxUtil.isChildren(
-                            idAndPath.getMailboxPath().getName(),
                             mailbox.getName(),
+                            idAndPath.getMailboxPath().getName(),
                             delimiter)))
             .join();
     }

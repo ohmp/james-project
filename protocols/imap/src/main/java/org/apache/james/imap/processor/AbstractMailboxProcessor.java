@@ -386,15 +386,11 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
         return delimiter.join(
             StreamUtils.flatten(
                 ImmutableList.of(
-                    toStreamOfNotNullNorEmpty(mailboxPath.getNamespace()),
-                    toStreamOfNotNullNorEmpty(mailboxPath.getUser()),
-                    toStreamOfNotNullNorEmpty(mailboxPath.getName())))
-            .collect(Guavate.toImmutableList()));
-    }
-
-    private Stream<String> toStreamOfNotNullNorEmpty(String value) {
-        return Stream.of(value)
-                .filter(s -> !Strings.isNullOrEmpty(s));
+                    Stream.of(mailboxPath.getNamespace()),
+                    Stream.of(mailboxPath.getUser()),
+                    Stream.of(mailboxPath.getName())))
+                .filter(s -> !Strings.isNullOrEmpty(s))
+                .collect(Guavate.toImmutableList()));
     }
 
     protected String mailboxName(boolean relative, MailboxPath path, PathDelimiter delimiter) {

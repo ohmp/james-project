@@ -37,7 +37,7 @@ public abstract class AbstractListingResponse {
 
     public AbstractListingResponse(MailboxMetaData.Children children,
                                    MailboxMetaData.Selectability selectability,
-                                   String name, org.apache.james.mailbox.PathDelimiter hierarchyDelimiter, MailboxType type) {
+                                   String name, PathDelimiter hierarchyDelimiter, MailboxType type) {
         super();
         this.children = children;
         this.selectability = selectability;
