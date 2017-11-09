@@ -69,7 +69,7 @@ public class PathDelimiterTest {
     @Test
     public void getLastPathPartShouldAcceptEmpty() throws Exception {
         String expected = "";
-        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart(expected);
+        String name = MailboxConstants.DEFAULT_DELIMITER.getLastPathPart("");
         assertThat(name).isEqualTo(expected);
     }
 
@@ -296,86 +296,86 @@ public class PathDelimiterTest {
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheEndShouldAcceptEmpty() {
+    public void removeTrailingSeparatorShouldAcceptEmpty() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheEnd(""))
+            .removeTrailingSeparator(""))
             .isEqualTo("");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheEndShouldDoNothingWhenNoSeparator() {
+    public void removeTrailingSeparatorShouldDoNothingWhenNoSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheEnd("aa"))
+            .removeTrailingSeparator("aa"))
             .isEqualTo("aa");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheEndShouldDoNothingWhenMiddleSeparator() {
+    public void removeTrailingSeparatorShouldDoNothingWhenMiddleSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheEnd("a.a"))
+            .removeTrailingSeparator("a.a"))
             .isEqualTo("a.a");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheEndShouldDoNothingWhenBeginningSeparator() {
+    public void removeTrailingSeparatorShouldDoNothingWhenBeginningSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheEnd(".aa"))
+            .removeTrailingSeparator(".aa"))
             .isEqualTo(".aa");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheEndShouldReturnBaseNameWhenSeparatorAtTheEnd() {
+    public void removeTrailingSeparatorShouldReturnBaseNameWhenSeparatorAtTheEnd() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheEnd("aa."))
+            .removeTrailingSeparator("aa."))
             .isEqualTo("aa");
     }
 
     @Test
-    public void removeTrailingSeparatorAtTheEndShouldRemoveSeparatorOnlyOnce() {
+    public void removeTrailingSeparatorShouldRemoveSeparatorOnlyOnce() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeTrailingSeparatorAtTheEnd("aa.."))
+            .removeTrailingSeparator("aa.."))
             .isEqualTo("aa.");
     }
 
     @Test
-    public void removeHeadingSeparatorAtTheBeginningShouldAcceptEmpty() {
+    public void removeHeadingSeparatorShouldAcceptEmpty() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeHeadingSeparatorAtTheBeginning(""))
+            .removeHeadingSeparator(""))
             .isEqualTo("");
     }
 
     @Test
-    public void removeHeadingSeparatorAtTheBeginningShouldDoNothingWhenNoSeparator() {
+    public void removeHeadingSeparatorShouldDoNothingWhenNoSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeHeadingSeparatorAtTheBeginning("aa"))
+            .removeHeadingSeparator("aa"))
             .isEqualTo("aa");
     }
 
     @Test
-    public void removeHeadingSeparatorAtTheBeginningShouldDoNothingWhenMiddleSeparator() {
+    public void removeHeadingSeparatorShouldDoNothingWhenMiddleSeparator() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeHeadingSeparatorAtTheBeginning("a.a"))
+            .removeHeadingSeparator("a.a"))
             .isEqualTo("a.a");
     }
 
     @Test
-    public void removeHeadingSeparatorAtTheBeginningShouldReturnBaseNameWhenStartingByDelimiter() {
+    public void removeHeadingSeparatorShouldReturnBaseNameWhenStartingByDelimiter() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeHeadingSeparatorAtTheBeginning(".aa"))
+            .removeHeadingSeparator(".aa"))
             .isEqualTo("aa");
     }
 
     @Test
-    public void removeHeadingSeparatorAtTheBeginningShouldRemoveSeparatorOnlyOnce() {
+    public void removeHeadingSeparatorShouldRemoveSeparatorOnlyOnce() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeHeadingSeparatorAtTheBeginning("..aa"))
+            .removeHeadingSeparator("..aa"))
             .isEqualTo(".aa");
     }
 
     @Test
-    public void removeHeadingSeparatorAtTheBeginningShouldDoNothingWhenSeparatorAtTheEnd() {
+    public void removeHeadingSeparatorShouldDoNothingWhenSeparatorAtTheEnd() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER
-            .removeHeadingSeparatorAtTheBeginning("aa."))
+            .removeHeadingSeparator("aa."))
             .isEqualTo("aa.");
     }
 
@@ -416,5 +416,23 @@ public class PathDelimiterTest {
     public void toPatternShouldQuoteDelimiter() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER.toPattern())
             .isEqualTo("\\Q.\\E");
+    }
+
+    @Test
+    public void asStringShouldReturnStringValueOfDelimiter() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.asString())
+            .isEqualTo(".");
+    }
+
+    @Test
+    public void isUndefinedShouldReturnFalseWhenNotZero() {
+        assertThat(MailboxConstants.DEFAULT_DELIMITER.isUndefined())
+            .isFalse();
+    }
+
+    @Test
+    public void isUndefinedShouldReturnTrueWhenZero() {
+        assertThat(new PathDelimiter('\0').isUndefined())
+            .isTrue();
     }
 }

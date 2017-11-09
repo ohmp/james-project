@@ -59,8 +59,8 @@ public class PrefixedRegex implements MailboxNameExpression {
 
     @Override
     public String getCombinedName() {
-        String sanitizedPrefix = pathDelimiter.removeTrailingSeparatorAtTheEnd(prefix);
-        String sanitizedRegex = pathDelimiter.removeHeadingSeparatorAtTheBeginning(regex);
+        String sanitizedPrefix = pathDelimiter.removeTrailingSeparator(prefix);
+        String sanitizedRegex = pathDelimiter.removeHeadingSeparator(regex);
         return pathDelimiter.join(
             Stream.of(sanitizedPrefix, sanitizedRegex)
                 .filter(s -> !s.isEmpty())
