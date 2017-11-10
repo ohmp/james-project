@@ -83,14 +83,14 @@ public class PathDelimiter {
         return name + charDelimiter;
     }
 
-    public String removeTrailingSeparator(String name) {
+    public String removeTrailingDelimiter(String name) {
         if (name.endsWith(String.valueOf(charDelimiter))) {
             return name.substring(0, name.length() - 1);
         }
         return name;
     }
 
-    public String removeHeadingSeparator(String name) {
+    public String removeHeadingDelimiter(String name) {
         if (name.startsWith(String.valueOf(charDelimiter))) {
             return name.substring(1, name.length());
         }
@@ -114,7 +114,7 @@ public class PathDelimiter {
         return charDelimiter == Character.UNASSIGNED;
     }
 
-    public char getPathDelimiter() {
+    public char asChar() {
         return charDelimiter;
     }
 
