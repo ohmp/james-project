@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.PathDelimiter;
+import org.apache.james.mailbox.PathDelimiterImpl;
 import org.apache.james.mailbox.store.SimpleMailboxSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +73,7 @@ public class MailboxSessionDataTransferObject {
             retrieveLocales(),
             sharedSpaces,
             otherUserSpace,
-            new PathDelimiter(separator),
+            new PathDelimiterImpl(separator),
             retrieveSessionType());
     }
 

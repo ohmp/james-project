@@ -29,6 +29,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.PathDelimiter;
+import org.apache.james.mailbox.PathDelimiterImpl;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
@@ -40,7 +41,7 @@ import com.google.common.base.Strings;
 public class MailboxAppender {
     private static final boolean IS_RECENT = true;
     private static final Flags FLAGS = null;
-    private static final PathDelimiter SLASH_PATH_DELIMITER = new PathDelimiter('/');
+    private static final PathDelimiter SLASH_PATH_DELIMITER = new PathDelimiterImpl('/');
 
     private final MailboxManager mailboxManager;
 

@@ -20,6 +20,7 @@
 package org.apache.james.mailbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Optional;
 
@@ -30,11 +31,11 @@ import com.github.steveash.guavate.Guavate;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class PathDelimiterTest {
+public class PathDelimiterImplTest {
 
     @Test
     public void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(PathDelimiter.class)
+        EqualsVerifier.forClass(PathDelimiterImpl.class)
             .verify();
     }
 
@@ -425,14 +426,14 @@ public class PathDelimiterTest {
     }
 
     @Test
-    public void isUndefinedShouldReturnFalseWhenNotZero() {
+    public void isUndefinedShouldReturnFalse() {
         assertThat(MailboxConstants.DEFAULT_DELIMITER.isUndefined())
             .isFalse();
     }
 
     @Test
-    public void isUndefinedShouldReturnTrueWhenZero() {
-        assertThat(new PathDelimiter('\0').isUndefined())
-            .isTrue();
+    public void constructorShouldThrowOnZeroChar() {
+        assertThatThrownBy(() -> new PathDelimiterImpl('\0'))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -20,130 +20,36 @@ package org.apache.james.mailbox;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+public interface PathDelimiter {
+    String join(String... paths);
 
-public class PathDelimiter {
+    String join(Iterable<String> paths);
 
-    private final Joiner joiner;
-    private final Splitter splitter;
-    private final char charDelimiter;
+    List<String> split(String path);
 
-    public PathDelimiter(char charDelimiter) {
-        this.charDelimiter = charDelimiter;
-        this.joiner = Joiner.on(charDelimiter);
-        this.splitter = Splitter.on(charDelimiter);
-    }
+    String getLastPathPart(String path);
 
-    public String join(String... paths) {
-        return joiner.join(paths);
-    }
+    String getFirstPathPart(String path);
 
-    public String join(Iterable<String> paths) {
-        return joiner.join(paths);
-    }
+    boolean containsPathDelimiter(String name);
 
-    public List<String> split(String path) {
-        return splitter.splitToList(path);
-    }
+    Optional<String> getParent(String name);
 
-    public String getLastPathPart(String path) {
-        return Iterables.getLast(split(path));
-    }
+    String appendDelimiter(String name);
 
-    public String getFirstPathPart(String path) {
-        return split(path).get(0);
-    }
+    String removeTrailingDelimiter(String name);
 
-    public boolean containsPathDelimiter(String name) {
-        return name.contains(String.valueOf(charDelimiter));
-    }
+    String removeHeadingDelimiter(String name);
 
-    public Optional<String> getParent(String name) {
-        List<String> parts = split(name);
-        if (parts.size() == 1) {
-            return Optional.empty();
-        }
-        return Optional.of(
-            join(
-                Iterables.limit(
-                    parts,
-                    parts.size() - 1)));
-    }
+    Stream<String> getHierarchyLevels(String name);
 
-    public String appendDelimiter(String name) {
-        return name + charDelimiter;
-    }
+    boolean isUndefined();
 
-    public String removeTrailingDelimiter(String name) {
-        if (name.endsWith(String.valueOf(charDelimiter))) {
-            return name.substring(0, name.length() - 1);
-        }
-        return name;
-    }
+    char asChar();
 
-    public String removeHeadingDelimiter(String name) {
-        if (name.startsWith(String.valueOf(charDelimiter))) {
-            return name.substring(1, name.length());
-        }
-        return name;
-    }
+    String asString();
 
-    public Stream<String> getHierarchyLevels(String name) {
-        if (Strings.isNullOrEmpty(name)) {
-            return Stream.of(name);
-        }
-        ImmutableList.Builder<String> seenParts = ImmutableList.builder();
-        return split(name)
-            .stream()
-            .map(part -> {
-                seenParts.add(part);
-                return join(seenParts.build());
-            });
-    }
-
-    public boolean isUndefined() {
-        return charDelimiter == Character.UNASSIGNED;
-    }
-
-    public char asChar() {
-        return charDelimiter;
-    }
-
-    public String asString() {
-        return String.valueOf(charDelimiter);
-    }
-
-    public String toPattern() {
-        return Pattern.quote(asString());
-    }
-    
-    @Override
-    public final int hashCode() {
-        return Objects.hashCode(charDelimiter);
-    }
-
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj instanceof PathDelimiter) {
-            PathDelimiter other = (PathDelimiter) obj;
-            return this.charDelimiter == other.charDelimiter;
-        }
-        return false;
-    }
-
-    @Override
-    public final String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("charDelimiter", charDelimiter)
-            .toString();
-    }
+    String toPattern();
 }

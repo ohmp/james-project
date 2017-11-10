@@ -18,7 +18,8 @@
  ****************************************************************/
 package org.apache.james.imap.encode;
 
-import static org.apache.james.mailbox.model.MailboxMetaData.*;
+import static org.apache.james.mailbox.model.MailboxMetaData.Children;
+import static org.apache.james.mailbox.model.MailboxMetaData.Selectability;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.imap.api.process.MailboxType;
@@ -26,7 +27,7 @@ import org.apache.james.imap.encode.base.ByteImapResponseWriter;
 import org.apache.james.imap.encode.base.ImapResponseComposerImpl;
 import org.apache.james.imap.message.response.ListResponse;
 import org.apache.james.imap.message.response.XListResponse;
-import org.apache.james.mailbox.PathDelimiter;
+import org.apache.james.mailbox.PathDelimiterImpl;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.junit.Test;
@@ -41,7 +42,7 @@ public class ListingEncodingUtilsTest  {
 
     @Test
     public void encodeShouldWriteNilDelimiterWhenUnassigned() throws Exception {
-        ListResponse input = new ListResponse(Children.HAS_CHILDREN, Selectability.NONE, nameParameter, new PathDelimiter(((char) Character.UNASSIGNED)));
+        ListResponse input = new ListResponse(Children.HAS_CHILDREN, Selectability.NONE, nameParameter, new PathDelimiterImpl(((char) Character.UNASSIGNED)));
 
         ListingEncodingUtils.encodeListingResponse(typeNameParameters, composer, input);
         assertThat(writer.getString()).isEqualTo("* LIST (\\HasChildren) NIL \"mailbox\"\r\n");
@@ -49,7 +50,7 @@ public class ListingEncodingUtilsTest  {
 
     @Test
     public void encodeShouldWriteAnyDelimiter() throws Exception {
-        ListResponse input = new ListResponse(Children.HAS_CHILDREN, Selectability.NONE, nameParameter, new PathDelimiter('#'));
+        ListResponse input = new ListResponse(Children.HAS_CHILDREN, Selectability.NONE, nameParameter, new PathDelimiterImpl('#'));
 
         ListingEncodingUtils.encodeListingResponse(typeNameParameters, composer, input);
         assertThat(writer.getString()).isEqualTo("* LIST (\\HasChildren) \"#\" \"mailbox\"\r\n");
