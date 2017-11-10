@@ -50,10 +50,10 @@ public class MailboxAppender {
 
     public ComposedMessageId append(MimeMessage mail, String user, String folder) throws MessagingException {
         MailboxSession session = createMailboxSession(user);
-        return append(mail, user, fromUrlToMailboxName(folder, session), session);
+        return append(mail, user, fromMailboxNameWithSlashToMailboxNameWithDelimiter(folder, session), session);
     }
 
-    private String fromUrlToMailboxName(String mailboxNameWithSlash, MailboxSession session) throws MessagingException {
+    private String fromMailboxNameWithSlashToMailboxNameWithDelimiter(String mailboxNameWithSlash, MailboxSession session) throws MessagingException {
         PathDelimiter pathDelimiter = session.getPathDelimiter();
         String destination = pathDelimiter.removeHeadingDelimiter(
             pathDelimiter.join(
