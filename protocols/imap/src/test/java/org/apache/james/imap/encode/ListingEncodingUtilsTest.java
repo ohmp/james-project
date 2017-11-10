@@ -27,6 +27,7 @@ import org.apache.james.imap.encode.base.ByteImapResponseWriter;
 import org.apache.james.imap.encode.base.ImapResponseComposerImpl;
 import org.apache.james.imap.message.response.ListResponse;
 import org.apache.james.imap.message.response.XListResponse;
+import org.apache.james.mailbox.NoPathDelimiter;
 import org.apache.james.mailbox.PathDelimiterImpl;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
@@ -42,7 +43,7 @@ public class ListingEncodingUtilsTest  {
 
     @Test
     public void encodeShouldWriteNilDelimiterWhenUnassigned() throws Exception {
-        ListResponse input = new ListResponse(Children.HAS_CHILDREN, Selectability.NONE, nameParameter, new PathDelimiterImpl(((char) Character.UNASSIGNED)));
+        ListResponse input = new ListResponse(Children.HAS_CHILDREN, Selectability.NONE, nameParameter, NoPathDelimiter.SINGLETON);
 
         ListingEncodingUtils.encodeListingResponse(typeNameParameters, composer, input);
         assertThat(writer.getString()).isEqualTo("* LIST (\\HasChildren) NIL \"mailbox\"\r\n");
