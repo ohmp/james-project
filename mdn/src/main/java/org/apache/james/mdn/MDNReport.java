@@ -235,7 +235,7 @@ public class MDNReport {
             extensionFields.stream().map(Optional::of);
 
         return StreamUtils.flatten(
-            ImmutableList.of(
+            Stream.of(
                 definedFields,
                 errors,
                 extentions))
