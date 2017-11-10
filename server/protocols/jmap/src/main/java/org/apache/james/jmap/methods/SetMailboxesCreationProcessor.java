@@ -20,9 +20,11 @@
 package org.apache.james.jmap.methods;
 
 import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import javax.inject.Inject;
 
 import org.apache.james.jmap.exceptions.MailboxParentNotFoundException;
@@ -156,7 +158,7 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
         if (mailboxSession.getPathDelimiter()
             .containsPathDelimiter(mailboxRequest.getName())) {
             throw new MailboxNameException(String.format("The mailbox '%s' contains an illegal character: '%c'",
-                mailboxRequest.getName(), mailboxSession.getPathDelimiter().getPathDelimiter()));
+                mailboxRequest.getName(), mailboxSession.getPathDelimiter().asChar()));
         }
     }
 

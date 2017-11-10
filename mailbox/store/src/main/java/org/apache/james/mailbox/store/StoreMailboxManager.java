@@ -492,7 +492,7 @@ public class StoreMailboxManager implements MailboxManager {
         if (length == 0) {
             LOGGER.warn("Ignoring mailbox with empty name");
         } else {
-            mailboxPath.setName(getDelimiter().removeTrailingSeparator(mailboxPath.getName()));
+            mailboxPath.setName(getDelimiter().removeTrailingDelimiter(mailboxPath.getName()));
             if (mailboxExists(mailboxPath, mailboxSession))
                 throw new MailboxExistsException(mailboxPath.toString());
             // Create parents first

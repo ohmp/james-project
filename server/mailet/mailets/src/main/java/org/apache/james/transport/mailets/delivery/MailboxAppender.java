@@ -55,7 +55,7 @@ public class MailboxAppender {
 
     private String fromUrlToMailboxName(String mailboxNameWithSlash, MailboxSession session) throws MessagingException {
         PathDelimiter pathDelimiter = session.getPathDelimiter();
-        String destination = pathDelimiter.removeHeadingSeparator(
+        String destination = pathDelimiter.removeHeadingDelimiter(
             pathDelimiter.join(
                 SLASH_PATH_DELIMITER.split(mailboxNameWithSlash)));
         if (Strings.isNullOrEmpty(destination)) {

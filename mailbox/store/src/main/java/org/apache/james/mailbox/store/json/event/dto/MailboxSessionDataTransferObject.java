@@ -59,7 +59,7 @@ public class MailboxSessionDataTransferObject {
         username = session.getUser().getUserName();
         sharedSpaces = new ArrayList<>(session.getSharedSpaces());
         otherUserSpace = session.getOtherUsersSpace();
-        separator = session.getPathDelimiter().getPathDelimiter();
+        separator = session.getPathDelimiter().asChar();
         sessionType = extractSessionType(session);
         sessionId = session.getSessionId();
         locales = Lists.transform(session.getUser().getLocalePreferences(), LocaleDataTransferObject::new);

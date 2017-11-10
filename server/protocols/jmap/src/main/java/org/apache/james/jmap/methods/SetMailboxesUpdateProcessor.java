@@ -165,7 +165,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     private void validateMailboxName(MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxNameException {
         if (nameContainsPathDelimiter(updateRequest, mailboxSession.getPathDelimiter())) {
             throw new MailboxNameException(String.format("The mailbox '%s' contains an illegal character: '%c'",
-                updateRequest.getName().get(), mailboxSession.getPathDelimiter().getPathDelimiter()));
+                updateRequest.getName().get(), mailboxSession.getPathDelimiter().asChar()));
         }
         if (nameMatchesSystemMailbox(updateRequest)) {
             throw new MailboxNameException(String.format("The mailbox '%s' is a system mailbox.", updateRequest.getName().get()));

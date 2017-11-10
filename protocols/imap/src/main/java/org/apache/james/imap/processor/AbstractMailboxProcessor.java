@@ -74,7 +74,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends AbstractChainedProcessor<M> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMailboxProcessor.class);
@@ -385,7 +384,7 @@ abstract public class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
     private String joinMailboxPath(MailboxPath mailboxPath, PathDelimiter delimiter) {
         return delimiter.join(
             StreamUtils.flatten(
-                ImmutableList.of(
+                Stream.of(
                     Stream.of(mailboxPath.getNamespace()),
                     Stream.of(mailboxPath.getUser()),
                     Stream.of(mailboxPath.getName())))
