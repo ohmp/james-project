@@ -31,7 +31,7 @@ import com.github.steveash.guavate.Guavate;
 public class StreamUtilsTest {
 
     @Test
-    public void concatShouldReturnEmptyWhenEmptyStreams() {
+    public void flattenShouldReturnEmptyWhenEmptyStreams() {
         assertThat(
             StreamUtils.<Integer>flatten(ImmutableList.of())
                 .collect(Guavate.toImmutableList()))
@@ -39,7 +39,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void concatShouldPreserveSingleStreams() {
+    public void flattenShouldPreserveSingleStreams() {
         assertThat(
             StreamUtils.flatten(ImmutableList.of(
                 Stream.of(1, 2, 3)))
@@ -48,7 +48,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void concatShouldMergeSeveralStreamsTogether() {
+    public void flattenShouldMergeSeveralStreamsTogether() {
         assertThat(
             StreamUtils.flatten(ImmutableList.of(
                 Stream.of(1, 2, 3),
@@ -58,7 +58,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void concatShouldAcceptEmptyStreams() {
+    public void flattenShouldAcceptEmptyStreams() {
         assertThat(
             StreamUtils.flatten(ImmutableList.of(
                 Stream.of()))
@@ -67,7 +67,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void concatShouldMergeEmptyStreamsWithOtherData() {
+    public void flattenShouldMergeEmptyStreamsWithOtherData() {
         assertThat(
             StreamUtils.flatten(ImmutableList.of(
                 Stream.of(1, 2),
