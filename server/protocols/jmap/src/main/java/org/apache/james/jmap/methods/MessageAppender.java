@@ -25,6 +25,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.mail.util.SharedByteArrayInputStream;
 
+import org.apache.james.jmap.methods.ValueWithId.CreationMessageEntry;
 import org.apache.james.jmap.model.Attachment;
 import org.apache.james.jmap.model.Keywords;
 import org.apache.james.jmap.model.MessageFactory;
@@ -58,7 +59,7 @@ public class MessageAppender {
         this.mimeMessageConverter = mimeMessageConverter;
     }
 
-    public MessageFactory.MetaDataWithContent appendMessageInMailbox(ValueWithId.MessageWithId.CreationMessageEntry createdEntry,
+    public MessageFactory.MetaDataWithContent appendMessageInMailbox(CreationMessageEntry createdEntry,
                                                                      MessageManager mailbox,
                                                                      MailboxSession session) throws MailboxException {
         ImmutableList<MessageAttachment> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
