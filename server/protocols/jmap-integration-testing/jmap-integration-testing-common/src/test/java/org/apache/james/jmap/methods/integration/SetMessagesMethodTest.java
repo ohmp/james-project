@@ -1477,7 +1477,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldRejectCreateInDraftAndOutbox() {
+    public void setMessageShouldRejectCreateInDraftAndOutboxForASingleMessage() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
 
