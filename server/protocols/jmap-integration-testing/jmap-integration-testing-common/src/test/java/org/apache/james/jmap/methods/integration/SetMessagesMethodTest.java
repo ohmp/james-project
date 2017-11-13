@@ -1404,7 +1404,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldRequireDraftInOnlyDraftMailbox() {
+    public void setMessageShouldFailWhenSavingADraftInSeveralMailboxes() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
