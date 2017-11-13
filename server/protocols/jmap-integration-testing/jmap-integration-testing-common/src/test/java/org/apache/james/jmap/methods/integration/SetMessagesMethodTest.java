@@ -1654,7 +1654,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldRequireDraftFlag() {
+    public void setMessageShouldRequireDraftFlagWhenSavingDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
