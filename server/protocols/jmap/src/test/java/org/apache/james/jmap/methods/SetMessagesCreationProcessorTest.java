@@ -61,6 +61,7 @@ import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxId.Factory;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
@@ -285,6 +286,8 @@ public class SetMessagesCreationProcessorTest {
                             creationMessageBuilder.mailboxId("any-id-but-outbox-id")
                         .build())
                     .build();
+        when(mockedMailboxManager.getMailbox(any(MailboxId.class), any()))
+            .thenReturn(outbox);
 
         sut.process(notInOutboxCreationRequest, session);
 
@@ -300,6 +303,7 @@ public class SetMessagesCreationProcessorTest {
                 .create(
                         creationMessageId, creationMessageBuilder.mailboxId(DRAFTS_ID.serialize()).build())
                 .build();
+        when(mockedMailboxManager.getMailbox(any(MailboxId.class), any())).thenReturn(drafts);
         sut.process(createMessageInDrafts, session);
 
         // Then
