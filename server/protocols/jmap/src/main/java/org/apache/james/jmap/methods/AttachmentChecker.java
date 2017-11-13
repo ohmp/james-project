@@ -46,11 +46,9 @@ public class AttachmentChecker {
 
     public void assertAttachmentsExist(ValueWithId.CreationMessageEntry entry, MailboxSession session) throws AttachmentsNotFoundException, MailboxException {
         List<Attachment> attachments = entry.getValue().getAttachments();
-        if (!attachments.isEmpty()) {
-            List<BlobId> notFounds = listAttachmentsNotFound(attachments, session);
-            if (!notFounds.isEmpty()) {
-                throw new AttachmentsNotFoundException(notFounds);
-            }
+        List<BlobId> notFounds = listAttachmentsNotFound(attachments, session);
+        if (!notFounds.isEmpty()) {
+            throw new AttachmentsNotFoundException(notFounds);
         }
     }
 
