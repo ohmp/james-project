@@ -41,8 +41,6 @@ import org.apache.james.jmap.model.CreationMessage.DraftEmailer;
 import org.apache.james.jmap.model.CreationMessageId;
 import org.apache.james.jmap.model.MessageFactory;
 import org.apache.james.jmap.model.MessagePreviewGenerator;
-import org.apache.james.jmap.model.MessageProperties.MessageProperty;
-import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
 import org.apache.james.jmap.model.mailbox.Role;
@@ -291,25 +289,6 @@ public class SetMessagesCreationProcessorTest {
 
         // Then
         verify(mockedMailSpool, never()).send(any(Mail.class), any(MailMetadata.class));
-    }
-
-    @Test
-    public void processShouldReturnNotImplementedErrorWhenSavingToDrafts() {
-        CreationMessageId creationMessageId = CreationMessageId.of("anything-really");
-        SetMessagesRequest createMessageInDrafts = SetMessagesRequest.builder()
-                .create(
-                        creationMessageId, creationMessageBuilder.mailboxId(DRAFTS_ID.serialize()).build())
-                .build();
-
-        // When
-        SetMessagesResponse actual = sut.process(createMessageInDrafts, session);
-
-        // Then
-        assertThat(actual.getNotCreated()).hasSize(1).containsEntry(creationMessageId, SetError.builder()
-                .type("invalidProperties")
-                .properties(MessageProperty.mailboxIds)
-                .description("Not yet implemented")
-                .build());
     }
 
     @Test
