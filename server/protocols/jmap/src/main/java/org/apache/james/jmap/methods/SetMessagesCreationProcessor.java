@@ -194,12 +194,12 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private void saveDraft(CreationMessageEntry entry, Builder responseBuilder, MailboxSession session) throws AttachmentsNotFoundException, MailboxException, MessagingException {
         attachmentChecker.assertAttachmentsExist(entry, session);
-        validateDraftKeywords(entry);
+        assertDraftKeywords(entry);
         MessageWithId created = handleDraftMessages(entry, session);
         responseBuilder.created(created.getCreationId(), created.getValue());
     }
 
-    private void validateDraftKeywords(CreationMessageEntry entry) {
+    private void assertDraftKeywords(CreationMessageEntry entry) {
         Boolean isDraft = entry.getValue()
             .getKeywords()
             .map(keywords -> keywords.contains(Keyword.DRAFT))
