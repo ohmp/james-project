@@ -234,7 +234,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private MessageWithId handleOutboxMessages(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
         MessageManager outbox = getMailboxWithRole(session, Role.OUTBOX).orElseThrow(() -> new MailboxNotFoundException(Role.OUTBOX.serialize()));
-        MetaDataWithContent newMessage = messageAppender.createMessageInMailbox(entry, outbox, session);
+        MetaDataWithContent newMessage = messageAppender.appendMessageInMailbox(entry, outbox, session);
         Message jmapMessage = messageFactory.fromMetaDataWithContent(newMessage);
         messageSender.sendMessage(jmapMessage, newMessage, session);
         return new ValueWithId.MessageWithId(entry.getCreationId(), jmapMessage);
@@ -242,7 +242,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private MessageWithId handleDraftMessages(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
         MessageManager draftMailbox = getMailboxWithRole(session, Role.DRAFTS).orElseThrow(() -> new MailboxNotFoundException(Role.DRAFTS.serialize()));
-        MetaDataWithContent newMessage = messageAppender.createMessageInMailbox(entry, draftMailbox, session);
+        MetaDataWithContent newMessage = messageAppender.appendMessageInMailbox(entry, draftMailbox, session);
         Message jmapMessage = messageFactory.fromMetaDataWithContent(newMessage);
         return new ValueWithId.MessageWithId(entry.getCreationId(), jmapMessage);
     }

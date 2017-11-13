@@ -58,7 +58,7 @@ public class MessageAppender {
         this.mimeMessageConverter = mimeMessageConverter;
     }
 
-    public MessageFactory.MetaDataWithContent createMessageInMailbox(ValueWithId.MessageWithId.CreationMessageEntry createdEntry,
+    public MessageFactory.MetaDataWithContent appendMessageInMailbox(ValueWithId.MessageWithId.CreationMessageEntry createdEntry,
                                                                      MessageManager mailbox,
                                                                      MailboxSession session) throws MailboxException {
         ImmutableList<MessageAttachment> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
