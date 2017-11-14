@@ -139,7 +139,7 @@ public class SetMessagesCreationProcessorTest {
         fakeSystemMailboxesProvider = new TestSystemMailboxesProvider(() -> optionalOutbox, () -> optionalDrafts);
         session = new MockMailboxSession(USER);
         MIMEMessageConverter mimeMessageConverter = new MIMEMessageConverter();
-        messageAppender = new MessageAppender(mockedAttachmentManager, mimeMessageConverter);
+        messageAppender = new MessageAppender(mockedMailboxManager, mockedAttachmentManager, mimeMessageConverter);
         messageSender = new MessageSender(mockedMailSpool, mockedMailFactory);
         sut = new SetMessagesCreationProcessor(messageFactory,
             fakeSystemMailboxesProvider,
