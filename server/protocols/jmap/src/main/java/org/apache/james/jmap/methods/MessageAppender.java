@@ -115,7 +115,6 @@ public class MessageAppender {
                 .isInline(attachment.isIsInline())
                 .build());
         } catch (AttachmentNotFoundException e) {
-            // should not happen (checked before)
             LOGGER.error(String.format("Attachment %s not found", attachment.getBlobId()), e);
             return Optional.empty();
         } catch (IllegalStateException e) {
