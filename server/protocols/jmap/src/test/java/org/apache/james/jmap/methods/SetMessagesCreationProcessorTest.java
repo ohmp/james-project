@@ -303,7 +303,9 @@ public class SetMessagesCreationProcessorTest {
                 .create(
                         creationMessageId, creationMessageBuilder.mailboxId(DRAFTS_ID.serialize()).build())
                 .build();
-        when(mockedMailboxManager.getMailbox(any(MailboxId.class), any())).thenReturn(drafts);
+        when(mockedMailboxManager.getMailbox(any(MailboxId.class), any()))
+            .thenReturn(drafts);
+        
         sut.process(createMessageInDrafts, session);
 
         // Then
