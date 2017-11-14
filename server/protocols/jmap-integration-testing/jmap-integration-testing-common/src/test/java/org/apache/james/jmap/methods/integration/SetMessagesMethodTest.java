@@ -1443,7 +1443,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldBeCompatibleWithIsDraftProperty() {
+    public void setMessageShouldAllowDraftCreationWhenUsingIsDraftProperty() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
