@@ -25,9 +25,9 @@ public class MailboxSendingNotAllowedException extends MailboxException {
 
     private String allowedFrom;
 
-    public MailboxSendingNotAllowedException(String allowedFroms) {
+    public MailboxSendingNotAllowedException(String allowedFrom) {
         super();
-        this.allowedFrom = allowedFroms;
+        this.allowedFrom = allowedFrom;
     }
     
     public String getAllowedFrom() {
