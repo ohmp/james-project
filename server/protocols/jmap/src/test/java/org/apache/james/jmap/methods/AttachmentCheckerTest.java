@@ -118,7 +118,7 @@ public class AttachmentCheckerTest {
     }
 
     @Test
-    public void assertAttachmentsExistShouldNotThrowThrowWhenKnownBlobIds() throws Exception {
+    public void assertAttachmentsExistShouldNotThrowWhenKnownBlobIds() throws Exception {
         BlobId blobId1 = BlobId.of("unknownBlobId1");
         BlobId blobId2 = BlobId.of("unknownBlobId2");
         AttachmentId attachmentId1 = AttachmentId.from(blobId1.getRawValue());
