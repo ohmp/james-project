@@ -1370,7 +1370,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldAllowDraftCreation() {
+    public void setMessagesShouldAllowDraftCreation() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1404,7 +1404,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldFailWhenSavingADraftInSeveralMailboxes() {
+    public void setMessagesShouldFailWhenSavingADraftInSeveralMailboxes() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
@@ -1443,7 +1443,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldBeCompatibleWithIsDraftProperty() {
+    public void setMessagesShouldBeCompatibleWithIsDraftProperty() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1477,7 +1477,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldRejectCreateInDraftAndOutboxForASingleMessage() {
+    public void setMessagesShouldRejectCreateInDraftAndOutboxForASingleMessage() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
 
@@ -1515,7 +1515,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldStoreDraft() {
+    public void setMessagesShouldStoreDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1557,7 +1557,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldNotCheckFromWhenDraft() {
+    public void setMessagesShouldNotCheckFromWhenDraft() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1590,7 +1590,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldAllowDraftCreationWithoutFrom() {
+    public void setMessagesShouldAllowDraftCreationWithoutFrom() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1622,7 +1622,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldAllowDraftCreationWithoutRecipients() {
+    public void setMessagesShouldAllowDraftCreationWithoutRecipients() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1654,7 +1654,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldRequireDraftFlagWhenSavingDraft() {
+    public void setMessagesShouldRequireDraftFlagWhenSavingDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1691,7 +1691,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldCheckAttachmentsWhenDraft() {
+    public void setMessagesShouldCheckAttachmentsWhenDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1731,7 +1731,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldAcceptAttachmentsWhenDraft() throws Exception {
+    public void setMessagesShouldAcceptAttachmentsWhenDraft() throws Exception {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         Attachment attachment = Attachment.builder()
@@ -1775,7 +1775,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldNotAllowDraftCreationInSomeoneElseMailbox() throws Exception {
+    public void setMessagesShouldNotAllowDraftCreationInSomeoneElseMailbox() throws Exception {
         String messageCreationId = "creationId1337";
         Attachment attachment = Attachment.builder()
             .bytes("attachment".getBytes(Charsets.UTF_8))
@@ -1813,7 +1813,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldNotAllowDraftCreationInADelegatedMailbox() throws Exception {
+    public void setMessagesShouldNotAllowDraftCreationInADelegatedMailbox() throws Exception {
         String messageCreationId = "creationId1337";
         Attachment attachment = Attachment.builder()
             .bytes("attachment".getBytes(Charsets.UTF_8))
