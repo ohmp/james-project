@@ -145,4 +145,12 @@ public class DockerCassandraRule implements TestRule {
         client.unpauseContainerCmd(cassandraContainer.getContainerId());
     }
 
+    public TestRule getLifecycleTestRule(int iterationsBetweenRestart) {
+        return ContainerLifecycleConfiguration.builder()
+            .iterationsBetweenRestart(iterationsBetweenRestart)
+            .container(cassandraContainer)
+            .build()
+            .asTestRule();
+    }
+
 }
