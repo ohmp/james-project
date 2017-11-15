@@ -38,7 +38,7 @@ public class CassandraSetMessagesMethodTest extends SetMessagesMethodTest {
     public CassandraJmapTestRule rule = CassandraJmapTestRule.defaultTestRule();
 
     @Rule
-    public TestRule cassandraLifecycleTestRule = cassandra.getLifecycleTestRule(20);
+    public TestRule cassandraLifecycleTestRule = cassandra.defaultLifecycleTestRule();
 
     @Override
     protected GuiceJamesServer createJmapServer() {

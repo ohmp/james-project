@@ -93,4 +93,8 @@ public class DockerCassandraRule implements GuiceModuleTestRule {
         return cassandraContainer.getLifecycleTestRule(iterationsBetweenRestart);
     }
 
+    public TestRule defaultLifecycleTestRule() {
+        return cassandraContainer.defaultLifecycleTestRule();
+    }
+
 }

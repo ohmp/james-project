@@ -37,7 +37,7 @@ public class CassandraVacationRelayIntegrationTest extends VacationRelayIntegrat
     public static DockerCassandraRule cassandra = new DockerCassandraRule();
 
     @Rule
-    public TestRule cassandraLifecycleTestRule = cassandra.getLifecycleTestRule(20);
+    public TestRule cassandraLifecycleTestRule = cassandra.defaultLifecycleTestRule();
     
     @Rule
     public CassandraJmapTestRule jamesServerRule = CassandraJmapTestRule.defaultTestRule();
