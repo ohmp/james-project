@@ -18,12 +18,16 @@
  ****************************************************************/
 package org.apache.james.transport.mailets;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Properties;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
@@ -96,13 +100,27 @@ public class ContactExtractor extends GenericMailet implements Mailet {
     }
 
     private Optional<String> extractContacts(Mail mail) throws MessagingException, IOException {
-        MimeMessage message = mail.getMessage();
+        MimeMessage message = relaxedParsableMessage(mail);
 
         return Optional.of(mail.getSender())
             .map(MailAddress::asString)
             .filter(Throwing.predicate(sender -> hasRecipients(message)))
             .map(Throwing.function(sender -> new ExtractedContacts(sender, recipients(message))))
             .map(Throwing.function(extractedContacts -> objectMapper.writeValueAsString(extractedContacts)));
+    }
+
+    private MimeMessage relaxedParsableMessage(Mail mail) throws IOException, MessagingException {
+        Properties props = System.getProperties();
+        props.put("mail.mime.address.strict", false);
+        Session session = Session.getInstance(props);
+        return copyMessage(session, mail.getMessage());
+    }
+
+    private MimeMessage copyMessage(Session session, MimeMessage message) throws IOException, MessagingException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        message.writeTo(byteArrayOutputStream);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        return new MimeMessage(session, byteArrayInputStream);
     }
 
     @VisibleForTesting boolean hasRecipients(MimeMessage mimeMessage) throws MessagingException {
