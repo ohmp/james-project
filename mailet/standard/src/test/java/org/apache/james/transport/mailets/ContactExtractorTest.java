@@ -256,15 +256,16 @@ public class ContactExtractorTest {
     }
 
     @Test
-    public void hasRecipientsShouldNotThrowWhenNoRecipient() throws Exception {
+    public void extractContactsShouldNotThrowWhenNoRecipient() throws Exception {
         MimeMessage message = MimeMessageBuilder.mimeMessageBuilder()
                 .setSender(SENDER)
                 .setSubject("Contact collection Rocks")
                 .setText("This is my email")
                 .build();
+        FakeMail mail = FakeMail.builder().mimeMessage(message)
+            .sender(new MailAddress(SENDER))
+            .build();
 
-        boolean hasRecipients = mailet.hasRecipients(message);
-
-        assertThat(hasRecipients).isFalse();
+        mailet.extractContacts(mail);
     }
 }
