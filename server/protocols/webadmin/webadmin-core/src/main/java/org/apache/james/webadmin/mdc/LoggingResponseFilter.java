@@ -19,9 +19,7 @@
 
 package org.apache.james.webadmin.mdc;
 
-import java.io.Closeable;
-
-import org.apache.james.util.MDCBuilder;
+import org.apache.james.util.MDCStructuredLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,12 +34,9 @@ public class LoggingResponseFilter implements Filter {
 
     @Override
     public void handle(Request request, Response response) throws Exception {
-        try (Closeable closeable =
-                 MDCBuilder.create()
-                     .addContext(STATUS, response.status())
-                     .addContext(BODY, response.body())
-                     .build()) {
-            LOGGER.info("Received request");
-        }
+        MDCStructuredLogger.forLogger(LOGGER)
+            .addField(STATUS, response.status())
+            .addField(BODY, request.body())
+            .log(logger -> logger.info("WebAdmin request received"));
     }
 }
