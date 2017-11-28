@@ -30,13 +30,13 @@ import spark.Response;
 public class LoggingResponseFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingResponseFilter.class);
     private static final String STATUS = "status";
-    private static final String BODY_RESPONSE = "body-response";
+    private static final String RESPONSE_BODY = "response-body";
 
     @Override
     public void handle(Request request, Response response) throws Exception {
         MDCStructuredLogger.forLogger(LOGGER)
             .addField(STATUS, response.status())
-            .addField(BODY_RESPONSE, request.body())
+            .addField(RESPONSE_BODY, request.body())
             .log(logger -> logger.info("WebAdmin response received"));
     }
 }
