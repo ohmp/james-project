@@ -29,12 +29,12 @@ import spark.Response;
 
 public class LoggingRequestFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingRequestFilter.class);
-    private static final String BODY = "body";
+    private static final String REQUEST_BODY = "request-body";
 
     @Override
     public void handle(Request request, Response response) throws Exception {
         MDCStructuredLogger.forLogger(LOGGER)
-            .addField(BODY, request.body())
+            .addField(REQUEST_BODY, request.body())
             .log(logger -> logger.info("WebAdmin request received"));
     }
 }
