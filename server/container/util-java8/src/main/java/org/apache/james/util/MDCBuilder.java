@@ -56,9 +56,9 @@ public class MDCBuilder {
         }
     }
 
-    public static void withMdc(MDCBuilder mdcBuilder, VoidOperation answerSupplier) {
+    public static void withMdc(MDCBuilder mdcBuilder, VoidOperation logOperation) {
         withMdc(mdcBuilder, () -> {
-            answerSupplier.perform();
+            logOperation.perform();
             return null;
         });
     }
