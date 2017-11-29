@@ -196,11 +196,12 @@ public class JamesMailetContext implements MailetContext, Configurable {
         }
 
         MailImpl reply = rawBounce(mail, message);
+
         // Change the sender...
-        ConsumerChainer<InternetAddress> setFromConsumer = Throwing.consumer(reply.getMessage()::setFrom);
-        Optional.ofNullable(bouncer)
-            .map(MailAddress::toInternetAddress)
-            .ifPresent(setFromConsumer.sneakyThrow());
+        if (bouncer != null) {
+            reply.getMessage().setFrom(bouncer.toInternetAddress());
+        }
+
         reply.getMessage().saveChanges();
         // Send it off ... with null reverse-path
         reply.setSender(null);
