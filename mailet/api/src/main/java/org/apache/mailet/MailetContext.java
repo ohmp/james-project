@@ -344,7 +344,7 @@ public interface MailetContext {
      * Sends an outgoing message to the top of this mailet container's root queue,
      * targeting a specific processing state.
      *
-     * This is functionally allow mail treatment done out of the MailetProcessor to be sent
+     * This functionally allow mail treatment done out of the MailetProcessor to be sent
      * to a specific processor inside the MailetContainer. This is for instance useful for bouncing mail
      * being remote delivered (asynchronously to original mail treatment)
      *
