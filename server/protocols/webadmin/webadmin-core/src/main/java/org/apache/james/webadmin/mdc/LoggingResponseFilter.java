@@ -36,7 +36,7 @@ public class LoggingResponseFilter implements Filter {
     public void handle(Request request, Response response) throws Exception {
         MDCStructuredLogger.forLogger(LOGGER)
             .addField(STATUS, response.status())
-            .addField(RESPONSE_BODY, request.body())
+            .addField(RESPONSE_BODY, response.body())
             .log(logger -> logger.info("WebAdmin response received"));
     }
 }
