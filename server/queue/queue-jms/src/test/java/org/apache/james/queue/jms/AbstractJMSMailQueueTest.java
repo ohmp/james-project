@@ -115,6 +115,19 @@ public abstract class AbstractJMSMailQueueTest {
     }
 
     @Test
+    public void dequeueShouldPreserveState() throws Exception {
+        Mail mail = createMail();
+        String state = "state";
+        mail.setState(state);
+
+        queue.enQueue(mail);
+
+        MailQueueItem item = queue.deQueue();
+        assertEquals(state, item.getMail().getState());
+        item.done(true);
+    }
+
+    @Test
     public void testDelayedDeQueue() throws Exception {
         // should be empty
         assertEquals(0, queue.getSize());
