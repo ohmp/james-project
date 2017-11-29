@@ -104,7 +104,14 @@ public class MemoryMailQueueFactoryTest {
                 .state(state)
                 .build();
         memoryMailQueueFactory.getQueue(KEY).enQueue(mail);
-        assertThat(memoryMailQueueFactory.getQueue(KEY).deQueue().getMail().getState()).isEqualTo(state);
+
+        String newState = memoryMailQueueFactory
+            .getQueue(KEY)
+            .deQueue()
+            .getMail()
+            .getState();
+
+        assertThat(newState).isEqualTo(state);
     }
 
     @Test
