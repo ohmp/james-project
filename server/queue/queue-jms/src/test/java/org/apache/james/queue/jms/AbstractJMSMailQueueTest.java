@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.queue.jms;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -123,8 +124,11 @@ public abstract class AbstractJMSMailQueueTest {
         queue.enQueue(mail);
 
         MailQueueItem item = queue.deQueue();
-        assertEquals(state, item.getMail().getState());
-        item.done(true);
+        try {
+            assertThat(item.getMail().getState()).isEqualTo(state);
+        } finally {
+            item.done(true);
+        }
     }
 
     @Test
