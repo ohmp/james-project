@@ -344,11 +344,13 @@ public interface MailetContext {
      * Sends an outgoing message to the top of this mailet container's root queue,
      * targeting a specific processing state.
      *
-     * This functionally allow mail treatment done out of the MailetProcessor to be sent
+     * This functionally allows mail treatment done out of the MailetProcessor to be sent
      * to a specific processor inside the MailetContainer. This is for instance useful for bouncing mail
      * being remote delivered (asynchronously to original mail treatment)
      *
-     * @param message the message to send
+     * @param message The message to send
+     * @param state   The state of the message, indicating the name of the processor for
+     *                which the message will be queued
      * @throws MessagingException if an error occurs accessing or sending the message
      */
     void sendMail(Mail mail, String state) throws MessagingException;
