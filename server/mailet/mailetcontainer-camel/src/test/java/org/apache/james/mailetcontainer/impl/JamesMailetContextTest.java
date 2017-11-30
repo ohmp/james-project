@@ -169,7 +169,7 @@ public class JamesMailetContextTest {
     }
 
     @Test
-    public void bounceShouldSendEmailToRootProcessor() throws Exception {
+    public void bounceShouldEnqueueEmailWithRootState() throws Exception {
         MailImpl mail = new MailImpl();
         mail.setSender(mailAddress);
         mail.setRecipients(ImmutableList.of(mailAddress));
@@ -184,7 +184,7 @@ public class JamesMailetContextTest {
     }
 
     @Test
-    public void sendMailShouldSendEmailToRootProcessor() throws Exception {
+    public void sendMailShouldEnqueueEmailWithRootState() throws Exception {
         MailImpl mail = new MailImpl();
         mail.setSender(mailAddress);
         mail.setRecipients(ImmutableList.of(mailAddress));
@@ -199,7 +199,7 @@ public class JamesMailetContextTest {
     }
 
     @Test
-    public void sendMailShouldSendEmailToOtherProcessorWhenSpecified() throws Exception {
+    public void sendMailShouldEnqueueEmailWithOtherStateWhenSpecified() throws Exception {
         MailImpl mail = new MailImpl();
         mail.setSender(mailAddress);
         mail.setRecipients(ImmutableList.of(mailAddress));
@@ -215,7 +215,7 @@ public class JamesMailetContextTest {
     }
 
     @Test
-    public void sendMailForMessageShouldSendEmailToRootProcessor() throws Exception {
+    public void sendMailForMessageShouldEnqueueEmailWithRootState() throws Exception {
         MimeMessage message = MimeMessageBuilder.mimeMessageBuilder()
             .addFrom(mailAddress.asString())
             .addToRecipient(mailAddress.asString())
@@ -232,7 +232,7 @@ public class JamesMailetContextTest {
     }
 
     @Test
-    public void sendMailForMessageAndEnvelopeShouldSendEmailToRootProcessor() throws Exception {
+    public void sendMailForMessageAndEnvelopeShouldEnqueueEmailWithRootState() throws Exception {
         MimeMessage message = MimeMessageBuilder.mimeMessageBuilder()
             .addFrom(mailAddress.asString())
             .addToRecipient(mailAddress.asString())
@@ -251,7 +251,7 @@ public class JamesMailetContextTest {
     }
 
     @Test
-    public void sendMailForMessageAndEnvelopeShouldSendEmailToOtherProcessorWhenSpecified() throws Exception {
+    public void sendMailForMessageAndEnvelopeShouldEnqueueEmailWithOtherStateWhenSpecified() throws Exception {
         MimeMessage message = MimeMessageBuilder.mimeMessageBuilder()
             .addFrom(mailAddress.asString())
             .addToRecipient(mailAddress.asString())
