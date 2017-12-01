@@ -41,8 +41,8 @@ import org.apache.james.utils.GuiceProbe;
 import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.junit.rules.TemporaryFolder;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 
 public class TemporaryJamesServer {
