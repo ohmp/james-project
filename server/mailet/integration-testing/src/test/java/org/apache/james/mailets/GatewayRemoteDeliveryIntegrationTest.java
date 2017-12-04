@@ -52,6 +52,7 @@ import org.apache.james.transport.mailets.ToProcessor;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.RelayLimit;
+import org.apache.james.util.streams.FakeSmtp;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
@@ -100,7 +101,7 @@ public class GatewayRemoteDeliveryIntegrationTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private final TemporaryFolder smtpFolder = new TemporaryFolder();
-    private final SwarmGenericContainer fakeSmtp = new SwarmGenericContainer("weave/rest-smtp-sink:latest")
+    private final SwarmGenericContainer fakeSmtp = new FakeSmtp()
         .withExposedPorts(25)
         .withAffinityToContainer()
         .waitingFor(new HostPortWaitStrategy());
@@ -121,6 +122,8 @@ public class GatewayRemoteDeliveryIntegrationTest {
             .with()
             .pollDelay(slowPacedPollInterval)
             .await();
+
+        FakeSmtp.await(fakeSmtp);
 
         RestAssured.requestSpecification = new RequestSpecBuilder()
             .setContentType(ContentType.JSON)

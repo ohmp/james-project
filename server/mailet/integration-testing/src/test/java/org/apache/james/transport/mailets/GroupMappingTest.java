@@ -44,6 +44,7 @@ import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.RelayLimit;
 import org.apache.james.transport.matchers.SMTPAuthSuccessful;
+import org.apache.james.util.streams.FakeSmtp;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
@@ -90,7 +91,7 @@ public class GroupMappingTest {
     private RequestSpecification restApiRequest;
 
     @Rule
-    public final SwarmGenericContainer fakeSmtp = new SwarmGenericContainer("weave/rest-smtp-sink:latest")
+    public final SwarmGenericContainer fakeSmtp = new FakeSmtp()
         .withExposedPorts(25)
         .withAffinityToContainer()
         .waitingFor(new HostPortWaitStrategy());
@@ -102,6 +103,7 @@ public class GroupMappingTest {
     private InetAddress containerIp;
     @Before
     public void setup() throws Exception {
+        FakeSmtp.await(fakeSmtp);
 
         containerIp = InetAddress.getByName(fakeSmtp.getContainerIp());
         inMemoryDNSService.registerRecord("yopmail.com", containerIp, "yopmail.com");
