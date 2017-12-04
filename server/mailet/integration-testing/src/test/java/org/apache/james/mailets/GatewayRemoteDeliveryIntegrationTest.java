@@ -133,7 +133,9 @@ public class GatewayRemoteDeliveryIntegrationTest {
 
     @After
     public void tearDown() {
-        jamesServer.shutdown();
+        if (jamesServer != null) {
+            jamesServer.shutdown();
+        }
     }
 
     @Test
