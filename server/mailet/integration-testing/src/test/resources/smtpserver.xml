@@ -39,7 +39,7 @@
 {{/hasAuthorizedAddresses}}
         <verifyIdentity>{{verifyIdentity}}</verifyIdentity>
         <maxmessagesize>{{maxmessagesize}}</maxmessagesize>
-        <addressBracketsEnforcement>true</addressBracketsEnforcement>
+        <addressBracketsEnforcement>{{bracketEnforcement}}</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>
         <handlerchain>
             <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
@@ -69,7 +69,7 @@
         <!-- Trust authenticated users -->
         <verifyIdentity>false</verifyIdentity>
         <maxmessagesize>{{maxmessagesize}}</maxmessagesize>
-        <addressBracketsEnforcement>true</addressBracketsEnforcement>
+        <addressBracketsEnforcement>{{bracketEnforcement}}</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>
         <handlerchain>
             <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
@@ -99,7 +99,7 @@
         <!-- Trust authenticated users -->
         <verifyIdentity>false</verifyIdentity>
         <maxmessagesize>{{maxmessagesize}}</maxmessagesize>
-        <addressBracketsEnforcement>true</addressBracketsEnforcement>
+        <addressBracketsEnforcement>{{bracketEnforcement}}</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>
         <handlerchain>
             <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
