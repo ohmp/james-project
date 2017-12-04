@@ -36,6 +36,7 @@ import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.mailets.configuration.SmtpConfiguration;
 import org.apache.james.probe.DataProbe;
+import org.apache.james.smtpserver.IsSmtpRelayAllowed;
 import org.apache.james.transport.mailets.LocalDelivery;
 import org.apache.james.transport.mailets.Null;
 import org.apache.james.transport.mailets.RemoteDelivery;
@@ -44,13 +45,11 @@ import org.apache.james.transport.mailets.ToProcessor;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.RelayLimit;
-import org.apache.james.transport.matchers.SMTPAuthSuccessful;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -143,7 +142,7 @@ public class SmtpAuthorizedAddresses {
                     .mailet(LocalDelivery.class)
                     .build())
                 .addMailet(MailetConfiguration.builder()
-                    .matcher(SMTPAuthSuccessful.class)
+                    .matcher(IsSmtpRelayAllowed.class)
                     .mailet(RemoteDelivery.class)
                     .addProperty("outgoingQueue", "outgoing")
                     .addProperty("delayTime", "5000, 100000, 500000")
@@ -183,7 +182,6 @@ public class SmtpAuthorizedAddresses {
         }
     }
 
-    @Ignore("TODO This should be allowed according to server/app/src/main/resources/smtpserver.xml comments")
     @Test
     public void userShouldBeAbleToSendMessagesWhenInAcceptedNetwork() throws Exception {
         createJamesServer("127.0.0.0/8");
