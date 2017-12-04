@@ -36,17 +36,18 @@ import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.mailets.configuration.SmtpConfiguration;
 import org.apache.james.probe.DataProbe;
-import org.apache.james.smtpserver.IsSmtpRelayAllowed;
 import org.apache.james.transport.mailets.LocalDelivery;
 import org.apache.james.transport.mailets.Null;
 import org.apache.james.transport.mailets.RemoteDelivery;
 import org.apache.james.transport.mailets.RemoveMimeHeader;
 import org.apache.james.transport.mailets.ToProcessor;
 import org.apache.james.transport.matchers.All;
+import org.apache.james.transport.matchers.IsSmtpRelayAllowed;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.RelayLimit;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
+import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
 import org.junit.After;
 import org.junit.Before;
@@ -68,6 +69,7 @@ public class SmtpAuthorizedAddresses {
     private static final String DEFAULT_DOMAIN = "james.org";
     private static final String LOCALHOST_IP = "127.0.0.1";
     private static final int SMTP_PORT = 1025;
+    public static final int IMAP_PORT = 1143;
     private static final String PASSWORD = "secret";
 
     private static final String JAMES_APACHE_ORG = "james.org";
@@ -107,7 +109,7 @@ public class SmtpAuthorizedAddresses {
             .build();
     }
 
-    private void createJamesServer(String authorizedAddresses) throws Exception {
+    private void createJamesServer(SmtpConfiguration.Builder smtpConfiguration) throws Exception {
         MailetContainer mailetContainer = MailetContainer.builder()
             .postmaster("postmaster@" + DEFAULT_DOMAIN)
             .threads(5)
@@ -164,10 +166,7 @@ public class SmtpAuthorizedAddresses {
             .addProcessor(CommonProcessors.bounces())
             .build();
         jamesServer = TemporaryJamesServer.builder()
-            .withSmtpConfiguration(SmtpConfiguration.builder()
-                .requireAuthentication()
-                .withAutorizedAddresses(authorizedAddresses)
-                .build())
+            .withSmtpConfiguration(smtpConfiguration.build())
             .build(temporaryFolder, mailetContainer);
 
         DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
@@ -183,8 +182,10 @@ public class SmtpAuthorizedAddresses {
     }
 
     @Test
-    public void userShouldBeAbleToSendMessagesWhenInAcceptedNetwork() throws Exception {
-        createJamesServer("127.0.0.0/8");
+    public void userShouldBeAbleToRelayMessagesWhenInAcceptedNetwork() throws Exception {
+        createJamesServer(SmtpConfiguration.builder()
+            .requireAuthentication()
+            .withAutorizedAddresses("127.0.0.0/8"));
 
         try (SMTPMessageSender messageSender =
                  SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG)) {
@@ -198,8 +199,10 @@ public class SmtpAuthorizedAddresses {
     }
 
     @Test
-    public void userShouldNotBeAbleToSendMessagesWhenOutOfAcceptedNetwork() throws Exception {
-        createJamesServer("172.0.0.0/8");
+    public void userShouldNotBeAbleToRelayMessagesWhenOutOfAcceptedNetwork() throws Exception {
+        createJamesServer(SmtpConfiguration.builder()
+            .requireAuthentication()
+            .withAutorizedAddresses("172.0.0.0/8"));
 
         try (SMTPMessageSender messageSender =
                  SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG)) {
@@ -208,14 +211,15 @@ public class SmtpAuthorizedAddresses {
 
             Thread.sleep(TimeUnit.SECONDS.toMillis(10));
 
-
             assertThat(messageSender.messageHasBeenSent()).isFalse();
         }
     }
 
     @Test
-    public void userShouldBeAbleToSendMessagesWhenOutOfAcceptedNetworkButAuthenticated() throws Exception {
-        createJamesServer("172.0.0.0/8");
+    public void userShouldBeAbleToRelayMessagesWhenOutOfAcceptedNetworkButAuthenticated() throws Exception {
+        createJamesServer(SmtpConfiguration.builder()
+            .requireAuthentication()
+            .withAutorizedAddresses("172.0.0.0/8"));
 
         try (SMTPMessageSender messageSender =
                  SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
@@ -226,6 +230,25 @@ public class SmtpAuthorizedAddresses {
 
             calmlyAwait.atMost(Duration.ONE_MINUTE)
                 .until(this::messageIsReceivedByTheSmtpServer);
+        }
+    }
+
+    @Test
+    public void localDeliveryShouldBePossibleFromNonAuthenticatedNonAuthorizedSender() throws Exception {
+        createJamesServer(SmtpConfiguration.builder()
+            .requireAuthentication()
+            .withAutorizedAddresses("172.0.0.0/8"));
+
+        try (SMTPMessageSender messageSender =
+                 SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG);
+             IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST_IP, IMAP_PORT)) {
+
+            messageSender.sendMessage(TO, FROM);
+
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
+
+            calmlyAwait.atMost(Duration.ONE_MINUTE)
+                .until(() -> imapMessageReader.userReceivedMessage(FROM, PASSWORD));
         }
     }
 
