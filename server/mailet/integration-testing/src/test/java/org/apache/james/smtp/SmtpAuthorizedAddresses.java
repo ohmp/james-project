@@ -45,6 +45,7 @@ import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.IsSmtpRelayAllowed;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.RelayLimit;
+import org.apache.james.util.streams.FakeSmtp;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
@@ -77,7 +78,7 @@ public class SmtpAuthorizedAddresses {
     private static final String TO = "to@any.com";
 
     private final TemporaryFolder smtpFolder = new TemporaryFolder();
-    private final SwarmGenericContainer fakeSmtp = new SwarmGenericContainer("weave/rest-smtp-sink:latest")
+    private final SwarmGenericContainer fakeSmtp = new FakeSmtp()
         .withExposedPorts(25)
         .withAffinityToContainer()
         .waitingFor(new HostPortWaitStrategy());
@@ -93,6 +94,8 @@ public class SmtpAuthorizedAddresses {
 
     @Before
     public void setup() throws Exception {
+        FakeSmtp.await(fakeSmtp);
+
         Duration slowPacedPollInterval = Duration.FIVE_HUNDRED_MILLISECONDS;
         calmlyAwait = Awaitility.with()
             .pollInterval(slowPacedPollInterval)
