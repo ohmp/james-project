@@ -41,6 +41,7 @@ import org.apache.james.transport.mailets.SetMimeHeader;
 import org.apache.james.transport.mailets.ToProcessor;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.HasMailAttribute;
+import org.apache.james.transport.matchers.IsSmtpRelayAllowed;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.SMTPAuthSuccessful;
 import org.apache.james.transport.matchers.SenderIsLocal;
@@ -125,7 +126,7 @@ public class SMIMESignIntegrationTest {
                     .mailet(LocalDelivery.class)
                     .build())
                 .addMailet(MailetConfiguration.builder()
-                    .matcher(SMTPAuthSuccessful.class)
+                    .matcher(IsSmtpRelayAllowed.class)
                     .mailet(RemoteDelivery.class)
                     .addProperty("outgoingQueue", "outgoing")
                     .addProperty("delayTime", "5000, 100000, 500000")

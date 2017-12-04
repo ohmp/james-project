@@ -41,9 +41,9 @@ import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.transport.matchers.All;
+import org.apache.james.transport.matchers.IsSmtpRelayAllowed;
 import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.transport.matchers.RelayLimit;
-import org.apache.james.transport.matchers.SMTPAuthSuccessful;
 import org.apache.james.util.streams.FakeSmtp;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
@@ -124,7 +124,7 @@ public class GroupMappingTest {
                     .mailet(Null.class)
                     .build())
                 .addMailet(MailetConfiguration.builder()
-                    .matcher(SMTPAuthSuccessful.class)
+                    .matcher(IsSmtpRelayAllowed.class)
                     .mailet(ToProcessor.class)
                     .addProperty("processor", "transport")
                     .build())

@@ -34,8 +34,8 @@ import org.apache.james.transport.mailets.Null;
 import org.apache.james.transport.mailets.RemoveMimeHeader;
 import org.apache.james.transport.mailets.ToProcessor;
 import org.apache.james.transport.matchers.All;
+import org.apache.james.transport.matchers.IsSmtpRelayAllowed;
 import org.apache.james.transport.matchers.RecipientIsLocal;
-import org.apache.james.transport.matchers.SMTPAuthSuccessful;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
@@ -70,7 +70,7 @@ public class SmtpAuthIntegrationTest {
         ProcessorConfiguration rootProcessor = ProcessorConfiguration.builder()
             .state("root")
             .addMailet(MailetConfiguration.builder()
-                .matcher(SMTPAuthSuccessful.class)
+                .matcher(IsSmtpRelayAllowed.class)
                 .mailet(ToProcessor.class)
                 .addProperty("processor", "transport")
                 .build())
