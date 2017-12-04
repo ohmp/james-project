@@ -38,7 +38,7 @@
         <authorizedAddresses>{{authorizedAddresses}}</authorizedAddresses>
 {{/hasAuthorizedAddresses}}
         <verifyIdentity>{{verifyIdentity}}</verifyIdentity>
-        <maxmessagesize>0</maxmessagesize>
+        <maxmessagesize>{{maxmessagesize}}</maxmessagesize>
         <addressBracketsEnforcement>true</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>
         <handlerchain>
@@ -68,7 +68,7 @@
         {{/hasAuthorizedAddresses}}
         <!-- Trust authenticated users -->
         <verifyIdentity>false</verifyIdentity>
-        <maxmessagesize>0</maxmessagesize>
+        <maxmessagesize>{{maxmessagesize}}</maxmessagesize>
         <addressBracketsEnforcement>true</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>
         <handlerchain>
@@ -98,7 +98,7 @@
         {{/hasAuthorizedAddresses}}
         <!-- Trust authenticated users -->
         <verifyIdentity>false</verifyIdentity>
-        <maxmessagesize>0</maxmessagesize>
+        <maxmessagesize>{{maxmessagesize}}</maxmessagesize>
         <addressBracketsEnforcement>true</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>
         <handlerchain>

@@ -41,7 +41,10 @@ public class SmtpConfiguration implements SerializableAsXml {
     public static final SmtpConfiguration DEFAULT = SmtpConfiguration.builder().build();
 
     public static class Builder {
+        private static final int DEFAULT_DISABLED = 0;
+
         private Optional<Boolean> authRequired;
+        private Optional<Integer> maxMessageSizeInKb;
         private Optional<Boolean> verifyIndentity;
         private Optional<String> authorizedAddresses;
 
@@ -49,11 +52,18 @@ public class SmtpConfiguration implements SerializableAsXml {
             authorizedAddresses = Optional.empty();
             authRequired = Optional.empty();
             verifyIndentity = Optional.empty();
+            maxMessageSizeInKb = Optional.empty();
         }
 
         public Builder withAutorizedAddresses(String authorizedAddresses) {
             Preconditions.checkNotNull(authorizedAddresses);
             this.authorizedAddresses = Optional.of(authorizedAddresses);
+            return this;
+        }
+
+        public Builder withMaxMessageSizeInKb(int sizeInKb) {
+            Preconditions.checkArgument(sizeInKb > 0);
+            this.maxMessageSizeInKb = Optional.of(sizeInKb);
             return this;
         }
 
@@ -73,7 +83,8 @@ public class SmtpConfiguration implements SerializableAsXml {
         }
 
         public SmtpConfiguration build() {
-            return new SmtpConfiguration(authorizedAddresses, authRequired.orElse(!AUTH_REQUIRED), verifyIndentity.orElse(true));
+            return new SmtpConfiguration(authorizedAddresses, authRequired.orElse(!AUTH_REQUIRED), verifyIndentity.orElse(true),
+                maxMessageSizeInKb.orElse(DEFAULT_DISABLED));
         }
     }
 
@@ -84,11 +95,13 @@ public class SmtpConfiguration implements SerializableAsXml {
     private final Optional<String> authorizedAddresses;
     private final boolean authRequired;
     private final boolean verifyIndentity;
+    private final int maxMessageSizeInKb;
 
-    public SmtpConfiguration(Optional<String> authorizedAddresses, boolean authRequired, boolean verifyIndentity) {
+    public SmtpConfiguration(Optional<String> authorizedAddresses, boolean authRequired, boolean verifyIndentity, int maxMessageSizeInKb) {
         this.authorizedAddresses = authorizedAddresses;
         this.authRequired = authRequired;
         this.verifyIndentity = verifyIndentity;
+        this.maxMessageSizeInKb = maxMessageSizeInKb;
     }
 
     public String serializeAsXml() throws IOException {
@@ -97,6 +110,7 @@ public class SmtpConfiguration implements SerializableAsXml {
         authorizedAddresses.ifPresent(value -> scopes.put("authorizedAddresses", value));
         scopes.put("authRequired", authRequired);
         scopes.put("verifyIdentity", verifyIndentity);
+        scopes.put("maxmessagesize", maxMessageSizeInKb);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Writer writer = new OutputStreamWriter(byteArrayOutputStream);
