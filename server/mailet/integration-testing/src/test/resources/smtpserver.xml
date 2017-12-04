@@ -37,7 +37,7 @@
 {{#hasAuthorizedAddresses}}
         <authorizedAddresses>{{authorizedAddresses}}</authorizedAddresses>
 {{/hasAuthorizedAddresses}}
-        <verifyIdentity>true</verifyIdentity>
+        <verifyIdentity>{{verifyIdentity}}</verifyIdentity>
         <maxmessagesize>0</maxmessagesize>
         <addressBracketsEnforcement>true</addressBracketsEnforcement>
         <smtpGreeting>JAMES Linagora's SMTP awesome Server</smtpGreeting>

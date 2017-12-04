@@ -42,11 +42,13 @@ public class SmtpConfiguration implements SerializableAsXml {
 
     public static class Builder {
         private Optional<Boolean> authRequired;
+        private Optional<Boolean> verifyIndentity;
         private Optional<String> authorizedAddresses;
 
         public Builder() {
             authorizedAddresses = Optional.empty();
             authRequired = Optional.empty();
+            verifyIndentity = Optional.empty();
         }
 
         public Builder withAutorizedAddresses(String authorizedAddresses) {
@@ -60,8 +62,18 @@ public class SmtpConfiguration implements SerializableAsXml {
             return this;
         }
 
+        public Builder verifyIdentity() {
+            this.verifyIndentity = Optional.of(true);
+            return this;
+        }
+
+        public Builder doNotVerifyIdentity() {
+            this.verifyIndentity = Optional.of(false);
+            return this;
+        }
+
         public SmtpConfiguration build() {
-            return new SmtpConfiguration(authorizedAddresses, authRequired.orElse(!AUTH_REQUIRED));
+            return new SmtpConfiguration(authorizedAddresses, authRequired.orElse(!AUTH_REQUIRED), verifyIndentity.orElse(true));
         }
     }
 
@@ -71,10 +83,12 @@ public class SmtpConfiguration implements SerializableAsXml {
 
     private final Optional<String> authorizedAddresses;
     private final boolean authRequired;
+    private final boolean verifyIndentity;
 
-    public SmtpConfiguration(Optional<String> authorizedAddresses, boolean authRequired) {
+    public SmtpConfiguration(Optional<String> authorizedAddresses, boolean authRequired, boolean verifyIndentity) {
         this.authorizedAddresses = authorizedAddresses;
         this.authRequired = authRequired;
+        this.verifyIndentity = verifyIndentity;
     }
 
     public String serializeAsXml() throws IOException {
@@ -82,6 +96,7 @@ public class SmtpConfiguration implements SerializableAsXml {
         scopes.put("hasAuthorizedAddresses", authorizedAddresses.isPresent());
         authorizedAddresses.ifPresent(value -> scopes.put("authorizedAddresses", value));
         scopes.put("authRequired", authRequired);
+        scopes.put("verifyIdentity", verifyIndentity);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Writer writer = new OutputStreamWriter(byteArrayOutputStream);
