@@ -34,7 +34,7 @@ public class MailRepositoryProbeImpl implements GuiceProbe {
         this.repositoryStore = repositoryStore;
     }
 
-    public int getRepositrySize(String url) throws Exception {
+    public int getRepositorySize(String url) throws Exception {
         return Iterators.size(repositoryStore.select(url)
             .list());
     }
