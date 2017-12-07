@@ -19,10 +19,6 @@
 
 package org.apache.james.smtp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.concurrent.TimeUnit;
-
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.CommonProcessors;
@@ -48,7 +44,7 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionFactory;
 
-public class SmtpBracketEnforcement {
+public class SmtpBracketEnforcementTest {
     private static final String DEFAULT_DOMAIN = "james.org";
     private static final String LOCALHOST_IP = "127.0.0.1";
     private static final int SMTP_PORT = 1025;
@@ -174,9 +170,7 @@ public class SmtpBracketEnforcement {
                  SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, USER, PASSWORD)) {
 
             messageSender.sendMessageNoBracket(USER, USER);
-
-            Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-            assertThat(messageSender.messageHasBeenSent()).isFalse();
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageSendingFailed);
         }
     }
 }
