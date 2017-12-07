@@ -22,11 +22,8 @@ package org.apache.james.smtp;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-
-import java.util.concurrent.TimeUnit;
 
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.mailets.TemporaryJamesServer;
@@ -200,10 +197,7 @@ public class SmtpAuthorizedAddressesTest {
                  SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG)) {
 
             messageSender.sendMessage(FROM, TO);
-
-            Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-
-            assertThat(messageSender.messageHasBeenSent()).isFalse();
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageSendingFailed);
         }
     }
 
