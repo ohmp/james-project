@@ -37,7 +37,7 @@ public class MailRepositoryProbeImpl implements GuiceProbe {
     /**
      * Get the count of email currently stored in a given repository
      */
-    public int getRepositorySize(String url) throws Exception {
+    public int getRepositoryMailCount(String url) throws Exception {
         return Iterators.size(repositoryStore.select(url)
             .list());
     }

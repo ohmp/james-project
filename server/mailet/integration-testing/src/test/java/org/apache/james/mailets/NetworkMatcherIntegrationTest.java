@@ -287,7 +287,7 @@ public class NetworkMatcherIntegrationTest {
             calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
 
             MailRepositoryProbeImpl repositoryProbe = jamesServer.getProbe(MailRepositoryProbeImpl.class);
-            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> repositoryProbe.getRepositorySize(DROPPED_MAILS) == 1);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> repositoryProbe.getRepositoryMailCount(DROPPED_MAILS) == 1);
             assertThat(imapMessageReader.userReceivedMessage(FROM, PASSWORD)).isFalse();
         }
     }
@@ -313,7 +313,7 @@ public class NetworkMatcherIntegrationTest {
             calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
 
             MailRepositoryProbeImpl repositoryProbe = jamesServer.getProbe(MailRepositoryProbeImpl.class);
-            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> repositoryProbe.getRepositorySize(DROPPED_MAILS) == 1);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> repositoryProbe.getRepositoryMailCount(DROPPED_MAILS) == 1);
             assertThat(imapMessageReader.userReceivedMessage(FROM, PASSWORD)).isFalse();
         }
     }
