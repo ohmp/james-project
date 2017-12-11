@@ -5077,7 +5077,6 @@ public abstract class SetMessagesMethodTest {
             .body(ARGUMENTS + ".list[0].isForwarded", equalTo(true));
     }
 
-    @Ignore("JAMES-2257 isDraft is rejected during message creation")
     @Test
     public void setMessagesShouldNotReturnAnErrorWhenTryingToChangeDraftFlagAmongOthers() {
         String messageCreationId = "creationId1337";
@@ -5140,7 +5139,6 @@ public abstract class SetMessagesMethodTest {
 
     }
 
-    @Ignore("JAMES-2257 isDraft is rejected during message creation")
     @Test
     public void setMessagesShouldModifyTheMessageWhenTryingToChangeDraftFlagAmongOthers() {
         String messageCreationId = "creationId1337";
