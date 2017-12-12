@@ -119,7 +119,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldNContainForwardedSeenWhenIsNForwarded() {
+    public void asKeywordsShouldContainForwardedSeenWhenIsForwarded() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isForwarded(Optional.of(true))
             .computeOldKeyword();
