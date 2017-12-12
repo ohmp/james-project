@@ -23,6 +23,10 @@ import java.util.Optional;
 
 import javax.mail.Flags;
 
+import org.apache.james.util.OptionalUtils;
+import org.apache.james.util.StreamUtils;
+
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -189,6 +193,18 @@ public class OldKeyword {
             newStateFlags.add(Flags.Flag.SEEN);
         }
         return newStateFlags;
+    }
+
+    public Keywords asKeywords() {
+        return Keywords.factory()
+            .fromSet(
+                StreamUtils.flatten(
+                    OptionalUtils.toStream(isAnswered.filter(b -> b).map(b -> Keyword.ANSWERED)),
+                    OptionalUtils.toStream(isDraft.filter(b -> b).map(b -> Keyword.DRAFT)),
+                    OptionalUtils.toStream(isForwarded.filter(b -> b).map(b -> Keyword.FORWARDED)),
+                    OptionalUtils.toStream(isFlagged.filter(b -> b).map(b -> Keyword.FLAGGED)),
+                    OptionalUtils.toStream(isUnread.filter(b -> !b).map(b -> Keyword.SEEN)))
+                    .collect(Guavate.toImmutableSet()));
     }
 
     @Override
