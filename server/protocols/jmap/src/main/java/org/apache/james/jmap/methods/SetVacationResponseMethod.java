@@ -95,9 +95,9 @@ public class SetVacationResponseMethod implements Method {
         try {
             return Stream.of(Pipeline
                 .forOperations(
-                    when(!setVacationRequest.isValid())
+                    whenNot(setVacationRequest.isValid())
                         .then(invalidRequest(clientId)),
-                    when(!vacationResponse.isValid())
+                    whenNot(vacationResponse.isValid())
                         .then(invalidVacationResponse(clientId, vacationResponse)),
                     endWith(modifyVacation(clientId, accountId, vacationResponse)))
                 .executeFirst(JmapResponse.builder())
@@ -138,8 +138,8 @@ public class SetVacationResponseMethod implements Method {
                 .build());
     }
 
-    private Pipeline.ConditionalStep.Factory<JmapResponse.Builder> when(boolean b) {
-        return Pipeline.when(b);
+    private Pipeline.ConditionalStep.Factory<JmapResponse.Builder> whenNot(boolean b) {
+        return Pipeline.when(!b);
     }
 
 }

@@ -117,7 +117,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .forOperations(
                     when(mailboxIds.isEmpty())
                         .then(invalidEmptyMailboxIds(create)),
-                    when(!allMailboxOwned(mailboxIds, mailboxSession))
+                    whenNot(allMailboxOwned(mailboxIds, mailboxSession))
                         .then(invalidMailboxOwner(create)),
                     when(isTargeting(create, mailboxSession, Role.OUTBOX))
                         .then(outboxPipeline(create, mailboxSession)),
@@ -163,9 +163,9 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
     private Pipeline<Builder> outboxPipeline(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
         CreationMessage creationMessage = entry.getValue();
         return Pipeline.forOperations(
-            when(!creationMessage.isValid())
+            whenNot(creationMessage.isValid())
                 .then(invalidMessage(entry)),
-            when(!isSender(creationMessage.getFrom(), session))
+            whenNot(isSender(creationMessage.getFrom(), session))
                 .then(invalidSender(entry, session)),
             checkAttachmentStep(entry, session),
             endWith(builder -> sendMail(entry, builder, session)));
@@ -250,7 +250,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private Pipeline.ConditionalStep<Builder> checkAttachmentStep(CreationMessageEntry entry, MailboxSession session) throws MailboxException {
         List<BlobId> attachmentNotFound = attachmentChecker.listAttachmentNotFounds(entry, session);
-        return when(!attachmentNotFound.isEmpty())
+        return whenNot(attachmentNotFound.isEmpty())
             .then(invalidAttachments(entry, attachmentNotFound));
     }
 
@@ -335,6 +335,10 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private Pipeline.ConditionalStep.Factory<Builder> when(boolean b) {
         return Pipeline.when(b);
+    }
+
+    private Pipeline.ConditionalStep.Factory<Builder> whenNot(boolean b) {
+        return Pipeline.when(!b);
     }
 
     private Pipeline.ConditionalStep.Factory<Builder> when(MailboxConditionSupplier condition) {
