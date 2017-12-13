@@ -71,9 +71,9 @@ public class MessageAppender {
         this.mimeMessageConverter = mimeMessageConverter;
     }
 
-    public MessageFactory.MetaDataWithContent appendMessageInMailbox(CreationMessageEntry createdEntry,
-                                                                     List<MailboxId> targetMailboxes,
-                                                                     MailboxSession session) throws MailboxException {
+    public MessageFactory.MetaDataWithContent appendMessageInMailboxes(CreationMessageEntry createdEntry,
+                                                                       List<MailboxId> targetMailboxes,
+                                                                       MailboxSession session) throws MailboxException {
         Preconditions.checkArgument(!targetMailboxes.isEmpty());
         ImmutableList<MessageAttachment> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
         byte[] messageContent = mimeMessageConverter.convert(createdEntry, messageAttachments);
@@ -97,6 +97,12 @@ public class MessageAppender {
             .mailboxId(mailbox.getId())
             .messageId(message.getMessageId())
             .build();
+    }
+
+    public MessageFactory.MetaDataWithContent appendMessageInMailbox(CreationMessageEntry createdEntry,
+                                                                       MailboxId targetMailbox,
+                                                                       MailboxSession session) throws MailboxException {
+        return appendMessageInMailboxes(createdEntry, ImmutableList.of(targetMailbox), session);
     }
 
     private Flags getFlags(CreationMessage message) {
