@@ -1356,48 +1356,6 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldCreateDraftOutsideOfDraftMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
-        String messageCreationId = "creationId1337";
-        String fromAddress = USERNAME;
-        String requestBody = "[" +
-            "  [" +
-            "    \"setMessages\","+
-            "    {" +
-            "      \"create\": { \"" + messageCreationId  + "\" : {" +
-            "        \"from\": { \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}," +
-            "        \"to\": [{ \"name\": \"BOB\", \"email\": \"someone@example.com\"}]," +
-            "        \"subject\": \"subject\"," +
-            "        \"keywords\": {\"$Draft\": true}," +
-            "        \"mailboxIds\": [\"" + mailboxId.serialize() + "\"]" +
-            "      }}" +
-            "    }," +
-            "    \"#0\"" +
-            "  ]" +
-            "]";
-
-        String messageId = given()
-            .header("Authorization", accessToken.serialize())
-            .body(requestBody)
-        .when()
-            .post("/jmap")
-        .then()
-            .extract()
-            .body()
-            .path(ARGUMENTS + ".created." + messageCreationId + ".id");
-
-        with()
-            .header("Authorization", accessToken.serialize())
-            .body("[[\"getMessages\", {\"ids\": [\"" + messageId + "\"]}, \"#0\"]]")
-            .post("/jmap")
-        .then()
-            .log().ifValidationFails()
-            .body(NAME, equalTo("messages"))
-            .body(ARGUMENTS + ".list", hasSize(1))
-            .body(ARGUMENTS + ".list[0].mailboxIds", contains(mailboxId.serialize()));
-    }
-
-    @Test
     public void setMessagesShouldCreateDraftInSeveralMailboxes() {
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
         String messageCreationId = "creationId1337";
