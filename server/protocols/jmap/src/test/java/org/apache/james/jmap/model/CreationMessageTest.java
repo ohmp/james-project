@@ -161,7 +161,7 @@ public class CreationMessageTest {
     }
 
     @Test
-    public void isDraftWhenNoKeywordsSpecified() {
+    public void isDraftShouldBeFalseWhenNoKeywordsSpecified() {
         String mailboxId = "123";
         CreationMessage message = CreationMessage.builder()
             .mailboxId(mailboxId)
