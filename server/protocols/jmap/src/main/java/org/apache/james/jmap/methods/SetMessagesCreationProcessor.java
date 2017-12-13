@@ -20,8 +20,7 @@
 package org.apache.james.jmap.methods;
 
 import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
-import static org.apache.james.jmap.methods.SetMessagePipeline.endWith;
-import static org.apache.james.jmap.methods.SetMessagePipeline.when;
+import static org.apache.james.jmap.methods.Pipeline.endWith;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
 
+import org.apache.james.jmap.methods.Pipeline.MailboxConditionSupplier;
 import org.apache.james.jmap.methods.ValueWithId.CreationMessageEntry;
 import org.apache.james.jmap.methods.ValueWithId.MessageWithId;
 import org.apache.james.jmap.model.BlobId;
@@ -113,7 +113,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
     private Builder handleCreate(CreationMessageEntry create, Builder responseBuilder, MailboxSession mailboxSession) {
         try {
             List<MailboxId> mailboxIds = toMailboxIds(create);
-            return SetMessagePipeline
+            return Pipeline
                 .forOperations(
                     when(mailboxIds.isEmpty())
                         .then(invalidEmptyMailboxIds(create)),
@@ -144,11 +144,11 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
         }
     }
 
-    private SetMessagePipeline.MailboxConditionSupplier isDraftSaving(CreationMessageEntry create) {
+    private MailboxConditionSupplier isDraftSaving(CreationMessageEntry create) {
         return () -> isDraft(create.getValue());
     }
 
-    private SetMessagePipeline.MailboxConditionSupplier isTargeting(CreationMessageEntry create, MailboxSession mailboxSession, Role role) {
+    private MailboxConditionSupplier isTargeting(CreationMessageEntry create, MailboxSession mailboxSession, Role role) {
         return () -> isAppendToMailboxWithRole(role, create.getValue(), mailboxSession);
     }
 
@@ -160,9 +160,9 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
             .collect(Guavate.toImmutableList());
     }
 
-    private SetMessagePipeline outboxPipeline(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
+    private Pipeline<Builder> outboxPipeline(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
         CreationMessage creationMessage = entry.getValue();
-        return SetMessagePipeline.forOperations(
+        return Pipeline.forOperations(
             when(!creationMessage.isValid())
                 .then(invalidMessage(entry)),
             when(!isSender(creationMessage.getFrom(), session))
@@ -171,12 +171,12 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
             endWith(builder -> sendMail(entry, builder, session)));
     }
 
-    private SetMessagePipeline saveDraftPipeline(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
-        return SetMessagePipeline.forOperations(
+    private Pipeline<Builder> saveDraftPipeline(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
+        return Pipeline.forOperations(
             when(() -> isTargetingAMailboxWithRole(Role.OUTBOX, entry, session))
                 .then(invalidMailboxIds(entry)),
             checkAttachmentStep(entry, session),
-            endWith(builder -> {
+            Pipeline.endWith(builder -> {
                 MessageWithId created = handleDraftMessages(entry, session);
                 return builder.created(created.getCreationId(), created.getValue());
             }));
@@ -248,13 +248,13 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .collect(Collectors.toSet());
     }
 
-    private SetMessagePipeline.ConditionalStep checkAttachmentStep(CreationMessageEntry entry, MailboxSession session) throws MailboxException {
+    private Pipeline.ConditionalStep<Builder> checkAttachmentStep(CreationMessageEntry entry, MailboxSession session) throws MailboxException {
         List<BlobId> attachmentNotFound = attachmentChecker.listAttachmentNotFounds(entry, session);
         return when(!attachmentNotFound.isEmpty())
             .then(invalidAttachments(entry, attachmentNotFound));
     }
 
-    private SetMessagePipeline.Operation invalidAttachments(CreationMessageEntry entry, List<BlobId> attachmentNotFound) {
+    private Pipeline.Operation<Builder> invalidAttachments(CreationMessageEntry entry, List<BlobId> attachmentNotFound) {
         return builder -> builder.notCreated(entry.getCreationId(),
             SetMessagesError.builder()
                 .type("invalidProperties")
@@ -264,7 +264,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .build());
     }
 
-    private SetMessagePipeline.Operation invalidSender(CreationMessageEntry entry, MailboxSession session) {
+    private Pipeline.Operation<Builder> invalidSender(CreationMessageEntry entry, MailboxSession session) {
         String allowedSender = session.getUser().getUserName();
         return builder -> builder.notCreated(entry.getCreationId(),
             SetError.builder()
@@ -275,7 +275,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .build());
     }
 
-    private SetMessagePipeline.Operation invalidMessage(CreationMessageEntry entry) {
+    private Pipeline.Operation<Builder> invalidMessage(CreationMessageEntry entry) {
         return builder -> builder.notCreated(entry.getCreationId(),
             buildSetErrorFromValidationResult(entry.getValue().validate()));
     }
@@ -294,7 +294,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
             .collect(Collectors.joining("\\n"));
     }
 
-    private SetMessagePipeline.Operation invalidMailboxOwner(CreationMessageEntry create) {
+    private Pipeline.Operation<Builder> invalidMailboxOwner(CreationMessageEntry create) {
         return builder -> {
             LOG.error("Appending message in an unknown mailbox");
             return builder.notCreated(create.getCreationId(),
@@ -306,7 +306,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
         };
     }
 
-    private SetMessagePipeline.Operation invalidEmptyMailboxIds(CreationMessageEntry create) {
+    private Pipeline.Operation<Builder> invalidEmptyMailboxIds(CreationMessageEntry create) {
         return builder -> builder.notCreated(create.getCreationId(),
             SetError.builder()
                 .type("invalidProperties")
@@ -315,7 +315,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .build());
     }
 
-    private SetMessagePipeline.Operation invalidDraftFlag(CreationMessageEntry entry) {
+    private Pipeline.Operation<Builder> invalidDraftFlag(CreationMessageEntry entry) {
         return responseBuilder -> responseBuilder.notCreated(entry.getCreationId(),
             SetError.builder()
                 .type("invalidProperties")
@@ -324,13 +324,21 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .build());
     }
 
-    private SetMessagePipeline.Operation invalidMailboxIds(CreationMessageEntry entry) {
+    private Pipeline.Operation<Builder> invalidMailboxIds(CreationMessageEntry entry) {
         return responseBuilder -> responseBuilder.notCreated(entry.getCreationId(),
             SetError.builder()
                 .type("invalidProperties")
                 .properties(MessageProperty.mailboxIds)
                 .description("Message creation is only supported in mailboxes with role Draft and Outbox")
                 .build());
+    }
+
+    private Pipeline.ConditionalStep.Factory<Builder> when(boolean b) {
+        return Pipeline.when(b);
+    }
+
+    private Pipeline.ConditionalStep.Factory<Builder> when(MailboxConditionSupplier condition) {
+        return Pipeline.when(condition);
     }
 
 }
