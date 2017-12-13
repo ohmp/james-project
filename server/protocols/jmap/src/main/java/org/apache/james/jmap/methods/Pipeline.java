@@ -48,6 +48,26 @@ public class Pipeline<T> {
         boolean get() throws MailboxException;
     }
 
+    private static <V> Step<V> identity() {
+        return v -> Optional.of(v);
+    }
+
+    public static class StepConbination<V> implements Step<V> {
+        private final Step<V> step1;
+        private final Step<V> step2;
+
+        public StepConbination(Step<V> step1, Step<V> step2) {
+            this.step1 = step1;
+            this.step2 = step2;
+        }
+
+        @Override
+        public Optional<V> run(V v) throws MailboxException, MessagingException {
+            return step1.run(
+                step2.run(v).orElse(v));
+        }
+    }
+
     public static class ConditionalStep<U> implements Step<U> {
         public static class Factory<V> {
             private MailboxConditionSupplier condition;
@@ -108,6 +128,10 @@ public class Pipeline<T> {
         return builder -> Optional.of(operation.run(builder));
     }
 
+    public static <U> Step<U> endWith(Step<U> step) {
+        return step::run;
+    }
+
     private final ImmutableList<Step> steps;
 
     private Pipeline(ImmutableList<Step> steps) {
@@ -124,5 +148,11 @@ public class Pipeline<T> {
             .findFirst()
             .flatMap(Function.identity())
             .orElse(t);
+    }
+
+    public Step<T> executeAll() throws MailboxException, MessagingException {
+        return steps.stream()
+            .reduce((a, b) -> new StepConbination<T>(a, b))
+            .orElse(Pipeline.<T>identity());
     }
 }
