@@ -273,7 +273,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private MessageWithId handleOutboxMessages(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
         assertUserIsSender(session, entry.getValue().getFrom());
-        MetaDataWithContent newMessage = messageAppender.appendMessageInMailbox(entry, toMailboxIds(entry), session);
+        MetaDataWithContent newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
         Message jmapMessage = messageFactory.fromMetaDataWithContent(newMessage);
         Envelope envelope = Envelope.fromMessage(jmapMessage);
         messageSender.sendMessage(newMessage, envelope, session);
@@ -290,7 +290,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
     }
 
     private MessageWithId handleDraftMessages(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException {
-        MetaDataWithContent newMessage = messageAppender.appendMessageInMailbox(entry, toMailboxIds(entry), session);
+        MetaDataWithContent newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
         Message jmapMessage = messageFactory.fromMetaDataWithContent(newMessage);
         return new ValueWithId.MessageWithId(entry.getCreationId(), jmapMessage);
     }
