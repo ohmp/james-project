@@ -120,16 +120,16 @@ public class Pipeline<T> {
         return pipeline::executeFirst;
     }
 
+    public static <U> Operation<U> nested(Step<U> pipeline) {
+        return u -> pipeline.run(u).orElse(u);
+    }
+
     public static <U> Pipeline<U> forOperations(Step<U>... steps) {
         return new Pipeline(ImmutableList.copyOf(Arrays.asList(steps)));
     }
 
     public static <U> Step<U> endWith(Operation<U> operation) {
         return builder -> Optional.of(operation.run(builder));
-    }
-
-    public static <U> Step<U> endWith(Step<U> step) {
-        return step::run;
     }
 
     private final ImmutableList<Step> steps;

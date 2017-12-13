@@ -21,6 +21,7 @@ package org.apache.james.jmap.methods;
 
 import static org.apache.james.jmap.methods.Method.JMAP_PREFIX;
 import static org.apache.james.jmap.methods.Pipeline.endWith;
+import static org.apache.james.jmap.methods.Pipeline.nested;
 
 import java.util.Optional;
 
@@ -94,8 +95,11 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
     private Builder handleUpdate(MailboxId mailboxId, MailboxUpdateRequest updateRequest, Builder responseBuilder, MailboxSession mailboxSession) {
         try {
-            Mailbox mailbox = getMailbox(mailboxId, mailboxSession);
+            MessageManager messageManager = mailboxManager.getMailbox(mailboxId, mailboxSession);
+            Mailbox mailbox = mailboxFactory.fromMessageManager(messageManager, mailboxSession);
             char pathDelimiter = mailboxSession.getPathDelimiter();
+            MailboxPath originMailboxPath = messageManager.getMailboxPath();
+
             return Pipeline.forOperations(
                 when(nameContainsPathDelimiter(updateRequest, pathDelimiter))
                     .then(invalidMailboxNameContainsDelimiter(mailboxId, updateRequest, pathDelimiter)),
@@ -108,7 +112,8 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
                 when(isForbiddenSystemMailboxUpdate(mailbox, updateRequest))
                     .then(invalidSystemMailboxUpdate(mailboxId)),
                 validateParentStep(mailbox, updateRequest, mailboxSession),
-                endWith(updateMailbox(mailbox, updateRequest, mailboxSession)))
+                endWith(nested(
+                    updateMailboxPipeline(mailbox, updateRequest, originMailboxPath, mailboxSession))))
                 .executeFirst(responseBuilder);
         } catch (TooLongMailboxNameException e) {
             return responseBuilder.notUpdated(mailboxId, SetError.builder()
@@ -151,32 +156,18 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         }
     }
 
-    private Pipeline.Operation<Builder> invalidSystemMailboxUpdate(MailboxId mailboxId) {
-        return responseBuilder -> responseBuilder.notUpdated(mailboxId, SetError.builder()
-                .type("invalidArguments")
-                .description("Cannot update a system mailbox.")
-                .build());
-    }
+    private Pipeline.Step<Builder> updateMailboxPipeline(Mailbox mailbox, MailboxUpdateRequest updateRequest, MailboxPath originMailboxPath, MailboxSession mailboxSession) throws MailboxException, MessagingException {
+        MailboxPath destinationMailboxPath = computeNewMailboxPath(mailbox, originMailboxPath, updateRequest, mailboxSession);
 
-    private Pipeline.Operation<Builder> invalidArgument(MailboxId mailboxId, String message) {
-        return builder -> builder.notUpdated(mailboxId, SetError.builder()
-            .type("invalidArguments")
-            .description(message)
-            .build());
-    }
-
-    private Pipeline.Operation<Builder> invalidMailboxNameContainsDelimiter(MailboxId mailboxId, MailboxUpdateRequest updateRequest, char pathDelimiter) {
-        return responseBuilder -> responseBuilder.notUpdated(mailboxId, SetError.builder()
-                .type("invalidArguments")
-                .description(String.format("The mailbox '%s' contains an illegal character: '%c'", updateRequest.getName().get(), pathDelimiter))
-                .build());
-    }
-
-    private Pipeline.Operation<Builder> invalidSystemMailboxName(MailboxId mailboxId, MailboxUpdateRequest updateRequest) {
-        return responseBuilder -> responseBuilder.notUpdated(mailboxId, SetError.builder()
-                .type("invalidArguments")
-                .description(String.format("The mailbox '%s' is a system mailbox.", updateRequest.getName().get()))
-                .build());
+        Pipeline.Operation<Builder> finalOperation = builder -> builder.updated(mailbox.getId());
+        return Pipeline
+            .forOperations(
+                when(updateRequest.getSharedWith().isPresent())
+                    .then(setRights(updateRequest, mailboxSession, originMailboxPath)),
+                whenNot(originMailboxPath.equals(destinationMailboxPath))
+                    .then(rename(mailboxSession, originMailboxPath, destinationMailboxPath)),
+                endWith(finalOperation))
+            .executeAll();
     }
 
     private boolean sharingDraft(Mailbox mailbox, MailboxUpdateRequest updateRequest) {
@@ -207,14 +198,6 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         return requestValue
             .filter(value -> !requestValue.equals(storeValue))
             .isPresent();
-    }
-
-    private Mailbox getMailbox(MailboxId mailboxId, MailboxSession mailboxSession) throws MailboxNotFoundException {
-        return mailboxFactory.builder()
-                .id(mailboxId)
-                .session(mailboxSession)
-                .build()
-                .orElseThrow(() -> new MailboxNotFoundException(mailboxId));
     }
 
     private boolean nameMatchesSystemMailbox(MailboxUpdateRequest updateRequest) {
@@ -281,21 +264,6 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
                 .orElse(true);
     }
 
-    private Pipeline.Step<Builder> updateMailbox(Mailbox mailbox, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException, MessagingException {
-        MailboxPath originMailboxPath = mailboxManager.getMailbox(mailbox.getId(), mailboxSession).getMailboxPath();
-        MailboxPath destinationMailboxPath = computeNewMailboxPath(mailbox, originMailboxPath, updateRequest, mailboxSession);
-
-        Pipeline.Operation<Builder> finalOperation = builder -> builder.updated(mailbox.getId());
-        return Pipeline
-            .forOperations(
-                when(updateRequest.getSharedWith().isPresent())
-                    .then(setRights(updateRequest, mailboxSession, originMailboxPath)),
-                whenNot(originMailboxPath.equals(destinationMailboxPath))
-                    .then(rename(mailboxSession, originMailboxPath, destinationMailboxPath)),
-                endWith(finalOperation))
-            .executeAll();
-    }
-
     private Pipeline.Operation<Builder> rename(MailboxSession mailboxSession, MailboxPath originMailboxPath, MailboxPath destinationMailboxPath) throws MailboxException {
         return builder -> {
             mailboxManager.renameMailbox(originMailboxPath, destinationMailboxPath, mailboxSession);
@@ -349,6 +317,34 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         return Iterables.getLast(
                 Splitter.on(mailboxSession.getPathDelimiter())
                     .splitToList(originMailboxPath.getName()));
+    }
+
+    private Pipeline.Operation<Builder> invalidSystemMailboxUpdate(MailboxId mailboxId) {
+        return responseBuilder -> responseBuilder.notUpdated(mailboxId, SetError.builder()
+            .type("invalidArguments")
+            .description("Cannot update a system mailbox.")
+            .build());
+    }
+
+    private Pipeline.Operation<Builder> invalidArgument(MailboxId mailboxId, String message) {
+        return builder -> builder.notUpdated(mailboxId, SetError.builder()
+            .type("invalidArguments")
+            .description(message)
+            .build());
+    }
+
+    private Pipeline.Operation<Builder> invalidMailboxNameContainsDelimiter(MailboxId mailboxId, MailboxUpdateRequest updateRequest, char pathDelimiter) {
+        return responseBuilder -> responseBuilder.notUpdated(mailboxId, SetError.builder()
+            .type("invalidArguments")
+            .description(String.format("The mailbox '%s' contains an illegal character: '%c'", updateRequest.getName().get(), pathDelimiter))
+            .build());
+    }
+
+    private Pipeline.Operation<Builder> invalidSystemMailboxName(MailboxId mailboxId, MailboxUpdateRequest updateRequest) {
+        return responseBuilder -> responseBuilder.notUpdated(mailboxId, SetError.builder()
+            .type("invalidArguments")
+            .description(String.format("The mailbox '%s' is a system mailbox.", updateRequest.getName().get()))
+            .build());
     }
 
     private Pipeline.ConditionalStep.Factory<Builder> when(boolean b) {
