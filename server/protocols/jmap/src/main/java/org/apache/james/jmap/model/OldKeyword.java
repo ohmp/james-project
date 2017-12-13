@@ -174,14 +174,14 @@ public class OldKeyword {
 
     public Keywords asKeywords() {
         return Keywords.factory()
-            .fromSet(
-                StreamUtils.flatten(
+            .fromSet(StreamUtils
+                .flatten(
                     OptionalUtils.toStream(isAnswered.filter(b -> b).map(b -> Keyword.ANSWERED)),
                     OptionalUtils.toStream(isDraft.filter(b -> b).map(b -> Keyword.DRAFT)),
                     OptionalUtils.toStream(isForwarded.filter(b -> b).map(b -> Keyword.FORWARDED)),
                     OptionalUtils.toStream(isFlagged.filter(b -> b).map(b -> Keyword.FLAGGED)),
                     OptionalUtils.toStream(isUnread.filter(b -> !b).map(b -> Keyword.SEEN)))
-                    .collect(Guavate.toImmutableSet()));
+                .collect(Guavate.toImmutableSet()));
     }
 
     @Override
