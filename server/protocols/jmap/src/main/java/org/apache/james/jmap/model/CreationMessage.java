@@ -220,7 +220,6 @@ public class CreationMessage {
             Optional<Keywords> maybeKeywords = creationKeywords();
             Optional<OldKeyword> oldKeywords = oldKeywordBuilder.computeOldKeyword();
 
-            Preconditions.checkArgument(!(maybeKeywords.isPresent() && oldKeywords.isPresent()), "Does not support keyword and is* at the same time");
             return new CreationMessage(mailboxIds, Optional.ofNullable(inReplyToMessageId), headers.build(), from,
                     to.build(), cc.build(), bcc.build(), replyTo.build(), subject, date, Optional.ofNullable(textBody), Optional.ofNullable(htmlBody),
                     attachments, attachedMessages, computeKeywords(maybeKeywords, oldKeywords));
@@ -232,10 +231,10 @@ public class CreationMessage {
                     .fromMap(map));
         }
 
-        public Keywords computeKeywords(Optional<Keywords> keywords, Optional<OldKeyword> oldKeyword) {
-            return oldKeyword.map(OldKeyword::asKeywords)
-                .map(Optional::of)
-                .orElse(keywords)
+        public Keywords computeKeywords(Optional<Keywords> keywords, Optional<OldKeyword> oldKeywords) {
+            Preconditions.checkArgument(!(keywords.isPresent() && oldKeywords.isPresent()), "Does not support keyword and is* at the same time");
+            return keywords.map(Optional::of)
+                .orElse(oldKeywords.map(OldKeyword::asKeywords))
                 .orElse(Keywords.DEFAULT_VALUE);
         }
 
