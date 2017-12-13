@@ -34,6 +34,7 @@ import javax.mail.internet.InternetAddress;
 import org.apache.james.jmap.methods.ValidationResult;
 import org.apache.james.jmap.model.MessageProperties.MessageProperty;
 import org.apache.james.mailbox.MessageManager;
+import org.apache.james.util.OptionalUtils;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -233,8 +234,9 @@ public class CreationMessage {
 
         public Keywords computeKeywords(Optional<Keywords> keywords, Optional<OldKeyword> oldKeywords) {
             Preconditions.checkArgument(!(keywords.isPresent() && oldKeywords.isPresent()), "Does not support keyword and is* at the same time");
-            return keywords.map(Optional::of)
-                .orElse(oldKeywords.map(OldKeyword::asKeywords))
+            return OptionalUtils
+                .or(keywords,
+                    oldKeywords.map(OldKeyword::asKeywords))
                 .orElse(Keywords.DEFAULT_VALUE);
         }
 
