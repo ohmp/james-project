@@ -28,7 +28,6 @@ import org.apache.james.util.OptionalUtils;
 import org.apache.james.util.StreamUtils;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
@@ -113,15 +112,6 @@ public class OldKeyword {
     private final Optional<Boolean> isAnswered;
     private final Optional<Boolean> isDraft;
     private final Optional<Boolean> isForwarded;
-
-    @VisibleForTesting
-    OldKeyword(boolean isUnread, boolean isFlagged, boolean isAnswered, boolean isDraft, boolean isForwarded) {
-        this.isUnread = Optional.of(isUnread);
-        this.isFlagged = Optional.of(isFlagged);
-        this.isAnswered = Optional.of(isAnswered);
-        this.isDraft = Optional.of(isDraft);
-        this.isForwarded = Optional.of(isForwarded);
-    }
 
     private OldKeyword(Optional<Boolean> isUnread, Optional<Boolean> isFlagged, Optional<Boolean> isAnswered,
                       Optional<Boolean> isDraft, Optional<Boolean> isForwarded) {
