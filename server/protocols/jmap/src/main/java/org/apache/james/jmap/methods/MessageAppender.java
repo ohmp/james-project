@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class MessageAppender {
@@ -73,6 +74,7 @@ public class MessageAppender {
     public MessageFactory.MetaDataWithContent appendMessageInMailbox(CreationMessageEntry createdEntry,
                                                                      List<MailboxId> targetMailboxes,
                                                                      MailboxSession session) throws MailboxException {
+        Preconditions.checkArgument(!targetMailboxes.isEmpty());
         ImmutableList<MessageAttachment> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
         byte[] messageContent = mimeMessageConverter.convert(createdEntry, messageAttachments);
         SharedByteArrayInputStream content = new SharedByteArrayInputStream(messageContent);
@@ -81,7 +83,7 @@ public class MessageAppender {
         boolean notRecent = false;
         MessageManager mailbox = mailboxManager.getMailbox(targetMailboxes.get(0), session);
         ComposedMessageId message = mailbox.appendMessage(content, internalDate, session, notRecent, getFlags(createdEntry.getValue()));
-        if (targetMailboxes.size() > 0) {
+        if (targetMailboxes.size() > 1) {
             messageIdManager.setInMailboxes(message.getMessageId(), targetMailboxes, session);
         }
 
