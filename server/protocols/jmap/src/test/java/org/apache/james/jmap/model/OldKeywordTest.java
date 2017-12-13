@@ -48,7 +48,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldNotContainFlaggedWhenIsnotFlagged() {
+    public void asKeywordsShouldNotContainFlaggedWhenIsNotFlagged() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isFlagged(Optional.of(false))
             .computeOldKeyword();
@@ -79,7 +79,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldContainAnsweredSeenWhenIsAnswered() {
+    public void asKeywordsShouldContainAnsweredWhenIsAnswered() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isAnswered(Optional.of(true))
             .computeOldKeyword();
@@ -89,7 +89,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldNotContainAnsweredSeenWhenIsNotAnswered() {
+    public void asKeywordsShouldNotContainAnsweredWhenIsNotAnswered() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isAnswered(Optional.of(false))
             .computeOldKeyword();
@@ -99,7 +99,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldContainDraftSeenWhenIsDraft() {
+    public void asKeywordsShouldContainDraftWhenIsDraft() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isDraft(Optional.of(true))
             .computeOldKeyword();
@@ -109,7 +109,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldNotContainDraftSeenWhenIsNotDraft() {
+    public void asKeywordsShouldNotContainDraftWhenIsNotDraft() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isDraft(Optional.of(false))
             .computeOldKeyword();
@@ -119,7 +119,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldContainForwardedSeenWhenIsForwarded() {
+    public void asKeywordsShouldContainForwardedWhenIsForwarded() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isForwarded(Optional.of(true))
             .computeOldKeyword();
@@ -129,7 +129,7 @@ public class OldKeywordTest {
     }
 
     @Test
-    public void asKeywordsShouldNotContainForwardedSeenWhenIsNotForwarded() {
+    public void asKeywordsShouldNotContainForwardedWhenIsNotForwarded() {
         Optional<OldKeyword> testee = OldKeyword.builder()
             .isForwarded(Optional.of(false))
             .computeOldKeyword();
