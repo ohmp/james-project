@@ -19,11 +19,15 @@
 
 package org.apache.james.mailbox.cassandra.mail.migration;
 
+import java.io.Closeable;
+
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentMessageIdDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAO.MessageIdAttachmentIds;
+import org.apache.james.mailbox.cassandra.mail.task.Task;
+import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +45,17 @@ public class AttachmentMessageIdCreation implements Migration {
 
     @Override
     public Result run() {
-        try {
+        TaskId taskId = Task.generateTaskId();
+        try (Closeable mdc = MDCBuilder.create()
+            .addContext(TASK_ID, taskId)
+            .addContext(TASK_TYPE, "attachmentId -> messageIds index creation")
+            .build()) {
             return cassandraMessageDAO.retrieveAllMessageIdAttachmentIds()
                 .join()
                 .map(this::createIndex)
                 .reduce(Result.COMPLETED, Task::combine);
         } catch (Exception e) {
-            LOGGER.error("Error while creation attachmentId -> messageIds index", e);
+            LOGGER.error("Error while creating attachmentId -> messageIds index", e);
             return Result.PARTIAL;
         }
     }

@@ -19,12 +19,16 @@
 
 package org.apache.james.mailbox.cassandra.mail.migration;
 
+import java.io.Closeable;
+
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
 import org.apache.james.mailbox.cassandra.mail.CassandraBlobsDAO;
+import org.apache.james.mailbox.cassandra.mail.task.Task;
 import org.apache.james.mailbox.model.Attachment;
+import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +49,11 @@ public class AttachmentV2Migration implements Migration {
 
     @Override
     public Result run() {
-        try {
+        TaskId taskId = Task.generateTaskId();
+        try (Closeable mdc = MDCBuilder.create()
+                 .addContext(TASK_ID, taskId)
+                 .addContext(TASK_TYPE, "attachmentDAO V2 migration")
+                 .build()) {
             return attachmentDAOV1.retrieveAll()
                 .map(this::migrateAttachment)
                 .reduce(Result.COMPLETED, Task::combine);
