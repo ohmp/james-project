@@ -17,13 +17,34 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.cassandra.mail.migration;
+package org.apache.james.mailbox.cassandra.mail.task;
+
+
+import org.apache.james.mailbox.exception.MailboxException;
 
 public interface Task {
 
+    interface Operation {
+        void run() throws MailboxException;
+    }
+
     enum Result {
         COMPLETED,
-        PARTIAL
+        PARTIAL;
+
+        public Result ifCompleted(Operation operation) throws MailboxException {
+            if (this == COMPLETED) {
+                operation.run();
+            }
+            return this;
+        }
+
+        public Result ifPartial(Operation operation) throws MailboxException {
+            if (this == PARTIAL) {
+                operation.run();
+            }
+            return this;
+        }
     }
 
     static Result combine(Result result1, Result result2) {

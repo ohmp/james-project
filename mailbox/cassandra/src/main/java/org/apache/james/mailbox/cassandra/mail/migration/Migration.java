@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.cassandra.mail.migration;
 
+import org.apache.james.mailbox.cassandra.mail.task.Task;
+
 public interface Migration extends Task {
 
 }
