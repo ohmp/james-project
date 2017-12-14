@@ -77,8 +77,8 @@ public class CassandraMigrationService {
     private void doMigration(Integer version) {
         if (allMigrationClazz.containsKey(version)) {
             LOG.info("Migrating to version {} ", version + 1);
-            Migration.MigrationResult migrationResult = allMigrationClazz.get(version).run();
-            if (migrationResult == Migration.MigrationResult.COMPLETED) {
+            Migration.Result migrationResult = allMigrationClazz.get(version).run();
+            if (migrationResult == Migration.Result.COMPLETED) {
                 schemaVersionDAO.updateVersion(version + 1);
                 LOG.info("Migrating to version {} done", version + 1);
             } else {

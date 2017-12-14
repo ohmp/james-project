@@ -40,27 +40,28 @@ public class AttachmentMessageIdCreation implements Migration {
     }
 
     @Override
-    public MigrationResult run() {
+    public Result run() {
         try {
             return cassandraMessageDAO.retrieveAllMessageIdAttachmentIds()
                 .join()
                 .map(this::createIndex)
-                .reduce(MigrationResult.COMPLETED, Migration::combine);
+                .reduce(Result.COMPLETED, Task::combine);
         } catch (Exception e) {
             LOGGER.error("Error while creation attachmentId -> messageIds index", e);
-            return MigrationResult.PARTIAL;
+            return Result.PARTIAL;
         }
     }
 
-    private MigrationResult createIndex(MessageIdAttachmentIds message) {
+    private Result createIndex(MessageIdAttachmentIds message) {
         try {
             message.getAttachmentId()
-                .stream()
-                .forEach(attachmentId -> attachmentMessageIdDAO.storeAttachmentForMessageId(attachmentId, message.getMessageId()).join());
-            return MigrationResult.COMPLETED;
+                .forEach(attachmentId -> attachmentMessageIdDAO
+                    .storeAttachmentForMessageId(attachmentId, message.getMessageId())
+                    .join());
+            return Result.COMPLETED;
         } catch (Exception e) {
             LOGGER.error("Error while creation attachmentId -> messageIds index", e);
-            return MigrationResult.PARTIAL;
+            return Result.PARTIAL;
         }
     }
 }

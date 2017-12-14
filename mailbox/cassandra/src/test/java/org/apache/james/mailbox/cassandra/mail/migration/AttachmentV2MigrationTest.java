@@ -91,7 +91,7 @@ public class AttachmentV2MigrationTest {
     @Test
     public void emptyMigrationShouldSucceed() {
         assertThat(migration.run())
-            .isEqualTo(Migration.MigrationResult.COMPLETED);
+            .isEqualTo(Migration.Result.COMPLETED);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class AttachmentV2MigrationTest {
         attachmentDAO.storeAttachment(attachment2).join();
 
         assertThat(migration.run())
-            .isEqualTo(Migration.MigrationResult.COMPLETED);
+            .isEqualTo(Migration.Result.COMPLETED);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class AttachmentV2MigrationTest {
 
         when(attachmentDAO.retrieveAll()).thenThrow(new RuntimeException());
 
-        assertThat(migration.run()).isEqualTo(Migration.MigrationResult.PARTIAL);
+        assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
 
     @Test
@@ -157,7 +157,7 @@ public class AttachmentV2MigrationTest {
             attachment2));
         when(blobsDAO.save(any())).thenThrow(new RuntimeException());
 
-        assertThat(migration.run()).isEqualTo(Migration.MigrationResult.PARTIAL);
+        assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
 
     @Test
@@ -176,7 +176,7 @@ public class AttachmentV2MigrationTest {
             .thenReturn(CompletableFuture.completedFuture(BlobId.forPayload(attachment2.getBytes())));
         when(attachmentDAOV2.storeAttachment(any())).thenThrow(new RuntimeException());
 
-        assertThat(migration.run()).isEqualTo(Migration.MigrationResult.PARTIAL);
+        assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
 
     @Test
@@ -196,7 +196,7 @@ public class AttachmentV2MigrationTest {
         when(attachmentDAOV2.storeAttachment(any())).thenReturn(CompletableFuture.completedFuture(null));
         when(attachmentDAO.deleteAttachment(any())).thenThrow(new RuntimeException());
 
-        assertThat(migration.run()).isEqualTo(Migration.MigrationResult.PARTIAL);
+        assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
 
     @Test
@@ -216,7 +216,7 @@ public class AttachmentV2MigrationTest {
         when(attachmentDAOV2.storeAttachment(any())).thenReturn(CompletableFuture.completedFuture(null));
         when(attachmentDAO.deleteAttachment(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-        assertThat(migration.run()).isEqualTo(Migration.MigrationResult.PARTIAL);
+        assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
 
 }
