@@ -30,10 +30,12 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
 import org.apache.james.mailbox.cassandra.mail.migration.Migration;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.webadmin.dto.CassandraVersionResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
 
 public class CassandraMigrationService {
@@ -67,32 +69,36 @@ public class CassandraMigrationService {
 
         IntStream.range(currentVersion, newVersion)
             .boxed()
-            .forEach(this::doMigration);
+            .forEach(Throwing.consumer(this::doMigration));
     }
 
     public void upgradeToLastVersion() {
         upgradeToVersion(latestVersion);
     }
 
-    private void doMigration(Integer version) {
+    private void doMigration(Integer version) throws MailboxException {
+        int newVersion = version + 1;
         if (allMigrationClazz.containsKey(version)) {
-            LOG.info("Migrating to version {} ", version + 1);
-            Migration.Result migrationResult = allMigrationClazz.get(version).run();
-            if (migrationResult == Migration.Result.COMPLETED) {
-                schemaVersionDAO.updateVersion(version + 1);
-                LOG.info("Migrating to version {} done", version + 1);
-            } else {
-                String message = String.format("Migrating to version %d partially done. " +
-                    "Please check logs for cause of failure and re-run this migration.",
-                    version + 1);
-                LOG.warn(message);
-                throw new MigrationException(message);
-            }
+            LOG.info("Migrating to version {} ", newVersion);
+            allMigrationClazz.get(version).run()
+                .ifCompleted(() -> schemaVersionDAO.updateVersion(newVersion))
+                .ifCompleted(() -> LOG.info("Migrating to version {} done", newVersion))
+                .ifPartial(() -> LOG.warn(failureMessage(newVersion)))
+                .ifPartial(() -> throwMigrationException(newVersion));
         } else {
-            String message = String.format("Can not migrate to %d. No migration class registered.", version + 1);
+            String message = String.format("Can not migrate to %d. No migration class registered.", newVersion);
             LOG.error(message);
             throw new NotImplementedException(message);
         }
+    }
+
+    private void throwMigrationException(int newVersion) {
+        throw new MigrationException(failureMessage(newVersion));
+    }
+
+    private String failureMessage(Integer newVersion) {
+        return String.format("Migrating to version %d partially done. " +
+                "Please check logs for cause of failure and re-run this migration.", newVersion);
     }
 
 }
