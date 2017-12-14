@@ -19,8 +19,12 @@
 
 package org.apache.james.mailbox.cassandra.mail.task;
 
+import java.util.Objects;
+import java.util.UUID;
 
 import org.apache.james.mailbox.exception.MailboxException;
+
+import com.google.common.base.MoreObjects;
 
 public interface Task {
 
@@ -54,6 +58,44 @@ public interface Task {
         }
         return Result.PARTIAL;
     }
+
+
+    class TaskId {
+        private final UUID value;
+
+        public TaskId(UUID value) {
+            this.value = value;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof TaskId) {
+                TaskId taskId = (TaskId) o;
+
+                return Objects.equals(this.value, taskId.value);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(value);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                .add("value", value)
+                .toString();
+        }
+    }
+
+    static TaskId generateTaskId() {
+        return new TaskId(UUID.randomUUID());
+    }
+
+    String TASK_ID = "taskId";
+    String TASK_TYPE = "taskType";
 
     /**
      * Runs the migration
