@@ -66,7 +66,7 @@ public class CassandraMigrationServiceTest {
     public void setUp() throws Exception {
         schemaVersionDAO = mock(CassandraSchemaVersionDAO.class);
         successfulMigration = mock(Migration.class);
-        when(successfulMigration.run()).thenReturn(Migration.MigrationResult.COMPLETED);
+        when(successfulMigration.run()).thenReturn(Migration.Result.COMPLETED);
         Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
             .put(OLDER_VERSION, successfulMigration)
             .put(CURRENT_VERSION, successfulMigration)
@@ -167,7 +167,7 @@ public class CassandraMigrationServiceTest {
         Migration wait1SecondMigration = mock(Migration.class);
         doAnswer(invocation -> {
             Thread.sleep(1000);
-            return Migration.MigrationResult.COMPLETED;
+            return Migration.Result.COMPLETED;
         }).when(wait1SecondMigration).run();
         Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
             .put(OLDER_VERSION, wait1SecondMigration)
@@ -201,7 +201,7 @@ public class CassandraMigrationServiceTest {
     @Test
     public void partialMigrationShouldThrow() throws Exception {
         Migration migration1 = mock(Migration.class);
-        when(migration1.run()).thenReturn(Migration.MigrationResult.PARTIAL);
+        when(migration1.run()).thenReturn(Migration.Result.PARTIAL);
         Migration migration2 = successfulMigration;
 
         Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
@@ -218,9 +218,9 @@ public class CassandraMigrationServiceTest {
     @Test
     public void partialMigrationShouldAbortMigrations() throws Exception {
         Migration migration1 = mock(Migration.class);
-        when(migration1.run()).thenReturn(Migration.MigrationResult.PARTIAL);
+        when(migration1.run()).thenReturn(Migration.Result.PARTIAL);
         Migration migration2 = mock(Migration.class);
-        when(migration2.run()).thenReturn(Migration.MigrationResult.COMPLETED);
+        when(migration2.run()).thenReturn(Migration.Result.COMPLETED);
 
         Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
             .put(OLDER_VERSION, migration1)

@@ -65,7 +65,7 @@ public class CassandraMigrationRoutesTest {
 
     private void createServer() throws Exception {
         Migration successfulMigration = mock(Migration.class);
-        when(successfulMigration.run()).thenReturn(Migration.MigrationResult.COMPLETED);
+        when(successfulMigration.run()).thenReturn(Migration.Result.COMPLETED);
 
         Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
             .put(OLDER_VERSION, successfulMigration)

@@ -44,28 +44,28 @@ public class AttachmentV2Migration implements Migration {
     }
 
     @Override
-    public MigrationResult run() {
+    public Result run() {
         try {
             return attachmentDAOV1.retrieveAll()
                 .map(this::migrateAttachment)
-                .reduce(MigrationResult.COMPLETED, Migration::combine);
+                .reduce(Result.COMPLETED, Task::combine);
         } catch (Exception e) {
             LOGGER.error("Error while performing attachmentDAO V2 migration", e);
-            return MigrationResult.PARTIAL;
+            return Result.PARTIAL;
         }
     }
 
-    private MigrationResult migrateAttachment(Attachment attachment) {
+    private Result migrateAttachment(Attachment attachment) {
         try {
             blobsDAO.save(attachment.getBytes())
                 .thenApply(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
                 .thenCompose(attachmentDAOV2::storeAttachment)
                 .thenCompose(any -> attachmentDAOV1.deleteAttachment(attachment.getAttachmentId()))
                 .join();
-            return MigrationResult.COMPLETED;
+            return Result.COMPLETED;
         } catch (Exception e) {
             LOGGER.error("Error while performing attachmentDAO V2 migration", e);
-            return MigrationResult.PARTIAL;
+            return Result.PARTIAL;
         }
     }
 }

@@ -19,6 +19,25 @@
 
 package org.apache.james.mailbox.cassandra.mail.migration;
 
-public interface Migration extends Task {
+public interface Task {
 
+    enum Result {
+        COMPLETED,
+        PARTIAL
+    }
+
+    static Result combine(Result result1, Result result2) {
+        if (result1 == Result.COMPLETED
+            && result2 == Result.COMPLETED) {
+            return Result.COMPLETED;
+        }
+        return Result.PARTIAL;
+    }
+
+    /**
+     * Runs the migration
+     *
+     * @return Return true if fully migrated. Returns false otherwise.
+     */
+    Result run();
 }
