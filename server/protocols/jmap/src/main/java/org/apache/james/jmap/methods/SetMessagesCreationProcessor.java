@@ -41,7 +41,6 @@ import org.apache.james.jmap.model.MessageFactory.MetaDataWithContent;
 import org.apache.james.jmap.model.MessageProperties;
 import org.apache.james.jmap.model.MessageProperties.MessageProperty;
 import org.apache.james.jmap.model.SetError;
-import org.apache.james.jmap.model.SetMessagesError;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
 import org.apache.james.jmap.model.SetMessagesResponse.Builder;
@@ -107,19 +106,19 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
         return responseBuilder.build();
     }
 
-    private Builder handleCreate(CreationMessageEntry create, Builder responseBuilder, MailboxSession mailboxSession) {
+    private SetMessagesResponse.Builder handleCreate(CreationMessageEntry create, SetMessagesResponse.Builder builder, MailboxSession mailboxSession) {
         try {
             List<MailboxId> mailboxIds = toMailboxIds(create);
             if (mailboxIds.isEmpty()) {
-                return invalidEmptyMailboxes(create, responseBuilder);
+                return builder.invalidEmptyMailboxes(create);
             }
             if (!allMailboxOwned(mailboxIds, mailboxSession)) {
                 LOG.error("Appending message in an unknown mailbox");
-                return invalidNotOwnedMailboxes(create, responseBuilder);
+                return builder.invalidNotOwnedMailboxes(create);
             }
-            return performCreate(create, responseBuilder, mailboxSession);
+            return performCreate(create, builder, mailboxSession);
         } catch (MailboxNotFoundException e) {
-            return responseBuilder.notCreated(create.getCreationId(),
+            return builder.notCreated(create.getCreationId(),
                     SetError.builder()
                         .type("error")
                         .description(e.getMessage())
@@ -127,7 +126,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
         } catch (MailboxException | MessagingException e) {
             LOG.error("Unexpected error while creating message", e);
-            return responseBuilder.notCreated(create.getCreationId(),
+            return builder.notCreated(create.getCreationId(),
                     SetError.builder()
                         .type("error")
                         .description("unexpected error")
@@ -143,79 +142,50 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
             .collect(Guavate.toImmutableList());
     }
 
-    private Builder performCreate(CreationMessageEntry entry, Builder responseBuilder, MailboxSession session) throws MailboxException, MessagingException {
+    private SetMessagesResponse.Builder performCreate(CreationMessageEntry entry, SetMessagesResponse.Builder builder, MailboxSession session) throws MailboxException, MessagingException {
         if (isAppendToMailboxWithRole(Role.OUTBOX, entry.getValue(), session)) {
-            return sendMailViaOutbox(entry, responseBuilder, session);
+            return sendMailViaOutbox(entry, builder, session);
         } else if (entry.getValue().isDraft()) {
             if (isTargettingAMailboxWithRole(Role.OUTBOX, entry.getValue(), session)) {
-                return invalidMailboxIds(entry, responseBuilder);
+                return builder.invalidMailboxIds(entry);
             }
-            return saveDraft(entry, responseBuilder, session);
+            return saveDraft(entry, builder, session);
         } else {
             if (isAppendToMailboxWithRole(Role.DRAFTS, entry.getValue(), session)) {
-                return invalidDraftFlag(entry, responseBuilder);
+                return builder.invalidDraftFlag(entry);
             }
-            return invalidMailboxIds(entry, responseBuilder);
+            return builder.invalidMailboxIds(entry);
         }
     }
 
-    private Builder invalidNotOwnedMailboxes(CreationMessageEntry create, Builder responseBuilder) {
-        return responseBuilder.notCreated(create.getCreationId(),
-            SetError.builder()
-                .type("error")
-                .properties(MessageProperty.mailboxIds)
-                .description("MailboxId invalid")
-                .build());
-    }
-
-    private Builder sendMailViaOutbox(CreationMessageEntry entry, Builder responseBuilder, MailboxSession session) throws MailboxException, MessagingException {
+    private SetMessagesResponse.Builder sendMailViaOutbox(CreationMessageEntry entry, SetMessagesResponse.Builder builder, MailboxSession session) throws MailboxException, MessagingException {
         if (!entry.getValue().isValid()) {
-            return responseBuilder.notCreated(entry.getCreationId(),
+            return builder.notCreated(entry.getCreationId(),
                 buildSetErrorFromValidationResult(entry.getValue().validate()));
         }
         if (!isSender(entry.getValue().getFrom(), session)) {
             String allowedSender = session.getUser().getUserName();
-            return invalidSender(entry, responseBuilder, allowedSender);
+            return builder.invalidSender(entry, allowedSender);
         }
         List<BlobId> attachmentNotFound = attachmentChecker.listAttachmentNotFounds(entry, session);
         if (!attachmentNotFound.isEmpty()) {
-            return invalidAttachments(entry, responseBuilder, attachmentNotFound);
+            return builder.invalidAttachments(entry, attachmentNotFound);
         }
         MetaDataWithContent newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
         Message jmapMessage = messageFactory.fromMetaDataWithContent(newMessage);
         Envelope envelope = Envelope.fromMessage(jmapMessage);
         messageSender.sendMessage(newMessage, envelope, session);
         MessageWithId created = new ValueWithId.MessageWithId(entry.getCreationId(), jmapMessage);
-        return responseBuilder.created(created.getCreationId(), created.getValue());
+        return builder.created(created.getCreationId(), created.getValue());
     }
 
-    private Builder invalidAttachments(CreationMessageEntry entry, Builder responseBuilder, List<BlobId> attachmentNotFound) {
-        return responseBuilder.notCreated(entry.getCreationId(),
-            SetMessagesError.builder()
-                .type("invalidProperties")
-                .properties(MessageProperty.attachments)
-                .attachmentsNotFound(attachmentNotFound)
-                .description("Attachment not found")
-                .build());
-    }
-
-    private Builder invalidSender(CreationMessageEntry entry, Builder responseBuilder, String allowedSender) {
-        return responseBuilder.notCreated(entry.getCreationId(),
-            SetError.builder()
-                .type("invalidProperties")
-                .properties(MessageProperty.from)
-                .description("Invalid 'from' field. Must be " +
-                    allowedSender)
-                .build());
-    }
-
-    private Builder saveDraft(CreationMessageEntry entry, Builder responseBuilder, MailboxSession session) throws MailboxException, MessagingException {
+    private Builder saveDraft(CreationMessageEntry entry, SetMessagesResponse.Builder builder, MailboxSession session) throws MailboxException, MessagingException {
         List<BlobId> attachmentNotFound = attachmentChecker.listAttachmentNotFounds(entry, session);
         if (!attachmentNotFound.isEmpty()) {
-            return invalidAttachments(entry, responseBuilder, attachmentNotFound);
+            return builder.invalidAttachments(entry, attachmentNotFound);
         }
         MessageWithId created = handleDraftMessages(entry, session);
-        return responseBuilder.created(created.getCreationId(), created.getValue());
+        return builder.created(created.getCreationId(), created.getValue());
     }
 
     @VisibleForTesting
@@ -275,33 +245,6 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
                 .flatMap(err -> propertiesSplitter.splitToList(err.getProperty()).stream())
                 .flatMap(MessageProperty::find)
                 .collect(Collectors.toSet());
-    }
-
-    private Builder invalidEmptyMailboxes(CreationMessageEntry create, Builder responseBuilder) {
-        return responseBuilder.notCreated(create.getCreationId(),
-            SetError.builder()
-                .type("invalidProperties")
-                .properties(MessageProperty.mailboxIds)
-                .description("Message needs to be in at least one mailbox")
-                .build());
-    }
-
-    private Builder invalidDraftFlag(CreationMessageEntry entry, Builder responseBuilder) {
-        return responseBuilder.notCreated(entry.getCreationId(),
-            SetError.builder()
-                .type("invalidProperties")
-                .properties(MessageProperty.keywords)
-                .description("A draft message should be flagged as Draft")
-                .build());
-    }
-
-    private Builder invalidMailboxIds(CreationMessageEntry entry, Builder responseBuilder) {
-        return responseBuilder.notCreated(entry.getCreationId(),
-            SetError.builder()
-                .type("invalidProperties")
-                .properties(MessageProperty.mailboxIds)
-                .description("Message creation is only supported in mailboxes with role Draft and Outbox")
-                .build());
     }
 
 }
