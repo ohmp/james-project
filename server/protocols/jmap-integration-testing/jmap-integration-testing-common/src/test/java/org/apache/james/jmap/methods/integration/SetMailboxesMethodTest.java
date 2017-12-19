@@ -50,7 +50,6 @@ import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
-import org.apache.james.mailbox.store.probe.MailboxProbe;
 import org.apache.james.modules.ACLProbeImpl;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
@@ -88,7 +87,7 @@ public abstract class SetMailboxesMethodTest {
     private AccessToken accessToken;
     private String username;
     private GuiceJamesServer jmapServer;
-    private MailboxProbe mailboxProbe;
+    private MailboxProbeImpl mailboxProbe;
     private MailboxId inboxId;
 
     @Before
@@ -164,7 +163,7 @@ public abstract class SetMailboxesMethodTest {
     @Test
     public void setMailboxesShouldNotUpdateMailboxWhenOverLimitName() {
         String overLimitName = StringUtils.repeat("a", MAILBOX_NAME_LENGTH_64K);
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -224,7 +223,7 @@ public abstract class SetMailboxesMethodTest {
     @Test
     public void setMailboxesShouldUpdateMailboxWhenOverLimitName() throws Exception {
         String overLimitName = StringUtils.repeat("a", MAILBOX_NAME_LENGTH_64K);
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -282,7 +281,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void userShouldBeSubscribedOnCreatedMailboxWhenCreateChildOfInboxMailbox() throws Exception {
-        MailboxId inboxId = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, username, MailboxConstants.INBOX).getMailboxId();
+        MailboxId inboxId = mailboxProbe.getPersonalMailbox(username, MailboxConstants.INBOX).getMailboxId();
 
         String requestBody =
             "[" +
@@ -310,9 +309,9 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void subscriptionUserShouldBeChangedWhenUpdateMailbox() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root");
+        mailboxProbe.createPersonalMailbox(username, "root");
 
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root.myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "root.myBox");
 
         String requestBody =
             "[" +
@@ -361,7 +360,7 @@ public abstract class SetMailboxesMethodTest {
             .body(NAME, equalTo("mailboxesSet"))
             .body(ARGUMENTS + ".created", hasKey("create-id01"));
 
-        Mailbox mailbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, username, "foo");
+        Mailbox mailbox = mailboxProbe.getPersonalMailbox(username, "foo");
         String mailboxId = mailbox.getMailboxId().serialize();
 
         requestBody =
@@ -388,7 +387,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void subscriptionUserShouldBeDeletedWhenDestroyMailbox() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -436,7 +435,7 @@ public abstract class SetMailboxesMethodTest {
             .body(NAME, equalTo("mailboxesSet"))
             .body(ARGUMENTS + ".created", hasKey("create-id01"));
 
-        Mailbox mailbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, username, "foo");
+        Mailbox mailbox = mailboxProbe.getPersonalMailbox(username, "foo");
 
         requestBody =
             "[" +
@@ -619,7 +618,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldCreateMailboxWhenChildOfInboxMailbox() {
-        MailboxId inboxId = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, username, MailboxConstants.INBOX).getMailboxId();
+        MailboxId inboxId = mailboxProbe.getPersonalMailbox(username, MailboxConstants.INBOX).getMailboxId();
 
         String requestBody =
             "[" +
@@ -760,7 +759,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotCreatedWhenMailboxAlreadyExists() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -862,7 +861,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnDestroyedMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -886,7 +885,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldDestroyMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -945,8 +944,8 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotDestroyedWhenMailboxHasChild() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox.child");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
+        mailboxProbe.createPersonalMailbox(username, "myBox.child");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -973,7 +972,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotDestroyedWhenSystemMailbox() {
-        Mailbox mailbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, username, MailboxConstants.INBOX);
+        Mailbox mailbox = mailboxProbe.getPersonalMailbox(username, MailboxConstants.INBOX);
         String mailboxId = mailbox.getMailboxId().serialize();
         String requestBody =
             "[" +
@@ -1001,8 +1000,8 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnDestroyedWhenParentThenChildMailboxes() {
-        MailboxId parentMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "parent");
-        MailboxId childMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "parent.child");
+        MailboxId parentMailboxId = mailboxProbe.createPersonalMailbox(username, "parent");
+        MailboxId childMailboxId = mailboxProbe.createPersonalMailbox(username, "parent.child");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -1026,8 +1025,8 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnDestroyedWhenChildThenParentMailboxes() {
-        MailboxId parentMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "parent");
-        MailboxId childMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "parent.child");
+        MailboxId parentMailboxId = mailboxProbe.createPersonalMailbox(username, "parent");
+        MailboxId childMailboxId = mailboxProbe.createPersonalMailbox(username, "parent.child");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -1050,7 +1049,7 @@ public abstract class SetMailboxesMethodTest {
     }
 
     private MailboxId getRemovedMailboxId() {
-        MailboxId removedId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "quicklyRemoved");
+        MailboxId removedId = mailboxProbe.createPersonalMailbox(username, "quicklyRemoved");
         mailboxProbe.deleteMailbox(MailboxConstants.USER_NAMESPACE, username, "quicklyRemoved");
         return removedId;
     }
@@ -1087,7 +1086,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnUpdatedMailboxIdWhenNoUpdateAskedOnExistingMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
                 "[" +
                     "  [ \"setMailboxes\"," +
@@ -1114,7 +1113,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnUpdatedWhenNameUpdateAskedOnExistingMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
                 "[" +
                     "  [ \"setMailboxes\"," +
@@ -1142,7 +1141,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void updateShouldReturnOkWhenClearingSharedWith() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -1170,7 +1169,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void updateShouldReturnOkWhenSettingNewACL() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -1198,9 +1197,8 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void updateShouldRejectInvalidRights() {
-        jmapServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        Mailbox mailbox = jmapServer.getProbe(MailboxProbeImpl.class).getMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        String mailboxId = mailbox.getMailboxId().serialize();
+        String mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox")
+            .serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -1227,9 +1225,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void updateShouldRejectUnhandledRight() {
-        jmapServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        Mailbox mailbox = jmapServer.getProbe(MailboxProbeImpl.class).getMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        String mailboxId = mailbox.getMailboxId().serialize();
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -1256,9 +1252,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void updateShouldRejectNonExistingRights() {
-        jmapServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        Mailbox mailbox = jmapServer.getProbe(MailboxProbeImpl.class).getMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
-        String mailboxId = mailbox.getMailboxId().serialize();
+        String mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox").serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -1287,7 +1281,7 @@ public abstract class SetMailboxesMethodTest {
     public void updateShouldApplyWhenSettingNewACL() {
         String myBox = "myBox";
         String user = "user@" + USERS_DOMAIN;
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, myBox);
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, myBox);
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -1323,7 +1317,7 @@ public abstract class SetMailboxesMethodTest {
     public void updateShouldModifyStoredDataWhenUpdatingACL() {
         String myBox = "myBox";
         String user = "user@" + USERS_DOMAIN;
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, myBox);
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, myBox);
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -1373,7 +1367,7 @@ public abstract class SetMailboxesMethodTest {
     public void updateShouldClearStoredDataWhenDeleteACL() {
         String myBox = "myBox";
         String user = "user";
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, myBox);
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, myBox);
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -1424,7 +1418,7 @@ public abstract class SetMailboxesMethodTest {
         String myBox = "myBox";
         String user1 = "user1@" + USERS_DOMAIN;
         String user2 = "user2@" + USERS_DOMAIN;
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, myBox);
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, myBox);
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -1474,7 +1468,7 @@ public abstract class SetMailboxesMethodTest {
     public void updateShouldFilterOwnerACL() throws Exception {
         String myBox = "myBox";
         String user2 = "user2";
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, myBox);
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, myBox);
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -1502,7 +1496,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldUpdateMailboxNameWhenNameUpdateAskedOnExistingMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
                 "[" +
                     "  [ \"setMailboxes\"," +
@@ -1644,11 +1638,11 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldUpdateMailboxParentIdWhenParentIdUpdateAskedOnExistingMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox");
+        mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox");
 
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox.myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox.myBox");
 
-        MailboxId newParentMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myNewParentBox");
+        MailboxId newParentMailboxId = mailboxProbe.createPersonalMailbox(username, "myNewParentBox");
 
         String requestBody =
                 "[" +
@@ -1683,9 +1677,9 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnMailboxIdWhenParentIdUpdateAskedAsOrphanForExistingMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox");
+        mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox");
 
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox.myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox.myBox");
 
         String requestBody =
                 "[" +
@@ -1714,9 +1708,9 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldUpdateParentIdWhenAskedAsOrphanForExistingMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox");
+        mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox");
 
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox.myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox.myBox");
 
         String requestBody =
                 "[" +
@@ -1751,9 +1745,9 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnMailboxIdWhenNameAndParentIdUpdateForExistingMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox");
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox.myBox");
-        MailboxId newParentMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myNewParentBox");
+        mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox.myBox");
+        MailboxId newParentMailboxId = mailboxProbe.createPersonalMailbox(username, "myNewParentBox");
 
         String requestBody =
                 "[" +
@@ -1783,9 +1777,9 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShoulUpdateMailboxIAndParentIddWhenBothUpdatedForExistingMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox");
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myPreviousParentBox.myBox");
-        MailboxId newParentMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myNewParentBox");
+        mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myPreviousParentBox.myBox");
+        MailboxId newParentMailboxId = mailboxProbe.createPersonalMailbox(username, "myNewParentBox");
 
         String requestBody =
                 "[" +
@@ -1822,7 +1816,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenNameContainsPathDelimiter() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String requestBody =
                 "[" +
                     "  [ \"setMailboxes\"," +
@@ -1852,7 +1846,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenNewParentDoesntExist() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
         String badParentId = getRemovedMailboxId().serialize();
         String requestBody =
                 "[" +
@@ -1883,11 +1877,11 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenUpdatingParentIdOfAParentMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root");
+        mailboxProbe.createPersonalMailbox(username, "root");
 
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root.myBox");
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root.myBox.child");
-        MailboxId newParentMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myNewParentBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "root.myBox");
+        mailboxProbe.createPersonalMailbox(username, "root.myBox.child");
+        MailboxId newParentMailboxId = mailboxProbe.createPersonalMailbox(username, "myNewParentBox");
 
 
 
@@ -1920,9 +1914,9 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenRenamingAMailboxToAnAlreadyExistingMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mySecondBox");
+        mailboxProbe.createPersonalMailbox(username, "mySecondBox");
 
         String requestBody =
                 "[" +
@@ -1953,8 +1947,8 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnUpdatedWhenRenamingAChildMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root");
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root.myBox");
+        mailboxProbe.createPersonalMailbox(username, "root");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "root.myBox");
 
         String requestBody =
                 "[" +
@@ -1983,8 +1977,8 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldUpdateMailboxNameWhenRenamingAChildMailbox() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root");
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root.myBox");
+        mailboxProbe.createPersonalMailbox(username, "root");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "root.myBox");
 
         String requestBody =
                 "[" +
@@ -2019,7 +2013,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenRenamingSystemMailbox() {
-        Mailbox mailbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, username, MailboxConstants.INBOX);
+        Mailbox mailbox = mailboxProbe.getPersonalMailbox(username, MailboxConstants.INBOX);
         String mailboxId = mailbox.getMailboxId().serialize();
 
         String requestBody =
@@ -2051,7 +2045,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenRenameToSystemMailboxName() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "myBox");
+        MailboxId mailboxId = mailboxProbe.createPersonalMailbox(username, "myBox");
 
         String requestBody =
                 "[" +
@@ -2082,10 +2076,10 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedErrorWhenMovingMailboxTriggersNameConflict() {
-        MailboxId mailboxRootAId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "A");
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "A.B");
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "A.C");
-        MailboxId mailboxChildToMoveCId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "A.B.C");
+        MailboxId mailboxRootAId = mailboxProbe.createPersonalMailbox(username, "A");
+        mailboxProbe.createPersonalMailbox(username, "A.B");
+        mailboxProbe.createPersonalMailbox(username, "A.C");
+        MailboxId mailboxChildToMoveCId = mailboxProbe.createPersonalMailbox(username, "A.B.C");
 
         String requestBody =
               "[" +
@@ -2143,7 +2137,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenShareOutboxMailbox() {
-        MailboxId outboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, DefaultMailboxes.OUTBOX);
+        MailboxId outboxId = mailboxProbe.createPersonalMailbox(username, DefaultMailboxes.OUTBOX);
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -2174,7 +2168,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldReturnNotUpdatedWhenShareDraftMailbox() {
-        MailboxId draftId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, DefaultMailboxes.DRAFTS);
+        MailboxId draftId = mailboxProbe.createPersonalMailbox(username, DefaultMailboxes.DRAFTS);
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
