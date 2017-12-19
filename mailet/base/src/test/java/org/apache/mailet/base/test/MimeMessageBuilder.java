@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Function;
 
 import javax.activation.DataHandler;
 import javax.mail.BodyPart;
@@ -48,7 +47,6 @@ import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Booleans;
 
@@ -207,14 +205,6 @@ public class MimeMessageBuilder {
         }
     }
 
-    public static final Function<String, InternetAddress> TO_INTERNET_ADDRESS = value -> {
-        try {
-            return new InternetAddress(value);
-        } catch (AddressException e) {
-            throw Throwables.propagate(e);
-        }
-    };
-
     public static MimeMessage defaultMimeMessage() {
         return new MimeMessage(Session.getDefaultInstance(new Properties()));
     }
@@ -302,21 +292,21 @@ public class MimeMessageBuilder {
 
     public MimeMessageBuilder addToRecipient(String... tos) throws AddressException {
         this.to.addAll(Arrays.stream(tos)
-            .map(TO_INTERNET_ADDRESS)
+            .map(Throwing.function(InternetAddress::new))
             .collect(Guavate.toImmutableList()));
         return this;
     }
 
     public MimeMessageBuilder addCcRecipient(String... ccs) throws AddressException {
         this.cc.addAll(Arrays.stream(ccs)
-            .map(TO_INTERNET_ADDRESS)
+            .map(Throwing.function(InternetAddress::new))
             .collect(Guavate.toImmutableList()));
         return this;
     }
 
     public MimeMessageBuilder addBccRecipient(String... bccs) throws AddressException {
         this.bcc.addAll(Arrays.stream(bccs)
-            .map(TO_INTERNET_ADDRESS)
+            .map(Throwing.function(InternetAddress::new))
             .collect(Guavate.toImmutableList()));
         return this;
     }
