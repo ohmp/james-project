@@ -406,10 +406,7 @@ public class GatewayRemoteDeliveryIntegrationTest {
     private ProcessorConfiguration relayAndLocalDeliveryTransport(String gatewayProperty) {
         return ProcessorConfiguration.transport()
             .enableJmx(true)
-            .addMailet(MailetConfiguration.builder()
-                .matcher(All.class)
-                .mailet(RemoveMimeHeader.class)
-                .addProperty("name", "bcc"))
+            .addMailet(MailetConfiguration.BCC_STRIPPER)
             .addMailet(MailetConfiguration.builder()
                 .matcher(RecipientIsLocal.class)
                 .mailet(LocalDelivery.class))
