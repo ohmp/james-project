@@ -499,7 +499,6 @@ public class ICSAttachmentWorkflowTest {
 
         DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
         dataProbe.addUser(RECIPIENT, PASSWORD);
 
         messageWithoutICSAttached = MimeMessageBuilder.mimeMessageBuilder()

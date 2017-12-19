@@ -95,7 +95,6 @@ public class StripAttachmentTest {
 
         DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
         dataProbe.addUser(RECIPIENT, PASSWORD);
     }
 

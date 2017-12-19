@@ -114,7 +114,6 @@ public class AmqpForwardAttachmentTest {
 
         DataProbe dataprobe = jamesServer.getProbe(DataProbeImpl.class);
         dataprobe.addDomain(DEFAULT_DOMAIN);
-        dataprobe.addUser(FROM, PASSWORD);
         dataprobe.addUser(RECIPIENT, PASSWORD);
     }
 
