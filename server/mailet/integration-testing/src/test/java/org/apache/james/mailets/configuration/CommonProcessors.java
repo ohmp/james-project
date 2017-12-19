@@ -47,8 +47,7 @@ import org.apache.mailet.Mail;
 public class CommonProcessors {
 
     public static ProcessorConfiguration root() {
-        return ProcessorConfiguration.builder()
-                .state("root")
+        return ProcessorConfiguration.root()
                 .enableJmx(true)
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
@@ -66,7 +65,7 @@ public class CommonProcessors {
                         .matcher(HasMailAttribute.class)
                         .matcherCondition("spamChecked")
                         .mailet(ToProcessor.class)
-                        .addProperty("processor", "transport"))
+                        .addProperty("processor", ProcessorConfiguration.STATE_TRANSPORT))
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(SetMailAttribute.class)
@@ -74,28 +73,27 @@ public class CommonProcessors {
                 .addMailet(MailetConfiguration.builder()
                         .matcher(SMTPAuthSuccessful.class)
                         .mailet(ToProcessor.class)
-                        .addProperty("processor", "transport"))
+                        .addProperty("processor", ProcessorConfiguration.STATE_TRANSPORT))
                 .addMailet(MailetConfiguration.builder()
                         .matcher(InSpammerBlacklist.class)
                         .matcherCondition("query.bondedsender.org.")
                         .mailet(ToProcessor.class)
-                        .addProperty("processor", "transport"))
+                        .addProperty("processor", ProcessorConfiguration.STATE_TRANSPORT))
                 .addMailet(MailetConfiguration.builder()
                         .matcher(InSpammerBlacklist.class)
                         .matcherCondition("dnsbl.njabl.org.")
                         .mailet(ToProcessor.class)
-                        .addProperty("processor", "spam")
+                        .addProperty("processor", ProcessorConfiguration.STATE_SPAM)
                         .addProperty("notice", "550 Requested action not taken: rejected - see http://njabl.org/"))
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(ToProcessor.class)
-                        .addProperty("processor", "transport"))
+                        .addProperty("processor", ProcessorConfiguration.STATE_TRANSPORT))
                 .build();
     }
 
     public static ProcessorConfiguration error() {
-        return ProcessorConfiguration.builder()
-                .state("error")
+        return ProcessorConfiguration.error()
                 .enableJmx(true)
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
@@ -108,8 +106,7 @@ public class CommonProcessors {
     }
 
     public static ProcessorConfiguration transport() {
-        return ProcessorConfiguration.builder()
-                .state("transport")
+        return ProcessorConfiguration.transport()
                 .enableJmx(true)
                 .addMailet(MailetConfiguration.builder()
                         .matcher(SMTPAuthSuccessful.class)
@@ -156,8 +153,7 @@ public class CommonProcessors {
     }
 
     public static ProcessorConfiguration spam() {
-        return ProcessorConfiguration.builder()
-                .state("spam")
+        return ProcessorConfiguration.spam()
                 .enableJmx(true)
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
@@ -198,8 +194,7 @@ public class CommonProcessors {
     }
 
     public static ProcessorConfiguration bounces() {
-        return ProcessorConfiguration.builder()
-                .state("bounces")
+        return ProcessorConfiguration.bounces()
                 .enableJmx(true)
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
