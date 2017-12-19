@@ -70,6 +70,7 @@ public class TemporaryJamesServer {
             overrideModules = ImmutableList.builder();
             module = Optional.empty();
             smtpConfiguration = Optional.empty();
+            mailetConfiguration = Optional.empty();
         }
 
         public Builder withBase(Module module) {
