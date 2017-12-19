@@ -20,7 +20,12 @@
 package org.apache.james.mailets;
 
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
-import static org.apache.james.mailets.configuration.AwaitUtils.calmlyAwait;
+import static org.apache.james.mailets.configuration.Constants.DEFAULT_DOMAIN;
+import static org.apache.james.mailets.configuration.Constants.IMAP_PORT;
+import static org.apache.james.mailets.configuration.Constants.LOCALHOST_IP;
+import static org.apache.james.mailets.configuration.Constants.PASSWORD;
+import static org.apache.james.mailets.configuration.Constants.SMTP_PORT;
+import static org.apache.james.mailets.configuration.Constants.calmlyAwait;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.MemoryJamesServerMain;
@@ -45,13 +50,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class NetworkMatcherIntegrationTest {
-    private static final String LOCALHOST_IP = "127.0.0.1";
-    private static final int SMTP_PORT = 1025;
-    private static final int IMAP_PORT = 1143;
-    private static final String PASSWORD = "secret";
-
-    private static final String JAMES_APACHE_ORG = "james.org";
-    private static final String FROM = "fromuser@" + JAMES_APACHE_ORG;
+    private static final String FROM = "fromuser@" + DEFAULT_DOMAIN;
     private static final String DROPPED_MAILS = "file://var/mail/dropped-mails/";
 
     @Rule
@@ -71,7 +70,7 @@ public class NetworkMatcherIntegrationTest {
             .build(temporaryFolder);
 
         DataProbe dataProbe = temporaryJamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(JAMES_APACHE_ORG);
+        dataProbe.addDomain(DEFAULT_DOMAIN);
         dataProbe.addUser(FROM, PASSWORD);
         return temporaryJamesServer;
     }
@@ -108,7 +107,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
+                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN, FROM, PASSWORD)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -131,7 +130,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
+                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN, FROM, PASSWORD)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -154,7 +153,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
+                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN, FROM, PASSWORD)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -177,7 +176,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
+                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN, FROM, PASSWORD)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -200,7 +199,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
+                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN, FROM, PASSWORD)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -223,7 +222,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG, FROM, PASSWORD)) {
+                 SMTPMessageSender.authentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN, FROM, PASSWORD)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -246,7 +245,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG)) {
+                 SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
@@ -273,7 +272,7 @@ public class NetworkMatcherIntegrationTest {
             .addMailet(toRepository()));
 
         try (SMTPMessageSender messageSender =
-                 SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG)) {
+                 SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, DEFAULT_DOMAIN)) {
 
             messageSender.sendMessage(FROM, FROM)
                 .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
