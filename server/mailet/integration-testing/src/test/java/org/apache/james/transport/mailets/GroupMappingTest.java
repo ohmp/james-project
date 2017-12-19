@@ -38,13 +38,11 @@ import javax.mail.internet.MimeMessage;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.api.InMemoryDNSService;
 import org.apache.james.jmap.mailet.VacationMailet;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.CommonProcessors;
 import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
-import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.RecipientIsLocal;
@@ -155,9 +153,6 @@ public class GroupMappingTest {
 
         dataProbe.addUser(USER_DOMAIN1, PASSWORD);
         dataProbe.addUser(USER_DOMAIN2, PASSWORD);
-
-        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, USER_DOMAIN1, "INBOX");
-        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, USER_DOMAIN2, "INBOX");
 
         restApiRequest = RestAssured.given()
             .port(jamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());

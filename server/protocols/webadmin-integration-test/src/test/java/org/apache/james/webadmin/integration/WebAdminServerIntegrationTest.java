@@ -188,7 +188,7 @@ public class WebAdminServerIntegrationTest {
     public void deleteMailboxShouldRemoveAMailbox() throws Exception {
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USERNAME, "anyPassword");
-        guiceJamesServer.getProbe(MailboxProbeImpl.class).createMailbox("#private", USERNAME, MAILBOX);
+        guiceJamesServer.getProbe(MailboxProbeImpl.class).createPersonalMailbox(USERNAME, MAILBOX);
 
         given()
             .port(webAdminGuiceProbe.getWebAdminPort())

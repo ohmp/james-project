@@ -29,7 +29,6 @@ import static org.apache.james.mailets.configuration.Constants.RECIPIENT;
 import static org.apache.james.mailets.configuration.Constants.SMTP_PORT;
 import static org.apache.james.mailets.configuration.Constants.calmlyAwait;
 
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.SieveProbeImpl;
 import org.apache.james.probe.DataProbe;
@@ -64,7 +63,7 @@ public class SieveDelivery {
         dataProbe.addUser(RECIPIENT, PASSWORD);
 
         jamesServer.getProbe(MailboxProbeImpl.class)
-            .createMailbox(MailboxConstants.USER_NAMESPACE, RECIPIENT, TARGETED_MAILBOX);
+            .createPersonalMailbox(RECIPIENT, TARGETED_MAILBOX);
     }
 
     @After

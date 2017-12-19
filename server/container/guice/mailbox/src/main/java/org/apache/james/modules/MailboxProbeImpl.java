@@ -36,6 +36,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -78,6 +79,10 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
         }
     }
 
+    public MailboxId createPersonalMailbox(String user, String name) {
+        return createMailbox(MailboxConstants.USER_NAMESPACE, user, name);
+    }
+
 
     @Override
     public Mailbox getMailbox(String namespace, String user, String name) {
@@ -91,6 +96,10 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
         } finally {
             closeSession(mailboxSession);
         }
+    }
+
+    public Mailbox getPersonalMailbox(String user, String name) {
+        return getMailbox(MailboxConstants.USER_NAMESPACE, user, name);
     }
 
     private void closeSession(MailboxSession session) {
