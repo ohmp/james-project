@@ -49,6 +49,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Booleans;
 
 public class MimeMessageBuilder {
 
@@ -103,6 +104,7 @@ public class MimeMessageBuilder {
         private Optional<String> disposition = Optional.empty();
         private Optional<String> dataAsString = Optional.empty();
         private Optional<byte[]> dataAsBytes = Optional.empty();
+        private Optional<MultipartBuilder> multipart = Optional.empty();
         private Optional<String> type = Optional.empty();
 
         public BodyPartBuilder cid(String cid) {
@@ -130,6 +132,11 @@ public class MimeMessageBuilder {
             return this;
         }
 
+        public BodyPartBuilder data(MultipartBuilder multipartBuilder) {
+            this.multipart = Optional.of(multipartBuilder);
+            return this;
+        }
+
         public BodyPartBuilder type(String type) {
             this.type = Optional.of(type);
             return this;
@@ -150,7 +157,9 @@ public class MimeMessageBuilder {
         }
 
         public BodyPart build() throws IOException, MessagingException {
-            Preconditions.checkState(!(dataAsString.isPresent() && dataAsBytes.isPresent()), "Can not specify data as bytes and data as string at the same time");
+            Preconditions.checkState(
+                Booleans.countTrue(dataAsBytes.isPresent(), dataAsString.isPresent(), multipart.isPresent()) == 1,
+                "Can not specify data as bytes, data as string, or a sub multipart at the same time");
             MimeBodyPart bodyPart = new MimeBodyPart();
             if (dataAsBytes.isPresent()) {
                 bodyPart.setDataHandler(
@@ -159,13 +168,15 @@ public class MimeMessageBuilder {
                             dataAsBytes.get(),
                             type.orElse(DEFAULT_TEXT_PLAIN_UTF8_TYPE))
                     ));
-            } else {
+            } else if (dataAsString.isPresent()) {
                 bodyPart.setDataHandler(
                     new DataHandler(
                         new ByteArrayDataSource(
                             dataAsString.orElse(DEFAULT_VALUE),
                             type.orElse(DEFAULT_TEXT_PLAIN_UTF8_TYPE))
                     ));
+            } else {
+                bodyPart.setContent(multipart.get().build());
             }
             if (filename.isPresent()) {
                 bodyPart.setFileName(filename.get());
