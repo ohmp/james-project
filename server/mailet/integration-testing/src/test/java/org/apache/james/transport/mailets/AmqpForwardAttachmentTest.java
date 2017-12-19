@@ -29,7 +29,6 @@ import static org.apache.james.mailets.configuration.Constants.calmlyAwait;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.MemoryJamesServerMain;
-import org.apache.james.core.MailAddress;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.CommonProcessors;
@@ -46,7 +45,6 @@ import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
-import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.MimeMessageBuilder;
 import org.junit.After;
@@ -140,14 +138,11 @@ public class AmqpForwardAttachmentTest {
                     .filename("test.txt"))
             .setSubject("test");
 
-        Mail mail = FakeMail.builder()
-              .mimeMessage(message)
-              .sender(new MailAddress(FROM))
-              .recipient(new MailAddress(RECIPIENT))
-              .build();
-
         messageSender.connect(LOCALHOST_IP, SMTP_PORT)
-            .sendMessage(mail)
+            .sendMessage(FakeMail.builder()
+                .mimeMessage(message)
+                .sender(FROM)
+                .recipient(RECIPIENT))
             .awaitSent(calmlyAwait.atMost(ONE_MINUTE));
 
         imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
