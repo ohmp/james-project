@@ -64,6 +64,7 @@ public class MimeMessageBuilder {
 
     public static class MultipartBuilder {
         private ImmutableList.Builder<BodyPart> bodyParts = ImmutableList.builder();
+        private Optional<String> subType = Optional.empty();
 
         public MultipartBuilder addBody(BodyPart bodyPart) {
             this.bodyParts.add(bodyPart);
@@ -75,8 +76,15 @@ public class MimeMessageBuilder {
             return this;
         }
 
+
+        public MultipartBuilder withSubtype(String subtype) {
+            this.subType = Optional.of(subtype);
+            return this;
+        }
+
         public MimeMultipart build() throws MessagingException {
             MimeMultipart multipart = new MimeMultipart();
+            multipart.setSubType(subType.orElse("mixed"));
             List<BodyPart> bodyParts = this.bodyParts.build();
             for(BodyPart bodyPart : bodyParts) {
                 multipart.addBodyPart(bodyPart);
