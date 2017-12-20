@@ -25,13 +25,15 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.GenericContainer;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Module;
 
 
 public class DockerCassandraRule implements GuiceModuleTestRule {
 
     private org.apache.james.backends.cassandra.DockerCassandraRule cassandraContainer = new org.apache.james.backends.cassandra.DockerCassandraRule();
-    
+    private String lastKeyspace;
+
     public PropertiesConfiguration getCassandraConfigurationForDocker(String keyspace) {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
 
@@ -55,8 +57,13 @@ public class DockerCassandraRule implements GuiceModuleTestRule {
 
     @Override
     public Module getModule() {
-        String keyspace = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(12);
-        return (binder) -> binder.bind(CassandraSessionConfiguration.class).toInstance(() -> getCassandraConfigurationForDocker(keyspace));
+        lastKeyspace = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(12);
+        return (binder) -> binder.bind(CassandraSessionConfiguration.class).toInstance(() -> getCassandraConfigurationForDocker(lastKeyspace));
+    }
+
+    public String getLastKeyspace() {
+        Preconditions.checkNotNull(lastKeyspace);
+        return lastKeyspace;
     }
 
     public String getIp() {
