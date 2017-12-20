@@ -436,6 +436,27 @@ Note that several calls to this endpoint will be run in a sequential pattern.
 
 If the server restarts during the migration, the migration is silently aborted.
 
+## Correcting ghost mailbox
+
+This is a temporary workaround for the **Ghost mailbox** bug encountered using the Cassandra backend, as described in MAILBOX-322.
+
+You can use the mailbox merging feature in order to merge the old "ghosted" mailbox with the new one.
+
+```
+curl -XPOST http://ip:port/cassandra/mailbox/merging -d `{"mergeOrigin":"id1", "mergeDestination":"id2"}`
+```
+
+Will:
+ - Delete references to `id1` mailbox
+ - Move it's messages into `id2` mailbox
+ - Union the rights of both mailboxes
+
+Response codes:
+
+ - 204: Success
+ - 400: Unable to parse the body.
+ - 500: Internal error. This can be the result of a partial operation.
+
 ## Creating address group
 
 You can use **webadmin** to define address groups.
