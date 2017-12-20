@@ -420,6 +420,8 @@ If the server restarts during the migration, the migration is silently aborted.
 
 ### Upgrading to the latest version
 
+`Only available for the Cassandra backend`
+
 ```
 curl -XPOST http://ip:port/cassandra/version/upgrade/latest
 ```
@@ -437,6 +439,8 @@ Note that several calls to this endpoint will be run in a sequential pattern.
 If the server restarts during the migration, the migration is silently aborted.
 
 ## Correcting ghost mailbox
+
+`Only available for the Cassandra backend`
 
 This is a temporary workaround for the **Ghost mailbox** bug encountered using the Cassandra backend, as described in MAILBOX-322.
 
