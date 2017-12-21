@@ -232,7 +232,6 @@ public class GatewayRemoteDeliveryIntegrationTest {
             .withBase(SMTP_AND_IMAP_MODULE)
             .withOverrides(binder -> binder.bind(DNSService.class).toInstance(inMemoryDNSService))
             .withMailetContainer(MailetContainer.builder()
-                .postmaster("postmaster@" + DEFAULT_DOMAIN)
                 .addProcessor(CommonProcessors.simpleRoot())
                 .addProcessor(CommonProcessors.error())
                 .addProcessor(ProcessorConfiguration.transport()
@@ -263,7 +262,6 @@ public class GatewayRemoteDeliveryIntegrationTest {
             .withBase(SMTP_ONLY_MODULE)
             .withOverrides(binder -> binder.bind(DNSService.class).toInstance(inMemoryDNSService))
             .withMailetContainer(MailetContainer.builder()
-                .postmaster("postmaster@" + DEFAULT_DOMAIN)
                 .addProcessor(CommonProcessors.simpleRoot())
                 .addProcessor(CommonProcessors.error())
                 .addProcessor(directResolutionTransport())
@@ -289,7 +287,6 @@ public class GatewayRemoteDeliveryIntegrationTest {
 
     private MailetContainer generateMailetContainerConfiguration(String gatewayProperty) {
         return MailetContainer.builder()
-            .postmaster("postmaster@" + DEFAULT_DOMAIN)
             .addProcessor(CommonProcessors.simpleRoot())
             .addProcessor(CommonProcessors.error())
             .addProcessor(relayAndLocalDeliveryTransport(gatewayProperty))
