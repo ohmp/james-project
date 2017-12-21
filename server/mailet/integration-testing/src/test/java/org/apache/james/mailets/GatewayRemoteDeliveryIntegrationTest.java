@@ -40,10 +40,7 @@ import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.probe.DataProbe;
-import org.apache.james.transport.mailets.LocalDelivery;
-import org.apache.james.transport.mailets.RemoteDelivery;
 import org.apache.james.transport.matchers.All;
-import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.util.docker.Images;
 import org.apache.james.util.docker.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
@@ -211,12 +208,7 @@ public class GatewayRemoteDeliveryIntegrationTest {
         jamesServer = TemporaryJamesServer.builder()
             .withBase(SMTP_AND_IMAP_MODULE)
             .withOverrides(binder -> binder.bind(DNSService.class).toInstance(inMemoryDNSService))
-            .withMailetContainer(MailetContainer.builder()
-                .postmaster("postmaster@" + DEFAULT_DOMAIN)
-                .addProcessor(CommonProcessors.simpleRoot())
-                .addProcessor(CommonProcessors.error())
-                .addProcessor(relayAndLocalDeliveryTransport(gatewayProperty))
-                .addProcessor(CommonProcessors.bounces()))
+            .withMailetContainer(generateMailetContainerConfiguration(gatewayProperty))
             .build(temporaryFolder);
 
         dataProbe = jamesServer.getProbe(DataProbeImpl.class);
@@ -246,15 +238,8 @@ public class GatewayRemoteDeliveryIntegrationTest {
                 .addProcessor(ProcessorConfiguration.transport()
                     .addMailet(MailetConfiguration.BCC_STRIPPER)
                     .addMailet(MailetConfiguration.LOCAL_DELIVERY)
-                    .addMailet(MailetConfiguration.builder()
+                    .addMailet(MailetConfiguration.remoteDeliveryBuilderNoBounces()
                         .matcher(All.class)
-                        .mailet(RemoteDelivery.class)
-                        .addProperty("outgoingQueue", "outgoing")
-                        .addProperty("delayTime", "5000, 100000, 500000")
-                        .addProperty("maxRetries", "2")
-                        .addProperty("maxDnsProblemRetries", "0")
-                        .addProperty("deliveryThreads", "2")
-                        .addProperty("sendpartial", "true")
                         .addProperty("gateway", gatewayProperty)))
                 .addProcessor(CommonProcessors.bounces()))
             .build(temporaryFolder);
@@ -307,62 +292,28 @@ public class GatewayRemoteDeliveryIntegrationTest {
             .postmaster("postmaster@" + DEFAULT_DOMAIN)
             .addProcessor(CommonProcessors.simpleRoot())
             .addProcessor(CommonProcessors.error())
-            .addProcessor(relayOnlyTransport(gatewayProperty))
+            .addProcessor(relayAndLocalDeliveryTransport(gatewayProperty))
             .addProcessor(CommonProcessors.bounces())
-            .build();
-    }
-
-    private ProcessorConfiguration relayOnlyTransport(String gatewayProperty) {
-        return ProcessorConfiguration.transport()
-            .addMailet(MailetConfiguration.BCC_STRIPPER)
-            .addMailet(MailetConfiguration.builder()
-                .matcher(All.class)
-                .mailet(RemoteDelivery.class)
-                .addProperty("outgoingQueue", "outgoing")
-                .addProperty("delayTime", "5000, 100000, 500000")
-                .addProperty("maxRetries", "2")
-                .addProperty("maxDnsProblemRetries", "0")
-                .addProperty("deliveryThreads", "2")
-                .addProperty("sendpartial", "true")
-                .addProperty("bounceProcessor", "bounces")
-                .addProperty("gateway", gatewayProperty))
             .build();
     }
 
     private ProcessorConfiguration relayAndLocalDeliveryTransport(String gatewayProperty) {
         return ProcessorConfiguration.transport()
             .addMailet(MailetConfiguration.BCC_STRIPPER)
-            .addMailet(MailetConfiguration.builder()
-                .matcher(RecipientIsLocal.class)
-                .mailet(LocalDelivery.class))
-            .addMailet(MailetConfiguration.builder()
-                .matcher(All.class)
-                .mailet(RemoteDelivery.class)
-                .addProperty("outgoingQueue", "outgoing")
-                .addProperty("delayTime", "5000, 100000, 500000")
-                .addProperty("maxRetries", "2")
-                .addProperty("maxDnsProblemRetries", "0")
-                .addProperty("deliveryThreads", "2")
-                .addProperty("sendpartial", "true")
-                .addProperty("bounceProcessor", "bounces")
-                .addProperty("gateway", gatewayProperty))
+            .addMailet(MailetConfiguration.LOCAL_DELIVERY)
+            .addMailet(MailetConfiguration.remoteDeliveryBuilder()
+                .addProperty("gateway", gatewayProperty)
+                .matcher(All.class))
             .build();
     }
 
     private ProcessorConfiguration directResolutionTransport() {
         return ProcessorConfiguration.transport()
             .addMailet(MailetConfiguration.BCC_STRIPPER)
-            .addMailet(MailetConfiguration.builder()
-                .matcher(All.class)
-                .mailet(RemoteDelivery.class)
-                .addProperty("outgoingQueue", "outgoing")
-                .addProperty("delayTime", "5000, 100000, 500000")
-                .addProperty("maxRetries", "2")
-                .addProperty("maxDnsProblemRetries", "0")
-                .addProperty("deliveryThreads", "2")
-                .addProperty("sendpartial", "true")
-                .addProperty("bounceProcessor", "bounces"))
+            .addMailet(MailetConfiguration.remoteDeliveryBuilder()
+                .matcher(All.class))
             .build();
     }
+
 
 }
