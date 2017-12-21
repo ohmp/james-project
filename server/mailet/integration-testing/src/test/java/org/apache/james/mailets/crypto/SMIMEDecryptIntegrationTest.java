@@ -70,7 +70,6 @@ public class SMIMEDecryptIntegrationTest {
             .addProcessor(CommonProcessors.root())
             .addProcessor(CommonProcessors.error())
             .addProcessor(ProcessorConfiguration.transport()
-                .enableJmx(true)
                 .addMailet(MailetConfiguration.BCC_STRIPPER)
                 .addMailet(MailetConfiguration.builder()
                     .mailet(SMIMEDecrypt.class)

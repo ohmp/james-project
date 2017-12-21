@@ -73,7 +73,6 @@ public class SMIMESignIntegrationTest {
             .addProcessor(CommonProcessors.root())
             .addProcessor(CommonProcessors.error())
             .addProcessor(ProcessorConfiguration.transport()
-                .enableJmx(true)
                 .addMailet(MailetConfiguration.builder()
                     .matcher(HasMailAttribute.class)
                     .matcherCondition("org.apache.james.SMIMECheckSignature")
