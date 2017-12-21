@@ -61,8 +61,8 @@ public class MailboxMergingTaskRunner {
     public Task.Result run(CassandraId oldMailboxId, CassandraId newMailboxId) throws MailboxException {
         MailboxSession session = mailboxManager.createSystemSession("task");
         return moveMessages(oldMailboxId, newMailboxId, session)
-            .ifCompleted(() -> mailboxDAO.delete(oldMailboxId).join())
-            .ifCompleted(() -> mergeRights(oldMailboxId, newMailboxId));
+            .ifCompleted(() -> mergeRights(oldMailboxId, newMailboxId))
+            .ifCompleted(() -> mailboxDAO.delete(oldMailboxId).join());
     }
 
     private Task.Result moveMessages(CassandraId oldMailboxId, CassandraId newMailboxId, MailboxSession session) {
