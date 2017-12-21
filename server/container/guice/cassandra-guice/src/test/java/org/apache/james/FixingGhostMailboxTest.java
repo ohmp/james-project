@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -107,7 +108,7 @@ public class FixingGhostMailboxTest {
     private CassandraTypesProvider cassandraTypesProvider;
     private MailboxBaseTupleUtil mailboxBaseTupleUtil;
     private ComposedMessageId message1;
-    private MailboxId aliceInboxId;
+    private MailboxId aliceGhostInboxId;
     private MailboxPath aliceInboxPath;
     private ComposedMessageId message2;
 
@@ -157,7 +158,7 @@ public class FixingGhostMailboxTest {
         // State before ghost mailbox bug
         // Alice INBOX is delegated to Bob and contains one message
         aliceInboxPath = MailboxPath.forUser(alice, MailboxConstants.INBOX);
-        aliceInboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
+        aliceGhostInboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
         aclProbe.addRights(aliceInboxPath, bob, MailboxACL.FULL_RIGHTS);
         message1 = mailboxProbe.appendMessage(alice, aliceInboxPath,
             generateMessageContent(), new Date(), !RECENT, new Flags());
@@ -205,7 +206,7 @@ public class FixingGhostMailboxTest {
     public void ghostMailboxBugShouldChangeMailboxId() throws Exception {
         Mailbox newAliceInbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
 
-        assertThat(aliceInboxId).isNotEqualTo(newAliceInbox.getMailboxId());
+        assertThat(aliceGhostInboxId).isNotEqualTo(newAliceInbox.getMailboxId());
     }
 
     @Test
@@ -221,6 +222,7 @@ public class FixingGhostMailboxTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", hasSize(1))
+            .body(ARGUMENTS + ".messageIds", not(contains(message1.getMessageId().serialize())))
             .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
     }
 
@@ -229,7 +231,7 @@ public class FixingGhostMailboxTest {
         Mailbox newAliceInbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
 
         String format = "{" +
-                "    \"mergeOrigin\":\"" + aliceInboxId.serialize() + "\"," +
+                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
                 "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
                 "}";
         given()
@@ -261,7 +263,7 @@ public class FixingGhostMailboxTest {
         aclProbe.addRights(aliceInboxPath, cedric, MailboxACL.FULL_RIGHTS);
 
         String format = "{" +
-                "    \"mergeOrigin\":\"" + aliceInboxId.serialize() + "\"," +
+                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
                 "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
                 "}";
         given()
@@ -291,7 +293,7 @@ public class FixingGhostMailboxTest {
         aclProbe.addRights(aliceInboxPath, cedric, MailboxACL.FULL_RIGHTS);
 
         String format = "{" +
-                "    \"mergeOrigin\":\"" + aliceInboxId.serialize() + "\"," +
+                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
                 "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
                 "}";
         given()
@@ -305,7 +307,7 @@ public class FixingGhostMailboxTest {
 
         given()
             .header("Authorization", accessToken.serialize())
-            .body("[[\"getMailboxes\", {\"ids\": [\"" + aliceInboxId.serialize() + "\"]}, \"#0\"]]")
+            .body("[[\"getMailboxes\", {\"ids\": [\"" + aliceGhostInboxId.serialize() + "\"]}, \"#0\"]]")
         .when()
             .post("/jmap")
             .prettyPeek()
