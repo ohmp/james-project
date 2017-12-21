@@ -285,31 +285,28 @@ public class GatewayRemoteDeliveryIntegrationTest {
             .body("[0].subject", equalTo("test")));
     }
 
-    private MailetContainer generateMailetContainerConfiguration(String gatewayProperty) {
+    private MailetContainer.Builder generateMailetContainerConfiguration(String gatewayProperty) {
         return MailetContainer.builder()
             .addProcessor(CommonProcessors.simpleRoot())
             .addProcessor(CommonProcessors.error())
             .addProcessor(relayAndLocalDeliveryTransport(gatewayProperty))
-            .addProcessor(CommonProcessors.bounces())
-            .build();
+            .addProcessor(CommonProcessors.bounces());
     }
 
-    private ProcessorConfiguration relayAndLocalDeliveryTransport(String gatewayProperty) {
+    private ProcessorConfiguration.Builder relayAndLocalDeliveryTransport(String gatewayProperty) {
         return ProcessorConfiguration.transport()
             .addMailet(MailetConfiguration.BCC_STRIPPER)
             .addMailet(MailetConfiguration.LOCAL_DELIVERY)
             .addMailet(MailetConfiguration.remoteDeliveryBuilder()
                 .addProperty("gateway", gatewayProperty)
-                .matcher(All.class))
-            .build();
+                .matcher(All.class));
     }
 
-    private ProcessorConfiguration directResolutionTransport() {
+    private ProcessorConfiguration.Builder directResolutionTransport() {
         return ProcessorConfiguration.transport()
             .addMailet(MailetConfiguration.BCC_STRIPPER)
             .addMailet(MailetConfiguration.remoteDeliveryBuilder()
-                .matcher(All.class))
-            .build();
+                .matcher(All.class));
     }
 
 
