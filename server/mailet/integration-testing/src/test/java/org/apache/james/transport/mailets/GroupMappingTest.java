@@ -352,8 +352,8 @@ public class GroupMappingTest {
 
         imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
             .login(USER_DOMAIN1, PASSWORD)
-            .select(IMAPMessageReader.INBOX);
-        awaitOneMinute.until(imapMessageReader::userDoesNotReceiveMessage);
+            .select(IMAPMessageReader.INBOX)
+            .awaitNoMessage(awaitOneMinute);
     }
 
     @Test
