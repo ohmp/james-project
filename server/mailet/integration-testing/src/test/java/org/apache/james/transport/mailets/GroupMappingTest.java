@@ -131,8 +131,10 @@ public class GroupMappingTest {
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, USER_DOMAIN1, "INBOX");
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, USER_DOMAIN2, "INBOX");
 
+        WebAdminGuiceProbe webAdminGuiceProbe = jamesServer.getProbe(WebAdminGuiceProbe.class);
+        webAdminGuiceProbe.await();
         restApiRequest = RestAssured.given()
-            .port(jamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
+            .port(webAdminGuiceProbe.getWebAdminPort());
 
         message = MimeMessageBuilder.mimeMessageBuilder()
             .setSubject("test")
