@@ -276,11 +276,11 @@ public class GroupMappingTest {
             .sendMessage( FakeMail.builder()
                 .mimeMessage(message)
                 .sender(SENDER)
-                .recipient(GROUP_ON_DOMAIN2))
+                .recipient(GROUP_ON_DOMAIN1))
             .awaitSent(awaitOneMinute);
 
         imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
-            .login(USER_DOMAIN1, PASSWORD)
+            .login(USER_DOMAIN2, PASSWORD)
             .select(IMAPMessageReader.INBOX)
             .awaitMessage(awaitOneMinute);
 
@@ -305,17 +305,17 @@ public class GroupMappingTest {
                 .mimeMessage(message)
                 .sender(SENDER)
                 .recipient(GROUP_ON_DOMAIN1))
-            .awaitSent(awaitOneMinute);
+            .awaitSentFail(awaitOneMinute);
 
         imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
             .login(USER_DOMAIN1, PASSWORD)
             .select(IMAPMessageReader.INBOX)
-            .awaitMessage(awaitOneMinute);
+            .awaitNoMessage(awaitOneMinute);
 
         imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
             .login(USER_DOMAIN1, PASSWORD)
             .select(IMAPMessageReader.INBOX)
-            .awaitMessage(awaitOneMinute);
+            .awaitNoMessage(awaitOneMinute);
     }
 
     @Test
@@ -428,7 +428,7 @@ public class GroupMappingTest {
             .awaitSent(awaitOneMinute);
 
         imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
-            .login(USER_DOMAIN2, PASSWORD)
+            .login(USER_DOMAIN1, PASSWORD)
             .select(IMAPMessageReader.INBOX)
             .awaitMessage(awaitOneMinute);
     }
