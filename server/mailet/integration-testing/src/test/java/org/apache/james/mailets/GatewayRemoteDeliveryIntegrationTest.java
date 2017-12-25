@@ -19,7 +19,6 @@
 
 package org.apache.james.mailets;
 
-import static com.jayway.restassured.RestAssured.when;
 import static org.apache.james.MemoryJamesServerMain.SMTP_AND_IMAP_MODULE;
 import static org.apache.james.MemoryJamesServerMain.SMTP_ONLY_MODULE;
 import static org.apache.james.mailets.configuration.Constants.DEFAULT_DOMAIN;
@@ -28,10 +27,9 @@ import static org.apache.james.mailets.configuration.Constants.LOCALHOST_IP;
 import static org.apache.james.mailets.configuration.Constants.PASSWORD;
 import static org.apache.james.mailets.configuration.Constants.SMTP_PORT;
 import static org.apache.james.mailets.configuration.Constants.awaitOneMinute;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-
-import java.util.concurrent.TimeUnit;
 
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.api.InMemoryDNSService;
@@ -166,7 +164,7 @@ public class GatewayRemoteDeliveryIntegrationTest {
         String gatewayProperty = "invalid.domain";
 
         jamesServer = TemporaryJamesServer.builder()
-            .withBase(SMTP_ONLY_MODULE)
+            .withBase(SMTP_AND_IMAP_MODULE)
             .withOverrides(binder -> binder.bind(DNSService.class).toInstance(inMemoryDNSService))
             .withMailetContainer(generateMailetContainerConfiguration(gatewayProperty))
             .build(temporaryFolder);
@@ -178,12 +176,13 @@ public class GatewayRemoteDeliveryIntegrationTest {
         messageSender.connect(LOCALHOST_IP, SMTP_PORT)
             .sendMessage(FROM, RECIPIENT);
 
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-        when()
-            .get("/api/email")
-        .then()
-            .statusCode(200)
-            .body("", hasSize(0));
+        // Wait for bounce being sent before checking no email is sent
+        imapMessageReader.connect(LOCALHOST_IP, IMAP_PORT)
+            .login(FROM, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitOneMinute);
+        assertThat(fakeSmtp.isReceived(response -> response.body("", hasSize(0))))
+            .isTrue();
     }
 
     @Test
