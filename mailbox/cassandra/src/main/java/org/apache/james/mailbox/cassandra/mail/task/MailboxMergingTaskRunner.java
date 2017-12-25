@@ -34,7 +34,7 @@ import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MessageRange;
-import org.apache.james.mailbox.store.StoreMessageIdManagerNoChecks;
+import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +42,14 @@ public class MailboxMergingTaskRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(MailboxMergingTaskRunner.class);
 
     private final MailboxManager mailboxManager;
-    private final StoreMessageIdManagerNoChecks messageIdManager;
+    private final StoreMessageIdManager messageIdManager;
     private final CassandraMessageIdDAO cassandraMessageIdDAO;
     private final CassandraMailboxDAO mailboxDAO;
     private final CassandraUserMailboxRightsDAO rightsDAO;
     private final CassandraACLMapper cassandraACLMapper;
 
     @Inject
-    public MailboxMergingTaskRunner(MailboxManager mailboxManager, StoreMessageIdManagerNoChecks messageIdManager, CassandraMessageIdDAO cassandraMessageIdDAO, CassandraMailboxDAO mailboxDAO, CassandraUserMailboxRightsDAO rightsDAO, CassandraACLMapper cassandraACLMapper) {
+    public MailboxMergingTaskRunner(MailboxManager mailboxManager, StoreMessageIdManager messageIdManager, CassandraMessageIdDAO cassandraMessageIdDAO, CassandraMailboxDAO mailboxDAO, CassandraUserMailboxRightsDAO rightsDAO, CassandraACLMapper cassandraACLMapper) {
         this.mailboxManager = mailboxManager;
         this.messageIdManager = messageIdManager;
         this.cassandraMessageIdDAO = cassandraMessageIdDAO;

@@ -214,6 +214,17 @@ public class StoreMessageIdManager implements MessageIdManager {
         }
     }
 
+    public void setInMailboxesNoCheck(MessageId messageId, MailboxId targetMailboxId, MailboxSession mailboxSession) throws MailboxException {
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        List<MailboxMessage> currentMailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full);
+
+        MessageMoves messageMoves = new MessageMoves(toMailboxIds(currentMailboxMessages), ImmutableList.of(targetMailboxId));
+
+        if (messageMoves.isChange()) {
+            applyMessageMoveNoMailboxChecks(mailboxSession, currentMailboxMessages, messageMoves);
+        }
+    }
+
     private List<MailboxMessage> findRelatedMailboxMessages(MessageId messageId, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
         return messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
