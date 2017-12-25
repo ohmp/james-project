@@ -58,6 +58,7 @@ import org.apache.james.mailbox.store.probe.MailboxProbe;
 import org.apache.james.modules.ACLProbeImpl;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
+import org.apache.james.server.CassandraProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
 import org.apache.james.utils.WebAdminGuiceProbe;
@@ -147,7 +148,7 @@ public class FixingGhostMailboxTest {
             .addContactPoint(cassandra.getIp())
             .withPort(cassandra.getMappedPort(9042))
             .build()
-            .connect(cassandra.getLastKeyspace());
+            .connect(jmapServer.getProbe(CassandraProbe.class).getKeyspace());
         cassandraTypesProvider = new CassandraTypesProvider(new CassandraMailboxModule(), session);
         mailboxBaseTupleUtil = new MailboxBaseTupleUtil(cassandraTypesProvider);
 
