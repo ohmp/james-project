@@ -81,10 +81,10 @@ public class CassandraMigrationService {
         if (allMigrationClazz.containsKey(version)) {
             LOG.info("Migrating to version {} ", newVersion);
             allMigrationClazz.get(version).run()
-                .ifCompleted(() -> schemaVersionDAO.updateVersion(newVersion))
-                .ifCompleted(() -> LOG.info("Migrating to version {} done", newVersion))
-                .ifPartial(() -> LOG.warn(failureMessage(newVersion)))
-                .ifPartial(() -> throwMigrationException(newVersion));
+                .onComplete(() -> schemaVersionDAO.updateVersion(newVersion),
+                    () -> LOG.info("Migrating to version {} done", newVersion))
+                .onFailure(() -> LOG.warn(failureMessage(newVersion)),
+                    () -> throwMigrationException(newVersion));
         } else {
             String message = String.format("Can not migrate to %d. No migration class registered.", newVersion);
             LOG.error(message);

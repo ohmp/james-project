@@ -73,8 +73,8 @@ public class CassandraMailboxMergingRoutes implements Routes {
 
             new MailboxMergingTask(mailboxMergingTaskRunner, originId, destinationId)
                 .run()
-                .ifCompleted(() -> response.status(HttpStatus.NO_CONTENT_204))
-                .ifPartial(() -> {
+                .onComplete(() -> response.status(HttpStatus.NO_CONTENT_204))
+                .onFailure(() -> {
                     throw internalError().haltError();
                 });
 

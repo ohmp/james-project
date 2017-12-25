@@ -19,11 +19,13 @@
 
 package org.apache.james.mailbox.cassandra.mail.task;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.james.mailbox.exception.MailboxException;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.MoreObjects;
 
 public interface Task {
@@ -36,18 +38,23 @@ public interface Task {
         COMPLETED,
         PARTIAL;
 
-        public Result ifCompleted(Operation operation) throws MailboxException {
+        public Result onComplete(Operation... operation) throws MailboxException {
             if (this == COMPLETED) {
-                operation.run();
+                run(operation);
             }
             return this;
         }
 
-        public Result ifPartial(Operation operation) throws MailboxException {
+        public Result onFailure(Operation... operation) throws MailboxException {
             if (this == PARTIAL) {
-                operation.run();
+                run(operation);
             }
             return this;
+        }
+
+        private void run(Operation... operation) {
+            Arrays.stream(operation)
+                .forEach(Throwing.consumer(Operation::run).sneakyThrow());
         }
     }
 
