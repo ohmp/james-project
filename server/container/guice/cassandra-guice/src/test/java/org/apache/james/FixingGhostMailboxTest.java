@@ -22,6 +22,7 @@ package org.apache.james;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -231,18 +232,7 @@ public class FixingGhostMailboxTest {
     public void webadminCanMergeTwoMailboxes() throws Exception {
         Mailbox newAliceInbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
 
-        String format = "{" +
-                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
-                "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
-                "}";
-        given()
-            .port(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort())
-            .basePath(CassandraMailboxMergingRoutes.BASE)
-            .body(format)
-            .post()
-        .then()
-            .statusCode(204);
-        rule.await();
+        fixGhostMailboxes(newAliceInbox);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -263,18 +253,7 @@ public class FixingGhostMailboxTest {
         Mailbox newAliceInbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
         aclProbe.addRights(aliceInboxPath, cedric, MailboxACL.FULL_RIGHTS);
 
-        String format = "{" +
-                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
-                "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
-                "}";
-        given()
-            .port(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort())
-            .basePath(CassandraMailboxMergingRoutes.BASE)
-            .body(format)
-            .post()
-        .then()
-            .statusCode(204);
-        rule.await();
+        fixGhostMailboxes(newAliceInbox);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -293,18 +272,7 @@ public class FixingGhostMailboxTest {
         Mailbox newAliceInbox = mailboxProbe.getMailbox(MailboxConstants.USER_NAMESPACE, alice, MailboxConstants.INBOX);
         aclProbe.addRights(aliceInboxPath, cedric, MailboxACL.FULL_RIGHTS);
 
-        String format = "{" +
-                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
-                "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
-                "}";
-        given()
-            .port(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort())
-            .basePath(CassandraMailboxMergingRoutes.BASE)
-            .body(format)
-            .post()
-        .then()
-            .statusCode(204);
-        rule.await();
+        fixGhostMailboxes(newAliceInbox);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -317,5 +285,17 @@ public class FixingGhostMailboxTest {
             .body(NAME, equalTo("mailboxes"))
             .body(ARGUMENTS + ".list", hasSize(0));
     }
-    
+
+    private void fixGhostMailboxes(Mailbox newAliceInbox) {
+        with()
+            .port(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort())
+            .basePath(CassandraMailboxMergingRoutes.BASE)
+            .body("{" +
+                "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
+                "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
+                "}")
+            .post();
+        rule.await();
+    }
+
 }
