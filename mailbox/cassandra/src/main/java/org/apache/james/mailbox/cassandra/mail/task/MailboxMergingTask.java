@@ -64,7 +64,7 @@ public class MailboxMergingTask implements Task {
     private Result doRun() {
         try {
             return taskRunner.run(oldMailboxId, newMailboxId)
-                .ifCompleted(() -> LOGGER.info("Mailbox merging succeeded"));
+                .onComplete(() -> LOGGER.info("Mailbox merging succeeded"));
         } catch (MailboxException e) {
             LOGGER.warn("Mailbox merging failed", e);
             return Result.PARTIAL;
