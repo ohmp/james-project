@@ -19,43 +19,25 @@
 
 package org.apache.james.webadmin.dto;
 
-import java.util.List;
+import java.util.UUID;
 
-import org.apache.james.task.TaskManager;
+import org.apache.james.task.Task;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.steveash.guavate.Guavate;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-public class StatusReportDto {
-    public static List<StatusReportDto> from(List<TaskManager.StatusReport> reports) {
-        return reports.stream()
-            .map(report -> new StatusReportDto(
-                TaskIdValueDto.from(report.getTaskId()),
-                report.getStatus().getValue(),
-                report.getClazz().getCanonicalName()))
-            .collect(Guavate.toImmutableList());
+public class TaskIdValueDto {
+    public static TaskIdValueDto from(Task.TaskId id) {
+        return new TaskIdValueDto(id.getValue());
     }
 
-    private final TaskIdValueDto id;
-    private final String status;
-    private final String clazz;
+    private final UUID uuid;
 
-    public StatusReportDto(TaskIdValueDto id, String status, String clazz) {
-        this.id = id;
-        this.status = status;
-        this.clazz = clazz;
+    public TaskIdValueDto(UUID uuid) {
+        this.uuid = uuid;
     }
 
-    public TaskIdValueDto getTaskId() {
-        return id;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    @JsonProperty("class")
-    public String getClazz() {
-        return clazz;
+    @JsonValue
+    public UUID getUuid() {
+        return uuid;
     }
 }

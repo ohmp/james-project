@@ -23,8 +23,6 @@ import java.util.UUID;
 
 import org.apache.james.task.Task;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public class TaskIdDto {
     public static TaskIdDto from(Task.TaskId id) {
         return new TaskIdDto(id.getValue());
@@ -36,8 +34,7 @@ public class TaskIdDto {
         this.uuid = uuid;
     }
 
-    @JsonValue
-    public UUID getUuid() {
+    public UUID getTaskId() {
         return uuid;
     }
 }
