@@ -287,14 +287,22 @@ public class FixingGhostMailboxTest {
     }
 
     private void fixGhostMailboxes(Mailbox newAliceInbox) {
-        with()
+        String taskId = with()
             .port(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort())
             .basePath(CassandraMailboxMergingRoutes.BASE)
             .body("{" +
                 "    \"mergeOrigin\":\"" + aliceGhostInboxId.serialize() + "\"," +
                 "    \"mergeDestination\":\"" + newAliceInbox.getMailboxId().serialize() + "\"" +
                 "}")
-            .post();
+            .post()
+            .jsonPath()
+            .getString("taskId");
+
+        with()
+            .port(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort())
+            .basePath("/task/" + taskId + "/await")
+            .get();
+
         rule.await();
     }
 

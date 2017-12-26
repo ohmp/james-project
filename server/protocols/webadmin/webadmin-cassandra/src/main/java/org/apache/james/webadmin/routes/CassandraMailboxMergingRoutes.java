@@ -24,13 +24,16 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTask;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTaskRunner;
-import org.apache.james.webadmin.Constants;
+import org.apache.james.task.Task;
+import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.MailboxMergingRequest;
+import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
 import org.apache.james.webadmin.utils.JsonExtractException;
 import org.apache.james.webadmin.utils.JsonExtractor;
+import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,19 +51,21 @@ public class CassandraMailboxMergingRoutes implements Routes {
     private final MailboxMergingTaskRunner mailboxMergingTaskRunner;
     private final CassandraId.Factory mailboxIdFactory;
     private final JsonExtractor<MailboxMergingRequest> jsonExtractor;
-
-    public static String PARTIAL_MERGING_PROCESS = "An error lead to partial merging process.Check server logs";
+    private final TaskManager taskManager;
+    private final JsonTransformer jsonTransformer;
 
     @Inject
-    public CassandraMailboxMergingRoutes(MailboxMergingTaskRunner mailboxMergingTaskRunner, CassandraId.Factory mailboxIdFactory) {
+    public CassandraMailboxMergingRoutes(MailboxMergingTaskRunner mailboxMergingTaskRunner, CassandraId.Factory mailboxIdFactory, TaskManager taskManager, JsonTransformer jsonTransformer) {
         this.mailboxMergingTaskRunner = mailboxMergingTaskRunner;
         this.mailboxIdFactory = mailboxIdFactory;
+        this.taskManager = taskManager;
+        this.jsonTransformer = jsonTransformer;
         this.jsonExtractor = new JsonExtractor<>(MailboxMergingRequest.class);
     }
 
     @Override
     public void define(Service service) {
-        service.post(BASE, this::mergeMailboxes);
+        service.post(BASE, this::mergeMailboxes, jsonTransformer);
     }
 
     private Object mergeMailboxes(Request request, Response response) {
@@ -70,14 +75,9 @@ public class CassandraMailboxMergingRoutes implements Routes {
             CassandraId originId = mailboxIdFactory.fromString(mailboxMergingRequest.getMergeOrigin());
             CassandraId destinationId = mailboxIdFactory.fromString(mailboxMergingRequest.getMergeDestination());
 
-            new MailboxMergingTask(mailboxMergingTaskRunner, originId, destinationId)
-                .run()
-                .onComplete(() -> response.status(HttpStatus.NO_CONTENT_204))
-                .onFailure(() -> {
-                    throw internalError().haltError();
-                });
-
-            return Constants.EMPTY_BODY;
+            MailboxMergingTask task = new MailboxMergingTask(mailboxMergingTaskRunner, originId, destinationId);
+            Task.TaskId taskId = taskManager.submit(task);
+            return TaskIdDto.from(taskId);
         } catch (JsonExtractException e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
@@ -86,12 +86,5 @@ public class CassandraMailboxMergingRoutes implements Routes {
                 .message("Failed to parse JSON request")
                 .haltError();
         }
-    }
-
-    private ErrorResponder internalError() {
-        return ErrorResponder.builder()
-            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
-            .type(ErrorType.SERVER_ERROR)
-            .message(PARTIAL_MERGING_PROCESS);
     }
 }
