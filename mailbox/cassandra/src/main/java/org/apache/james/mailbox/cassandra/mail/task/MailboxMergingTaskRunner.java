@@ -38,6 +38,8 @@ import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
+
 public class MailboxMergingTaskRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(MailboxMergingTaskRunner.class);
 
@@ -83,12 +85,16 @@ public class MailboxMergingTaskRunner {
         }
     }
 
-    private void mergeRights(CassandraId oldMailboxId, CassandraId newMailboxId) throws MailboxException {
-        MailboxACL oldAcl = cassandraACLMapper.getACL(oldMailboxId).join();
-        MailboxACL newAcl = cassandraACLMapper.getACL(newMailboxId).join();
-        MailboxACL finalAcl = newAcl.union(oldAcl);
+    private void mergeRights(CassandraId oldMailboxId, CassandraId newMailboxId) {
+        try {
+            MailboxACL oldAcl = cassandraACLMapper.getACL(oldMailboxId).join();
+            MailboxACL newAcl = cassandraACLMapper.getACL(newMailboxId).join();
+            MailboxACL finalAcl = newAcl.union(oldAcl);
 
-        cassandraACLMapper.setACL(newMailboxId, finalAcl);
-        rightsDAO.update(oldMailboxId, ACLDiff.computeDiff(oldAcl, MailboxACL.EMPTY)).join();
+            cassandraACLMapper.setACL(newMailboxId, finalAcl);
+            rightsDAO.update(oldMailboxId, ACLDiff.computeDiff(oldAcl, MailboxACL.EMPTY)).join();
+        } catch (MailboxException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }
