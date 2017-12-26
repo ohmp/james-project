@@ -29,11 +29,8 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.apache.james.mailbox.exception.MailboxException;
-
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 public class MemoryTaskManager implements TaskManager {
@@ -69,15 +66,11 @@ public class MemoryTaskManager implements TaskManager {
 
     private void run(Task.TaskId taskId, Task task, Consumer<Task.TaskId> callback) {
         idToLastKnownStatus.put(taskId, Status.IN_PROGRESS);
-        try {
-            task.run()
-                .onComplete(() -> idToLastKnownStatus.put(taskId, Status.COMPLETED))
-                .onFailure(() -> idToLastKnownStatus.put(taskId, Status.FAILED));
-            idToFuture.remove(taskId);
-            callback.accept(taskId);
-        } catch (MailboxException e) {
-            throw Throwables.propagate(e);
-        }
+        task.run()
+            .onComplete(() -> idToLastKnownStatus.put(taskId, Status.COMPLETED))
+            .onFailure(() -> idToLastKnownStatus.put(taskId, Status.FAILED));
+        idToFuture.remove(taskId);
+        callback.accept(taskId);
     }
 
     @Override
