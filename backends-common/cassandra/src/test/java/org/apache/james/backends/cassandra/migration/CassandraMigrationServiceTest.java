@@ -21,7 +21,6 @@ package org.apache.james.backends.cassandra.migration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,20 +33,16 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.datastax.driver.core.Session;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 public class CassandraMigrationServiceTest {
@@ -161,44 +156,6 @@ public class CassandraMigrationServiceTest {
         } finally {
             verify(schemaVersionDAO).updateVersion(CURRENT_VERSION);
         }
-    }
-
-    @Ignore("Concurrency of migration tasks will be handled by the TaskManager")
-    @Test
-    public void concurrentMigrationsShouldFail() throws Exception {
-        // Given a stateful migration service
-        Migration wait1SecondMigration = mock(Migration.class);
-        doAnswer(invocation -> {
-            Thread.sleep(1000);
-            return Migration.Result.COMPLETED;
-        }).when(wait1SecondMigration).run();
-        Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
-            .put(OLDER_VERSION, wait1SecondMigration)
-            .put(CURRENT_VERSION, wait1SecondMigration)
-            .put(LATEST_VERSION, wait1SecondMigration)
-            .build();
-        testee = new CassandraMigrationService(new InMemorySchemaDAO(OLDER_VERSION), allMigrationClazz, LATEST_VERSION);
-
-        // When I perform a concurrent migration
-        AtomicInteger encounteredExceptionCount = new AtomicInteger(0);
-        executorService.submit(() -> testee.upgradeToVersion(LATEST_VERSION).run());
-        executorService.submit(() -> {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                throw Throwables.propagate(e);
-            }
-
-            try {
-                testee.upgradeToVersion(LATEST_VERSION).run();
-            } catch (IllegalStateException e) {
-                encounteredExceptionCount.incrementAndGet();
-            }
-        });
-        executorService.awaitTermination(10, TimeUnit.SECONDS);
-
-        // Then the second migration fails
-        assertThat(encounteredExceptionCount.get()).isEqualTo(1);
     }
 
     @Test
