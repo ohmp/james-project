@@ -97,10 +97,12 @@ public class MemoryTaskManager implements TaskManager {
 
     @Override
     public void cancel(Task.TaskId id) {
-        idToFuture.get(id)
-            .cancel(INTERRUPT_IF_RUNNING);
-        idToLastKnownStatus.put(id, Status.CANCELLED);
-        idToFuture.remove(id);
+        Optional.ofNullable(idToFuture.get(id))
+            .ifPresent(future -> {
+                future.cancel(INTERRUPT_IF_RUNNING);
+                idToLastKnownStatus.put(id, Status.CANCELLED);
+                idToFuture.remove(id);
+            });
     }
 
     private ImmutableList<StatusReport> toReport(Stream<Map.Entry<Task.TaskId, Status>> stream) {
