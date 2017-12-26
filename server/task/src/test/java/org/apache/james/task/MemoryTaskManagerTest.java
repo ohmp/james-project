@@ -22,6 +22,7 @@ package org.apache.james.task;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -346,6 +347,37 @@ public class MemoryTaskManagerTest {
             () -> Task.Result.COMPLETED);
         memoryTaskManager.await(taskId);
         memoryTaskManager.await(taskId);
+    }
+
+    @Test
+    public void submittedTaskShouldExecuteSequentially() {
+        ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
+
+        Task.TaskId id1 = memoryTaskManager.submit(() -> {
+            queue.add(1);
+            sleep(500);
+            queue.add(2);
+            return Task.Result.COMPLETED;
+        });
+        Task.TaskId id2 = memoryTaskManager.submit(() -> {
+            queue.add(3);
+            sleep(500);
+            queue.add(4);
+            return Task.Result.COMPLETED;
+        });
+        memoryTaskManager.await(id1);
+        memoryTaskManager.await(id2);
+
+        assertThat(queue)
+            .containsExactly(1, 2, 3, 4);
+    }
+
+    private void sleep(int sleepDurationInMs) {
+        try {
+            Thread.sleep(sleepDurationInMs);
+        } catch (InterruptedException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private void await(CountDownLatch latch) {
