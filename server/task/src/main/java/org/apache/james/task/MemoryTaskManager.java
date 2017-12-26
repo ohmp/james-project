@@ -29,6 +29,8 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.annotation.PreDestroy;
+
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -109,6 +111,7 @@ public class MemoryTaskManager implements TaskManager {
             .collect(Guavate.toImmutableList());
     }
 
+    @PreDestroy
     public void stop() {
         executor.shutdownNow();
     }
