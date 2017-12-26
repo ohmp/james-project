@@ -177,6 +177,24 @@ public class TaskRoutesTest {
     }
 
     @Test
+    public void getAwaitShouldAwaitTaskCompletion() {
+        Task.TaskId taskId = taskManager.submit(() -> {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw Throwables.propagate(e);
+            }
+            return Task.Result.COMPLETED;
+        });
+
+        when()
+            .get("/" + taskId.getValue().toString() + "/await")
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .body("status", is("completed"));
+    }
+
+    @Test
     public void deleteShouldReturnOk() {
         Task.TaskId taskId = taskManager.submit(() -> {
             await(new CountDownLatch(1));

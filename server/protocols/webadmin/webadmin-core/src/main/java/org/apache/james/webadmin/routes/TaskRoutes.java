@@ -58,6 +58,8 @@ public class TaskRoutes implements Routes {
     public void define(Service service) {
         service.get(BASE + "/:id", this::getStatus, jsonTransformer);
 
+        service.get(BASE + "/:id/await", this::await, jsonTransformer);
+
         service.delete(BASE + "/:id", this::cancel, jsonTransformer);
 
         service.post(BASE, this::list, jsonTransformer);
@@ -86,6 +88,16 @@ public class TaskRoutes implements Routes {
     private Object getStatus(Request req, Response response) {
         Task.TaskId taskId = getTaskId(req);
         TaskManager.Status status = taskManager.getStatus(taskId);
+        return respondStatus(taskId, status);
+    }
+
+    private Object await(Request req, Response response) {
+        Task.TaskId taskId = getTaskId(req);
+        TaskManager.Status status = taskManager.await(taskId);
+        return respondStatus(taskId, status);
+    }
+
+    private Object respondStatus(Task.TaskId taskId, TaskManager.Status status) {
         if (status == TaskManager.Status.UNKNOWN) {
             throw ErrorResponder.builder()
                 .message(String.format("%s can not be found", taskId.getValue()))
