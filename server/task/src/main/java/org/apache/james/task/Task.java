@@ -78,6 +78,10 @@ public interface Task {
             this.value = value;
         }
 
+        public UUID getValue() {
+            return value;
+        }
+
         @Override
         public final boolean equals(Object o) {
             if (o instanceof TaskId) {

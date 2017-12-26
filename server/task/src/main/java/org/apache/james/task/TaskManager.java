@@ -19,16 +19,35 @@
 
 package org.apache.james.task;
 
+import java.util.Arrays;
 import java.util.List;
 
 public interface TaskManager {
     enum Status {
-        UNKNOWN,
-        WAITING,
-        IN_PROGRESS,
-        COMPLETED,
-        CANCELLED,
-        FAILED
+        UNKNOWN("unknown"),
+        WAITING("waiting"),
+        IN_PROGRESS("inProgress"),
+        COMPLETED("completed"),
+        CANCELLED("canceled"),
+        FAILED("failed");
+
+        public static Status fromString(String value) {
+            return Arrays.stream(values())
+                .filter(status -> status.value.equalsIgnoreCase(value))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                    String.format("Unknown status value '%s'", value)));
+        }
+
+        private final String value;
+
+        Status(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     class StatusReport {
