@@ -21,11 +21,12 @@ package org.apache.james.webadmin.routes;
 
 import javax.inject.Inject;
 
+import org.apache.james.backends.cassandra.migration.CassandraMigrationService;
+import org.apache.james.backends.cassandra.migration.MigrationException;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.CassandraVersionRequest;
-import org.apache.james.webadmin.service.CassandraMigrationService;
-import org.apache.james.webadmin.service.MigrationException;
+import org.apache.james.webadmin.dto.CassandraVersionResponse;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -60,11 +61,11 @@ public class CassandraMigrationRoutes implements Routes {
     @Override
     public void define(Service service) {
         service.get(VERSION_BASE,
-            (request, response) -> cassandraMigrationService.getCurrentVersion(),
+            (request, response) -> new CassandraVersionResponse(cassandraMigrationService.getCurrentVersion()),
             jsonTransformer);
 
         service.get(VERSION_BASE_LATEST,
-            (request, response) -> cassandraMigrationService.getLatestVersion(),
+            (request, response) -> new CassandraVersionResponse(cassandraMigrationService.getLatestVersion()),
             jsonTransformer);
 
         service.post(VERSION_UPGRADE_BASE, (request, response) -> {

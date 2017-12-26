@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.service;
+package org.apache.james.backends.cassandra.migration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
-import org.apache.james.mailbox.cassandra.mail.migration.Migration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -85,12 +84,12 @@ public class CassandraMigrationServiceTest {
     public void getCurrentVersionShouldReturnCurrentVersion() throws Exception {
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(CURRENT_VERSION)));
 
-        assertThat(testee.getCurrentVersion().getversion().get()).isEqualTo(CURRENT_VERSION);
+        assertThat(testee.getCurrentVersion().get()).isEqualTo(CURRENT_VERSION);
     }
 
     @Test
     public void getLatestVersionShouldReturnTheLatestVersion() throws Exception {
-        assertThat(testee.getLatestVersion().getversion().get()).isEqualTo(LATEST_VERSION);
+        assertThat(testee.getLatestVersion().get()).isEqualTo(LATEST_VERSION);
     }
 
     @Test

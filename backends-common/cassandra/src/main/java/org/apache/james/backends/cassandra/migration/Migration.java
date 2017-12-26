@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.cassandra.mail.migration;
+package org.apache.james.backends.cassandra.migration;
 
 import org.apache.james.task.Task;
 

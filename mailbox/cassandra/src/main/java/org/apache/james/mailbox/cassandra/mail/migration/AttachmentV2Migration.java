@@ -23,6 +23,7 @@ import java.io.Closeable;
 
 import javax.inject.Inject;
 
+import org.apache.james.backends.cassandra.migration.Migration;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
 import org.apache.james.mailbox.cassandra.mail.CassandraBlobsDAO;
