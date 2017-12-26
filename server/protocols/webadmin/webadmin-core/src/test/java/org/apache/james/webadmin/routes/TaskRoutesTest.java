@@ -61,7 +61,6 @@ public class TaskRoutesTest {
     public void setUp() throws Exception {
         taskManager = new MemoryTaskManager();
 
-
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
             new TaskRoutes(taskManager, new JsonTransformer()));
