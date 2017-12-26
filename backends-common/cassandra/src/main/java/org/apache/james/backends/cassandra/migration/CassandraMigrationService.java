@@ -19,6 +19,8 @@
 
 package org.apache.james.backends.cassandra.migration;
 
+import static org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager.DEFAULT_VERSION;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -28,7 +30,6 @@ import javax.inject.Named;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
-import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +59,8 @@ public class CassandraMigrationService {
     }
 
     public Migration upgradeToVersion(int newVersion) {
-        int currentVersion = schemaVersionDAO.getCurrentSchemaVersion().join().orElse(CassandraSchemaVersionManager.DEFAULT_VERSION);
-        if (currentVersion >= newVersion) {
-            throw new IllegalStateException("Current version is already up to date");
-        }
+        int currentVersion = getCurrentVersion().orElse(DEFAULT_VERSION);
+        assertMigrationNeeded(newVersion, currentVersion);
 
         return IntStream.range(currentVersion, newVersion)
             .boxed()
@@ -69,6 +68,13 @@ public class CassandraMigrationService {
             .map(this::toMigration)
             .reduce(() -> Migration.Result.COMPLETED,
                 Migration::combine);
+    }
+
+    private void assertMigrationNeeded(int newVersion, int currentVersion) {
+        boolean needMigration = currentVersion < newVersion;
+        if (!needMigration) {
+            throw new IllegalStateException("Current version is already up to date");
+        }
     }
 
     private Integer validateVersionNumber(Integer versionNumber) {
@@ -87,6 +93,11 @@ public class CassandraMigrationService {
     private Migration toMigration(Integer version) {
         return () -> {
             int newVersion = version + 1;
+            int currentVersion = getCurrentVersion().orElse(DEFAULT_VERSION);
+            if (currentVersion >= newVersion) {
+                return Migration.Result.PARTIAL;
+            }
+
             LOG.info("Migrating to version {} ", newVersion);
             return allMigrationClazz.get(version).run()
                 .onComplete(() -> schemaVersionDAO.updateVersion(newVersion),
