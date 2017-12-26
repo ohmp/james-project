@@ -24,7 +24,6 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTask;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTaskRunner;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.MailboxMergingRequest;
@@ -85,10 +84,6 @@ public class CassandraMailboxMergingRoutes implements Routes {
                 .type(ErrorType.INVALID_ARGUMENT)
                 .cause(e)
                 .message("Failed to parse JSON request")
-                .haltError();
-        } catch (MailboxException e) {
-            throw internalError()
-                .cause(e)
                 .haltError();
         }
     }
