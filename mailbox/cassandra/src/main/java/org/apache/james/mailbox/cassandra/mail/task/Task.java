@@ -23,29 +23,33 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.apache.james.mailbox.exception.MailboxException;
+import org.slf4j.LoggerFactory;
 
-import com.github.fge.lambdas.Throwing;
 import com.google.common.base.MoreObjects;
 
 public interface Task {
 
     interface Operation {
-        void run() throws MailboxException;
+        void run();
     }
 
     enum Result {
         COMPLETED,
         PARTIAL;
 
-        public Result onComplete(Operation... operation) throws MailboxException {
-            if (this == COMPLETED) {
-                run(operation);
+        public Result onComplete(Operation... operation) {
+            try {
+                if (this == COMPLETED) {
+                    run(operation);
+                }
+                return this;
+            } catch (Exception e) {
+                LoggerFactory.getLogger(Task.class).error("Error while executing operation", e);
+                return PARTIAL;
             }
-            return this;
         }
 
-        public Result onFailure(Operation... operation) throws MailboxException {
+        public Result onFailure(Operation... operation) {
             if (this == PARTIAL) {
                 run(operation);
             }
@@ -54,7 +58,7 @@ public interface Task {
 
         private void run(Operation... operation) {
             Arrays.stream(operation)
-                .forEach(Throwing.consumer(Operation::run).sneakyThrow());
+                .forEach(Operation::run);
         }
     }
 
