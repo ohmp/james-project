@@ -32,7 +32,6 @@ import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManage
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
 
 public class CassandraMigrationService {
@@ -58,35 +57,43 @@ public class CassandraMigrationService {
         return Optional.of(latestVersion);
     }
 
-    public synchronized void upgradeToVersion(int newVersion) {
+    public Migration upgradeToVersion(int newVersion) {
         int currentVersion = schemaVersionDAO.getCurrentSchemaVersion().join().orElse(CassandraSchemaVersionManager.DEFAULT_VERSION);
         if (currentVersion >= newVersion) {
             throw new IllegalStateException("Current version is already up to date");
         }
 
-        IntStream.range(currentVersion, newVersion)
+        return IntStream.range(currentVersion, newVersion)
             .boxed()
-            .forEach(Throwing.consumer(this::doMigration));
+            .map(this::validateVersionNumber)
+            .map(this::toMigration)
+            .reduce(() -> Migration.Result.COMPLETED,
+                Migration::combine);
     }
 
-    public void upgradeToLastVersion() {
-        upgradeToVersion(latestVersion);
+    private Integer validateVersionNumber(Integer versionNumber) {
+        if (!allMigrationClazz.containsKey(versionNumber)) {
+            String message = String.format("Can not migrate to %d. No migration class registered.", versionNumber);
+            LOG.error(message);
+            throw new NotImplementedException(message);
+        }
+        return versionNumber;
     }
 
-    private void doMigration(Integer version) {
-        int newVersion = version + 1;
-        if (allMigrationClazz.containsKey(version)) {
+    public Migration upgradeToLastVersion() {
+        return upgradeToVersion(latestVersion);
+    }
+
+    private Migration toMigration(Integer version) {
+        return () -> {
+            int newVersion = version + 1;
             LOG.info("Migrating to version {} ", newVersion);
-            allMigrationClazz.get(version).run()
+            return allMigrationClazz.get(version).run()
                 .onComplete(() -> schemaVersionDAO.updateVersion(newVersion),
                     () -> LOG.info("Migrating to version {} done", newVersion))
                 .onFailure(() -> LOG.warn(failureMessage(newVersion)),
                     () -> throwMigrationException(newVersion));
-        } else {
-            String message = String.format("Can not migrate to %d. No migration class registered.", newVersion);
-            LOG.error(message);
-            throw new NotImplementedException(message);
-        }
+        };
     }
 
     private void throwMigrationException(int newVersion) {

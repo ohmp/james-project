@@ -23,4 +23,14 @@ import org.apache.james.task.Task;
 
 public interface Migration extends Task {
 
+    static Migration combine(Migration migration1, Migration migration2) {
+        return () -> {
+            Result migration1Result = migration1.run();
+            if (migration1Result == Result.COMPLETED) {
+                return migration2.run();
+            }
+            return Result.PARTIAL;
+        };
+    }
+
 }

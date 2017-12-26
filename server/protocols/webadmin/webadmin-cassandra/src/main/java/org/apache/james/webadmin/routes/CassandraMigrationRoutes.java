@@ -72,7 +72,8 @@ public class CassandraMigrationRoutes implements Routes {
             LOGGER.debug("Cassandra upgrade launched");
             try {
                 CassandraVersionRequest cassandraVersionRequest = CassandraVersionRequest.parse(request.body());
-                cassandraMigrationService.upgradeToVersion(cassandraVersionRequest.getValue());
+                cassandraMigrationService.upgradeToVersion(cassandraVersionRequest.getValue())
+                    .run();
                 response.status(HttpStatus.NO_CONTENT_204);
             } catch (NullPointerException | IllegalArgumentException e) {
                 LOGGER.info(INVALID_VERSION_UPGRADE_REQUEST);
@@ -104,7 +105,8 @@ public class CassandraMigrationRoutes implements Routes {
 
         service.post(VERSION_UPGRADE_TO_LATEST_BASE, (request, response) -> {
             try {
-                cassandraMigrationService.upgradeToLastVersion();
+                cassandraMigrationService.upgradeToLastVersion()
+                    .run();
             } catch (IllegalStateException e) {
                 LOGGER.info(MIGRATION_REQUEST_CAN_NOT_BE_DONE, e);
                 throw ErrorResponder.builder()

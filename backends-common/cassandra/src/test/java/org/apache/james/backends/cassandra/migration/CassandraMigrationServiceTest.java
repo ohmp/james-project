@@ -41,6 +41,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -51,7 +52,8 @@ import com.google.common.collect.ImmutableMap;
 
 public class CassandraMigrationServiceTest {
     private static final int LATEST_VERSION = 3;
-    private static final int CURRENT_VERSION = 2;
+    private static final int INTERMEDIARY_VERSION = 2;
+    private static final int CURRENT_VERSION = INTERMEDIARY_VERSION;
     private static final int OLDER_VERSION = 1;
     private CassandraMigrationService testee;
     private CassandraSchemaVersionDAO schemaVersionDAO;
@@ -98,14 +100,14 @@ public class CassandraMigrationServiceTest {
 
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(CURRENT_VERSION)));
 
-        testee.upgradeToVersion(OLDER_VERSION);
+        testee.upgradeToVersion(OLDER_VERSION).run();
     }
 
     @Test
     public void upgradeToVersionShouldUpdateToVersion() throws Exception {
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(OLDER_VERSION)));
 
-        testee.upgradeToVersion(CURRENT_VERSION);
+        testee.upgradeToVersion(CURRENT_VERSION).run();
 
         verify(schemaVersionDAO, times(1)).updateVersion(eq(CURRENT_VERSION));
     }
@@ -116,14 +118,14 @@ public class CassandraMigrationServiceTest {
 
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(LATEST_VERSION)));
 
-        testee.upgradeToLastVersion();
+        testee.upgradeToLastVersion().run();
     }
 
     @Test
     public void upgradeToLastVersionShouldUpdateToLatestVersion() throws Exception {
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(OLDER_VERSION)));
 
-        testee.upgradeToLastVersion();
+        testee.upgradeToLastVersion().run();
 
         verify(schemaVersionDAO, times(1)).updateVersion(eq(LATEST_VERSION));
     }
@@ -139,7 +141,7 @@ public class CassandraMigrationServiceTest {
 
         expectedException.expect(NotImplementedException.class);
 
-        testee.upgradeToVersion(LATEST_VERSION);
+        testee.upgradeToVersion(LATEST_VERSION).run();
     }
 
     @Test
@@ -147,6 +149,7 @@ public class CassandraMigrationServiceTest {
         try {
             Map<Integer, Migration> allMigrationClazz = ImmutableMap.<Integer, Migration>builder()
                 .put(OLDER_VERSION, successfulMigration)
+                .put(INTERMEDIARY_VERSION, () -> Migration.Result.PARTIAL)
                 .put(LATEST_VERSION, successfulMigration)
                 .build();
             testee = new CassandraMigrationService(schemaVersionDAO, allMigrationClazz, LATEST_VERSION);
@@ -154,12 +157,13 @@ public class CassandraMigrationServiceTest {
 
             expectedException.expect(RuntimeException.class);
 
-            testee.upgradeToVersion(LATEST_VERSION);
+            testee.upgradeToVersion(LATEST_VERSION).run();
         } finally {
             verify(schemaVersionDAO).updateVersion(CURRENT_VERSION);
         }
     }
 
+    @Ignore("Concurrency of migration tasks will be handled by the TaskManager")
     @Test
     public void concurrentMigrationsShouldFail() throws Exception {
         // Given a stateful migration service
@@ -177,7 +181,7 @@ public class CassandraMigrationServiceTest {
 
         // When I perform a concurrent migration
         AtomicInteger encounteredExceptionCount = new AtomicInteger(0);
-        executorService.submit(() -> testee.upgradeToVersion(LATEST_VERSION));
+        executorService.submit(() -> testee.upgradeToVersion(LATEST_VERSION).run());
         executorService.submit(() -> {
             try {
                 Thread.sleep(500);
@@ -186,7 +190,7 @@ public class CassandraMigrationServiceTest {
             }
 
             try {
-                testee.upgradeToVersion(LATEST_VERSION);
+                testee.upgradeToVersion(LATEST_VERSION).run();
             } catch (IllegalStateException e) {
                 encounteredExceptionCount.incrementAndGet();
             }
@@ -211,7 +215,7 @@ public class CassandraMigrationServiceTest {
 
         expectedException.expect(MigrationException.class);
 
-        testee.upgradeToVersion(LATEST_VERSION);
+        testee.upgradeToVersion(LATEST_VERSION).run();
     }
 
     @Test
@@ -230,7 +234,7 @@ public class CassandraMigrationServiceTest {
         expectedException.expect(MigrationException.class);
 
         try {
-            testee.upgradeToVersion(LATEST_VERSION);
+            testee.upgradeToVersion(LATEST_VERSION).run();
         } finally {
             verify(migration1, times(1)).run();
             verifyNoMoreInteractions(migration1);
