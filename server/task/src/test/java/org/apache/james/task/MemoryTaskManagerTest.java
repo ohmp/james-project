@@ -340,6 +340,14 @@ public class MemoryTaskManagerTest {
         assertThat(memoryTaskManager.list(TaskManager.Status.CANCELLED)).isEmpty();
     }
 
+    @Test
+    public void awaitShouldNotThrowWhenCompletedTask() throws Exception {
+        Task.TaskId taskId = memoryTaskManager.submit(
+            () -> Task.Result.COMPLETED);
+        memoryTaskManager.await(taskId);
+        memoryTaskManager.await(taskId);
+    }
+
     private void await(CountDownLatch latch) {
         try {
             latch.await();

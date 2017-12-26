@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.PreDestroy;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -103,6 +104,13 @@ public class MemoryTaskManager implements TaskManager {
                 idToLastKnownStatus.put(id, Status.CANCELLED);
                 idToFuture.remove(id);
             });
+    }
+
+    @Override
+    public Status await(Task.TaskId id) {
+        Optional.ofNullable(idToFuture.get(id))
+            .ifPresent(Throwing.consumer(Future::get));
+        return getStatus(id);
     }
 
     private ImmutableList<StatusReport> toReport(Stream<Map.Entry<Task.TaskId, Status>> stream) {

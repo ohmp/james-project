@@ -83,4 +83,6 @@ public interface TaskManager {
     List<StatusReport> list(Status status);
 
     void cancel(Task.TaskId id);
+
+    Status await(Task.TaskId id);
 }
