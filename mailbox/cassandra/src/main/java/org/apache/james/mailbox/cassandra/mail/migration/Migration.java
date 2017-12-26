@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail.migration;
 
-import org.apache.james.mailbox.cassandra.mail.task.Task;
+import org.apache.james.task.Task;
 
 public interface Migration extends Task {
 

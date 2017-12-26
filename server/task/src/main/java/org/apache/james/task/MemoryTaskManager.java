@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.cassandra.mail.task;
+package org.apache.james.task;
 
 import java.util.List;
 import java.util.Map;

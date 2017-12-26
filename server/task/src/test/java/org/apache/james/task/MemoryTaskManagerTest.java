@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.cassandra.mail.task;
+package org.apache.james.task;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,10 +30,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.shaded.com.google.common.base.Throwables;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.consumers.ConsumerChainer;
+import com.google.common.base.Throwables;
 
 public class MemoryTaskManagerTest {
 
