@@ -17,47 +17,60 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.backends.cassandra.migration;
+package org.apache.james.backends.cassandra.versions;
 
-import java.util.Optional;
+import java.util.Objects;
 
-import org.apache.james.backends.cassandra.versions.SchemaVersion;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
-public class MigrationTask implements Migration {
-    public static final String CASSANDRA_MIGRATION = "CassandraMigration";
+public class SchemaVersion {
+    private final int value;
 
-    public static class Details {
-        private final SchemaVersion toVersion;
+    public SchemaVersion(int value) {
+        Preconditions.checkArgument(value > 0, "version needs to be strictly positive");
+        this.value = value;
+    }
 
-        public Details(SchemaVersion toVersion) {
-            this.toVersion = toVersion;
+    public int getValue() {
+        return value;
+    }
+
+    public boolean isAfterOrEquals(SchemaVersion other) {
+        return this.value >= other.value;
+    }
+
+    public SchemaVersion next() {
+        return new SchemaVersion(value + 1);
+    }
+
+    public SchemaVersion previous() {
+        return new SchemaVersion(value - 1);
+    }
+
+    public boolean isBefore(SchemaVersion other) {
+        return this.value < other.value;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof SchemaVersion) {
+            SchemaVersion that = (SchemaVersion) o;
+
+            return Objects.equals(this.value, that.value);
         }
-
-        public int getToVersion() {
-            return toVersion.getValue();
-        }
-    }
-
-    private final Migration migration;
-    private final SchemaVersion toVersion;
-
-    public MigrationTask(Migration migration, SchemaVersion toVersion) {
-        this.migration = migration;
-        this.toVersion = toVersion;
+        return false;
     }
 
     @Override
-    public Result run() {
-        return migration.run();
+    public final int hashCode() {
+        return Objects.hash(value);
     }
 
     @Override
-    public String type() {
-        return CASSANDRA_MIGRATION;
-    }
-
-    @Override
-    public Optional<Object> details() {
-        return Optional.of(new Details(toVersion));
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("version", value)
+            .toString();
     }
 }
