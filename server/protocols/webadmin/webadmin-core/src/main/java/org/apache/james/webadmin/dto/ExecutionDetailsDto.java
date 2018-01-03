@@ -59,7 +59,7 @@ public class ExecutionDetailsDto {
         return executionDetails.getStatus().getValue();
     }
 
-    public Optional<Object> getAdditionalInformation() {
+    public Optional<TaskExecutionDetails.AdditionalInformation> getAdditionalInformation() {
         return executionDetails.getAdditionalInformation();
     }
 
