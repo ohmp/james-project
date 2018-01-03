@@ -85,7 +85,8 @@ public class TasksRoutes implements Routes {
             dataType = "String",
             defaultValue = "None",
             example = "?status=inProgress",
-            value = "If present, allow to filter the tasks and keep only the one with a given status.")
+            value = "If present, allow to filter the tasks and keep only the one with a given status. " +
+                "The status are one of [waiting, inProgress, failed, canceled, completed]")
     })
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.OK_200, message = "A specific class execution details", response = List.class),
