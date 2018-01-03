@@ -23,11 +23,12 @@ import java.util.Optional;
 
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.task.Task;
+import org.apache.james.task.TaskExecutionDetails;
 
 public class MailboxMergingTask implements Task {
     public static final String MAILBOX_MERGING = "mailboxMerging";
 
-    public static class Details {
+    public static class Details implements TaskExecutionDetails.AdditionalInformation {
         private final CassandraId oldMailboxId;
         private final CassandraId newMailboxId;
 
@@ -66,7 +67,7 @@ public class MailboxMergingTask implements Task {
     }
 
     @Override
-    public Optional<Object> details() {
+    public Optional<TaskExecutionDetails.AdditionalInformation> details() {
         return Optional.of(new Details(oldMailboxId, newMailboxId));
     }
 }
