@@ -417,6 +417,7 @@ Response codes:
  - 200: Success. The scheduled task taskId is returned.
  - 400: The version is invalid. The version should be a strictly positive number.
  - 410: Error while planning this migration. This resource is gone away. Reason is mentionned in the body.
+ - 500: Internal error while creating the migration task.
 
 Note that several calls to this endpoint will be run in a sequential pattern.
 
@@ -453,6 +454,7 @@ Response codes:
 
  - 200: Success. The scheduled task taskId is returned.
  - 410: Error while planning this migration. This resource is gone away. Reason is mentionned in the body.
+ - 500: Internal error while creating the migration task.
 
 Note that several calls to this endpoint will be run in a sequential pattern.
 
