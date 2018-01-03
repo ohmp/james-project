@@ -45,7 +45,7 @@ public class VersionRequestTest {
     }
 
     @Test
-    public void parseShouldAcceptZeroVersion() throws Exception {
+    public void parseShouldThrowWhenZeroVersion() throws Exception {
         assertThatThrownBy(() -> CassandraVersionRequest.parse("0"))
             .isInstanceOf(IllegalArgumentException.class);
     }
