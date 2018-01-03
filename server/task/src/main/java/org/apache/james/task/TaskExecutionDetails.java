@@ -25,6 +25,11 @@ import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 public class TaskExecutionDetails {
+
+    public interface AdditionalInformation {
+
+    }
+
     public static TaskExecutionDetails from(Task task, TaskId id) {
         return new TaskExecutionDetails(
             id,
@@ -41,14 +46,15 @@ public class TaskExecutionDetails {
     private final TaskId taskId;
     private final String type;
     private final TaskManager.Status status;
-    private final Optional<Object> additionalInformation;
+    private final Optional<AdditionalInformation> additionalInformation;
     private final Optional<ZonedDateTime> submitDate;
     private final Optional<ZonedDateTime> startedDate;
     private final Optional<ZonedDateTime> completedDate;
     private final Optional<ZonedDateTime> canceledDate;
     private final Optional<ZonedDateTime> failedDate;
 
-    public TaskExecutionDetails(TaskId taskId, String type, TaskManager.Status status, Optional<Object> additionalInformation,
+    public TaskExecutionDetails(TaskId taskId, String type, TaskManager.Status status,
+                                Optional<AdditionalInformation> additionalInformation,
                                 Optional<ZonedDateTime> submitDate, Optional<ZonedDateTime> startedDate,
                                 Optional<ZonedDateTime> completedDate, Optional<ZonedDateTime> canceledDate,
                                 Optional<ZonedDateTime> failedDate) {
@@ -75,7 +81,7 @@ public class TaskExecutionDetails {
         return status;
     }
 
-    public Optional<Object> getAdditionalInformation() {
+    public Optional<AdditionalInformation> getAdditionalInformation() {
         return additionalInformation;
     }
 
