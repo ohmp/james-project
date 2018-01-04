@@ -64,7 +64,7 @@ public class AddFooterTest {
         jamesServer = TemporaryJamesServer.builder()
             .withOverrides(new ActiveMQQueueModule())
             .withMailetContainer(TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION
-                .addProcessor(ProcessorConfiguration.transport()
+                .putProcessor(ProcessorConfiguration.transport()
                     .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(AddFooter.class)
