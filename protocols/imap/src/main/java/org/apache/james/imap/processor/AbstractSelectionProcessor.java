@@ -285,7 +285,7 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
             for (Long msn : knownSequence) {
 
                 // Check if we have uids left to check against
-                if (knownUidsList.size() > index++) {
+                if (knownUidsList.size() > ++index) {
                     int msnAsInt = msn.intValue();
                     MessageUid knownUid = knownUidsList.get(index);
 

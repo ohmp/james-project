@@ -34,7 +34,6 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.metrics.api.MetricFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class AbstractSelectionProcessorTest {
@@ -49,7 +48,6 @@ public class AbstractSelectionProcessorTest {
         testee = new SelectProcessor(nextProcessor, mailboxManager, statusResponseFactory, metricFactory);
     }
 
-    @Ignore("JAMES-2278 Processing fails with an index out of bound")
     @Test
     public void recomputeUidSetShouldNotFailWhenDataIsProvided() {
         IdRange knownSequences = new IdRange(1, 2);
