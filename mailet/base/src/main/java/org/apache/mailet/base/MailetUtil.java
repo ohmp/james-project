@@ -21,11 +21,19 @@
 
 package org.apache.mailet.base;
 
+import static org.apache.mailet.base.MailetUtil.ValidationPolicy.ALL;
+
 import java.util.Optional;
+import java.util.function.Predicate;
+
 import javax.mail.MessagingException;
 
+import org.apache.james.util.OptionalUtils;
+import org.apache.james.util.Port;
 import org.apache.mailet.MailetConfig;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.functions.FunctionChainer;
 import com.google.common.base.Strings;
 
 
@@ -33,7 +41,87 @@ import com.google.common.base.Strings;
  * Collects utility methods.
  */
 public class MailetUtil {
-    
+
+    public static class ValidationPolicy {
+        public static final ValidationPolicy ALL = new ValidationPolicy(i -> true, "Not expected message");
+        public static final ValidationPolicy STRICTLY_POSITIVE = new ValidationPolicy(i -> i > 0,
+            "Expecting condition to be a strictly positive integer.");
+        public static final ValidationPolicy POSITIVE = new ValidationPolicy(i -> i >= 0,
+            "Expecting condition to be a positive integer.");
+        public static final ValidationPolicy VALID_PORT = new ValidationPolicy(Port::isValid,
+            "Expecting condition to be a valid port.");
+
+        private final Predicate<Integer> isValidPredicate;
+        private final String errorPrefix;
+
+        public ValidationPolicy(Predicate<Integer> isValidPredicate, String errorPrefix) {
+            this.isValidPredicate = isValidPredicate;
+            this.errorPrefix = errorPrefix;
+        }
+
+        public int validate (int value) throws MessagingException {
+            if (!isValidPredicate.test(value)) {
+                throw new MessagingException(errorPrefix + " Got " + value);
+            }
+            return value;
+        }
+
+        public Optional<Integer> validate (Optional<Integer> value) throws MessagingException {
+            FunctionChainer<Integer, Integer> function = Throwing.function(this::validate);
+            return value.map(function.sneakyThrow());
+        }
+    }
+
+    public static class IntegerConditionParser {
+        private Optional<Integer> defaultValue;
+        private Optional<ValidationPolicy> validationPolicy;
+
+        public IntegerConditionParser() {
+            this.defaultValue = Optional.empty();
+            this.validationPolicy = Optional.empty();
+        }
+
+        public IntegerConditionParser withDefaultValue(int defaultValue) {
+            return withDefaultValue(Optional.of(defaultValue));
+        }
+
+        public IntegerConditionParser withDefaultValue(Optional<Integer> defaultValue) {
+            this.defaultValue = defaultValue;
+            return this;
+        }
+
+        public IntegerConditionParser withValidationPolicy(ValidationPolicy validationPolicy) {
+            this.validationPolicy = Optional.of(validationPolicy);
+            return this;
+        }
+
+        public int parse(String condition) throws MessagingException {
+            return parseAsOptional(condition)
+                .orElseThrow(() -> new MessagingException("Condition is required. It should be a strictly positive integer"));
+        }
+
+        public Optional<Integer> parseAsOptional(String condition) throws MessagingException {
+            Optional<String> value = OptionalUtils.or(Optional.ofNullable(condition)
+                    .filter(s -> !Strings.isNullOrEmpty(s)),
+                defaultValue.map(String::valueOf));
+
+            return validationPolicy.orElse(ALL)
+                .validate(tryParseInteger(value));
+        }
+
+        private Optional<Integer> tryParseInteger(Optional<String> value) throws MessagingException {
+            try {
+                return value.map(Integer::valueOf);
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
+        }
+    }
+
+    public static IntegerConditionParser integerConditionParser() {
+        return new IntegerConditionParser();
+    }
+
     /**
      * <p>This takes the subject string and reduces (normailzes) it.
      * Multiple "Re:" entries are reduced to one, and capitalized.  The
@@ -111,36 +199,4 @@ public class MailetUtil {
         return Optional.empty();
     }
 
-    public static int getInitParameterAsStrictlyPositiveInteger(String condition, int defaultValue) throws MessagingException {
-        String defaultStringValue = String.valueOf(defaultValue);
-        return getInitParameterAsStrictlyPositiveInteger(condition, Optional.of(defaultStringValue));
-    }
-
-    public static int getInitParameterAsStrictlyPositiveInteger(String condition) throws MessagingException {
-        return getInitParameterAsStrictlyPositiveInteger(condition, Optional.empty());
-    }
-
-    public static int getInitParameterAsStrictlyPositiveInteger(String condition, Optional<String> defaultValue) throws MessagingException {
-        String value = Optional.ofNullable(condition)
-            .orElse(defaultValue.orElse(null));
-
-        if (Strings.isNullOrEmpty(value)) {
-            throw new MessagingException("Condition is required. It should be a strictly positive integer");
-        }
-
-        int valueAsInt = tryParseInteger(value);
-
-        if (valueAsInt < 1) {
-            throw new MessagingException("Expecting condition to be a strictly positive integer. Got " + value);
-        }
-        return valueAsInt;
-    }
-
-    private static int tryParseInteger(String value) throws MessagingException {
-        try {
-            return Integer.valueOf(value);
-        } catch (NumberFormatException e) {
-            throw new MessagingException("Expecting condition to be a strictly positive integer. Got " + value);
-        }
-    }
 }

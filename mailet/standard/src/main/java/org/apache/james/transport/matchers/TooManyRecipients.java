@@ -23,8 +23,8 @@ import java.util.Collection;
 
 import javax.mail.MessagingException;
 
-import org.apache.mailet.Mail;
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 import org.apache.mailet.base.MailetUtil;
 
@@ -45,7 +45,9 @@ public class TooManyRecipients extends GenericMatcher {
 
     @Override
     public void init() throws MessagingException {
-        maximumRecipientCount = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getCondition());
+        maximumRecipientCount = MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .parse(getCondition());
     }
 
     @Override

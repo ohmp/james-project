@@ -23,8 +23,8 @@ import java.util.Collection;
 
 import javax.mail.MessagingException;
 
-import org.apache.mailet.Mail;
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 import org.apache.mailet.base.MailetUtil;
 
@@ -46,7 +46,9 @@ public class TooManyLines extends GenericMatcher {
 
     @Override
     public void init() throws MessagingException {
-        maximumLineCount = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getCondition());
+        maximumLineCount = MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .parse(getCondition());
     }
 
     @Override

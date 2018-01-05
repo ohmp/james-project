@@ -116,11 +116,13 @@ public class SpamAssassinTest {
 
     @Test
     public void initShouldThrowWhenSpamdPortTooBig() throws Exception {
-        assertThatThrownBy(() -> mailet.init(FakeMailetConfig.builder()
-            .mailetName("SpamAssassin")
-            .setProperty(SpamAssassin.SPAMD_PORT,
-                String.valueOf(Port.MAX_PORT_VALUE + 1))
-            .build())).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(
+            () -> mailet.init(FakeMailetConfig.builder()
+                .mailetName("SpamAssassin")
+                .setProperty(SpamAssassin.SPAMD_PORT,
+                    String.valueOf(Port.MAX_PORT_VALUE + 1))
+                .build()))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test

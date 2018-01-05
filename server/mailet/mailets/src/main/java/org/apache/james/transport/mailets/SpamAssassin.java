@@ -24,7 +24,6 @@ import java.util.Optional;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.james.util.Port;
 import org.apache.james.util.scanner.SpamAssassinInvoker;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -77,8 +76,10 @@ public class SpamAssassin extends GenericMailet {
             .filter(s -> !Strings.isNullOrEmpty(s))
             .orElse(DEFAULT_HOST);
 
-        spamdPort = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getInitParameter(SPAMD_PORT), DEFAULT_PORT);
-        Port.assertValid(spamdPort);
+        spamdPort = MailetUtil.integerConditionParser()
+            .withDefaultValue(DEFAULT_PORT)
+            .withValidationPolicy(MailetUtil.ValidationPolicy.VALID_PORT)
+            .parse(getInitParameter(SPAMD_PORT));
     }
 
     /**

@@ -20,20 +20,18 @@
 package org.apache.mailet.base;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import javax.mail.MessagingException;
 
+import org.apache.james.util.Port;
 import org.apache.mailet.base.test.FakeMailetConfig;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class MailetUtilTest {
 
     private static final String A_PARAMETER = "aParameter";
     public static final int DEFAULT_VALUE = 36;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void getInitParameterShouldReturnTrueWhenIsValueTrueLowerCase() {
@@ -91,84 +89,133 @@ public class MailetUtilTest {
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerShouldThrowOnEmptyString() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("");
+    public void parseWithStrictlyPositivePolicyShouldThrowOnEmptyString() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .parse(""))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerShouldThrowOnNull() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger(null);
+    public void parseWithStrictlyPositivePolicyShouldThrowOnNull() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .parse(null))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerShouldThrowOnInvalid() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("invalid");
+    public void parseWithStrictlyPositivePolicyShouldThrowOnInvalid() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .parse("invalid"))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerShouldThrowOnNegativeNumber() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("-1");
+    public void parseWithStrictlyPositivePolicyShouldThrowOnNegativeValue() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .parse("-1"))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerShouldThrowOnZero() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("0");
+    public void parseWithStrictlyPositivePolicyShouldThrowOnZero() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .parse("0"))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerShouldParseCorrectValue() throws Exception {
-        assertThat(MailetUtil.getInitParameterAsStrictlyPositiveInteger("1"))
+    public void parseWithStrictlyPositivePolicyShouldReturnValue() throws Exception {
+        assertThat(MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .withDefaultValue(DEFAULT_VALUE)
+            .parse("1"))
             .isEqualTo(1);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldThrowOnEmptyString() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("", DEFAULT_VALUE);
-    }
-
-    @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldReturnDefaultValueOnNull() throws Exception {
-        assertThat(MailetUtil.getInitParameterAsStrictlyPositiveInteger(null, DEFAULT_VALUE))
+    public void parseWithStrictlyPositivePolicyAndDefaultValueShouldReturnDefaultOnEmpty() throws Exception {
+        assertThat(MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .withDefaultValue(DEFAULT_VALUE)
+            .parse(""))
             .isEqualTo(DEFAULT_VALUE);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldThrowOnInvalid() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("invalid", DEFAULT_VALUE);
+    public void parseWithStrictlyPositivePolicyAndDefaultValueShouldReturnDefaultOnNull() throws Exception {
+        assertThat(MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .withDefaultValue(DEFAULT_VALUE)
+            .parse(null))
+            .isEqualTo(DEFAULT_VALUE);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldThrowOnNegativeNumber() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("-1", DEFAULT_VALUE);
+    public void parseWithStrictlyPositivePolicyAndDefaultValueShouldThrowOnInvalidValue() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .withDefaultValue(DEFAULT_VALUE)
+                .parse("invalid"))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldThrowOnZero() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        MailetUtil.getInitParameterAsStrictlyPositiveInteger("0", DEFAULT_VALUE);
+    public void parseWithStrictlyPositivePolicyAndDefaultValueShouldThrowOnNegativeValue() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .withDefaultValue(DEFAULT_VALUE)
+                .parse("-1"))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void getInitParameterAsStrictlyPositiveIntegerWithDefaultValueShouldParseCorrectValue() throws Exception {
-        assertThat(MailetUtil.getInitParameterAsStrictlyPositiveInteger("1", DEFAULT_VALUE))
+    public void parseWithStrictlyPositivePolicyAndDefaultValueShouldThrowOnZero() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+                .withDefaultValue(DEFAULT_VALUE)
+                .parse("0"))
+            .isInstanceOf(MessagingException.class);
+    }
+
+    @Test
+    public void parseWithStrictlyPositivePolicyAndDefaultValueShouldReturnValue() throws Exception {
+        assertThat(MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .withDefaultValue(DEFAULT_VALUE)
+            .parse("1"))
             .isEqualTo(1);
+    }
+
+    @Test
+    public void parseWithPositivePolicyShouldAllowToReturnZero() throws Exception {
+        assertThat(MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.POSITIVE)
+            .withDefaultValue(DEFAULT_VALUE)
+            .parse("0"))
+            .isEqualTo(0);
+    }
+
+    @Test
+    public void parseWithPortValidationShouldThrowWhenTooBig() throws Exception {
+        assertThatThrownBy(
+            () -> MailetUtil.integerConditionParser()
+                .withValidationPolicy(MailetUtil.ValidationPolicy.VALID_PORT)
+                .withDefaultValue(DEFAULT_VALUE)
+                .parse(String.valueOf(Port.MAX_PORT_VALUE + 1)))
+            .isInstanceOf(MessagingException.class);
     }
 
     private boolean getParameterValued(String value, boolean defaultValue) {
