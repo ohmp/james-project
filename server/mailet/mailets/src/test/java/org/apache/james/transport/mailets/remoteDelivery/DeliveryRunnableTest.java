@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -58,7 +59,7 @@ public class DeliveryRunnableTest {
     private MailQueue mailQueue;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .setProperty(RemoteDeliveryConfiguration.DELIVERY_THREADS, "1")
             .setProperty(RemoteDeliveryConfiguration.DEBUG, "true")

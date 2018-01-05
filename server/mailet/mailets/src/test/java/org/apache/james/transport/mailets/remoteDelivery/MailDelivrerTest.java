@@ -64,7 +64,7 @@ public class MailDelivrerTest {
     private MailDelivrerToHost mailDelivrerToHost;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         bouncer = mock(Bouncer.class);
         dnsHelper = mock(DnsHelper.class);
         mailDelivrerToHost = mock(MailDelivrerToHost.class);

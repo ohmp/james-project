@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.mail.MessagingException;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.mailet.MailetConfig;
@@ -33,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 public class RemoteDeliveryConfiguration {
@@ -89,7 +90,7 @@ public class RemoteDeliveryConfiguration {
     private final String authPass;
     private final Properties javaxAdditionalProperties;
 
-    public RemoteDeliveryConfiguration(MailetConfig mailetConfig, DomainList domainList) {
+    public RemoteDeliveryConfiguration(MailetConfig mailetConfig, DomainList domainList) throws MessagingException {
         isDebug = MailetUtil.getInitParameter(mailetConfig, DEBUG).orElse(false);
         startTLS = MailetUtil.getInitParameter(mailetConfig, START_TLS).orElse(false);
         isSSLEnable = MailetUtil.getInitParameter(mailetConfig, SSL_ENABLE).orElse(false);
@@ -102,11 +103,25 @@ public class RemoteDeliveryConfiguration {
         DelaysAndMaxRetry delaysAndMaxRetry = computeDelaysAndMaxRetry(mailetConfig);
         maxRetries = delaysAndMaxRetry.getMaxRetries();
         delayTimes = delaysAndMaxRetry.getExpandedDelays();
-        smtpTimeout = computeSmtpTimeout(mailetConfig);
-        connectionTimeout = computeConnectionTimeout(mailetConfig);
-        dnsProblemRetry = computeDnsProblemRetry(mailetConfig);
+        smtpTimeout = MailetUtil.integerConditionParser()
+            .parseAsOptional(mailetConfig.getInitParameter(TIMEOUT))
+            .orElseGet(() -> {
+                LOGGER.warn("Invalid timeout setting: {}", mailetConfig.getInitParameter(TIMEOUT));
+                return DEFAULT_SMTP_TIMEOUT;
+            });
+        connectionTimeout = MailetUtil.integerConditionParser()
+            .parseAsOptional(mailetConfig.getInitParameter(CONNECTIONTIMEOUT))
+            .orElseGet(() -> {
+                LOGGER.warn("Invalid timeout setting: {}", mailetConfig.getInitParameter(TIMEOUT));
+                return DEFAULT_CONNECTION_TIMEOUT;
+            });
+        dnsProblemRetry = MailetUtil.integerConditionParser()
+            .withDefaultValue(DEFAULT_DNS_RETRY_PROBLEM)
+            .parse(mailetConfig.getInitParameter(MAX_DNS_PROBLEM_RETRIES));
         heloNameProvider = new HeloNameProvider(mailetConfig.getInitParameter(HELO_NAME), domainList);
-        workersThreadCount = Integer.valueOf(mailetConfig.getInitParameter(DELIVERY_THREADS));
+        workersThreadCount = MailetUtil.integerConditionParser()
+            .withValidationPolicy(MailetUtil.ValidationPolicy.STRICTLY_POSITIVE)
+            .parse(mailetConfig.getInitParameter(DELIVERY_THREADS));
 
         String gatewayPort = mailetConfig.getInitParameter(GATEWAY_PORT);
         String gateway = mailetConfig.getInitParameter(GATEWAY);
@@ -132,39 +147,6 @@ public class RemoteDeliveryConfiguration {
                 .map(propertyName -> Pair.of(propertyName, mailetConfig.getInitParameter(propertyName)))
                 .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue)));
         return result;
-    }
-
-    private int computeDnsProblemRetry(MailetConfig mailetConfig) {
-        String dnsRetry = mailetConfig.getInitParameter(MAX_DNS_PROBLEM_RETRIES);
-        if (!Strings.isNullOrEmpty(dnsRetry)) {
-            return Integer.valueOf(dnsRetry);
-        } else {
-            return DEFAULT_DNS_RETRY_PROBLEM;
-        }
-    }
-
-    private int computeConnectionTimeout(MailetConfig mailetConfig) {
-        try {
-            return Integer.valueOf(
-                Optional.ofNullable(mailetConfig.getInitParameter(CONNECTIONTIMEOUT))
-                    .orElse(String.valueOf(DEFAULT_CONNECTION_TIMEOUT)));
-        } catch (Exception e) {
-            LOGGER.warn("Invalid timeout setting: {}", mailetConfig.getInitParameter(TIMEOUT));
-            return DEFAULT_CONNECTION_TIMEOUT;
-        }
-    }
-
-    private long computeSmtpTimeout(MailetConfig mailetConfig) {
-        try {
-            if (mailetConfig.getInitParameter(TIMEOUT) != null) {
-                return Integer.valueOf(mailetConfig.getInitParameter(TIMEOUT));
-            } else {
-                return DEFAULT_SMTP_TIMEOUT;
-            }
-        } catch (Exception e) {
-            LOGGER.warn("Invalid timeout setting: {}", mailetConfig.getInitParameter(TIMEOUT));
-            return DEFAULT_SMTP_TIMEOUT;
-        }
     }
 
     private DelaysAndMaxRetry computeDelaysAndMaxRetry(MailetConfig mailetConfig) {
