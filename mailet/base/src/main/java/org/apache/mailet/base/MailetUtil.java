@@ -59,14 +59,14 @@ public class MailetUtil {
             this.errorPrefix = errorPrefix;
         }
 
-        public int validate (int value) throws MessagingException {
+        public int validate(int value) throws MessagingException {
             if (!isValidPredicate.test(value)) {
                 throw new MessagingException(errorPrefix + " Got " + value);
             }
             return value;
         }
 
-        public Optional<Integer> validate (Optional<Integer> value) throws MessagingException {
+        public Optional<Integer> validate(Optional<Integer> value) throws MessagingException {
             FunctionChainer<Integer, Integer> function = Throwing.function(this::validate);
             return value.map(function.sneakyThrow());
         }
