@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -249,7 +250,7 @@ public abstract class SetMailboxesMethodTest {
             .body(NAME, equalTo("mailboxesSet"))
             .body(ARGUMENTS + ".updated", contains(mailboxId.serialize()));
 
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnly(overLimitName);
+        assertThat(mailboxProbe.listSubscriptions(username)).contains(overLimitName);
     }
 
     @Test
@@ -387,7 +388,14 @@ public abstract class SetMailboxesMethodTest {
             .body(requestBody)
             .post("/jmap");
 
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnly("mySecondBox");
+        List<String> expectedMailboxes = ImmutableList.<String> builder()
+            .add(DefaultMailboxes.OUTBOX)
+            .add(DefaultMailboxes.SENT)
+            .add(DefaultMailboxes.TRASH)
+            .add(DefaultMailboxes.DRAFTS)
+            .add("mySecondBox")
+            .build();
+        assertThat(mailboxProbe.listSubscriptions(username)).containsOnlyElementsOf(expectedMailboxes);
     }
 
     @Test
@@ -411,7 +419,13 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200);
 
-        assertThat(mailboxProbe.listSubscriptions(username)).isEmpty();
+        List<String> expectedMailboxes = ImmutableList.<String> builder()
+                .add(DefaultMailboxes.OUTBOX)
+                .add(DefaultMailboxes.SENT)
+                .add(DefaultMailboxes.TRASH)
+                .add(DefaultMailboxes.DRAFTS)
+                .build();
+        assertThat(mailboxProbe.listSubscriptions(username)).containsOnlyElementsOf(expectedMailboxes);
     }
 
     @Test
@@ -460,7 +474,14 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200);
 
-        assertThat(mailboxProbe.listSubscriptions(username)).isEmpty();
+        List<String> expectedMailboxes = ImmutableList.<String> builder()
+                .add(DefaultMailboxes.OUTBOX)
+                .add(DefaultMailboxes.SENT)
+                .add(DefaultMailboxes.TRASH)
+                .add(DefaultMailboxes.DRAFTS)
+                .add("mySecondBox")
+                .build();
+        assertThat(mailboxProbe.listSubscriptions(username)).containsOnlyElementsOf(expectedMailboxes);
     }
 
     @Test
