@@ -278,7 +278,7 @@ public abstract class SetMailboxesMethodTest {
             .body(NAME, equalTo("mailboxesSet"))
             .body(ARGUMENTS + ".created", hasKey("create-id01"));
 
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnly("foo");
+        assertThat(mailboxProbe.listSubscriptions(username)).contains("foo");
     }
 
     @Test
@@ -306,14 +306,15 @@ public abstract class SetMailboxesMethodTest {
         .when()
             .post("/jmap");
 
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnly(DefaultMailboxes.INBOX + ".foo");
+        assertThat(mailboxProbe.listSubscriptions(username)).contains(DefaultMailboxes.INBOX + ".foo");
     }
 
     @Test
     public void subscriptionUserShouldBeChangedWhenUpdateMailbox() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root");
 
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "root.myBox");
+        String initialMailboxName = "root.myBox";
+        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, initialMailboxName);
 
         String requestBody =
             "[" +
@@ -333,7 +334,9 @@ public abstract class SetMailboxesMethodTest {
             .body(requestBody)
             .post("/jmap");
 
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnly("mySecondBox");
+        assertThat(mailboxProbe.listSubscriptions(username))
+            .contains("mySecondBox")
+            .doesNotContain(initialMailboxName);
     }
 
     @Test
