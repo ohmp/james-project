@@ -101,7 +101,7 @@ public abstract class ProvisioningTest {
     }
 
     @Test
-    public void provisionMailboxesShouldRegisterThem() throws Exception {
+    public void provisionMailboxesShouldSubscribeToThem() throws Exception {
         String token = HttpJmapAuthentication.authenticateJamesUser(baseUri(), USER, PASSWORD).serialize();
 
         with()
