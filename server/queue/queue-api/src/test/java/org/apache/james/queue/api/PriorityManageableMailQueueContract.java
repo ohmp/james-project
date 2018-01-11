@@ -19,16 +19,6 @@
 
 package org.apache.james.queue.api;
 
-import static org.apache.james.queue.api.MailQueueFixture.NAME0;
-import static org.apache.james.queue.api.MailQueueFixture.NAME1;
-import static org.apache.james.queue.api.MailQueueFixture.NAME2;
-import static org.apache.james.queue.api.MailQueueFixture.NAME3;
-import static org.apache.james.queue.api.MailQueueFixture.NAME4;
-import static org.apache.james.queue.api.MailQueueFixture.NAME5;
-import static org.apache.james.queue.api.MailQueueFixture.NAME6;
-import static org.apache.james.queue.api.MailQueueFixture.NAME7;
-import static org.apache.james.queue.api.MailQueueFixture.NAME8;
-import static org.apache.james.queue.api.MailQueueFixture.NAME9;
 import static org.apache.james.queue.api.MailQueueFixture.createMimeMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,59 +38,59 @@ public interface PriorityManageableMailQueueContract {
     @Test
     default void browseShouldBeOrderedByPriority() throws Exception {
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME3)
+            .name("priority3")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 3)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME9)
+            .name("priority9")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 9)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("priority1")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 1)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME8)
+            .name("priority8")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 8)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME6)
+            .name("priority6")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 6)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME0)
+            .name("priority0")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 0)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME7)
+            .name("priority7")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 7)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME4)
+            .name("priority4")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 4)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME2)
+            .name("priority2")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 2)
             .build());
 
         getManageableMailQueue().enQueue(mailBuilder()
-            .name(NAME5)
+            .name("priority5")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 5)
             .build());
 
         assertThat(getManageableMailQueue().browse())
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME9, NAME8, NAME7, NAME6, NAME5, NAME4, NAME3, NAME2, NAME1, NAME0);
+            .containsExactly("priority9", "priority8", "priority7", "priority6", "priority5", "priority4", "priority3", "priority2", "priority1", "priority0");
     }
 
     static FakeMail.Builder mailBuilder() throws MessagingException {

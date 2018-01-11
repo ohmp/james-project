@@ -19,16 +19,6 @@
 
 package org.apache.james.queue.api;
 
-import static org.apache.james.queue.api.MailQueueFixture.NAME0;
-import static org.apache.james.queue.api.MailQueueFixture.NAME1;
-import static org.apache.james.queue.api.MailQueueFixture.NAME2;
-import static org.apache.james.queue.api.MailQueueFixture.NAME3;
-import static org.apache.james.queue.api.MailQueueFixture.NAME4;
-import static org.apache.james.queue.api.MailQueueFixture.NAME5;
-import static org.apache.james.queue.api.MailQueueFixture.NAME6;
-import static org.apache.james.queue.api.MailQueueFixture.NAME7;
-import static org.apache.james.queue.api.MailQueueFixture.NAME8;
-import static org.apache.james.queue.api.MailQueueFixture.NAME9;
 import static org.apache.james.queue.api.MailQueueFixture.createMimeMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,52 +43,52 @@ public interface PriorityMailQueueContract {
     @Test
     default void priorityShouldReorderMailsWhenDequeing() throws Exception {
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME3)
+            .name("priority3")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 3)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME9)
+            .name("priority9")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 9)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("priority1")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 1)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME8)
+            .name("priority8")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 8)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME6)
+            .name("priority6")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 6)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME0)
+            .name("priority0")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 0)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME7)
+            .name("priority7")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 7)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME4)
+            .name("priority4")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 4)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME2)
+            .name("priority2")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 2)
             .build());
 
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME5)
+            .name("priority5")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 5)
             .build());
 
@@ -113,17 +103,17 @@ public interface PriorityMailQueueContract {
         assertThat(items)
             .extracting(MailQueue.MailQueueItem::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME9, NAME8, NAME7, NAME6, NAME5, NAME4, NAME3, NAME2, NAME1, NAME0);
+            .containsExactly("priority9", "priority8", "priority7", "priority6", "priority5", "priority4", "priority3", "priority2", "priority1", "priority0");
     }
 
     @Test
     default void negativePriorityShouldBeConsideredZero() throws Exception {
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME2)
+            .name("priority-1")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, -1)
             .build());
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("priority1")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 1)
             .build());
 
@@ -131,18 +121,18 @@ public interface PriorityMailQueueContract {
         mailQueueItem1.done(true);
         MailQueue.MailQueueItem mailQueueItem2 = getMailQueue().deQueue();
         mailQueueItem2.done(true);
-        assertThat(mailQueueItem1.getMail().getName()).isEqualTo(NAME1);
-        assertThat(mailQueueItem2.getMail().getName()).isEqualTo(NAME2);
+        assertThat(mailQueueItem1.getMail().getName()).isEqualTo("priority1");
+        assertThat(mailQueueItem2.getMail().getName()).isEqualTo("priority-1");
     }
 
     @Test
     default void tooBigPriorityShouldBeConsideredMaximum() throws Exception {
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME2)
+            .name("priority12")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 12)
             .build());
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("priority8")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 8)
             .build());
 
@@ -150,22 +140,22 @@ public interface PriorityMailQueueContract {
         mailQueueItem1.done(true);
         MailQueue.MailQueueItem mailQueueItem2 = getMailQueue().deQueue();
         mailQueueItem2.done(true);
-        assertThat(mailQueueItem1.getMail().getName()).isEqualTo(NAME2);
-        assertThat(mailQueueItem2.getMail().getName()).isEqualTo(NAME1);
+        assertThat(mailQueueItem1.getMail().getName()).isEqualTo("priority12");
+        assertThat(mailQueueItem2.getMail().getName()).isEqualTo("priority8");
     }
 
     @Test
     default void invalidPriorityShouldBeConsideredDefault() throws Exception {
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("priority_invalid")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, "invalid")
             .build());
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME2)
+            .name("priority4")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 4)
             .build());
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME3)
+            .name("priority6")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 6)
             .build());
 
@@ -175,22 +165,22 @@ public interface PriorityMailQueueContract {
         mailQueueItem2.done(true);
         MailQueue.MailQueueItem mailQueueItem3 = getMailQueue().deQueue();
         mailQueueItem3.done(true);
-        assertThat(mailQueueItem1.getMail().getName()).isEqualTo(NAME3);
-        assertThat(mailQueueItem2.getMail().getName()).isEqualTo(NAME1);
-        assertThat(mailQueueItem3.getMail().getName()).isEqualTo(NAME2);
+        assertThat(mailQueueItem1.getMail().getName()).isEqualTo("priority6");
+        assertThat(mailQueueItem2.getMail().getName()).isEqualTo("priority4");
+        assertThat(mailQueueItem3.getMail().getName()).isEqualTo("priority_invalid");
     }
 
     @Test
     default void defaultPriorityShouldBeNormal() throws Exception {
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("default_priority")
             .build());
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME2)
+            .name("priority4")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 4)
             .build());
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME3)
+            .name("priority6")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, 6)
             .build());
 
@@ -200,19 +190,19 @@ public interface PriorityMailQueueContract {
         mailQueueItem2.done(true);
         MailQueue.MailQueueItem mailQueueItem3 = getMailQueue().deQueue();
         mailQueueItem3.done(true);
-        assertThat(mailQueueItem1.getMail().getName()).isEqualTo(NAME3);
-        assertThat(mailQueueItem2.getMail().getName()).isEqualTo(NAME1);
-        assertThat(mailQueueItem3.getMail().getName()).isEqualTo(NAME2);
+        assertThat(mailQueueItem1.getMail().getName()).isEqualTo("priority6");
+        assertThat(mailQueueItem2.getMail().getName()).isEqualTo("default_priority");
+        assertThat(mailQueueItem3.getMail().getName()).isEqualTo("priority4");
     }
 
     @Test
     default void priorityCanBeOmitted() throws Exception {
         getMailQueue().enQueue(mailBuilder()
-            .name(NAME1)
+            .name("priority")
             .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
-        assertThat(mailQueueItem.getMail().getName()).isEqualTo(NAME1);
+        assertThat(mailQueueItem.getMail().getName()).isEqualTo("priority");
     }
 
     static FakeMail.Builder mailBuilder() throws MessagingException {
