@@ -39,7 +39,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -388,14 +387,12 @@ public abstract class SetMailboxesMethodTest {
             .body(requestBody)
             .post("/jmap");
 
-        List<String> expectedMailboxes = ImmutableList.<String> builder()
-            .add(DefaultMailboxes.OUTBOX)
-            .add(DefaultMailboxes.SENT)
-            .add(DefaultMailboxes.TRASH)
-            .add(DefaultMailboxes.DRAFTS)
-            .add("mySecondBox")
-            .build();
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnlyElementsOf(expectedMailboxes);
+        assertThat(mailboxProbe.listSubscriptions(username))
+            .containsOnly(DefaultMailboxes.OUTBOX,
+                DefaultMailboxes.SENT,
+                DefaultMailboxes.TRASH,
+                DefaultMailboxes.DRAFTS,
+                "mySecondBox");
     }
 
     @Test
@@ -419,13 +416,11 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200);
 
-        List<String> expectedMailboxes = ImmutableList.<String> builder()
-                .add(DefaultMailboxes.OUTBOX)
-                .add(DefaultMailboxes.SENT)
-                .add(DefaultMailboxes.TRASH)
-                .add(DefaultMailboxes.DRAFTS)
-                .build();
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnlyElementsOf(expectedMailboxes);
+        assertThat(mailboxProbe.listSubscriptions(username))
+            .containsOnly(DefaultMailboxes.OUTBOX,
+            DefaultMailboxes.SENT,
+            DefaultMailboxes.TRASH,
+            DefaultMailboxes.DRAFTS);
     }
 
     @Test
@@ -474,14 +469,12 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200);
 
-        List<String> expectedMailboxes = ImmutableList.<String> builder()
-                .add(DefaultMailboxes.OUTBOX)
-                .add(DefaultMailboxes.SENT)
-                .add(DefaultMailboxes.TRASH)
-                .add(DefaultMailboxes.DRAFTS)
-                .add("mySecondBox")
-                .build();
-        assertThat(mailboxProbe.listSubscriptions(username)).containsOnlyElementsOf(expectedMailboxes);
+        assertThat(mailboxProbe.listSubscriptions(username))
+            .containsOnly(DefaultMailboxes.OUTBOX,
+                DefaultMailboxes.SENT,
+                DefaultMailboxes.TRASH,
+                DefaultMailboxes.DRAFTS,
+                "mySecondBox");
     }
 
     @Test
