@@ -55,14 +55,14 @@ import com.google.common.collect.ImmutableList;
 public class ActiveMQMailQueueBlobTest  implements MailQueueContract, ManageableMailQueueContract, DelayedMailQueueContract,
     DelayedManageableMailQueueContract, PriorityMailQueueContract, PriorityManageableMailQueueContract {
 
-    private static final String BASE_DIR = "file://target/james-test";
-    private static final String QUEUE_NAME = "test";
-    private static final boolean USE_BLOB = true;
+    static final String BASE_DIR = "file://target/james-test";
+    static final String QUEUE_NAME = "test";
+    static final boolean USE_BLOB = true;
 
-    private ActiveMQMailQueue mailQueue;
+    ActiveMQMailQueue mailQueue;
 
-    private BrokerService broker;
-    private MyFileSystem fileSystem;
+    BrokerService broker;
+    MyFileSystem fileSystem;
 
     @Override
     public MailQueue getMailQueue() {
@@ -72,12 +72,6 @@ public class ActiveMQMailQueueBlobTest  implements MailQueueContract, Manageable
     @Override
     public ManageableMailQueue getManageableMailQueue() {
         return mailQueue;
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        fileSystem.destroy();
-        broker.stop();
     }
 
     @BeforeEach
@@ -90,6 +84,12 @@ public class ActiveMQMailQueueBlobTest  implements MailQueueContract, Manageable
         NoopMetricFactory metricFactory = new NoopMetricFactory();
         mailQueue = new ActiveMQMailQueue(connectionFactory, mailQueueItemDecoratorFactory, QUEUE_NAME, USE_BLOB, metricFactory);
 
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        fileSystem.destroy();
+        broker.stop();
     }
 
     protected static BrokerService createBroker() throws Exception {
@@ -141,8 +141,8 @@ public class ActiveMQMailQueueBlobTest  implements MailQueueContract, Manageable
         return factory;
     }
 
-    private static final class MyFileSystem implements FileSystem {
-        private static final Logger LOGGER = LoggerFactory.getLogger(MyFileSystem.class);
+    static final class MyFileSystem implements FileSystem {
+        static final Logger LOGGER = LoggerFactory.getLogger(MyFileSystem.class);
 
         @Override
         public InputStream getResource(String url) throws IOException {
