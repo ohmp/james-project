@@ -19,9 +19,6 @@
 
 package org.apache.james.queue.api;
 
-import static org.apache.james.queue.api.MailQueueFixture.NAME1;
-import static org.apache.james.queue.api.MailQueueFixture.NAME2;
-import static org.apache.james.queue.api.MailQueueFixture.NAME3;
 import static org.apache.james.queue.api.MailQueueFixture.createMimeMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -115,7 +112,7 @@ public interface ManageableMailQueueContract {
     @Test
     default void browseShouldReturnSingleElement() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -126,27 +123,27 @@ public interface ManageableMailQueueContract {
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1);
+            .containsExactly("name");
     }
 
     @Test
     default void browseShouldReturnOrderElements() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME3)
+            .name("name3")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -157,27 +154,27 @@ public interface ManageableMailQueueContract {
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2, NAME3);
+            .containsExactly("name1", "name2", "name3");
     }
 
     @Test
     default void concurrentDequeueShouldNotAlterBrowsing() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME3)
+            .name("name3")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -190,27 +187,27 @@ public interface ManageableMailQueueContract {
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2, NAME3);
+            .containsExactly("name1", "name2", "name3");
     }
 
     @Test
     default void concurrentDequeueShouldNotAlterBrowsingWhenDequeueWhileIterating() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME3)
+            .name("name3")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -223,31 +220,30 @@ public interface ManageableMailQueueContract {
 
         getManageableMailQueue().deQueue();
 
-        assertThat(firstItem.getMail().getName()).isEqualTo(NAME1);
+        assertThat(firstItem.getMail().getName()).isEqualTo("name1");
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME2, NAME3);
+            .containsExactly("name2", "name3");
     }
 
     @Test
     default void browsingShouldNotAffectDequeue() throws Exception {
-        String NAME3 = "NAME3";
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME3)
+            .name("name3")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -259,20 +255,20 @@ public interface ManageableMailQueueContract {
 
         MailQueue.MailQueueItem mailQueueItem = getManageableMailQueue().deQueue();
 
-        assertThat(mailQueueItem.getMail().getName()).isEqualTo(NAME1);
+        assertThat(mailQueueItem.getMail().getName()).isEqualTo("name1");
     }
 
     @Test
     default void concurrentEnqueueShouldNotAlterBrowsingWhenDequeueWhileIterating() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -284,30 +280,30 @@ public interface ManageableMailQueueContract {
         ManageableMailQueue.MailQueueItemView firstItem = items.next();
 
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME3)
+            .name("name3")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
 
-        assertThat(firstItem.getMail().getName()).isEqualTo(NAME1);
+        assertThat(firstItem.getMail().getName()).isEqualTo("name1");
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME2);
+            .containsExactly("name2");
     }
 
     @Test
     default void concurrentDequeueShouldNotAlterBrowsingWhileIterating() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -317,7 +313,7 @@ public interface ManageableMailQueueContract {
         ManageableMailQueue.MailQueueIterator items = getManageableMailQueue().browse();
 
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME3)
+            .name("name3")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -326,20 +322,20 @@ public interface ManageableMailQueueContract {
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2);
+            .containsExactly("name1", "name2");
     }
 
     @Test
     default void concurrentFlushShouldNotAlterBrowsingWhenDequeueWhileIterating() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -352,23 +348,23 @@ public interface ManageableMailQueueContract {
 
         getManageableMailQueue().flush();
 
-        assertThat(firstItem.getMail().getName()).isEqualTo(NAME1);
+        assertThat(firstItem.getMail().getName()).isEqualTo("name1");
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME2);
+            .containsExactly("name2");
     }
 
     @Test
     default void concurrentFlushShouldNotAlterBrowsing() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -381,20 +377,20 @@ public interface ManageableMailQueueContract {
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2);
+            .containsExactly("name1", "name2");
     }
 
     @Test
     default void concurrentClearShouldNotAlterBrowsingWhenDequeue() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -407,20 +403,20 @@ public interface ManageableMailQueueContract {
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2);
+            .containsExactly("name1", "name2");
     }
 
     @Test
     default void concurrentRemoveShouldNotAlterBrowsingWhenDequeue() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -429,24 +425,24 @@ public interface ManageableMailQueueContract {
 
         ManageableMailQueue.MailQueueIterator items = getManageableMailQueue().browse();
 
-        getManageableMailQueue().remove(ManageableMailQueue.Type.Name, NAME2);
+        getManageableMailQueue().remove(ManageableMailQueue.Type.Name, "name2");
 
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2);
+            .containsExactly("name1", "name2");
     }
 
     @Test
     default void concurrentClearShouldNotAlterBrowsingWhenDequeueWhileIterating() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -458,23 +454,23 @@ public interface ManageableMailQueueContract {
 
         getManageableMailQueue().clear();
 
-        assertThat(next.getMail().getName()).isEqualTo(NAME1);
+        assertThat(next.getMail().getName()).isEqualTo("name1");
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME2);
+            .containsExactly("name2");
     }
 
     @Test
     default void concurrentRemoveShouldNotAlterBrowsingWhenDequeueWhileIterating() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
@@ -484,50 +480,50 @@ public interface ManageableMailQueueContract {
         ManageableMailQueue.MailQueueIterator items = getManageableMailQueue().browse();
         ManageableMailQueue.MailQueueItemView next = items.next();
 
-        getManageableMailQueue().remove(ManageableMailQueue.Type.Name, NAME2);
+        getManageableMailQueue().remove(ManageableMailQueue.Type.Name, "name2");
 
-        assertThat(next.getMail().getName()).isEqualTo(NAME1);
+        assertThat(next.getMail().getName()).isEqualTo("name1");
         assertThat(items).extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME2);
+            .containsExactly("name2");
     }
 
     @Test
     default void removeByNameShouldRemoveSpecificEmail() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
 
-        getManageableMailQueue().remove(ManageableMailQueue.Type.Name, NAME2);
+        getManageableMailQueue().remove(ManageableMailQueue.Type.Name, "name2");
 
         assertThat(getManageableMailQueue().browse())
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1);
+            .containsExactly("name1");
     }
 
     @Test
     default void removeBySenderShouldRemoveSpecificEmail() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.ANY_AT_JAMES)
             .recipients(MailAddressFixture.OTHER_AT_LOCAL, MailAddressFixture.OTHER_AT_JAMES)
@@ -539,20 +535,20 @@ public interface ManageableMailQueueContract {
         assertThat(getManageableMailQueue().browse())
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME2);
+            .containsExactly("name2");
     }
 
     @Test
     default void removeByRecipientShouldRemoveSpecificEmail() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.ANY_AT_JAMES)
             .recipients(MailAddressFixture.OTHER_AT_LOCAL)
@@ -564,20 +560,20 @@ public interface ManageableMailQueueContract {
         assertThat(getManageableMailQueue().browse())
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1);
+            .containsExactly("name1");
     }
 
     @Test
     default void removeByRecipientShouldRemoveSpecificEmailWhenMultipleRecipients() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.ANY_AT_JAMES)
             .recipients(MailAddressFixture.OTHER_AT_LOCAL, MailAddressFixture.OTHER_AT_JAMES)
@@ -589,7 +585,7 @@ public interface ManageableMailQueueContract {
         assertThat(getManageableMailQueue().browse())
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1);
+            .containsExactly("name1");
     }
 
     @Test
@@ -620,14 +616,14 @@ public interface ManageableMailQueueContract {
     @Test
     default void clearShouldRemoveAllElements() throws Exception {
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME1)
+            .name("name1")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
             .build());
         getManageableMailQueue().enQueue(FakeMail.builder()
-            .name(NAME2)
+            .name("name2")
             .mimeMessage(createMimeMessage())
             .sender(MailAddressFixture.ANY_AT_JAMES)
             .recipients(MailAddressFixture.OTHER_AT_LOCAL, MailAddressFixture.OTHER_AT_JAMES)
