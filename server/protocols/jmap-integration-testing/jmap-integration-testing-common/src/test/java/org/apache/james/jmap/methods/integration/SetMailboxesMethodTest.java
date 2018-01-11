@@ -473,8 +473,7 @@ public abstract class SetMailboxesMethodTest {
             .containsOnly(DefaultMailboxes.OUTBOX,
                 DefaultMailboxes.SENT,
                 DefaultMailboxes.TRASH,
-                DefaultMailboxes.DRAFTS,
-                "mySecondBox");
+                DefaultMailboxes.DRAFTS);
     }
 
     @Test
