@@ -19,7 +19,6 @@
 
 package org.apache.james.queue.api;
 
-import static org.apache.james.queue.api.MailQueueFixture.NAME1;
 import static org.apache.james.queue.api.MailQueueFixture.createMimeMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,7 +56,7 @@ public interface DelayedMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME1)
+            .name("name")
             .build(), 2L, TimeUnit.SECONDS);
 
         Future<?> future = EXECUTOR_SERVICE.submit(Throwing.runnable(() -> getMailQueue().deQueue()));
@@ -72,11 +71,11 @@ public interface DelayedMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME1)
+            .name("name")
             .build(), 1L, TimeUnit.SECONDS);
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
-        assertThat(mailQueueItem.getMail().getName()).isEqualTo(NAME1);
+        assertThat(mailQueueItem.getMail().getName()).isEqualTo("name");
     }
 
     @Test
@@ -90,7 +89,7 @@ public interface DelayedMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME1)
+            .name("name")
             .build(), delay, unit);
 
         getMailQueue().deQueue();

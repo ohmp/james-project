@@ -19,9 +19,6 @@
 
 package org.apache.james.queue.api;
 
-import static org.apache.james.queue.api.MailQueueFixture.NAME1;
-import static org.apache.james.queue.api.MailQueueFixture.NAME2;
-import static org.apache.james.queue.api.MailQueueFixture.NAME3;
 import static org.apache.james.queue.api.MailQueueFixture.createMimeMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,14 +52,14 @@ public interface DelayedManageableMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME1)
+            .name("name")
             .build(), 30L, TimeUnit.SECONDS);
 
         getManageableMailQueue().flush();
 
         Future<MailQueue.MailQueueItem> tryDequeue = EXECUTOR_SERVICE.submit(() -> getManageableMailQueue().deQueue());
         assertThat(tryDequeue.get(1, TimeUnit.SECONDS).getMail().getName())
-            .isEqualTo(NAME1);
+            .isEqualTo("name");
     }
 
     @Test
@@ -72,7 +69,7 @@ public interface DelayedManageableMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME1)
+            .name("name1")
             .build());
 
         getManageableMailQueue().enQueue(FakeMail.builder()
@@ -80,7 +77,7 @@ public interface DelayedManageableMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME2)
+            .name("name2")
             .build(), 30L, TimeUnit.SECONDS);
 
         getManageableMailQueue().enQueue(FakeMail.builder()
@@ -88,7 +85,7 @@ public interface DelayedManageableMailQueueContract {
             .sender(MailAddressFixture.OTHER_AT_LOCAL)
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.OTHER_AT_JAMES)
             .lastUpdated(new Date())
-            .name(NAME3)
+            .name("name3")
             .build(), 2L, TimeUnit.SECONDS);
 
         getManageableMailQueue().flush();
@@ -96,7 +93,7 @@ public interface DelayedManageableMailQueueContract {
         assertThat(getManageableMailQueue().browse())
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
-            .containsExactly(NAME1, NAME2, NAME3);
+            .containsExactly("name1", "name2", "name3");
     }
 
 }
