@@ -240,8 +240,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mime4j-core/0.8.1/apache-mime4j-core-0.8.1.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-mime4j-core/0.8.1/apache-mime4j-core-0.8.1-sources.jar">(Sources)</a>
-    </p>
+      </p>
 
     <p>In order to use Mime-4j DOM:</p>
 
@@ -257,7 +256,6 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mime4j-dom/0.8.1/apache-mime4j-dom-0.8.1.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-mime4j-dom/0.8.1/apache-mime4j-dom-0.8.1-sources.jar">(Sources)</a>
     </p>
 
     <p>An aggregator project is also available:</p>
@@ -275,6 +273,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mime4j/0.8.1/apache-mime4j-0.8.1-bin.tar.gz">(Tar)</a>
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mime4j/0.8.1/apache-mime4j-0.8.1-bin.zip">(Zip)</a>
+      <a href="https://github.com/apache/james-mime4j/releases/tag/apache-mime4j-project-0.8.1">(Sources)</a>
     </p>
   
   </section>
@@ -297,7 +296,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-jspf/0.9.5/apache-jspf-0.9.5.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-jspf/0.9.5/apache-jspf-0.9.5-sources.jar">(Sources)</a>
+      <a href="https://github.com/apache/james-jspf/releases/tag/apache-jspf-project-1.0.1">(Sources)</a>
     </p>
   
   </section>
@@ -321,6 +320,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/jdkim/apache-jdkim/0.2/apache-jdkim-0.2-bin.tar.gz">(Tar)</a>
       <a href="http://central.maven.org/maven2/org/apache/james/jdkim/apache-jdkim/0.2/apache-jdkim-0.2-bin.zip">(Zip)</a>
+      <a href="https://github.com/apache/james-jdkim/releases/tag/apache-jdkim-project-0.2">(Sources)</a>
     </p>
   
   </section>
@@ -343,7 +343,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-jsieve-core/0.7/apache-jsieve-core-0.7.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-jsieve-core/0.7/apache-jsieve-core-0.7-sources.jar">(Sources)</a>
+      <a href="https://github.com/apache/james-jsieve/releases/tag/apache-jsieve-0.7">(Sources)</a>
     </p>
 
     <p>An aggregator project is also available:</p>
@@ -381,7 +381,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-api/3.0.1/apache-mailet-api-3.0.1.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-api/3.0.1/apache-mailet-api-3.0.1-sources.jar">(Sources)</a>
+      <a href="https://github.com/apache/james-project/releases/tag/james-project-3.0.1">(Sources are in the <code>mailet/api</code> folder)</a>
     </p>
     
   </section>
@@ -402,7 +402,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-base/3.0.1/apache-mailet-base-3.0.1.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-base/3.0.1/apache-mailet-base-3.0.1-sources.jar">(Sources)</a>
+      <a href="https://github.com/apache/james-project/releases/tag/james-project-3.0.1">(Sources are in the <code>mailet/base</code> folder)</a>
     </p>
 
   </section>
@@ -423,7 +423,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download link:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-standard/3.0.1/apache-mailet-standard-3.0.1.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-standard/3.0.1/apache-mailet-standard-3.0.1-tests.jar">(Sources)</a>
+      <a href="https://github.com/apache/james-project/releases/tag/james-project-3.0.1">(Sources are in the <code>mailet/standard</code> folder)</a>
     </p>
 
   </section>
@@ -460,7 +460,7 @@ is found <a href='http://www.apache.org/licenses/exports/'>here</a>.
 
     <p>Direct download links:
       <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-ai/3.0.1/apache-mailet-ai-3.0.1.jar">(Jar)</a>
-      <a href="http://central.maven.org/maven2/org/apache/james/apache-mailet-ai/3.0.1/apache-mailet-ai-3.0.1-sources.jar">(Sources)</a>
+      <a href="https://github.com/apache/james-project/releases/tag/james-project-3.0.1">(Sources are in the <code>mailet/ai</code> folder)</a>
     </p>
     
   </section>
