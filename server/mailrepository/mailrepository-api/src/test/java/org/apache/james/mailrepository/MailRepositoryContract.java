@@ -124,7 +124,7 @@ public interface MailRepositoryContract {
 
         testee.store(createMail(key2));
 
-        assertThat(testee.list()).containsExactly(key1, key2);
+        assertThat(testee.list()).containsOnly(key1, key2);
     }
 
     @Test
