@@ -85,6 +85,7 @@ public class JDBCMailRepositoryTest implements MailRepositoryContract {
     public void storingMessageWithSameKeyTwiceShouldUpdateMessageContent() {
     }
 
+    @Test
     @Disabled("JAMES-2303 JDBC doesn't store PerRecipientSpecificHeaders")
     @Override
     public void checkMailEquality(Mail actual, Mail expected) {
