@@ -78,20 +78,20 @@ public interface MailRepositoryContract {
     @Test
     default void storeRegularMailShouldNotFail() throws Exception {
         MailRepository testee = retrieveRepository();
-        Mail email = createMail("mail1");
+        Mail mail = createMail("mail1");
 
-        testee.store(email);
+        testee.store(mail);
     }
 
     @Test
     default void retrieveShouldGetStoredMail() throws Exception {
         MailRepository testee = retrieveRepository();
         String key1 = "mail1";
-        Mail email = createMail(key1);
+        Mail mail = createMail(key1);
 
-        testee.store(email);
+        testee.store(mail);
 
-        assertThat(testee.retrieve(key1)).satisfies(actual -> checkMailEquality(actual, email));
+        assertThat(testee.retrieve(key1)).satisfies(actual -> checkMailEquality(actual, mail));
     }
 
     @Test
