@@ -19,8 +19,8 @@
 
 package org.apache.james.queue.api;
 
-import static org.apache.james.queue.api.MailQueueFixture.defaultMail;
-import static org.apache.james.queue.api.MailQueueFixture.defaultMailNoRecipient;
+import static org.apache.james.queue.api.Mails.defaultMail;
+import static org.apache.james.queue.api.Mails.defaultMailNoRecipient;
 import static org.apache.mailet.base.MailAddressFixture.OTHER_AT_LOCAL;
 import static org.apache.mailet.base.MailAddressFixture.RECIPIENT1;
 import static org.apache.mailet.base.MailAddressFixture.RECIPIENT2;
