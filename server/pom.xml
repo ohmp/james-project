@@ -102,6 +102,8 @@
 
         <module>task</module>
         <module>testing</module>
+
+        <module>blob</module>
     </modules>
 
     <properties>
