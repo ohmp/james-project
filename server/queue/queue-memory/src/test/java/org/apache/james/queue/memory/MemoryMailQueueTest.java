@@ -19,7 +19,7 @@
 
 package org.apache.james.queue.memory;
 
-import static org.apache.james.queue.api.MailQueueFixture.defaultMail;
+import static org.apache.james.queue.api.Mails.defaultMail;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.queue.api.MailQueue;
