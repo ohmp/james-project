@@ -34,6 +34,7 @@
 
     <modules>
         <module>james-server-blob-api</module>
+        <module>james-server-blob-cassandra</module>
     </modules>
 
 </project>
