@@ -31,7 +31,7 @@ public interface DelayedPriorityMailQueueContract extends DelayedMailQueueContra
     MailQueue getMailQueue();
 
     @Test
-    default void delayedHighPriorityMailShouldBeDeQueuedBeforeLowPriorityNonDelayedMail() throws Exception {
+    default void delayedHighPriorityMailShouldBeDeQueuedBeforeLowPriorityNonDelayedMailAfterDelayExpiracy() throws Exception {
         getMailQueue().enQueue(defaultMail()
             .name("name1")
             .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.LOW_PRIORITY)
@@ -55,5 +55,30 @@ public interface DelayedPriorityMailQueueContract extends DelayedMailQueueContra
 
         assertThat(item1.getMail().getName()).isEqualTo("name2");
         assertThat(item2.getMail().getName()).isEqualTo("name1");
+    }
+
+    @Test
+    default void delayedHighPriorityMailShouldBeDeQueuedAfterNonDelayedMail() throws Exception {
+        getMailQueue().enQueue(defaultMail()
+            .name("name1")
+            .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.LOW_PRIORITY)
+            .build());
+
+        int delay = 1;
+        TimeUnit unit = TimeUnit.SECONDS;
+        getMailQueue().enQueue(defaultMail()
+            .name("name2")
+            .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.HIGH_PRIORITY)
+            .build(),
+            delay,
+            unit);
+
+        MailQueue.MailQueueItem item1 = getMailQueue().deQueue();
+        item1.done(true);
+        MailQueue.MailQueueItem item2 = getMailQueue().deQueue();
+        item2.done(true);
+
+        assertThat(item1.getMail().getName()).isEqualTo("name1");
+        assertThat(item2.getMail().getName()).isEqualTo("name2");
     }
 }
