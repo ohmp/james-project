@@ -89,7 +89,7 @@ public interface ManageableMailQueue extends MailQueue {
     /**
      * Represent a View over a queue {@link MailQueue.MailQueueItem}
      */
-    final class MailQueueItemView {
+    class MailQueueItemView {
 
         private final Mail mail;
         private final long nextDelivery;
