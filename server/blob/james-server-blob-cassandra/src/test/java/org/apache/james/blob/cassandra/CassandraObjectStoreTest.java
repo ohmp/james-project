@@ -39,23 +39,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.google.common.base.Strings;
 
 @ExtendWith(DockerCassandraExtension.class)
-public class CassandraBlobsDAOTest implements ObjectStoreContract {
+public class CassandraObjectStoreTest implements ObjectStoreContract {
 
     private static final int CHUNK_SIZE = 1024;
     private static final int MULTIPLE_CHUNK_SIZE = 3;
 
     private CassandraCluster cassandra;
-    private CassandraBlobsDAO testee;
+    private CassandraObjectStore testee;
 
     @BeforeEach
     public void setUp(DockerCassandra dockerCassandra) {
         cassandra = CassandraCluster.create(
                 new CassandraBlobModule(), dockerCassandra.getIp(), dockerCassandra.getBindingPort());
         
-        testee = new CassandraBlobsDAO(cassandra.getConf(),
+        testee = new CassandraObjectStore(new CassandraBlobsDAO(cassandra.getConf(),
             CassandraConfiguration.builder()
                 .blobPartSize(CHUNK_SIZE)
-                .build());
+                .build()));
     }
 
     @AfterEach
@@ -76,9 +76,10 @@ public class CassandraBlobsDAOTest implements ObjectStoreContract {
     @Test
     public void readShouldReturnSplitSavedDataByChunk() throws IOException {
         String longString = Strings.repeat("0123456789\n", MULTIPLE_CHUNK_SIZE);
-        BlobId blobId = testee.save(longString.getBytes(StandardCharsets.UTF_8)).join();
+        BlobId blobId = new CassandraBlobId("any");
+        testee.saveAsBytes(blobId, longString.getBytes(StandardCharsets.UTF_8)).join();
 
-        byte[] bytes = testee.read(blobId).join();
+        byte[] bytes = testee.readAsBytes(blobId).join();
 
         assertThat(new String(bytes, StandardCharsets.UTF_8)).isEqualTo(longString);
     }

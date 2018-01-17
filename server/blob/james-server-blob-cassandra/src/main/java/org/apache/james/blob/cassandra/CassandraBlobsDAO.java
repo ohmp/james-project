@@ -36,7 +36,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.init.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.blob.api.BlobId;
-import org.apache.james.blob.api.ObjectStore;
 import org.apache.james.blob.cassandra.BlobTable.BlobParts;
 import org.apache.james.blob.cassandra.utils.DataChunker;
 import org.apache.james.util.FluentFutureStream;
@@ -53,7 +52,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Bytes;
 
-public class CassandraBlobsDAO implements ObjectStore {
+public class CassandraBlobsDAO {
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraBlobsDAO.class);
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement insert;
@@ -106,17 +105,15 @@ public class CassandraBlobsDAO implements ObjectStore {
             .value(BlobParts.DATA, bindMarker(BlobParts.DATA)));
     }
 
-    @Override
-    public CompletableFuture<BlobId> save(byte[] data) {
+    public CompletableFuture<BlobId> save(BlobId blobId, byte[] data) {
         Preconditions.checkNotNull(data);
 
-        CassandraBlobId blobId = CassandraBlobId.forPayload(data);
         return saveBlobParts(data, blobId)
             .thenCompose(numberOfChunk -> saveBlobPartsReferences(blobId, numberOfChunk))
             .thenApply(any -> blobId);
     }
 
-    private CompletableFuture<Integer> saveBlobParts(byte[] data, CassandraBlobId blobId) {
+    private CompletableFuture<Integer> saveBlobParts(byte[] data, BlobId blobId) {
         return FluentFutureStream.of(
             dataChunker.chunk(data, configuration.getBlobPartSize())
                 .map(pair -> writePart(pair.getRight(), blobId, pair.getKey())
@@ -132,7 +129,7 @@ public class CassandraBlobsDAO implements ObjectStore {
         return stream.reduce((first, second) -> second);
     }
 
-    private CompletableFuture<Void> writePart(ByteBuffer data, CassandraBlobId blobId, int position) {
+    private CompletableFuture<Void> writePart(ByteBuffer data, BlobId blobId, int position) {
         return cassandraAsyncExecutor.executeVoid(
             insertPart.bind()
                 .setString(BlobTable.ID, blobId.asString())
@@ -140,13 +137,12 @@ public class CassandraBlobsDAO implements ObjectStore {
                 .setBytes(BlobParts.DATA, data));
     }
 
-    private CompletableFuture<Void> saveBlobPartsReferences(CassandraBlobId blobId, int numberOfChunk) {
+    private CompletableFuture<Void> saveBlobPartsReferences(BlobId blobId, int numberOfChunk) {
         return cassandraAsyncExecutor.executeVoid(insert.bind()
             .setString(BlobTable.ID, blobId.asString())
             .setInt(BlobTable.NUMBER_OF_CHUNK, numberOfChunk));
     }
 
-    @Override
     public CompletableFuture<byte[]> read(BlobId blobId) {
         return cassandraAsyncExecutor.executeSingleRow(
             select.bind()
