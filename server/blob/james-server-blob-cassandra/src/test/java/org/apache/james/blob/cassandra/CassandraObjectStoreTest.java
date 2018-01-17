@@ -69,8 +69,8 @@ public class CassandraObjectStoreTest implements ObjectStoreContract {
     }
 
     @Override
-    public BlobId from(String blodIdAsString) {
-        return CassandraBlobId.from(blodIdAsString);
+    public BlobId.Factory blobIdFactory() {
+        return new CassandraBlobId.Factory();
     }
 
     @Test

@@ -34,7 +34,8 @@ import com.google.common.base.Strings;
 public interface ObjectStoreContract {
 
     ObjectStore testee();
-    BlobId from(String blodIdAsString);
+
+    BlobId.Factory blobIdFactory();
 
     @Test
     default void saveShouldThrowWhenNullBlobId() throws Exception {
@@ -50,7 +51,7 @@ public interface ObjectStoreContract {
 
     @Test
     default void saveAsBytesShouldThrowWhenNullData() throws Exception {
-        assertThatThrownBy(() -> testee().saveAsBytes(from("any"), null))
+        assertThatThrownBy(() -> testee().saveAsBytes(blobIdFactory().from("any"), null))
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -68,7 +69,7 @@ public interface ObjectStoreContract {
 
     @Test
     default void saveShouldSaveEmptyData() throws Exception {
-        BlobId blobId = from("myblobId");
+        BlobId blobId = blobIdFactory().from("myblobId");
         OutputStream outputStream = testee().save(blobId);
         outputStream.write(new byte[]{});
         outputStream.close();
@@ -80,7 +81,7 @@ public interface ObjectStoreContract {
 
     @Test
     default void saveShouldSaveSomeData() throws Exception {
-        BlobId blobId = from("myblobId");
+        BlobId blobId = blobIdFactory().from("myblobId");
         OutputStream outputStream = testee().save(blobId);
         outputStream.write("toto".getBytes(StandardCharsets.UTF_8));
         outputStream.close();
@@ -92,14 +93,14 @@ public interface ObjectStoreContract {
 
     @Test
     default void readShouldBeEmptyWhenNoExisting() throws IOException {
-        InputStream bytes = testee().read(from("unknown"));
+        InputStream bytes = testee().read(blobIdFactory().from("unknown"));
 
         assertThat(IOUtils.toByteArray(bytes)).isEmpty();
     }
 
     @Test
     default void readShouldReturnLongSavedData() throws IOException {
-        BlobId blobId = from("myblobId");
+        BlobId blobId = blobIdFactory().from("myblobId");
         String longString = Strings.repeat("0123456789\n", 1000);
         OutputStream outputStream = testee().save(blobId);
         outputStream.write(longString.getBytes(StandardCharsets.UTF_8));
