@@ -52,7 +52,7 @@ public interface DelayedMailQueueContract {
     }
 
     @Test
-    default void enqueueShouldNegativeDelayShouldNotDelayDelivery(ExecutorService executorService) throws Exception {
+    default void enqueueWithNegativeDelayShouldNotDelayDelivery(ExecutorService executorService) throws Exception {
         getMailQueue().enQueue(defaultMail()
             .build(),
             -30L,
