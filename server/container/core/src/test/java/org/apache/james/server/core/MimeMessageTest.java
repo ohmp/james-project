@@ -48,7 +48,7 @@ public class MimeMessageTest {
         return MimeMessageBuilder.mimeMessageBuilder()
             .addHeader("Date", "Tue, 16 Jan 2018 09:56:01 +0700 (ICT)")
             .setSubject("test")
-            .setText("test body")
+            .setText("test body", "text/plain; charset=us-ascii")
             .build();
     }
 
