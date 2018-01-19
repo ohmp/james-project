@@ -29,19 +29,16 @@ import org.apache.james.queue.api.MailQueueFactoryContract;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+
+@ExtendWith(BrokerExtension.class)
 public class JMSMailQueueFactoryTest implements MailQueueFactoryContract {
-
-    private final static String QUEUE_NAME = "test";
 
     private JMSMailQueueFactory mailQueueFactory;
 
-    private BrokerService broker;
-
     @BeforeEach
-    public void setUp() throws Exception {
-        broker = BrokerSupplier.createBroker(QUEUE_NAME);
-        broker.start();
+    public void setUp(BrokerService broker) throws Exception {
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?create=false");
         RawMailQueueItemDecoratorFactory mailQueueItemDecoratorFactory = new RawMailQueueItemDecoratorFactory();
         NoopMetricFactory metricFactory = new NoopMetricFactory();
@@ -51,7 +48,6 @@ public class JMSMailQueueFactoryTest implements MailQueueFactoryContract {
 
     @AfterEach
     public void tearDown() throws Exception {
-        broker.stop();
         mailQueueFactory.destroy();
     }
 
