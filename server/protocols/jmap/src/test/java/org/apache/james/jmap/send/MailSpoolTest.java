@@ -21,7 +21,6 @@ package org.apache.james.jmap.send;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
@@ -31,8 +30,6 @@ import org.apache.james.queue.memory.MemoryMailQueueFactory;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 
 public class MailSpoolTest {
     private static final String USERNAME = "user";
@@ -44,29 +41,10 @@ public class MailSpoolTest {
 
     @Before
     public void setup() {
-        myQueue = new MemoryMailQueueFactory.MemoryMailQueue(MailQueueFactory.SPOOL, new RawMailQueueItemDecoratorFactory());
+        MemoryMailQueueFactory mailQueueFactory = new MemoryMailQueueFactory(new RawMailQueueItemDecoratorFactory());
+        myQueue = mailQueueFactory.getQueue(MailQueueFactory.SPOOL);
 
-        mailSpool = new MailSpool(new SingletonMailQueueFactory(myQueue));
-    }
-
-    private static class SingletonMailQueueFactory implements MailQueueFactory {
-
-        private final MailQueue mailQueue;
-
-        public SingletonMailQueueFactory(MailQueue mailQueue) {
-
-            this.mailQueue = mailQueue;
-        }
-
-        @Override
-        public MailQueue getQueue(String name) {
-            return mailQueue;
-        }
-
-        @Override
-        public List<MailQueue> getUsedMailQueues() {
-            return ImmutableList.of(mailQueue);
-        }
+        mailSpool = new MailSpool(mailQueueFactory);
     }
 
     @Test
