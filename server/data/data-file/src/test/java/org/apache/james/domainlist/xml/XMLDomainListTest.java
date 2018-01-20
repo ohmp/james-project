@@ -20,22 +20,17 @@ package org.apache.james.domainlist.xml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.mock.MockDNSService;
+import org.apache.james.dnsservice.api.InMemoryDNSService;
 import org.apache.james.domainlist.api.DomainListException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import com.google.common.collect.ImmutableList;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 public class XMLDomainListTest {
 
@@ -56,31 +51,13 @@ public class XMLDomainListTest {
         return configuration;
     }
 
-    private DNSService setUpDNSServer(final String hostName) {
-        return new MockDNSService() {
-
-            @Override
-            public String getHostName(InetAddress inet) {
-                return hostName;
-            }
-
-            @Override
-            public Collection<InetAddress> getAllByName(String name) throws UnknownHostException {
-                return ImmutableList.of(InetAddress.getByName("127.0.0.1"));
-            }
-
-            @Override
-            public InetAddress getLocalHost() throws UnknownHostException {
-                return InetAddress.getLocalHost();
-            }
-        };
-    }
-
     // See https://issues.apache.org/jira/browse/JAMES-998
     @Test
     public void testNoConfiguredDomains() throws Exception {
         List<String> domains = new ArrayList<>();
-        XMLDomainList dom = new XMLDomainList(setUpDNSServer("localhost"));
+        XMLDomainList dom = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("localhost", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         dom.configure(setUpConfiguration(false, false, domains));
 
         assertThat(dom.getDomains()).containsOnly(DEFAULT_DOMAIN);
@@ -92,7 +69,9 @@ public class XMLDomainListTest {
         domains.add("domain1.");
         domains.add("domain2.");
 
-        XMLDomainList dom = new XMLDomainList(setUpDNSServer("localhost"));
+        XMLDomainList dom = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("localhost", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         dom.configure(setUpConfiguration(false, false, domains));
 
         assertThat(dom.getDomains()).hasSize(3);
@@ -103,9 +82,12 @@ public class XMLDomainListTest {
         List<String> domains = new ArrayList<>();
         domains.add("domain1.");
 
-        XMLDomainList dom = new XMLDomainList(setUpDNSServer("local"));
+        XMLDomainList dom = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("local", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         dom.configure(setUpConfiguration(true, false, domains));
 
+        System.out.println(ImmutableList.of(dom.getDomains()));
         assertThat(dom.getDomains()).hasSize(3);
     }
 
@@ -114,7 +96,9 @@ public class XMLDomainListTest {
         List<String> domains = new ArrayList<>();
         domains.add("domain1.");
 
-        XMLDomainList dom = new XMLDomainList(setUpDNSServer("localhost"));
+        XMLDomainList dom = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("localhost", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         dom.configure(setUpConfiguration(true, false, domains));
 
         assertThat(dom.getDomains()).hasSize(2);
@@ -127,7 +111,9 @@ public class XMLDomainListTest {
         List<String> domains = new ArrayList<>();
         domains.add("domain1");
 
-        XMLDomainList testee = new XMLDomainList(setUpDNSServer("hostname"));
+        XMLDomainList testee = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("hostname", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         testee.configure(setUpConfiguration(true, false, domains));
 
         testee.addDomain("newDomain");
@@ -140,7 +126,9 @@ public class XMLDomainListTest {
         List<String> domains = new ArrayList<>();
         domains.add("domain1");
 
-        XMLDomainList testee = new XMLDomainList(setUpDNSServer("localhost"));
+        XMLDomainList testee = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("localhost", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         testee.configure(setUpConfiguration(true, false, domains));
 
         testee.removeDomain("newDomain");
@@ -155,7 +143,9 @@ public class XMLDomainListTest {
         configuration.addProperty("domainnames.domainname", "domain1");
         configuration.addProperty("defaultDomain", "localhost");
 
-        XMLDomainList testee = new XMLDomainList(setUpDNSServer("localhost"));
+        XMLDomainList testee = new XMLDomainList(new InMemoryDNSService()
+            .registerMxRecord("localhost", "127.0.0.1")
+            .registerMxRecord("127.0.0.1", "127.0.0.1"));
         testee.configure(configuration);
 
         assertThat(testee.getDomainListInternal()).hasSize(3);
