@@ -21,6 +21,7 @@ package org.apache.james.webadmin.routes;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
+import static com.jayway.restassured.RestAssured.with;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
@@ -31,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,8 +42,10 @@ import java.util.List;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.memory.MemoryMailRepository;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
+import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.service.ClearMailRepositoryTask;
 import org.apache.james.webadmin.service.MailRepositoryStoreService;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -69,9 +73,13 @@ public class MailRepositoriesRoutesTest {
         mailRepositoryStore = mock(MailRepositoryStore.class);
         mailRepository = new MemoryMailRepository();
 
+        MemoryTaskManager taskManager = new MemoryTaskManager();
+        JsonTransformer jsonTransformer = new JsonTransformer();
         webAdminServer = WebAdminUtils.createWebAdminServer(
                 new DefaultMetricFactory(),
-                new MailRepositoriesRoutes(new MailRepositoryStoreService(mailRepositoryStore), new JsonTransformer()));
+                new MailRepositoriesRoutes(new MailRepositoryStoreService(mailRepositoryStore),
+                    jsonTransformer, taskManager),
+            new TasksRoutes(taskManager, jsonTransformer));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
@@ -411,6 +419,105 @@ public class MailRepositoriesRoutesTest {
             .extract()
             .as(Long.class);
         assertThat(actual).isEqualTo(0L);
+    }
+
+    @Test
+    public void deletingAllMailsShouldCreateATask() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        when()
+            .patch(URL_ESCAPED_MY_REPO + "?action=clear")
+        .then()
+            .statusCode(HttpStatus.CREATED_201)
+            .header("Location", is(notNullValue()))
+            .body("taskId", is(notNullValue()));
+    }
+
+    @Test
+    public void patchShouldOnlySupportClear() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        when()
+            .patch(URL_ESCAPED_MY_REPO + "?action=invalid")
+        .then()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .body("statusCode", is(400))
+            .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
+            .body("message", is("Unknown action invalid"));
+    }
+
+    @Test
+    public void patchShouldRequireAnAction() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        when()
+            .patch(URL_ESCAPED_MY_REPO)
+        .then()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .body("statusCode", is(400))
+            .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
+            .body("message", is("You need to specify an action. Currently only clear is supported."));
+    }
+
+    @Test
+    public void clearTaskShouldHaveDetails() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        String name1 = "name1";
+        String name2 = "name2";
+        mailRepository.store(FakeMail.builder()
+            .name(name1)
+            .build());
+        mailRepository.store(FakeMail.builder()
+            .name(name2)
+            .build());
+
+        String taskId = with()
+            .patch(URL_ESCAPED_MY_REPO + "?action=clear")
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("taskId", is(notNullValue()))
+            .body("type", is(ClearMailRepositoryTask.TYPE))
+            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO))
+            .body("additionalInformation.initialCount", is(2))
+            .body("additionalInformation.remainingCount", is(0))
+            .body("startedDate", is(notNullValue()))
+            .body("submitDate", is(notNullValue()))
+            .body("completedDate", is(notNullValue()));
+    }
+
+    @Test
+    public void clearTaskShouldRemoveAllTheMailsFromTheMailRepository() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        mailRepository.store(FakeMail.builder()
+            .name("name1")
+            .build());
+        mailRepository.store(FakeMail.builder()
+            .name("name2")
+            .build());
+
+        String taskId = with()
+            .patch(URL_ESCAPED_MY_REPO + "?action=clear")
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+            .get(taskId + "/await");
+
+        when()
+            .get(URL_ESCAPED_MY_REPO)
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .body("", hasSize(0));
     }
 
 }
