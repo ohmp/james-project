@@ -74,6 +74,8 @@ public class MailRepositoriesRoutes implements Routes {
         defineGetMailRepositories();
 
         defineListMails();
+
+        defineSize();
     }
 
     @GET
@@ -128,6 +130,29 @@ public class MailRepositoriesRoutes implements Routes {
         service.get(MAIL_REPOSITORIES, (request, response) -> {
             response.status(HttpStatus.OK_200);
             return repositoryStoreService.listMailRepositories();
+        }, jsonTransformer);
+    }
+
+    @GET
+    @Path("/{encodedUrl}/size")
+    @ApiOperation(value = "Reading the size of a repository")
+    @ApiResponses(value = {
+        @ApiResponse(code = HttpStatus.OK_200, message = "The number of mails in a repository", response = List.class),
+        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
+    })
+    public void defineSize() {
+        service.get(MAIL_REPOSITORIES + "/:encodedUrl/size", (request, response) -> {
+            String url = URLDecoder.decode(request.params("encodedUrl"), StandardCharsets.UTF_8.displayName());
+            try {
+                return repositoryStoreService.size(url);
+            } catch (MailRepositoryStore.MailRepositoryStoreException| MessagingException e) {
+                throw ErrorResponder.builder()
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .type(ErrorResponder.ErrorType.SERVER_ERROR)
+                    .cause(e)
+                    .message("Error while retrieving mail repository size")
+                    .haltError();
+            }
         }, jsonTransformer);
     }
 

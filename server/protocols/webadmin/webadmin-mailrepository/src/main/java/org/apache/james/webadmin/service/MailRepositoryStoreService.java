@@ -57,4 +57,9 @@ public class MailRepositoryStoreService {
             .collect(Guavate.toImmutableList());
     }
 
+    public long size(String url) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
+        MailRepository mailRepository = mailRepositoryStore.select(url);
+        return mailRepository.size();
+    }
+
 }

@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin.routes;
 
+import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
@@ -266,4 +267,35 @@ public class MailRepositoriesRoutesTest {
             .body("mailKey", containsInAnyOrder("name1", "name2"));
     }
 
+    @Test
+    public void retrievingSizeShouldReturnNumberOfContainedMails() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        mailRepository.store(FakeMail.builder()
+            .name("name1")
+            .build());
+
+        Long actual = given()
+            .get(URL_ESCAPED_MY_REPO + "/size")
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .contentType(ContentType.JSON)
+            .extract()
+            .as(Long.class);
+        assertThat(actual).isEqualTo(1L);
+    }
+
+    @Test
+    public void retrievingSizeShouldReturnZeroWhenEmpty() throws Exception {
+        when(mailRepositoryStore.select(URL_MY_REPO)).thenReturn(mailRepository);
+
+        Long actual = given()
+            .get(URL_ESCAPED_MY_REPO + "/size")
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .contentType(ContentType.JSON)
+            .extract()
+            .as(Long.class);
+        assertThat(actual).isEqualTo(0L);
+    }
 }
