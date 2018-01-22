@@ -77,6 +77,8 @@ import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.hash.Hashing;
 
@@ -695,5 +697,11 @@ public class MBoxMailRepository implements MailRepository, Configurable {
     @Override
     public long size() throws MessagingException {
         return Iterators.size(list());
+    }
+
+    @Override
+    public void removeAll() throws MessagingException {
+        ImmutableList.copyOf(list())
+            .forEach(Throwing.<String>consumer(this::remove).sneakyThrow());
     }
 }
