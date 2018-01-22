@@ -77,6 +77,7 @@ import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Iterators;
 import com.google.common.hash.Hashing;
 
 /**
@@ -689,5 +690,10 @@ public class MBoxMailRepository implements MailRepository, Configurable {
      */
     public boolean unlock(String key) {
         return false;
+    }
+
+    @Override
+    public long size() throws MessagingException {
+        return Iterators.size(list());
     }
 }
