@@ -33,7 +33,6 @@ import static org.hamcrest.Matchers.not;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
@@ -62,7 +61,6 @@ public class TasksRoutesTest {
         taskManager = new MemoryTaskManager();
 
         webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
             new TasksRoutes(taskManager, new JsonTransformer()));
 
         webAdminServer.configure(NO_CONFIGURATION);

@@ -21,7 +21,7 @@ package org.apache.james.webadmin;
 
 import java.io.IOException;
 
-import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 
 import com.google.common.collect.ImmutableSet;
@@ -35,11 +35,11 @@ public class WebAdminUtils {
             .build();
     }
 
-    public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, Routes... routes) throws IOException {
+    public static WebAdminServer createWebAdminServer(Routes... routes) throws IOException {
         return new WebAdminServer(webAdminConfigurationForTesting(),
             ImmutableSet.copyOf(routes),
             new NoAuthenticationFilter(),
-            metricFactory);
+            new DefaultMetricFactory());
     }
 
 }

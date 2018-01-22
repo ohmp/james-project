@@ -40,7 +40,6 @@ import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.domainlist.memory.MemoryDomainList;
-import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
@@ -80,9 +79,7 @@ public class GroupsRoutesTest {
     private WebAdminServer webAdminServer;
 
     private void createServer(GroupsRoutes groupsRoutes) throws Exception {
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            groupsRoutes);
+        webAdminServer = WebAdminUtils.createWebAdminServer(groupsRoutes);
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 

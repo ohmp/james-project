@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.james.domainlist.api.DomainList;
-import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
@@ -67,7 +66,6 @@ public class UsersRoutesTest {
 
     private void createServer(UsersRepository usersRepository) throws Exception {
         webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
             new UserRoutes(new UserService(usersRepository), new JsonTransformer()));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();

@@ -41,7 +41,6 @@ import java.util.List;
 
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.memory.MemoryMailRepository;
-import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
@@ -76,9 +75,8 @@ public class MailRepositoriesRoutesTest {
         MemoryTaskManager taskManager = new MemoryTaskManager();
         JsonTransformer jsonTransformer = new JsonTransformer();
         webAdminServer = WebAdminUtils.createWebAdminServer(
-                new DefaultMetricFactory(),
-                new MailRepositoriesRoutes(new MailRepositoryStoreService(mailRepositoryStore),
-                    jsonTransformer, taskManager),
+            new MailRepositoriesRoutes(new MailRepositoryStoreService(mailRepositoryStore),
+                jsonTransformer, taskManager),
             new TasksRoutes(taskManager, jsonTransformer));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
