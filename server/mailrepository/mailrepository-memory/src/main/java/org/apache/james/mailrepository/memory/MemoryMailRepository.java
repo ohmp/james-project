@@ -80,4 +80,9 @@ public class MemoryMailRepository implements MailRepository {
     public long size() throws MessagingException {
         return mails.size();
     }
+
+    @Override
+    public void removeAll() throws MessagingException {
+        mails.clear();
+    }
 }
