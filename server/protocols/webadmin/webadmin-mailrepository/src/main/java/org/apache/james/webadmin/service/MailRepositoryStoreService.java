@@ -20,6 +20,7 @@
 package org.apache.james.webadmin.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.mail.MessagingException;
@@ -28,9 +29,11 @@ import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.util.streams.Iterators;
 import org.apache.james.util.streams.Limit;
+import org.apache.james.webadmin.dto.MailDto;
 import org.apache.james.webadmin.dto.MailKey;
 import org.apache.james.webadmin.dto.MailRepositoryResponse;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 
 public class MailRepositoryStoreService {
@@ -60,6 +63,13 @@ public class MailRepositoryStoreService {
     public long size(String url) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
         MailRepository mailRepository = mailRepositoryStore.select(url);
         return mailRepository.size();
+    }
+
+    public Optional<MailDto> retrieveMail(String url, String mailKey) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
+        MailRepository mailRepository = mailRepositoryStore.select(url);
+
+        return Optional.ofNullable(mailRepository.retrieve(mailKey))
+            .map(Throwing.function(MailDto::fromMail).sneakyThrow());
     }
 
 }
