@@ -56,11 +56,15 @@ public class WebAdminUtils {
     }
 
     public static RequestSpecBuilder defineRequestSpecification(WebAdminServer webAdminServer) {
+        return defineRequestSpecification(webAdminServer.getPort());
+    }
+
+    public static RequestSpecBuilder defineRequestSpecification(PortSupplier portSupplier) {
         return new RequestSpecBuilder()
             .setContentType(ContentType.JSON)
             .setAccept(ContentType.JSON)
             .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
-            .setPort(webAdminServer.getPort().get().getValue());
+            .setPort(portSupplier.get().getValue());
     }
 
 }
