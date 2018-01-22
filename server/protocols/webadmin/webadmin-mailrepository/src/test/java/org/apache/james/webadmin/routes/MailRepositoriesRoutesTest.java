@@ -24,7 +24,8 @@ import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,8 +50,6 @@ import com.jayway.restassured.http.ContentType;
 
 public class MailRepositoriesRoutesTest {
 
-    public static final String USERNAME = "username";
-    public static final String MAILBOX_NAME = "myMailboxName";
     private WebAdminServer webAdminServer;
     private MailRepositoryStore mailRepositoryStore;
 
@@ -103,7 +102,9 @@ public class MailRepositoriesRoutesTest {
             .get()
         .then()
             .statusCode(HttpStatus.OK_200)
-            .body(is("[{\"repository\":\"url://myRepo\"}]"));
+            .body("", hasSize(1))
+            .body("[0].repository", is("url://myRepo"))
+            .body("[0].encodedUrl", is("url%3A%2F%2FmyRepo"));
     }
 
     @Test
