@@ -26,12 +26,14 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.mail.MessagingException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.util.streams.Limit;
+import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.service.MailRepositoryStoreService;
 import org.apache.james.webadmin.utils.ErrorResponder;
@@ -78,6 +80,8 @@ public class MailRepositoriesRoutes implements Routes {
         defineGetMail();
 
         defineSize();
+
+        defineDeleteMail();
     }
 
     @GET
@@ -177,12 +181,38 @@ public class MailRepositoriesRoutes implements Routes {
             String url = URLDecoder.decode(request.params("encodedUrl"), StandardCharsets.UTF_8.displayName());
             try {
                 return repositoryStoreService.size(url);
+        } catch (MailRepositoryStore.MailRepositoryStoreException| MessagingException e) {
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                .type(ErrorResponder.ErrorType.SERVER_ERROR)
+                .cause(e)
+                .message("Error while retrieving mail repository size")
+                .haltError();
+            }
+        }, jsonTransformer);
+    }
+
+    @DELETE
+    @Path("/{encodedUrl}/{mailKey}")
+    @ApiOperation(value = "Deleting a specific mail from that mailRepository")
+    @ApiResponses(value = {
+        @ApiResponse(code = HttpStatus.OK_200, message = "Mail is no more stored in the repository", response = List.class),
+        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
+    })
+    public void defineDeleteMail() {
+        service.delete(MAIL_REPOSITORIES + "/:encodedUrl/:mailKey", (request, response) -> {
+            String url = URLDecoder.decode(request.params("encodedUrl"), StandardCharsets.UTF_8.displayName());
+            String mailKey = request.params("mailKey");
+            try {
+                response.status(HttpStatus.NO_CONTENT_204);
+                repositoryStoreService.deleteMail(url, mailKey);
+                return Constants.EMPTY_BODY;
             } catch (MailRepositoryStore.MailRepositoryStoreException| MessagingException e) {
                 throw ErrorResponder.builder()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .type(ErrorResponder.ErrorType.SERVER_ERROR)
                     .cause(e)
-                    .message("Error while retrieving mail repository size")
+                    .message("Error while deleting mail")
                     .haltError();
             }
         }, jsonTransformer);
