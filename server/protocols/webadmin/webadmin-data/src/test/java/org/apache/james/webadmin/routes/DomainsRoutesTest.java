@@ -23,7 +23,6 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.with;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -61,8 +60,6 @@ public class DomainsRoutesTest {
     private void createServer(DomainList domainList) throws Exception {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DomainsRoutes(domainList, new JsonTransformer()));
-        webAdminServer.configure(NO_CONFIGURATION);
-        webAdminServer.await();
 
         RestAssured.requestSpecification = WebAdminUtils.defineRequestSpecification(webAdminServer)
             .setBasePath(DomainsRoutes.DOMAINS)

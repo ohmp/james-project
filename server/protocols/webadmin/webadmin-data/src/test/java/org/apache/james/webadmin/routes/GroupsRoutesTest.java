@@ -22,7 +22,6 @@ package org.apache.james.webadmin.routes;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -76,8 +75,6 @@ public class GroupsRoutesTest {
 
     private void createServer(GroupsRoutes groupsRoutes) throws Exception {
         webAdminServer = WebAdminUtils.createWebAdminServer(groupsRoutes);
-        webAdminServer.configure(NO_CONFIGURATION);
-        webAdminServer.await();
 
         RestAssured.requestSpecification = WebAdminUtils.defineRequestSpecification(webAdminServer)
             .setBasePath(GroupsRoutes.ROOT_PATH)

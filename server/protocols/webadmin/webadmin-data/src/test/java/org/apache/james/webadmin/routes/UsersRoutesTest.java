@@ -22,7 +22,6 @@ package org.apache.james.webadmin.routes;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.with;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -63,8 +62,6 @@ public class UsersRoutesTest {
     private void createServer(UsersRepository usersRepository) throws Exception {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new UserRoutes(new UserService(usersRepository), new JsonTransformer()));
-        webAdminServer.configure(NO_CONFIGURATION);
-        webAdminServer.await();
 
         RestAssured.requestSpecification = WebAdminUtils.defineRequestSpecification(webAdminServer)
             .setBasePath(UserRoutes.USERS)

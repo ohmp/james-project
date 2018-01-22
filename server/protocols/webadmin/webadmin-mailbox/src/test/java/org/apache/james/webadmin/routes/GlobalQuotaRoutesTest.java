@@ -20,7 +20,6 @@
 package org.apache.james.webadmin.routes;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
@@ -49,8 +48,6 @@ public class GlobalQuotaRoutesTest {
         maxQuotaManager = new InMemoryPerUserMaxQuotaManager();
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new GlobalQuotaRoutes(maxQuotaManager, new JsonTransformer()));
-        webAdminServer.configure(NO_CONFIGURATION);
-        webAdminServer.await();
 
         RestAssured.requestSpecification = WebAdminUtils.defineRequestSpecification(webAdminServer)
             .build();

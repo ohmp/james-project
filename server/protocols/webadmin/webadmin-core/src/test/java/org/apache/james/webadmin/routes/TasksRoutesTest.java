@@ -22,7 +22,6 @@ package org.apache.james.webadmin.routes;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.with;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -57,9 +56,6 @@ public class TasksRoutesTest {
 
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new TasksRoutes(taskManager, new JsonTransformer()));
-
-        webAdminServer.configure(NO_CONFIGURATION);
-        webAdminServer.await();
 
         RestAssured.requestSpecification = WebAdminUtils.defineRequestSpecification(webAdminServer)
             .setBasePath(TasksRoutes.BASE)

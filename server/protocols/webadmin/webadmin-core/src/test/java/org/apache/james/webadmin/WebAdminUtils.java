@@ -21,10 +21,12 @@ package org.apache.james.webadmin;
 
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
+import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 
@@ -41,11 +43,16 @@ public class WebAdminUtils {
             .build();
     }
 
-    public static WebAdminServer createWebAdminServer(Routes... routes) throws IOException {
-        return new WebAdminServer(webAdminConfigurationForTesting(),
+    public static WebAdminServer createWebAdminServer(Routes... routes) throws IOException, ConfigurationException {
+        WebAdminServer webAdminServer = new WebAdminServer(webAdminConfigurationForTesting(),
             ImmutableSet.copyOf(routes),
             new NoAuthenticationFilter(),
             new DefaultMetricFactory());
+
+        webAdminServer.configure(NO_CONFIGURATION);
+        webAdminServer.await();
+
+        return webAdminServer;
     }
 
     public static RequestSpecBuilder defineRequestSpecification(WebAdminServer webAdminServer) {
