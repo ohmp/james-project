@@ -72,8 +72,7 @@ public class DiscreteDistribution<T> {
     }
 
     public Stream<T> generateRandomStream() {
-        return Stream.iterate(this, i -> i)
-            .map(DiscreteDistribution::sample);
+        return Stream.generate(this::sample);
     }
 
     public T sample() {
