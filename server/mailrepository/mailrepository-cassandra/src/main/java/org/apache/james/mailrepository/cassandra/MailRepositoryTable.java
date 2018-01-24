@@ -22,11 +22,14 @@ package org.apache.james.mailrepository.cassandra;
 public interface MailRepositoryTable {
     String KEYS_TABLE_NAME = "mailRepositoryKeys";
     String CONTENT_TABLE_NAME = "mailRepositoryContent";
-    String COUNT_TABLE = "mailRepositoryContent";
+    String COUNT_TABLE = "mailRepositoryCount";
 
     String REPOSITORY_NAME = "name";
+
     String MAIL_KEY = "mailKey";
     String MESSAGE_SIZE = "messageSize";
+    String HEADER_BLOB_ID = "headerBlobId";
+    String BODY_BLOB_ID = "bodyBlobId";
     String STATE = "state";
     String SENDER = "sender";
     String RECIPIENTS = "recipients";
@@ -36,6 +39,9 @@ public interface MailRepositoryTable {
     String REMOTE_ADDR = "remoteAddr";
     String LAST_UPDATED = "lastUpdated";
     String PER_RECIPIENT_SPECIFIC_HEADERS = "perRecipientSpecificHeaders";
+
+    String[] MAIL_PROPERTIES = { MAIL_KEY, MESSAGE_SIZE, STATE, SENDER, RECIPIENTS, ATTRIBUTES, ERROR_MESSAGE, REMOTE_ADDR,
+        REMOTE_HOST, LAST_UPDATED, PER_RECIPIENT_SPECIFIC_HEADERS, HEADER_BLOB_ID, BODY_BLOB_ID };
 
     String COUNT = "count";
 
