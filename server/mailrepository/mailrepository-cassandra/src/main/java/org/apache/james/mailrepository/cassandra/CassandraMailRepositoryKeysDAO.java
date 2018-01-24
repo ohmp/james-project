@@ -32,6 +32,8 @@ import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.REPO
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 
@@ -46,6 +48,7 @@ public class CassandraMailRepositoryKeysDAO {
     private final PreparedStatement deleteKey;
     private final PreparedStatement listKeys;
 
+    @Inject
     public CassandraMailRepositoryKeysDAO(Session session, CassandraUtils cassandraUtils) {
         this.executor = new CassandraAsyncExecutor(session);
         this.cassandraUtils = cassandraUtils;

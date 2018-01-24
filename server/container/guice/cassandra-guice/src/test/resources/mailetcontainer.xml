@@ -84,9 +84,10 @@
         <processor state="local-address-error" enableJmx="false">
             <mailet match="All" class="Bounce">
                 <attachment>none</attachment>
+                <passThrough>true</passThrough>
             </mailet>
             <mailet match="All" class="ToRepository">
-                <repositoryPath>file://var/mail/address-error/</repositoryPath>
+                <repositoryPath>cassandra://var/mail/address-error/</repositoryPath>
             </mailet>
         </processor>
 
