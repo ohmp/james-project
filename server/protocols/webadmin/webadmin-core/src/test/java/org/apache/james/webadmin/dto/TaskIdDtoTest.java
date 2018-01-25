@@ -36,7 +36,7 @@ public class TaskIdDtoTest {
     private static final String UID_VALUE = "ce5316cb-c924-40eb-9ca0-c5828e276297";
 
     @Test
-    public void test() {
+    public void respondShouldReturnCreatedWithTaskIdHeader() {
         Response response = mock(Response.class);
         TaskId taskId = new TaskId(UUID.fromString(UID_VALUE));
 
