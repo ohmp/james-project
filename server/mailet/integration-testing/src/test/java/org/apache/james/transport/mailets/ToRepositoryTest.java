@@ -118,11 +118,11 @@ public class ToRepositoryTest {
 
         with()
             .spec(webAdminAPI)
+            .queryParam("processor", ProcessorConfiguration.STATE_TRANSPORT)
+            .queryParam("action", "reprocess")
             .patch(MailRepositoriesRoutes.MAIL_REPOSITORIES
                 + "/" + URLEncoder.encode(CUSTOM_REPOSITORY, StandardCharsets.UTF_8.displayName())
-                + "/mails"
-                + "?processor=" + ProcessorConfiguration.STATE_TRANSPORT
-                + "&action=reprocess")
+                + "/mails")
             .jsonPath()
             .get("taskId");
 
@@ -147,11 +147,11 @@ public class ToRepositoryTest {
 
         with()
             .spec(webAdminAPI)
+            .queryParam("processor", ProcessorConfiguration.STATE_TRANSPORT)
+            .queryParam("action", "reprocess")
             .patch(MailRepositoriesRoutes.MAIL_REPOSITORIES
                 + "/" + URLEncoder.encode(CUSTOM_REPOSITORY, StandardCharsets.UTF_8.displayName())
-                + "/mails/" + key
-                + "?processor=" + ProcessorConfiguration.STATE_TRANSPORT
-                + "&action=reprocess")
+                + "/mails/" + key)
             .jsonPath()
             .get("taskId");
 
