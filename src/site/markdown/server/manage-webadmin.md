@@ -1,7 +1,7 @@
 Web administration for JAMES
 ============================
 
-The web administration supports for now the CRUD operations on the domains,the users, their mailboxes and their quotas,
+The web administration supports for now the CRUD operations on the domains, the users, their mailboxes and their quotas,
  managing mail repositories, performing cassandra migrations, and much more, as described in the following sections.
 
 **WARNING**: This API allow authentication only via the use of JWT. If not configured with JWT, an administrator should ensure an attacker can not use this API.
@@ -606,24 +606,24 @@ The answer looks like:
 [
     {
         "repository": "file://var/mail/error/",
-        "encodedUrl": "file%3A%2F%2Fvar%2Fmail%2Ferror%2F"
+        "id": "file%3A%2F%2Fvar%2Fmail%2Ferror%2F"
     },
     {
         "repository": "file://var/mail/relay-denied/",
-        "encodedUrl": "file%3A%2F%2Fvar%2Fmail%2Frelay-denied%2F"
+        "id": "file%3A%2F%2Fvar%2Fmail%2Frelay-denied%2F"
     },
     {
         "repository": "file://var/mail/spam/",
-        "encodedUrl": "file%3A%2F%2Fvar%2Fmail%2Fspam%2F"
+        "id": "file%3A%2F%2Fvar%2Fmail%2Fspam%2F"
     },
     {
         "repository": "file://var/mail/address-error/",
-        "encodedUrl": "file%3A%2F%2Fvar%2Fmail%2Faddress-error%2F"
+        "id": "file%3A%2F%2Fvar%2Fmail%2Faddress-error%2F"
     }
 ]
 ```
 
-You can use `encodedUrl` to access the repository.
+You can use `id`, the encoded URL of the repository, to access it in later requests.
 
 Response codes:
 
@@ -647,7 +647,7 @@ The answer looks like:
 ```
 {
    "repository": "file://var/mail/error/",
-   "encodedUrl": "file%3A%2F%2Fvar%2Fmail%2Ferror%2F",
+   "id": "file%3A%2F%2Fvar%2Fmail%2Ferror%2F",
    "size": 243
 }
 ```
@@ -667,7 +667,7 @@ curl -XGET http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails
 Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Example:
 
 ```
-curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/
+curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails
 ```
 
 The answer will contains all mailKey contained in that repository.
@@ -689,7 +689,7 @@ You can pass additional URL parameters to this call in order to limit the output
 Example:
 
 ```
-curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/?limit=100&offset=500
+curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails?limit=100&offset=500
 ```
 
 Response codes:
@@ -743,7 +743,7 @@ curl -XDELETE http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F
 
 Response codes:
 
- - 204: This mail no longer exist in this repository
+ - 204: This mail no longer exists in this repository
  - 404: This repository can not be found
  - 500: Internal error
 
@@ -856,7 +856,7 @@ The scheduled task will have the following type `reprocessingAllTask` and the fo
 
 ### Reprocessing a specific mail from a mail repository
 
-To reprocess mails from a specific mail from a mail repository:
+To reprocess a specific mail from a mail repository:
 
 ```
 curl -XPATCH http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails/mailKey?action=reprocess
