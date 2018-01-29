@@ -635,6 +635,14 @@ Response codes:
 curl -XGET http://ip:port/mailQueues/mailQueueName/mails
 ```
 
+Additional URL query parameters:
+
+ - `limit`: Maximum number of mails returned in a single call. Only strictly positive integer values are accepted. Example:
+ 
+```
+curl -XGET http://ip:port/mailQueues/mailQueueName/mails?limit=100
+```
+
 The answer looks like:
 
 ```
@@ -649,7 +657,7 @@ The answer looks like:
 Response codes:
 
  - 200: Success
- - 400: Mail queue is not valid
+ - 400: Mail queue is not valid or limit is invalid
  - 404: The mail queue does not exist
  - 500: Internal error
 
