@@ -30,7 +30,6 @@ import org.apache.james.domainlist.api.DomainListException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 public class XMLDomainListTest {
 
@@ -84,10 +83,10 @@ public class XMLDomainListTest {
 
         XMLDomainList dom = new XMLDomainList(new InMemoryDNSService()
             .registerMxRecord("local", "127.0.0.1")
+            .registerMxRecord("domain1.", "127.0.0.1")
             .registerMxRecord("127.0.0.1", "127.0.0.1"));
         dom.configure(setUpConfiguration(true, false, domains));
 
-        System.out.println(ImmutableList.of(dom.getDomains()));
         assertThat(dom.getDomains()).hasSize(3);
     }
 
@@ -98,6 +97,7 @@ public class XMLDomainListTest {
 
         XMLDomainList dom = new XMLDomainList(new InMemoryDNSService()
             .registerMxRecord("localhost", "127.0.0.1")
+            .registerMxRecord("domain1.", "127.0.0.1")
             .registerMxRecord("127.0.0.1", "127.0.0.1"));
         dom.configure(setUpConfiguration(true, false, domains));
 
