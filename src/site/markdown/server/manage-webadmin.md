@@ -636,7 +636,7 @@ Response codes:
 curl -XGET http://ip:port/mailRepositories/encodedUrlOfTheRepository/
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Example:
 
 ```
 curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/
@@ -664,7 +664,7 @@ Response codes:
 curl -XGET http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Example:
 
 ```
 curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails
@@ -705,7 +705,7 @@ Response codes:
 curl -XGET http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails/mailKey
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Resource name `mailKey` should be the key of a mail stored in that repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Resource name `mailKey` should be the key of a mail stored in that repository. Example:
 
 ```
 curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails/mail-key-1
@@ -735,7 +735,7 @@ Response codes:
 curl -XDELETE http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails/mailKey
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Resource name `mailKey` should be the key of a mail stored in that repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Resource name `mailKey` should be the key of a mail stored in that repository. Example:
 
 ```
 curl -XDELETE http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails/mail-key-1
@@ -754,7 +754,7 @@ Response codes:
 curl -XDELETE http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Example:
 
 ```
 curl -XDELETE http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails
@@ -800,7 +800,7 @@ To reprocess mails from a repository:
 curl -XPATCH http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails?action=reprocess
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Example:
 
 For instance:
 
@@ -862,7 +862,7 @@ To reprocess a specific mail from a mail repository:
 curl -XPATCH http://ip:port/mailRepositories/encodedUrlOfTheRepository/mails/mailKey?action=reprocess
 ```
 
-Resource name `encodedUrlOfTheRepository` should be the encoded URL of an existing mail repository. Resource name `mailKey` should be the key of a mail stored in that repository. Example:
+Resource name `encodedUrlOfTheRepository` should be the resource id of an existing mail repository. Resource name `mailKey` should be the key of a mail stored in that repository. Example:
 
 For instance:
 
