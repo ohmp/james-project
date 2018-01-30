@@ -39,8 +39,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.google.common.base.Throwables;
 
-import net.javacrumbs.futureconverter.java8guava.FutureConverter;
-
 public final class CassandraCluster implements AutoCloseable {
 
     private static final int REPLICATION_FACTOR = 1;
@@ -122,7 +120,6 @@ public final class CassandraCluster implements AutoCloseable {
 
     @Override
     public void close() {
-        FutureConverter.toCompletableFuture(session.closeAsync())
-            .thenCompose(any -> FutureConverter.toCompletableFuture(cluster.closeAsync()));
+        cluster.closeAsync();
     }
 }
