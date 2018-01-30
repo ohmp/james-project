@@ -690,7 +690,7 @@ curl -XPATCH http://ip:port/mailQueues/mailQueueName?delayed=true \
 ```
 
 This request should have the query parameter *delayed* set to *true*, in order to indicate only delayed mails are affected.
-The payload should set the `delayed` field to false inorder to remove the delay. This is the only supported combinaison,
+The payload should set the `delayed` field to false inorder to remove the delay. This is the only supported combination,
 and it performs a flush.
 
 The mails delayed in the given mail queue will be flushed.
