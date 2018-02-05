@@ -66,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Temporals;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Throwables;
 
 /**
@@ -81,35 +82,13 @@ import com.google.common.base.Throwables;
  */
 public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPrioritySupport, Disposable {
 
-    protected static void closeSession(Session session) {
-        if (session != null) {
-            try {
-                session.close();
-            } catch (JMSException e) {
-                LOGGER.error("Error while closing session", e);
-            }
-        }
-    }
-
-    protected static void closeProducer(MessageProducer producer) {
-        if (producer != null) {
-            try {
-                producer.close();
-            } catch (JMSException e) {
-                LOGGER.error("Error while closing producer", e);
-            }
-        }
-    }
-
-    protected static void closeConsumer(MessageConsumer consumer) {
-        if (consumer != null) {
-            try {
-                consumer.close();
-            } catch (JMSException e) {
-                LOGGER.error("Error while closing consumer", e);
-            }
-        }
-    }
+    protected final ThreadLocal<Session> transactedSession;
+    protected final ThreadLocal<Session> nonTransactedSession;
+    protected final ThreadLocal<Queue> transactedQueue;
+    protected final ThreadLocal<Queue> nonTransactdQueue;
+    protected final ThreadLocal<MessageProducer> transactedProducer;
+    protected final ThreadLocal<MessageProducer> nonTransactedProducer;
+    protected final ThreadLocal<MessageConsumer> consumer;
 
     protected static void rollback(Session session) {
         if (session != null) {
@@ -153,6 +132,15 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
         this.metricFactory = metricFactory;
         this.enqueuedMailsMetric = metricFactory.generate("enqueuedMail:" + queueName);
         this.mailQueueSize = metricFactory.generate("mailQueueSize:" + queueName);
+        this.transactedSession = ThreadLocal.withInitial(Throwing
+            .supplier(() -> connection.createSession(true, Session.SESSION_TRANSACTED)));
+        this.nonTransactedSession = ThreadLocal.withInitial(Throwing
+            .supplier(() -> connection.createSession(false, Session.AUTO_ACKNOWLEDGE)));
+        this.transactedQueue = ThreadLocal.withInitial(Throwing.supplier(() -> transactedSession.get().createQueue(queueName)));
+        this.nonTransactdQueue = ThreadLocal.withInitial(Throwing.supplier(() -> nonTransactedSession.get().createQueue(queueName)));
+        this.transactedProducer = ThreadLocal.withInitial(Throwing.supplier(() -> transactedSession.get().createProducer(transactedQueue.get())));
+        this.nonTransactedProducer = ThreadLocal.withInitial(Throwing.supplier(() -> nonTransactedSession.get().createProducer(nonTransactdQueue.get())));
+        this.consumer = ThreadLocal.withInitial(Throwing.supplier(() -> transactedSession.get().createConsumer(transactedQueue.get(), getMessageSelector())));
     }
 
     @Override
@@ -174,51 +162,31 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
      */
     @Override
     public MailQueueItem deQueue() throws MailQueueException {
-        Session session = null;
-        Message message;
-        MessageConsumer consumer = null;
-
         while (true) {
             TimeMetric timeMetric = metricFactory.timer("dequeueTime:" + queueName);
             try {
-                session = connection.createSession(true, Session.SESSION_TRANSACTED);
-                Queue queue = session.createQueue(queueName);
-                consumer = session.createConsumer(queue, getMessageSelector());
-
-                message = consumer.receive(10000);
-
+                Message message = consumer.get().receive(10000);
                 if (message != null) {
                     mailQueueSize.decrement();
-                    return createMailQueueItem(connection, session, consumer, message);
+                    return createMailQueueItem(transactedSession.get(), consumer.get(), message);
                 } else {
-                    session.commit();
-                    closeConsumer(consumer);
-                    closeSession(session);
+                    transactedSession.get().commit();
                 }
-
             } catch (Exception e) {
-                rollback(session);
-                closeConsumer(consumer);
-                closeSession(session);
+                rollback(transactedSession.get());
                 throw new MailQueueException("Unable to dequeue next message", e);
             } finally {
                 timeMetric.stopAndPublish();
             }
         }
-
     }
 
     @Override
     public void enQueue(Mail mail, long delay, TimeUnit unit) throws MailQueueException {
         TimeMetric timeMetric = metricFactory.timer("enqueueMailTime:" + queueName);
-        Session session = null;
-
         long nextDeliveryTimestamp = computeNextDeliveryTimestamp(delay, unit);
 
         try {
-
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
             int msgPrio = NORMAL_PRIORITY;
             Object prio = mail.getAttribute(MAIL_PRIORITY);
             if (prio instanceof Integer) {
@@ -227,7 +195,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
 
             Map<String, Object> props = getJMSProperties(mail, nextDeliveryTimestamp);
 
-            produceMail(session, props, msgPrio, mail);
+            produceMail(props, msgPrio, mail);
 
             enqueuedMailsMetric.increment();
             mailQueueSize.increment();
@@ -235,7 +203,6 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
             throw new MailQueueException("Unable to enqueue mail " + mail, e);
         } finally {
             timeMetric.stopAndPublish();
-            closeSession(session);
         }
     }
 
@@ -257,38 +224,28 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
     /**
      * Produce the mail to the JMS Queue
      */
-    protected void produceMail(Session session, Map<String, Object> props, int msgPrio, Mail mail) throws JMSException, MessagingException, IOException {
-        MessageProducer producer = null;
+    protected void produceMail(Map<String, Object> props, int msgPrio, Mail mail) throws JMSException, MessagingException, IOException {
+        ObjectMessage message = nonTransactedSession.get().createObjectMessage();
 
-        try {
-            Queue queue = session.createQueue(queueName);
-
-            producer = session.createProducer(queue);
-            ObjectMessage message = session.createObjectMessage();
-
-            for (Map.Entry<String, Object> entry : props.entrySet()) {
-                message.setObjectProperty(entry.getKey(), entry.getValue());
-            }
-
-            long size = mail.getMessageSize();
-            ByteArrayOutputStream out;
-            if (size > -1) {
-                out = new ByteArrayOutputStream((int) size);
-            } else {
-                out = new ByteArrayOutputStream();
-            }
-            mail.getMessage().writeTo(out);
-
-            // store the byte array in a ObjectMessage so we can use a
-            // SharedByteArrayInputStream later
-            // without the need of copy the day
-            message.setObject(out.toByteArray());
-
-            producer.send(message, Message.DEFAULT_DELIVERY_MODE, msgPrio, Message.DEFAULT_TIME_TO_LIVE);
-
-        } finally {
-            closeProducer(producer);
+        for (Map.Entry<String, Object> entry : props.entrySet()) {
+            message.setObjectProperty(entry.getKey(), entry.getValue());
         }
+
+        long size = mail.getMessageSize();
+        ByteArrayOutputStream out;
+        if (size > -1) {
+            out = new ByteArrayOutputStream((int) size);
+        } else {
+            out = new ByteArrayOutputStream();
+        }
+        mail.getMessage().writeTo(out);
+
+        // store the byte array in a ObjectMessage so we can use a
+        // SharedByteArrayInputStream later
+        // without the need of copy the day
+        message.setObject(out.toByteArray());
+
+        nonTransactedProducer.get().send(message, Message.DEFAULT_DELIVERY_MODE, msgPrio, Message.DEFAULT_TIME_TO_LIVE);
     }
 
     protected Map<String, Object> getJMSProperties(Mail mail, long nextDelivery) throws MessagingException {
@@ -472,9 +429,9 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
      * @throws JMSException
      * @throws MessagingException
      */
-    protected MailQueueItem createMailQueueItem(Connection connection, Session session, MessageConsumer consumer, Message message) throws JMSException, MessagingException {
+    protected MailQueueItem createMailQueueItem(Session session, MessageConsumer consumer, Message message) throws JMSException, MessagingException {
         final Mail mail = createMail(message);
-        JMSMailQueueItem jmsMailQueueItem = new JMSMailQueueItem(mail, connection, session, consumer);
+        JMSMailQueueItem jmsMailQueueItem = new JMSMailQueueItem(mail, session, consumer);
         return mailQueueItemDecoratorFactory.decorate(jmsMailQueueItem);
     }
 
@@ -485,14 +442,10 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
     @SuppressWarnings("unchecked")
     @Override
     public long getSize() throws MailQueueException {
-        Session session = null;
         QueueBrowser browser = null;
         int size = 0;
         try {
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Queue queue = session.createQueue(queueName);
-
-            browser = session.createBrowser(queue);
+            browser = nonTransactedSession.get().createBrowser(nonTransactdQueue.get());
 
             Enumeration<Message> messages = browser.getEnumeration();
 
@@ -506,51 +459,38 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
             throw new MailQueueException("Unable to get size of queue " + queueName, e);
         } finally {
             closeBrowser(browser);
-            closeSession(session);
         }
     }
 
     @Override
     public long flush() throws MailQueueException {
-        Session session = null;
         Message message = null;
-        MessageConsumer consumer = null;
-        MessageProducer producer = null;
         boolean first = true;
         long count = 0;
         try {
 
-            session = connection.createSession(true, Session.SESSION_TRANSACTED);
-            Queue queue = session.createQueue(queueName);
-            consumer = session.createConsumer(queue);
-            producer = session.createProducer(queue);
-
             while (first || message != null) {
                 if (first) {
                     // give the consumer 2000 ms to receive messages
-                    message = consumer.receive(2000);
+                    message = consumer.get().receive(2000);
                 } else {
-                    message = consumer.receiveNoWait();
+                    message = consumer.get().receiveNoWait();
                 }
                 first = false;
 
                 if (message != null) {
-                    Message m = copy(session, message);
+                    Message m = copy(transactedSession.get(), message);
                     m.setBooleanProperty(FORCE_DELIVERY, true);
-                    producer.send(m, message.getJMSDeliveryMode(), message.getJMSPriority(), message.getJMSExpiration());
+                    transactedProducer.get().send(m, message.getJMSDeliveryMode(), message.getJMSPriority(), message.getJMSExpiration());
                     count++;
                 }
             }
-            session.commit();
+            transactedSession.get().commit();
             return count;
         } catch (Exception e) {
             LOGGER.error("Unable to flush mail", e);
-            rollback(session);
+            rollback(transactedSession.get());
             throw new MailQueueException("Unable to get size of queue " + queueName, e);
-        } finally {
-            closeConsumer(consumer);
-            closeProducer(producer);
-            closeSession(session);
         }
     }
 
@@ -574,16 +514,13 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
      * @return messages
      */
     public List<Message> removeWithSelector(String selector) throws MailQueueException {
-        Session session = null;
         Message message = null;
         MessageConsumer consumer = null;
         boolean first = true;
         List<Message> messages = new ArrayList<>();
 
         try {
-            session = connection.createSession(true, Session.SESSION_TRANSACTED);
-            Queue queue = session.createQueue(queueName);
-            consumer = session.createConsumer(queue, selector);
+            consumer = transactedSession.get().createConsumer(transactedQueue.get(), selector);
             while (first || message != null) {
                 if (first) {
                     // give the consumer 2000 ms to receive messages
@@ -596,15 +533,14 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
                     messages.add(message);
                 }
             }
-            session.commit();
+            transactedSession.get().commit();
             return messages;
         } catch (Exception e) {
-            rollback(session);
+            rollback(transactedSession.get());
             throw new MailQueueException("Unable to remove mails", e);
 
         } finally {
             closeConsumer(consumer);
-            closeSession(session);
         }
     }
 
@@ -649,17 +585,12 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
     @Override
     @SuppressWarnings("unchecked")
     public MailQueueIterator browse() throws MailQueueException {
-        Session session = null;
         QueueBrowser browser = null;
         try {
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Queue queue = session.createQueue(queueName);
-
-            browser = session.createBrowser(queue);
+            browser = nonTransactedSession.get().createBrowser(nonTransactdQueue.get());
 
             final Enumeration<Message> messages = browser.getEnumeration();
 
-            final Session mySession = session;
             final QueueBrowser myBrowser = browser;
 
             return new MailQueueIterator() {
@@ -696,15 +627,11 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
                 @Override
                 public void close() {
                     closeBrowser(myBrowser);
-                    closeSession(mySession);
                 }
             };
 
         } catch (Exception e) {
-
             closeBrowser(browser);
-            closeSession(session);
-
             LOGGER.error("Unable to browse queue {}", queueName, e);
             throw new MailQueueException("Unable to browse queue " + queueName, e);
         }
@@ -713,9 +640,44 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
     @Override
     public void dispose() {
         try {
+            closeConsumer(consumer.get());
+            closeProducer(nonTransactedProducer.get());
+            closeProducer(transactedProducer.get());
+            closeSession(nonTransactedSession.get());
+            closeSession(transactedSession.get());
             connection.close();
         } catch (JMSException e) {
             LOGGER.error("Error while closing session", e);
+        }
+    }
+
+    protected static void closeSession(Session session) {
+        if (session != null) {
+            try {
+                session.close();
+            } catch (JMSException e) {
+                LOGGER.error("Error while closing session", e);
+            }
+        }
+    }
+
+    protected static void closeProducer(MessageProducer producer) {
+        if (producer != null) {
+            try {
+                producer.close();
+            } catch (JMSException e) {
+                LOGGER.error("Error while closing producer", e);
+            }
+        }
+    }
+
+    protected static void closeConsumer(MessageConsumer consumer) {
+        if (consumer != null) {
+            try {
+                consumer.close();
+            } catch (JMSException e) {
+                LOGGER.error("Error while closing consumer", e);
+            }
         }
     }
     

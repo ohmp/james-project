@@ -34,13 +34,11 @@ import org.apache.mailet.Mail;
 public class JMSMailQueueItem implements MailQueueItem {
 
     protected final Mail mail;
-    protected final Connection connection;
     protected final Session session;
     protected final MessageConsumer consumer;
 
-    public JMSMailQueueItem(Mail mail, Connection connection, Session session, MessageConsumer consumer) {
+    public JMSMailQueueItem(Mail mail, Session session, MessageConsumer consumer) {
         this.mail = mail;
-        this.connection = connection;
         this.session = session;
         this.consumer = consumer;
     }
@@ -55,9 +53,6 @@ public class JMSMailQueueItem implements MailQueueItem {
             }
         } catch (JMSException ex) {
             throw new MailQueueException("Unable to commit dequeue operation for mail " + mail.getName(), ex);
-        } finally {
-            JMSMailQueue.closeConsumer(consumer);
-            JMSMailQueue.closeSession(session);
         }
     }
 

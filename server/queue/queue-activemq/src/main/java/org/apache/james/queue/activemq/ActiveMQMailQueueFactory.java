@@ -20,12 +20,15 @@ package org.apache.james.queue.activemq;
 
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.jms.JMSMailQueueFactory;
+
+import com.google.common.base.Throwables;
 
 /**
  * {@link MailQueueFactory} implementations which return
@@ -50,6 +53,10 @@ public class ActiveMQMailQueueFactory extends JMSMailQueueFactory {
 
     @Override
     protected ManageableMailQueue createMailQueue(String name) {
-        return new ActiveMQMailQueue(connectionFactory, mailQueueItemDecoratorFactory, name, useBlob, metricFactory);
+        try {
+            return new ActiveMQMailQueue(connectionFactory, mailQueueItemDecoratorFactory, name, useBlob, metricFactory);
+        } catch (JMSException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

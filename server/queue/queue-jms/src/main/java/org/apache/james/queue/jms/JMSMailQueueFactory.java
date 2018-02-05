@@ -20,12 +20,15 @@ package org.apache.james.queue.jms;
 
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.library.AbstractMailQueueFactory;
+
+import com.google.common.base.Throwables;
 
 /**
  * {@link MailQueueFactory} implementation which use JMS
