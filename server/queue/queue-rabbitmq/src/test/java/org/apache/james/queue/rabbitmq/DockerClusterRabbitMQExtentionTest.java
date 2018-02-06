@@ -18,36 +18,26 @@
  ****************************************************************/
 package org.apache.james.queue.rabbitmq;
 
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import org.apache.james.queue.rabbitmq.DockerClusterRabbitMQExtention.DockerRabbitMQCluster;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class DockerRabbitMQExtention implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
+@ExtendWith(DockerClusterRabbitMQExtention.class)
+public class DockerClusterRabbitMQExtentionTest {
 
-    private DockerRabbitMQ rabbitMQ;
+    private DockerRabbitMQCluster cluster;
 
-    @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
-        rabbitMQ = DockerRabbitMQ.withoutCookie();
-        rabbitMQ.start();
+    @BeforeEach
+    public void setup(DockerRabbitMQCluster cluster) {
+        this.cluster = cluster;
     }
 
-    @Override
-    public void afterAll(ExtensionContext context) throws Exception {
-        rabbitMQ.stop();
+    @Test
+    public void rabbitMQManagerShouldReturnThreeNodesWhenAskingForStatus() throws Exception {
+        String stdout = cluster.getRabbitMQ1().container()
+            .execInContainer("rabbitmqctl", "cluster_status")
+            .getStdout();
+        System.out.println(stdout);
     }
-
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == DockerRabbitMQ.class);
-    }
-
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return rabbitMQ;
-    }
-
 }

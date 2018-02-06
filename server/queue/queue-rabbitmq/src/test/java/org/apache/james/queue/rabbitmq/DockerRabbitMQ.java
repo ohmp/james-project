@@ -18,19 +18,36 @@
  ****************************************************************/
 package org.apache.james.queue.rabbitmq;
 
+import java.util.Optional;
+
 import org.testcontainers.containers.GenericContainer;
 
 public class DockerRabbitMQ {
 
+    private static final String DEFAULT_RABBIT_NODE = "my-rabbit";
     private static final int DEFAULT_RABBITMQ_PORT = 5672;
+    private static final String RABBITMQ_ERLANG_COOKIE = "RABBITMQ_ERLANG_COOKIE";
+    private static final String RABBITMQ_NODENAME = "RABBITMQ_NODENAME";
     private GenericContainer<?> container;
+    private Optional<String> hostName;
+
+    public static DockerRabbitMQ withCookieAndNodeName(String hostName, String erlangCookie, String nodeName) {
+        return new DockerRabbitMQ(Optional.ofNullable(hostName), Optional.ofNullable(erlangCookie), Optional.ofNullable(nodeName));
+    }
+
+    public static DockerRabbitMQ withoutCookie() {
+        return new DockerRabbitMQ(Optional.empty(), Optional.empty(), Optional.empty());
+    }
 
     @SuppressWarnings("resource")
-    public DockerRabbitMQ() {
+    private DockerRabbitMQ(Optional<String> hostName, Optional<String> erlangCookie, Optional<String> nodeName) {
+        this.hostName = hostName;
         container = new GenericContainer<>("rabbitmq:3.7.3")
-                .withCreateContainerCmdModifier(cmd -> cmd.withHostName("my-rabbit"))
+                .withCreateContainerCmdModifier(cmd -> cmd.withHostName(hostName.orElse(DEFAULT_RABBIT_NODE)))
                 .withExposedPorts(DEFAULT_RABBITMQ_PORT)
                 .waitingFor(new RabbitMQWaitStrategy());
+        erlangCookie.ifPresent(cookie -> container.withEnv(RABBITMQ_ERLANG_COOKIE, cookie));
+        nodeName.ifPresent(name -> container.withEnv(RABBITMQ_NODENAME, name));
     }
 
     public String getHostIp() {
@@ -55,5 +72,25 @@ public class DockerRabbitMQ {
 
     public void stop() {
         container.stop();
+    }
+
+    public GenericContainer<?> container() {
+        return container;
+    }
+
+    public String node() {
+        return hostName.map(name -> "rabbit@" + name)
+                .orElse("rabbit@my-rabbit");
+    }
+
+    public void join(DockerRabbitMQ rabbitMQ) throws Exception {
+        String stdout = container()
+                .execInContainer("rabbitmqctl", "stop_app")
+                .getStdout();
+        System.out.println(stdout);
+        String stdout2 = container()
+                .execInContainer("rabbitmqctl", "join_cluster", rabbitMQ.node())
+                .getStdout();
+        System.out.println(stdout2);
     }
 }
