@@ -486,7 +486,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
         QueueBrowser browser = null;
         try {
             browser = session.createBrowser(queue);
-            Enumeration enumeration = browser.getEnumeration();
+            Enumeration<?> enumeration = browser.getEnumeration();
             return Iterators.size(new EnumerationIterator(enumeration));
         } catch (Exception e) {
             LOGGER.error("Unable to get size of queue {}", queueName, e);
