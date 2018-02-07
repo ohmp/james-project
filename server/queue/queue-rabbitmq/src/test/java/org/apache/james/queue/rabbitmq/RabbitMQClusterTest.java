@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DockerClusterRabbitMQExtention.class)
-public class DockerClusterRabbitMQExtentionTest {
+public class RabbitMQClusterTest {
 
     private DockerRabbitMQCluster cluster;
 

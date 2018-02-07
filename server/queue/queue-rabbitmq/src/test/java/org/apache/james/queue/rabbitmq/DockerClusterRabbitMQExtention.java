@@ -33,19 +33,13 @@ public class DockerClusterRabbitMQExtention implements BeforeAllCallback, AfterA
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         String cookie = DigestUtils.sha1Hex("secret cookie here");
-        String nodeName = "rabbit@rabbits";
-        DockerRabbitMQ rabbitMQ1 = DockerRabbitMQ.withCookieAndNodeName("rabbit1", cookie, nodeName);
-        System.out.println("starting rabbitMQ1");
+        DockerRabbitMQ rabbitMQ1 = DockerRabbitMQ.withCookieAndNodeName("rabbit1", cookie, "rabbit1@localhost");
+        DockerRabbitMQ rabbitMQ2 = DockerRabbitMQ.withCookieAndNodeName("rabbit2", cookie, "rabbit2@localhost");
+        DockerRabbitMQ rabbitMQ3 = DockerRabbitMQ.withCookieAndNodeName("rabbit3", cookie, "rabbit3@localhost");
         rabbitMQ1.start();
-        DockerRabbitMQ rabbitMQ2 = DockerRabbitMQ.withCookieAndNodeName("rabbit2", cookie, nodeName);
-        System.out.println("starting rabbitMQ2");
         rabbitMQ2.start();
-        System.out.println("joining rabbitMQ1");
-        rabbitMQ2.join(rabbitMQ1);
-        DockerRabbitMQ rabbitMQ3 = DockerRabbitMQ.withCookieAndNodeName("rabbit3", cookie, nodeName);
-        System.out.println("starting rabbitMQ3");
         rabbitMQ3.start();
-        System.out.println("joining rabbitMQ1");
+        rabbitMQ2.join(rabbitMQ1);
         rabbitMQ3.join(rabbitMQ1);
 
         cluster = new DockerRabbitMQCluster(rabbitMQ1, rabbitMQ2, rabbitMQ3);
