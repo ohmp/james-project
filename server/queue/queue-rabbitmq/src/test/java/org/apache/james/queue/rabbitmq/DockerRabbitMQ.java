@@ -100,4 +100,12 @@ public class DockerRabbitMQ {
                 .getStdout();
         System.out.println(stdout2);
     }
+
+    public void startApp() throws Exception {
+        String stdout = container()
+                .execInContainer("rabbitmqctl", "start_app")
+                .getStdout();
+        System.out.println(stdout);
+
+    }
 }

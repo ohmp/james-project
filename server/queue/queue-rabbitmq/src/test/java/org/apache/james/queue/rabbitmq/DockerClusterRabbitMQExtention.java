@@ -73,6 +73,9 @@ public class DockerClusterRabbitMQExtention implements BeforeAllCallback, AfterA
         rabbitMQ2.join(rabbitMQ1);
         rabbitMQ3.join(rabbitMQ1);
 
+        rabbitMQ2.startApp();
+        rabbitMQ3.startApp();
+
         cluster = new DockerRabbitMQCluster(rabbitMQ1, rabbitMQ2, rabbitMQ3);
     }
 
