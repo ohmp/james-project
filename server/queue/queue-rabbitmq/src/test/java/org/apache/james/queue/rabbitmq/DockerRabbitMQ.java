@@ -20,6 +20,7 @@ package org.apache.james.queue.rabbitmq;
 
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
 public class DockerRabbitMQ {
@@ -45,7 +46,8 @@ public class DockerRabbitMQ {
         container = new GenericContainer<>("rabbitmq:3.7.3")
                 .withCreateContainerCmdModifier(cmd -> cmd.withHostName(hostName.orElse(DEFAULT_RABBIT_NODE)))
                 .withExposedPorts(DEFAULT_RABBITMQ_PORT)
-                .waitingFor(new RabbitMQWaitStrategy());
+                .waitingFor(new RabbitMQWaitStrategy())
+                .withLogConsumer(frame -> LoggerFactory.getLogger(DockerRabbitMQ.class).debug(frame.getUtf8String()));
         erlangCookie.ifPresent(cookie -> container.withEnv(RABBITMQ_ERLANG_COOKIE, cookie));
         nodeName.ifPresent(name -> container.withEnv(RABBITMQ_NODENAME, name));
     }
