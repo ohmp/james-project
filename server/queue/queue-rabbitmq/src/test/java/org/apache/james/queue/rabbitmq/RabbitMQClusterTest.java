@@ -18,33 +18,26 @@
  ****************************************************************/
 package org.apache.james.queue.rabbitmq;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.james.queue.rabbitmq.DockerClusterRabbitMQExtention.DockerRabbitMQCluster;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DockerClusterRabbitMQExtention.class)
 public class RabbitMQClusterTest {
 
-    private DockerRabbitMQCluster cluster;
-
-    @BeforeEach
-    public void setup(DockerRabbitMQCluster cluster) {
-        this.cluster = cluster;
-    }
-
     @Test
-    public void rabbitMQManagerShouldReturnThreeNodesWhenAskingForStatus() throws Exception {
-        String stdout2 = cluster.getRabbitMQ2().container()
-            .execInContainer("nslookup", "rabbit1")
-            .getStdout();
-        System.out.println(stdout2);
-
-        Thread.sleep(10 * 1000);
-
+    public void rabbitMQManagerShouldReturnThreeNodesWhenAskingForStatus(DockerRabbitMQCluster cluster) throws Exception {
         String stdout = cluster.getRabbitMQ1().container()
             .execInContainer("rabbitmqctl", "cluster_status")
             .getStdout();
         System.out.println(stdout);
+
+        assertThat(stdout)
+            .contains(
+                DockerClusterRabbitMQExtention.RABBIT_1,
+                DockerClusterRabbitMQExtention.RABBIT_2,
+                DockerClusterRabbitMQExtention.RABBIT_3);
     }
 }
