@@ -25,20 +25,51 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.Network;
+import org.testcontainers.shaded.javax.ws.rs.NotSupportedException;
 
 public class DockerClusterRabbitMQExtention implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
 
+    public static final String RABBIT_1 = "rabbit1";
+    public static final String RABBIT_2 = "rabbit2";
+    public static final String RABBIT_3 = "rabbit3";
     private DockerRabbitMQCluster cluster;
+    private Network network;
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         String cookie = DigestUtils.sha1Hex("secret cookie here");
-        DockerRabbitMQ rabbitMQ1 = DockerRabbitMQ.withCookieAndNodeName("rabbit1", cookie, "rabbit1@localhost");
-        DockerRabbitMQ rabbitMQ2 = DockerRabbitMQ.withCookieAndNodeName("rabbit2", cookie, "rabbit2@localhost");
-        DockerRabbitMQ rabbitMQ3 = DockerRabbitMQ.withCookieAndNodeName("rabbit3", cookie, "rabbit3@localhost");
+
+        String netId = DockerClientFactory.instance().client().createNetworkCmd()
+            .withName("rabbitCluster")
+            .withCheckDuplicate(true)
+            .withEnableIpv6(false)
+            .exec()
+            .getId();
+
+        network = new Network() {
+            @Override
+            public String getId() {
+                return netId;
+            }
+
+            @Override
+            public Statement apply(Statement statement, Description description) {
+                throw new NotSupportedException("");
+            }
+        };
+
+        DockerRabbitMQ rabbitMQ1 = DockerRabbitMQ.withCookieAndNodeName(RABBIT_1, cookie, "rabbit@rabbit1", network);
+        DockerRabbitMQ rabbitMQ2 = DockerRabbitMQ.withCookieAndNodeName(RABBIT_2, cookie, "rabbit@rabbit2", network);
+        DockerRabbitMQ rabbitMQ3 = DockerRabbitMQ.withCookieAndNodeName(RABBIT_3, cookie, "rabbit@rabbit3", network);
+
         rabbitMQ1.start();
         rabbitMQ2.start();
         rabbitMQ3.start();
+
         rabbitMQ2.join(rabbitMQ1);
         rabbitMQ3.join(rabbitMQ1);
 
@@ -48,6 +79,7 @@ public class DockerClusterRabbitMQExtention implements BeforeAllCallback, AfterA
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
         cluster.stop();
+        network.close();
     }
 
     @Override

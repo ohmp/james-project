@@ -35,6 +35,13 @@ public class RabbitMQClusterTest {
 
     @Test
     public void rabbitMQManagerShouldReturnThreeNodesWhenAskingForStatus() throws Exception {
+        String stdout2 = cluster.getRabbitMQ2().container()
+            .execInContainer("nslookup", "rabbit1")
+            .getStdout();
+        System.out.println(stdout2);
+
+        Thread.sleep(10 * 1000);
+
         String stdout = cluster.getRabbitMQ1().container()
             .execInContainer("rabbitmqctl", "cluster_status")
             .getStdout();
