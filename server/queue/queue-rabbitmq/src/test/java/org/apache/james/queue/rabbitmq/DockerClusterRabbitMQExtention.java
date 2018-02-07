@@ -44,7 +44,7 @@ public class DockerClusterRabbitMQExtention implements BeforeAllCallback, AfterA
         String cookie = DigestUtils.sha1Hex("secret cookie here");
 
         String netId = DockerClientFactory.instance().client().createNetworkCmd()
-            .withName("rabbitCluster")
+            .withName("rabbitCluster2")
             .withCheckDuplicate(true)
             .withEnableIpv6(false)
             .exec()
