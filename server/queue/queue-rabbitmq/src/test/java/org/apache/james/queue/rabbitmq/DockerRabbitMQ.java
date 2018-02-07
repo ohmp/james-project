@@ -18,9 +18,12 @@
  ****************************************************************/
 package org.apache.james.queue.rabbitmq;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
 public class DockerRabbitMQ {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerRabbitMQ.class);
 
     private static final int DEFAULT_RABBITMQ_PORT = 5672;
     private GenericContainer<?> container;
@@ -30,6 +33,7 @@ public class DockerRabbitMQ {
         container = new GenericContainer<>("rabbitmq:3.7.3")
                 .withCreateContainerCmdModifier(cmd -> cmd.withHostName("my-rabbit"))
                 .withExposedPorts(DEFAULT_RABBITMQ_PORT)
+            .withLogConsumer(outputFrame -> LOGGER.debug(outputFrame.getUtf8String()))
                 .waitingFor(new RabbitMQWaitStrategy());
     }
 
