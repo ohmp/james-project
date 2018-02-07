@@ -20,6 +20,7 @@ package org.apache.james.queue.rabbitmq;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 
 public class DockerRabbitMQ {
@@ -59,5 +60,10 @@ public class DockerRabbitMQ {
 
     public void stop() {
         container.stop();
+    }
+
+    public void restart() {
+        DockerClientFactory.instance().client()
+            .restartContainerCmd(container.getContainerId());
     }
 }

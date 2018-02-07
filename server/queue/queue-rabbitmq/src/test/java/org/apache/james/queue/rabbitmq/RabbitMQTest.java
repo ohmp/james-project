@@ -37,9 +37,11 @@ public class RabbitMQTest {
 
     private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);
     private ConnectionFactory connectionFactory;
+    private DockerRabbitMQ rabbitMQ;
 
     @BeforeEach
     public void setup(DockerRabbitMQ rabbitMQ) {
+        this.rabbitMQ = rabbitMQ;
         connectionFactory = new ConnectionFactory();
         connectionFactory.setHost(rabbitMQ.getHostIp());
         connectionFactory.setPort(rabbitMQ.getPort());
@@ -56,6 +58,24 @@ public class RabbitMQTest {
             String queueName = createQueue(channel, exchangeName, routingKey);
 
             publishAMessage(channel, exchangeName, routingKey);
+
+            Thread.sleep(ONE_MINUTE);
+            boolean autoAck = false;
+            assertThat(channel.basicGet(queueName, autoAck)).isNotNull();
+        }
+    }
+
+    @Test
+    public void demonstrateDurability() throws Exception {
+        try (Connection connection = connectionFactory.newConnection();
+                Channel channel = connection.createChannel();) {
+            String exchangeName = "exchangeName";
+            String routingKey = "routingKey";
+            String queueName = createQueue(channel, exchangeName, routingKey);
+
+            publishAMessage(channel, exchangeName, routingKey);
+
+            rabbitMQ.restart();
 
             Thread.sleep(ONE_MINUTE);
             boolean autoAck = false;
