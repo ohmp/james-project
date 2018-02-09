@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Apache JAMES joins Google Summer of code 2018 !!!"
+title:  "Apache JAMES joins Google Summer of code 2018 !"
 date:   2018-02-1 00:00:22 +0200
 categories: announcements
 ---
@@ -10,7 +10,7 @@ This year, James developers will propose ideas of Google Summer of Code projects
 [Google Summer of Code] is a global program focused on bringing more student developers into open source software development.
 Students work with an open source organization on a 3 month programming project during their break from school.
 
-![My helpful screenshot]({{ "/assets/images/gsoc.png" | absolute_url }})
+![Google Summer of code communication image]({{ "/assets/images/gsoc.png" }})
 
 We consider it is a dreamed occasion to discover the Apache James project, and get on board in this amazing project!
 
@@ -29,7 +29,7 @@ Here are some ideas of applications:
 
  - ⚒ [JAMES-1933] Emails need to be secure. Many protocols like DKIM, SPF and DMARC allow to meet this purpose. However we need more documentation and a DMARC implementation.
 
- - ⚒ [JAMES-XXXX] James should be a flexible server. We should be able to use custom configuration providers, not only XML files as off today. That is a move toward "clustering done the right way".
+ - ⚒ [JAMES-2335] James should be a flexible server. We should be able to use custom configuration providers, not only XML files as of today. That is a move toward "clustering done the right way".
 
 Of course, we are very open if you want to propose other ideas to us! Come and discuss this on [our gitter channel] or on the issues directly.
 
@@ -39,5 +39,5 @@ Thank you by advance for your involvement and hope to see you around!
 [JAMES-1931]: https://issues.apache.org/jira/browse/JAMES-1931
 [JAMES-1932]: https://issues.apache.org/jira/browse/JAMES-1932
 [JAMES-1933]: https://issues.apache.org/jira/browse/JAMES-1933
-[JAMES-XXXX]: https://issues.apache.org/jira/browse/JAMES-XXXX
+[JAMES-2335]: https://issues.apache.org/jira/browse/JAMES-2335
 [our gitter channel]: https://gitter.im/apache/james-project
