@@ -36,10 +36,10 @@
         <dd>List of some nodes of the cassandra's cluster in following format host:port or host, if the port is not specified we use 9042</dd>
 
         <dt><strong>cassandra.keyspace</strong></dt>
-        <dd>Is the name of the keyspace used by James.</dd>
+        <dd>Is the name of the keyspace used by James. This keyspace will be created if it does not exist yet.</dd>
 
         <dt><strong>cassandra.replication.factor</strong></dt>
-        <dd>Is the replication factor. (should be 1, as cluster is not yet supported)</dd>
+        <dd>Is the replication factor of the keyspace created by James.</dd>
 
         <dt><strong>cassandra.query.logger.constant.threshold</strong></dt>
         <dd>Optional.
