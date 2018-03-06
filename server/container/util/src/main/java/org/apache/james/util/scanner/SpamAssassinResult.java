@@ -51,12 +51,10 @@ public class SpamAssassinResult {
         
         private String hits;
         private String requiredHits;
-        private ImmutableMap.Builder<String, String> headersAsAttribute;
         private final boolean isSpam;
 
         private Builder(boolean isSpam) {
             this.isSpam = isSpam;
-            headersAsAttribute = ImmutableMap.builder();
         }
 
         public Builder hits(String hits) {
@@ -73,20 +71,16 @@ public class SpamAssassinResult {
             Preconditions.checkNotNull(hits);
             Preconditions.checkNotNull(requiredHits);
 
+            ImmutableMap.Builder<String, String> headersAsAttribute = ImmutableMap.builder();
             if (isSpam) {
-                putHeader(FLAG_MAIL_ATTRIBUTE_NAME, "YES");
-                putHeader(STATUS_MAIL_ATTRIBUTE_NAME, "Yes, hits=" + hits + " required=" + requiredHits);
+                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, "YES");
+                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, "Yes, hits=" + hits + " required=" + requiredHits);
             } else {
-                putHeader(FLAG_MAIL_ATTRIBUTE_NAME, "NO");
-                putHeader(STATUS_MAIL_ATTRIBUTE_NAME, "No, hits=" + hits + " required=" + requiredHits);
+                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, "NO");
+                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, "No, hits=" + hits + " required=" + requiredHits);
             }
 
             return new SpamAssassinResult(hits, requiredHits, headersAsAttribute.build());
-        }
-
-        private Builder putHeader(String name, String value) {
-            this.headersAsAttribute.put(name, value);
-            return this;
         }
     }
 
