@@ -46,8 +46,7 @@ public class SpamAssassinInvokerTest {
                 ClassLoader.getSystemResourceAsStream("eml/spam.eml"));
         SpamAssassinResult result = testee.scanMail(mimeMessage, "any@james");
 
-        // The result is varying from 0.4 to 0.0
-        assertThat(result.getHits()).startsWith("0.");
+        assertThat(result.getHits()).isNotEqualTo(SpamAssassinResult.NO_RESULT);
     }
 
     @Test
@@ -83,7 +82,7 @@ public class SpamAssassinInvokerTest {
     @Test
     public void learnAsSpamShouldReturnTrueWhenLearningWorks() throws Exception {
         MimeMessage mimeMessage = MimeMessageUtil.mimeMessageFromStream(
-                ClassLoader.getSystemResourceAsStream("spamassassin_db/spam/spam1"));
+                ClassLoader.getSystemResourceAsStream("spamassassin_db/spam/spam2"));
 
         boolean result = testee.learnAsSpam(mimeMessage.getInputStream(), "any@james");
 

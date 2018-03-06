@@ -30,7 +30,7 @@ public class SpamAssassinResult {
     /** The mail attribute under which the flag get stored */
     public static final String FLAG_MAIL_ATTRIBUTE_NAME = "org.apache.james.spamassassin.flag";
 
-    private static final String NO_RESULT = "?";
+    public static final String NO_RESULT = "?";
 
     public static SpamAssassinResult empty() {
         return new Builder()
