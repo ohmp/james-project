@@ -40,7 +40,6 @@ import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.util.docker.Images;
 import org.apache.james.util.docker.SwarmGenericContainer;
-import org.apache.james.util.scanner.SpamAssassinInvoker;
 import org.apache.james.util.scanner.SpamAssassinResult;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
