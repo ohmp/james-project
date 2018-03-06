@@ -125,11 +125,18 @@ public class SpamAssassinInvoker {
     private SpamAssassinResult processSpam(String line) {
         List<String> elements = Lists.newArrayList(Splitter.on(' ').split(line));
 
-        return SpamAssassinResult.builder()
+        return builderFrom(elements)
             .hits(elements.get(HITS_INDEX))
             .requiredHits(elements.get(REQUIRED_HITS_INDEX))
-            .isSpam(spam(elements.get(SPAM_INDEX)))
             .build();
+    }
+
+    private SpamAssassinResult.Builder builderFrom(List<String> elements) {
+        if (spam(elements.get(SPAM_INDEX))) {
+            return SpamAssassinResult.asSpam();
+        } else {
+            return SpamAssassinResult.asHam();
+        }
     }
 
     private boolean spam(String string) {

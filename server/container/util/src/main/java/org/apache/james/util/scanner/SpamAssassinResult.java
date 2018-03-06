@@ -33,15 +33,18 @@ public class SpamAssassinResult {
     public static final String NO_RESULT = "?";
 
     public static SpamAssassinResult empty() {
-        return new Builder()
+        return asHam()
                 .hits(NO_RESULT)
                 .requiredHits(NO_RESULT)
-                .isSpam(false)
                 .build();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder asSpam() {
+        return new Builder(true);
+    }
+
+    public static Builder asHam() {
+        return new Builder(false);
     }
 
     public static class Builder {
@@ -49,9 +52,10 @@ public class SpamAssassinResult {
         private String hits;
         private String requiredHits;
         private ImmutableMap.Builder<String, String> headersAsAttribute;
-        private Boolean isSpam;
+        private final boolean isSpam;
 
-        private Builder() {
+        private Builder(boolean isSpam) {
+            this.isSpam = isSpam;
             headersAsAttribute = ImmutableMap.builder();
         }
 
@@ -65,15 +69,9 @@ public class SpamAssassinResult {
             return this;
         }
 
-        public Builder isSpam(boolean isSpam) {
-            this.isSpam = isSpam;
-            return this;
-        }
-
         public SpamAssassinResult build() {
             Preconditions.checkNotNull(hits);
             Preconditions.checkNotNull(requiredHits);
-            Preconditions.checkNotNull(isSpam);
 
             if (isSpam) {
                 putHeader(FLAG_MAIL_ATTRIBUTE_NAME, "YES");

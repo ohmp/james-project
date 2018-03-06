@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.util.scanner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.assertj.core.api.JUnitSoftAssertions;
@@ -33,27 +34,16 @@ public class SpamAssassinResultTest {
 
     @Test
     public void buildShouldThrowWhenHitsIsNotGiven() {
-        assertThatThrownBy(() -> SpamAssassinResult.builder()
+        assertThatThrownBy(() -> SpamAssassinResult.asSpam()
                 .requiredHits("4.0")
-                .isSpam(false)
                 .build())
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     public void buildShouldThrowWhenRequiredHitsIsNotGiven() {
-        assertThatThrownBy(() -> SpamAssassinResult.builder()
+        assertThatThrownBy(() -> SpamAssassinResult.asSpam()
                 .hits("4.0")
-                .isSpam(false)
-                .build())
-            .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    public void buildShouldThrowWhenIsSpamIsNotGiven() {
-        assertThatThrownBy(() -> SpamAssassinResult.builder()
-                .hits("1.0")
-                .requiredHits("4.0")
                 .build())
             .isInstanceOf(NullPointerException.class);
     }
@@ -62,12 +52,10 @@ public class SpamAssassinResultTest {
     public void buildShouldWork() {
         String hits = "1.1";
         String requiredHits = "5.0";
-        boolean isSpam = true;
 
-        SpamAssassinResult spamAssassinResult = SpamAssassinResult.builder()
+        SpamAssassinResult spamAssassinResult = SpamAssassinResult.asSpam()
             .hits(hits)
             .requiredHits(requiredHits)
-            .isSpam(isSpam)
             .build();
 
         softly.assertThat(spamAssassinResult.getHits()).isEqualTo(hits);
@@ -76,5 +64,33 @@ public class SpamAssassinResultTest {
             .containsAllEntriesOf(ImmutableMap.of(
                 SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, "YES",
                 SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME, "Yes, hits=1.1 required=5.0"));
+    }
+
+    @Test
+    public void headersAsAttributeShouldContainsSpamHeaderWithYESValueWhenBuiltAsSpam() {
+        String hits = "1.1";
+        String requiredHits = "5.0";
+
+        SpamAssassinResult spamAssassinResult = SpamAssassinResult.asSpam()
+            .hits(hits)
+            .requiredHits(requiredHits)
+            .build();
+
+        assertThat(spamAssassinResult.getHeadersAsAttribute())
+            .containsEntry(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, "YES");
+    }
+
+    @Test
+    public void headersAsAttributeShouldContainsSpamHeaderWithNOValueWhenBuiltAsHam() {
+        String hits = "1.1";
+        String requiredHits = "5.0";
+
+        SpamAssassinResult spamAssassinResult = SpamAssassinResult.asHam()
+            .hits(hits)
+            .requiredHits(requiredHits)
+            .build();
+
+        assertThat(spamAssassinResult.getHeadersAsAttribute())
+            .containsEntry(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, "NO");
     }
 }

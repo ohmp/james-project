@@ -68,7 +68,7 @@ public class SpamAssassinInvokerTest {
     }
 
     @Test
-    public void scanMailShouldMarkHasSpamWhenKnownHasSpam() throws Exception {
+    public void scanMailShouldMarkAsSpamWhenKnownAsSpam() throws Exception {
         spamAssassin.train("user");
         
         MimeMessage mimeMessage = MimeMessageUtil.mimeMessageFromStream(
