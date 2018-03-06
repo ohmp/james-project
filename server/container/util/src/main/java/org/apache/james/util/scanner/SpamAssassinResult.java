@@ -24,6 +24,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 public class SpamAssassinResult {
+    /** The mail attribute under which the status get stored */
+    public static final String STATUS_MAIL_ATTRIBUTE_NAME = "org.apache.james.spamassassin.status";
+
+    /** The mail attribute under which the flag get stored */
+    public static final String FLAG_MAIL_ATTRIBUTE_NAME = "org.apache.james.spamassassin.flag";
 
     private static final String NO_RESULT = "?";
 
@@ -31,6 +36,7 @@ public class SpamAssassinResult {
         return new Builder()
                 .hits(NO_RESULT)
                 .requiredHits(NO_RESULT)
+                .isSpam(false)
                 .build();
     }
 
@@ -43,6 +49,7 @@ public class SpamAssassinResult {
         private String hits;
         private String requiredHits;
         private ImmutableMap.Builder<String, String> headersAsAttribute;
+        private Boolean isSpam;
 
         private Builder() {
             headersAsAttribute = ImmutableMap.builder();
@@ -58,15 +65,30 @@ public class SpamAssassinResult {
             return this;
         }
 
-        public Builder putHeader(String name, String value) {
-            this.headersAsAttribute.put(name, value);
+        public Builder isSpam(boolean isSpam) {
+            this.isSpam = isSpam;
             return this;
         }
 
         public SpamAssassinResult build() {
             Preconditions.checkNotNull(hits);
             Preconditions.checkNotNull(requiredHits);
+            Preconditions.checkNotNull(isSpam);
+
+            if (isSpam) {
+                putHeader(FLAG_MAIL_ATTRIBUTE_NAME, "YES");
+                putHeader(STATUS_MAIL_ATTRIBUTE_NAME, "Yes, hits=" + hits + " required=" + requiredHits);
+            } else {
+                putHeader(FLAG_MAIL_ATTRIBUTE_NAME, "NO");
+                putHeader(STATUS_MAIL_ATTRIBUTE_NAME, "No, hits=" + hits + " required=" + requiredHits);
+            }
+
             return new SpamAssassinResult(hits, requiredHits, headersAsAttribute.build());
+        }
+
+        private Builder putHeader(String name, String value) {
+            this.headersAsAttribute.put(name, value);
+            return this;
         }
     }
 

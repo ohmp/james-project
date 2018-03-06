@@ -34,7 +34,6 @@ public class SpamAssassinInvokerTest {
     private SpamAssassin spamAssassin;
     private SpamAssassinInvoker testee;
 
-
     @BeforeEach
     public void setup(SpamAssassin spamAssassin) throws Exception {
         this.spamAssassin = spamAssassin;
@@ -78,7 +77,7 @@ public class SpamAssassinInvokerTest {
 
         SpamAssassinResult result = testee.scanMail(mimeMessage, "any@james");
 
-        assertThat(result.getHeadersAsAttribute().get(SpamAssassinInvoker.FLAG_MAIL_ATTRIBUTE_NAME)).isEqualTo("YES");
+        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)).isEqualTo("YES");
     }
 
     @Test
@@ -100,6 +99,6 @@ public class SpamAssassinInvokerTest {
 
         SpamAssassinResult result = testee.scanMail(mimeMessage, "any@james");
 
-        assertThat(result.getHeadersAsAttribute().get(SpamAssassinInvoker.FLAG_MAIL_ATTRIBUTE_NAME)).isEqualTo("YES");
+        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)).isEqualTo("YES");
     }
 }
