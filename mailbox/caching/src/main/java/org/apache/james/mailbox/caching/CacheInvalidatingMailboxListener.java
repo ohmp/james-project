@@ -1,5 +1,6 @@
 package org.apache.james.mailbox.caching;
 
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxListenerSupport;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -44,8 +45,14 @@ public class CacheInvalidatingMailboxListener implements MailboxListener {
     }
 
     @Override
-    public void event(MailboxEvent event) {
+    public void event(Event event) {
         // TODO this needs for sure to be smarter
+        if (event instanceof MailboxEvent) {
+            mailboxEvent((MailboxEvent) event);
+        }
+    }
+
+    private void mailboxEvent(MailboxEvent event) {
         try {
             if (event instanceof MessageEvent) {
                 // invalidate the metadata caches
@@ -55,7 +62,6 @@ public class CacheInvalidatingMailboxListener implements MailboxListener {
         } catch (MailboxException e) {
             LOGGER.error("Error while invalidation cache", e);
         }
-
     }
 
     private void invalidateMetadata(MailboxEvent event) throws MailboxException {
