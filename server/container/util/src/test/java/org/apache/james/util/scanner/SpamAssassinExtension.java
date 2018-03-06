@@ -43,7 +43,7 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterAllCallbac
     private SpamAssassin spamAssassin;
 
     public SpamAssassinExtension() {
-        spamAssassinContainer = new GenericContainer<>("aduprat/spamassassin:latest");
+        spamAssassinContainer = new GenericContainer<>("linagora/spamassassin:latest");
         spamAssassinContainer.waitingFor(new SpamAssassinWaitStrategy());
     }
 
