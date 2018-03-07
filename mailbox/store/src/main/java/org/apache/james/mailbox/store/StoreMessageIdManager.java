@@ -186,7 +186,10 @@ public class StoreMessageIdManager implements MessageIdManager {
             return;
         }
 
-        MessageMoves messageMoves = new MessageMoves(toMailboxIds(currentMailboxMessages), targetMailboxIds);
+        MessageMoves messageMoves = MessageMoves.builder()
+            .targetMailboxIds(targetMailboxIds)
+            .previousMailboxIds(toMailboxIds(currentMailboxMessages))
+            .build();
 
         if (messageMoves.isChange()) {
             applyMessageMoves(mailboxSession, currentMailboxMessages, messageMoves);
@@ -197,7 +200,10 @@ public class StoreMessageIdManager implements MessageIdManager {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
         List<MailboxMessage> currentMailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full);
 
-        MessageMoves messageMoves = new MessageMoves(toMailboxIds(currentMailboxMessages), ImmutableList.of(targetMailboxId));
+        MessageMoves messageMoves = MessageMoves.builder()
+            .previousMailboxIds(toMailboxIds(currentMailboxMessages))
+            .targetMailboxIds(targetMailboxId)
+            .build();
 
         if (messageMoves.isChange()) {
             applyMessageMoveNoMailboxChecks(mailboxSession, currentMailboxMessages, messageMoves);
