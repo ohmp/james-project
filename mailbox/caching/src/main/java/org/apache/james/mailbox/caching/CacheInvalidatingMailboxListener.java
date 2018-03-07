@@ -46,13 +46,13 @@ public class CacheInvalidatingMailboxListener implements MailboxListener {
 
     @Override
     public void event(Event event) {
-        // TODO this needs for sure to be smarter
         if (event instanceof MailboxEvent) {
             mailboxEvent((MailboxEvent) event);
         }
     }
 
     private void mailboxEvent(MailboxEvent event) {
+        // TODO this needs for sure to be smarter
         try {
             if (event instanceof MessageEvent) {
                 // invalidate the metadata caches
