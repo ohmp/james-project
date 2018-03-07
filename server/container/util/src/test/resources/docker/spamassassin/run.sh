@@ -6,6 +6,4 @@ set -m
 
 pids=`jobs -p`
 
-exitcode=0
-
 wait
