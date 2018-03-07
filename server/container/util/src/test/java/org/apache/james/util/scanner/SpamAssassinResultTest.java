@@ -67,7 +67,7 @@ public class SpamAssassinResultTest {
     }
 
     @Test
-    public void headersAsAttributeShouldContainsSpamHeaderWithYESValueWhenBuiltAsSpam() {
+    public void headersAsAttributeShouldContainSpamHeaderWithYESValueWhenBuiltAsSpam() {
         String hits = "1.1";
         String requiredHits = "5.0";
 
@@ -81,7 +81,7 @@ public class SpamAssassinResultTest {
     }
 
     @Test
-    public void headersAsAttributeShouldContainsSpamHeaderWithNOValueWhenBuiltAsHam() {
+    public void headersAsAttributeShouldContainSpamHeaderWithNOValueWhenBuiltAsHam() {
         String hits = "1.1";
         String requiredHits = "5.0";
 
