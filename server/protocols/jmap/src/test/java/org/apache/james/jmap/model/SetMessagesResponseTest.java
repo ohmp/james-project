@@ -84,7 +84,8 @@ public class SetMessagesResponseTest {
             .notCreated(notCreated)
             .notUpdated(notUpdated)
             .notDestroyed(notDestroyed)
-            .MDNNotSent(mdnNotSent)
+            .mdnNotSent(mdnNotSent)
+            .mdnSent(mdnSent)
             .build();
 
         assertThat(setMessagesResponse).isEqualToComparingFieldByField(expected);

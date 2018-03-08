@@ -51,21 +51,21 @@ public class SetMessagesResponse implements Method.Response {
         private String oldState;
         private String newState;
         private final ImmutableMap.Builder<CreationMessageId, Message> created;
-        private final ImmutableMap.Builder<CreationMessageId, MessageId> MDNSent;
+        private final ImmutableMap.Builder<CreationMessageId, MessageId> mdnSent;
         private final ImmutableList.Builder<MessageId> updated;
         private final ImmutableList.Builder<MessageId> destroyed;
         private final ImmutableMap.Builder<CreationMessageId, SetError> notCreated;
-        private final ImmutableMap.Builder<CreationMessageId, SetError> MDNNotSent;
+        private final ImmutableMap.Builder<CreationMessageId, SetError> mdnNotSent;
         private final ImmutableMap.Builder<MessageId, SetError> notUpdated;
         private final ImmutableMap.Builder<MessageId, SetError> notDestroyed;
 
         private Builder() {
             created = ImmutableMap.builder();
-            MDNSent = ImmutableMap.builder();
+            mdnSent = ImmutableMap.builder();
             updated = ImmutableList.builder();
             destroyed = ImmutableList.builder();
             notCreated = ImmutableMap.builder();
-            MDNNotSent = ImmutableMap.builder();
+            mdnNotSent = ImmutableMap.builder();
             notUpdated = ImmutableMap.builder();
             notDestroyed = ImmutableMap.builder();
         }
@@ -93,12 +93,12 @@ public class SetMessagesResponse implements Method.Response {
         }
 
         public Builder mdnSent(CreationMessageId creationMessageId, MessageId messageId) {
-            this.MDNSent.put(creationMessageId, messageId);
+            this.mdnSent.put(creationMessageId, messageId);
             return this;
         }
 
         public Builder mdnSent(ImmutableMap<CreationMessageId, MessageId> sent) {
-            this.MDNSent.putAll(sent);
+            this.mdnSent.putAll(sent);
             return this;
         }
 
@@ -122,13 +122,13 @@ public class SetMessagesResponse implements Method.Response {
             return this;
         }
 
-        public Builder MDNNotSent(Map<CreationMessageId, SetError> notCreated) {
-            this.MDNNotSent.putAll(notCreated);
+        public Builder mdnNotSent(Map<CreationMessageId, SetError> notCreated) {
+            this.mdnNotSent.putAll(notCreated);
             return this;
         }
 
-        public Builder MDNNotSent(CreationMessageId creationMessageId, SetError error) {
-            this.MDNNotSent.put(creationMessageId, error);
+        public Builder mdnNotSent(CreationMessageId creationMessageId, SetError error) {
+            this.mdnNotSent.put(creationMessageId, error);
             return this;
         }
         
@@ -158,8 +158,8 @@ public class SetMessagesResponse implements Method.Response {
 
         public SetMessagesResponse build() {
             return new SetMessagesResponse(accountId, oldState, newState, 
-                created.build(), MDNSent.build(), updated.build(), destroyed.build(),
-                notCreated.build(), MDNNotSent.build(), notUpdated.build(), notDestroyed.build());
+                created.build(), mdnSent.build(), updated.build(), destroyed.build(),
+                notCreated.build(), mdnNotSent.build(), notUpdated.build(), notDestroyed.build());
         }
     }
 
@@ -167,11 +167,11 @@ public class SetMessagesResponse implements Method.Response {
     private final String oldState;
     private final String newState;
     private final ImmutableMap<CreationMessageId, Message> created;
-    private final ImmutableMap<CreationMessageId, MessageId> MDNSent;
+    private final ImmutableMap<CreationMessageId, MessageId> mdnSent;
     private final ImmutableList<MessageId> updated;
     private final ImmutableList<MessageId> destroyed;
     private final ImmutableMap<CreationMessageId, SetError> notCreated;
-    private final ImmutableMap<CreationMessageId, SetError> MDNNotSent;
+    private final ImmutableMap<CreationMessageId, SetError> mdnNotSent;
     private final ImmutableMap<MessageId, SetError> notUpdated;
     private final ImmutableMap<MessageId, SetError> notDestroyed;
 
@@ -181,11 +181,11 @@ public class SetMessagesResponse implements Method.Response {
         this.oldState = oldState;
         this.newState = newState;
         this.created = created;
-        this.MDNSent = mdnSent;
+        this.mdnSent = mdnSent;
         this.updated = updated;
         this.destroyed = destroyed;
         this.notCreated = notCreated;
-        this.MDNNotSent = mdnNotSent;
+        this.mdnNotSent = mdnNotSent;
         this.notUpdated = notUpdated;
         this.notDestroyed = notDestroyed;
     }
@@ -228,12 +228,12 @@ public class SetMessagesResponse implements Method.Response {
 
     @JsonProperty("MDNSent")
     public ImmutableMap<CreationMessageId, MessageId> getMDNSent() {
-        return MDNSent;
+        return mdnSent;
     }
 
     @JsonProperty("MDNNotSent")
     public ImmutableMap<CreationMessageId, SetError> getMDNNotSent() {
-        return MDNNotSent;
+        return mdnNotSent;
     }
 
     public SetMessagesResponse.Builder mergeInto(SetMessagesResponse.Builder responseBuilder) {
@@ -243,7 +243,7 @@ public class SetMessagesResponse implements Method.Response {
         responseBuilder.notCreated(getNotCreated());
         responseBuilder.notUpdated(getNotUpdated());
         responseBuilder.notDestroyed(getNotDestroyed());
-        responseBuilder.MDNNotSent(getMDNNotSent());
+        responseBuilder.mdnNotSent(getMDNNotSent());
         responseBuilder.mdnSent(getMDNSent());
         if (! Strings.isNullOrEmpty(getAccountId())) {
             responseBuilder.accountId(getAccountId());

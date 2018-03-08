@@ -111,7 +111,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
                 .mdnSent(creationMDNEntry.getCreationId(), messageId);
         } catch (MessageNotFoundException e) {
             return SetMessagesResponse.builder()
-                .MDNNotSent(creationMDNEntry.getCreationId(),
+                .mdnNotSent(creationMDNEntry.getCreationId(),
                     SetError.builder()
                         .description(String.format("Message with id %s not found. Thus could not send MDN.",
                             creationMDNEntry.getValue().getMessageId().serialize()))
@@ -121,7 +121,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
         } catch (Exception e) {
             LOGGER.error("Error while sending MDN", e);
             return SetMessagesResponse.builder()
-                .MDNNotSent(creationMDNEntry.getCreationId(),
+                .mdnNotSent(creationMDNEntry.getCreationId(),
                     SetError.builder()
                         .description(String.format("Could not send MDN %s", creationMDNEntry.getCreationId().getId()))
                         .type("error")
