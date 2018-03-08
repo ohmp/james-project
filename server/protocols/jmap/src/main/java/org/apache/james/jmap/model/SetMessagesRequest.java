@@ -54,7 +54,7 @@ public class SetMessagesRequest implements JmapRequest {
         private String accountId;
         private String ifInState;
         private HashMap<CreationMessageId, CreationMessage> create;
-        private HashMap<CreationMessageId, MDN> sendMDN;
+        private HashMap<CreationMessageId, JmapMDN> sendMDN;
         private ImmutableMap.Builder<MessageId, Function<UpdateMessagePatchConverter, UpdateMessagePatch>> updatesProvider;
 
         private ImmutableList.Builder<MessageId> destroy;
@@ -90,12 +90,12 @@ public class SetMessagesRequest implements JmapRequest {
             return this;
         }
 
-        public Builder sendMDN(CreationMessageId creationMessageId, MDN mdn) {
+        public Builder sendMDN(CreationMessageId creationMessageId, JmapMDN mdn) {
             this.sendMDN.put(creationMessageId, mdn);
             return this;
         }
 
-        public Builder sendMDN(Map<CreationMessageId, MDN> mdns) {
+        public Builder sendMDN(Map<CreationMessageId, JmapMDN> mdns) {
             this.sendMDN.putAll(mdns);
             return this;
         }
