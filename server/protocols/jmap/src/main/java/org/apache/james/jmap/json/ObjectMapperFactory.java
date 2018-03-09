@@ -35,6 +35,7 @@ import org.apache.james.mdn.type.DispositionType;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -102,12 +103,12 @@ public class ObjectMapperFactory {
     }
 
     public static class MDNActionModeDeserializer extends JsonDeserializer<DispositionActionMode> {
-        public static final ImmutableList<String> ALLOWED_VALUES = Arrays.stream(DispositionActionMode.values())
+        private static final ImmutableList<String> ALLOWED_VALUES = Arrays.stream(DispositionActionMode.values())
             .map(DispositionActionMode::getValue)
             .collect(Guavate.toImmutableList());
 
         @Override
-        public DispositionActionMode deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+        public DispositionActionMode deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             String value = jsonParser.getValueAsString();
             return DispositionActionMode.fromString(value)
                 .orElseThrow(() -> new IllegalStateException(
@@ -116,12 +117,12 @@ public class ObjectMapperFactory {
     }
 
     public static class MDNSendingModeDeserializer extends JsonDeserializer<DispositionSendingMode> {
-        public static final ImmutableList<String> ALLOWED_VALUES = Arrays.stream(DispositionSendingMode.values())
+        private static final ImmutableList<String> ALLOWED_VALUES = Arrays.stream(DispositionSendingMode.values())
             .map(DispositionSendingMode::getValue)
             .collect(Guavate.toImmutableList());
 
         @Override
-        public DispositionSendingMode deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+        public DispositionSendingMode deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             String value = jsonParser.getValueAsString();
             return DispositionSendingMode.fromString(value)
                 .orElseThrow(() -> new IllegalStateException(
@@ -130,16 +131,16 @@ public class ObjectMapperFactory {
     }
 
     public static class MDNTypeDeserializer extends JsonDeserializer<DispositionType> {
-        public static final ImmutableList<String> ALLOWED_VALUES = Arrays.stream(DispositionType.values())
+        private static final ImmutableList<String> ALLOWED_VALUES = Arrays.stream(DispositionType.values())
             .map(DispositionType::getValue)
             .collect(Guavate.toImmutableList());
 
         @Override
-        public DispositionType deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+        public DispositionType deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             String value = jsonParser.getValueAsString();
             return DispositionType.fromString(value)
                 .orElseThrow(() -> new IllegalStateException(
-                    String.format("Unrecognized MDN Disposition sending mode %s. Should be one of %s", value, ALLOWED_VALUES)));
+                    String.format("Unrecognized MDN Disposition type %s. Should be one of %s", value, ALLOWED_VALUES)));
         }
     }
 
@@ -151,7 +152,7 @@ public class ObjectMapperFactory {
         }
 
         @Override
-        public MailboxId deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        public MailboxId deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
             return factory.fromString(p.getValueAsString());
         }
     }
@@ -159,7 +160,7 @@ public class ObjectMapperFactory {
     public static class MailboxIdSerializer extends JsonSerializer<MailboxId> {
 
         @Override
-        public void serialize(MailboxId value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        public void serialize(MailboxId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
             gen.writeString(value.serialize());
         }
     }
@@ -174,7 +175,7 @@ public class ObjectMapperFactory {
     public static class RightDeserializer extends JsonDeserializer<Rights.Right> {
 
         @Override
-        public Rights.Right deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        public Rights.Right deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
             String nodeValue = p.getValueAsString();
             Preconditions.checkArgument(nodeValue.length() == 1, "Rights should be represented as single value characters");
 
@@ -198,7 +199,7 @@ public class ObjectMapperFactory {
     public static class MailboxIdKeySerializer extends JsonSerializer<MailboxId> {
 
         @Override
-        public void serialize(MailboxId value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        public void serialize(MailboxId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
             gen.writeFieldName(value.serialize());
         }
     }
@@ -211,7 +212,7 @@ public class ObjectMapperFactory {
         }
 
         @Override
-        public MessageId deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        public MessageId deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
             return factory.fromString(p.getValueAsString());
         }
     }
@@ -232,7 +233,7 @@ public class ObjectMapperFactory {
     public static class MessageIdKeySerializer extends JsonSerializer<MessageId> {
 
         @Override
-        public void serialize(MessageId value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        public void serialize(MessageId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
             gen.writeFieldName(value.serialize());
         }
     }
@@ -241,7 +242,7 @@ public class ObjectMapperFactory {
     public static class MessageIdSerializer extends JsonSerializer<MessageId> {
 
         @Override
-        public void serialize(MessageId value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        public void serialize(MessageId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
             gen.writeString(value.serialize());
         }
     }

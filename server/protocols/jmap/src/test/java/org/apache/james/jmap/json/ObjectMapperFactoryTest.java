@@ -155,8 +155,6 @@ public class ObjectMapperFactoryTest {
             .hasMessage("Unrecognized MDN Disposition sending mode illegal. Should be one of [MDN-sent-manually, MDN-sent-automatically]");
     }
 
-
-
     @Test
     public void readValueShouldParseSendingModeWhenDeleted() throws Exception {
         DispositionType actual = testee.forParsing()
