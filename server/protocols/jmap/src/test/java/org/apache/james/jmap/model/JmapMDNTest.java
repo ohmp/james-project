@@ -22,10 +22,16 @@ package org.apache.james.jmap.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
+
+import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNNotificationException;
+import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.mdn.action.mode.DispositionActionMode;
 import org.apache.james.mdn.sending.mode.DispositionSendingMode;
 import org.apache.james.mdn.type.DispositionType;
+import org.apache.james.mime4j.dom.Message;
+import org.apache.james.mime4j.dom.address.Mailbox;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -35,12 +41,19 @@ public class JmapMDNTest {
     public static final String TEXT_BODY = "text body";
     public static final String SUBJECT = "subject";
     public static final String REPORTING_UA = "reportingUA";
+    public static final TestMessageId MESSAGE_ID = TestMessageId.of(45);
     public static final MDNDisposition DISPOSITION = MDNDisposition.builder()
         .actionMode(DispositionActionMode.Automatic)
         .sendingMode(DispositionSendingMode.Automatic)
         .type(DispositionType.Processed)
         .build();
-    public static final TestMessageId MESSAGE_ID = TestMessageId.of(45);
+    public static final JmapMDN MDN = JmapMDN.builder()
+        .disposition(DISPOSITION)
+        .messageId(MESSAGE_ID)
+        .reportingUA(REPORTING_UA)
+        .subject(SUBJECT)
+        .textBody(TEXT_BODY)
+        .build();
 
     @Test
     public void shouldMatchBeanContract() {
@@ -51,14 +64,7 @@ public class JmapMDNTest {
 
     @Test
     public void builderShouldReturnObjectWhenAllFieldsAreValid() {
-        assertThat(
-            JmapMDN.builder()
-                .disposition(DISPOSITION)
-                .messageId(MESSAGE_ID)
-                .reportingUA(REPORTING_UA)
-                .subject(SUBJECT)
-                .textBody(TEXT_BODY)
-                .build())
+        assertThat(MDN)
             .isEqualTo(new JmapMDN(MESSAGE_ID, SUBJECT, TEXT_BODY, REPORTING_UA, DISPOSITION));
     }
 
@@ -120,6 +126,52 @@ public class JmapMDNTest {
                 .subject(SUBJECT)
                 .build())
             .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void generateMDNMessageShouldUseFromHeaderWhenNoSenderHeader() throws Exception {
+        String senderAddress = "sender@local";
+        Message originMessage = Message.Builder.of()
+            .setMessageId("45554@local.com")
+            .setFrom(senderAddress)
+            .setBody("body", StandardCharsets.UTF_8)
+            .build();
+
+        assertThat(
+            MDN.generateMDNMessage(originMessage,
+                new MockMailboxSession("user@localhost.com"))
+                .getTo())
+            .extracting(address -> (Mailbox) address)
+            .extracting(Mailbox::getAddress)
+            .containsExactly(senderAddress);
+    }
+
+    @Test
+    public void messageWithoutMessageIdHeaderShouldBeInvalid() throws Exception {
+        Message originMessage = Message.Builder.of()
+            .setFrom("sender@local")
+            .setBody("body", StandardCharsets.UTF_8)
+            .build();
+
+        assertThatThrownBy(() ->
+            MDN.generateMDNMessage(originMessage,
+                new MockMailboxSession("user@localhost.com"))
+                .getTo())
+            .isInstanceOf(InvalidOriginMessageForMDNNotificationException.class);
+    }
+
+    @Test
+    public void messageWithoutSenderAndFromHeaderShouldBeInvalid() throws Exception {
+        Message originMessage = Message.Builder.of()
+            .setMessageId("45554@local.com")
+            .setBody("body", StandardCharsets.UTF_8)
+            .build();
+
+        assertThatThrownBy(() ->
+            MDN.generateMDNMessage(originMessage,
+                new MockMailboxSession("user@localhost.com"))
+                .getTo())
+            .isInstanceOf(InvalidOriginMessageForMDNNotificationException.class);
     }
 
 }

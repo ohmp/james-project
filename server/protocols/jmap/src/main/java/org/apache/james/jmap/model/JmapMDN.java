@@ -19,10 +19,25 @@
 
 package org.apache.james.jmap.model;
 
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.apache.james.core.User;
+import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNNotificationException;
+import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mdn.MDN;
+import org.apache.james.mdn.MDNReport;
+import org.apache.james.mdn.fields.Disposition;
+import org.apache.james.mime4j.dom.Message;
+import org.apache.james.mime4j.dom.address.MailboxList;
+import org.apache.james.mime4j.dom.field.ParseException;
+import org.apache.james.mime4j.util.MimeUtil;
+import org.apache.james.util.OptionalUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.annotations.VisibleForTesting;
@@ -114,6 +129,55 @@ public class JmapMDN {
 
     public MDNDisposition getDisposition() {
         return disposition;
+    }
+
+    public Message generateMDNMessage(Message originalMessage, MailboxSession mailboxSession) throws ParseException, IOException, InvalidOriginMessageForMDNNotificationException {
+
+        User user = User.fromUsername(mailboxSession.getUser().getUserName());
+
+        return MDN.builder()
+            .report(generateReport(originalMessage, mailboxSession))
+            .humanReadableText(textBody)
+            .build()
+        .asMime4JMessageBuilder()
+            .setTo(getSenderAddress(originalMessage))
+            .setFrom(user.asString())
+            .setSubject(subject)
+            .setMessageId(MimeUtil.createUniqueMessageId(user.getDomainPart().orElse(null)))
+            .build();
+    }
+
+    public String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNNotificationException {
+        return OptionalUtils.or(
+            Optional.ofNullable(originalMessage.getSender()),
+            Optional.ofNullable(originalMessage.getFrom())
+                .map(MailboxList::stream).orElse(Stream.of())
+                .findAny())
+            .orElseThrow(() -> InvalidOriginMessageForMDNNotificationException.missingField("Sender"))
+            .getAddress();
+    }
+
+    @JsonIgnore
+    public MDNReport generateReport(Message originalMessage, MailboxSession mailboxSession) throws InvalidOriginMessageForMDNNotificationException {
+        if (originalMessage.getMessageId() == null) {
+            throw InvalidOriginMessageForMDNNotificationException.missingField("Message-ID");
+        }
+        return MDNReport.builder()
+            .dispositionField(generateDisposition())
+            .originalRecipientField(mailboxSession.getUser().getUserName())
+            .originalMessageIdField(originalMessage.getMessageId())
+            .finalRecipientField(mailboxSession.getUser().getUserName())
+            .reportingUserAgentField(getReportingUA())
+            .build();
+    }
+
+    @JsonIgnore
+    private Disposition generateDisposition() {
+        return Disposition.builder()
+            .actionMode(disposition.getActionMode())
+            .sendingMode(disposition.getSendingMode())
+            .type(disposition.getType())
+            .build();
     }
 
     @Override
