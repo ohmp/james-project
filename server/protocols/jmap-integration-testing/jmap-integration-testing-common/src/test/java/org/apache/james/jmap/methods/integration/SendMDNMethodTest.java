@@ -43,9 +43,6 @@ import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.probe.MailboxProbe;
-import org.apache.james.mdn.action.mode.DispositionActionMode;
-import org.apache.james.mdn.sending.mode.DispositionSendingMode;
-import org.apache.james.mdn.type.DispositionType;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
@@ -91,7 +88,6 @@ public abstract class SendMDNMethodTest {
                 .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
                 .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         RestAssured.defaultParser = Parser.JSON;
 
         dataProbe.addDomain(USERS_DOMAIN);
@@ -101,7 +97,9 @@ public abstract class SendMDNMethodTest {
         accessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(), USERNAME, PASSWORD);
         bobAccessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(), BOB, BOB_PASSWORD);
         await();
+    }
 
+    public void sendAnInitialMessage() {
         String messageCreationId = "creationId";
         String outboxId = getOutboxId(bobAccessToken);
         String requestBody = "[" +
@@ -149,14 +147,9 @@ public abstract class SendMDNMethodTest {
 
     @Test
     public void sendMDNShouldReturnCreatedMessageId() {
-        List<String> messageIds = with()
-            .header("Authorization", accessToken.serialize())
-            .body("[[\"getMessageList\", {}, \"#0\"]]")
-            .post("/jmap")
-        .then()
-            .extract()
-            .body()
-            .path(ARGUMENTS + ".messageIds");
+        sendAnInitialMessage();
+
+        List<String> messageIds = getMessageIdListForAccount(accessToken.serialize());
 
         String creationId = "creation-1";
         given()
@@ -168,9 +161,9 @@ public abstract class SendMDNMethodTest {
                     "    \"textBody\":\"textBody\"," +
                     "    \"reportingUA\":\"reportingUA\"," +
                     "    \"disposition\":{" +
-                    "        \"actionMode\":\"" + DispositionActionMode.Automatic.getValue() + "\","+
-                    "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                    "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                    "        \"actionMode\":\"automatic-action\","+
+                    "        \"sendingMode\":\"MDN-sent-automatically\","+
+                    "        \"type\":\"processed\""+
                     "    }" +
                     "}" +
                 "}}, \"#0\"]]")
@@ -185,6 +178,8 @@ public abstract class SendMDNMethodTest {
 
     @Test
     public void sendMDNShouldFailOnUnknownMessageId() {
+        sendAnInitialMessage();
+
         String creationId = "creation-1";
         String randomMessageId = randomMessageId().serialize();
         given()
@@ -196,9 +191,9 @@ public abstract class SendMDNMethodTest {
                     "    \"textBody\":\"textBody\"," +
                     "    \"reportingUA\":\"reportingUA\"," +
                     "    \"disposition\":{" +
-                    "        \"actionMode\":\"" + DispositionActionMode.Automatic.getValue() + "\","+
-                    "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                    "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                    "        \"actionMode\":\"automatic-action\","+
+                    "        \"sendingMode\":\"MDN-sent-automatically\","+
+                    "        \"type\":\"processed\""+
                     "    }" +
                     "}" +
                 "}}, \"#0\"]]")
@@ -218,14 +213,9 @@ public abstract class SendMDNMethodTest {
 
     @Test
     public void sendMDNShouldSendAMDNBackToTheOriginalMessageAuthor() {
-        List<String> messageIds = with()
-            .header("Authorization", accessToken.serialize())
-            .body("[[\"getMessageList\", {}, \"#0\"]]")
-            .post("/jmap")
-        .then()
-            .extract()
-            .body()
-            .path(ARGUMENTS + ".messageIds");
+        sendAnInitialMessage();
+
+        List<String> messageIds = getMessageIdListForAccount(accessToken.serialize());
 
         // USER sends a MDN back to BOB
         String creationId = "creation-1";
@@ -238,9 +228,9 @@ public abstract class SendMDNMethodTest {
                 "    \"textBody\":\"Read confirmation\"," +
                 "    \"reportingUA\":\"reportingUA\"," +
                 "    \"disposition\":{" +
-                "        \"actionMode\":\"" + DispositionActionMode.Automatic.getValue() + "\","+
-                "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                "        \"actionMode\":\"automatic-action\","+
+                "        \"sendingMode\":\"MDN-sent-automatically\","+
+                "        \"type\":\"processed\""+
                 "    }" +
                 "}" +
                 "}}, \"#0\"]]")
@@ -249,18 +239,11 @@ public abstract class SendMDNMethodTest {
         await();
 
         // BOB should have received it
-        List<String> bobInboxmessageIds = with()
-            .header("Authorization", bobAccessToken.serialize())
-            .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + getInboxId(bobAccessToken) + "\"]}}, \"#0\"]]")
-            .post("/jmap")
-        .then()
-            .extract()
-            .body()
-            .path(ARGUMENTS + ".messageIds");
+        List<String> bobInboxMessageIds = listMessagesInMailbox(bobAccessToken, getInboxId(bobAccessToken));
 
         given()
             .header("Authorization", bobAccessToken.serialize())
-            .body("[[\"getMessages\", {\"ids\": [\"" + bobInboxmessageIds.get(0) + "\"]}, \"#0\"]]")
+            .body("[[\"getMessages\", {\"ids\": [\"" + bobInboxMessageIds.get(0) + "\"]}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()
@@ -276,14 +259,9 @@ public abstract class SendMDNMethodTest {
 
     @Test
     public void sendMDNShouldPositionTheReportAsAnAttachment() {
-        List<String> messageIds = with()
-            .header("Authorization", accessToken.serialize())
-            .body("[[\"getMessageList\", {}, \"#0\"]]")
-            .post("/jmap")
-        .then()
-            .extract()
-            .body()
-            .path(ARGUMENTS + ".messageIds");
+        sendAnInitialMessage();
+
+        List<String> messageIds = getMessageIdListForAccount(accessToken.serialize());
 
         // USER sends a MDN back to BOB
         String creationId = "creation-1";
@@ -296,9 +274,9 @@ public abstract class SendMDNMethodTest {
                 "    \"textBody\":\"Read confirmation\"," +
                 "    \"reportingUA\":\"reportingUA\"," +
                 "    \"disposition\":{" +
-                "        \"actionMode\":\"" + DispositionActionMode.Automatic.getValue() + "\","+
-                "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                "        \"actionMode\":\"automatic-action\","+
+                "        \"sendingMode\":\"MDN-sent-automatically\","+
+                "        \"type\":\"processed\""+
                 "    }" +
                 "}" +
                 "}}, \"#0\"]]")
@@ -307,18 +285,11 @@ public abstract class SendMDNMethodTest {
         await();
 
         // BOB should have received it
-        List<String> bobInboxmessageIds = with()
-            .header("Authorization", bobAccessToken.serialize())
-            .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + getInboxId(bobAccessToken) + "\"]}}, \"#0\"]]")
-            .post("/jmap")
-        .then()
-            .extract()
-            .body()
-            .path(ARGUMENTS + ".messageIds");
+        List<String> bobInboxMessageIds = listMessagesInMailbox(bobAccessToken, getInboxId(bobAccessToken));
 
         String blobId = with()
             .header("Authorization", bobAccessToken.serialize())
-            .body("[[\"getMessages\", {\"ids\": [\"" + bobInboxmessageIds.get(0) + "\"]}, \"#0\"]]")
+            .body("[[\"getMessages\", {\"ids\": [\"" + bobInboxMessageIds.get(0) + "\"]}, \"#0\"]]")
             .post("/jmap")
         .then()
             .extract()
@@ -349,9 +320,9 @@ public abstract class SendMDNMethodTest {
                     "    \"textBody\":\"textBody\"," +
                     "    \"reportingUA\":\"reportingUA\"," +
                     "    \"disposition\":{" +
-                    "        \"actionMode\":\"" + DispositionActionMode.Automatic.getValue() + "\","+
-                    "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                    "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                    "        \"actionMode\":\"automatic-action\","+
+                    "        \"sendingMode\":\"MDN-sent-automatically\","+
+                    "        \"type\":\"processed\""+
                     "    }" +
                     "}" +
                 "}}, \"#0\"]]")
@@ -378,8 +349,8 @@ public abstract class SendMDNMethodTest {
                 "    \"textBody\":\"textBody\"," +
                 "    \"reportingUA\":\"reportingUA\"," +
                 "    \"disposition\":{" +
-                "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                "        \"sendingMode\":\"MDN-sent-automatically\","+
+                "        \"type\":\"processed\""+
                 "    }" +
                 "}" +
                 "}}, \"#0\"]]")
@@ -396,7 +367,6 @@ public abstract class SendMDNMethodTest {
     @Test
     public void invalidEnumValuesInMDNShouldBeReported() {
         String creationId = "creation-1";
-        // Missing actionMode
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[\"setMessages\", {\"sendMDN\": {" +
@@ -407,8 +377,8 @@ public abstract class SendMDNMethodTest {
                 "    \"reportingUA\":\"reportingUA\"," +
                 "    \"disposition\":{" +
                 "        \"actionMode\":\"invalid\","+
-                "        \"sendingMode\":\"" + DispositionSendingMode.Automatic.getValue() + "\","+
-                "        \"type\":\"" + DispositionType.Processed.getValue() + "\""+
+                "        \"sendingMode\":\"MDN-sent-automatically\","+
+                "        \"type\":\"processed\""+
                 "    }" +
                 "}" +
                 "}}, \"#0\"]]")
@@ -447,4 +417,27 @@ public abstract class SendMDNMethodTest {
             .jsonPath()
             .getList(ARGUMENTS + ".list");
     }
+
+    public List<String> getMessageIdListForAccount(String accessToken) {
+        return with()
+            .header("Authorization", accessToken)
+            .body("[[\"getMessageList\", {}, \"#0\"]]")
+            .post("/jmap")
+        .then()
+            .extract()
+            .body()
+            .path(ARGUMENTS + ".messageIds");
+    }
+
+    public List<String> listMessagesInMailbox(AccessToken accessToken, String mailboxId) {
+        return with()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + mailboxId + "\"]}}, \"#0\"]]")
+            .post("/jmap")
+        .then()
+            .extract()
+            .body()
+            .path(ARGUMENTS + ".messageIds");
+    }
+
 }

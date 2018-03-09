@@ -96,41 +96,41 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             () -> handleMDNCreation(request, mailboxSession));
     }
 
-    public SetMessagesResponse handleMDNCreation(SetMessagesRequest request, MailboxSession mailboxSession) {
+    private SetMessagesResponse handleMDNCreation(SetMessagesRequest request, MailboxSession mailboxSession) {
         return request.getSendMDN()
             .stream()
-            .map(creationMDNEntry -> handleMDNCreation(creationMDNEntry, mailboxSession))
+            .map(MDNCreationEntry -> handleMDNCreation(MDNCreationEntry, mailboxSession))
             .reduce(SetMessagesResponse.builder(), SetMessagesResponse.Builder::mergeWith)
             .build();
     }
 
-    public SetMessagesResponse.Builder handleMDNCreation(ValueWithId.CreationMDNEntry creationMDNEntry, MailboxSession mailboxSession) {
+    private SetMessagesResponse.Builder handleMDNCreation(ValueWithId.MDNCreationEntry MDNCreationEntry, MailboxSession mailboxSession) {
         try {
-            MessageId messageId = sendMdn(creationMDNEntry, mailboxSession);
+            MessageId messageId = sendMdn(MDNCreationEntry, mailboxSession);
             return SetMessagesResponse.builder()
-                .mdnSent(creationMDNEntry.getCreationId(), messageId);
+                .mdnSent(MDNCreationEntry.getCreationId(), messageId);
         } catch (MessageNotFoundException e) {
             return SetMessagesResponse.builder()
-                .mdnNotSent(creationMDNEntry.getCreationId(),
+                .mdnNotSent(MDNCreationEntry.getCreationId(),
                     SetError.builder()
                         .description(String.format("Message with id %s not found. Thus could not send MDN.",
-                            creationMDNEntry.getValue().getMessageId().serialize()))
+                            MDNCreationEntry.getValue().getMessageId().serialize()))
                         .type("invalidArgument")
                         .build());
 
         } catch (Exception e) {
             LOGGER.error("Error while sending MDN", e);
             return SetMessagesResponse.builder()
-                .mdnNotSent(creationMDNEntry.getCreationId(),
+                .mdnNotSent(MDNCreationEntry.getCreationId(),
                     SetError.builder()
-                        .description(String.format("Could not send MDN %s", creationMDNEntry.getCreationId().getId()))
+                        .description(String.format("Could not send MDN %s", MDNCreationEntry.getCreationId().getId()))
                         .type("error")
                         .build());
         }
     }
 
-    public MessageId sendMdn(ValueWithId.CreationMDNEntry creationMDNEntry, MailboxSession mailboxSession) throws MailboxException, IOException, MessagingException, ParseException, MessageNotFoundException {
-        JmapMDN mdn = creationMDNEntry.getValue();
+    private MessageId sendMdn(ValueWithId.MDNCreationEntry MDNCreationEntry, MailboxSession mailboxSession) throws MailboxException, IOException, MessagingException, ParseException, MessageNotFoundException {
+        JmapMDN mdn = MDNCreationEntry.getValue();
         Message originalMessage = retrieveOriginalMessage(mdn, mailboxSession);
         MDNReport mdnReport = generateReport(mdn, originalMessage, mailboxSession);
         List<MessageAttachment> reportAsAttachment = ImmutableList.of(convertReportToAttachment(mdnReport));
@@ -148,12 +148,12 @@ public class SendMDNProcessor implements SetMessagesProcessor {
         return metaDataWithContent.getMessageId();
     }
 
-    public Message generateMDNMessage(Message originalMessage, JmapMDN mdn, MDNReport mdnReport, User user) throws ParseException, IOException {
+    private Message generateMDNMessage(Message originalMessage, JmapMDN mdn, MDNReport mdnReport, User user) throws ParseException, IOException {
         return MDN.builder()
             .report(mdnReport)
             .humanReadableText(mdn.getTextBody())
             .build()
-            .asMime4JMessageBuilder()
+        .asMime4JMessageBuilder()
             .setTo(originalMessage.getSender().getAddress())
             .setFrom(user.asString())
             .setSubject(mdn.getSubject())
@@ -161,7 +161,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             .build();
     }
 
-    public Message retrieveOriginalMessage(JmapMDN mdn, MailboxSession mailboxSession) throws MailboxException, IOException, MessageNotFoundException {
+    private Message retrieveOriginalMessage(JmapMDN mdn, MailboxSession mailboxSession) throws MailboxException, IOException, MessageNotFoundException {
         List<MessageResult> messages = messageIdManager.getMessages(ImmutableList.of(mdn.getMessageId()),
             FetchGroupImpl.HEADERS,
             mailboxSession);
@@ -176,7 +176,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
         return messageBuilder.parseMessage(messages.get(0).getHeaders().getInputStream());
     }
 
-    public MessageAttachment convertReportToAttachment(MDNReport mdnReport) {
+    private MessageAttachment convertReportToAttachment(MDNReport mdnReport) {
         Attachment attachment = Attachment.builder()
             .bytes(mdnReport.formattedValue().getBytes(StandardCharsets.UTF_8))
             .type(MDN.DISPOSITION_CONTENT_TYPE)
@@ -188,7 +188,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             .build();
     }
 
-    public MDNReport generateReport(JmapMDN mdn, Message originalMessage, MailboxSession mailboxSession) {
+    private MDNReport generateReport(JmapMDN mdn, Message originalMessage, MailboxSession mailboxSession) {
         return MDNReport.builder()
                 .dispositionField(generateDisposition(mdn.getDisposition()))
                 .originalRecipientField(mailboxSession.getUser().getUserName())
@@ -198,7 +198,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
                 .build();
     }
 
-    public Disposition generateDisposition(MDNDisposition disposition) {
+    private Disposition generateDisposition(MDNDisposition disposition) {
         return Disposition.builder()
             .actionMode(disposition.getActionMode())
             .sendingMode(disposition.getSendingMode())
@@ -206,7 +206,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             .build();
     }
 
-    public MessageManager getOutbox(MailboxSession mailboxSession) throws MailboxException {
+    private MessageManager getOutbox(MailboxSession mailboxSession) throws MailboxException {
         return systemMailboxesProvider.getMailboxByRole(Role.OUTBOX, mailboxSession)
             .findAny()
             .orElseThrow(() -> new IllegalStateException("User don't have an Outbox"));
