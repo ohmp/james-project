@@ -192,7 +192,7 @@ public class MDNTest {
             "Disposition: automatic-action/MDN-sent-automatically;deleted");
     }
 
-    public String asString(Message message) throws Exception {
+    private String asString(Message message) throws Exception {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         DefaultMessageWriter writer = new DefaultMessageWriter();
         writer.writeMessage(message, buffer);
