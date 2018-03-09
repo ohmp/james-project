@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.james.core.User;
-import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNNotificationException;
+import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mdn.MDN;
@@ -131,7 +131,7 @@ public class JmapMDN {
         return disposition;
     }
 
-    public Message generateMDNMessage(Message originalMessage, MailboxSession mailboxSession) throws ParseException, IOException, InvalidOriginMessageForMDNNotificationException {
+    public Message generateMDNMessage(Message originalMessage, MailboxSession mailboxSession) throws ParseException, IOException, InvalidOriginMessageForMDNException {
 
         User user = User.fromUsername(mailboxSession.getUser().getUserName());
 
@@ -147,20 +147,20 @@ public class JmapMDN {
             .build();
     }
 
-    public String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNNotificationException {
+    public String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNException {
         return OptionalUtils.or(
             Optional.ofNullable(originalMessage.getSender()),
             Optional.ofNullable(originalMessage.getFrom())
                 .map(MailboxList::stream).orElse(Stream.of())
-                .findAny())
-            .orElseThrow(() -> InvalidOriginMessageForMDNNotificationException.missingField("Sender"))
+                .findFirst())
+            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField("Sender"))
             .getAddress();
     }
 
     @JsonIgnore
-    public MDNReport generateReport(Message originalMessage, MailboxSession mailboxSession) throws InvalidOriginMessageForMDNNotificationException {
+    public MDNReport generateReport(Message originalMessage, MailboxSession mailboxSession) throws InvalidOriginMessageForMDNException {
         if (originalMessage.getMessageId() == null) {
-            throw InvalidOriginMessageForMDNNotificationException.missingField("Message-ID");
+            throw InvalidOriginMessageForMDNException.missingField("Message-ID");
         }
         return MDNReport.builder()
             .dispositionField(generateDisposition())

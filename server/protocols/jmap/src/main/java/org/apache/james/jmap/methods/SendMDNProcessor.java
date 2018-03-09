@@ -29,7 +29,7 @@ import javax.inject.Inject;
 import javax.mail.Flags;
 import javax.mail.MessagingException;
 
-import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNNotificationException;
+import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNException;
 import org.apache.james.jmap.exceptions.MessageNotFoundException;
 import org.apache.james.jmap.model.Envelope;
 import org.apache.james.jmap.model.JmapMDN;
@@ -106,7 +106,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             MessageId messageId = sendMdn(MDNCreationEntry, mailboxSession);
             return SetMessagesResponse.builder()
                 .mdnSent(MDNCreationEntry.getCreationId(), messageId);
-        } catch (InvalidOriginMessageForMDNNotificationException e) {
+        } catch (InvalidOriginMessageForMDNException e) {
             return SetMessagesResponse.builder()
                 .mdnNotSent(MDNCreationEntry.getCreationId(),
                     SetError.builder()
@@ -136,7 +136,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
     }
 
     private MessageId sendMdn(ValueWithId.MDNCreationEntry MDNCreationEntry, MailboxSession mailboxSession)
-            throws MailboxException, IOException, MessagingException, ParseException, MessageNotFoundException, InvalidOriginMessageForMDNNotificationException {
+            throws MailboxException, IOException, MessagingException, ParseException, MessageNotFoundException, InvalidOriginMessageForMDNException {
 
         JmapMDN mdn = MDNCreationEntry.getValue();
         Message originalMessage = retrieveOriginalMessage(mdn, mailboxSession);

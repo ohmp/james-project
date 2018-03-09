@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 
-import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNNotificationException;
+import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNException;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.mdn.action.mode.DispositionActionMode;
@@ -147,6 +147,61 @@ public class JmapMDNTest {
     }
 
     @Test
+    public void generateMDNMessageShouldUseSenderHeaderWhenNoFromHeader() throws Exception {
+        String senderAddress = "sender@local";
+        Message originMessage = Message.Builder.of()
+            .setMessageId("45554@local.com")
+            .setSender(senderAddress)
+            .setBody("body", StandardCharsets.UTF_8)
+            .build();
+
+        assertThat(
+            MDN.generateMDNMessage(originMessage,
+                new MockMailboxSession("user@localhost.com"))
+                .getTo())
+            .extracting(address -> (Mailbox) address)
+            .extracting(Mailbox::getAddress)
+            .containsExactly(senderAddress);
+    }
+
+    @Test
+    public void generateMDNMessageShouldUseSenderHeaderWhenFromAndSenderHeaders() throws Exception {
+        String senderAddress = "sender@local";
+        Message originMessage = Message.Builder.of()
+            .setMessageId("45554@local.com")
+            .setSender(senderAddress)
+            .setFrom("from@localhost.com")
+            .setBody("body", StandardCharsets.UTF_8)
+            .build();
+
+        assertThat(
+            MDN.generateMDNMessage(originMessage,
+                new MockMailboxSession("user@localhost.com"))
+                .getTo())
+            .extracting(address -> (Mailbox) address)
+            .extracting(Mailbox::getAddress)
+            .containsExactly(senderAddress);
+    }
+
+    @Test
+    public void generateMDNMessageShouldUseFirstFromFieldWhenSeveral() throws Exception {
+        String senderAddress = "sender@local";
+        Message originMessage = Message.Builder.of()
+            .setMessageId("45554@local.com")
+            .setFrom(senderAddress, "other@localhost.com")
+            .setBody("body", StandardCharsets.UTF_8)
+            .build();
+
+        assertThat(
+            MDN.generateMDNMessage(originMessage,
+                new MockMailboxSession("user@localhost.com"))
+                .getTo())
+            .extracting(address -> (Mailbox) address)
+            .extracting(Mailbox::getAddress)
+            .containsExactly(senderAddress);
+    }
+
+    @Test
     public void messageWithoutMessageIdHeaderShouldBeInvalid() throws Exception {
         Message originMessage = Message.Builder.of()
             .setFrom("sender@local")
@@ -157,7 +212,7 @@ public class JmapMDNTest {
             MDN.generateMDNMessage(originMessage,
                 new MockMailboxSession("user@localhost.com"))
                 .getTo())
-            .isInstanceOf(InvalidOriginMessageForMDNNotificationException.class);
+            .isInstanceOf(InvalidOriginMessageForMDNException.class);
     }
 
     @Test
@@ -171,7 +226,7 @@ public class JmapMDNTest {
             MDN.generateMDNMessage(originMessage,
                 new MockMailboxSession("user@localhost.com"))
                 .getTo())
-            .isInstanceOf(InvalidOriginMessageForMDNNotificationException.class);
+            .isInstanceOf(InvalidOriginMessageForMDNException.class);
     }
 
 }
