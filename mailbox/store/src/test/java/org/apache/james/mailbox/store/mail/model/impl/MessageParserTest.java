@@ -278,7 +278,7 @@ public class MessageParserTest {
     }
 
     @Test
-    public void mdnReportsShouldBeConsideredAs() throws Exception {
+    public void mdnReportShouldBeConsideredAsAttachmentWhenDispositionContentType() throws Exception {
         Message message = MDN.builder()
             .humanReadableText("A little test")
             .report(MDNReport.builder()
