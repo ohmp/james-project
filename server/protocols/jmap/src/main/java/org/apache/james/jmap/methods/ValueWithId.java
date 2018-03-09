@@ -51,8 +51,8 @@ public class ValueWithId<T> {
         }
     }
 
-    public static class CreationMDNEntry extends ValueWithId<JmapMDN> {
-        public CreationMDNEntry(CreationMessageId creationId, JmapMDN mdn) {
+    public static class MDNCreationEntry extends ValueWithId<JmapMDN> {
+        public MDNCreationEntry(CreationMessageId creationId, JmapMDN mdn) {
             super(creationId, mdn);
         }
     }

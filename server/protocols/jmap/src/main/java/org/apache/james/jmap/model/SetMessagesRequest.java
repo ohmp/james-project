@@ -28,8 +28,8 @@ import java.util.function.Function;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.jmap.methods.JmapRequest;
 import org.apache.james.jmap.methods.UpdateMessagePatchConverter;
-import org.apache.james.jmap.methods.ValueWithId.CreationMDNEntry;
 import org.apache.james.jmap.methods.ValueWithId.CreationMessageEntry;
+import org.apache.james.jmap.methods.ValueWithId.MDNCreationEntry;
 import org.apache.james.mailbox.model.MessageId;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -121,9 +121,9 @@ public class SetMessagesRequest implements JmapRequest {
                     .collect(Guavate.toImmutableList());
         }
 
-        private ImmutableList<CreationMDNEntry> mdnSendings() {
+        private ImmutableList<MDNCreationEntry> mdnSendings() {
             return sendMDN.entrySet().stream()
-                    .map(entry -> new CreationMDNEntry(entry.getKey(), entry.getValue()))
+                    .map(entry -> new MDNCreationEntry(entry.getKey(), entry.getValue()))
                     .collect(Guavate.toImmutableList());
         }
     }
@@ -131,13 +131,14 @@ public class SetMessagesRequest implements JmapRequest {
     private final Optional<String> accountId;
     private final Optional<String> ifInState;
     private final List<CreationMessageEntry> create;
-    private final List<CreationMDNEntry> sendMDN;
+    private final List<MDNCreationEntry> sendMDN;
     private final Map<MessageId, Function<UpdateMessagePatchConverter, UpdateMessagePatch>> update;
     private final List<MessageId> destroy;
 
     @VisibleForTesting SetMessagesRequest(Optional<String> accountId, Optional<String> ifInState,
-                    List<CreationMessageEntry> create, List<CreationMDNEntry> sendMDN, Map<MessageId,
-                    Function<UpdateMessagePatchConverter, UpdateMessagePatch>> update, List<MessageId> destroy) {
+                                          List<CreationMessageEntry> create, List<MDNCreationEntry> sendMDN,
+                                          Map<MessageId, Function<UpdateMessagePatchConverter, UpdateMessagePatch>> update,
+                                          List<MessageId> destroy) {
         this.accountId = accountId;
         this.ifInState = ifInState;
         this.create = create;
@@ -158,7 +159,7 @@ public class SetMessagesRequest implements JmapRequest {
         return create;
     }
 
-    public List<CreationMDNEntry> getSendMDN() {
+    public List<MDNCreationEntry> getSendMDN() {
         return sendMDN;
     }
 
