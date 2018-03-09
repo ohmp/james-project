@@ -201,7 +201,7 @@ public class ObjectMapperFactoryTest {
             .readValue("\"illegal\"",
                 DispositionType.class))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Unrecognized MDN Disposition sending mode illegal. Should be one of [deleted, dispatched, displayed, processed]");
+            .hasMessage("Unrecognized MDN Disposition type illegal. Should be one of [deleted, dispatched, displayed, processed]");
     }
 
     @Test
