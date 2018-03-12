@@ -97,7 +97,7 @@ public abstract class SendMDNMethodTest {
         bobAccessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(), BOB, BOB_PASSWORD);
     }
 
-    public void sendAnInitialMessage() {
+    private void sendAnInitialMessage() {
         String messageCreationId = "creationId";
         String outboxId = getOutboxId(bobAccessToken);
         String requestBody = "[" +
@@ -414,7 +414,7 @@ public abstract class SendMDNMethodTest {
             .getList(ARGUMENTS + ".list");
     }
 
-    public List<String> getMessageIdListForAccount(String accessToken) {
+    private List<String> getMessageIdListForAccount(String accessToken) {
         return with()
             .header("Authorization", accessToken)
             .body("[[\"getMessageList\", {}, \"#0\"]]")
@@ -425,7 +425,7 @@ public abstract class SendMDNMethodTest {
             .path(ARGUMENTS + ".messageIds");
     }
 
-    public List<String> listMessagesInMailbox(AccessToken accessToken, String mailboxId) {
+    private List<String> listMessagesInMailbox(AccessToken accessToken, String mailboxId) {
         return with()
             .header("Authorization", accessToken.serialize())
             .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + mailboxId + "\"]}}, \"#0\"]]")
