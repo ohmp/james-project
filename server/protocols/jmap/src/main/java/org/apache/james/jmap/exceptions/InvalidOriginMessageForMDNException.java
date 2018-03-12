@@ -30,7 +30,7 @@ public class InvalidOriginMessageForMDNException extends Exception {
 
     public static InvalidOriginMessageForMDNException headerMismatch(String expectedValue) {
         return new InvalidOriginMessageForMDNException(JmapMDN.DISPOSITION_NOTIFICATION_TO,
-            String.format("'%s' field of targeted message do not match the '%s' field. Expected value was '%s'",
+            String.format("'%s' field of targeted message does not match the '%s' field. Expected value was '%s'",
                 JmapMDN.DISPOSITION_NOTIFICATION_TO, JmapMDN.RETURN_PATH, expectedValue));
     }
 

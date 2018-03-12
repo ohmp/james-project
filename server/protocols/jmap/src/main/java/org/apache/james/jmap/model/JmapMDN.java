@@ -163,9 +163,6 @@ public class JmapMDN {
             .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField(RETURN_PATH))
             .getAddress();
 
-        System.out.println("return path " + returnPath);
-        System.out.println("requestedMDNRecipient " + requestedMDNRecipient);
-
         if (!returnPath.equals(requestedMDNRecipient)) {
             throw InvalidOriginMessageForMDNException.headerMismatch(returnPath);
         }
