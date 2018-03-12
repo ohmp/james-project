@@ -38,7 +38,6 @@ import org.apache.james.mime4j.dom.field.ParseException;
 import org.apache.james.mime4j.util.MimeUtil;
 import org.apache.james.util.OptionalUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.annotations.VisibleForTesting;
@@ -148,7 +147,7 @@ public class JmapMDN {
             .build();
     }
 
-    public String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNException {
+    private String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNException {
         Optional<Mailbox> replyTo = Optional.ofNullable(originalMessage.getReplyTo())
             .map(AddressList::flatten)
             .flatMap(this::returnFirstAddress);
@@ -161,11 +160,10 @@ public class JmapMDN {
             .getAddress();
     }
 
-    public Optional<Mailbox> returnFirstAddress(MailboxList mailboxList) {
+    private Optional<Mailbox> returnFirstAddress(MailboxList mailboxList) {
         return mailboxList.stream().findFirst();
     }
 
-    @JsonIgnore
     public MDNReport generateReport(Message originalMessage, MailboxSession mailboxSession) throws InvalidOriginMessageForMDNException {
         if (originalMessage.getMessageId() == null) {
             throw InvalidOriginMessageForMDNException.missingField("Message-ID");
@@ -179,7 +177,6 @@ public class JmapMDN {
             .build();
     }
 
-    @JsonIgnore
     private Disposition generateDisposition() {
         return Disposition.builder()
             .actionMode(disposition.getActionMode())
