@@ -22,7 +22,6 @@ package org.apache.james.jmap.model;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.apache.james.core.User;
 import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNException;
@@ -32,6 +31,8 @@ import org.apache.james.mdn.MDN;
 import org.apache.james.mdn.MDNReport;
 import org.apache.james.mdn.fields.Disposition;
 import org.apache.james.mime4j.dom.Message;
+import org.apache.james.mime4j.dom.address.AddressList;
+import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.address.MailboxList;
 import org.apache.james.mime4j.dom.field.ParseException;
 import org.apache.james.mime4j.util.MimeUtil;
@@ -148,13 +149,20 @@ public class JmapMDN {
     }
 
     public String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNException {
-        return OptionalUtils.or(
-            Optional.ofNullable(originalMessage.getSender()),
-            Optional.ofNullable(originalMessage.getFrom())
-                .map(MailboxList::stream).orElse(Stream.of())
-                .findFirst())
+        Optional<Mailbox> replyTo = Optional.ofNullable(originalMessage.getReplyTo())
+            .map(AddressList::flatten)
+            .flatMap(this::returnFirstAddress);
+        Optional<Mailbox> sender = Optional.ofNullable(originalMessage.getSender());
+        Optional<Mailbox> from = Optional.ofNullable(originalMessage.getFrom())
+            .flatMap(this::returnFirstAddress);
+
+        return OptionalUtils.or(replyTo, sender, from)
             .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField("Sender"))
             .getAddress();
+    }
+
+    public Optional<Mailbox> returnFirstAddress(MailboxList mailboxList) {
+        return mailboxList.stream().findFirst();
     }
 
     @JsonIgnore
