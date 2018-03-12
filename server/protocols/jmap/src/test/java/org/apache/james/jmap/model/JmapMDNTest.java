@@ -31,8 +31,8 @@ import org.apache.james.mdn.action.mode.DispositionActionMode;
 import org.apache.james.mdn.sending.mode.DispositionSendingMode;
 import org.apache.james.mdn.type.DispositionType;
 import org.apache.james.mime4j.dom.Message;
-import org.apache.james.mime4j.dom.address.Group;
 import org.apache.james.mime4j.dom.address.Mailbox;
+import org.apache.james.mime4j.stream.RawField;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -131,12 +131,14 @@ public class JmapMDNTest {
     }
 
     @Test
-    public void generateMDNMessageShouldUseFromHeaderWhenNoSenderHeader() throws Exception {
+    public void generateMDNMessageShouldUseDispositionHeaders() throws Exception {
         String senderAddress = "sender@local";
         Message originMessage = Message.Builder.of()
             .setMessageId("45554@local.com")
             .setFrom(senderAddress)
             .setBody("body", StandardCharsets.UTF_8)
+            .addField(new RawField(JmapMDN.RETURN_PATH, "<" + senderAddress + ">"))
+            .addField(new RawField(JmapMDN.DISPOSITION_NOTIFICATION_TO, "<" + senderAddress + ">"))
             .build();
 
         assertThat(
@@ -148,158 +150,48 @@ public class JmapMDNTest {
     }
 
     @Test
-    public void generateMDNMessageShouldUseSenderHeaderWhenNoFromHeader() throws Exception {
+    public void generateMDNMessageShouldFailOnMissingReturnPath() throws Exception {
         String senderAddress = "sender@local";
         Message originMessage = Message.Builder.of()
             .setMessageId("45554@local.com")
-            .setSender(senderAddress)
+            .setFrom(senderAddress)
             .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(senderAddress);
-    }
-
-    @Test
-    public void generateMDNMessageShouldUseSenderHeaderWhenFromAndSenderHeaders() throws Exception {
-        String senderAddress = "sender@local";
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setSender(senderAddress)
-            .setFrom("from@localhost.com")
-            .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(senderAddress);
-    }
-
-    @Test
-    public void generateMDNMessageShouldUseFirstFromFieldWhenSeveral() throws Exception {
-        String senderAddress = "sender@local";
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setFrom(senderAddress, "other@localhost.com")
-            .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(senderAddress);
-    }
-
-    @Test
-    public void generateMDNMessageShouldUseReplyToFieldWhenProvided() throws Exception {
-        String senderAddress = "sender@local";
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setReplyTo(new Mailbox("sender", "local"))
-            .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(senderAddress);
-    }
-
-    @Test
-    public void generateMDNMessageShouldUseFirstReplyToEntry() throws Exception {
-        String senderAddress = "sender@local";
-        Mailbox senderMailbox = new Mailbox("sender", "local");
-        Mailbox otherMailbox = new Mailbox("other", "local");
-
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setReplyTo(senderMailbox,
-                otherMailbox)
-            .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(senderAddress);
-    }
-
-    @Test
-    public void generateMDNMessageShouldSupportGroupReplyTo() throws Exception {
-        String senderAddress = "sender@local";
-        Mailbox senderMailbox = new Mailbox("sender", "local");
-        Mailbox otherMailbox = new Mailbox("other", "local");
-        Group group = new Group("myGroup", senderMailbox, otherMailbox);
-
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setReplyTo(group)
-            .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(senderAddress);
-    }
-
-    @Test
-    public void generateMDNMessageShouldUseReplyToFieldInPriority() throws Exception {
-        String replyTo = "replyTo@local";
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setReplyTo(new Mailbox("replyTo", "local"))
-            .setSender("sender@local")
-            .setFrom("from@local")
-            .setBody("body", StandardCharsets.UTF_8)
-            .build();
-
-        assertThat(
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
-            .extracting(address -> (Mailbox) address)
-            .extracting(Mailbox::getAddress)
-            .containsExactly(replyTo);
-    }
-
-    @Test
-    public void messageWithoutMessageIdHeaderShouldBeInvalid() throws Exception {
-        Message originMessage = Message.Builder.of()
-            .setFrom("sender@local")
-            .setBody("body", StandardCharsets.UTF_8)
+            .addField(new RawField(JmapMDN.DISPOSITION_NOTIFICATION_TO, "<" + senderAddress + ">"))
             .build();
 
         assertThatThrownBy(() ->
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
+            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION))
             .isInstanceOf(InvalidOriginMessageForMDNException.class);
     }
 
     @Test
-    public void messageWithoutSenderAndFromHeaderShouldBeInvalid() throws Exception {
+    public void generateMDNMessageShouldFailOnMissingDisposition() throws Exception {
+        String senderAddress = "sender@local";
         Message originMessage = Message.Builder.of()
             .setMessageId("45554@local.com")
+            .setFrom(senderAddress)
             .setBody("body", StandardCharsets.UTF_8)
+            .addField(new RawField(JmapMDN.RETURN_PATH, "<" + senderAddress + ">"))
             .build();
 
         assertThatThrownBy(() ->
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION)
-                .getTo())
+            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION))
+            .isInstanceOf(InvalidOriginMessageForMDNException.class);
+    }
+
+    @Test
+    public void generateMDNMessageShouldFailOnHeaderMismatch() throws Exception {
+        String senderAddress = "sender@local";
+        Message originMessage = Message.Builder.of()
+            .setMessageId("45554@local.com")
+            .setFrom(senderAddress)
+            .setBody("body", StandardCharsets.UTF_8)
+            .addField(new RawField(JmapMDN.RETURN_PATH, "<" + senderAddress + ">"))
+            .addField(new RawField(JmapMDN.DISPOSITION_NOTIFICATION_TO, "<other@local>"))
+            .build();
+
+        assertThatThrownBy(() ->
+            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION))
             .isInstanceOf(InvalidOriginMessageForMDNException.class);
     }
 

@@ -22,6 +22,7 @@ package org.apache.james.jmap.model;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.james.core.User;
 import org.apache.james.jmap.exceptions.InvalidOriginMessageForMDNException;
@@ -30,22 +31,28 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mdn.MDN;
 import org.apache.james.mdn.MDNReport;
 import org.apache.james.mdn.fields.Disposition;
+import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.dom.address.AddressList;
 import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.address.MailboxList;
+import org.apache.james.mime4j.dom.field.AddressListField;
 import org.apache.james.mime4j.dom.field.ParseException;
+import org.apache.james.mime4j.field.AddressListFieldLenientImpl;
 import org.apache.james.mime4j.util.MimeUtil;
-import org.apache.james.util.OptionalUtils;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 @JsonDeserialize(builder = JmapMDN.Builder.class)
 public class JmapMDN {
+
+    public static final String DISPOSITION_NOTIFICATION_TO = "Disposition-Notification-To";
+    public static final String RETURN_PATH = "Return-Path";
 
     public static Builder builder() {
         return new Builder();
@@ -148,21 +155,38 @@ public class JmapMDN {
     }
 
     private String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNException {
-        Optional<Mailbox> replyTo = Optional.ofNullable(originalMessage.getReplyTo())
-            .map(AddressList::flatten)
-            .flatMap(this::returnFirstAddress);
-        Optional<Mailbox> sender = Optional.ofNullable(originalMessage.getSender());
-        Optional<Mailbox> from = Optional.ofNullable(originalMessage.getFrom())
-            .flatMap(this::returnFirstAddress);
-
-        return OptionalUtils.or(replyTo, sender, from)
-            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField("Sender"))
+        String requestedMDNRecipient = getAddressForHeader(originalMessage, DISPOSITION_NOTIFICATION_TO)
+            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField(DISPOSITION_NOTIFICATION_TO))
             .getAddress();
+
+        String returnPath = getAddressForHeader(originalMessage, RETURN_PATH)
+            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField(RETURN_PATH))
+            .getAddress();
+
+        System.out.println("return path " + returnPath);
+        System.out.println("requestedMDNRecipient " + requestedMDNRecipient);
+
+        if (!returnPath.equals(requestedMDNRecipient)) {
+            throw InvalidOriginMessageForMDNException.headerMismatch(returnPath);
+        }
+
+        return requestedMDNRecipient;
     }
 
-    private Optional<Mailbox> returnFirstAddress(MailboxList mailboxList) {
-        return mailboxList.stream().findFirst();
+    private Optional<Mailbox> getAddressForHeader(Message originalMessage, String fieldName) {
+        return Optional.ofNullable(originalMessage.getHeader()
+            .getFields(fieldName))
+            .orElse(ImmutableList.of())
+            .stream()
+            .map(field -> AddressListFieldLenientImpl.PARSER.parse(field, new DecodeMonitor()))
+            .findFirst()
+            .map(AddressListField::getAddressList)
+            .map(AddressList::flatten)
+            .map(MailboxList::stream)
+            .orElse(Stream.of())
+            .findFirst();
     }
+
 
     public MDNReport generateReport(Message originalMessage, MailboxSession mailboxSession) throws InvalidOriginMessageForMDNException {
         if (originalMessage.getMessageId() == null) {

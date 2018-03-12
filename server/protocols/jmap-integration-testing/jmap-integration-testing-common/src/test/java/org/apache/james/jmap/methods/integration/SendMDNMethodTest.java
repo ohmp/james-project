@@ -105,6 +105,40 @@ public abstract class SendMDNMethodTest {
             "    \"setMessages\"," +
             "    {" +
             "      \"create\": { \"" + messageCreationId  + "\" : {" +
+            "        \"headers\":{\"Disposition-Notification-To\":\"" + BOB + "\"}," +
+            "        \"from\": { \"name\": \"Bob\", \"email\": \"" + BOB + "\"}," +
+            "        \"to\": [{ \"name\": \"User\", \"email\": \"" + USERNAME + "\"}]," +
+            "        \"subject\": \"Message with an attachment\"," +
+            "        \"textBody\": \"Test body, plain text version\"," +
+            "        \"htmlBody\": \"Test <b>body</b>, HTML version\"," +
+            "        \"mailboxIds\": [\"" + outboxId + "\"] " +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+
+        with()
+            .header("Authorization", bobAccessToken.serialize())
+            .body(requestBody)
+            .post("/jmap")
+        .then()
+            .extract()
+            .body()
+            .path(ARGUMENTS + ".created." + messageCreationId + ".id");
+
+        calmlyAwait.until(() -> !getMessageIdListForAccount(accessToken.serialize()).isEmpty());
+    }
+
+    private void sendAWrongInitialMessage() {
+        String messageCreationId = "creationId";
+        String outboxId = getOutboxId(bobAccessToken);
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\"," +
+            "    {" +
+            "      \"create\": { \"" + messageCreationId  + "\" : {" +
+            "        \"headers\":{\"Disposition-Notification-To\":\"other@domain.tld\"}," +
             "        \"from\": { \"name\": \"Bob\", \"email\": \"" + BOB + "\"}," +
             "        \"to\": [{ \"name\": \"User\", \"email\": \"" + USERNAME + "\"}]," +
             "        \"subject\": \"Message with an attachment\"," +
@@ -207,6 +241,45 @@ public abstract class SendMDNMethodTest {
             .body(ARGUMENTS + ".MDNNotSent", hasEntry(
                 equalTo(creationId),
                 hasEntry("description", "Message with id " + randomMessageId + " not found. Thus could not send MDN.")));
+    }
+
+    @Test
+    public void sendMDNShouldFailOnInvalidMessages() {
+        sendAWrongInitialMessage();
+        List<String> messageIds = getMessageIdListForAccount(accessToken.serialize());
+
+        String creationId = "creation-1";
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"setMessages\", {\"sendMDN\": {" +
+                "\"" + creationId + "\":{" +
+                    "    \"messageId\":\"" + messageIds.get(0) + "\"," +
+                    "    \"subject\":\"subject\"," +
+                    "    \"textBody\":\"textBody\"," +
+                    "    \"reportingUA\":\"reportingUA\"," +
+                    "    \"disposition\":{" +
+                    "        \"actionMode\":\"automatic-action\","+
+                    "        \"sendingMode\":\"MDN-sent-automatically\","+
+                    "        \"type\":\"processed\""+
+                    "    }" +
+                    "}" +
+                "}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body(NAME, equalTo("messagesSet"))
+            .body(ARGUMENTS + ".MDNNotSent", hasEntry(
+                equalTo(creationId),
+                hasEntry("type", "invalidArgument")))
+            .body(ARGUMENTS + ".MDNNotSent", hasEntry(
+                equalTo(creationId),
+                hasEntry("description", "Origin messageId '" + messageIds.get(0) + "' is invalid. " +
+                    "Message has invalid Disposition-Notification-To header. " +
+                    "Explanation: 'Disposition-Notification-To' field of targeted message do not match the 'Return-Path' field. " +
+                    "Expected value was 'bob@domain.tld'")));
     }
 
     @Test
