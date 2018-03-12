@@ -110,7 +110,9 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             return SetMessagesResponse.builder()
                 .mdnNotSent(MDNCreationEntry.getCreationId(),
                     SetError.builder()
-                        .description(String.format("Origin messageId '%s' is invalid. Message has invalid " + e.getInvalidHeader() + " header. Explanation: " + e.getExplanation(),
+                        .description(String.format("Origin messageId '%s' is invalid." +
+                                " A Message Delivery Notification can not be generated for it." +
+                                " Explanation: " + e.getExplanation(),
                             MDNCreationEntry.getValue().getMessageId().serialize()))
                         .type("invalidArgument")
                         .build());

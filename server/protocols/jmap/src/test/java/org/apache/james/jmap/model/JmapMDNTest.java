@@ -150,21 +150,6 @@ public class JmapMDNTest {
     }
 
     @Test
-    public void generateMDNMessageShouldFailOnMissingReturnPath() throws Exception {
-        String senderAddress = "sender@local";
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setFrom(senderAddress)
-            .setBody("body", StandardCharsets.UTF_8)
-            .addField(new RawField(JmapMDN.DISPOSITION_NOTIFICATION_TO, "<" + senderAddress + ">"))
-            .build();
-
-        assertThatThrownBy(() ->
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION))
-            .isInstanceOf(InvalidOriginMessageForMDNException.class);
-    }
-
-    @Test
     public void generateMDNMessageShouldFailOnMissingDisposition() throws Exception {
         String senderAddress = "sender@local";
         Message originMessage = Message.Builder.of()
@@ -172,22 +157,6 @@ public class JmapMDNTest {
             .setFrom(senderAddress)
             .setBody("body", StandardCharsets.UTF_8)
             .addField(new RawField(JmapMDN.RETURN_PATH, "<" + senderAddress + ">"))
-            .build();
-
-        assertThatThrownBy(() ->
-            MDN.generateMDNMessage(originMessage, MAILBOX_SESSION))
-            .isInstanceOf(InvalidOriginMessageForMDNException.class);
-    }
-
-    @Test
-    public void generateMDNMessageShouldFailOnHeaderMismatch() throws Exception {
-        String senderAddress = "sender@local";
-        Message originMessage = Message.Builder.of()
-            .setMessageId("45554@local.com")
-            .setFrom(senderAddress)
-            .setBody("body", StandardCharsets.UTF_8)
-            .addField(new RawField(JmapMDN.RETURN_PATH, "<" + senderAddress + ">"))
-            .addField(new RawField(JmapMDN.DISPOSITION_NOTIFICATION_TO, "<other@local>"))
             .build();
 
         assertThatThrownBy(() ->

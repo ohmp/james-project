@@ -19,31 +19,17 @@
 
 package org.apache.james.jmap.exceptions;
 
-import org.apache.james.jmap.model.JmapMDN;
-
 public class InvalidOriginMessageForMDNException extends Exception {
-    private static final String MISSING_HEADER = "Header is missing";
+    private static final String MISSING_HEADER = " header is missing";
 
-    public static InvalidOriginMessageForMDNException missingField(String fieldName) {
-        return new InvalidOriginMessageForMDNException(MISSING_HEADER, fieldName);
+    public static InvalidOriginMessageForMDNException missingHeader(String headerName) {
+        return new InvalidOriginMessageForMDNException(headerName + MISSING_HEADER);
     }
 
-    public static InvalidOriginMessageForMDNException headerMismatch(String expectedValue) {
-        return new InvalidOriginMessageForMDNException(JmapMDN.DISPOSITION_NOTIFICATION_TO,
-            String.format("'%s' field of targeted message does not match the '%s' field. Expected value was '%s'",
-                JmapMDN.DISPOSITION_NOTIFICATION_TO, JmapMDN.RETURN_PATH, expectedValue));
-    }
-
-    private final String invalidField;
     private final String explanation;
 
-    public InvalidOriginMessageForMDNException(String invalidField, String explanation) {
-        this.invalidField = invalidField;
+    public InvalidOriginMessageForMDNException(String explanation) {
         this.explanation = explanation;
-    }
-
-    public String getInvalidHeader() {
-        return invalidField;
     }
 
     public String getExplanation() {

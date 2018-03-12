@@ -155,19 +155,9 @@ public class JmapMDN {
     }
 
     private String getSenderAddress(Message originalMessage) throws InvalidOriginMessageForMDNException {
-        String requestedMDNRecipient = getAddressForHeader(originalMessage, DISPOSITION_NOTIFICATION_TO)
-            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField(DISPOSITION_NOTIFICATION_TO))
+        return getAddressForHeader(originalMessage, DISPOSITION_NOTIFICATION_TO)
+            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingHeader(DISPOSITION_NOTIFICATION_TO))
             .getAddress();
-
-        String returnPath = getAddressForHeader(originalMessage, RETURN_PATH)
-            .orElseThrow(() -> InvalidOriginMessageForMDNException.missingField(RETURN_PATH))
-            .getAddress();
-
-        if (!returnPath.equals(requestedMDNRecipient)) {
-            throw InvalidOriginMessageForMDNException.headerMismatch(returnPath);
-        }
-
-        return requestedMDNRecipient;
     }
 
     private Optional<Mailbox> getAddressForHeader(Message originalMessage, String fieldName) {
@@ -187,7 +177,7 @@ public class JmapMDN {
 
     public MDNReport generateReport(Message originalMessage, MailboxSession mailboxSession) throws InvalidOriginMessageForMDNException {
         if (originalMessage.getMessageId() == null) {
-            throw InvalidOriginMessageForMDNException.missingField("Message-ID");
+            throw InvalidOriginMessageForMDNException.missingHeader("Message-ID");
         }
         return MDNReport.builder()
             .dispositionField(generateDisposition())

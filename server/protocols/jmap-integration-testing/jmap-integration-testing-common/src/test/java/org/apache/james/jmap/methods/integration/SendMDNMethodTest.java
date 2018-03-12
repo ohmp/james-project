@@ -138,7 +138,6 @@ public abstract class SendMDNMethodTest {
             "    \"setMessages\"," +
             "    {" +
             "      \"create\": { \"" + messageCreationId  + "\" : {" +
-            "        \"headers\":{\"Disposition-Notification-To\":\"other@domain.tld\"}," +
             "        \"from\": { \"name\": \"Bob\", \"email\": \"" + BOB + "\"}," +
             "        \"to\": [{ \"name\": \"User\", \"email\": \"" + USERNAME + "\"}]," +
             "        \"subject\": \"Message with an attachment\"," +
@@ -277,9 +276,8 @@ public abstract class SendMDNMethodTest {
             .body(ARGUMENTS + ".MDNNotSent", hasEntry(
                 equalTo(creationId),
                 hasEntry("description", "Origin messageId '" + messageIds.get(0) + "' is invalid. " +
-                    "Message has invalid Disposition-Notification-To header. " +
-                    "Explanation: 'Disposition-Notification-To' field of targeted message do not match the 'Return-Path' field. " +
-                    "Expected value was 'bob@domain.tld'")));
+                    "A Message Delivery Notification can not be generated for it. " +
+                    "Explanation: Disposition-Notification-To header is missing")));
     }
 
     @Test
