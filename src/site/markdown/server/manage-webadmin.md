@@ -238,7 +238,23 @@ curl -XGET http://ip:port/quota/users/usernameToBeUsed
 
 Resource name usernameToBeUsed should be an existing user
 
-The answer can contain a fixed value, an empty value (null) or an unlimited value (-1):
+The answer is the details of the quota of that user.
+
+```
+{
+  "global": {"count":252,"size":242}
+  "domain": {"count":152,"size":142}
+  "user": {"count":52,"size":42}
+  "computed": {"count":52,"size":42}
+}
+```
+
+ - The `global` entry represent the quota limit allowed on this James server.
+ - The `domain` entry represent the quota limit allowed for the user of that domain.
+ - The `user` entry represent the quota limit allowed for this specific user.
+ - The `computed` entry represent the quota limit applied for this user, resolved from the upper values.
+
+Note that `quota` objectcan contain a fixed value, an empty value (null) or an unlimited value (-1):
 
 ```
 {"count":52,"size":42}
