@@ -463,7 +463,7 @@ The body can contain a fixed value, an empty value (null) or an unlimited value 
 Response codes:
 
  - 204: The quota has been updated
- - 400: The body is not a positive integer or not unlimited value (-1).
+ - 400: The body is not a positive integer neither an unlimited value (-1).
  - 404: The domain does not exist
  - 405: Domain Quota configuration not supported when virtual hosting is desactivated.
  - 409: The requested restriction can’t be enforced right now.
@@ -507,7 +507,7 @@ The body can contain a fixed value or an unlimited value (-1):
 Response codes:
 
  - 204: The quota has been updated
- - 400: The body is not a positive integer or not unlimited value (-1).
+ - 400: The body is not a positive integer neither an unlimited value (-1).
  - 404: The domain does not exist
  - 405: Domain Quota configuration not supported when virtual hosting is desactivated.
  - 409: The requested restriction can’t be enforced right now.
@@ -524,7 +524,7 @@ Resource name domainToBeUsed should be an existing domain.
 Response codes:
 
  - 204: The quota has been updated to unlimited value.
- - 400: The body is not a positive integer or not unlimited value (-1).
+ - 400: The body is not a positive integer neither an unlimited value (-1).
  - 404: The domain does not exist
  - 405: Domain Quota configuration not supported when virtual hosting is desactivated.
  - 409: The requested restriction can’t be enforced right now.
@@ -568,7 +568,7 @@ The body can contain a fixed value or an unlimited value (-1):
 Response codes:
 
  - 204: The quota has been updated
- - 400: The body is not a positive integer or not unlimited value (-1).
+ - 400: The body is not a positive integer neither an unlimited value (-1).
  - 404: The domain does not exist
  - 405: Domain Quota configuration not supported when virtual hosting is desactivated.
  - 409: The requested restriction can’t be enforced right now.
@@ -585,7 +585,7 @@ Resource name domainToBeUsed should be an existing domain.
 Response codes:
 
  - 204: The quota has been updated to unlimited value.
- - 400: The body is not a positive integer or not unlimited value (-1).
+ - 400: The body is not a positive integer neither an unlimited value (-1).
  - 404: The domain does not exist
  - 409: The requested restriction can’t be enforced right now.
  - 500: Internal server error - Something went bad on the server side.
