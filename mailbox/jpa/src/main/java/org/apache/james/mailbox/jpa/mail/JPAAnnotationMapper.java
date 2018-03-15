@@ -71,7 +71,7 @@ public class JPAAnnotationMapper extends JPATransactionalMapper implements Annot
     @Override
     public List<MailboxAnnotation> getAnnotationsByKeys(MailboxId mailboxId, Set<MailboxAnnotationKey> keys) {
         try {
-            final JPAId jpaId = (JPAId) mailboxId;
+            JPAId jpaId = (JPAId) mailboxId;
             return keys.stream()
                 .map(input -> READ_ROW
                     .apply(getEntityManager()

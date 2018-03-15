@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import javax.mail.Flags;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
@@ -96,8 +97,8 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
         try {
             List<MailboxMessage> results;
             MessageUid from = set.getUidFrom();
-            final MessageUid to = set.getUidTo();
-            final Type type = set.getType();
+            MessageUid to = set.getUidTo();
+            Type type = set.getType();
             JPAId mailboxId = (JPAId) mailbox.getMailboxId();
 
             switch (type) {
@@ -211,10 +212,10 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
     public Map<MessageUid, MessageMetaData> expungeMarkedForDeletionInMailbox(Mailbox mailbox, MessageRange set)
             throws MailboxException {
         try {
-            final Map<MessageUid, MessageMetaData> data;
-            final List<MailboxMessage> results;
-            final MessageUid from = set.getUidFrom();
-            final MessageUid to = set.getUidTo();
+            Map<MessageUid, MessageMetaData> data;
+            List<MailboxMessage> results;
+            MessageUid from = set.getUidFrom();
+            MessageUid to = set.getUidTo();
             JPAId mailboxId = (JPAId) mailbox.getMailboxId();
 
             switch (set.getType()) {
@@ -389,7 +390,7 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
     }
 
     private Map<MessageUid, MessageMetaData> createMetaData(List<MailboxMessage> uids) {
-        final Map<MessageUid, MessageMetaData> data = new HashMap<>();
+        Map<MessageUid, MessageMetaData> data = new HashMap<>();
         for (MailboxMessage m : uids) {
             data.put(m.getUid(), new SimpleMessageMetaData(m));
         }
