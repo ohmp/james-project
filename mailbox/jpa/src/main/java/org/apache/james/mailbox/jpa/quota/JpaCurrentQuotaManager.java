@@ -20,6 +20,7 @@
 package org.apache.james.mailbox.jpa.quota;
 
 import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -39,11 +40,11 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
     public static final long NO_MESSAGES = 0L;
     public static final long NO_STORED_BYTES = 0L;
 
-    private final EntityManager entityManager;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Inject
     public JpaCurrentQuotaManager(EntityManagerFactory entityManagerFactory) {
-        this.entityManager = entityManagerFactory.createEntityManager();
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     @Override
@@ -52,52 +53,55 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
     }
 
     @Override
-    public QuotaCount getCurrentMessageCount(QuotaRoot quotaRoot) throws MailboxException {
-        JpaCurrentQuota userQuota = retrieveUserQuota(quotaRoot);
-
-        if (userQuota == null) {
-            return QuotaCount.count(NO_STORED_BYTES);
-        }
-        return QuotaCount.count(userQuota.getMessageCount());
+    public QuotaCount getCurrentMessageCount(QuotaRoot quotaRoot) {
+        return Optional.ofNullable(retrieveUserQuota(quotaRoot))
+            .map(JpaCurrentQuota::getMessageCount)
+            .orElse(QuotaCount.count(NO_STORED_BYTES));
     }
 
     @Override
-    public QuotaSize getCurrentStorage(QuotaRoot quotaRoot) throws MailboxException {
-        JpaCurrentQuota userQuota = retrieveUserQuota(quotaRoot);
-
-        if (userQuota == null) {
-            return QuotaSize.size(NO_STORED_BYTES);
-        }
-        return QuotaSize.size(userQuota.getSize());
+    public QuotaSize getCurrentStorage(QuotaRoot quotaRoot) {
+        return Optional.ofNullable(retrieveUserQuota(quotaRoot))
+            .map(JpaCurrentQuota::getSize)
+            .orElse(QuotaSize.size(NO_STORED_BYTES));
     }
 
     @Override
-    public void increase(QuotaRoot quotaRoot, long count, long size) throws MailboxException {
+    public void increase(QuotaRoot quotaRoot, long count, long size) {
         Preconditions.checkArgument(count > 0, "Counts should be positive");
         Preconditions.checkArgument(size > 0, "Size should be positive");
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
 
         JpaCurrentQuota jpaCurrentQuota = Optional.ofNullable(retrieveUserQuota(quotaRoot))
             .orElse(new JpaCurrentQuota(quotaRoot.getValue(), NO_MESSAGES, NO_STORED_BYTES));
 
         entityManager.merge(new JpaCurrentQuota(quotaRoot.getValue(),
-            jpaCurrentQuota.getMessageCount() + count,
-            jpaCurrentQuota.getSize() + size));
+            jpaCurrentQuota.getMessageCount().asLong() + count,
+            jpaCurrentQuota.getSize().asLong() + size));
+
+        entityManager.getTransaction().commit();
     }
 
     @Override
     public void decrease(QuotaRoot quotaRoot, long count, long size) throws MailboxException {
         Preconditions.checkArgument(count > 0, "Counts should be positive");
         Preconditions.checkArgument(size > 0, "Counts should be positive");
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
 
         JpaCurrentQuota jpaCurrentQuota = Optional.ofNullable(retrieveUserQuota(quotaRoot))
             .orElse(new JpaCurrentQuota(quotaRoot.getValue(), NO_MESSAGES, NO_STORED_BYTES));
 
         entityManager.merge(new JpaCurrentQuota(quotaRoot.getValue(),
-            jpaCurrentQuota.getMessageCount() - count,
-            jpaCurrentQuota.getSize() - size));
+            jpaCurrentQuota.getMessageCount().asLong() - count,
+            jpaCurrentQuota.getSize().asLong() - size));
+
+        entityManager.getTransaction().commit();
     }
 
-    private JpaCurrentQuota retrieveUserQuota(QuotaRoot quotaRoot) throws MailboxException {
+    private JpaCurrentQuota retrieveUserQuota(QuotaRoot quotaRoot) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
         return entityManager.find(JpaCurrentQuota.class, quotaRoot.getValue());
     }
 }
