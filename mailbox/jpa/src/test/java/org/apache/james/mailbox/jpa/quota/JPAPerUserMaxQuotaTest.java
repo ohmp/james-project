@@ -19,7 +19,10 @@
 
 package org.apache.james.mailbox.jpa.quota;
 
+import javax.persistence.EntityManagerFactory;
+
 import org.apache.james.backends.jpa.JpaTestCluster;
+import org.apache.james.backends.jpa.TransactionRunner;
 import org.apache.james.mailbox.jpa.JPAMailboxFixture;
 import org.apache.james.mailbox.quota.MaxQuotaManager;
 import org.apache.james.mailbox.store.quota.GenericMaxQuotaManagerTest;
@@ -31,7 +34,9 @@ public class JPAPerUserMaxQuotaTest extends GenericMaxQuotaManagerTest {
 
     @Override
     protected MaxQuotaManager provideMaxQuotaManager() {
-        return new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(JPA_TEST_CLUSTER.getEntityManagerFactory()));
+        EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
+        TransactionRunner transactionRunner = new TransactionRunner(entityManagerFactory);
+        return new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(entityManagerFactory, transactionRunner));
     }
 
     @After

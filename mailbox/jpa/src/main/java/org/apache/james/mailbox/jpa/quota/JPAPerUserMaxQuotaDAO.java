@@ -42,14 +42,16 @@ public class JPAPerUserMaxQuotaDAO {
 
     private static final long INFINITE = -1;
     private final EntityManagerFactory entityManagerFactory;
+    private final TransactionRunner transactionRunner;
 
     @Inject
-    public JPAPerUserMaxQuotaDAO(EntityManagerFactory entityManagerFactory) {
+    public JPAPerUserMaxQuotaDAO(EntityManagerFactory entityManagerFactory, TransactionRunner transactionRunner) {
         this.entityManagerFactory = entityManagerFactory;
+        this.transactionRunner = transactionRunner;
     }
 
     public void setMaxStorage(QuotaRoot quotaRoot, Optional<QuotaSize> maxStorageQuota) {
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 MaxUserStorage storedValue = getMaxUserStorageEntity(entityManager, quotaRoot, maxStorageQuota);
                 entityManager.persist(storedValue);
@@ -67,7 +69,7 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setMaxMessage(QuotaRoot quotaRoot, Optional<QuotaCount> maxMessageCount) {
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 MaxUserMessageCount storedValue = getMaxUserMessageEntity(entityManager, quotaRoot, maxMessageCount);
                 entityManager.persist(storedValue);
@@ -85,7 +87,7 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setDomainMaxMessage(String domain, Optional<QuotaCount> count) {
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 MaxDomainMessageCount storedValue = getMaxDomainMessageEntity(entityManager, domain, count);
                 entityManager.persist(storedValue);
@@ -94,7 +96,7 @@ public class JPAPerUserMaxQuotaDAO {
 
 
     public void setDomainMaxStorage(String domain, Optional<QuotaSize> size) {
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 MaxDomainStorage storedValue = getMaxDomainStorageEntity(entityManager, domain, size);
                 entityManager.persist(storedValue);
@@ -123,7 +125,7 @@ public class JPAPerUserMaxQuotaDAO {
 
 
     public void setGlobalMaxStorage(Optional<QuotaSize> globalMaxStorage) {
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 MaxGlobalStorage globalMaxStorageEntity = getGlobalMaxStorageEntity(entityManager, globalMaxStorage);
                 entityManager.persist(globalMaxStorageEntity);
@@ -141,7 +143,7 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setGlobalMaxMessage(Optional<QuotaCount> globalMaxMessageCount) {
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 MaxGlobalMessageCount globalMaxMessageEntity = getGlobalMaxMessageEntity(entityManager, globalMaxMessageCount);
                 entityManager.persist(globalMaxMessageEntity);

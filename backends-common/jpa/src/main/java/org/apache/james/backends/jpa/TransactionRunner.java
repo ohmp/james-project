@@ -28,7 +28,13 @@ import javax.persistence.PersistenceException;
 
 public class TransactionRunner {
 
-    public static void run(EntityManagerFactory entityManagerFactory, Consumer<EntityManager> runnable) {
+    private final EntityManagerFactory entityManagerFactory;
+
+    public TransactionRunner(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+    public void run(Consumer<EntityManager> runnable) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
@@ -36,7 +42,6 @@ public class TransactionRunner {
             runnable.accept(entityManager);
             transaction.commit();
         } catch (PersistenceException e) {
-            e.printStackTrace();
             if (transaction.isActive()) {
                 transaction.rollback();
             }

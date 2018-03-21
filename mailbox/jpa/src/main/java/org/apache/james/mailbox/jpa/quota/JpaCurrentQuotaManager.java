@@ -42,10 +42,12 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
     public static final long NO_STORED_BYTES = 0L;
 
     private final EntityManagerFactory entityManagerFactory;
+    private final TransactionRunner transactionRunner;
 
     @Inject
-    public JpaCurrentQuotaManager(EntityManagerFactory entityManagerFactory) {
+    public JpaCurrentQuotaManager(EntityManagerFactory entityManagerFactory, TransactionRunner transactionRunner) {
         this.entityManagerFactory = entityManagerFactory;
+        this.transactionRunner = transactionRunner;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
         Preconditions.checkArgument(count > 0, "Counts should be positive");
         Preconditions.checkArgument(size > 0, "Size should be positive");
 
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 JpaCurrentQuota jpaCurrentQuota = Optional.ofNullable(retrieveUserQuota(entityManager, quotaRoot))
                     .orElse(new JpaCurrentQuota(quotaRoot.getValue(), NO_MESSAGES, NO_STORED_BYTES));
@@ -90,7 +92,7 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
         Preconditions.checkArgument(count > 0, "Counts should be positive");
         Preconditions.checkArgument(size > 0, "Counts should be positive");
 
-        TransactionRunner.run(entityManagerFactory,
+        transactionRunner.run(
             entityManager -> {
                 JpaCurrentQuota jpaCurrentQuota = Optional.ofNullable(retrieveUserQuota(entityManager, quotaRoot))
                     .orElse(new JpaCurrentQuota(quotaRoot.getValue(), NO_MESSAGES, NO_STORED_BYTES));
