@@ -46,9 +46,9 @@ public class JPAJamesServerTest extends AbstractJamesServerTest {
     private static final String DOMAIN = "james.local";
     private static final String USER = "toto@" + DOMAIN;
     private static final String PASSWORD = "123456";
-    public static final String LOCALHOST = "127.0.0.1";
-    public static final int SMTP_PORT = 1025;
-    public static final int IMAP_PORT = 1143;
+    private static final String LOCALHOST = "127.0.0.1";
+    private static final int SMTP_PORT = 1025;
+    private static final int IMAP_PORT = 1143;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
