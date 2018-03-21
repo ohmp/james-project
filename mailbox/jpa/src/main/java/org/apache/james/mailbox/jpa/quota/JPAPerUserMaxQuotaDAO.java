@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
+import org.apache.james.backends.jpa.TransactionRunner;
 import org.apache.james.mailbox.jpa.quota.model.MaxDomainMessageCount;
 import org.apache.james.mailbox.jpa.quota.model.MaxDomainStorage;
 import org.apache.james.mailbox.jpa.quota.model.MaxGlobalMessageCount;
@@ -48,11 +49,11 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setMaxStorage(QuotaRoot quotaRoot, Optional<QuotaSize> maxStorageQuota) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        MaxUserStorage storedValue = getMaxUserStorageEntity(entityManager, quotaRoot, maxStorageQuota);
-        entityManager.persist(storedValue);
-        entityManager.getTransaction().commit();
+        TransactionRunner.run(entityManagerFactory,
+            entityManager -> {
+                MaxUserStorage storedValue = getMaxUserStorageEntity(entityManager, quotaRoot, maxStorageQuota);
+                entityManager.persist(storedValue);
+            });
     }
 
     private MaxUserStorage getMaxUserStorageEntity(EntityManager entityManager, QuotaRoot quotaRoot, Optional<QuotaSize> maxStorageQuota) {
@@ -66,11 +67,11 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setMaxMessage(QuotaRoot quotaRoot, Optional<QuotaCount> maxMessageCount) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        MaxUserMessageCount storedValue = getMaxUserMessageEntity(entityManager, quotaRoot, maxMessageCount);
-        entityManager.persist(storedValue);
-        entityManager.getTransaction().commit();
+        TransactionRunner.run(entityManagerFactory,
+            entityManager -> {
+                MaxUserMessageCount storedValue = getMaxUserMessageEntity(entityManager, quotaRoot, maxMessageCount);
+                entityManager.persist(storedValue);
+            });
     }
 
     private MaxUserMessageCount getMaxUserMessageEntity(EntityManager entityManager, QuotaRoot quotaRoot, Optional<QuotaCount> maxMessageQuota) {
@@ -84,20 +85,20 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setDomainMaxMessage(String domain, Optional<QuotaCount> count) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        MaxDomainMessageCount storedValue = getMaxDomainMessageEntity(entityManager, domain, count);
-        entityManager.persist(storedValue);
-        entityManager.getTransaction().commit();
+        TransactionRunner.run(entityManagerFactory,
+            entityManager -> {
+                MaxDomainMessageCount storedValue = getMaxDomainMessageEntity(entityManager, domain, count);
+                entityManager.persist(storedValue);
+            });
     }
 
 
     public void setDomainMaxStorage(String domain, Optional<QuotaSize> size) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        MaxDomainStorage storedValue = getMaxDomainStorageEntity(entityManager, domain, size);
-        entityManager.persist(storedValue);
-        entityManager.getTransaction().commit();
+        TransactionRunner.run(entityManagerFactory,
+            entityManager -> {
+                MaxDomainStorage storedValue = getMaxDomainStorageEntity(entityManager, domain, size);
+                entityManager.persist(storedValue);
+            });
     }
 
     private MaxDomainMessageCount getMaxDomainMessageEntity(EntityManager entityManager, String domain, Optional<QuotaCount> maxMessageQuota) {
@@ -122,11 +123,11 @@ public class JPAPerUserMaxQuotaDAO {
 
 
     public void setGlobalMaxStorage(Optional<QuotaSize> globalMaxStorage) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        MaxGlobalStorage globalMaxStorageEntity = getGlobalMaxStorageEntity(entityManager, globalMaxStorage);
-        entityManager.persist(globalMaxStorageEntity);
-        entityManager.getTransaction().commit();
+        TransactionRunner.run(entityManagerFactory,
+            entityManager -> {
+                MaxGlobalStorage globalMaxStorageEntity = getGlobalMaxStorageEntity(entityManager, globalMaxStorage);
+                entityManager.persist(globalMaxStorageEntity);
+            });
     }
 
     private MaxGlobalStorage getGlobalMaxStorageEntity(EntityManager entityManager, Optional<QuotaSize> maxSizeQuota) {
@@ -140,11 +141,11 @@ public class JPAPerUserMaxQuotaDAO {
     }
 
     public void setGlobalMaxMessage(Optional<QuotaCount> globalMaxMessageCount) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        MaxGlobalMessageCount globalMaxMessageEntity = getGlobalMaxMessageEntity(entityManager, globalMaxMessageCount);
-        entityManager.persist(globalMaxMessageEntity);
-        entityManager.getTransaction().commit();
+        TransactionRunner.run(entityManagerFactory,
+            entityManager -> {
+                MaxGlobalMessageCount globalMaxMessageEntity = getGlobalMaxMessageEntity(entityManager, globalMaxMessageCount);
+                entityManager.persist(globalMaxMessageEntity);
+            });
     }
 
     private MaxGlobalMessageCount getGlobalMaxMessageEntity(EntityManager entityManager, Optional<QuotaCount> maxMessageQuota) {
