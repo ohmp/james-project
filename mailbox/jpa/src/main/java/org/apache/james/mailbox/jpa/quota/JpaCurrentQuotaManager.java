@@ -45,9 +45,9 @@ public class JpaCurrentQuotaManager implements StoreCurrentQuotaManager {
     private final TransactionRunner transactionRunner;
 
     @Inject
-    public JpaCurrentQuotaManager(EntityManagerFactory entityManagerFactory, TransactionRunner transactionRunner) {
+    public JpaCurrentQuotaManager(EntityManagerFactory entityManagerFactory) {
         this.entityManagerFactory = entityManagerFactory;
-        this.transactionRunner = transactionRunner;
+        this.transactionRunner = new TransactionRunner(entityManagerFactory);
     }
 
     @Override

@@ -45,9 +45,9 @@ public class JPAPerUserMaxQuotaDAO {
     private final TransactionRunner transactionRunner;
 
     @Inject
-    public JPAPerUserMaxQuotaDAO(EntityManagerFactory entityManagerFactory, TransactionRunner transactionRunner) {
+    public JPAPerUserMaxQuotaDAO(EntityManagerFactory entityManagerFactory) {
         this.entityManagerFactory = entityManagerFactory;
-        this.transactionRunner = transactionRunner;
+        this.transactionRunner = new TransactionRunner(entityManagerFactory);
     }
 
     public void setMaxStorage(QuotaRoot quotaRoot, Optional<QuotaSize> maxStorageQuota) {

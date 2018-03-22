@@ -25,7 +25,6 @@ import javax.persistence.EntityManagerFactory;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.backends.jpa.TransactionRunner;
 import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
 import org.apache.james.imap.main.DefaultImapDecoderFactory;
@@ -90,7 +89,6 @@ public class JPAHostSystem extends JamesImapHostSystem {
     public void beforeTest() throws Exception {
         super.beforeTest();
         EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
-        TransactionRunner transactionRunner = new TransactionRunner(entityManagerFactory);
         JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
         JPAUidProvider uidProvider = new JPAUidProvider(locker, entityManagerFactory);
         JPAModSeqProvider modSeqProvider = new JPAModSeqProvider(locker, entityManagerFactory);
@@ -109,8 +107,8 @@ public class JPAHostSystem extends JamesImapHostSystem {
             mailboxEventDispatcher, annotationManager, storeRightManager);
 
         DefaultUserQuotaRootResolver quotaRootResolver = new DefaultUserQuotaRootResolver(mapperFactory);
-        JpaCurrentQuotaManager currentQuotaManager = new JpaCurrentQuotaManager(entityManagerFactory, transactionRunner);
-        maxQuotaManager = new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(entityManagerFactory, transactionRunner));
+        JpaCurrentQuotaManager currentQuotaManager = new JpaCurrentQuotaManager(entityManagerFactory);
+        maxQuotaManager = new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(entityManagerFactory));
         StoreQuotaManager storeQuotaManager = new StoreQuotaManager(currentQuotaManager, maxQuotaManager);
         ListeningCurrentQuotaUpdater quotaUpdater = new ListeningCurrentQuotaUpdater(currentQuotaManager, quotaRootResolver);
 

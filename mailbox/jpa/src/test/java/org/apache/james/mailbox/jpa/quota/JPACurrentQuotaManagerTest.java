@@ -19,10 +19,7 @@
 
 package org.apache.james.mailbox.jpa.quota;
 
-import javax.persistence.EntityManagerFactory;
-
 import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.backends.jpa.TransactionRunner;
 import org.apache.james.mailbox.jpa.JPAMailboxFixture;
 import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManager;
 import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManagerTest;
@@ -34,9 +31,7 @@ public class JPACurrentQuotaManagerTest extends StoreCurrentQuotaManagerTest {
 
     @Override
     protected StoreCurrentQuotaManager provideTestee() {
-        EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
-        TransactionRunner transactionRunner = new TransactionRunner(entityManagerFactory);
-        return new JpaCurrentQuotaManager(entityManagerFactory, transactionRunner);
+        return new JpaCurrentQuotaManager(JPA_TEST_CLUSTER.getEntityManagerFactory());
     }
 
     @After
