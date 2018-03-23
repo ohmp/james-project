@@ -27,7 +27,7 @@ import java.util.Properties;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Test;
 

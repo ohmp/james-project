@@ -22,7 +22,7 @@ package org.apache.james.transport.mailets;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.MailAddressFixture;

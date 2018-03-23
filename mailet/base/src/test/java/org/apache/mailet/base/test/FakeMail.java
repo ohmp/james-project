@@ -37,7 +37,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;

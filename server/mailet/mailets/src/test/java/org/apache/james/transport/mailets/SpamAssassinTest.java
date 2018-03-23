@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import javax.mail.MessagingException;
 
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.user.memory.MemoryUsersRepository;
 import org.apache.james.util.Port;
 import org.apache.james.util.scanner.SpamAssassinResult;

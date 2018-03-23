@@ -47,7 +47,7 @@ import javax.mail.internet.ParseException;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.lifecycle.api.Disposable;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.mailet.Mail;

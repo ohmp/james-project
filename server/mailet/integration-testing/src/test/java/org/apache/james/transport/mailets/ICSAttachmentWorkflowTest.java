@@ -33,7 +33,7 @@ import java.util.Optional;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.MemoryJamesServerMain;
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.jmap.mailet.TextCalendarBodyToAttachment;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.CommonProcessors;

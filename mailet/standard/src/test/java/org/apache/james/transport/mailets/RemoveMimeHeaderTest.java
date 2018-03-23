@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 import javax.mail.MessagingException;
 
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.apache.mailet.base.test.FakeMail;

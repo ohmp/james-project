@@ -34,7 +34,7 @@ import javax.mail.MessagingException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders.Header;

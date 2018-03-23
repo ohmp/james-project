@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.core.builder;
+package org.apache.james.javax;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

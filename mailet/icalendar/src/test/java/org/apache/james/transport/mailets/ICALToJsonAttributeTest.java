@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
@@ -46,6 +46,7 @@ import org.junit.rules.ExpectedException;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.google.common.collect.ImmutableMap;
+
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 

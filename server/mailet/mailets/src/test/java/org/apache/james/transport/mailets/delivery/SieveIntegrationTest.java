@@ -29,8 +29,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.builder.MimeMessageBuilder;
-import org.apache.james.core.builder.MimeMessageBuilder.Header;
+import org.apache.james.javax.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageBuilder.Header;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.sieverepository.api.exception.ScriptNotFoundException;
 import org.apache.james.transport.mailets.Sieve;
