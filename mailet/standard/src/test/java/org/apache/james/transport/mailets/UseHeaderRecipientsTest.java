@@ -19,9 +19,11 @@
 
 package org.apache.james.transport.mailets;
 
+import static org.apache.mailet.base.MailAddressFixture.RECIPIENT1;
+import static org.apache.mailet.base.MailAddressFixture.RECIPIENT2;
+import static org.apache.mailet.base.MailAddressFixture.RECIPIENT3;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.james.core.MailAddress;
 import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
@@ -36,14 +38,8 @@ import org.junit.rules.ExpectedException;
 
 public class UseHeaderRecipientsTest {
 
-    public static final String RECIPIENT1 = "abc1@apache1.org";
-    public static final String RECIPIENT2 = "abc2@apache2.org";
-    public static final String RECIPIENT3 = "abc3@apache3.org";
     private UseHeaderRecipients testee;
     private FakeMailContext mailetContext;
-    private MailAddress mailAddress1;
-    private MailAddress mailAddress2;
-    private MailAddress mailAddress3;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -53,10 +49,6 @@ public class UseHeaderRecipientsTest {
         testee = new UseHeaderRecipients();
         mailetContext = FakeMailContext.defaultContext();
         testee.init(FakeMailetConfig.builder().mailetContext(mailetContext).build());
-
-        mailAddress1 = new MailAddress(RECIPIENT1);
-        mailAddress2 = new MailAddress(RECIPIENT2);
-        mailAddress3 = new MailAddress(RECIPIENT3);
     }
 
     @Test
@@ -64,13 +56,13 @@ public class UseHeaderRecipientsTest {
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES, MailAddressFixture.ANY_AT_JAMES2)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RECIPIENT1, RECIPIENT2))
+                .addToRecipient(RECIPIENT1.asString(), RECIPIENT2.asString()))
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(mailAddress1, mailAddress2);
+            .containsOnly(RECIPIENT1, RECIPIENT2);
     }
 
     @Test
@@ -78,15 +70,15 @@ public class UseHeaderRecipientsTest {
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RECIPIENT1)
-                .addCcRecipient(RECIPIENT2)
-                .addBccRecipient(RECIPIENT3))
+                .addToRecipient(RECIPIENT1.asString())
+                .addCcRecipient(RECIPIENT2.asString())
+                .addBccRecipient(RECIPIENT3.asString()))
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(mailAddress1, mailAddress2, mailAddress3);
+            .containsOnly(RECIPIENT1, RECIPIENT2, RECIPIENT3);
     }
 
     @Test
@@ -121,16 +113,17 @@ public class UseHeaderRecipientsTest {
         FakeMail fakeMail = FakeMail.builder()
             .recipients(MailAddressFixture.ANY_AT_JAMES)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RECIPIENT1)
-                .addCcRecipient(RECIPIENT2)
-                .addBccRecipient(RECIPIENT3))
+                .addToRecipient(RECIPIENT1.asString())
+                .addCcRecipient(RECIPIENT2.asString())
+                .addBccRecipient(RECIPIENT3.asString())
+                .build())
             .build();
 
         testee.service(fakeMail);
 
         assertThat(mailetContext.getSentMails())
             .containsOnly(FakeMailContext.sentMailBuilder()
-                .recipients(mailAddress1, mailAddress2, mailAddress3)
+                .recipients(RECIPIENT1, RECIPIENT2, RECIPIENT3)
                 .fromMailet()
                 .build());
     }
@@ -140,7 +133,7 @@ public class UseHeaderRecipientsTest {
         expectedException.expect(RuntimeException.class);
 
         FakeMail fakeMail = FakeMail.builder()
-            .recipients(mailAddress1)
+            .recipients(RECIPIENT1.asString())
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .addToRecipient("invalid"))
             .build();
@@ -153,13 +146,13 @@ public class UseHeaderRecipientsTest {
         FakeMail fakeMail = FakeMail.builder()
             .recipients()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient(RECIPIENT1, RECIPIENT2))
+                .addToRecipient(RECIPIENT1.asString(), RECIPIENT2.asString()))
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(mailAddress1, mailAddress2);
+            .containsOnly(RECIPIENT1, RECIPIENT2);
     }
 
     @Test
@@ -167,12 +160,12 @@ public class UseHeaderRecipientsTest {
         FakeMail fakeMail = FakeMail.builder()
             .recipients()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addToRecipient("APACHE" + "<" + UseHeaderRecipientsTest.RECIPIENT1 + ">"))
+                .addToRecipient("APACHE" + "<" + RECIPIENT1.asString() + ">"))
             .build();
 
         testee.service(fakeMail);
 
         assertThat(fakeMail.getRecipients())
-            .containsOnly(mailAddress1);
+            .containsOnly(RECIPIENT1);
     }
 }
