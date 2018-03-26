@@ -49,6 +49,17 @@ import com.google.common.collect.Lists;
 public class SpamAssassinInvoker {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpamAssassinInvoker.class);
 
+    enum MessageClass {
+        HAM("ham"),
+        SPAM("spam");
+
+        private final String value;
+
+        MessageClass(String value) {
+            this.value = value;
+        }
+    }
+
     private static final int SPAM_INDEX = 1;
     private static final int HITS_INDEX = 3;
     private static final int REQUIRED_HITS_INDEX = 5;
@@ -61,7 +72,6 @@ public class SpamAssassinInvoker {
     /**
      * Init the spamassassin invoker
      *
-     * @param metricFactory
      * @param spamdHost
      *            The host on which spamd runs
      * @param spamdPort
@@ -90,7 +100,7 @@ public class SpamAssassinInvoker {
         return metricFactory.withMetric(
             "spamAssassin-check",
             Throwing.supplier(
-                () -> scanMailWithAdditionalHeaders(message))
+                () -> scanMailWithoutAdditionalHeaders(message))
             .sneakyThrow());
     }
 
@@ -127,6 +137,10 @@ public class SpamAssassinInvoker {
         } catch (IOException | MessagingException e) {
             throw new MessagingException("Error communicating with spamd on " + spamdHost + ":" + spamdPort, e);
         }
+    }
+
+    public SpamAssassinResult scanMailWithoutAdditionalHeaders(MimeMessage message) throws MessagingException {
+        return scanMailWithAdditionalHeaders(message);
     }
 
     private SpamAssassinResult processSpam(String line) {
@@ -171,7 +185,7 @@ public class SpamAssassinInvoker {
         return metricFactory.withMetric(
             "spamAssassin-spam-report",
             Throwing.supplier(
-                () -> performReport(message, user, "spam"))
+                () -> reportMessageAs(message, user, MessageClass.SPAM))
                 .sneakyThrow());
     }
 
@@ -187,11 +201,11 @@ public class SpamAssassinInvoker {
         return metricFactory.withMetric(
             "spamAssassin-ham-report",
             Throwing.supplier(
-                () -> performReport(message, user, "ham"))
+                () -> reportMessageAs(message, user, MessageClass.HAM))
                 .sneakyThrow());
     }
 
-    public boolean performReport(InputStream message, String user, String messageClass) throws MessagingException {
+    private boolean reportMessageAs(InputStream message, String user, MessageClass messageClass) throws MessagingException {
         try (Socket socket = new Socket(spamdHost, spamdPort);
              OutputStream out = socket.getOutputStream();
              PrintWriter writer = new PrintWriter(out);
@@ -202,7 +216,7 @@ public class SpamAssassinInvoker {
             writer.write(CRLF);
             writer.write("Content-length: " + byteArray.length);
             writer.write(CRLF);
-            writer.write("Message-class: " + messageClass);
+            writer.write("Message-class: " + messageClass.value);
             writer.write(CRLF);
             writer.write("Set: local, remote");
             writer.write(CRLF);
