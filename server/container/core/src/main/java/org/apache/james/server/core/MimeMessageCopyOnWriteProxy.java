@@ -91,8 +91,8 @@ public class MimeMessageCopyOnWriteProxy extends MimeMessage implements Disposab
 
     protected MessageReferenceTracker refCount;
 
-    public MimeMessageCopyOnWriteProxy(MimeMessage original) {
-        this(original, false);
+    public MimeMessageCopyOnWriteProxy(MimeMessage original) throws MessagingException {
+        this(new MimeMessageWrapper(original), false);
     }
 
     public MimeMessageCopyOnWriteProxy(MimeMessageSource original) throws MessagingException {

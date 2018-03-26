@@ -347,7 +347,7 @@ public class MimeMessageBuilder {
 
     public MimeMessage build() throws MessagingException {
         Preconditions.checkState(!(text.isPresent() && content.isPresent()), "Can not get at the same time a text and a content");
-        MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
+        MimeMessage mimeMessage = new MimeMessageWrapper(new MimeMessage(Session.getInstance(new Properties())));
         if (text.isPresent()) {
             mimeMessage.setContent(text.get(), textContentType.orElse(DEFAULT_TEXT_PLAIN_UTF8_TYPE));
         }
