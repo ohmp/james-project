@@ -35,6 +35,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.mailet.HostAddress;
 import org.apache.mailet.LookupException;
 import org.apache.mailet.Mail;
@@ -107,6 +108,14 @@ public class FakeMailContext implements MailetContext {
 
     public static class SentMail {
 
+        private static MimeMessage tryCopyMimeMessage(MimeMessage msg) throws MessagingException {
+            try {
+                return new MimeMessage(msg);
+            } catch (Exception e) {
+                return MimeMessageBuilder.mimeMessageBuilder().build();
+            }
+        }
+
         public static class Builder {
             private MailAddress sender;
             private Optional<Collection<MailAddress>> recipients = Optional.empty();
@@ -175,7 +184,7 @@ public class FakeMailContext implements MailetContext {
                 return this;
             }
 
-            public SentMail build() {
+            public SentMail build() throws MessagingException {
                 if (fromMailet.orElse(false)) {
                     this.attribute(Mail.SENT_BY_MAILET, "true");
                 }
@@ -192,10 +201,10 @@ public class FakeMailContext implements MailetContext {
         private final String state;
         private final Optional<Delay> delay;
 
-        private SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg, Map<String, Serializable> attributes, String state, Optional<Delay> delay) {
+        private SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg, Map<String, Serializable> attributes, String state, Optional<Delay> delay) throws MessagingException {
             this.sender = sender;
             this.recipients = ImmutableList.copyOf(recipients);
-            this.msg = msg;
+            this.msg = tryCopyMimeMessage(msg);
             this.subject = getSubject(msg);
             this.attributes = ImmutableMap.copyOf(attributes);
             this.state = state;
@@ -310,7 +319,7 @@ public class FakeMailContext implements MailetContext {
             this.bouncer = bouncer;
         }
 
-        public BouncedMail(SentMail.Builder sentMail, String message, Optional<MailAddress> bouncer) {
+        public BouncedMail(SentMail.Builder sentMail, String message, Optional<MailAddress> bouncer) throws MessagingException {
             this(sentMail.build(), message, bouncer);
         }
 
