@@ -797,6 +797,10 @@ public abstract class AbstractMessageSearchIndexTest {
 
     @Test
     public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecifiedWithOnlyUserPartOfEmail() throws Exception {
+        Assume.assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.From, "murari"));
 
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
@@ -825,6 +829,10 @@ public abstract class AbstractMessageSearchIndexTest {
 
     @Test
     public void addressShouldReturnUidHavingRightRecipientWhenToIsSpecifiedWithOnlyEmailUserPart() throws Exception {
+        Assume.assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.To, "root"));
 
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
@@ -845,6 +853,10 @@ public abstract class AbstractMessageSearchIndexTest {
 
     @Test
     public void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecified() throws Exception {
+        Assume.assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.Cc, "monkey@any.com"));
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
             .containsOnly(m5.getUid());
@@ -852,6 +864,10 @@ public abstract class AbstractMessageSearchIndexTest {
 
     @Test
     public void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecifiedWithOnlyUserPartOfTheEmail() throws Exception {
+        Assume.assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.Cc, "monkey"));
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
             .containsOnly(m5.getUid());
@@ -870,6 +886,10 @@ public abstract class AbstractMessageSearchIndexTest {
 
     @Test
     public void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecifiedWithOnlyUserPartOfTheEmail() throws Exception {
+        Assume.assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.Bcc, "monkey"));
 
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
@@ -889,6 +909,10 @@ public abstract class AbstractMessageSearchIndexTest {
 
     @Test
     public void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecified() throws Exception {
+        Assume.assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.Bcc, "no@no.com"));
 
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
