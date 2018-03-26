@@ -42,6 +42,8 @@ import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
 import org.slf4j.Logger;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -107,6 +109,14 @@ public class FakeMailContext implements MailetContext {
     }
 
     public static class SentMail {
+
+        private static MimeMessage tryCopyMimeMessage(MimeMessage msg) throws MessagingException {
+            ThrowingFunction<MimeMessage, MimeMessage> throwingFunction = MimeMessage::new;
+
+            return Optional.ofNullable(msg)
+                .map(Throwing.function(throwingFunction).sneakyThrow())
+                .orElse(null);
+        }
 
         public static class Builder {
             private MailAddress sender;
@@ -176,7 +186,7 @@ public class FakeMailContext implements MailetContext {
                 return this;
             }
 
-            public SentMail build() {
+            public SentMail build() throws MessagingException {
                 if (fromMailet.orElse(false)) {
                     this.attribute(Mail.SENT_BY_MAILET, "true");
                 }
@@ -193,10 +203,10 @@ public class FakeMailContext implements MailetContext {
         private final String state;
         private final Optional<Delay> delay;
 
-        private SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg, Map<String, Serializable> attributes, String state, Optional<Delay> delay) {
+        private SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg, Map<String, Serializable> attributes, String state, Optional<Delay> delay) throws MessagingException {
             this.sender = sender;
             this.recipients = ImmutableList.copyOf(recipients);
-            this.msg = msg;
+            this.msg = tryCopyMimeMessage(msg);
             this.subject = getSubject(msg);
             this.attributes = ImmutableMap.copyOf(attributes);
             this.state = state;
@@ -311,7 +321,7 @@ public class FakeMailContext implements MailetContext {
             this.bouncer = bouncer;
         }
 
-        public BouncedMail(SentMail.Builder sentMail, String message, Optional<MailAddress> bouncer) {
+        public BouncedMail(SentMail.Builder sentMail, String message, Optional<MailAddress> bouncer) throws MessagingException {
             this(sentMail.build(), message, bouncer);
         }
 
