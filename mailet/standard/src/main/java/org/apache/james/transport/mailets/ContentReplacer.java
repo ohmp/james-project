@@ -28,6 +28,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.ParseException;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.slf4j.Logger;
@@ -84,7 +85,7 @@ public class ContentReplacer {
             boolean contentChanged = applyBodyReplacingUnits(mail, replaceConfig, charset);
 
             if (subjectChanged || contentChanged) {
-                mail.getMessage().saveChanges();
+                MimeMessageSaver.save(mail.getMessage());
             }
         } catch (MessagingException | IOException e) {
             throw new MailetException("Error in replace", e);

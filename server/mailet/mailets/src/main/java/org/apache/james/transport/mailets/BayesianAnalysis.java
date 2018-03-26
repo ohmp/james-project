@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.util.bayesian.JDBCBayesianAnalyzer;
 import org.apache.james.util.sql.JDBCUtil;
 import org.apache.mailet.Experimental;
@@ -402,7 +403,7 @@ public class BayesianAnalysis extends GenericMailet {
      */
     private void saveChanges(MimeMessage message) throws MessagingException {
         String messageId = message.getMessageID();
-        message.saveChanges();
+        MimeMessageSaver.save(message);
         if (messageId != null) {
             message.setHeader(RFC2822Headers.MESSAGE_ID, messageId);
         }

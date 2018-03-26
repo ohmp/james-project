@@ -36,6 +36,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.james.core.MailAddress;
 import org.apache.james.dnsservice.api.DNSService;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
 import org.apache.james.transport.mailets.redirect.InitParameters;
@@ -270,8 +271,8 @@ public class DSNBounce extends GenericMailet implements RedirectNotify {
             mailModifier.setSender(getSender(originalMail), originalMail);
        
             newMail.getMessage().setHeader(RFC2822Headers.DATE, getDateHeader(originalMail));
-       
-            newMail.getMessage().saveChanges();
+
+            MimeMessageSaver.save(newMail.getMessage());
             getMailetContext().sendMail(newMail);
         } finally {
             newMail.dispose();

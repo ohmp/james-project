@@ -24,6 +24,7 @@ import java.util.List;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -66,6 +67,6 @@ public class RemoveMimeHeader extends GenericMailet {
         for (String header : headers) {
             message.removeHeader(header);
         }
-        message.saveChanges();
+        MimeMessageSaver.save(message);
     }
 }

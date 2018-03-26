@@ -23,6 +23,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.jspf.core.Logger;
 import org.apache.james.jspf.executor.SPFResult;
 import org.apache.james.jspf.impl.DefaultSPF;
@@ -91,7 +92,7 @@ public class SPF extends GenericMailet {
                 try {
                     MimeMessage msg = mail.getMessage();
                     msg.addHeader(result.getHeaderName(), result.getHeaderText());
-                    msg.saveChanges();
+                    MimeMessageSaver.save(msg);
                 } catch (MessagingException e) {
                     // Ignore not be able to add headers
                 }

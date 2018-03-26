@@ -46,6 +46,7 @@ import org.apache.james.dnsservice.api.TemporaryResolutionException;
 import org.apache.james.dnsservice.library.MXHostAddressIterator;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.queue.api.MailQueue;
@@ -187,7 +188,7 @@ public class JamesMailetContext implements MailetContext, Configurable {
             reply.getMessage().setFrom(bouncer.toInternetAddress());
         }
 
-        reply.getMessage().saveChanges();
+        MimeMessageSaver.save(mail.getMessage());
         // Send it off ... with null reverse-path
         reply.setSender(null);
         sendMail(reply);

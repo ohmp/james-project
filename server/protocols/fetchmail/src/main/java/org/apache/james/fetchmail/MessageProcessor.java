@@ -34,6 +34,7 @@ import javax.mail.internet.ParseException;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.mailet.Mail;
@@ -581,7 +582,7 @@ public class MessageProcessor extends ProcessorAbstract {
         messageOut.setText("");
 
         // Save
-        messageOut.saveChanges();
+        MimeMessageSaver.save(messageOut);
 
         return messageOut;
     }

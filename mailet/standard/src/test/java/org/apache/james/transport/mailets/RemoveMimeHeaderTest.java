@@ -30,6 +30,7 @@ import javax.mail.MessagingException;
 import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
+import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.junit.Before;
@@ -73,6 +74,26 @@ public class RemoveMimeHeaderTest {
 
         assertThat(mail.getMessage().getHeader(HEADER1)).isNull();
         assertThat(mail.getMessage().getHeader(HEADER2)).isNotNull();
+    }
+
+    @Test
+    public void serviceShouldNotResetMessageID() throws MessagingException {
+        FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
+                .mailetName("Test")
+                .setProperty("name", HEADER1)
+                .build();
+        mailet.init(mailetConfig);
+
+        String messageID = "<abcd@def.com>";
+        Mail mail = FakeMail.fromMessage(MimeMessageBuilder.mimeMessageBuilder()
+            .addHeader(HEADER1, "true")
+            .addHeader(HEADER2, "true")
+            .addHeader(RFC2822Headers.MESSAGE_ID, messageID));
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader(RFC2822Headers.MESSAGE_ID))
+            .containsExactly(messageID);
     }
 
     @Test

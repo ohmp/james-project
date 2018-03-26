@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import javax.mail.MessagingException;
 
 import org.apache.james.javax.MimeMessageBuilder;
+import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
+import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.apache.mailet.base.test.MailUtil;
@@ -242,6 +244,26 @@ public class MailAttributesListToMimeHeadersTest {
         assertThat(mail.getMessage().getHeader(HEADER_NAME1)).containsOnly(value);
     }
 
+    @Test
+    public void serviceShouldNotResetMessageID() throws MessagingException {
+        FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
+            .mailetName("Test")
+            .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+            .build();
+        mailet.init(mailetConfig);
+
+        String messageID = "<abcd@def.com>";
+        Mail mail = FakeMail.builder()
+            .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                .addHeader(RFC2822Headers.MESSAGE_ID, messageID))
+            .attribute(MAIL_ATTRIBUTE_NAME1, ImmutableList.of(3L, "value"))
+            .build();
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader(RFC2822Headers.MESSAGE_ID))
+            .containsExactly(messageID);
+    }
 
     @Test
     public void shouldThrowAtInitWhenNoSemicolumnInConfigurationEntry() throws MessagingException {

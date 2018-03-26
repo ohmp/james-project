@@ -380,7 +380,7 @@ public class MimeMessageBuilder {
         for (Header header: headerList) {
             mimeMessage.addHeader(header.name, header.value);
         }
-        mimeMessage.saveChanges();
+        MimeMessageSaver.save(mimeMessage);
         return mimeMessage;
     }
 

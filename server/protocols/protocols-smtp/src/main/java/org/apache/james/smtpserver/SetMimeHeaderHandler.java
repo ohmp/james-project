@@ -23,6 +23,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.HookResult;
@@ -74,7 +75,7 @@ public class SetMimeHeaderHandler implements JamesMessageHook, ProtocolHandler {
             // Set the header name and value (supplied at init time).
             if (headerName != null) {
                 message.setHeader(headerName, headerValue);
-                message.saveChanges();
+                MimeMessageSaver.save(message);
             }
 
         } catch (javax.mail.MessagingException me) {

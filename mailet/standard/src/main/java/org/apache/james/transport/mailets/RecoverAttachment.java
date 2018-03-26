@@ -31,6 +31,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
@@ -117,7 +118,7 @@ public class RecoverAttachment extends GenericMailet {
                         // This saveChanges is required when the MimeMessage has
                         // been created from
                         // an InputStream, otherwise it is not saved correctly.
-                        message.saveChanges();
+                        MimeMessageSaver.save(message);
                         mimeMultipart.setParent(message);
                         MimeBodyPart bodyPart = new MimeBodyPart();
                         mimeMultipart.addBodyPart(bodyPart);
@@ -125,7 +126,7 @@ public class RecoverAttachment extends GenericMailet {
                     }
                     ((MimeMultipart) message.getContent()).addBodyPart(p);
                 }
-                message.saveChanges();
+                MimeMessageSaver.save(message);
             } catch (MessagingException e) {
                 LOGGER.error("MessagingException in recoverAttachment", e);
             } catch (IOException e) {

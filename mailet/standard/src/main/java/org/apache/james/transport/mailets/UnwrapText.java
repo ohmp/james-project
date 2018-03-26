@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
@@ -81,7 +82,7 @@ public class UnwrapText extends GenericMailet {
                 if (o instanceof String) {
                     String unwrapped = unwrap((String) o, quotewidth);
                     mail.getMessage().setContent(unwrapped, mail.getMessage().getContentType());
-                    mail.getMessage().saveChanges();
+                    MimeMessageSaver.save(mail.getMessage());
                 }
             }
         } catch (MessagingException | IOException e) {

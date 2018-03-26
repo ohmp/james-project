@@ -25,6 +25,7 @@ import java.util.List;
 import javax.mail.Header;
 import javax.mail.MessagingException;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.transport.mailets.utils.MimeMessageUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -70,7 +71,7 @@ public class RemoveMimeHeaderByPrefix extends GenericMailet {
             mail.getMessage().removeHeader(headerName);
         }
         if (!headerNamesToRemove.isEmpty()) {
-            mail.getMessage().saveChanges();
+            MimeMessageSaver.save(mail.getMessage());
         }
     }
 

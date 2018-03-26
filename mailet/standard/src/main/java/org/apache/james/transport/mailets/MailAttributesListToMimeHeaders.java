@@ -28,6 +28,7 @@ import java.util.Optional;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -68,7 +69,7 @@ public class MailAttributesListToMimeHeaders extends GenericMailet {
         MimeMessage message = mail.getMessage();
         attributeNameToHeader.entrySet()
             .forEach(entry -> addAttributeToHeader(mail, message, entry));
-        message.saveChanges();
+        MimeMessageSaver.save(message);
     }
 
     private void addAttributeToHeader(Mail mail, MimeMessage message, Entry<String, String> entry) {

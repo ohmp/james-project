@@ -24,6 +24,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Mail;
 
 import com.google.common.base.Strings;
@@ -53,7 +54,7 @@ public class SieveFailureMessageComposer {
         message.setContent(multipart);
         message.setSubject("[SIEVE ERROR] " + originalMessage.getSubject());
         message.setHeader("X-Priority", "1");
-        message.saveChanges();
+        MimeMessageSaver.save(message);
         return message;
     }
 }

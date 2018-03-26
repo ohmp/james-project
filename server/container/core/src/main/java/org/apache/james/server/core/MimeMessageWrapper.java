@@ -39,6 +39,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.util.SharedByteArrayInputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.lifecycle.api.Disposable;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 
@@ -311,7 +312,7 @@ public class MimeMessageWrapper extends MimeMessage implements Disposable {
                     // The headers was modified so we need to call saveChanges() just to be sure
                     // See JAMES-1320
                     if (!saved) {
-                        saveChanges();
+                        MimeMessageSaver.save(this);
                     }
                     myHeaders = headers;
                 }
@@ -325,7 +326,7 @@ public class MimeMessageWrapper extends MimeMessage implements Disposable {
             // save the changes as the message was modified
             // See JAMES-1320
             if (!saved) {
-                saveChanges();
+                MimeMessageSaver.save(this);
             }
 
             // MimeMessageUtil.writeToInternal(this, headerOs, bodyOs,

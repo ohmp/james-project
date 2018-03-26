@@ -26,12 +26,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.apache.mailet.base.RFC2822Headers;
@@ -67,7 +69,7 @@ public class AddFooter extends GenericMailet {
             MimeMessage message = mail.getMessage();
 
             if (attachFooter(message)) {
-                message.saveChanges();
+                MimeMessageSaver.save(message);
             } else {
                 LOGGER.info("Unable to add footer to mail {}", mail.getName());
             }

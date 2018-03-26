@@ -31,6 +31,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -338,7 +339,7 @@ public class BayesianAnalysisFeeder extends GenericMailet {
                 LOGGER.error("Cannot remove header.", me);
             }
         }
-        message.saveChanges();
+        MimeMessageSaver.save(message);
     }
 
 }

@@ -41,6 +41,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.core.MailAddress;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -821,7 +822,7 @@ public class ClamAVScan extends GenericMailet {
      */
     protected final void saveChanges(MimeMessage message) throws MessagingException {
         String messageId = message.getMessageID();
-        message.saveChanges();
+        MimeMessageSaver.save(message);
         if (messageId != null) {
             message.setHeader(RFC2822Headers.MESSAGE_ID, messageId);
         }

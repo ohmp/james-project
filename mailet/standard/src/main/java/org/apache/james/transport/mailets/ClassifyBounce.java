@@ -30,6 +30,7 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -75,7 +76,7 @@ public class ClassifyBounce extends GenericMailet {
         String classification = classifier.getClassification();
         //if ( !classification.equals("Normal") ) {
         message.setHeader(headerName, classification);
-        message.saveChanges();
+        MimeMessageSaver.save(message);
         //}
     }
 

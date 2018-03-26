@@ -30,8 +30,10 @@ import java.util.Set;
 
 import javax.mail.MessagingException;
 
+import org.apache.james.javax.MimeMessageBuilder;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
+import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.apache.mailet.base.test.MailUtil;
@@ -369,6 +371,25 @@ public class AddFooterTest {
         String expectedFooter = "<br />------ " + MY_FOOTER + " =E0/=80 ------";
         
         assertThat(MailUtil.toString(mail, javaCharset)).endsWith(expectedFooter);
+    }
+
+    @Test
+    public void serviceShouldNotResetMessageID() throws Exception {
+        FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
+            .mailetName("Test")
+            .setProperty("text", "------ " + MY_FOOTER + " ------")
+            .build();
+        mailet.init(mailetConfig);
+
+        String messageID = "<abcd@def.com>";
+        Mail mail = FakeMail.fromMessage(MimeMessageBuilder.mimeMessageBuilder()
+            .setText("test text")
+            .addHeader(RFC2822Headers.MESSAGE_ID, messageID));
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader(RFC2822Headers.MESSAGE_ID))
+            .containsExactly(messageID);
     }
     
     @SuppressWarnings("unchecked")

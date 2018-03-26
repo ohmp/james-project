@@ -22,6 +22,7 @@ package org.apache.james.transport.mailets;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.transport.matchers.HasHabeasWarrantMark;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
@@ -106,7 +107,7 @@ public class AddHabeasWarrantMark extends GenericMailet {
             message.setHeader(HasHabeasWarrantMark.warrantMark[i][0], HasHabeasWarrantMark.warrantMark[i][1]);
         }
 
-        message.saveChanges();
+        MimeMessageSaver.save(message);
     }
 
     /*

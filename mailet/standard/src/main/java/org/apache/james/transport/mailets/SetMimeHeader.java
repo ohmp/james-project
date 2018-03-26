@@ -24,6 +24,7 @@ package org.apache.james.transport.mailets;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
@@ -62,7 +63,7 @@ public class SetMimeHeader extends GenericMailet {
         MimeMessage message = mail.getMessage();
 
         message.addHeader(headerName, headerValue);
-        message.saveChanges();
+        MimeMessageSaver.save(message);
     }
 
     @Override

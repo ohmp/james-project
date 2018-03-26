@@ -32,6 +32,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.transport.KeyStoreHolder;
 import org.apache.james.transport.SMIMESignerInfo;
 import org.apache.mailet.Mail;
@@ -228,7 +229,7 @@ public class SMIMECheckSignature extends GenericMailet {
                 } else {
                     message.setContent(obj, strippedMessage.getContentType());
                 }
-                message.saveChanges();
+                MimeMessageSaver.save(message);
                 mail.setMessage(message);
             } catch (Exception e) {
                 throw new MessagingException(

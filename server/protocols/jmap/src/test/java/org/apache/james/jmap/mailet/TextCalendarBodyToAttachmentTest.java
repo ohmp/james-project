@@ -31,6 +31,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
+import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.junit.Before;
@@ -56,7 +57,7 @@ public class TextCalendarBodyToAttachmentTest {
     }
 
     @Test
-    public void getMailetInformationShouldReturnInformation() throws Exception {
+    public void getMailetInformationShouldReturnInformation() {
         assertThat(mailet.getMailetInfo()).isEqualTo("Moves body part of content type text/calendar to attachment");
     }
 
@@ -138,6 +139,28 @@ public class TextCalendarBodyToAttachmentTest {
 
         assertThat(multipart.getCount()).isEqualTo(1);
         assertThat(multipart.getBodyPart(0).getDisposition()).isEqualTo("attachment");
+    }
+
+    @Test
+    public void serviceShouldPreserveMessageID() throws Exception {
+        String messageContent = "Content-type: text/calendar; method=REPLY; charset=UTF-8\n" +
+            "Content-transfer-encoding: 8BIT\n" +
+            "\n" +
+            "BEGIN:VCALENDAR\n" +
+            "END:VEVENT\n" +
+            "END:VCALENDAR";
+        MimeMessage message = MimeMessageUtil.mimeMessageFromString(messageContent);
+        String messageID = "<abc@def.com>";
+        message.setHeader(RFC2822Headers.MESSAGE_ID, messageID);
+
+        Mail mail = FakeMail.builder()
+            .mimeMessage(message)
+            .build();
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader(RFC2822Headers.MESSAGE_ID))
+            .containsExactly(messageID);
     }
 
     @Test

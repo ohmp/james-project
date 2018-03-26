@@ -39,6 +39,7 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.core.MailAddress;
 import org.apache.james.javax.MimeMessageBuilder;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.managesieve.api.SieveParser;
 import org.apache.james.managesieve.api.SyntaxException;
 import org.apache.james.sieverepository.api.ScriptSummary;
@@ -116,7 +117,7 @@ public class ManageSieveMailetTestCase {
         MimeMessage message = prepareMimeMessage("CAPABILITY");
         Mail mail = createUnauthenticatedMail(message);
         message.setSubject("CAPABILITY extra");
-        message.saveChanges();
+        MimeMessageSaver.save(message);
         mailet.service(mail);
         ensureResponse("Re: CAPABILITY extra", "NO \"Too many arguments: extra\"");
     }

@@ -30,6 +30,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
@@ -79,7 +80,7 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
         multipart.addBodyPart(createMimeBodyPartWithContentHeadersFromMimeMessage(mimeMessage, contentHeaders));
 
         mimeMessage.setContent(multipart);
-        mimeMessage.saveChanges();
+        MimeMessageSaver.save(mimeMessage);
     }
 
     private List<Header> getContentHeadersFromMimeMessage(MimeMessage mimeMessage) throws MessagingException {

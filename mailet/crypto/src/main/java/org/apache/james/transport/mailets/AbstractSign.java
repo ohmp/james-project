@@ -35,6 +35,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.ParseException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.transport.KeyHolder;
 import org.apache.james.transport.SMIMEAttributeNames;
 import org.apache.james.user.api.UsersRepository;
@@ -505,7 +506,7 @@ public abstract class AbstractSign extends GenericMailet {
             
             newMessage.setContent(signedMimeMultipart, signedMimeMultipart.getContentType());
             String messageId = originalMessage.getMessageID();
-            newMessage.saveChanges();
+            MimeMessageSaver.save(newMessage);
             if (messageId != null) {
                 newMessage.setHeader(RFC2822Headers.MESSAGE_ID, messageId);
             }

@@ -34,6 +34,7 @@ import javax.mail.Part;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.transport.SMIMEKeyHolder;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetConfig;
@@ -170,7 +171,7 @@ public class SMIMEDecrypt extends GenericMailet {
                 if (!strippedMessage.isMimeType("multipart/*")) {
                     newMessage.setDisposition(null);
                 }
-                newMessage.saveChanges();
+                MimeMessageSaver.save(newMessage);
                 mail.setMessage(newMessage);
             } catch (IOException e) {
                 LOGGER.error("Error during the strip of the encrypted message", e);

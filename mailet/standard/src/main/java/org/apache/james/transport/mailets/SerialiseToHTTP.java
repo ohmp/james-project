@@ -36,6 +36,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -141,7 +142,7 @@ public class SerialiseToHTTP extends GenericMailet {
             if (!success && errorMessage != null && errorMessage.length() > 0) {
                 message.setHeader("X-toHTTPFailure", errorMessage);
             }
-            message.saveChanges();
+            MimeMessageSaver.save(message);
         } catch (MessagingException me) {
             LOGGER.error("Messaging exception", me);
         }

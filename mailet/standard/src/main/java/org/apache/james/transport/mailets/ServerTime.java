@@ -23,6 +23,7 @@ package org.apache.james.transport.mailets;
 
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -64,7 +65,7 @@ public class ServerTime extends GenericMailet {
             response.setRecipients(MimeMessage.RecipientType.TO, mail.getSender().toString());
         }
 
-        response.saveChanges();
+        MimeMessageSaver.save(response);
         getMailetContext().sendMail(response);
     }
 

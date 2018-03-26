@@ -30,6 +30,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
+import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.apache.mailet.base.test.MailUtil;
 import org.junit.Before;
@@ -81,6 +82,26 @@ public class SetMimeHeaderTest {
         mailet.service(mail);
 
         assertThat(mail.getMessage().getHeader("header-name")).containsOnly("test-value", "first-value");
+    }
+
+    @Test
+    public void shouldPreserveMessageID() throws MessagingException {
+        FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
+                .mailetName("Test")
+                .setProperty("name", "header-name")
+                .setProperty("value", "test-value")
+                .build();
+        mailet.init(mailetConfig);
+
+        MimeMessage mimeMessage = MailUtil.createMimeMessage();
+        mimeMessage.addHeader("header-name", "first-value");
+        String messageID = "<abc@def.com>";
+        mimeMessage.setHeader(RFC2822Headers.MESSAGE_ID, messageID);
+        Mail mail = MailUtil.createMockMail2Recipients(mimeMessage);
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader(RFC2822Headers.MESSAGE_ID)).containsExactly(messageID);
     }
 
     @Test

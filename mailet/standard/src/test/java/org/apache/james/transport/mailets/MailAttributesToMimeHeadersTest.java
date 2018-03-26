@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.MessagingException;
 
 import org.apache.james.javax.MimeMessageBuilder;
+import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
+import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.apache.mailet.base.test.MailUtil;
@@ -151,6 +153,25 @@ public class MailAttributesToMimeHeadersTest {
         assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly("first value", MAIL_ATTRIBUTE_VALUE1);
     }
 
+    @Test
+    public void serviceShouldNotResetMessageID() throws MessagingException {
+        FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
+            .mailetName("Test")
+            .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+            .build();
+        mailet.init(mailetConfig);
+
+        String messageID = "<abcd@def.com>";
+        Mail mail = MailUtil.createMockMail2Recipients(MimeMessageBuilder.mimeMessageBuilder()
+            .addHeader(HEADER_NAME1, "first value")
+            .addHeader(RFC2822Headers.MESSAGE_ID, messageID)
+            .build());
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader(RFC2822Headers.MESSAGE_ID))
+            .containsExactly(messageID);
+    }
     
     @Test
     public void shouldThrowAtInitWhenNoSemicolumnInConfigurationEntry() throws MessagingException {

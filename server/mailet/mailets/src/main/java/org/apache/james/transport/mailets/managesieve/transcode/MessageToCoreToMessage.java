@@ -31,6 +31,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.managesieve.api.ManageSieveException;
 import org.apache.james.managesieve.api.Session;
 import org.apache.james.managesieve.transcode.ManageSieveProcessor;
@@ -110,7 +111,7 @@ public class MessageToCoreToMessage {
             Address from = message.getAllRecipients()[0];
             reply.setFrom(from);
         }
-        reply.saveChanges();
+        MimeMessageSaver.save(reply);
         return reply;
     }
 

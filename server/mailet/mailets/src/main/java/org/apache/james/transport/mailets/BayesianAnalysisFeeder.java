@@ -32,6 +32,7 @@ import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
 import org.apache.james.util.bayesian.JDBCBayesianAnalyzer;
 import org.apache.james.util.sql.JDBCUtil;
@@ -331,7 +332,7 @@ public class BayesianAnalysisFeeder extends GenericMailet {
                 LOGGER.error("Ignored error while removing header", me);
             }
         }
-        message.saveChanges();
+        MimeMessageSaver.save(message);
     }
 
 }
