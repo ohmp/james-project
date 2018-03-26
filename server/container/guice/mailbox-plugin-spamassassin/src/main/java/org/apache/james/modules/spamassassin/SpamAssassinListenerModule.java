@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 
 public class SpamAssassinListenerModule extends AbstractModule {
@@ -51,6 +52,8 @@ public class SpamAssassinListenerModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(SpamAssassinListener.class).in(Scopes.SINGLETON);
+
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(SpamAssassinListenerConfigurationPerformer.class);
     }
     
