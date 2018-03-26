@@ -210,12 +210,11 @@ public class MailModifier {
         }
     }
 
-    public void setMessageId(Mail originalMail) throws MessagingException {
-        String messageId = originalMail.getMessage().getMessageID();
-        if (messageId != null) {
-            mail.getMessage().setHeader(RFC2822Headers.MESSAGE_ID, messageId);
+    public void setMessageId(String savedValue) throws MessagingException {
+        if (savedValue != null) {
+            mail.getMessage().setHeader(RFC2822Headers.MESSAGE_ID, savedValue);
             if (mailet.getInitParameters().isDebug()) {
-                LOGGER.debug("MESSAGE_ID restored to: {}", messageId);
+                LOGGER.debug("MESSAGE_ID restored to: {}", savedValue);
             }
         }
     }

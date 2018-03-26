@@ -22,6 +22,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.javax.MimeMessageSaver;
 import org.apache.james.server.core.MailImpl;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
@@ -48,6 +49,7 @@ public class ProcessRedirectNotify {
         // the original untouched
         MailImpl newMail = MailImpl.duplicate(originalMail);
         try {
+            String originalMessageId = originalMail.getMessage().getMessageID();
             MailModifier mailModifier = MailModifier.builder()
                     .mailet(mailet)
                     .mail(newMail)
@@ -80,7 +82,7 @@ public class ProcessRedirectNotify {
             mailModifier.setSender(mailet.getSender(originalMail), originalMail);
             mailModifier.initializeDateIfNotPresent();
             if (keepMessageId) {
-                mailModifier.setMessageId(originalMail);
+                mailModifier.setMessageId(originalMessageId);
             }
             finalize(newMail);
 
@@ -89,7 +91,7 @@ public class ProcessRedirectNotify {
                 mailet.getMailetContext().sendMail(newMail);
             } else {
                 throw new MessagingException(mailet.getMailetName() + " mailet cannot forward " + originalMail.getName() + ". " +
-                        "Invalid sender domain for " + newMail.getSender() + ". " + 
+                        "Invalid sender domain for " + newMail.getSender() + ". " +
                         "Consider using the Resend mailet " + "using a different sender.");
             }
 
@@ -103,7 +105,7 @@ public class ProcessRedirectNotify {
     }
 
     private void finalize(MailImpl mail) throws MessagingException {
-        mail.getMessage().saveChanges();
+        MimeMessageSaver.save(mail.getMessage());
         mail.removeAllAttributes();
     }
 
