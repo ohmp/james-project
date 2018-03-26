@@ -29,10 +29,8 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.spamassassin.SpamAssassin;
 import org.apache.james.mailbox.spamassassin.SpamAssassinConfiguration;
 import org.apache.james.mailbox.spamassassin.SpamAssassinListener;
-import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.utils.ConfigurationPerformer;
 import org.apache.james.utils.PropertiesProvider;
@@ -58,24 +56,19 @@ public class SpamAssassinListenerModule extends AbstractModule {
     
     @Singleton
     public static class SpamAssassinListenerConfigurationPerformer implements ConfigurationPerformer {
-
-        private final SpamAssassinConfiguration spamAssassinConfiguration;
+        private final SpamAssassinListener spamAssassinListener;
         private final StoreMailboxManager storeMailboxManager;
-        private final MailboxSessionMapperFactory mapperFactory;
 
         @Inject
-        public SpamAssassinListenerConfigurationPerformer(SpamAssassinConfiguration spamAssassinConfiguration,
-                                                          StoreMailboxManager storeMailboxManager,
-                                                          MailboxSessionMapperFactory mapperFactory) {
-            this.spamAssassinConfiguration = spamAssassinConfiguration;
+        public SpamAssassinListenerConfigurationPerformer(SpamAssassinListener spamAssassinListener,
+                                                          StoreMailboxManager storeMailboxManager) {
+            this.spamAssassinListener = spamAssassinListener;
             this.storeMailboxManager = storeMailboxManager;
-            this.mapperFactory = mapperFactory;
         }
 
         @Override
         public void initModule() {
             try {
-                SpamAssassinListener spamAssassinListener = new SpamAssassinListener(new SpamAssassin(spamAssassinConfiguration), mapperFactory);
                 MailboxSession session = null;
                 storeMailboxManager.addGlobalListener(spamAssassinListener, session);
             } catch (MailboxException e) {
