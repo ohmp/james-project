@@ -76,11 +76,13 @@ public class TikaTextExtractor implements TextExtractor {
     @Override
     public ParsedContent extractContent(InputStream inputStream, String contentType) throws Exception {
         return metricFactory.withMetric("tikaTextExtraction", Throwing.supplier(
-            () -> {
-                ContentAndMetadata contentAndMetadata = convert(tikaHttpClient.recursiveMetaDataAsJson(inputStream, contentType));
-                return new ParsedContent(contentAndMetadata.getContent(), contentAndMetadata.getMetadata());
-            })
+            () -> performContentExtraction(inputStream, contentType))
             .sneakyThrow());
+    }
+
+    public ParsedContent performContentExtraction(InputStream inputStream, String contentType) throws IOException {
+        ContentAndMetadata contentAndMetadata = convert(tikaHttpClient.recursiveMetaDataAsJson(inputStream, contentType));
+        return new ParsedContent(contentAndMetadata.getContent(), contentAndMetadata.getMetadata());
     }
 
     private ContentAndMetadata convert(InputStream json) throws IOException, JsonParseException, JsonMappingException {
