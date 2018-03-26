@@ -22,8 +22,10 @@ package org.apache.james.core.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Properties;
 
 import javax.mail.Session;
@@ -42,12 +44,45 @@ public class MimeMessageWrapperTest {
             "Content!";
         InputStream inputStream = new ByteArrayInputStream(messageText.getBytes(StandardCharsets.UTF_8));
         MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), inputStream);
-        MimeMessageWrapper mimeMessageWrapper = new MimeMessageWrapper(message);
+        MimeMessageWrapper mimeMessageWrapper = MimeMessageWrapper.wrap(message);
 
         mimeMessageWrapper.saveChanges();
 
         assertThat(mimeMessageWrapper.getMessageID())
             .isEqualTo(messageId);
+    }
+
+    @Test
+    public void wrapShouldPreserveBody() throws Exception {
+        String messageAsText = "header1: <5436@ab.com>\r\n" +
+            "Subject: test\r\n" +
+            "\r\n" +
+            "Content!";
+        InputStream inputStream = new ByteArrayInputStream(messageAsText.getBytes(StandardCharsets.UTF_8));
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), inputStream);
+        MimeMessageWrapper mimeMessageWrapper = MimeMessageWrapper.wrap(message);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        mimeMessageWrapper.writeTo(outputStream);
+
+        assertThat(new String(outputStream.toByteArray(), StandardCharsets.UTF_8))
+            .isEqualTo(messageAsText);
+    }
+
+    @Test
+    public void wrapShouldNotThrowWhenNoBody() throws Exception {
+        MimeMessage originalMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        originalMessage.addHeader("header1", "value1");
+        originalMessage.addHeader("header2", "value2");
+        originalMessage.addHeader("header2", "value3");
+        MimeMessageWrapper mimeMessageWrapper = MimeMessageWrapper.wrap(originalMessage);
+
+        assertThat(Collections.list(mimeMessageWrapper.getAllHeaders()))
+            .extracting(javaxHeader -> new MimeMessageBuilder.Header(javaxHeader.getName(), javaxHeader.getValue()))
+            .contains(new MimeMessageBuilder.Header("header1", "value1"),
+                new MimeMessageBuilder.Header("header2", "value2"),
+                new MimeMessageBuilder.Header("header2", "value3"));
     }
 
 }

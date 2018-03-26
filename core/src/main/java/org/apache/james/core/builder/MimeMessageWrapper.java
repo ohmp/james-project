@@ -19,11 +19,39 @@
 
 package org.apache.james.core.builder;
 
+import java.util.Collections;
+import java.util.Properties;
+
+import javax.mail.Header;
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.consumers.ThrowingConsumer;
+
 public class MimeMessageWrapper extends MimeMessage {
-    public MimeMessageWrapper(MimeMessage mimeMessage) throws MessagingException {
+
+    public static MimeMessageWrapper wrap(MimeMessage mimeMessage) throws MessagingException {
+        try {
+            return new MimeMessageWrapper(mimeMessage);
+        } catch (MessagingException e) {
+            // Copying a mime message fails when the body is empty
+            // Copying manually the headers is the best alternative...
+
+            MimeMessageWrapper result = new MimeMessageWrapper();
+            ThrowingConsumer<Header> consumer = header -> result.addHeader(header.getName(), header.getValue());
+            Collections.list(mimeMessage.getAllHeaders())
+                .forEach(Throwing.consumer(consumer).sneakyThrow());
+            return result;
+        }
+    }
+
+    private MimeMessageWrapper() {
+        super(Session.getDefaultInstance(new Properties()));
+    }
+
+    private MimeMessageWrapper(MimeMessage mimeMessage) throws MessagingException {
         super(mimeMessage);
     }
 
