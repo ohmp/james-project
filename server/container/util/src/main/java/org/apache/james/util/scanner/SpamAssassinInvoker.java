@@ -34,9 +34,11 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.james.metrics.api.MetricFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -52,19 +54,20 @@ public class SpamAssassinInvoker {
     private static final int REQUIRED_HITS_INDEX = 5;
     private static final String CRLF = "\r\n";
 
+    private final MetricFactory metricFactory;
     private final String spamdHost;
-
     private final int spamdPort;
 
     /**
      * Init the spamassassin invoker
-     * 
+     *
+     * @param metricFactory
      * @param spamdHost
      *            The host on which spamd runs
      * @param spamdPort
-     *            The port on which spamd listen
      */
-    public SpamAssassinInvoker(String spamdHost, int spamdPort) {
+    public SpamAssassinInvoker(MetricFactory metricFactory, String spamdHost, int spamdPort) {
+        this.metricFactory = metricFactory;
         this.spamdHost = spamdHost;
         this.spamdPort = spamdPort;
     }
@@ -84,7 +87,11 @@ public class SpamAssassinInvoker {
     }
 
     public SpamAssassinResult scanMail(MimeMessage message) throws MessagingException {
-        return scanMailWithAdditionalHeaders(message);
+        return metricFactory.withMetric(
+            "spamAssassin-check",
+            Throwing.supplier(
+                () -> scanMailWithAdditionalHeaders(message))
+            .sneakyThrow());
     }
 
     public SpamAssassinResult scanMailWithAdditionalHeaders(MimeMessage message, String... additionalHeaders) throws MessagingException {
@@ -161,36 +168,11 @@ public class SpamAssassinInvoker {
      *             if an error occured during learning.
      */
     public boolean learnAsSpam(InputStream message, String user) throws MessagingException {
-        try (Socket socket = new Socket(spamdHost, spamdPort);
-                OutputStream out = socket.getOutputStream();
-                PrintWriter writer = new PrintWriter(out);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-            byte[] byteArray = IOUtils.toByteArray(message);
-            writer.write("TELL SPAMC/1.2");
-            writer.write(CRLF);
-            writer.write("Content-length: " + byteArray.length);
-            writer.write(CRLF);
-            writer.write("Message-class: spam");
-            writer.write(CRLF);
-            writer.write("Set: local, remote");
-            writer.write(CRLF);
-            writer.write("User: " + user);
-            writer.write(CRLF);
-            writer.write(CRLF);
-            writer.flush();
-
-            out.write(byteArray);
-            out.flush();
-            socket.shutdownOutput();
-
-            return in.lines()
-                .anyMatch(this::hasBeenSet);
-        } catch (UnknownHostException e) {
-            throw new MessagingException("Error communicating with spamd. Unknown host: " + spamdHost);
-        } catch (IOException e) {
-            throw new MessagingException("Error communicating with spamd on " + spamdHost + ":" + spamdPort, e);
-        }
+        return metricFactory.withMetric(
+            "spamAssassin-spam-report",
+            Throwing.supplier(
+                () -> performReport(message, user, "spam"))
+                .sneakyThrow());
     }
 
     /**
@@ -202,17 +184,25 @@ public class SpamAssassinInvoker {
      *             if an error occured during learning.
      */
     public boolean learnAsHam(InputStream message, String user) throws MessagingException {
+        return metricFactory.withMetric(
+            "spamAssassin-ham-report",
+            Throwing.supplier(
+                () -> performReport(message, user, "ham"))
+                .sneakyThrow());
+    }
+
+    public boolean performReport(InputStream message, String user, String messageClass) throws MessagingException {
         try (Socket socket = new Socket(spamdHost, spamdPort);
-                OutputStream out = socket.getOutputStream();
-                PrintWriter writer = new PrintWriter(out);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+             OutputStream out = socket.getOutputStream();
+             PrintWriter writer = new PrintWriter(out);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             byte[] byteArray = IOUtils.toByteArray(message);
             writer.write("TELL SPAMC/1.2");
             writer.write(CRLF);
             writer.write("Content-length: " + byteArray.length);
             writer.write(CRLF);
-            writer.write("Message-class: ham");
+            writer.write("Message-class: " + messageClass);
             writer.write(CRLF);
             writer.write("Set: local, remote");
             writer.write(CRLF);
