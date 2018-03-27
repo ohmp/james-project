@@ -22,6 +22,8 @@ package org.apache.james.modules.mailbox;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Named;
+
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxManager;
@@ -31,6 +33,7 @@ import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.EventDelivery;
 import org.apache.james.mailbox.store.event.SynchronousEventDelivery;
+import org.apache.james.modules.Names;
 import org.apache.james.utils.ConfigurationPerformer;
 
 import com.github.fge.lambdas.Throwing;
@@ -62,7 +65,7 @@ public class DefaultEventModule extends AbstractModule {
         private final Set<MailboxListener> listeners;
 
         @Inject
-        public ListenerRegistrationPerformer(MailboxManager mailboxManager,
+        public ListenerRegistrationPerformer(@Named(Names.MAILBOXMANAGER_NAME) MailboxManager mailboxManager,
                                              Set<MailboxListener> listeners) {
             this.mailboxManager = mailboxManager;
             this.listeners = listeners;
