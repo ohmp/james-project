@@ -31,7 +31,6 @@ import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.EventDelivery;
 import org.apache.james.mailbox.store.event.SynchronousEventDelivery;
-import org.apache.james.modules.Names;
 import org.apache.james.utils.ConfigurationPerformer;
 
 import com.github.fge.lambdas.Throwing;
@@ -42,7 +41,6 @@ import com.google.inject.Inject;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
 
 public class DefaultEventModule extends AbstractModule {
 
@@ -64,7 +62,7 @@ public class DefaultEventModule extends AbstractModule {
         private final Set<MailboxListener> listeners;
 
         @Inject
-        public ListenerRegistrationPerformer(@Named(Names.MAILBOXMANAGER_NAME) MailboxManager mailboxManager,
+        public ListenerRegistrationPerformer(MailboxManager mailboxManager,
                                              Set<MailboxListener> listeners) {
             this.mailboxManager = mailboxManager;
             this.listeners = listeners;
