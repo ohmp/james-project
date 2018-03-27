@@ -36,6 +36,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.builder.MimeMessageWrapper;
 import org.apache.mailet.HostAddress;
 import org.apache.mailet.LookupException;
 import org.apache.mailet.Mail;
@@ -111,7 +112,7 @@ public class FakeMailContext implements MailetContext {
     public static class SentMail {
 
         private static MimeMessage tryCopyMimeMessage(MimeMessage msg) throws MessagingException {
-            ThrowingFunction<MimeMessage, MimeMessage> throwingFunction = MimeMessage::new;
+            ThrowingFunction<MimeMessage, MimeMessage> throwingFunction = MimeMessageWrapper::wrap;
 
             return Optional.ofNullable(msg)
                 .map(Throwing.function(throwingFunction).sneakyThrow())
