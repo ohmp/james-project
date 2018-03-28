@@ -309,7 +309,7 @@ public abstract class AbstractRecipientRewriteTableTest {
                 virtualUserTable.addAliasDomainMapping(domain, Domain.of(mapping));
                 break;
             default:
-                throw new RuntimeException("Invalid mapping type: " + type);
+                throw new RuntimeException("Invalid mapping type: " + type.asPrefix());
         }
     }
 
@@ -329,7 +329,7 @@ public abstract class AbstractRecipientRewriteTableTest {
                 virtualUserTable.removeAliasDomainMapping(domain, Domain.of(mapping));
                 break;
             default:
-                throw new RuntimeException("Invalid mapping type: " + type);
+                throw new RuntimeException("Invalid mapping type: " + type.asPrefix());
         }
     }
 
