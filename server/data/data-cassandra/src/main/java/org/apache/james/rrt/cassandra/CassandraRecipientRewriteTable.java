@@ -42,6 +42,7 @@ import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.Mappings;
 import org.apache.james.rrt.lib.MappingsImpl;
+import org.apache.james.util.OptionalUtils;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -177,9 +178,10 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
 
     @Override
     protected String mapAddressInternal(String user, Domain domain) throws RecipientRewriteTableException {
-        Mappings mappings = retrieveMappings(user, domain)
-            .orElseGet(() -> retrieveMappings(WILDCARD, domain)
-                .orElseGet(MappingsImpl::empty));
+        Mappings mappings = OptionalUtils.or(
+            retrieveMappings(user, domain),
+            retrieveMappings(WILDCARD, domain))
+            .orElse(MappingsImpl.empty());
 
         return !mappings.isEmpty() ? mappings.serialize() : null;
     }
