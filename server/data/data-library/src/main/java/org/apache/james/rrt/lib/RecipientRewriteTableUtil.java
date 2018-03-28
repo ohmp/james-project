@@ -178,28 +178,28 @@ public class RecipientRewriteTableUtil {
      */
     public static String getSeparator(String targetString) {
         return OptionalUtils.or(
-                maybeComma(targetString),
-                maybeSemicolon(targetString),
-                maybeColon(targetString))
+                mayContainsComma(targetString),
+                mayContainsSemicolon(targetString),
+                mayContainsColon(targetString))
             .orElse("");
     }
 
-    private static Optional<String> maybeComma(String targetString) {
-        return maybeContains(targetString, ",");
+    private static Optional<String> mayContainsComma(String targetString) {
+        return mayContains(targetString, ",");
     }
 
-    private static Optional<String> maybeSemicolon(String targetString) {
-        return maybeContains(targetString, ";");
+    private static Optional<String> mayContainsSemicolon(String targetString) {
+        return mayContains(targetString, ";");
     }
 
-    private static Optional<String> maybeColon(String targetString) {
+    private static Optional<String> mayContainsColon(String targetString) {
         if (Type.hasPrefix(targetString)) {
             return Optional.empty();
         }
         return Optional.of(":");
     }
 
-    private static Optional<String> maybeContains(String targetString, String expectedCharacter) {
+    private static Optional<String> mayContains(String targetString, String expectedCharacter) {
         return Optional.of(expectedCharacter)
             .filter(targetString::contains);
     }
