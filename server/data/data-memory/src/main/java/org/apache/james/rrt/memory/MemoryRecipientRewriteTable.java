@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,6 +37,7 @@ import org.apache.james.util.OptionalUtils;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
+import com.google.common.collect.Multimaps;
 
 public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
 
@@ -124,10 +124,7 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
         if (mappingEntries.isEmpty()) {
             return null;
         }
-        return mappingEntries.stream()
-            .collect(Guavate.toImmutableListMultimap(
-                InMemoryMappingEntry::asKey,
-                Function.identity()))
+        return Multimaps.index(mappingEntries, InMemoryMappingEntry::asKey)
             .asMap()
             .entrySet()
             .stream()
