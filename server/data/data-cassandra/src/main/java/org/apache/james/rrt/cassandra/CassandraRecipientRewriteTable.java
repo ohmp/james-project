@@ -37,7 +37,6 @@ import javax.inject.Inject;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.core.Domain;
-import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.Mappings;
@@ -95,7 +94,7 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     }
 
     @Override
-    protected void addMappingInternal(String user, Domain domain, Mapping mapping) throws RecipientRewriteTableException {
+    protected void addMappingInternal(String user, Domain domain, Mapping mapping) {
         executor.executeVoid(insertStatement.bind()
             .setString(USER, getFixedUser(user))
             .setString(DOMAIN, getFixedDomain(domain).asString())
@@ -104,7 +103,7 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     }
 
     @Override
-    protected void removeMappingInternal(String user, Domain domain, Mapping mapping) throws RecipientRewriteTableException {
+    protected void removeMappingInternal(String user, Domain domain, Mapping mapping) {
         executor.executeVoid(deleteStatement.bind()
                 .setString(USER, getFixedUser(user))
                 .setString(DOMAIN, getFixedDomain(domain).asString())
@@ -113,7 +112,7 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     }
 
     @Override
-    protected Mappings getUserDomainMappingsInternal(String user, Domain domain) throws RecipientRewriteTableException {
+    protected Mappings getUserDomainMappingsInternal(String user, Domain domain) {
         return retrieveMappings(user, domain)
             .orElse(null);
     }
@@ -131,7 +130,7 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     }
 
     @Override
-    protected Map<String, Mappings> getAllMappingsInternal() throws RecipientRewriteTableException {
+    protected Map<String, Mappings> getAllMappingsInternal() {
         Map<String, Mappings> map = executor.execute(retrieveAllMappingsStatement.bind())
             .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> new UserMapping(row.getString(USER), Domain.of(row.getString(DOMAIN)), row.getString(MAPPING)))
@@ -177,9 +176,9 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     }
 
     @Override
-    protected String mapAddressInternal(String user, Domain domain) throws RecipientRewriteTableException {
-        Mappings mappings = OptionalUtils.executeIfEmpty(
-            retrieveMappings(user, domain),
+    protected String mapAddressInternal(String user, Domain domain) {
+        Mappings mappings = OptionalUtils.orSuppliers(
+            () -> retrieveMappings(user, domain),
             () -> retrieveMappings(WILDCARD, domain))
                 .orElse(MappingsImpl.empty());
 
