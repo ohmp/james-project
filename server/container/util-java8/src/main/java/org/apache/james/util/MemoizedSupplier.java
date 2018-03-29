@@ -19,19 +19,34 @@
 
 package org.apache.james.util;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
-import org.apache.commons.lang3.tuple.Pair;
+public class MemoizedSupplier<T> implements Supplier<T> {
 
-import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ImmutableListMultimap;
+    public static <T> MemoizedSupplier<T> of(Supplier<T> supplier) {
+        return new MemoizedSupplier<>(supplier);
+    }
 
-public class GuavaUtils {
-    public static <K, V> ImmutableListMultimap<K, V> toMultimap(Map<K, List<V>> rights) {
-        return rights.entrySet()
-            .stream()
-            .flatMap(e -> e.getValue().stream().map(right -> Pair.of(e.getKey(), right)))
-            .collect(Guavate.toImmutableListMultimap(Pair::getKey, Pair::getValue));
+    private final Supplier<T> originalSupplier;
+    private Optional<AtomicReference<T>> cachedValue;
+
+    public MemoizedSupplier(Supplier<T> originalSupplier) {
+        this.originalSupplier = originalSupplier;
+        this.cachedValue = Optional.empty();
+    }
+
+    @Override
+    public T get() {
+        return cachedValue
+            .orElseGet(
+            () -> {
+                T value = originalSupplier.get();
+                AtomicReference<T> atomicReference = new AtomicReference<>(value);
+                cachedValue = Optional.of(atomicReference);
+                return atomicReference;
+            })
+            .get();
     }
 }
