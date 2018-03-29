@@ -393,13 +393,15 @@ public class MimeMessageBuilder {
         if (!bccAddresses.isEmpty()) {
             mimeMessage.setRecipients(Message.RecipientType.BCC, bccAddresses.toArray(new InternetAddress[bccAddresses.size()]));
         }
-        List<Header> headerList = headers.build();
-        for (Header header: headerList) {
-            mimeMessage.addHeader(header.name, header.value);
-        }
 
         MimeMessage wrappedMessage = MimeMessageWrapper.wrap(mimeMessage);
+
+        List<Header> headerList = headers.build();
+        for (Header header: headerList) {
+            wrappedMessage.setHeader(header.name, header.value);
+        }
         wrappedMessage.saveChanges();
+
         return wrappedMessage;
     }
 
