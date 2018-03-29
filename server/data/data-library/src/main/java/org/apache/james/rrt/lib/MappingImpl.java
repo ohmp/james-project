@@ -100,7 +100,7 @@ public class MappingImpl implements Mapping, Serializable {
 
     @Override
     public String getAddress() {
-        Preconditions.checkState(getType() == Type.Address);
+        Preconditions.checkState(getType() == Type.Address || getType() == Type.Forward);
         return mapping;
     }
 
