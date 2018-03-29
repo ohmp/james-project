@@ -398,7 +398,11 @@ public class MimeMessageBuilder {
 
         List<Header> headerList = headers.build();
         for (Header header: headerList) {
-            wrappedMessage.setHeader(header.name, header.value);
+            if (header.name.equals("Message-ID")) {
+                wrappedMessage.setHeader(header.name, header.value);
+            } else {
+                wrappedMessage.addHeader(header.name, header.value);
+            }
         }
         wrappedMessage.saveChanges();
 

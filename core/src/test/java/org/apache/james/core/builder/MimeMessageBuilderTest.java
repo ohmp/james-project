@@ -30,12 +30,24 @@ public class MimeMessageBuilderTest {
     @Test
     public void buildShouldPreserveMessageID() throws Exception {
         String messageID = "<abc@123>";
-        MimeMessage build = MimeMessageBuilder.mimeMessageBuilder()
+        MimeMessage mimeMessage = MimeMessageBuilder.mimeMessageBuilder()
             .addHeader("Message-ID", messageID)
             .build();
 
-        assertThat(build.getMessageID())
+        assertThat(mimeMessage.getMessageID())
             .isEqualTo(messageID);
+    }
+
+    @Test
+    public void buildShouldAllowMultiValuedHeader() throws Exception {
+        String headerName = "header";
+        MimeMessage mimeMessage = MimeMessageBuilder.mimeMessageBuilder()
+            .addHeader(headerName, "value1")
+            .addHeader(headerName, "value2")
+            .build();
+
+        assertThat(mimeMessage.getHeader(headerName))
+            .hasSize(2);
     }
 
 }
