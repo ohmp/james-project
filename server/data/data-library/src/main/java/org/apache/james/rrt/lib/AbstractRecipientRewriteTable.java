@@ -179,7 +179,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
                     return Optional.ofNullable(target);
                 }
             case Domain:
-                return Optional.ofNullable(user + "@" + Type.Domain.withoutPrefix(target));
+                return Optional.of(user + "@" + Type.Domain.withoutPrefix(target));
             default:
                 return Optional.ofNullable(target);
         }
