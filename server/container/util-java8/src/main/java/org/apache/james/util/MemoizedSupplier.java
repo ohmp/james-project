@@ -19,34 +19,12 @@
 
 package org.apache.james.util;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public class MemoizedSupplier<T> implements Supplier<T> {
+import com.google.common.base.Suppliers;
 
-    public static <T> MemoizedSupplier<T> of(Supplier<T> supplier) {
-        return new MemoizedSupplier<>(supplier);
-    }
-
-    private final Supplier<T> originalSupplier;
-    private Optional<AtomicReference<T>> cachedValue;
-
-    public MemoizedSupplier(Supplier<T> originalSupplier) {
-        this.originalSupplier = originalSupplier;
-        this.cachedValue = Optional.empty();
-    }
-
-    @Override
-    public T get() {
-        return cachedValue
-            .orElseGet(
-            () -> {
-                T value = originalSupplier.get();
-                AtomicReference<T> atomicReference = new AtomicReference<>(value);
-                cachedValue = Optional.of(atomicReference);
-                return atomicReference;
-            })
-            .get();
+public class MemoizedSupplier {
+    public static <T> Supplier<T> of(Supplier<T> originalSupplier) {
+        return Suppliers.memoize(originalSupplier::get)::get;
     }
 }

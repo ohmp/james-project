@@ -22,6 +22,7 @@ package org.apache.james.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -29,14 +30,14 @@ public class MemoizedSupplierTest {
 
     @Test
     public void getShouldReturnSuppliedValue() {
-        MemoizedSupplier<Integer> supplier = MemoizedSupplier.of(() -> 42);
+        Supplier<Integer> supplier = MemoizedSupplier.of(() -> 42);
 
         assertThat(supplier.get()).isEqualTo(42);
     }
 
     @Test
     public void getShouldBeIdempotent() {
-        MemoizedSupplier<Integer> supplier = MemoizedSupplier.of(() -> 42);
+        Supplier<Integer> supplier = MemoizedSupplier.of(() -> 42);
 
         supplier.get();
         assertThat(supplier.get()).isEqualTo(42);
@@ -44,7 +45,7 @@ public class MemoizedSupplierTest {
 
     @Test
     public void nullValueShouldBeSupported() {
-        MemoizedSupplier<Integer> supplier = MemoizedSupplier.of(() -> null);
+        Supplier<Integer> supplier = MemoizedSupplier.of(() -> null);
 
         supplier.get();
         assertThat(supplier.get()).isNull();
@@ -54,7 +55,7 @@ public class MemoizedSupplierTest {
     public void underlyingSupplierShouldBeCalledOnlyOnce() {
         AtomicInteger atomicInteger = new AtomicInteger(0);
 
-        MemoizedSupplier<Integer> supplier = MemoizedSupplier.of(() -> {
+        Supplier<Integer> supplier = MemoizedSupplier.of(() -> {
             atomicInteger.incrementAndGet();
             return 42;
         });
@@ -69,7 +70,7 @@ public class MemoizedSupplierTest {
     public void underlyingSupplierShouldBeCalledOnlyOnceWhenReturningNullValue() {
         AtomicInteger atomicInteger = new AtomicInteger(0);
 
-        MemoizedSupplier<Integer> supplier = MemoizedSupplier.of(() -> {
+        Supplier<Integer> supplier = MemoizedSupplier.of(() -> {
             atomicInteger.incrementAndGet();
             return null;
         });
