@@ -79,17 +79,17 @@ public class MappingImplTest {
     
     @Test
     public void appendDefaultDomainShouldWorkOnValidDomain() {
-        assertThat(MappingImpl.address("abc").appendDefaultDomain(() -> Domain.of("domain"))).isEqualTo(MappingImpl.address("abc@domain"));
+        assertThat(MappingImpl.address("abc").appendDomainIfNone(() -> Domain.of("domain"))).isEqualTo(MappingImpl.address("abc@domain"));
     }
     
     @Test
     public void appendDefaultDomainShouldNotAddDomainWhenMappingAlreadyContainsDomains() {
-        assertThat(MappingImpl.address("abc@d").appendDefaultDomain(() -> Domain.of("domain"))).isEqualTo(MappingImpl.address("abc@d"));
+        assertThat(MappingImpl.address("abc@d").appendDomainIfNone(() -> Domain.of("domain"))).isEqualTo(MappingImpl.address("abc@d"));
     }
     
     @Test(expected = NullPointerException.class)
     public void appendDomainShouldThrowWhenNullDomain() {
-        MappingImpl.address("abc@d").appendDefaultDomain(null);
+        MappingImpl.address("abc@d").appendDomainIfNone(null);
     }
     
     @Test

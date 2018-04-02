@@ -77,7 +77,7 @@ public interface Mapping {
 
     boolean hasDomain();
 
-    Mapping appendDefaultDomain(Supplier<Domain> domainSupplier);
+    Mapping appendDomainIfNone(Supplier<Domain> domainSupplier);
 
     String getErrorMessage();
 

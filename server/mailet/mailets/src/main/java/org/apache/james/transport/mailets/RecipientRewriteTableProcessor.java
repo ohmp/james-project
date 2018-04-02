@@ -173,7 +173,7 @@ public class RecipientRewriteTableProcessor {
     @VisibleForTesting
     List<MailAddress> handleMappings(Mappings mappings, MailAddress sender, MailAddress recipient, MimeMessage message) throws MessagingException {
         ImmutableList<MailAddress> mailAddresses = mappings.asStream()
-            .map(mapping -> mapping.appendDefaultDomain(defaultDomainSupplier))
+            .map(mapping -> mapping.appendDomainIfNone(defaultDomainSupplier))
             .map(mailAddressFromMapping)
             .flatMap(OptionalUtils::toStream)
             .collect(Guavate.toImmutableList());

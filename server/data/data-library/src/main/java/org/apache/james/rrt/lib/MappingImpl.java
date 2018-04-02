@@ -75,7 +75,7 @@ public class MappingImpl implements Mapping, Serializable {
     }
     
     @Override
-    public Mapping appendDefaultDomain(Supplier<Domain> domain) {
+    public Mapping appendDomainIfNone(Supplier<Domain> domain) {
         Preconditions.checkNotNull(domain);
         if (hasDomain()) {
             return this;
