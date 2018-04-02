@@ -33,8 +33,10 @@ import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.EventDelivery;
 import org.apache.james.mailbox.store.event.SynchronousEventDelivery;
+import org.apache.james.modules.MailboxListenerProbe;
 import org.apache.james.modules.Names;
 import org.apache.james.utils.ConfigurationPerformer;
+import org.apache.james.utils.GuiceProbe;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Throwables;
@@ -57,6 +59,8 @@ public class DefaultEventModule extends AbstractModule {
 
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(ListenerRegistrationPerformer.class);
         Multibinder.newSetBinder(binder(), MailboxListener.class);
+
+        Multibinder.newSetBinder(binder(), GuiceProbe.class).addBinding().to(MailboxListenerProbe.class);
     }
 
     @Singleton
