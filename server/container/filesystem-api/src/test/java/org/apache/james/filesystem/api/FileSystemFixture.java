@@ -17,22 +17,23 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.utils;
+package org.apache.james.filesystem.api;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Optional;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.james.filesystem.api.FileSystem;
+import org.apache.commons.lang3.NotImplementedException;
 
 public class FileSystemFixture {
 
     public static final FileSystem THROWING_FILE_SYSTEM = new FileSystem() {
         @Override
         public InputStream getResource(String url) throws IOException {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not implemented");
         }
 
         @Override
@@ -42,31 +43,34 @@ public class FileSystemFixture {
 
         @Override
         public File getBasedir() throws FileNotFoundException {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not implemented");
         }
     };
 
     public static final FileSystem CLASSPATH_FILE_SYSTEM = new FileSystem() {
         @Override
         public InputStream getResource(String url) throws IOException {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not implemented");
         }
 
         @Override
         public File getFile(String fileURL) throws FileNotFoundException {
-            return new File(ClassLoader.getSystemResource("recursive/extensions-jars").getFile());
+            return Optional.ofNullable(ClassLoader.getSystemResource("recursive/extensions-jars"))
+                .map(URL::getFile)
+                .map(File::new)
+                .orElseThrow(() -> new FileNotFoundException(fileURL));
         }
 
         @Override
         public File getBasedir() throws FileNotFoundException {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not implemented");
         }
     };
 
     public static final FileSystem RECURSIVE_CLASSPATH_FILE_SYSTEM = new FileSystem() {
         @Override
         public InputStream getResource(String url) throws IOException {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not implemented");
         }
 
         @Override
@@ -76,7 +80,7 @@ public class FileSystemFixture {
 
         @Override
         public File getBasedir() throws FileNotFoundException {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not implemented");
         }
     };
 }
