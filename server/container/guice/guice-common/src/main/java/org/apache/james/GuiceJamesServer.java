@@ -24,6 +24,7 @@ import java.util.List;
 import javax.annotation.PreDestroy;
 
 import org.apache.james.modules.CommonServicesModule;
+import org.apache.james.modules.GuiceExtensionModule;
 import org.apache.james.modules.MailetProcessingModule;
 import org.apache.james.onami.lifecycle.Stager;
 import org.apache.james.utils.ConfigurationsPerformer;
@@ -68,10 +69,13 @@ public class GuiceJamesServer {
     }
 
     public void start() throws Exception {
-        Injector injector = Guice.createInjector(module);
-        preDestroy = injector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
-        injector.getInstance(ConfigurationsPerformer.class).initModules();
-        guiceProbeProvider = injector.getInstance(GuiceProbeProvider.class);
+        Injector fatherInjector = Guice.createInjector(module);
+        Module extensions = fatherInjector.getInstance(GuiceExtensionModule.class)
+            .getConfiguredModule();
+        Injector finalInjector = fatherInjector.createChildInjector(extensions);
+        preDestroy = finalInjector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
+        finalInjector.getInstance(ConfigurationsPerformer.class).initModules();
+        guiceProbeProvider = finalInjector.getInstance(GuiceProbeProvider.class);
         isStarted = true;
     }
 

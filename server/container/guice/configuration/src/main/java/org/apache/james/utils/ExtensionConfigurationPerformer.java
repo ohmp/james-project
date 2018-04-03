@@ -19,32 +19,6 @@
 
 package org.apache.james.utils;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
+public interface ExtensionConfigurationPerformer extends ConfigurationPerformer{
 
-import javax.inject.Inject;
-
-import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Preconditions;
-
-public class GuiceProbeProvider {
-    private final Map<Class<GuiceProbe>, GuiceProbe> registry;
-
-    @SuppressWarnings("unchecked")
-    @Inject
-    public GuiceProbeProvider(Set<GuiceProbe> guiceProbes, Set<ExtensionGuiceProbe> extensionGuiceProbes) {
-        this.registry = Stream.concat(guiceProbes.stream(),
-            extensionGuiceProbes.stream())
-            .collect(Guavate.toImmutableMap(guiceProbe -> (Class<GuiceProbe>) guiceProbe.getClass()));
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends GuiceProbe> T getProbe(Class<T> clazz) {
-        Preconditions.checkNotNull(clazz);
-        return Optional.ofNullable(registry.get(clazz))
-            .map(probe -> (T) probe)
-            .orElseThrow(() -> new RuntimeException("No probe registered for class: " + clazz));
-    }
 }

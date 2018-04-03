@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.modules.MailboxListenerProbe;
+import org.apache.james.modules.TestModule;
 import org.apache.james.utils.ConfigurationPerformer;
 import org.apache.james.utils.PropertiesProvider;
 import org.junit.After;
@@ -62,6 +63,22 @@ public class GuiceJamesServerTest {
             .getGlobalMailboxListeners())
             .filteredOn(listner -> listner instanceof TestListener)
             .hasSize(1);
+    }
+
+    @Test
+    public void test() throws Exception {
+        GuiceJamesServer overriddenServer = this.guiceJamesServer
+            .overrideWith(binder -> binder.bind(PropertiesProvider.class).to(PropertiesProvider.ClassPathPropertiesProvider.class));
+
+        overriddenServer.start();
+
+        assertThat(overriddenServer.getProbe(TestModule.AdditionalProbe.class)
+            .isLoaded())
+            .isTrue();
+
+        assertThat(overriddenServer.getProbe(TestModule.AdditionalProbe.class)
+            .isConfigured())
+            .isTrue();
     }
 
     @Test

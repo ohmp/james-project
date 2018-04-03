@@ -17,7 +17,8 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.utils;
-import static  org.assertj.core.api.Assertions.assertThat;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +37,7 @@ public class GuiceProbeProviderTest {
     @Before
     public void setUp() throws Exception {
         guiceProbe1 = new GuiceProbe1();
-        guiceProbeProvider = new GuiceProbeProvider(ImmutableSet.of(guiceProbe1));
+        guiceProbeProvider = new GuiceProbeProvider(ImmutableSet.of(guiceProbe1), ImmutableSet.of());
     }
 
     @Test
