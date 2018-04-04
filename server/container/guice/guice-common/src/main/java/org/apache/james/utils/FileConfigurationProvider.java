@@ -31,7 +31,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.james.filesystem.api.FileSystem;
-import org.apache.james.modules.CommonServicesModule;
+import org.apache.james.modules.ConfigurationModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class FileConfigurationProvider implements ConfigurationProvider {
     private final String configurationPrefix;
 
     @Inject
-    public FileConfigurationProvider(FileSystem fileSystem, @Named(CommonServicesModule.CONFIGURATION_PATH) String configurationPrefix) {
+    public FileConfigurationProvider(FileSystem fileSystem, @Named(ConfigurationModule.CONFIGURATION_PATH) String configurationPrefix) {
         this.fileSystem = fileSystem;
         this.configurationPrefix = configurationPrefix;
     }

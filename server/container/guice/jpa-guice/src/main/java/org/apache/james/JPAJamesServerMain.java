@@ -80,7 +80,7 @@ public class JPAJamesServerMain {
 
     public static void main(String[] args) throws Exception {
         GuiceJamesServer server = new GuiceJamesServer()
-                    .combineWith(JPA_SERVER_MODULE, PROTOCOLS,
+                    .combineBaseWith(JPA_SERVER_MODULE, PROTOCOLS,
                             new JMXServerModule(), 
                             new LuceneSearchMailboxModule());
         server.start();

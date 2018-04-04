@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 
 import org.apache.james.lifecycle.api.Configurable;
 
-import com.github.steveash.guavate.Guavate;
 import com.google.inject.Inject;
 
 public class ConfigurationsPerformer {
@@ -35,17 +34,12 @@ public class ConfigurationsPerformer {
 
     @Inject
     public ConfigurationsPerformer(Set<ConfigurationPerformer> configurationPerformers,
-                                   Set<ExtensionConfigurationPerformer> extensionConfigurationPerformers,
                                    Configurables configurables) {
-        this.configurationPerformers = Stream.concat(
-            configurationPerformers.stream(),
-            extensionConfigurationPerformers.stream())
-            .collect(Guavate.toImmutableSet());
+        this.configurationPerformers = configurationPerformers;
         this.configurables = configurables;
     }
 
-    public void initModules() throws Exception {
-        
+    public void initModules() {
         Set<ConfigurationPerformer> processed = processConfigurables();
         
         processOthers(processed);

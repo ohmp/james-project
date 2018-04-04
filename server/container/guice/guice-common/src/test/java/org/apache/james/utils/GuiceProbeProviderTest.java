@@ -37,7 +37,7 @@ public class GuiceProbeProviderTest {
     @Before
     public void setUp() throws Exception {
         guiceProbe1 = new GuiceProbe1();
-        guiceProbeProvider = new GuiceProbeProvider(ImmutableSet.of(guiceProbe1), ImmutableSet.of());
+        guiceProbeProvider = new GuiceProbeProvider(ImmutableSet.of(guiceProbe1));
     }
 
     @Test

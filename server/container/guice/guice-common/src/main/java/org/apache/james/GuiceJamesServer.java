@@ -23,9 +23,15 @@ import java.util.List;
 
 import javax.annotation.PreDestroy;
 
-import org.apache.james.modules.CommonServicesModule;
-import org.apache.james.modules.GuiceExtensionModule;
+import org.apache.james.modules.ConfigurationModule;
+import org.apache.james.modules.GuiceExtensionProvider;
 import org.apache.james.modules.MailetProcessingModule;
+import org.apache.james.modules.server.AsyncTasksExecutorModule;
+import org.apache.james.modules.server.DNSServiceModule;
+import org.apache.james.modules.server.DataProbeModule;
+import org.apache.james.modules.server.DropWizardMetricsModule;
+import org.apache.james.modules.server.TaskManagerModule;
+import org.apache.james.onami.lifecycle.PreDestroyModule;
 import org.apache.james.onami.lifecycle.Stager;
 import org.apache.james.utils.ConfigurationsPerformer;
 import org.apache.james.utils.GuiceProbe;
@@ -41,42 +47,64 @@ import com.google.inject.util.Modules;
 
 public class GuiceJamesServer {
 
-    protected final Module module;
+    protected final Module configurationModule;
+    protected final Module baseModule;
     private Stager<PreDestroy> preDestroy;
     private GuiceProbeProvider guiceProbeProvider;
     private boolean isStarted = false;
 
     public GuiceJamesServer() {
-        this(Modules.combine(
-                        new CommonServicesModule(),
-                        new MailetProcessingModule()));
+        this(new ConfigurationModule(),
+            Modules.combine(
+                new DNSServiceModule(),
+                new DataProbeModule(),
+                new MailetProcessingModule(),
+                new DropWizardMetricsModule(),
+                new TaskManagerModule(),
+                new PreDestroyModule(),
+                new AsyncTasksExecutorModule()));
     }
 
-    protected GuiceJamesServer(Module module) {
-        this.module = module;
+    protected GuiceJamesServer(Module configurationModule, Module baseModule) {
+        this.configurationModule = configurationModule;
+        this.baseModule = baseModule;
     }
     
-    public GuiceJamesServer combineWith(Module... modules) {
-        return new GuiceJamesServer(Modules.combine(Iterables.concat(Arrays.asList(module), Arrays.asList(modules))));
+    public GuiceJamesServer combineBaseWith(Module... modules) {
+        return new GuiceJamesServer(
+            configurationModule,
+            Modules.combine(Iterables.concat(Arrays.asList(baseModule), Arrays.asList(modules))));
     }
 
     public GuiceJamesServer overrideWith(Module... overrides) {
-        return new GuiceJamesServer(Modules.override(module).with(overrides));
+        return new GuiceJamesServer(configurationModule, Modules.override(baseModule).with(overrides));
     }
 
     public GuiceJamesServer overrideWith(List<Module> overrides) {
-        return new GuiceJamesServer(Modules.override(module).with(overrides));
+        return new GuiceJamesServer(configurationModule, Modules.override(baseModule).with(overrides));
+    }
+
+    public GuiceJamesServer overrideConfigurationModulesWith(Module... overrides) {
+        return new GuiceJamesServer(Modules.override(configurationModule).with(overrides), baseModule);
     }
 
     public void start() throws Exception {
-        Injector fatherInjector = Guice.createInjector(module);
-        Module extensions = fatherInjector.getInstance(GuiceExtensionModule.class)
-            .getConfiguredModule();
-        Injector finalInjector = fatherInjector.createChildInjector(extensions);
-        preDestroy = finalInjector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
-        finalInjector.getInstance(ConfigurationsPerformer.class).initModules();
-        guiceProbeProvider = finalInjector.getInstance(GuiceProbeProvider.class);
+        Injector injector = Guice.createInjector(
+            Modules.combine(
+                configurationModule,
+                baseModule,
+                loadExtensions()));
+        preDestroy = injector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
+        injector.getInstance(ConfigurationsPerformer.class).initModules();
+        guiceProbeProvider = injector.getInstance(GuiceProbeProvider.class);
         isStarted = true;
+    }
+
+    public Module loadExtensions() throws Exception {
+        Injector temporaryInjector = Guice.createInjector(configurationModule);
+
+        return temporaryInjector.getInstance(GuiceExtensionProvider.class)
+            .getConfiguredModule();
     }
 
     public void stop() {

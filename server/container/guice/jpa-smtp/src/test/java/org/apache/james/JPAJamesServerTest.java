@@ -57,9 +57,9 @@ public class JPAJamesServerTest {
 
     private org.apache.james.GuiceJamesServer createJamesServer() {
         return new GuiceJamesServer()
-                .combineWith(JPAJamesServerMain.JPA_SERVER_MODULE, JPAJamesServerMain.PROTOCOLS)
+                .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder))
+                .combineBaseWith(JPAJamesServerMain.JPA_SERVER_MODULE, JPAJamesServerMain.PROTOCOLS)
                 .overrideWith(
-                        new TestFilesystemModule(temporaryFolder),
                         new TestJPAConfigurationModule(),
                         (binder) -> binder.bind(EntityManagerFactory.class)
                             .toInstance(JpaTestCluster.create(JPAUser.class, JPADomain.class, JPARecipientRewrite.class)

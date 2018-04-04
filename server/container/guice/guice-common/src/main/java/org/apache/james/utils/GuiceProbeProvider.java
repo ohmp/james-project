@@ -22,7 +22,6 @@ package org.apache.james.utils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -34,9 +33,8 @@ public class GuiceProbeProvider {
 
     @SuppressWarnings("unchecked")
     @Inject
-    public GuiceProbeProvider(Set<GuiceProbe> guiceProbes, Set<ExtensionGuiceProbe> extensionGuiceProbes) {
-        this.registry = Stream.concat(guiceProbes.stream(),
-            extensionGuiceProbes.stream())
+    public GuiceProbeProvider(Set<GuiceProbe> guiceProbes) {
+        this.registry = guiceProbes.stream()
             .collect(Guavate.toImmutableMap(guiceProbe -> (Class<GuiceProbe>) guiceProbe.getClass()));
     }
 

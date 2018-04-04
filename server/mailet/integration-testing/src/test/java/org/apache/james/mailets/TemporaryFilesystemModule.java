@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.filesystem.api.JamesDirectoriesProvider;
-import org.apache.james.modules.CommonServicesModule;
+import org.apache.james.modules.ConfigurationModule;
 import org.apache.james.server.core.JamesServerResourceLoader;
 import org.junit.rules.TemporaryFolder;
 
@@ -74,7 +74,7 @@ public class TemporaryFilesystemModule extends AbstractModule {
         try {
             bind(JamesDirectoriesProvider.class).toInstance(new JamesServerResourceLoader(workingDirectory.get().getAbsolutePath()));
             copyResources(Paths.get(workingDirectory.get().getAbsolutePath(), "conf"));
-            bindConstant().annotatedWith(Names.named(CommonServicesModule.CONFIGURATION_PATH)).to(FileSystem.FILE_PROTOCOL_AND_CONF);
+            bindConstant().annotatedWith(Names.named(ConfigurationModule.CONFIGURATION_PATH)).to(FileSystem.FILE_PROTOCOL_AND_CONF);
         } catch (IOException e) {
             Throwables.propagate(e);
         }

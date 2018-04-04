@@ -96,7 +96,7 @@ public class MemoryJamesServerMain {
 
     public static void main(String[] args) throws Exception {
         new GuiceJamesServer()
-            .combineWith(IN_MEMORY_SERVER_AGGREGATE_MODULE, new JMXServerModule())
+            .combineBaseWith(IN_MEMORY_SERVER_AGGREGATE_MODULE, new JMXServerModule())
             .start();
     }
 

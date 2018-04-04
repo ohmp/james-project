@@ -26,43 +26,26 @@ import javax.inject.Singleton;
 
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.filesystem.api.JamesDirectoriesProvider;
-import org.apache.james.modules.server.AsyncTasksExecutorModule;
 import org.apache.james.modules.server.ConfigurationProviderModule;
-import org.apache.james.modules.server.DNSServiceModule;
-import org.apache.james.modules.server.DropWizardMetricsModule;
-import org.apache.james.modules.server.TaskManagerModule;
-import org.apache.james.onami.lifecycle.PreDestroyModule;
 import org.apache.james.server.core.JamesServerResourceLoader;
 import org.apache.james.server.core.filesystem.FileSystemImpl;
-import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.utils.GuiceProbe;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
 
-public class CommonServicesModule extends AbstractModule {
+public class ConfigurationModule extends AbstractModule {
     
     public static final String CONFIGURATION_PATH = "configurationPath";
-    
-    public CommonServicesModule() {
-    }
     
     @Override
     protected void configure() {
         install(new ConfigurablesModule());
         install(new ConfigurationProviderModule());
-        install(new PreDestroyModule());
-        install(new DNSServiceModule());
-        install(new AsyncTasksExecutorModule());
-        install(new DropWizardMetricsModule());
-        install(new TaskManagerModule());
 
         bind(FileSystemImpl.class).in(Scopes.SINGLETON);
 
         bind(FileSystem.class).to(FileSystemImpl.class);
-        Multibinder.newSetBinder(binder(), GuiceProbe.class).addBinding().to(DataProbeImpl.class);
     }
 
     @Provides

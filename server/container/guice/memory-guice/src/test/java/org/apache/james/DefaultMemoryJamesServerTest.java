@@ -40,8 +40,8 @@ public class DefaultMemoryJamesServerTest {
     @Before
     public void setUp() {
         guiceJamesServer = memoryJmap.jmapServer()
-            .overrideWith(binder -> binder.bind(PropertiesProvider.class).to(FailingPropertiesProvider.class))
-            .overrideWith(binder -> binder.bind(ConfigurationProvider.class).toInstance(s -> new HierarchicalConfiguration()));
+            .overrideConfigurationModulesWith(binder -> binder.bind(PropertiesProvider.class).to(FailingPropertiesProvider.class))
+            .overrideConfigurationModulesWith(binder -> binder.bind(ConfigurationProvider.class).toInstance(s -> new HierarchicalConfiguration()));
     }
 
     @After

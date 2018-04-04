@@ -63,11 +63,11 @@ public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallba
     private JamesWithSpamAssassin james() {
         return new JamesWithSpamAssassin(
                 new GuiceJamesServer()
-                    .combineWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS)
+                    .combineBaseWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS)
                     .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
                     .overrideWith(new TestJMAPServerModule(LIMIT_TO_20_MESSAGES))
                     .overrideWith(new TestESMetricReporterModule())
-                    .overrideWith(new TestFilesystemModule(temporaryFolder::getRoot))
+                    .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder::getRoot))
                     .overrideWith(cassandra.getModule())
                     .overrideWith(new TestElasticSearchModule(elasticSearch))
                     .overrideWith(new SpamAssassinModule(spamAssassinExtension)),

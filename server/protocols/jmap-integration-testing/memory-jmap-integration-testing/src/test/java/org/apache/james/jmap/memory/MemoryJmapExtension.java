@@ -56,9 +56,9 @@ public class MemoryJmapExtension implements BeforeEachCallback, AfterEachCallbac
     private JamesWithSpamAssassin james() {
         return new JamesWithSpamAssassin(
             new GuiceJamesServer()
-                .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-                .overrideWith(new TestFilesystemModule(temporaryFolder),
-                    new TestJMAPServerModule(LIMIT_TO_20_MESSAGES))
+                .combineBaseWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+                .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder))
+                .overrideWith(new TestJMAPServerModule(LIMIT_TO_20_MESSAGES))
                 .overrideWith(binder -> binder.bind(PersistenceAdapter.class).to(MemoryPersistenceAdapter.class))
                 .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
                 .overrideWith(binder -> binder.bind(MessageSearchIndex.class).to(SimpleMessageSearchIndex.class))

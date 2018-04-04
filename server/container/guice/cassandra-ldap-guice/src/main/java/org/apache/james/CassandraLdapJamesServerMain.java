@@ -32,7 +32,7 @@ public class CassandraLdapJamesServerMain {
 
     public static void main(String[] args) throws Exception {
         GuiceJamesServer server = new GuiceJamesServer()
-            .combineWith(cassandraLdapServerModule, new JMXServerModule());
+            .combineBaseWith(cassandraLdapServerModule, new JMXServerModule());
 
         server.start();
     }

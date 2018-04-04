@@ -22,9 +22,11 @@ package org.apache.james;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.plist.PropertyListConfiguration;
 import org.apache.james.http.jetty.ConfigurationException;
+import org.apache.james.modules.TestFilesystemModule;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.utils.ConfigurationProvider;
 import org.apache.james.utils.FileConfigurationProvider;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -43,17 +45,18 @@ public class CassandraLdapJmapTestRule implements TestRule {
     }
 
     private GuiceModuleTestRule guiceModuleTestRule;
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public CassandraLdapJmapTestRule(GuiceModuleTestRule... guiceModuleTestRule) {
         this.guiceModuleTestRule =
             AggregateGuiceModuleTestRule
-                .of(guiceModuleTestRule)
-                .aggregate(new TempFilesystemTestRule());
+                .of(guiceModuleTestRule);
     }
 
     public GuiceJamesServer jmapServer(String ldapIp, Module... additionals) {
         return new GuiceJamesServer()
-            .combineWith(CassandraLdapJamesServerMain.cassandraLdapServerModule,
+            .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder))
+            .combineBaseWith(CassandraLdapJamesServerMain.cassandraLdapServerModule,
                 binder -> binder.bind(String.class).annotatedWith(Names.named("ldapIp")).toInstance(ldapIp))
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES))
             .overrideWith(guiceModuleTestRule.getModule())
@@ -63,7 +66,9 @@ public class CassandraLdapJmapTestRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-        return guiceModuleTestRule.apply(base, description);
+        return temporaryFolder.apply(
+            guiceModuleTestRule.apply(base, description),
+            description);
     }
 
     public void await() {

@@ -60,9 +60,9 @@ public class JPAJamesServerTest extends AbstractJamesServerTest {
     @Override
     protected GuiceJamesServer createJamesServer() {
         return new GuiceJamesServer()
-            .combineWith(JPAJamesServerMain.JPA_SERVER_MODULE, JPAJamesServerMain.PROTOCOLS)
-            .overrideWith(new TestFilesystemModule(temporaryFolder),
-                    new TestJPAConfigurationModule());
+            .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder))
+            .combineBaseWith(JPAJamesServerMain.JPA_SERVER_MODULE, JPAJamesServerMain.PROTOCOLS)
+            .overrideWith(new TestJPAConfigurationModule());
     }
 
     @Override

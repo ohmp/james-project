@@ -136,11 +136,11 @@ public class TemporaryJamesServer {
         appendSmtpConfigurations(temporaryFolder, smtpConfiguration);
 
         jamesServer = new GuiceJamesServer()
-            .combineWith(serverBaseModule)
+            .overrideConfigurationModulesWith(new TemporaryFilesystemModule(temporaryFolder))
+            .combineBaseWith(serverBaseModule)
             .overrideWith((binder) -> binder.bind(PersistenceAdapter.class).to(MemoryPersistenceAdapter.class))
             .overrideWith(additionalModules)
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES))
-            .overrideWith(new TemporaryFilesystemModule(temporaryFolder))
             .overrideWith((binder) -> binder.bind(WebAdminConfiguration.class).toProvider(WebAdminUtils::webAdminConfigurationForTesting));
 
         jamesServer.start();

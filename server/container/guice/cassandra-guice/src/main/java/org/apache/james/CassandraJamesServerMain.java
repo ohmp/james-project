@@ -93,7 +93,7 @@ public class CassandraJamesServerMain {
 
     public static void main(String[] args) throws Exception {
         GuiceJamesServer server = new GuiceJamesServer()
-                    .combineWith(CASSANDRA_SERVER_MODULE, PROTOCOLS, new JMXServerModule());
+                    .combineBaseWith(CASSANDRA_SERVER_MODULE, PROTOCOLS, new JMXServerModule());
         server.start();
     }
 

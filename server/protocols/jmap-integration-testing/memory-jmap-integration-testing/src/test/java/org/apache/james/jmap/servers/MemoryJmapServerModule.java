@@ -19,24 +19,16 @@
 
 package org.apache.james.jmap.servers;
 
-import org.apache.james.modules.TestFilesystemModule;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.junit.rules.TemporaryFolder;
 
 import com.google.inject.AbstractModule;
 
 public class MemoryJmapServerModule extends AbstractModule {
 
     private static final int LIMIT_TO_3_MESSAGES = 3;
-    private TemporaryFolder temporaryFolder;
-
-    public MemoryJmapServerModule(TemporaryFolder temporaryFolder) {
-        this.temporaryFolder = temporaryFolder;
-    }
     
     @Override
     protected void configure() {
-        install(new TestFilesystemModule(temporaryFolder));
         install(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES));    
     }
 

@@ -17,7 +17,17 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.utils;
+package org.apache.james.modules.server;
 
-public interface ExtensionGuiceProbe extends GuiceProbe {
+import org.apache.james.utils.DataProbeImpl;
+import org.apache.james.utils.GuiceProbe;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
+
+public class DataProbeModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        Multibinder.newSetBinder(binder(), GuiceProbe.class).addBinding().to(DataProbeImpl.class);
+    }
 }

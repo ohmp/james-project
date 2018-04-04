@@ -22,8 +22,8 @@ package org.apache.james.modules;
 import java.util.List;
 
 import org.apache.james.lifecycle.api.Configurable;
-import org.apache.james.utils.ExtensionConfigurationPerformer;
-import org.apache.james.utils.ExtensionGuiceProbe;
+import org.apache.james.utils.ConfigurationPerformer;
+import org.apache.james.utils.GuiceProbe;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
@@ -34,17 +34,17 @@ import com.google.inject.multibindings.Multibinder;
 public class TestModule extends AbstractModule {
     @Override
     protected void configure() {
-        Multibinder.newSetBinder(binder(), ExtensionGuiceProbe.class)
+        Multibinder.newSetBinder(binder(), GuiceProbe.class)
             .addBinding()
             .to(AdditionalProbe.class);
 
-        Multibinder.newSetBinder(binder(), ExtensionConfigurationPerformer.class)
+        Multibinder.newSetBinder(binder(), ConfigurationPerformer.class)
             .addBinding()
             .to(AdditionalConfigurationPerformer.class);
     }
 
     @Singleton
-    public static class AdditionalProbe implements ExtensionGuiceProbe {
+    public static class AdditionalProbe implements GuiceProbe {
         private boolean configured = false;
 
         public boolean isLoaded() {
@@ -60,7 +60,7 @@ public class TestModule extends AbstractModule {
         }
     }
 
-    public static class AdditionalConfigurationPerformer implements ExtensionConfigurationPerformer {
+    public static class AdditionalConfigurationPerformer implements ConfigurationPerformer {
         private final AdditionalProbe additionalProbe;
 
         @Inject

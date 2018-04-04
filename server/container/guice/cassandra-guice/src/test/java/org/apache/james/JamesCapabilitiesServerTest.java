@@ -61,10 +61,10 @@ public class JamesCapabilitiesServerTest {
         Module mockMailboxManager = (binder) -> binder.bind(MailboxManager.class).toInstance(mailboxManager);
         
         return new GuiceJamesServer()
-            .combineWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS)
+            .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder))
+            .combineBaseWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS)
             .overrideWith((binder) -> binder.bind(PersistenceAdapter.class).to(MemoryPersistenceAdapter.class))
             .overrideWith(new TestElasticSearchModule(embeddedElasticSearch),
-                new TestFilesystemModule(temporaryFolder),
                 cassandraServer.getModule(),
                 new TestJMAPServerModule(GetMessageListMethod.DEFAULT_MAXIMUM_LIMIT),
                 mockMailboxManager);

@@ -55,7 +55,7 @@ public class TestFilesystemModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(JamesDirectoriesProvider.class).toInstance(new JamesServerResourceLoader(workingDirectory.get().getAbsolutePath()));
-        bindConstant().annotatedWith(Names.named(CommonServicesModule.CONFIGURATION_PATH)).to(FileSystem.CLASSPATH_PROTOCOL);
+        bindConstant().annotatedWith(Names.named(ConfigurationModule.CONFIGURATION_PATH)).to(FileSystem.CLASSPATH_PROTOCOL);
     }
     
 }

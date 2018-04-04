@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.james.utils.ExtendedClassLoader;
-import org.apache.james.utils.ExtensionConfigurationPerformer;
-import org.apache.james.utils.ExtensionGuiceProbe;
 import org.apache.james.utils.GuiceGenericLoader;
 import org.apache.james.utils.PropertiesProvider;
 import org.slf4j.Logger;
@@ -34,30 +32,20 @@ import org.slf4j.LoggerFactory;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Splitter;
-import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Modules;
 
-public class GuiceExtensionModule {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GuiceExtensionModule.class);
+public class GuiceExtensionProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GuiceExtensionProvider.class);
     public static final String DEFAULT_PACKAGE_NAME = "org.apache.james.modules";
-
-    public static class ExtensionModule extends AbstractModule {
-        @Override
-        protected void configure() {
-            Multibinder.newSetBinder(binder(), ExtensionGuiceProbe.class);
-            Multibinder.newSetBinder(binder(), ExtensionConfigurationPerformer.class);
-        }
-    }
 
     private final PropertiesProvider propertiesProvider;
     private final GuiceGenericLoader<Module> genericLoader;
 
     @Inject
-    public GuiceExtensionModule(Injector injector, PropertiesProvider propertiesProvider, ExtendedClassLoader extendedClassLoader) {
+    public GuiceExtensionProvider(Injector injector, PropertiesProvider propertiesProvider, ExtendedClassLoader extendedClassLoader) {
         this.propertiesProvider = propertiesProvider;
         this.genericLoader = new GuiceGenericLoader<>(injector, extendedClassLoader, DEFAULT_PACKAGE_NAME);
     }
@@ -71,12 +59,10 @@ public class GuiceExtensionModule {
                 .omitEmptyStrings()
                 .splitToList(configuration.getString("extension.names", ""));
 
-            return Modules.combine(
-                Modules.combine(extensionNames.stream()
+            return Modules.combine(extensionNames.stream()
                     .map(Throwing.function(name -> configuration.getString(name + ".class")))
                     .map(Throwing.function(genericLoader::instanciate))
-                    .collect(Guavate.toImmutableList())),
-                new ExtensionModule());
+                    .collect(Guavate.toImmutableList()));
         } catch (FileNotFoundException e) {
             LOGGER.warn("Missing guice.extensions.propoerties file. No registered guice extensions.");
             return Modules.combine();

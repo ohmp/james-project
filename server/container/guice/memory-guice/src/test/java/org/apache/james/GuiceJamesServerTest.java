@@ -68,7 +68,7 @@ public class GuiceJamesServerTest {
     @Test
     public void test() throws Exception {
         GuiceJamesServer overriddenServer = this.guiceJamesServer
-            .overrideWith(binder -> binder.bind(PropertiesProvider.class).to(PropertiesProvider.ClassPathPropertiesProvider.class));
+            .overrideConfigurationModulesWith(binder -> binder.bind(PropertiesProvider.class).to(PropertiesProvider.ClassPathPropertiesProvider.class));
 
         overriddenServer.start();
 

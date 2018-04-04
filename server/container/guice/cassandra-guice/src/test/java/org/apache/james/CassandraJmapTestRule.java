@@ -21,7 +21,9 @@ package org.apache.james;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.modules.TestESMetricReporterModule;
+import org.apache.james.modules.TestFilesystemModule;
 import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -38,6 +40,7 @@ public class CassandraJmapTestRule implements TestRule {
     }
 
     private GuiceModuleTestRule guiceModuleTestRule;
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public CassandraJmapTestRule(GuiceModuleTestRule... guiceModuleTestRule) {
         this.guiceModuleTestRule =
@@ -48,7 +51,8 @@ public class CassandraJmapTestRule implements TestRule {
 
     public GuiceJamesServer jmapServer(Module... additionals) {
         return new GuiceJamesServer()
-            .combineWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS)
+            .overrideConfigurationModulesWith(new TestFilesystemModule(temporaryFolder))
+            .combineBaseWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS)
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES))
             .overrideWith(new TestESMetricReporterModule())
@@ -58,7 +62,9 @@ public class CassandraJmapTestRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-        return guiceModuleTestRule.apply(base, description);
+        return temporaryFolder.apply(
+            guiceModuleTestRule.apply(base, description),
+            description);
     }
 
     public void await() {
