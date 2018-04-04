@@ -56,12 +56,16 @@ public class GuiceJamesServerTest {
         GuiceJamesServer overriddenServer = this.guiceJamesServer
             .overrideWith(binder -> binder.bind(PropertiesProvider.class).to(PropertiesProvider.ClassPathPropertiesProvider.class));
 
-        overriddenServer.start();
+        try {
+            overriddenServer.start();
 
-        assertThat(overriddenServer.getProbe(MailboxListenerProbe.class)
-            .getGlobalMailboxListeners())
-            .filteredOn(listner -> listner instanceof TestListener)
-            .hasSize(1);
+            assertThat(overriddenServer.getProbe(MailboxListenerProbe.class)
+                .getGlobalMailboxListeners())
+                .filteredOn(listner -> listner instanceof TestListener)
+                .hasSize(1);
+        } finally {
+            overriddenServer.stop();
+        }
     }
 
     @Test
