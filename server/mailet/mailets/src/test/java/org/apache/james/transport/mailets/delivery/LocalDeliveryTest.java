@@ -100,7 +100,7 @@ public class LocalDeliveryTest {
         testee.service(mail);
 
         // Then
-        verify(messageManager).appendMessage(any(MessageManager.AppendCommand.class),  any(MailboxSession.class));
+        verify(messageManager).appendMessage(any(MessageManager.AppendCommand.class), any(MailboxSession.class));
     }
 
     @Test
