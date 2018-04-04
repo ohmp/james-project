@@ -111,6 +111,7 @@ public class DefaultEventModule extends AbstractModule {
 
                 listenerNames.stream()
                     .map(name -> mailboxListeners.getString(name + ".class"))
+                    .peek(clazz -> LOGGER.info("Loading user defined listener {}", clazz))
                     .map(Throwing.function(listenerLoader::getListener))
                     .forEach(Throwing.consumer(listener -> mailboxManager.addGlobalListener(listener, systemSession)));
             } catch (FileNotFoundException e) {
