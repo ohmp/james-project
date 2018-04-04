@@ -140,7 +140,7 @@ public interface UsersRepository {
     /**
      * Returns one of the possible mail address to be used to send a mail to that user
      *
-     * This makes sens as it handles virtual-hosting logics.
+     * This makes sense as it handles virtual-hosting logics.
      *
      * @param user The user parameter
      * @return A mail address corresponding to this user
