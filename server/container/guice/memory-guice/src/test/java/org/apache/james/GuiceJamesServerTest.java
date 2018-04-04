@@ -70,19 +70,26 @@ public class GuiceJamesServerTest {
     }
 
     @Test
-    public void test() throws Exception {
-        GuiceJamesServer overriddenServer = this.guiceJamesServer
+    public void guiceExtensionsShouldBeLoaded() throws Exception {
+        GuiceJamesServer overWrittenServer = this.guiceJamesServer
             .overrideConfigurationModulesWith(binder -> binder.bind(PropertiesProvider.class).to(PropertiesProvider.ClassPathPropertiesProvider.class));
 
-        overriddenServer.start();
+        try {
+            overWrittenServer.start();
 
-        assertThat(overriddenServer.getProbe(TestModule.AdditionalProbe.class)
-            .isLoaded())
-            .isTrue();
+            assertThat(overWrittenServer.getProbe(TestModule.AdditionalProbe.class)
+                .isLoaded())
+                .isTrue();
 
-        assertThat(overriddenServer.getProbe(TestModule.AdditionalProbe.class)
-            .isConfigured())
-            .isTrue();
+            assertThat(overWrittenServer.getProbe(TestModule.AdditionalProbe.class)
+                .isConfigured())
+                .isTrue();
+        } finally {
+            if (overWrittenServer != null) {
+                overWrittenServer.stop();
+            }
+        }
+
     }
 
     @Test
