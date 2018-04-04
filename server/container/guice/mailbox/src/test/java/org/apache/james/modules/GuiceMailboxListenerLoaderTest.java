@@ -20,6 +20,7 @@
 package org.apache.james.modules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.filesystem.api.FileSystemFixture;
 import org.apache.james.mailbox.TestListener;
@@ -51,6 +52,12 @@ public class GuiceMailboxListenerLoaderTest {
         assertThat(listenerLoader.getListener("TestListener"))
             .isNotNull()
             .isInstanceOf(TestListener.class);
+    }
+
+    @Test
+    public void getListenerShouldThrowWhenNotFound() {
+        assertThatThrownBy(() ->listenerLoader.getListener("NotFound"))
+            .isInstanceOf(ClassNotFoundException.class);
     }
 
 }
