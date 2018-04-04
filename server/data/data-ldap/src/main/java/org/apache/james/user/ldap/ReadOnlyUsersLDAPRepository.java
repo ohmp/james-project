@@ -342,11 +342,6 @@ public class ReadOnlyUsersLDAPRepository implements UsersRepository, Configurabl
 
     private final DomainList domainList;
 
-    /**
-     * Creates a new instance of ReadOnlyUsersLDAPRepository.
-     *
-     * @param domainList
-     */
     @Inject
     public ReadOnlyUsersLDAPRepository(DomainList domainList) {
         super();
@@ -794,12 +789,12 @@ public class ReadOnlyUsersLDAPRepository implements UsersRepository, Configurabl
 
 
     @Override
-    public MailAddress getMailAddressFor(org.apache.james.user.api.model.User user) throws UsersRepositoryException {
+    public MailAddress getMailAddressFor(org.apache.james.core.User user) throws UsersRepositoryException {
         try {
             if (supportVirtualHosting()) {
-                return new MailAddress(user.getUserName());
+                return new MailAddress(user.asString());
             }
-            return new MailAddress(user.getUserName(), domainList.getDefaultDomain());
+            return new MailAddress(user.getLocalPart(), domainList.getDefaultDomain());
         } catch (Exception e) {
             throw new UsersRepositoryException("Failed to compute mail address associated with the user", e);
         }
