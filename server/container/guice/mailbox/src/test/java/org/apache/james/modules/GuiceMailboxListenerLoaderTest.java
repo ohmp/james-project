@@ -36,7 +36,7 @@ public class GuiceMailboxListenerLoaderTest {
     @BeforeEach
     public void beforeEach() {
         listenerLoader = new GuiceMailboxListenerLoader(Guice.createInjector(),
-            new ExtendedClassLoader(FileSystemFixture.CLASSPATH_FILE_SYSTEM));
+            new ExtendedClassLoader(FileSystemFixture.FIXED_CLASSPATH_FILE_SYSTEM.apply("recursive/extensions-jars")));
     }
 
     @Test
