@@ -61,14 +61,18 @@ public interface MailboxListener {
      *            not null
      */
     void event(Event event);
+    
+    interface QuotaEvent extends Event {
+        QuotaRoot getQuotaRoot();
+    }
 
-    class QuotaEvent implements Event, Serializable {
+    class QuotaUsageUpdateEvent implements QuotaEvent, Serializable {
         private final MailboxSession session;
         private final QuotaRoot quotaRoot;
         private final Quota<QuotaCount> countQuota;
         private final Quota<QuotaSize> sizeQuota;
 
-        public QuotaEvent(MailboxSession session, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota) {
+        public QuotaUsageUpdateEvent(MailboxSession session, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota) {
             this.session = session;
             this.quotaRoot = quotaRoot;
             this.countQuota = countQuota;
@@ -88,14 +92,15 @@ public interface MailboxListener {
             return sizeQuota;
         }
 
+        @Override
         public QuotaRoot getQuotaRoot() {
             return quotaRoot;
         }
 
         @Override
         public final boolean equals(Object o) {
-            if (o instanceof QuotaEvent) {
-                QuotaEvent that = (QuotaEvent) o;
+            if (o instanceof QuotaUsageUpdateEvent) {
+                QuotaUsageUpdateEvent that = (QuotaUsageUpdateEvent) o;
 
                 return Objects.equals(this.session, that.session)
                     && Objects.equals(this.quotaRoot, that.quotaRoot)

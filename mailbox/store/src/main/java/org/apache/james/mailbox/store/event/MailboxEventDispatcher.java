@@ -164,6 +164,6 @@ public class MailboxEventDispatcher {
     }
 
     public void quota(MailboxSession session, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota) {
-        listener.event(new MailboxListener.QuotaEvent(session, quotaRoot, countQuota, sizeQuota));
+        listener.event(new MailboxListener.QuotaUsageUpdateEvent(session, quotaRoot, countQuota, sizeQuota));
     }
 }
