@@ -77,10 +77,9 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
     protected abstract boolean isLocalDomain(Domain domain);
     
     /**
-     * Return true if virtualHosting should get used. If so the full email address will get used to 
-     * match against the supplied auth username
+     * Return the username corresponding to the given mail address.
      * 
-     * @return useVirtualHosting
+     * @return username corresponding to the mail address
      */
     protected abstract String getUser(MailAddress mailAddress);
 
