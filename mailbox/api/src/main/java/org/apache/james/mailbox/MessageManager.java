@@ -187,7 +187,7 @@ public interface MessageManager {
                 return new AppendCommand(
                     msgIn,
                     internalDate.orElse(new Date()),
-                    isRecent.orElse(false),
+                    isRecent.orElse(true),
                     flags.orElse(new Flags()));
             }
 
