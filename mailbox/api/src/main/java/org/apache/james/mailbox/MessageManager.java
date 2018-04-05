@@ -20,6 +20,7 @@
 package org.apache.james.mailbox;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -42,6 +43,8 @@ import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.MessageResult.FetchGroup;
 import org.apache.james.mailbox.model.MessageResultIterator;
 import org.apache.james.mailbox.model.SearchQuery;
+import org.apache.james.mime4j.dom.Message;
+import org.apache.james.mime4j.message.DefaultMessageWriter;
 
 /**
  * Interface which represent a Mailbox
@@ -194,6 +197,14 @@ public interface MessageManager {
 
             public AppendCommand build(byte[] msgIn) {
                 return build(new ByteArrayInputStream(msgIn));
+            }
+
+            public AppendCommand build(Message message) throws IOException {
+                return build(DefaultMessageWriter.asBytes(message));
+            }
+
+            public AppendCommand build(Message.Builder messageBuilder) throws IOException {
+                return build(messageBuilder.build());
             }
         }
 
