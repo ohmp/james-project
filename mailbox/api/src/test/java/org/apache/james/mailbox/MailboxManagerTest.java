@@ -944,7 +944,7 @@ public abstract class MailboxManagerTest {
                 .build(message), session);
 
         assertThat(listener.getEvents())
-            .contains(new MailboxListener.QuotaUsageUpdateEvent(
+            .contains(new MailboxListener.QuotaUsageUpdatedEvent(
                 session,
                 QuotaRoot.quotaRoot("#private&" + USER_1, Optional.empty()),
                 Quota.<QuotaCount>builder()
