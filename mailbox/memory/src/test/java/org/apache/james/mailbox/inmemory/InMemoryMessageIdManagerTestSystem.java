@@ -92,6 +92,7 @@ public class InMemoryMessageIdManagerTestSystem extends MessageIdManagerTestSyst
             MessageManager messageManager = mailboxManager.getMailbox(mailboxId, session);
             MessageId messageId = messageManager.appendMessage(MessageManager.AppendCommand
                     .builder()
+                    .notRecent()
                     .withFlags(flags)
                     .build(message),
                 session)
