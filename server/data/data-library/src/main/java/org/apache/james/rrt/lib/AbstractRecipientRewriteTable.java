@@ -151,13 +151,13 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
 
                         if (childMappings.isEmpty()) {
                             // add mapping
-                            mappings.add(addressWithMappingApplied);
+                            mappings.add(toMapping(addressWithMappingApplied, type));
                         } else {
                             mappings = mappings.addAll(childMappings);
                         }
 
                     } else {
-                        mappings.add(addressWithMappingApplied);
+                        mappings.add(toMapping(addressWithMappingApplied, type));
                     }
                 }
                 return mappings.build();
@@ -165,6 +165,16 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         }
 
         return MappingsImpl.empty();
+    }
+
+    private Mapping toMapping(String mappedAddress, Type type) {
+        switch (type) {
+            case Forward:
+            case Group:
+                return MappingImpl.of(type, mappedAddress);
+            default:
+                return MappingImpl.address(mappedAddress);
+        }
     }
 
     private Optional<String> applyMapping(String user, Domain domain, String target, Type type) {
@@ -179,7 +189,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
             case Domain:
                 return Optional.of(user + "@" + Type.Domain.withoutPrefix(target));
             default:
-                return Optional.ofNullable(target);
+                return Optional.of(type.withoutPrefix(target));
         }
     }
 
