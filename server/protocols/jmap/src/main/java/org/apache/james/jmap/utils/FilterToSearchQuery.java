@@ -36,7 +36,13 @@ import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
-public class FilterToSearchQuery {
+public class
+
+
+
+
+
+FilterToSearchQuery {
 
     public SearchQuery convert(Filter filter) {
         if (filter instanceof FilterCondition) {
@@ -60,7 +66,8 @@ public class FilterToSearchQuery {
                         SearchQuery.address(AddressType.Bcc, text),
                         SearchQuery.headerContains("Subject", text),
                         SearchQuery.attachmentContains(text),
-                        SearchQuery.bodyContains(text)))
+                        SearchQuery.bodyContains(text),
+                        SearchQuery.attachmentFileName(text)))
                 ));
         filter.getFrom().ifPresent(from -> searchQuery.andCriteria(SearchQuery.address(AddressType.From, from)));
         filter.getTo().ifPresent(to -> searchQuery.andCriteria(SearchQuery.address(AddressType.To, to)));
