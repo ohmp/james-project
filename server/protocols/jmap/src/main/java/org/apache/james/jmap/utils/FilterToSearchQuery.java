@@ -36,13 +36,7 @@ import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
-public class
-
-
-
-
-
-FilterToSearchQuery {
+public class FilterToSearchQuery {
 
     public SearchQuery convert(Filter filter) {
         if (filter instanceof FilterCondition) {
