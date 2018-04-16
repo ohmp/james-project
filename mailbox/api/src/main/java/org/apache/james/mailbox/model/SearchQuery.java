@@ -1111,6 +1111,8 @@ public class SearchQuery implements Serializable {
         /** Attachment content */
         ATTACHMENTS,
 
+        /** Attachment file name, specified on Content-Disposition
+         * header of mime body parts */
         ATTACHMENT_FILE_NAME
     }
 
