@@ -2042,6 +2042,37 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
+    public void getMessageListFileNameFilterShouldNotReturnMessagesWithOnlyAttachmentContentMatching() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE, "mailbox");
+
+        mailboxProbe.appendMessage(ALICE, MailboxPath.forUser(ALICE, "mailbox"),
+            MessageManager.AppendCommand.builder()
+                .build(Message.Builder.of()
+                    .setBody(
+                        MultipartBuilder.create("alternative")
+                            .addBodyPart(BodyPartBuilder.create()
+                                .setContentDisposition("attachment", "nomatch.md")
+                                .setBody(SingleBodyBuilder.create()
+                                    .setText("matchme.txt ...")
+                                    .setCharset(StandardCharsets.UTF_8)
+                                    .build())
+                                .build())
+                            .build())));
+
+        await();
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"attachmentFileName\":\"matchme.txt\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", hasSize(0));
+    }
+
+    @Test
     public void getMessageListTextFilterShouldReturnOnlyMessagesWithMatchingAttachmentFileNames() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE, "mailbox");
 
