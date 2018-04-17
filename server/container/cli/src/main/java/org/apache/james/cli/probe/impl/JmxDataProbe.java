@@ -261,8 +261,6 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
         }
     }
 
-
-
     @Override
     public void addGroupMapping(String toUser, String toDomain, String fromAddress) throws Exception {
         try (Closeable closeable =
