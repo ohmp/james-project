@@ -296,7 +296,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void addressForwardsEndpointShouldHandleRequests() throws Exception {
+    public void addressForwardsEndpointShouldListForwardAddresses() throws Exception {
         dataProbe.addForwardMapping("from1", "domain.com", "user1@domain.com");
         dataProbe.addForwardMapping("from2", "domain.com", "user2@domain.com");
 

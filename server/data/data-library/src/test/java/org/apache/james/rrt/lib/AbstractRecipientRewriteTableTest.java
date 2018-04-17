@@ -117,27 +117,23 @@ public abstract class AbstractRecipientRewriteTableTest {
     public void getAllMappingsShouldListAllEntries() throws ErrorMappingException, RecipientRewriteTableException {
         String user = "test";
         String user2 = "test2";
-        Domain domain = Domain.LOCALHOST;
-        // String regex = "(.*):{$1}@localhost";
-        // String regex2 = "(.+):{$1}@test";
         String regex = "(.*)@localhost";
         String regex2 = "(.+)@test";
 
-        assertThat(virtualUserTable.getMappings(user, domain)).describedAs("No mapping").isNull();
 
-        addMapping(user, domain, regex, Type.Regex);
-        addMapping(user, domain, regex2, Type.Regex);
-        addMapping(user2, domain, user + "@" + domain.asString(), Type.Address);
+        addMapping(user, Domain.LOCALHOST, regex, Type.Regex);
+        addMapping(user, Domain.LOCALHOST, regex2, Type.Regex);
+        addMapping(user2, Domain.LOCALHOST, user + "@" + Domain.LOCALHOST.asString(), Type.Address);
 
         assertThat(virtualUserTable.getAllMappings())
             .describedAs("One mappingline")
             .containsOnly(
-                Pair.of(user + "@" + domain.asString(), MappingsImpl.builder()
+                Pair.of(user + "@" + Domain.LOCALHOST.asString(), MappingsImpl.builder()
                     .add(MappingImpl.regex(regex))
                     .add(MappingImpl.regex(regex2))
                     .build()),
-                Pair.of(user2 + "@" + domain.asString(), MappingsImpl.builder()
-                    .add(MappingImpl.address(user + "@" + domain.asString()))
+                Pair.of(user2 + "@" + Domain.LOCALHOST.asString(), MappingsImpl.builder()
+                    .add(MappingImpl.address(user + "@" + Domain.LOCALHOST.asString()))
                     .build()));
     }
 
