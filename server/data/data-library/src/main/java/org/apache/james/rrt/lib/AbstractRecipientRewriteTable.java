@@ -176,9 +176,13 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
             case Forward:
             case Group:
                 return MappingImpl.of(type, mappedAddress);
-            default:
+            case Regex:
+            case Domain:
+            case Error:
+            case Address:
                 return MappingImpl.address(mappedAddress);
         }
+        throw new IllegalArgumentException("unhandled enum type");
     }
 
     private Optional<String> applyMapping(String user, Domain domain, String target, Type type) {
