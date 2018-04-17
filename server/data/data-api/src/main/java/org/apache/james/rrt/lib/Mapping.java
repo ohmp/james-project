@@ -83,10 +83,6 @@ public interface Mapping {
                 || mapping.startsWith(Forward.asPrefix())
                 || mapping.startsWith(Group.asPrefix());
         }
-
-        public int getOrder() {
-            return order;
-        }
     }
 
     Type getType();
