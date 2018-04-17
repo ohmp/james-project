@@ -16,3 +16,7 @@
 #  under the License.
 
 # In this script, one can define environment variables to run James server with in UNIX environment
+
+# This example shows you how you can, for instance, add specific folders to your CLASSPATH_PREFIX
+# 
+# export CLASSPATH_PREFIX=$CLASSPATH_PREFIX:/my/new/classpath/
