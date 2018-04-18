@@ -93,7 +93,7 @@ public class JPAMapperProvider implements MapperProvider {
 
     @Override
     public void clearMapper() throws MailboxException {
-        jpaTestCluster.clear(JPAMailboxFixture.MAILBOX_TABLE_NAMES);
+        jpaTestCluster.clear(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES);
     }
 
     @Override

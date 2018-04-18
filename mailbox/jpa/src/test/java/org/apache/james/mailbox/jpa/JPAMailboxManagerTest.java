@@ -50,7 +50,7 @@ public class JPAMailboxManagerTest extends MailboxManagerTest {
     @Override
     @After
     public void tearDown() throws MailboxException {
-        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.MAILBOX_TABLE_NAMES);
+        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES);
     }
 
 }

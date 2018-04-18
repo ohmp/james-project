@@ -22,6 +22,7 @@ package org.apache.james.backends.jpa;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -31,11 +32,11 @@ import com.google.common.collect.ImmutableList;
 
 public class JpaTestCluster {
 
-    public static JpaTestCluster create(Class<?>... clazz) {
+    public static JpaTestCluster create(TableDeclaration... clazz) {
         return create(ImmutableList.copyOf(clazz));
     }
 
-    public static JpaTestCluster create(List<Class<?>> clazz) {
+    public static JpaTestCluster create(List<TableDeclaration> clazz) {
         HashMap<String, String> properties = new HashMap<>();
         properties.put("openjpa.ConnectionDriverName", org.h2.Driver.class.getName());
         properties.put("openjpa.ConnectionURL", "jdbc:h2:mem:mailboxintegrationtesting;DB_CLOSE_DELAY=-1"); // Memory H2 database
@@ -48,6 +49,7 @@ public class JpaTestCluster {
         properties.put("openjpa.ConnectionFactoryProperties", "PrettyPrint=true, PrettyPrintLineLength=72");
         properties.put("openjpa.MetaDataFactory", "jpa(Types=" +
                 clazz.stream()
+                    .map(TableDeclaration::getClazz)
                     .map(Class::getName)
                     .collect(Collectors.joining(";"))
             + ")");
@@ -64,15 +66,15 @@ public class JpaTestCluster {
         return entityManagerFactory;
     }
 
-    public void clear(String... tables) {
+    public void clear(TableDeclaration... tables) {
         clear(ImmutableList.copyOf(tables));
     }
 
-    public void clear(List<String> tables) {
+    public void clear(List<TableDeclaration> tables) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        for (String tableName: tables) {
-            entityManager.createNativeQuery("DELETE FROM " + tableName).executeUpdate();
+        for (TableDeclaration tableDeclaration: tables) {
+            entityManager.createNativeQuery("DELETE FROM " + tableDeclaration.getTableName()).executeUpdate();
         }
         entityManager.getTransaction().commit();
         entityManager.close();

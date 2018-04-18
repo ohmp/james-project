@@ -19,8 +19,8 @@
 package org.apache.james.user.jpa;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.JPADataTablesDeclarations;
 import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.user.jpa.model.JPAUser;
 import org.apache.james.user.lib.AbstractUsersRepository;
 import org.apache.james.user.lib.AbstractUsersRepositoryTest;
 import org.junit.After;
@@ -28,7 +28,7 @@ import org.junit.Before;
 
 public class JpaUsersRepositoryTest extends AbstractUsersRepositoryTest {
 
-    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAUser.class);
+    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPADataTablesDeclarations.USER_TABLE);
 
     @Before
     @Override
@@ -40,7 +40,7 @@ public class JpaUsersRepositoryTest extends AbstractUsersRepositoryTest {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        JPA_TEST_CLUSTER.clear("JAMES_USER");
+        JPA_TEST_CLUSTER.clear(JPADataTablesDeclarations.USER_TABLE);
     }
 
     @Override

@@ -17,25 +17,22 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.jpa.quota;
+package org.apache.james.backends.jpa;
 
-import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.mailbox.jpa.JPAMailboxFixture;
-import org.apache.james.mailbox.quota.MaxQuotaManager;
-import org.apache.james.mailbox.store.quota.GenericMaxQuotaManagerTest;
-import org.junit.After;
+public class TableDeclaration {
+    private final Class<?> clazz;
+    private final String tableName;
 
-public class JPAPerUserMaxQuotaTest extends GenericMaxQuotaManagerTest {
-
-    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAMailboxFixture.QUOTA_PERSISTANCE_CLASSES);
-
-    @Override
-    protected MaxQuotaManager provideMaxQuotaManager() {
-        return new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(JPA_TEST_CLUSTER.getEntityManagerFactory()));
+    public TableDeclaration(Class<?> clazz, String tableName) {
+        this.clazz = clazz;
+        this.tableName = tableName;
     }
 
-    @After
-    public void cleanUp() {
-        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.QUOTA_PERSISTANCE_CLASSES);
+    public Class<?> getClazz() {
+        return clazz;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 }

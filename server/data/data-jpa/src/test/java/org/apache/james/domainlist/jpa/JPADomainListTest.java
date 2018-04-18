@@ -18,10 +18,10 @@
  ****************************************************************/
 package org.apache.james.domainlist.jpa;
 
+import org.apache.james.JPADataTablesDeclarations;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.core.Domain;
 import org.apache.james.domainlist.api.DomainList;
-import org.apache.james.domainlist.jpa.model.JPADomain;
 import org.apache.james.domainlist.lib.AbstractDomainListTest;
 import org.junit.After;
 import org.junit.Before;
@@ -31,7 +31,7 @@ import org.junit.Before;
  */
 public class JPADomainListTest extends AbstractDomainListTest {
 
-    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPADomain.class);
+    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPADataTablesDeclarations.DOMAIN_TABLE);
 
     @Override
     @Before

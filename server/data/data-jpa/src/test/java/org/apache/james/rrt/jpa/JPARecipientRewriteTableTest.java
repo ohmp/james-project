@@ -19,8 +19,8 @@
 package org.apache.james.rrt.jpa;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.JPADataTablesDeclarations;
 import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.rrt.jpa.model.JPARecipientRewrite;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTableTest;
 import org.junit.After;
@@ -31,7 +31,7 @@ import org.junit.Before;
  */
 public class JPARecipientRewriteTableTest extends AbstractRecipientRewriteTableTest {
 
-    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPARecipientRewrite.class);
+    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPADataTablesDeclarations.RRT_TABLE);
 
     @Override
     @Before

@@ -21,6 +21,7 @@ package org.apache.james.mailbox.jpa;
 
 import java.util.List;
 
+import org.apache.james.backends.jpa.TableDeclaration;
 import org.apache.james.mailbox.jpa.mail.model.JPAMailbox;
 import org.apache.james.mailbox.jpa.mail.model.JPAMailboxAnnotation;
 import org.apache.james.mailbox.jpa.mail.model.JPAProperty;
@@ -40,41 +41,23 @@ import com.google.common.collect.ImmutableList;
 
 public interface JPAMailboxFixture {
 
-    List<Class<?>> MAILBOX_PERSISTANCE_CLASSES = ImmutableList.of(
-        JPAMailbox.class,
-        AbstractJPAMailboxMessage.class,
-        JPAMailboxMessage.class,
-        JPAProperty.class,
-        JPAUserFlag.class,
-        JPAMailboxAnnotation.class,
-        JPASubscription.class
+    List<TableDeclaration> MAILBOX_PERSISTANCE_CLASSES = ImmutableList.of(
+        new TableDeclaration(JPAMailbox.class, "JAMES_MAILBOX"),
+        new TableDeclaration(AbstractJPAMailboxMessage.class, "JAMES_MAIL"),
+        new TableDeclaration(JPAMailboxMessage.class, "JAMES_MAIL"),
+        new TableDeclaration(JPAProperty.class, "JAMES_MAIL_PROPERTY"),
+        new TableDeclaration(JPAUserFlag.class, "JAMES_MAIL_USERFLAG"),
+        new TableDeclaration(JPAMailboxAnnotation.class, "JAMES_MAILBOX_ANNOTATION"),
+        new TableDeclaration(JPASubscription.class, "JAMES_SUBSCRIPTION")
     );
 
-    List<Class<?>> QUOTA_PERSISTANCE_CLASSES = ImmutableList.of(
-        MaxGlobalMessageCount.class,
-        MaxGlobalStorage.class,
-        MaxDomainStorage.class,
-        MaxDomainMessageCount.class,
-        MaxUserMessageCount.class,
-        MaxUserStorage.class,
-        JpaCurrentQuota.class
-    );
-
-    List<String> MAILBOX_TABLE_NAMES = ImmutableList.of(
-        "JAMES_MAIL_USERFLAG",
-        "JAMES_MAIL_PROPERTY",
-        "JAMES_MAILBOX_ANNOTATION",
-        "JAMES_MAILBOX",
-        "JAMES_MAIL",
-        "JAMES_SUBSCRIPTION");
-
-    List<String> QUOTA_TABLES_NAMES = ImmutableList.of(
-        "JAMES_MAX_GLOBAL_MESSAGE_COUNT",
-        "JAMES_MAX_GLOBAL_STORAGE",
-        "JAMES_MAX_USER_MESSAGE_COUNT",
-        "JAMES_MAX_USER_STORAGE",
-        "JAMES_MAX_DOMAIN_MESSAGE_COUNT",
-        "JAMES_MAX_DOMAIN_STORAGE",
-        "JAMES_QUOTA_CURRENTQUOTA"
+    List<TableDeclaration> QUOTA_PERSISTANCE_CLASSES = ImmutableList.of(
+        new TableDeclaration(MaxGlobalMessageCount.class, "JAMES_MAX_GLOBAL_MESSAGE_COUNT"),
+        new TableDeclaration(MaxGlobalStorage.class, "JAMES_MAX_GLOBAL_STORAGE"),
+        new TableDeclaration(MaxDomainStorage.class, "JAMES_MAX_DOMAIN_STORAGE"),
+        new TableDeclaration(MaxDomainMessageCount.class, "JAMES_MAX_DOMAIN_MESSAGE_COUNT"),
+        new TableDeclaration(MaxUserMessageCount.class, "JAMES_MAX_USER_MESSAGE_COUNT"),
+        new TableDeclaration(MaxUserStorage.class, "JAMES_MAX_USER_STORAGE"),
+        new TableDeclaration(JpaCurrentQuota.class, "JAMES_QUOTA_CURRENTQUOTA")
     );
 }

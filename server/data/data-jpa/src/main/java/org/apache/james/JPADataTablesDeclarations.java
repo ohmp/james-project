@@ -17,25 +17,17 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.jpa.quota;
+package org.apache.james;
 
-import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.mailbox.jpa.JPAMailboxFixture;
-import org.apache.james.mailbox.quota.MaxQuotaManager;
-import org.apache.james.mailbox.store.quota.GenericMaxQuotaManagerTest;
-import org.junit.After;
+import org.apache.james.backends.jpa.TableDeclaration;
+import org.apache.james.domainlist.jpa.model.JPADomain;
+import org.apache.james.rrt.jpa.model.JPARecipientRewrite;
+import org.apache.james.user.jpa.model.JPAUser;
 
-public class JPAPerUserMaxQuotaTest extends GenericMaxQuotaManagerTest {
+public interface JPADataTablesDeclarations {
+     TableDeclaration USER_TABLE = new TableDeclaration(JPAUser.class, "JAMES_USER");
 
-    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAMailboxFixture.QUOTA_PERSISTANCE_CLASSES);
+     TableDeclaration DOMAIN_TABLE = new TableDeclaration(JPADomain.class, "JAMES_DOMAIN");
 
-    @Override
-    protected MaxQuotaManager provideMaxQuotaManager() {
-        return new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(JPA_TEST_CLUSTER.getEntityManagerFactory()));
-    }
-
-    @After
-    public void cleanUp() {
-        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.QUOTA_PERSISTANCE_CLASSES);
-    }
+     TableDeclaration RRT_TABLE = new TableDeclaration(JPARecipientRewrite.class, "JamesRecipientRewrite");
 }

@@ -36,7 +36,7 @@ public class JPACurrentQuotaManagerTest extends StoreCurrentQuotaManagerTest {
 
     @After
     public void tearDown() {
-        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.QUOTA_TABLES_NAMES);
+        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.QUOTA_PERSISTANCE_CLASSES);
     }
 
 }

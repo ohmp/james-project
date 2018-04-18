@@ -19,8 +19,8 @@
 package org.apache.james.rrt.jpa;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.JPADataTablesDeclarations;
 import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.rrt.jpa.model.JPARecipientRewrite;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
 import org.apache.james.rrt.lib.RewriteTablesStepdefs;
 
@@ -29,7 +29,7 @@ import cucumber.api.java.Before;
 
 public class JPAStepdefs {
 
-    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPARecipientRewrite.class);
+    private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPADataTablesDeclarations.RRT_TABLE);
 
     private final RewriteTablesStepdefs mainStepdefs;
 
@@ -44,7 +44,7 @@ public class JPAStepdefs {
 
     @After
     public void tearDown() {
-        JPA_TEST_CLUSTER.clear(JPARecipientRewrite.JAMES_RECIPIENT_REWRITE);
+        JPA_TEST_CLUSTER.clear(JPADataTablesDeclarations.RRT_TABLE);
     }
 
     private AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception {
