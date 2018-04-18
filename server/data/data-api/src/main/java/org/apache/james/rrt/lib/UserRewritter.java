@@ -82,7 +82,8 @@ public interface UserRewritter {
         public UserRewritter generateUserRewriter(String mapping) {
             return oldUser -> {
                 try {
-                    return regexMap(oldUser.asMailAddress(), mapping)
+                    return oldUser.asMailAddress()
+                        .flatMap(address -> regexMap(address, mapping))
                         .map(User::fromUsername);
                 } catch (PatternSyntaxException e) {
                     LOGGER.error("Exception during regexMap processing: ", e);

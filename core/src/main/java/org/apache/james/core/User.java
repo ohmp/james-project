@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import javax.mail.internet.AddressException;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -112,9 +113,8 @@ public class User {
             .orElse(localPart);
     }
 
-    public MailAddress asMailAddress() throws AddressException {
-        Preconditions.checkState(hasDomainPart());
-        return new MailAddress(localPart, domainPart.get());
+    public Optional<MailAddress> asMailAddress() throws AddressException {
+        return domainPart.map(Throwing.function((Domain domain) -> new MailAddress(localPart, domain)).sneakyThrow());
     }
 
     @Override
