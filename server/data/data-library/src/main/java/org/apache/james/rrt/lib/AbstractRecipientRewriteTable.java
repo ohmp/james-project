@@ -183,7 +183,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         }
 
         Mapping mapping = Mapping.regex(regex);
-        checkMapping(user, domain, mapping);
+        checkDuplicateMapping(user, domain, mapping);
         LOGGER.info("Add regex mapping => {} for user: {} domain: {}", regex, user, domain.name());
         addMapping(user, domain, mapping);
 
@@ -201,7 +201,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
             .appendDomainIfNone(defaultDomainSupplier());
 
         checkHasValidAddress(mapping);
-        checkMapping(user, domain, mapping);
+        checkDuplicateMapping(user, domain, mapping);
 
         LOGGER.info("Add address mapping => {} for user: {} domain: {}", mapping, user, domain.name());
         addMapping(user, domain, mapping);
@@ -236,7 +236,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     public void addErrorMapping(String user, Domain domain, String error) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.error(error);
 
-        checkMapping(user, domain, mapping);
+        checkDuplicateMapping(user, domain, mapping);
         LOGGER.info("Add error mapping => {} for user: {} domain: {}", error, user, domain.name());
         addMapping(user, domain, mapping);
 
@@ -266,7 +266,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
             .appendDomainIfNone(defaultDomainSupplier());
 
         checkHasValidAddress(mapping);
-        checkMapping(user, domain, mapping);
+        checkDuplicateMapping(user, domain, mapping);
 
         LOGGER.info("Add forward mapping => {} for user: {} domain: {}", mapping, user, domain.name());
         addMapping(user, domain, mapping);
@@ -287,7 +287,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
             .appendDomainIfNone(defaultDomainSupplier());
 
         checkHasValidAddress(mapping);
-        checkMapping(user, domain, mapping);
+        checkDuplicateMapping(user, domain, mapping);
 
         LOGGER.info("Add forward mapping => {} for user: {} domain: {}", mapping, user, domain.name());
         addMapping(user, domain, mapping);
@@ -326,7 +326,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
      */
     protected abstract Mappings mapAddress(String user, Domain domain) throws RecipientRewriteTableException;
 
-    private void checkMapping(String user, Domain domain, Mapping mapping) throws RecipientRewriteTableException {
+    private void checkDuplicateMapping(String user, Domain domain, Mapping mapping) throws RecipientRewriteTableException {
         Mappings mappings = getUserDomainMappings(user, domain);
         if (mappings != null && mappings.contains(mapping)) {
             throw new RecipientRewriteTableException("Mapping " + mapping + " for user " + user + " domain " + domain + " already exist!");
