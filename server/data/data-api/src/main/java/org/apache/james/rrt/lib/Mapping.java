@@ -57,21 +57,19 @@ public interface Mapping {
     Optional<MailAddress> asMailAddress();
 
     enum Type {
-        Regex("regex:", 4, IdentityMappingBehaviour.Throw, new UserRewritter.RegexRewriter()),
-        Domain("domain:", 1, IdentityMappingBehaviour.Throw, new UserRewritter.DomainRewriter()),
-        Error("error:", 4, IdentityMappingBehaviour.Throw, new UserRewritter.NoneRewriter()),
-        Forward("forward:", 3, IdentityMappingBehaviour.ReturnIdentity, new UserRewritter.ReplaceRewriter()),
-        Group("group:", 2, IdentityMappingBehaviour.Throw, new UserRewritter.ReplaceRewriter()),
-        Address("", 4, IdentityMappingBehaviour.Throw, new UserRewritter.ReplaceRewriter());
+        Regex("regex:", IdentityMappingBehaviour.Throw, new UserRewritter.RegexRewriter()),
+        Domain("domain:", IdentityMappingBehaviour.Throw, new UserRewritter.DomainRewriter()),
+        Error("error:", IdentityMappingBehaviour.Throw, new UserRewritter.NoneRewriter()),
+        Forward("forward:", IdentityMappingBehaviour.ReturnIdentity, new UserRewritter.ReplaceRewriter()),
+        Group("group:", IdentityMappingBehaviour.Throw, new UserRewritter.ReplaceRewriter()),
+        Address("", IdentityMappingBehaviour.Throw, new UserRewritter.ReplaceRewriter());
 
         private final String asPrefix;
-        private final int order;
         private final IdentityMappingBehaviour identityMappingBehaviour;
         private final UserRewritter.MappingUserRewriter userRewriter;
 
-        Type(String asPrefix, Integer order, IdentityMappingBehaviour identityMappingBehaviour, UserRewritter.MappingUserRewriter userRewriter) {
+        Type(String asPrefix, IdentityMappingBehaviour identityMappingBehaviour, UserRewritter.MappingUserRewriter userRewriter) {
             this.asPrefix = asPrefix;
-            this.order = order;
             this.identityMappingBehaviour = identityMappingBehaviour;
             this.userRewriter = userRewriter;
         }
