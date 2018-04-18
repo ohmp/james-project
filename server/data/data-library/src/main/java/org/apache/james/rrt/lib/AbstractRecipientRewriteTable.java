@@ -113,9 +113,6 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
 
         Mappings targetMappings = mapAddress(user.getLocalPart(), user.getDomainPart().get());
 
-        if (targetMappings.contains(Type.Error)) {
-            throw new ErrorMappingException(targetMappings.getError().getErrorMessage());
-        }
 
         try {
             return MappingsImpl.fromMappings(

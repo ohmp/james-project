@@ -28,7 +28,7 @@ public class NoneRewiterTest {
     @Test
     public void rewriteShouldReturnEmpty() throws Exception {
         assertThat(
-            new UserRewritter.NoneRewriter()
+            new UserRewritter.ThrowingRewriter()
                 .generateUserRewriter("any")
                 .rewrite(User.fromUsername("any")))
             .isEmpty();
