@@ -43,8 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
-import com.github.fge.lambdas.functions.FunctionChainer;
-import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.base.Preconditions;
 
 public abstract class AbstractRecipientRewriteTable implements RecipientRewriteTable, Configurable {
