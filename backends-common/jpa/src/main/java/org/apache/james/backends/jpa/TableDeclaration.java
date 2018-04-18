@@ -19,11 +19,17 @@
 
 package org.apache.james.backends.jpa;
 
+import com.google.common.base.Preconditions;
+
 public class TableDeclaration {
     private final Class<?> clazz;
     private final String tableName;
 
     public TableDeclaration(Class<?> clazz, String tableName) {
+        Preconditions.checkArgument(tableName.length() < 30,
+            "Error with table name '" + tableName + "'" +
+                "Tables of more than 30 characters are not supported by Oracle 11g," +
+                "and thus we avoid using it in James for compatibility reasons. See MAILBOX-328");
         this.clazz = clazz;
         this.tableName = tableName;
     }

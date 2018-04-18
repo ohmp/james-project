@@ -25,7 +25,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity(name = "MaxUserMessageCount")
-@Table(name = "JAMES_MAX_USER_MESSAGE_COUNT")
+@Table(name = "JAMES_MAX_USER_M_COUNT")
 public class MaxUserMessageCount {
     @Id
     @Column(name = "QUOTAROOT_ID")

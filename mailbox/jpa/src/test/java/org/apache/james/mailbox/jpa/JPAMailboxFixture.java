@@ -52,11 +52,11 @@ public interface JPAMailboxFixture {
     );
 
     List<TableDeclaration> QUOTA_PERSISTANCE_CLASSES = ImmutableList.of(
-        new TableDeclaration(MaxGlobalMessageCount.class, "JAMES_MAX_GLOBAL_MESSAGE_COUNT"),
+        new TableDeclaration(MaxGlobalMessageCount.class, "JAMES_MAX_GLOBAL_M_COUNT"),
         new TableDeclaration(MaxGlobalStorage.class, "JAMES_MAX_GLOBAL_STORAGE"),
         new TableDeclaration(MaxDomainStorage.class, "JAMES_MAX_DOMAIN_STORAGE"),
-        new TableDeclaration(MaxDomainMessageCount.class, "JAMES_MAX_DOMAIN_MESSAGE_COUNT"),
-        new TableDeclaration(MaxUserMessageCount.class, "JAMES_MAX_USER_MESSAGE_COUNT"),
+        new TableDeclaration(MaxDomainMessageCount.class, "JAMES_MAX_DOMAIN_M_COUNT"),
+        new TableDeclaration(MaxUserMessageCount.class, "JAMES_MAX_USER_M_COUNT"),
         new TableDeclaration(MaxUserStorage.class, "JAMES_MAX_USER_STORAGE"),
         new TableDeclaration(JpaCurrentQuota.class, "JAMES_QUOTA_CURRENTQUOTA")
     );

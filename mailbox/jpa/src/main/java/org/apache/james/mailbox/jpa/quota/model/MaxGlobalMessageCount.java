@@ -25,7 +25,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity(name = "MaxGlobalMessageCount")
-@Table(name = "JAMES_MAX_GLOBAL_MESSAGE_COUNT")
+@Table(name = "JAMES_MAX_GLOBAL_M_COUNT")
 public class MaxGlobalMessageCount {
     public static final String DEFAULT_KEY = "default_key";
     
