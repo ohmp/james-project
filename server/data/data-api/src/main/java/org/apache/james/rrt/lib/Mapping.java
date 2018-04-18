@@ -57,21 +57,49 @@ public interface Mapping {
     Optional<MailAddress> asMailAddress();
 
     enum Type {
-        Regex("regex:", IdentityMappingBehaviour.Throw, new UserRewritter.RegexRewriter()),
-        Domain("domain:", IdentityMappingBehaviour.Throw, new UserRewritter.DomainRewriter()),
-        Error("error:", IdentityMappingBehaviour.Throw, new UserRewritter.NoneRewriter()),
-        Forward("forward:", IdentityMappingBehaviour.ReturnIdentity, new UserRewritter.ReplaceRewriter()),
-        Group("group:", IdentityMappingBehaviour.Throw, new UserRewritter.ReplaceRewriter()),
-        Address("", IdentityMappingBehaviour.Throw, new UserRewritter.ReplaceRewriter());
+        Regex("regex:", IdentityMappingBehaviour.Throw) {
+            @Override
+            protected UserRewritter rewriter(String mapping) {
+                return new UserRewritter.RegexRewriter().generateUserRewriter(mapping);
+            }
+        },
+        Domain("domain:", IdentityMappingBehaviour.Throw) {
+            @Override
+            protected UserRewritter rewriter(String mapping) {
+                return new UserRewritter.DomainRewriter().generateUserRewriter(mapping);
+            }
+        },
+        Error("error:", IdentityMappingBehaviour.Throw) {
+            @Override
+            protected UserRewritter rewriter(String mapping) {
+                return new UserRewritter.NoneRewriter().generateUserRewriter(mapping);
+            }
+        },
+        Forward("forward:", IdentityMappingBehaviour.ReturnIdentity) {
+            @Override
+            protected UserRewritter rewriter(String mapping) {
+                return new UserRewritter.ReplaceRewriter().generateUserRewriter(mapping);
+            }
+        },
+        Group("group:", IdentityMappingBehaviour.Throw) {
+            @Override
+            protected UserRewritter rewriter(String mapping) {
+                return new UserRewritter.ReplaceRewriter().generateUserRewriter(mapping);
+            }
+        },
+        Address("", IdentityMappingBehaviour.Throw) {
+            @Override
+            protected UserRewritter rewriter(String mapping) {
+                return new UserRewritter.ReplaceRewriter().generateUserRewriter(mapping);
+            }
+        };
 
         private final String asPrefix;
         private final IdentityMappingBehaviour identityMappingBehaviour;
-        private final UserRewritter.MappingUserRewriter userRewriter;
 
-        Type(String asPrefix, IdentityMappingBehaviour identityMappingBehaviour, UserRewritter.MappingUserRewriter userRewriter) {
+        Type(String asPrefix, IdentityMappingBehaviour identityMappingBehaviour) {
             this.asPrefix = asPrefix;
             this.identityMappingBehaviour = identityMappingBehaviour;
-            this.userRewriter = userRewriter;
         }
 
         public String asPrefix() {
@@ -95,9 +123,8 @@ public interface Mapping {
             return identityMappingBehaviour;
         }
 
-        public UserRewritter.MappingUserRewriter getUserRewriter() {
-            return userRewriter;
-        }
+        protected abstract UserRewritter rewriter(String mapping);
+
     }
 
     enum IdentityMappingBehaviour {

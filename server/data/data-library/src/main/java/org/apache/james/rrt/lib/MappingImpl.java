@@ -124,8 +124,7 @@ public class MappingImpl implements Mapping, Serializable {
 
     @Override
     public Optional<User> rewriteUser(User user) throws AddressException {
-        return type.getUserRewriter()
-            .generateUserRewriter(mapping)
+        return type.rewriter(mapping)
             .rewrite(user);
     }
 
