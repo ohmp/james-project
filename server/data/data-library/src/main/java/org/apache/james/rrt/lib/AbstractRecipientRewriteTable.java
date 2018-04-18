@@ -115,7 +115,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         try {
             return MappingsImpl.fromMappings(
                 targetMappings.asStream()
-                    .flatMap(Throwing.<Mapping, Stream<Mapping>>function(target -> convertAndRecurseMapping(user, target, mappingLimit)).sneakyThrow()));
+                    .flatMap(Throwing.function((Mapping target) -> convertAndRecurseMapping(user, target, mappingLimit)).sneakyThrow()));
         } catch (SkipMappingProcessingException e) {
             return MappingsImpl.empty();
         }
@@ -175,7 +175,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     }
 
     @Override
-    public void addRegexMapping(String user, Domain domain, String regex) throws RecipientRewriteTableException {
+    public void addRegexMapping(MappingSource source, String regex) throws RecipientRewriteTableException {
         try {
             Pattern.compile(regex);
         } catch (PatternSyntaxException e) {
@@ -183,28 +183,27 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         }
 
         Mapping mapping = Mapping.regex(regex);
-        checkDuplicateMapping(user, domain, mapping);
-        LOGGER.info("Add regex mapping => {} for user: {} domain: {}", regex, user, domain.name());
-        addMapping(user, domain, mapping);
-
+        checkDuplicateMapping(source, mapping);
+        LOGGER.info("Add regex mapping => {} for source {}", regex, source.asString());
+        addMapping(source, mapping);
     }
 
     @Override
-    public void removeRegexMapping(String user, Domain domain, String regex) throws RecipientRewriteTableException {
-        LOGGER.info("Remove regex mapping => {} for user: {} domain: {}", regex, user, domain.name());
-        removeMapping(user, domain, Mapping.regex(regex));
+    public void removeRegexMapping(MappingSource source, String regex) throws RecipientRewriteTableException {
+        LOGGER.info("Remove regex mapping => {} for source: {}", regex, source.asString());
+        removeMapping(source, Mapping.regex(regex));
     }
 
     @Override
-    public void addAddressMapping(String user, Domain domain, String address) throws RecipientRewriteTableException {
+    public void addAddressMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.address(address)
             .appendDomainIfNone(defaultDomainSupplier());
 
         checkHasValidAddress(mapping);
-        checkDuplicateMapping(user, domain, mapping);
+        checkDuplicateMapping(source, mapping);
 
-        LOGGER.info("Add address mapping => {} for user: {} domain: {}", mapping, user, domain.name());
-        addMapping(user, domain, mapping);
+        LOGGER.info("Add address mapping => {} for source: {}", mapping, source.asString());
+        addMapping(source, mapping);
     }
 
     private Supplier<Domain> defaultDomainSupplier() throws RecipientRewriteTableException {
@@ -224,82 +223,82 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     }
 
     @Override
-    public void removeAddressMapping(String user, Domain domain, String address) throws RecipientRewriteTableException {
+    public void removeAddressMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.address(address)
             .appendDomainIfNone(defaultDomainSupplier());
 
-        LOGGER.info("Remove address mapping => {} for user: {} domain: {}", mapping, user, domain.name());
-        removeMapping(user, domain, mapping);
+        LOGGER.info("Remove address mapping => {} for source: {}", mapping, source.asString());
+        removeMapping(source, mapping);
     }
 
     @Override
-    public void addErrorMapping(String user, Domain domain, String error) throws RecipientRewriteTableException {
+    public void addErrorMapping(MappingSource source, String error) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.error(error);
 
-        checkDuplicateMapping(user, domain, mapping);
-        LOGGER.info("Add error mapping => {} for user: {} domain: {}", error, user, domain.name());
-        addMapping(user, domain, mapping);
+        checkDuplicateMapping(source, mapping);
+        LOGGER.info("Add error mapping => {} for source: {}", error, source.asString());
+        addMapping(source, mapping);
 
     }
 
     @Override
-    public void removeErrorMapping(String user, Domain domain, String error) throws RecipientRewriteTableException {
-        LOGGER.info("Remove error mapping => {} for user: {} domain: {}", error, user, domain.name());
-        removeMapping(user, domain, Mapping.error(error));
+    public void removeErrorMapping(MappingSource source, String error) throws RecipientRewriteTableException {
+        LOGGER.info("Remove error mapping => {} for source: {}", error, source.asString());
+        removeMapping(source, Mapping.error(error));
     }
 
     @Override
-    public void addAliasDomainMapping(Domain aliasDomain, Domain realDomain) throws RecipientRewriteTableException {
-        LOGGER.info("Add domain mapping: {} => {}", aliasDomain, realDomain);
-        addMapping(null, aliasDomain, Mapping.domain(realDomain));
+    public void addAliasDomainMapping(MappingSource source, Domain realDomain) throws RecipientRewriteTableException {
+        LOGGER.info("Add domain mapping: {} => {}", source.asDomain().map(Domain::asString).orElse("null"), realDomain);
+        addMapping(source, Mapping.domain(realDomain));
     }
 
     @Override
-    public void removeAliasDomainMapping(Domain aliasDomain, Domain realDomain) throws RecipientRewriteTableException {
-        LOGGER.info("Remove domain mapping: {} => {}", aliasDomain, realDomain);
-        removeMapping(null, aliasDomain, Mapping.domain(realDomain));
+    public void removeAliasDomainMapping(MappingSource source, Domain realDomain) throws RecipientRewriteTableException {
+        LOGGER.info("Remove domain mapping: {} => {}", source.asDomain().map(Domain::asString).orElse("null"), realDomain);
+        removeMapping(source, Mapping.domain(realDomain));
     }
 
     @Override
-    public void addForwardMapping(String user, Domain domain, String address) throws RecipientRewriteTableException {
+    public void addForwardMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.forward(address)
             .appendDomainIfNone(defaultDomainSupplier());
 
         checkHasValidAddress(mapping);
-        checkDuplicateMapping(user, domain, mapping);
+        checkDuplicateMapping(source, mapping);
 
-        LOGGER.info("Add forward mapping => {} for user: {} domain: {}", mapping, user, domain.name());
-        addMapping(user, domain, mapping);
+        LOGGER.info("Add forward mapping => {} for source: {}", mapping, source.asString());
+        addMapping(source, mapping);
     }
 
     @Override
-    public void removeForwardMapping(String user, Domain domain, String address) throws RecipientRewriteTableException {
+    public void removeForwardMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.forward(address)
             .appendDomainIfNone(defaultDomainSupplier());
 
-        LOGGER.info("Remove forward mapping => {} for user: {} domain: {}", mapping, user, domain.name());
-        removeMapping(user, domain, mapping);
+        LOGGER.info("Remove forward mapping => {} for source: {}", mapping, source.asString());
+        removeMapping(source, mapping);
     }
 
     @Override
-    public void addGroupMapping(String user, Domain domain, String address) throws RecipientRewriteTableException {
+    public void addGroupMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.group(address)
             .appendDomainIfNone(defaultDomainSupplier());
 
         checkHasValidAddress(mapping);
-        checkDuplicateMapping(user, domain, mapping);
+        checkDuplicateMapping(source, mapping);
 
-        LOGGER.info("Add forward mapping => {} for user: {} domain: {}", mapping, user, domain.name());
-        addMapping(user, domain, mapping);
+        LOGGER.info("Add forward mapping => {} for source: {}", mapping, source.asString());
+        addMapping(source, mapping);
     }
 
     @Override
-    public void removeGroupMapping(String user, Domain domain, String address) throws RecipientRewriteTableException {
+    public void removeGroupMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         Mapping mapping = Mapping.group(address)
             .appendDomainIfNone(defaultDomainSupplier());
 
-        LOGGER.info("Remove forward mapping => {} for user: {} domain: {}", mapping, user, domain.name());
-        removeMapping(user, domain, mapping);
+        LOGGER.info("Remove forward mapping => {} for source: {}", mapping, source.asString());
+        removeMapping(source, mapping);
     }
 
     /**
@@ -307,7 +306,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
      * 
      * @return Map
      */
-    public abstract Map<String, Mappings> getAllMappings() throws RecipientRewriteTableException;
+    public abstract Map<MappingSource, Mappings> getAllMappings() throws RecipientRewriteTableException;
 
     /**
      * Override to map virtual recipients to real recipients, both local and
@@ -326,10 +325,10 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
      */
     protected abstract Mappings mapAddress(String user, Domain domain) throws RecipientRewriteTableException;
 
-    private void checkDuplicateMapping(String user, Domain domain, Mapping mapping) throws RecipientRewriteTableException {
-        Mappings mappings = getUserDomainMappings(user, domain);
+    private void checkDuplicateMapping(MappingSource source, Mapping mapping) throws RecipientRewriteTableException {
+        Mappings mappings = getUserDomainMappings(source);
         if (mappings != null && mappings.contains(mapping)) {
-            throw new RecipientRewriteTableException("Mapping " + mapping + " for user " + user + " domain " + domain + " already exist!");
+            throw new RecipientRewriteTableException("Mapping " + mapping + " for " + source.asString() + " already exist!");
         }
     }
 
