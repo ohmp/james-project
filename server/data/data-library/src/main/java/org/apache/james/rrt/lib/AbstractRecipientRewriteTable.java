@@ -119,26 +119,22 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
             return MappingsImpl.fromMappings(
                 targetMappings.asStream()
                     .flatMap(Throwing.<Mapping, Stream<Mapping>>function(target -> convertAndRecurseMapping(user, target, mappingLimit)).sneakyThrow()));
-        } catch (EmptyMappingException e) {
+        } catch (SkipMappingProcessingException e) {
             return MappingsImpl.empty();
         }
     }
 
-    private static class EmptyMappingException extends RuntimeException {
-
-    }
-
-    private Stream<Mapping> convertAndRecurseMapping(User user, Mapping associatedMapping, int remainingLoops) throws ErrorMappingException, RecipientRewriteTableException, EmptyMappingException, AddressException {
+    private Stream<Mapping> convertAndRecurseMapping(User user, Mapping associatedMapping, int remainingLoops) throws ErrorMappingException, RecipientRewriteTableException, SkipMappingProcessingException, AddressException {
 
         ThrowingFunction<String, Stream<Mapping>> function =
-            (String stringMapping) -> convertAndRecurseMapping(associatedMapping.getType(), user, remainingLoops, stringMapping);
+            (String stringMapping) -> convertAndRecurseMapping(associatedMapping.getType(), user, stringMapping, remainingLoops);
 
         return associatedMapping.apply(user.asMailAddress())
             .map(Throwing.function(function).sneakyThrow())
             .orElse(Stream.empty());
     }
 
-    private Stream<Mapping> convertAndRecurseMapping(Type mappingType, User originalUser, int remainingLoops, String addressWithMappingApplied) throws ErrorMappingException, RecipientRewriteTableException {
+    private Stream<Mapping> convertAndRecurseMapping(Type mappingType, User originalUser, String addressWithMappingApplied, int remainingLoops) throws ErrorMappingException, RecipientRewriteTableException {
         LOGGER.debug("Valid virtual user mapping {} to {}", originalUser, addressWithMappingApplied);
 
         Stream<Mapping> possibleResult = Stream.of(toMapping(addressWithMappingApplied, mappingType));
@@ -149,15 +145,16 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         User targetUser = User.fromUsername(addressWithMappingApplied)
             .withDefaultDomain(originalUser.getDomainPart().get());
 
-        // Check if the returned mapping is the same as the
-        // input. If so return null to avoid loops
+        // Check if the returned mapping is the same as the input. If so we need to handle identity to avoid loops.
         if (originalUser.equals(targetUser)) {
-            if (mappingType.equals(Type.Forward)) {
-                return possibleResult;
-            }
-            throw new EmptyMappingException();
+            return mappingType.getIdentityMappingBehaviour()
+                .handleIdentity(possibleResult);
+        } else {
+            return recurseMapping(possibleResult, targetUser, remainingLoops);
         }
+    }
 
+    private Stream<Mapping> recurseMapping(Stream<Mapping> possibleResult, User targetUser, int remainingLoops) throws ErrorMappingException, RecipientRewriteTableException {
         Mappings childMappings = getMappings(targetUser, remainingLoops - 1);
 
         if (childMappings.isEmpty()) {

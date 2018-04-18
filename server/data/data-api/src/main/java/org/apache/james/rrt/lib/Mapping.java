@@ -22,7 +22,9 @@ package org.apache.james.rrt.lib;
 
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 
@@ -52,19 +54,21 @@ public interface Mapping {
     Optional<MailAddress> asMailAddress();
 
     enum Type {
-        Regex("regex:", 4),
-        Domain("domain:", 1),
-        Error("error:", 4),
-        Forward("forward:", 3),
-        Group("group:", 2),
-        Address("", 4);
+        Regex("regex:", 4, IdentityMappingBehaviour.Throw),
+        Domain("domain:", 1, IdentityMappingBehaviour.Throw),
+        Error("error:", 4, IdentityMappingBehaviour.Throw),
+        Forward("forward:", 3, IdentityMappingBehaviour.ReturnIdentity),
+        Group("group:", 2, IdentityMappingBehaviour.Throw),
+        Address("", 4, IdentityMappingBehaviour.Throw);
 
         private final String asPrefix;
         private final int order;
+        private final IdentityMappingBehaviour identityMappingBehaviour;
 
-        Type(String asPrefix, Integer order) {
+        Type(String asPrefix, Integer order, IdentityMappingBehaviour identityMappingBehaviour) {
             this.asPrefix = asPrefix;
             this.order = order;
+            this.identityMappingBehaviour = identityMappingBehaviour;
         }
 
         public String asPrefix() {
@@ -82,6 +86,26 @@ public interface Mapping {
                 || mapping.startsWith(Error.asPrefix())
                 || mapping.startsWith(Forward.asPrefix())
                 || mapping.startsWith(Group.asPrefix());
+        }
+
+        public IdentityMappingBehaviour getIdentityMappingBehaviour() {
+            return identityMappingBehaviour;
+        }
+    }
+
+    enum IdentityMappingBehaviour {
+        Throw,
+        ReturnIdentity;
+
+        public Stream<Mapping> handleIdentity(Stream<Mapping> mapping) {
+            switch (this) {
+                case Throw:
+                    throw new SkipMappingProcessingException();
+                case ReturnIdentity:
+                    return mapping;
+                default:
+                    throw new NotImplementedException("Unknown IdentityMappingBehaviour : " + this);
+            }
         }
     }
 
