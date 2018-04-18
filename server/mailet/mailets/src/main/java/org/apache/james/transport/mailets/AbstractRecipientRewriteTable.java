@@ -38,6 +38,7 @@ import org.apache.james.core.User;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.UserRewritter;
 import org.apache.james.server.core.MailImpl;
