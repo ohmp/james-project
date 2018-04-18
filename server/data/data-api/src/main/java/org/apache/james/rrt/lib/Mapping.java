@@ -24,9 +24,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.mail.internet.AddressException;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.User;
 
 import com.google.common.base.Preconditions;
 
@@ -119,6 +122,6 @@ public interface Mapping {
 
     String getErrorMessage();
 
-    Optional<String> apply(MailAddress input);
+    Optional<User> rewriteUser(User user) throws AddressException;
 
 }
