@@ -78,7 +78,8 @@ public class UserTest {
 
     @Test
     public void fromLocalPartWithDomainStringVersionShouldThrowOnNullDomainPart() {
-        assertThatThrownBy(() -> User.fromLocalPartWithDomain("local", (String) null))
+        String domain = null;
+        assertThatThrownBy(() -> User.fromLocalPartWithDomain("local", domain))
             .isInstanceOf(NullPointerException.class);
     }
 
