@@ -20,6 +20,7 @@ package org.apache.james.rrt.lib;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.functions.FunctionChainer;
 import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.base.Preconditions;
 
@@ -126,12 +128,14 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
 
     private Stream<Mapping> convertAndRecurseMapping(User originalUser, Mapping associatedMapping, int remainingLoops) throws ErrorMappingException, RecipientRewriteTableException, SkipMappingProcessingException, AddressException {
 
-        ThrowingFunction<User, Stream<Mapping>> convertAndRecurseMapping =
-            (User rewrittenUser) -> convertAndRecurseMapping(associatedMapping.getType(), originalUser, rewrittenUser, remainingLoops);
+        Function<User, Stream<Mapping>> convertAndRecurseMapping =
+            Throwing
+                .function((User rewrittenUser) -> convertAndRecurseMapping(associatedMapping.getType(), originalUser, rewrittenUser, remainingLoops))
+                .sneakyThrow();
 
         return associatedMapping.rewriteUser(originalUser)
             .map(rewrittenUser -> rewrittenUser.withDefaultDomainFromUser(originalUser))
-            .map(Throwing.function(convertAndRecurseMapping).sneakyThrow())
+            .map(convertAndRecurseMapping)
             .orElse(Stream.empty());
     }
 
