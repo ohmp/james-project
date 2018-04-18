@@ -142,17 +142,17 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     private Stream<Mapping> convertAndRecurseMapping(Type mappingType, User originalUser, User rewrittenUser, int remainingLoops) throws ErrorMappingException, RecipientRewriteTableException {
         LOGGER.debug("Valid virtual user mapping {} to {}", originalUser, rewrittenUser);
 
-        Stream<Mapping> possibleResult = Stream.of(toMapping(rewrittenUser, mappingType));
+        Stream<Mapping> nonRecursiveResult = Stream.of(toMapping(rewrittenUser, mappingType));
         if (!recursive) {
-            return possibleResult;
+            return nonRecursiveResult;
         }
 
         // Check if the returned mapping is the same as the input. If so we need to handle identity to avoid loops.
         if (originalUser.equals(rewrittenUser)) {
             return mappingType.getIdentityMappingBehaviour()
-                .handleIdentity(possibleResult);
+                .handleIdentity(nonRecursiveResult);
         } else {
-            return recurseMapping(possibleResult, rewrittenUser, remainingLoops);
+            return recurseMapping(nonRecursiveResult, rewrittenUser, remainingLoops);
         }
     }
 
