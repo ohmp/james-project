@@ -129,6 +129,8 @@ public abstract class AbstractRecipientRewriteTable extends GenericMailet {
                                 targetAddress = maybeTarget.get();
                             } catch (PatternSyntaxException e) {
                                 LOGGER.error("Exception during regexMap processing: ", e);
+                            } catch (RecipientRewriteTable.ErrorMappingException e) {
+                                LOGGER.error("Regex mapping should not throw ErrorMappingException", e);
                             }
                         }
 
