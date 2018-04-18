@@ -22,6 +22,7 @@ package org.apache.james.probe;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.lib.Mappings;
 
 public interface DataProbe {
@@ -44,7 +45,7 @@ public interface DataProbe {
 
     List<String> listDomains() throws Exception;
 
-    Map<String, Mappings> listMappings() throws Exception;
+    Map<MappingSource, Mappings> listMappings() throws Exception;
 
     Mappings listUserDomainMappings(String user, String domain) throws Exception;
 

@@ -21,6 +21,7 @@ package org.apache.james.rrt.api;
 
 import java.util.Map;
 
+import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.lib.Mappings;
 
 /**
@@ -186,7 +187,7 @@ public interface RecipientRewriteTableManagementMBean {
      * @throws Exception
      *            If an error occurred
      */
-    Map<String, Mappings> getAllMappings() throws Exception;
+    Map<MappingSource, Mappings> getAllMappings() throws Exception;
 
     /***
      * Add forward mapping
