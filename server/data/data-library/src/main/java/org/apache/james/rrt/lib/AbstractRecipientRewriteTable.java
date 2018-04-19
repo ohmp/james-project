@@ -19,7 +19,6 @@
 package org.apache.james.rrt.lib;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -43,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
-import com.google.common.base.Preconditions;
 
 public abstract class AbstractRecipientRewriteTable implements RecipientRewriteTable, Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRecipientRewriteTable.class);
@@ -330,28 +328,6 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         if (mappings != null && mappings.contains(mapping)) {
             throw new RecipientRewriteTableException("Mapping " + mapping + " for " + source.asString() + " already exist!");
         }
-    }
-
-    // TODO move this normalization as part of MappingSource
-    /**
-     * Return user String for the given argument.
-     * If give value is null, return a wildcard.
-     * 
-     * @param user the given user String
-     * @return fixedUser the fixed user String
-     */
-    protected String getFixedUser(String user) {
-        String sanitizedUser = Optional.ofNullable(user).orElse(WILDCARD);
-        Preconditions.checkArgument(sanitizedUser.equals(WILDCARD) || !sanitizedUser.contains("@"));
-        return sanitizedUser;
-    }
-
-    /**
-     * Fix the domain for the given argument.
-     * If give value is null, return a wildcard.
-     */
-    protected Domain getFixedDomain(Domain domain) {
-        return Optional.ofNullable(domain).orElse(Domains.WILDCARD);
     }
 
 }
