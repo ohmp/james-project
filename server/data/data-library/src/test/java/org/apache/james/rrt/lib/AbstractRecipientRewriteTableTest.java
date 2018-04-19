@@ -110,16 +110,15 @@ public abstract class AbstractRecipientRewriteTableTest {
     }
 
     @Test
-    public void getAllMappingsShouldListAllEntries() throws ErrorMappingException, RecipientRewriteTableException {
+    public void getAllMappingsShouldListAllEntries() throws Exception {
         String user = "test";
         String user2 = "test2";
         String regex = "(.*)@localhost";
         String regex2 = "(.+)@test";
 
-
-        addMapping(user, Domain.LOCALHOST, regex, Type.Regex);
-        addMapping(user, Domain.LOCALHOST, regex2, Type.Regex);
-        addMapping(user2, Domain.LOCALHOST, user + "@" + Domain.LOCALHOST.asString(), Type.Address);
+        virtualUserTable.addMapping(user, Domain.LOCALHOST, MappingImpl.regex(regex));
+        virtualUserTable.addMapping(user, Domain.LOCALHOST, MappingImpl.regex(regex2));
+        virtualUserTable.addMapping(user2, Domain.LOCALHOST, MappingImpl.address(user + "@" + Domain.LOCALHOST.asString()));
 
         assertThat(virtualUserTable.getAllMappings())
             .describedAs("One mappingline")
