@@ -84,32 +84,32 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
     }
 
     @Override
-    public void addMapping(MappingSource user, Mapping mapping) {
-        mappingEntries.add(new InMemoryMappingEntry(getFixedUser(user), getFixedDomain(domain), mapping));
+    public void addMapping(MappingSource source, Mapping mapping) {
+        mappingEntries.add(new InMemoryMappingEntry(source, mapping));
     }
 
     @Override
-    public void removeMapping(String user, Domain domain, Mapping mapping) {
-        mappingEntries.remove(new InMemoryMappingEntry(getFixedUser(user), getFixedDomain(domain), mapping));
+    public void removeMapping(MappingSource source, Mapping mapping) {
+        mappingEntries.remove(new InMemoryMappingEntry(source, mapping));
     }
 
     @Override
-    public Mappings getUserDomainMappings(String user, Domain domain) {
-        return retrieveMappings(user, domain)
+    public Mappings getUserDomainMappings(MappingSource mappingSource) {
+        return retrieveMappings(mappingSource)
             .orElse(null);
     }
 
     @Override
     protected Mappings mapAddress(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
-            () -> retrieveMappings(user, domain),
-            () -> retrieveMappings(WILDCARD, domain))
+            () -> retrieveMappings(MappingSource.fromUser(User.fromLocalPartWithDomain(user, domain))),
+            () -> retrieveMappings(MappingSource.fromDomain(domain)))
             .orElse(MappingsImpl.empty());
     }
 
     @Override
-    public Map<User, Mappings> getAllMappings() {
-        return Multimaps.index(mappingEntries, InMemoryMappingEntry::getUser)
+    public Map<MappingSource, Mappings> getAllMappings() {
+        return Multimaps.index(mappingEntries, InMemoryMappingEntry::getSource)
             .asMap()
             .entrySet()
             .stream()
@@ -123,9 +123,9 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
             .map(InMemoryMappingEntry::getMapping));
     }
 
-    private Optional<Mappings> retrieveMappings(String user, Domain domain) {
+    private Optional<Mappings> retrieveMappings(MappingSource mappingSource) {
         Stream<Mapping> userEntries = mappingEntries.stream()
-            .filter(mappingEntry -> user.equals(mappingEntry.getUser()) && domain.equals(mappingEntry.getDomain()))
+            .filter(mappingEntry -> mappingEntry.source.equals(mappingSource))
             .map(InMemoryMappingEntry::getMapping);
         return MappingsImpl.fromMappings(userEntries).toOptional();
     }

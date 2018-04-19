@@ -48,7 +48,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addRegexMapping(String user, String domain, String regex) {
         try {
-            rrt.addRegexMapping(user, Domain.of(domain), regex);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.addRegexMapping(source, regex);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -57,7 +58,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeRegexMapping(String user, String domain, String regex) {
         try {
-            rrt.removeRegexMapping(user, Domain.of(domain), regex);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.removeRegexMapping(source, regex);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -66,7 +68,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addAddressMapping(String user, String domain, String address) {
         try {
-            rrt.addAddressMapping(user, Domain.of(domain), address);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.addAddressMapping(source, address);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -75,7 +78,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeAddressMapping(String user, String domain, String address) {
         try {
-            rrt.removeAddressMapping(user, Domain.of(domain), address);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.removeAddressMapping(source, address);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -84,7 +88,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addErrorMapping(String user, String domain, String error) {
         try {
-            rrt.addErrorMapping(user, Domain.of(domain), error);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.addErrorMapping(source, error);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -93,7 +98,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeErrorMapping(String user, String domain, String error) {
         try {
-            rrt.removeErrorMapping(user, Domain.of(domain), error);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.removeErrorMapping(source, error);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -102,7 +108,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addDomainMapping(String domain, String targetDomain) {
         try {
-            rrt.addAliasDomainMapping(Domain.of(domain), Domain.of(targetDomain));
+            MappingSource source = MappingSource.fromDomain(Domain.of(domain));
+            rrt.addAliasDomainMapping(source, Domain.of(targetDomain));
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -111,7 +118,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeDomainMapping(String domain, String targetDomain) {
         try {
-            rrt.removeAliasDomainMapping(Domain.of(domain), Domain.of(targetDomain));
+            MappingSource source = MappingSource.fromDomain(Domain.of(domain));
+            rrt.removeAliasDomainMapping(source, Domain.of(targetDomain));
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -120,7 +128,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public Mappings getUserDomainMappings(String user, String domain) {
         try {
-            return rrt.getUserDomainMappings(user, Domain.of(domain));
+            MappingSource source = MappingSource.fromUser(user, domain);
+            return rrt.getUserDomainMappings(source);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -129,7 +138,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addMapping(String user, String domain, String mapping) {
         try {
-            rrt.addMapping(user, Domain.of(domain), Mapping.of(mapping));
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.addMapping(source, Mapping.of(mapping));
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -138,14 +148,15 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeMapping(String user, String domain, String mapping) {
         try {
-            rrt.removeMapping(user, Domain.of(domain), Mapping.of(mapping));
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.removeMapping(source, Mapping.of(mapping));
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
     }
 
     @Override
-    public Map<String, Mappings> getAllMappings() {
+    public Map<MappingSource, Mappings> getAllMappings() {
         try {
             return ImmutableMap.copyOf(rrt.getAllMappings());
         } catch (RecipientRewriteTableException e) {
@@ -156,7 +167,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addForwardMapping(String user, String domain, String address) {
         try {
-            rrt.addForwardMapping(user, Domain.of(domain), address);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.addForwardMapping(source, address);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -165,7 +177,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeForwardMapping(String user, String domain, String address) {
         try {
-            rrt.removeForwardMapping(user, Domain.of(domain), address);
+            MappingSource source = MappingSource.fromUser(user, domain);
+            rrt.removeForwardMapping(source, address);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -174,7 +187,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void addGroupMapping(String toUser, String toDomain, String fromAddress) {
         try {
-            rrt.addGroupMapping(toUser, Domain.of(toDomain), fromAddress);
+            MappingSource source = MappingSource.fromUser(toUser, toDomain);
+            rrt.addGroupMapping(source, fromAddress);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }
@@ -183,7 +197,8 @@ public class RecipientRewriteTableManagement extends StandardMBean implements Re
     @Override
     public void removeGroupMapping(String toUser, String toDomain, String fromAddress) {
         try {
-            rrt.removeForwardMapping(toUser, Domain.of(toDomain), fromAddress);
+            MappingSource source = MappingSource.fromUser(toUser, toDomain);
+            rrt.removeForwardMapping(source, fromAddress);
         } catch (RecipientRewriteTableException e) {
             throw Throwables.propagate(e);
         }

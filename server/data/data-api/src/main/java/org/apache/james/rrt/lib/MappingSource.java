@@ -19,6 +19,8 @@
 
 package org.apache.james.rrt.lib;
 
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.mail.internet.AddressException;
@@ -30,19 +32,35 @@ import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MappingSource {
+public class MappingSource implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MappingSource.class);
+    public static final String WILDCARD = "*";
 
     private enum WildCard {
         WildCard
     }
 
     public static MappingSource fromDomain(Domain domain) {
+        if (domain.asString().equals(WILDCARD)) {
+            return wildCard();
+        }
         return new MappingSource(Optional.of(domain), Optional.empty(), Optional.empty());
     }
 
+    public static MappingSource fromUser(String localPart, String domain) {
+        return fromUser(localPart, Domain.of(domain));
+    }
+
+    public static MappingSource fromUser(String localPart, Domain domain) {
+        User user = User.fromLocalPartWithDomain(localPart, domain);
+        return fromUser(user);
+    }
+
     public static MappingSource fromUser(User user) {
+        if (user.getLocalPart().equals(WILDCARD)) {
+            return MappingSource.fromDomain(user.getDomainPart().get());
+        }
         return new MappingSource(Optional.empty(), Optional.of(user), Optional.empty());
     }
 
@@ -52,9 +70,12 @@ public class MappingSource {
 
     public static MappingSource parse(String mappingSource) {
         switch (mappingSource) {
-            case "%":
+            case WILDCARD:
                 return wildCard();
             default:
+                if (mappingSource.startsWith(WILDCARD + "@")) {
+                    return fromDomain(Domain.of(mappingSource.substring(2, mappingSource.length())));
+                }
                 return fromUser(User.fromUsername(mappingSource));
         }
     }
@@ -84,8 +105,6 @@ public class MappingSource {
         });
     }
 
-
-
     public String asString() {
         return OptionalUtils.orSuppliers(
                 () -> wildcard.map(x -> "*"),
@@ -94,4 +113,32 @@ public class MappingSource {
             .orElseThrow(IllegalStateException::new);
     }
 
+    public String getFixedUser() {
+        return user.map(User::getLocalPart)
+            .orElse(WILDCARD);
+    }
+
+    public String getFixedDomain() {
+        return OptionalUtils.or(
+            user.flatMap(User::getDomainPart).map(Domain::asString),
+            domain.map(Domain::asString))
+            .orElse(WILDCARD);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof MappingSource) {
+            MappingSource that = (MappingSource) o;
+
+            return Objects.equals(this.domain, that.domain)
+                && Objects.equals(this.user, that.user)
+                && Objects.equals(this.wildcard, that.wildcard);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(domain, user, wildcard);
+    }
 }

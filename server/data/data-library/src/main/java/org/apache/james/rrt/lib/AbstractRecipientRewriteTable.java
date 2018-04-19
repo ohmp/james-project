@@ -332,6 +332,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         }
     }
 
+    // TODO move this normalization as part of MappingSource
     /**
      * Return user String for the given argument.
      * If give value is null, return a wildcard.
