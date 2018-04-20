@@ -319,7 +319,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     }
 
     private void handleInvalidRequest(SetMessagesResponse.Builder responseBuilder, MessageId messageId,
-                                      List<ValidationResult> validationErrors) {
+                                      ImmutableList<ValidationResult> validationErrors) {
         LOGGER.warn("Invalid update request for message #{}: {}", messageId, validationErrors);
 
         String formattedValidationErrorMessage = validationErrors.stream()
