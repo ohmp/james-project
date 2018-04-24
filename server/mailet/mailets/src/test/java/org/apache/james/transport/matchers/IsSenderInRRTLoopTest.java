@@ -28,6 +28,7 @@ import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.rrt.api.RecipientRewriteTable;
+import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
@@ -65,7 +66,7 @@ public class IsSenderInRRTLoopTest {
 
     @Test
     public void matchShouldReturnEmptyWhenNoRRTLoop() throws Exception {
-        recipientRewriteTable.addAddressMapping(SENDER.getLocalPart(), SENDER.getDomain(), RECIPIENT1.asString());
+        recipientRewriteTable.addAddressMapping(MappingSource.fromUser(SENDER.getLocalPart(), SENDER.getDomain()), RECIPIENT1.asString());
 
         Collection<MailAddress> result = testee.match(FakeMail.builder()
             .sender(SENDER)
@@ -77,8 +78,8 @@ public class IsSenderInRRTLoopTest {
 
     @Test
     public void matchShouldReturnRecipientsWhenLoop() throws Exception {
-        recipientRewriteTable.addAddressMapping(SENDER.getLocalPart(), SENDER.getDomain(), RECIPIENT1.asString());
-        recipientRewriteTable.addAddressMapping(RECIPIENT1.getLocalPart(), RECIPIENT1.getDomain(), SENDER.asString());
+        recipientRewriteTable.addAddressMapping(MappingSource.fromUser(SENDER.getLocalPart(), SENDER.getDomain()), RECIPIENT1.asString());
+        recipientRewriteTable.addAddressMapping(MappingSource.fromUser(RECIPIENT1.getLocalPart(), RECIPIENT1.getDomain()), SENDER.asString());
 
         Collection<MailAddress> result = testee.match(FakeMail.builder()
             .sender(SENDER)
@@ -90,8 +91,8 @@ public class IsSenderInRRTLoopTest {
 
     @Test
     public void matchShouldReturnEmptyWhenLoopButNoRecipient() throws Exception {
-        recipientRewriteTable.addAddressMapping(SENDER.getLocalPart(), SENDER.getDomain(), RECIPIENT1.asString());
-        recipientRewriteTable.addAddressMapping(RECIPIENT1.getLocalPart(), RECIPIENT1.getDomain(), SENDER.asString());
+        recipientRewriteTable.addAddressMapping(MappingSource.fromUser(SENDER.getLocalPart(), SENDER.getDomain()), RECIPIENT1.asString());
+        recipientRewriteTable.addAddressMapping(MappingSource.fromUser(RECIPIENT1.getLocalPart(), RECIPIENT1.getDomain()), SENDER.asString());
 
         Collection<MailAddress> result = testee.match(FakeMail.builder()
             .sender(SENDER)
