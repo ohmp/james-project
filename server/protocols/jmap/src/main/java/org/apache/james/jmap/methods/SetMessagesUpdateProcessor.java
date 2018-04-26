@@ -211,7 +211,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
             .orElse(false);
 
         boolean targetContainsOutbox = targetMailboxes.stream().anyMatch(outboxMailboxes::contains);
-        boolean targetIsOnlyOutbox = targetMailboxes.stream().allMatch(outboxMailboxes::contains);
+        boolean targetIsOnlyOutbox = outboxMailboxes.containsAll(targetMailboxes);
 
         assertOutboxMoveTargetsOnlyOutBox(targetContainsOutbox, targetIsOnlyOutbox);
         assertOutboxMoveOriginallyHasDraftKeywordSet(targetContainsOutbox, isDraft);
