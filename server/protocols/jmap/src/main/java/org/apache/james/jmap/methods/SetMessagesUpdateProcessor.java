@@ -207,8 +207,8 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
             .map(MessageResult::getFlags)
             .map(Keywords.factory().filterImapNonExposedKeywords()::fromFlags)
             .reduce(new KeywordsCombiner())
-            .orElse(Keywords.DEFAULT_VALUE)
-            .contains(Keyword.DRAFT);
+            .map(keywords -> keywords.contains(Keyword.DRAFT))
+            .orElse(false);
 
         boolean targetContainsOutbox = targetMailboxes.stream().anyMatch(outboxMailboxes::contains);
         boolean targetIsOnlyOutbox = targetMailboxes.stream().allMatch(outboxMailboxes::contains);
