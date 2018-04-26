@@ -125,14 +125,14 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     private void update(MessageId messageId, UpdateMessagePatch updateMessagePatch, MailboxSession mailboxSession,
                         SetMessagesResponse.Builder builder) {
         try {
-            List<MessageResult> messages = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, mailboxSession);
-            assertValidUpdate(messages, updateMessagePatch, mailboxSession);
+            List<MessageResult> mailboxMessages = messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.MINIMAL, mailboxSession);
+            assertValidUpdate(mailboxMessages, updateMessagePatch, mailboxSession);
 
-            if (messages.isEmpty()) {
+            if (mailboxMessages.isEmpty()) {
                 addMessageIdNotFoundToResponse(messageId, builder);
             } else {
                 setInMailboxes(messageId, updateMessagePatch, mailboxSession);
-                Optional<MailboxException> updateError = messages.stream()
+                Optional<MailboxException> updateError = mailboxMessages.stream()
                     .flatMap(message -> updateFlags(messageId, updateMessagePatch, mailboxSession, message))
                     .findAny();
                 if (updateError.isPresent()) {
@@ -195,18 +195,13 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
         }
     }
 
-    private void assertValidUpdate(List<MessageResult> messagesToBeUpdated, UpdateMessagePatch updateMessagePatch, MailboxSession session) throws MailboxException {
+    private void assertValidUpdate(List<MessageResult> mailboxMessagesToBeUpdated, UpdateMessagePatch updateMessagePatch, MailboxSession session) throws MailboxException {
         List<MailboxId> outboxMailboxes = mailboxIdFor(Role.OUTBOX, session);
 
-        ImmutableList<MailboxId> previousMailboxes = messagesToBeUpdated.stream()
-            .map(MessageResult::getMailboxId)
-            .collect(Guavate.toImmutableList());
-        List<MailboxId> targetMailboxes = getTargetedMailboxes(previousMailboxes, updateMessagePatch);
+        ImmutableList<MailboxId> currentMailboxes = listMailboxesContainingMessage(mailboxMessagesToBeUpdated);
+        List<MailboxId> targetMailboxes = computeTargetMailboxes(currentMailboxes, updateMessagePatch);
 
-        boolean isDraft = messagesToBeUpdated.stream()
-            .map(MessageResult::getFlags)
-            .map(Keywords.factory().filterImapNonExposedKeywords()::fromFlags)
-            .reduce(new KeywordsCombiner())
+        boolean messageIsDraft = computeCombinedKeywords(mailboxMessagesToBeUpdated)
             .map(keywords -> keywords.contains(Keyword.DRAFT))
             .orElse(false);
 
@@ -214,7 +209,20 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
         boolean targetIsOnlyOutbox = outboxMailboxes.containsAll(targetMailboxes);
 
         assertOutboxMoveTargetsOnlyOutBox(targetContainsOutbox, targetIsOnlyOutbox);
-        assertOutboxMoveOriginallyHasDraftKeywordSet(targetContainsOutbox, isDraft);
+        assertOutboxMoveOriginallyHasDraftKeywordSet(targetContainsOutbox, messageIsDraft);
+    }
+
+    private ImmutableList<MailboxId> listMailboxesContainingMessage(List<MessageResult> mailboxMessagesToBeUpdated) {
+        return mailboxMessagesToBeUpdated.stream()
+            .map(MessageResult::getMailboxId)
+            .collect(Guavate.toImmutableList());
+    }
+
+    private Optional<Keywords> computeCombinedKeywords(List<MessageResult> mailboxMessagesToBeUpdated) {
+        return mailboxMessagesToBeUpdated.stream()
+            .map(MessageResult::getFlags)
+            .map(Keywords.factory().filterImapNonExposedKeywords()::fromFlags)
+            .reduce(new KeywordsCombiner());
     }
 
     private void assertOutboxMoveTargetsOnlyOutBox(boolean targetContainsOutbox, boolean targetIsOnlyOutbox) {
@@ -229,7 +237,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
         }
     }
 
-    private List<MailboxId> getTargetedMailboxes(ImmutableList<MailboxId> previousMailboxes, UpdateMessagePatch updateMessagePatch) {
+    private List<MailboxId> computeTargetMailboxes(ImmutableList<MailboxId> previousMailboxes, UpdateMessagePatch updateMessagePatch) {
         return updateMessagePatch.getMailboxIds()
             .map(ids -> ids.stream().map(mailboxIdFactory::fromString).collect(Guavate.toImmutableList()))
             .orElse(previousMailboxes);
