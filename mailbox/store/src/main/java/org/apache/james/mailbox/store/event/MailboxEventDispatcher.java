@@ -160,8 +160,9 @@ public class MailboxEventDispatcher {
     }
 
     public void moved(MailboxSession session, MessageMoves messageMoves, Map<MessageUid, MailboxMessage> messages) {
-        if (!messages.isEmpty()) {
-            listener.event(eventFactory.moved(session, messageMoves, messages));
+        MessageMoveEvent moveEvent = eventFactory.moved(session, messageMoves, messages);
+        if (!moveEvent.isNoop()) {
+            listener.event(moveEvent);
         }
     }
 
