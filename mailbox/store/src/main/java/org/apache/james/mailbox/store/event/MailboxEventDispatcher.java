@@ -160,7 +160,9 @@ public class MailboxEventDispatcher {
     }
 
     public void moved(MailboxSession session, MessageMoves messageMoves, Map<MessageUid, MailboxMessage> messages) {
-        listener.event(eventFactory.moved(session, messageMoves, messages));
+        if (!messages.isEmpty()) {
+            listener.event(eventFactory.moved(session, messageMoves, messages));
+        }
     }
 
     public void quota(MailboxSession session, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota) {

@@ -737,14 +737,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
             messagesMap.put(message.getUid(), immutableMailboxMessageFactory.from(to.getMailboxEntity().getMailboxId(), message));
         }
         dispatcher.added(session, copiedUids, to.getMailboxEntity(), messagesMap.build());
-        if (!messagesMap.build().isEmpty()) {
-            dispatcher.moved(session,
-                MessageMoves.builder()
-                    .previousMailboxIds(getMailboxEntity().getMailboxId())
-                    .targetMailboxIds(to.getMailboxEntity().getMailboxId(), getMailboxEntity().getMailboxId())
-                    .build(),
-                messagesMap.build());
-        }
+        dispatcher.moved(session,
+            MessageMoves.builder()
+                .previousMailboxIds(getMailboxEntity().getMailboxId())
+                .targetMailboxIds(to.getMailboxEntity().getMailboxId(), getMailboxEntity().getMailboxId())
+                .build(),
+            messagesMap.build());
         return copiedUids;
     }
 
@@ -760,14 +758,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         }
         dispatcher.added(session, moveUids, to.getMailboxEntity(), messagesMap.build());
         dispatcher.expunged(session, collectMetadata(moveResult.getOriginalMessages()), getMailboxEntity());
-        if (!messagesMap.build().isEmpty()) {
-            dispatcher.moved(session,
-                MessageMoves.builder()
-                    .previousMailboxIds(getMailboxEntity().getMailboxId())
-                    .targetMailboxIds(to.getMailboxEntity().getMailboxId())
-                    .build(),
-                messagesMap.build());
-        }
+        dispatcher.moved(session,
+            MessageMoves.builder()
+                .previousMailboxIds(getMailboxEntity().getMailboxId())
+                .targetMailboxIds(to.getMailboxEntity().getMailboxId())
+                .build(),
+            messagesMap.build());
         return moveUids;
     }
 
