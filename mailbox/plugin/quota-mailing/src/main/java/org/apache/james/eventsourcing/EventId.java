@@ -17,24 +17,41 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.memory;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.InMemoryEventStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import java.util.Objects;
 
-public class InMemoryQuotaThresholdHistoryStoreExtension implements ParameterResolver {
+public class EventId implements Comparable<EventId> {
 
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == EventStore.class);
+    public static EventId first() {
+        return new EventId(0);
+    }
+
+    private final long value;
+
+    public EventId(long value) {
+        this.value = value;
+    }
+
+    public EventId next() {
+        return new EventId(value + 1);
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new InMemoryEventStore();
+    public int compareTo(EventId o) {
+        return Long.compare(value, o.value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EventId eventId = (EventId) o;
+        return value == eventId.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }

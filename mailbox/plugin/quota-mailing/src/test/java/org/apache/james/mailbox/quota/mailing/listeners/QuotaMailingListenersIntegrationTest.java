@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.quota.mailing.listeners;
 
 import static org.apache.james.mailbox.quota.model.QuotaThresholdFixture._50;
-import static org.apache.james.mailbox.quota.model.QuotaThresholdFixture._80;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
@@ -28,25 +27,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.james.core.User;
+import org.apache.james.eventsourcing.EventStore;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.mock.MockMailboxSession;
-import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaRoot;
-import org.apache.james.mailbox.quota.QuotaCount;
-import org.apache.james.mailbox.quota.QuotaSize;
-import org.apache.james.mailbox.quota.QuotaThresholdHistoryStore;
 import org.apache.james.mailbox.quota.mailing.QuotaMailingListenerConfiguration;
-import org.apache.james.mailbox.quota.model.QuotaThreshold;
-import org.apache.james.mailbox.quota.model.QuotaThresholdChange;
-import org.apache.james.mailbox.quota.model.QuotaThresholdHistory;
+import org.apache.james.mailbox.quota.model.QuotaThresholdFixture.Quotas.Counts;
+import org.apache.james.mailbox.quota.model.QuotaThresholdFixture.Quotas.Sizes;
 import org.apache.james.mailbox.quota.model.QuotaThresholds;
-import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMailContext;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -55,111 +47,70 @@ public interface QuotaMailingListenersIntegrationTest {
 
     Duration GRACE_PERIOD = Duration.ofDays(1);
     QuotaThresholds SINGLE_THRESHOLD = new QuotaThresholds(ImmutableList.of(_50));
+    QuotaMailingListenerConfiguration DEFAULT_CONFIGURATION = new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD);
     String BOB = "bob@domain";
+    MockMailboxSession BOB_SESSION = new MockMailboxSession(BOB);
     User BOB_USER = User.fromUsername(BOB);
     Instant BASE_INSTANT = Instant.now();
+    Clock FIXED_CLOCK = Clock.fixed(BASE_INSTANT, ZoneId.systemDefault());
+    QuotaRoot QUOTAROOT = QuotaRoot.quotaRoot("any", Optional.empty());
 
     @Test
-    default void shouldNotSendMailWhenUnderAllThresholds(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotSendMailWhenUnderAllThresholds(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
-        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
-            QuotaRoot.quotaRoot("any", Optional.empty()),
-            Quota.<QuotaCount>builder()
-                .used(QuotaCount.count(40))
-                .computedLimit(QuotaCount.count(100))
-                .build(),
-            Quota.<QuotaSize>builder()
-                .used(QuotaSize.size(30))
-                .computedLimit(QuotaSize.size(100))
-                .build()));
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, BASE_INSTANT));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
 
     @Test
-    default void shouldNotSendMailWhenNoThresholdUpdate(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotSendMailWhenNoThresholdUpdate(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, BASE_INSTANT.minus(Duration.ofHours(1))));
 
-        store.persistQuotaSizeThresholdChange(BOB_USER,
-            new QuotaThresholdChange(_50,
-                BASE_INSTANT.minus(Duration.ofDays(2))));
+        mailetContext.resetSentMails();
 
-        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
-            QuotaRoot.quotaRoot("any", Optional.empty()),
-            Quota.<QuotaCount>builder()
-                .used(QuotaCount.count(40))
-                .computedLimit(QuotaCount.count(100))
-                .build(),
-            Quota.<QuotaSize>builder()
-                .used(QuotaSize.size(55))
-                .computedLimit(QuotaSize.size(100))
-                .build()));
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, BASE_INSTANT));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
 
     @Test
-    default void shouldNotSendMailWhenThresholdOverPassedRecently(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotSendMailWhenThresholdOverPassedRecently(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, BASE_INSTANT.minus(Duration.ofHours(12))));
 
-        store.persistQuotaSizeThresholdChange(BOB_USER,
-            new QuotaThresholdChange(_50,
-                BASE_INSTANT.minus(Duration.ofHours(12))));
-        store.persistQuotaSizeThresholdChange(BOB_USER,
-            new QuotaThresholdChange(QuotaThreshold.ZERO,
-                BASE_INSTANT.minus(Duration.ofHours(6))));
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, BASE_INSTANT.minus(Duration.ofHours(6))));
 
-        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
-            QuotaRoot.quotaRoot("any", Optional.empty()),
-            Quota.<QuotaCount>builder()
-                .used(QuotaCount.count(40))
-                .computedLimit(QuotaCount.count(100))
-                .build(),
-            Quota.<QuotaSize>builder()
-                .used(QuotaSize.size(55))
-                .computedLimit(QuotaSize.size(100))
-                .build()));
+        mailetContext.resetSentMails();
+
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, BASE_INSTANT));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
 
+
     @Test
-    default void shouldSendMailWhenThresholdOverPassed(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldSendMailWhenThresholdOverPassed(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
-        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
-            QuotaRoot.quotaRoot("any", Optional.empty()),
-            Quota.<QuotaCount>builder()
-                .used(QuotaCount.count(40))
-                .computedLimit(QuotaCount.count(100))
-                .build(),
-            Quota.<QuotaSize>builder()
-                .used(QuotaSize.size(55))
-                .computedLimit(QuotaSize.size(100))
-                .build()));
+        testee.event(new MailboxListener.QuotaUsageUpdatedEvent(BOB_SESSION, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, BASE_INSTANT));
 
         assertThat(mailetContext.getSentMails()).hasSize(1);
     }
 
+    /*
     @Test
-    default void shouldNotSendDuplicates(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotSendDuplicates(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -187,11 +138,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotifySeparatelyCountAndSize(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotifySeparatelyCountAndSize(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -219,11 +168,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldGroupSizeAndCountNotificationsWhenTriggeredByASingleEvent(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldGroupSizeAndCountNotificationsWhenTriggeredByASingleEvent(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -240,11 +187,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldSendMailWhenThresholdOverPassedOverGracePeriod(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldSendMailWhenThresholdOverPassedOverGracePeriod(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         store.persistQuotaSizeThresholdChange(BOB_USER,
             new QuotaThresholdChange(_50,
@@ -268,13 +213,11 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotSendMailWhenNoThresholdUpdateForCount(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotSendMailWhenNoThresholdUpdateForCount(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
-        store.persistQuotaCountThresholdChange(BOB_USER,
+        store.épersistQuotaCountThresholdChange(BOB_USER,
             new QuotaThresholdChange(_50,
                 BASE_INSTANT.minus(Duration.ofDays(2))));
 
@@ -293,11 +236,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotSendMailWhenThresholdOverPassedRecentlyForCount(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldNotSendMailWhenThresholdOverPassedRecentlyForCount(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         store.persistQuotaCountThresholdChange(BOB_USER,
             new QuotaThresholdChange(_50,
@@ -321,11 +262,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldSendMailWhenThresholdOverPassedForCount(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldSendMailWhenThresholdOverPassedForCount(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -342,11 +281,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldSendMailWhenThresholdOverPassedOverGracePeriodForCount(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldSendMailWhenThresholdOverPassedOverGracePeriodForCount(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, DEFAULT_CONFIGURATION);
 
         store.persistQuotaCountThresholdChange(BOB_USER,
             new QuotaThresholdChange(_50,
@@ -369,16 +306,9 @@ public interface QuotaMailingListenersIntegrationTest {
         assertThat(mailetContext.getSentMails()).hasSize(1);
     }
 
-    default FakeMailContext mailetContext() {
-        return FakeMailContext.builder()
-            .postmaster(MailAddressFixture.POSTMASTER_AT_JAMES)
-            .build();
-    }
-
     @Test
-    default void shouldUpdateSizeChangesWhenOverPassingLimit(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+    default void shouldUpdateSizeChangesWhenOverPassingLimit(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -399,9 +329,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotUpdateSizeChangesWhenNoChanges(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+    default void shouldNotUpdateSizeChangesWhenNoChanges(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -419,9 +348,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotUpdateSizeChangesWhenNoChange(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+    default void shouldNotUpdateSizeChangesWhenNoChange(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
 
         QuotaThresholdChange oldChange = new QuotaThresholdChange(_50,
@@ -444,10 +372,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateSizeChangesWhenBelow(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldUpdateSizeChangesWhenBelow(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange = new QuotaThresholdChange(_50,
             BASE_INSTANT.minus(Duration.ofDays(6)));
@@ -470,10 +396,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateSizeChangesWhenAbove(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldUpdateSizeChangesWhenAbove(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange = new QuotaThresholdChange(QuotaThreshold.ZERO,
             BASE_INSTANT.minus(Duration.ofDays(6)));
@@ -496,10 +420,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateSizeChangesWhenAboveButRecentlyOverpasses(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldUpdateSizeChangesWhenAboveButRecentlyOverpasses(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange1 = new QuotaThresholdChange(_50,
             BASE_INSTANT.minus(Duration.ofHours(12)));
@@ -525,9 +447,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateCountChangesWhenOverPassingLimit(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+    default void shouldUpdateCountChangesWhenOverPassingLimit(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -548,9 +469,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotUpdateCountChangesWhenNoChanges(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
+    default void shouldNotUpdateCountChangesWhenNoChanges(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -568,10 +488,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldNotUpdateCountChangesWhenNoChange(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldNotUpdateCountChangesWhenNoChange(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange = new QuotaThresholdChange(_50,
             BASE_INSTANT.minus(Duration.ofDays(6)));
@@ -593,10 +511,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateCountChangesWhenBelow(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldUpdateCountChangesWhenBelow(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange = new QuotaThresholdChange(_50,
             BASE_INSTANT.minus(Duration.ofDays(6)));
@@ -619,10 +535,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateCountChangesWhenAbove(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldUpdateCountChangesWhenAbove(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange = new QuotaThresholdChange(QuotaThreshold.ZERO,
             BASE_INSTANT.minus(Duration.ofDays(6)));
@@ -645,10 +559,8 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldUpdateCountChangesWhenAboveButRecentlyOverpasses(QuotaThresholdHistoryStore store) throws Exception {
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext(), Clock.fixed(BASE_INSTANT, ZoneId.systemDefault()));
-        testee.configure(new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD));
-
+    default void shouldUpdateCountChangesWhenAboveButRecentlyOverpasses(EventStore store) throws Exception {
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext(), store, DEFAULT_CONFIGURATION, FIXED_CLOCK);
 
         QuotaThresholdChange oldChange1 = new QuotaThresholdChange(_50,
             BASE_INSTANT.minus(Duration.ofHours(12)));
@@ -674,10 +586,9 @@ public interface QuotaMailingListenersIntegrationTest {
     }
 
     @Test
-    default void shouldSendOneNoticePerThreshold(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldSendOneNoticePerThreshold(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-        testee.configure(new QuotaMailingListenerConfiguration(new QuotaThresholds(_50, _80), GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, new QuotaMailingListenerConfiguration(new QuotaThresholds(_50, _80), GRACE_PERIOD));
 
         testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
             QuotaRoot.quotaRoot("any", Optional.empty()),
@@ -706,10 +617,9 @@ public interface QuotaMailingListenersIntegrationTest {
 
     @Disabled
     @Test
-    default void shouldSendOneMailUponConcurrentEvents(QuotaThresholdHistoryStore store) throws Exception {
+    default void shouldSendOneMailUponConcurrentEvents(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-        testee.configure(new QuotaMailingListenerConfiguration(new QuotaThresholds(_50, _80), GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, new QuotaMailingListenerConfiguration(new QuotaThresholds(_50, _80), GRACE_PERIOD));
 
         new ConcurrentTestRunner(10, 1, (threadNb, step) ->
             testee.event(new MailboxListener.QuotaUsageUpdatedEvent(new MockMailboxSession(BOB),
@@ -731,10 +641,9 @@ public interface QuotaMailingListenersIntegrationTest {
 
     @Disabled
     @Test
-    default void storeShouldOnlyStoreOneOverPassedThresholdOnceWhenConcurrentEvents(QuotaThresholdHistoryStore store) throws Exception {
+    default void storeShouldOnlyStoreOneOverPassedThresholdOnceWhenConcurrentEvents(EventStore store) throws Exception {
         FakeMailContext mailetContext = mailetContext();
-        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(store, mailetContext);
-        testee.configure(new QuotaMailingListenerConfiguration(new QuotaThresholds(_50, _80), GRACE_PERIOD));
+        QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, new QuotaMailingListenerConfiguration(new QuotaThresholds(_50, _80), GRACE_PERIOD));
 
         int threadCount = 5;
         new ConcurrentTestRunner(threadCount, 1, (threadNb, step) ->
@@ -755,4 +664,12 @@ public interface QuotaMailingListenersIntegrationTest {
             .getChanges())
             .hasSize(1);
     }
+    */
+
+    default FakeMailContext mailetContext() {
+        return FakeMailContext.builder()
+            .postmaster(MailAddressFixture.POSTMASTER_AT_JAMES)
+            .build();
+    }
+
 }

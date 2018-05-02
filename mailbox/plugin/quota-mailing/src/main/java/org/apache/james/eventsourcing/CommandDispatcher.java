@@ -17,24 +17,42 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.memory;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.InMemoryEventStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
-public class InMemoryQuotaThresholdHistoryStoreExtension implements ParameterResolver {
+import com.google.common.collect.ImmutableList;
 
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == EventStore.class);
+public class CommandDispatcher {
+
+    public interface Command {
     }
 
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new InMemoryEventStore();
+    private final EventBus eventBus;
+    private Map<Class, Function<Command, List<? extends Event>>> handlers;
+
+    public CommandDispatcher(EventBus eventBus) {
+        this.eventBus = eventBus;
+        this.handlers = new ConcurrentHashMap<>();
+    }
+
+    public <C extends Command, HandlerT extends Function<C, List<? extends Event>>>
+        CommandDispatcher register(Class<C> type, HandlerT commandHandler) {
+
+        handlers.put(type, (Function<Command, List<? extends Event>>) commandHandler);
+        return this;
+    }
+
+    public void dispatch(Command c) {
+        try {
+            Optional<List<? extends Event>> events = Optional.ofNullable(handlers.get(c.getClass())).map(f -> f.apply(c));
+            eventBus.publish(events.orElse(ImmutableList.of()));
+        } catch (EventBus.EventStoreFailedException e) {
+            //Retry
+        }
     }
 }

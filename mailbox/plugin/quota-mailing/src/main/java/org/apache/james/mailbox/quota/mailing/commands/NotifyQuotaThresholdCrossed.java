@@ -17,24 +17,27 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.memory;
+package org.apache.james.mailbox.quota.mailing.commands;
 
-import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.InMemoryEventStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import org.apache.james.core.User;
+import org.apache.james.eventsourcing.CommandDispatcher;
+import org.apache.james.mailbox.quota.model.QuotaThreshold;
 
-public class InMemoryQuotaThresholdHistoryStoreExtension implements ParameterResolver {
+public class NotifyQuotaThresholdCrossed implements CommandDispatcher.Command {
 
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == EventStore.class);
+    private final User user;
+    private final QuotaThreshold threshold;
+
+    public NotifyQuotaThresholdCrossed(User user, QuotaThreshold threshold) {
+        this.user = user;
+        this.threshold = threshold;
     }
 
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new InMemoryEventStore();
+    public User getUser() {
+        return user;
+    }
+
+    public QuotaThreshold getThreshold() {
+        return threshold;
     }
 }

@@ -17,24 +17,22 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.memory;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.InMemoryEventStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import java.util.Arrays;
+import java.util.List;
 
-public class InMemoryQuotaThresholdHistoryStoreExtension implements ParameterResolver {
+public interface EventStore {
 
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == EventStore.class);
+    default void append(Event event) {
+        appendAll(Arrays.asList(event));
     }
 
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new InMemoryEventStore();
-    }
+    /**
+     * This method should check that no input event has an id already stored and throw otherwise
+     * It should also check that all events belong to the same aggregate
+     */
+    void appendAll(List<? extends Event> events);
+
+    List<Event> getEventsOfAggregate(AggregateId aggregateId);
 }

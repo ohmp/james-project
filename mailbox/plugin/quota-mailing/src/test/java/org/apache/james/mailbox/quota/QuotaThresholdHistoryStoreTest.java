@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 public interface QuotaThresholdHistoryStoreTest {
 
+    /*
     User USER = User.fromUsername("bob@domain");
     User OTHER_USER = User.fromUsername("alice@domain");
 
@@ -133,5 +134,5 @@ public interface QuotaThresholdHistoryStoreTest {
         assertThat(store.retrieveQuotaCountThresholdChanges(USER))
             .isEqualTo(new QuotaThresholdHistory(change1, change2));
     }
-
+*/
 }

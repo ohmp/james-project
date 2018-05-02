@@ -17,24 +17,15 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.memory;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.InMemoryEventStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+public interface Event extends Comparable<Event> {
 
-public class InMemoryQuotaThresholdHistoryStoreExtension implements ParameterResolver {
+    EventId eventId();
+    AggregateId getAggregateId();
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == EventStore.class);
-    }
-
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new InMemoryEventStore();
+    default int compareTo(Event o) {
+        return eventId().compareTo(o.eventId());
     }
 }

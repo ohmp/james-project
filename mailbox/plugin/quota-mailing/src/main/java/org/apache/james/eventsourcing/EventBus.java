@@ -17,24 +17,38 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.memory;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.InMemoryEventStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import java.util.HashSet;
+import java.util.List;
 
-public class InMemoryQuotaThresholdHistoryStoreExtension implements ParameterResolver {
+import org.apache.commons.lang3.tuple.Pair;
 
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == EventStore.class);
+import com.google.common.collect.Sets;
+
+public class EventBus {
+
+    public static class EventStoreFailedException extends RuntimeException {
+
     }
 
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new InMemoryEventStore();
+    private final EventStore eventStore;
+    private final HashSet<Subscriber> subscribers;
+
+    public EventBus(EventStore eventStore) {
+        this.eventStore = eventStore;
+        this.subscribers = Sets.newHashSet();
+    }
+
+    public EventBus subscribe(Subscriber subscriber) {
+        subscribers.add(subscriber);
+        return this;
+    }
+
+    public void publish(List<? extends Event> events) throws EventStoreFailedException {
+        eventStore.appendAll(events);
+        events.stream()
+            .flatMap(event -> subscribers.stream().map(subscriber -> Pair.of(event, subscriber)))
+            .forEach(pair -> pair.getRight().handle(pair.getLeft()));
     }
 }

@@ -17,18 +17,29 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.core.User;
-import org.apache.james.mailbox.quota.model.QuotaThresholdChange;
-import org.apache.james.mailbox.quota.model.QuotaThresholdHistory;
+import java.util.List;
+import java.util.Optional;
 
-public interface QuotaThresholdHistoryStore {
-    QuotaThresholdHistory retrieveQuotaSizeThresholdChanges(User user);
+import com.google.common.collect.ArrayListMultimap;
 
-    void persistQuotaSizeThresholdChange(User user, QuotaThresholdChange quotaThresholdChange);
+public class InMemoryEventStore implements EventStore {
 
-    QuotaThresholdHistory retrieveQuotaCountThresholdChanges(User user);
+    private final ArrayListMultimap<AggregateId, Event> store;
 
-    void persistQuotaCountThresholdChange(User user, QuotaThresholdChange quotaThresholdChange);
+    public InMemoryEventStore() {
+        this.store = ArrayListMultimap.create();
+    }
+
+    @Override
+    public void appendAll(List<? extends Event> events) {
+        Optional<AggregateId> aggregateId = events.stream().map(Event::getAggregateId).findFirst();
+        aggregateId.map(id -> store.putAll(id, events));
+    }
+
+    @Override
+    public List<Event> getEventsOfAggregate(AggregateId aggregateId) {
+        return store.get(aggregateId);
+    }
 }
