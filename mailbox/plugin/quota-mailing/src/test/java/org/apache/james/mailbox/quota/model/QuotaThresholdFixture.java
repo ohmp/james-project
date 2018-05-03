@@ -19,9 +19,23 @@
 
 package org.apache.james.mailbox.quota.model;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Optional;
+
+import org.apache.james.core.User;
+import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.Quota;
+import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.quota.QuotaCount;
 import org.apache.james.mailbox.quota.QuotaSize;
+import org.apache.james.mailbox.quota.mailing.QuotaMailingListenerConfiguration;
+import org.apache.mailet.base.MailAddressFixture;
+import org.apache.mailet.base.test.FakeMailContext;
+
+import com.google.common.collect.ImmutableList;
 
 public interface QuotaThresholdFixture {
     QuotaThreshold _50 = new QuotaThreshold(0.50);
@@ -34,8 +48,23 @@ public interface QuotaThresholdFixture {
 
     interface Quotas {
         interface Counts {
+            Quota<QuotaCount> _32_PERCENT = Quota.<QuotaCount>builder()
+                .used(QuotaCount.count(32))
+                .computedLimit(QuotaCount.count(100))
+                .build();
+
             Quota<QuotaCount> _40_PERCENT = Quota.<QuotaCount>builder()
                 .used(QuotaCount.count(40))
+                .computedLimit(QuotaCount.count(100))
+                .build();
+
+            Quota<QuotaCount> _52_PERCENT = Quota.<QuotaCount>builder()
+                .used(QuotaCount.count(52))
+                .computedLimit(QuotaCount.count(100))
+                .build();
+
+            Quota<QuotaCount> _85_PERCENT = Quota.<QuotaCount>builder()
+                .used(QuotaCount.count(85))
                 .computedLimit(QuotaCount.count(100))
                 .build();
         }
@@ -44,14 +73,40 @@ public interface QuotaThresholdFixture {
                 .used(QuotaSize.size(30))
                 .computedLimit(QuotaSize.size(100))
                 .build();
+            Quota<QuotaSize> _42_PERCENT = Quota.<QuotaSize>builder()
+                .used(QuotaSize.size(42))
+                .computedLimit(QuotaSize.size(100))
+                .build();
 
             Quota<QuotaSize> _55_PERCENT = Quota.<QuotaSize>builder()
                 .used(QuotaSize.size(55))
                 .computedLimit(QuotaSize.size(100))
                 .build();
 
-        }
+            Quota<QuotaSize> _60_PERCENT = Quota.<QuotaSize>builder()
+                .used(QuotaSize.size(60))
+                .computedLimit(QuotaSize.size(100))
+                .build();
 
+        }
+    }
+
+    interface TestConstants {
+        Duration GRACE_PERIOD = Duration.ofDays(1);
+        QuotaThresholds SINGLE_THRESHOLD = new QuotaThresholds(ImmutableList.of(_50));
+        QuotaMailingListenerConfiguration DEFAULT_CONFIGURATION = new QuotaMailingListenerConfiguration(SINGLE_THRESHOLD, GRACE_PERIOD);
+        String BOB = "bob@domain";
+        MockMailboxSession BOB_SESSION = new MockMailboxSession(BOB);
+        User BOB_USER = User.fromUsername(BOB);
+        Instant BASE_INSTANT = Instant.now();
+        Clock FIXED_CLOCK = Clock.fixed(BASE_INSTANT, ZoneId.systemDefault());
+        QuotaRoot QUOTAROOT = QuotaRoot.quotaRoot("any", Optional.empty());
+    }
+
+    static FakeMailContext mailetContext() {
+        return FakeMailContext.builder()
+            .postmaster(MailAddressFixture.POSTMASTER_AT_JAMES)
+            .build();
     }
 
 }

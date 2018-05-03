@@ -19,11 +19,13 @@
 
 package org.apache.james.mailbox.quota.memory.listeners;
 
-import org.apache.james.mailbox.quota.mailing.listeners.QuotaMailingListenersIntegrationTest;
+import org.apache.james.mailbox.quota.mailing.listeners.QuotaThresholdMailingIntegrationTest;
+import org.apache.james.mailbox.quota.mailing.listeners.QuotaThresholdStorageIntegrationTest;
 import org.apache.james.mailbox.quota.memory.InMemoryQuotaThresholdHistoryStoreExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(InMemoryQuotaThresholdHistoryStoreExtension.class)
-public class InMemoryQuotaMailingListenersIntegrationTest implements QuotaMailingListenersIntegrationTest {
+public class InMemoryQuotaMailingListenersIntegrationTest implements QuotaThresholdMailingIntegrationTest,
+                                                                     QuotaThresholdStorageIntegrationTest {
 
 }
