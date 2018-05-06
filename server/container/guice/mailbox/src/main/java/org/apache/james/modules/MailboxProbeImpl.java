@@ -32,13 +32,19 @@ import javax.mail.Flags;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.MessageAttachment;
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.model.search.Wildcard;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
@@ -47,17 +53,22 @@ import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.probe.MailboxProbe;
 import org.apache.james.utils.GuiceProbe;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 
 public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
     private final MailboxManager mailboxManager;
+    private final MessageIdManager messageIdManager;
     private final MailboxMapperFactory mailboxMapperFactory;
     private final SubscriptionManager subscriptionManager;
 
     @Inject
-    private MailboxProbeImpl(MailboxManager mailboxManager, MailboxMapperFactory mailboxMapperFactory,
+    private MailboxProbeImpl(MailboxManager mailboxManager, MessageIdManager messageIdManager, MailboxMapperFactory mailboxMapperFactory,
                              SubscriptionManager subscriptionManager) {
         this.mailboxManager = mailboxManager;
+        this.messageIdManager = messageIdManager;
         this.mailboxMapperFactory = mailboxMapperFactory;
         this.subscriptionManager = subscriptionManager;
     }
@@ -200,6 +211,19 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
     public Collection<String> listSubscriptions(String user) throws Exception {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
         return subscriptionManager.subscriptions(mailboxSession);
+    }
+
+    public List<AttachmentId> retrieveAttachmentIds(MessageId messageId, String username) throws MailboxException {
+        MailboxSession mailboxSession = mailboxManager.createSystemSession(username);
+        List<MessageResult> messages = messageIdManager.getMessages(
+            ImmutableList.of(messageId),
+            FetchGroupImpl.MINIMAL,
+            mailboxSession);
+
+        return messages.stream()
+            .flatMap(Throwing.function(messageResult -> messageResult.getAttachments().stream()))
+            .map(MessageAttachment::getAttachmentId)
+            .collect(Guavate.toImmutableList());
     }
 
 }
