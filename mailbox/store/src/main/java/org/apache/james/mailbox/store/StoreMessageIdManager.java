@@ -219,12 +219,10 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     private List<MailboxMessage> findRelatedMailboxMessages(MessageId messageId, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-        List<MailboxMessage> messageList = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full);
 
-        ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.Read);
-
-        return messageList.stream()
-            .filter(message -> allowedMailboxIds.contains(message.getMailboxId()))
+        return messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
+            .stream()
+            .filter(hasRightsOn(mailboxSession, Right.Read))
             .collect(Guavate.toImmutableList());
     }
 
@@ -343,6 +341,11 @@ public class StoreMessageIdManager implements MessageIdManager {
     private Predicate<MailboxMessage> inMailboxes(Collection<MailboxId> mailboxIds) {
         return mailboxMessage -> mailboxIds.contains(mailboxMessage.getMailboxId());
     }
+
+    private Predicate<MailboxMessage> hasRightsOn(MailboxSession session, Right... rights) {
+        return message -> hasRightsOnMailbox(session, rights).test(message.getMailboxId());
+    }
+
 
     private Predicate<MailboxId> hasRightsOnMailbox(MailboxSession session, Right... rights) {
         return Throwing.predicate((MailboxId mailboxId) -> mailboxManager.myRights(mailboxId, session).contains(rights))
