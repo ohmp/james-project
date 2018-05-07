@@ -27,6 +27,10 @@ import com.google.common.base.Preconditions;
 
 public class EventId implements Comparable<EventId> {
 
+    public static EventId fromSerialized(long value) {
+        return new EventId(value);
+    }
+
     public static EventId first() {
         return new EventId(0);
     }
@@ -74,5 +78,9 @@ public class EventId implements Comparable<EventId> {
         return MoreObjects.toStringHelper(this)
             .add("value", value)
             .toString();
+    }
+
+    public long serialize() {
+        return value;
     }
 }

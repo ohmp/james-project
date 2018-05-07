@@ -17,21 +17,32 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.eventsourcing;
+package org.apache.james.mailbox.quota.cassandra;
 
-public interface Event extends Comparable<Event> {
+import java.util.List;
 
-    interface Factory {
-        Event from(String serialized);
+import javax.inject.Inject;
+
+import org.apache.james.eventsourcing.AggregateId;
+import org.apache.james.eventsourcing.Event;
+import org.apache.james.eventsourcing.EventStore;
+
+public class CassandraEventStore implements EventStore {
+
+    private final EventStoreDao eventStoreDao;
+
+    @Inject
+    public CassandraEventStore(EventStoreDao eventStoreDao) {
+        this.eventStoreDao = eventStoreDao;
     }
-
-    EventId eventId();
-
-    AggregateId getAggregateId();
 
     @Override
-    default int compareTo(Event o) {
-        return eventId().compareTo(o.eventId());
+    public void appendAll(List<Event> events) {
+        eventStoreDao.appendAll(events).join();
     }
 
+    @Override
+    public History getEventsOfAggregate(AggregateId aggregateId) {
+        return eventStoreDao.getEventsOfAggregate(aggregateId);
+    }
 }

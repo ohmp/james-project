@@ -17,21 +17,13 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.eventsourcing;
+package org.apache.james.mailbox.quota.cassandra.listeners;
 
-public interface Event extends Comparable<Event> {
+import org.apache.james.mailbox.quota.cassandra.CassandraEventStoreExtension;
+import org.apache.james.mailbox.quota.mailing.listeners.QuotaThresholdMailingIntegrationTest;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-    interface Factory {
-        Event from(String serialized);
-    }
-
-    EventId eventId();
-
-    AggregateId getAggregateId();
-
-    @Override
-    default int compareTo(Event o) {
-        return eventId().compareTo(o.eventId());
-    }
+@ExtendWith(CassandraEventStoreExtension.class)
+public class CassandraQuotaMailingListenersIntegrationTest implements QuotaThresholdMailingIntegrationTest {
 
 }

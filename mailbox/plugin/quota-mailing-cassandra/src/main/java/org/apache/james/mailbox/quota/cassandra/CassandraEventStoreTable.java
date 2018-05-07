@@ -16,22 +16,12 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+package org.apache.james.mailbox.quota.cassandra;
 
-package org.apache.james.eventsourcing;
+public interface CassandraEventStoreTable {
 
-public interface Event extends Comparable<Event> {
-
-    interface Factory {
-        Event from(String serialized);
-    }
-
-    EventId eventId();
-
-    AggregateId getAggregateId();
-
-    @Override
-    default int compareTo(Event o) {
-        return eventId().compareTo(o.eventId());
-    }
-
+    String EVENTS_TABLE = "eventStore";
+    String AGGREGATE_ID = "aggregateId";
+    String EVENT = "event";
+    String EVENT_ID = "eventId";
 }
