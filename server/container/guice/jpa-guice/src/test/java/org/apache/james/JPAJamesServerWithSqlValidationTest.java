@@ -19,16 +19,22 @@
 
 package org.apache.james;
 
-import org.apache.james.modules.TestFilesystemModule;
+import java.io.IOException;
+
+import org.apache.james.server.core.configuration.Configuration;
 
 public class JPAJamesServerWithSqlValidationTest extends JPAJamesServerTest {
 
     @Override
-    protected GuiceJamesServer createJamesServer() {
-        return new GuiceJamesServer()
+    protected GuiceJamesServer createJamesServer() throws IOException {
+        Configuration configuration = Configuration.builder()
+            .workingDirectory(temporaryFolder.newFolder())
+            .configurationFromClasspath()
+            .build();
+
+        return new GuiceJamesServer(configuration)
             .combineWith(JPAJamesServerMain.JPA_SERVER_MODULE, JPAJamesServerMain.PROTOCOLS)
-            .overrideWith(new TestFilesystemModule(temporaryFolder),
-                        new TestJPAConfigurationModuleWithSqlValidation());
+            .overrideWith(new TestJPAConfigurationModuleWithSqlValidation());
     }
 
 }
