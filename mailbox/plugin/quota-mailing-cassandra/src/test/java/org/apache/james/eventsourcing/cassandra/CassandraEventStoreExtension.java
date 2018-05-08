@@ -17,13 +17,15 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra;
+package org.apache.james.eventsourcing.cassandra;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraExtension;
 import org.apache.james.backends.cassandra.DockerCassandraExtension.DockerCassandra;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.eventsourcing.EventStore;
+import org.apache.james.eventsourcing.cassandra.dto.TestEventDTOModule;
+import org.apache.james.mailbox.quota.cassandra.dto.QuotaThresholdChangedEventDTOModule;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -55,14 +57,20 @@ public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAll
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
+    public void beforeEach(ExtensionContext context) {
         cassandra = CassandraCluster.create(
                 new CassandraEventStoreModule(), dockerCassandra.getIp(), dockerCassandra.getBindingPort());
-        eventStoreDao = new EventStoreDao(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION, new JsonEventSerializer());
+
+        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(
+            new QuotaThresholdChangedEventDTOModule(),
+            new TestEventDTOModule());
+
+        eventStoreDao = new EventStoreDao(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION,
+            jsonEventSerializer);
     }
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
+    public void afterEach(ExtensionContext context) {
         cassandra.close();
     }
 

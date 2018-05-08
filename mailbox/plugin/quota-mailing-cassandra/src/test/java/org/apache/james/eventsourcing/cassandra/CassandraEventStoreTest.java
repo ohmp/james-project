@@ -17,32 +17,12 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra;
+package org.apache.james.eventsourcing.cassandra;
 
-import java.util.List;
+import org.apache.james.eventsourcing.EventStoreTest;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.inject.Inject;
+@ExtendWith(CassandraEventStoreExtension.class)
+class CassandraEventStoreTest implements EventStoreTest {
 
-import org.apache.james.eventsourcing.AggregateId;
-import org.apache.james.eventsourcing.Event;
-import org.apache.james.eventsourcing.EventStore;
-
-public class CassandraEventStore implements EventStore {
-
-    private final EventStoreDao eventStoreDao;
-
-    @Inject
-    public CassandraEventStore(EventStoreDao eventStoreDao) {
-        this.eventStoreDao = eventStoreDao;
-    }
-
-    @Override
-    public void appendAll(List<Event> events) {
-        eventStoreDao.appendAll(events).join();
-    }
-
-    @Override
-    public History getEventsOfAggregate(AggregateId aggregateId) {
-        return eventStoreDao.getEventsOfAggregate(aggregateId);
-    }
 }

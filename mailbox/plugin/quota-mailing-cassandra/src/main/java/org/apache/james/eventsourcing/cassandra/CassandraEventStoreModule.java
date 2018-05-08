@@ -16,7 +16,8 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.mailbox.quota.cassandra;
+
+package org.apache.james.eventsourcing.cassandra;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class CassandraEventStoreModule implements CassandraModule {
                 SchemaBuilder.createTable(CassandraEventStoreTable.EVENTS_TABLE)
                     .ifNotExists()
                     .addPartitionKey(CassandraEventStoreTable.AGGREGATE_ID, DataType.varchar())
-                    .addClusteringColumn(CassandraEventStoreTable.EVENT_ID, DataType.cint())
+                    .addClusteringColumn(CassandraEventStoreTable.EVENT_ID, DataType.bigint())
                     .addColumn(CassandraEventStoreTable.EVENT, DataType.text())
                     .withOptions()
                     .comment("Store events of a EventSourcing aggregate")

@@ -16,12 +16,11 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.mailbox.quota.cassandra;
 
-public interface CassandraEventStoreTable {
+package org.apache.james.eventsourcing.cassandra.dto;
 
-    String EVENTS_TABLE = "eventStore";
-    String AGGREGATE_ID = "aggregateId";
-    String EVENT = "event";
-    String EVENT_ID = "eventId";
+import org.apache.james.eventsourcing.Event;
+
+public interface EventDTO {
+    Event toEvent();
 }

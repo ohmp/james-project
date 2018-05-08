@@ -16,12 +16,17 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.mailbox.quota.cassandra;
+
+package org.apache.james.eventsourcing.cassandra;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static org.apache.james.eventsourcing.cassandra.CassandraEventStoreTable.AGGREGATE_ID;
+import static org.apache.james.eventsourcing.cassandra.CassandraEventStoreTable.EVENT;
+import static org.apache.james.eventsourcing.cassandra.CassandraEventStoreTable.EVENTS_TABLE;
+import static org.apache.james.eventsourcing.cassandra.CassandraEventStoreTable.EVENT_ID;
 
 import java.io.IOException;
 import java.util.List;
@@ -61,17 +66,43 @@ public class EventStoreDao {
     }
 
     private PreparedStatement prepareInsert(Session session) {
-        return session.prepare(insertInto(CassandraEventStoreTable.EVENTS_TABLE)
-            .value(CassandraEventStoreTable.AGGREGATE_ID, bindMarker(CassandraEventStoreTable.AGGREGATE_ID))
-            .value(CassandraEventStoreTable.EVENT_ID, bindMarker(CassandraEventStoreTable.EVENT_ID))
-            .value(CassandraEventStoreTable.EVENT, bindMarker(CassandraEventStoreTable.EVENT))
+        return session.prepare(insertInto(EVENTS_TABLE)
+            .value(AGGREGATE_ID, bindMarker(AGGREGATE_ID))
+            .value(EVENT_ID, bindMarker(EVENT_ID))
+            .value(EVENT, bindMarker(EVENT))
             .ifNotExists());
     }
 
     private PreparedStatement prepareSelect(Session session) {
         return session.prepare(select()
-            .from(CassandraEventStoreTable.EVENTS_TABLE)
-            .where(eq(CassandraEventStoreTable.AGGREGATE_ID, bindMarker(CassandraEventStoreTable.AGGREGATE_ID))));
+            .from(EVENTS_TABLE)
+            .where(eq(AGGREGATE_ID, bindMarker(AGGREGATE_ID))));
+    }
+
+    public CompletableFuture<Boolean> appendAll(List<Event> events) {
+        BatchStatement batch = new BatchStatement();
+        events.forEach(event -> batch.add(insertEvent(event)));
+        return cassandraAsyncExecutor.executeReturnApplied(batch);
+    }
+
+    private BoundStatement insertEvent(Event event) {
+        try {
+            return insert
+                .bind()
+                .setString(AGGREGATE_ID, event.getAggregateId().asAggregateKey())
+                .setLong(EVENT_ID, event.eventId().serialize())
+                .setString(EVENT, jsonEventSerializer.serialize(event));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public EventStore.History getEventsOfAggregate(AggregateId aggregateId) {
+        return toHistory(
+            cassandraAsyncExecutor.execute(
+                select.bind()
+                    .setString(AGGREGATE_ID, aggregateId.asAggregateKey()))
+                .join());
     }
 
     private EventStore.History toHistory(ResultSet resultSet) {
@@ -83,36 +114,9 @@ public class EventStoreDao {
 
     private Event toEvent(Row row) {
         try {
-            return jsonEventSerializer.deserialize(row.getString(CassandraEventStoreTable.EVENT));
+            return jsonEventSerializer.deserialize(row.getString(EVENT));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-
-    public CompletableFuture<Void> appendAll(List<Event> events) {
-        BatchStatement batch = new BatchStatement();
-        events.forEach(event -> batch.add(insertEvent(event)));
-        return cassandraAsyncExecutor.executeVoid(batch);
-    }
-
-    private BoundStatement insertEvent(Event event) {
-        try {
-            return insert
-                .bind()
-                .setString(CassandraEventStoreTable.AGGREGATE_ID, event.getAggregateId().asAggregateKey())
-                .setLong(CassandraEventStoreTable.EVENT_ID, event.eventId().serialize())
-                .setString(CassandraEventStoreTable.EVENT, jsonEventSerializer.serialize(event));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public EventStore.History getEventsOfAggregate(AggregateId aggregateId) {
-        return toHistory(
-            cassandraAsyncExecutor.execute(
-                select.bind()
-                    .setString(CassandraEventStoreTable.AGGREGATE_ID, aggregateId.asAggregateKey()))
-                .join());
     }
 }
