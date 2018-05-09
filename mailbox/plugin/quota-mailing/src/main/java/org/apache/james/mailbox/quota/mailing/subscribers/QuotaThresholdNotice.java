@@ -148,21 +148,25 @@ public class QuotaThresholdNotice {
     }
 
     private String renderTemplate(FileSystem fileSystem, String template) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        Writer writer = new OutputStreamWriter(byteArrayOutputStream);
-        MustacheFactory mf = new DefaultMustacheFactory();
-        Mustache mustache = mf.compile(getPatternReader(fileSystem, template), "example");
-        mustache.execute(writer, computeScopes());
-        writer.flush();
-        return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             Writer writer = new OutputStreamWriter(byteArrayOutputStream)) {
+
+            MustacheFactory mf = new DefaultMustacheFactory();
+            Mustache mustache = mf.compile(getPatternReader(fileSystem, template), "example");
+            mustache.execute(writer, computeScopes());
+            writer.flush();
+            return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+        }
     }
 
     private StringReader getPatternReader(FileSystem fileSystem, String path) throws IOException {
-        InputStream patternStream = fileSystem.getResource(path);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        IOUtils.copy(patternStream, byteArrayOutputStream);
-        String pattern = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-        return new StringReader(pattern);
+        try (InputStream patternStream = fileSystem.getResource(path);
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+
+            IOUtils.copy(patternStream, byteArrayOutputStream);
+            String pattern = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+            return new StringReader(pattern);
+        }
     }
 
     private HashMap<String, Object> computeScopes() {
