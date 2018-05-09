@@ -23,8 +23,8 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.core.User;
+import org.apache.james.evensourcing.cassandra.JsonEventSerializer;
 import org.apache.james.eventsourcing.EventId;
-import org.apache.james.eventsourcing.cassandra.JsonEventSerializer;
 import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.quota.QuotaCount;
 import org.apache.james.mailbox.quota.QuotaSize;

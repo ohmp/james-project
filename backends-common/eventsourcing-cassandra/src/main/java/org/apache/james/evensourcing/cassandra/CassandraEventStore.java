@@ -17,38 +17,46 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra.dto;
+package org.apache.james.evensourcing.cassandra;
 
-import org.apache.james.evensourcing.cassandra.dto.EventDTO;
-import org.apache.james.evensourcing.cassandra.dto.EventDTOModule;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.apache.james.eventsourcing.AggregateId;
 import org.apache.james.eventsourcing.Event;
-import org.apache.james.mailbox.quota.mailing.events.QuotaThresholdChangedEvent;
+import org.apache.james.eventsourcing.EventStore;
 
 import com.google.common.base.Preconditions;
 
-public class QuotaThresholdChangedEventDTOModule implements EventDTOModule {
-    public static final String QUOTA_THRESHOLD_CHANGE = "quota-threshold-change";
+public class CassandraEventStore implements EventStore {
 
-    @Override
-    public String getType() {
-        return QUOTA_THRESHOLD_CHANGE;
+    private final EventStoreDao eventStoreDao;
+
+    @Inject
+    public CassandraEventStore(EventStoreDao eventStoreDao) {
+        this.eventStoreDao = eventStoreDao;
     }
 
     @Override
-    public Class<? extends EventDTO> getDTOClass() {
-        return QuotaThresholdChangedEventDTO.class;
+    public void appendAll(List<Event> events) {
+        if (events.isEmpty()) {
+            return;
+        }
+        doAppendAll(events);
+    }
+
+    public void doAppendAll(List<Event> events) {
+        Preconditions.checkArgument(Event.belongsToSameAggregate(events));
+
+        boolean success = eventStoreDao.appendAll(events).join();
+        if (!success) {
+            throw new EventStoreFailedException();
+        }
     }
 
     @Override
-    public Class<? extends Event> getEventClass() {
-        return QuotaThresholdChangedEvent.class;
-    }
-
-    @Override
-    public EventDTO toDTO(Event event) {
-        Preconditions.checkArgument(event instanceof QuotaThresholdChangedEvent);
-        return QuotaThresholdChangedEventDTO.from(
-            (QuotaThresholdChangedEvent) event,
-            QUOTA_THRESHOLD_CHANGE);
+    public History getEventsOfAggregate(AggregateId aggregateId) {
+        return eventStoreDao.getEventsOfAggregate(aggregateId);
     }
 }

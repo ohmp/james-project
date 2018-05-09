@@ -17,38 +17,42 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra.dto;
+package org.apache.james.eventsourcing.cassandra.dto;
 
 import org.apache.james.evensourcing.cassandra.dto.EventDTO;
 import org.apache.james.evensourcing.cassandra.dto.EventDTOModule;
 import org.apache.james.eventsourcing.Event;
-import org.apache.james.mailbox.quota.mailing.events.QuotaThresholdChangedEvent;
+import org.apache.james.eventsourcing.TestEvent;
+import org.testcontainers.shaded.com.google.common.base.Preconditions;
 
-import com.google.common.base.Preconditions;
+public class TestEventDTOModule implements EventDTOModule {
 
-public class QuotaThresholdChangedEventDTOModule implements EventDTOModule {
-    public static final String QUOTA_THRESHOLD_CHANGE = "quota-threshold-change";
+    public static final String TEST_TYPE = "TestType";
 
     @Override
     public String getType() {
-        return QUOTA_THRESHOLD_CHANGE;
+        return TEST_TYPE;
     }
 
     @Override
     public Class<? extends EventDTO> getDTOClass() {
-        return QuotaThresholdChangedEventDTO.class;
+        return TestEventDTO.class;
     }
 
     @Override
     public Class<? extends Event> getEventClass() {
-        return QuotaThresholdChangedEvent.class;
+        return TestEvent.class;
     }
 
     @Override
     public EventDTO toDTO(Event event) {
-        Preconditions.checkArgument(event instanceof QuotaThresholdChangedEvent);
-        return QuotaThresholdChangedEventDTO.from(
-            (QuotaThresholdChangedEvent) event,
-            QUOTA_THRESHOLD_CHANGE);
+        Preconditions.checkArgument(event instanceof TestEvent);
+
+        TestEvent testEvent = (TestEvent) event;
+        return new TestEventDTO(
+            TEST_TYPE,
+            testEvent.getData(),
+            testEvent.eventId().serialize(),
+            testEvent.getAggregateId().getId());
     }
 }

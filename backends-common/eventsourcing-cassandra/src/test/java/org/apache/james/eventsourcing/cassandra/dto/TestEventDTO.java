@@ -17,38 +17,58 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra.dto;
+package org.apache.james.eventsourcing.cassandra.dto;
 
 import org.apache.james.evensourcing.cassandra.dto.EventDTO;
-import org.apache.james.evensourcing.cassandra.dto.EventDTOModule;
 import org.apache.james.eventsourcing.Event;
-import org.apache.james.mailbox.quota.mailing.events.QuotaThresholdChangedEvent;
+import org.apache.james.eventsourcing.EventId;
+import org.apache.james.eventsourcing.TestAggregateId;
+import org.apache.james.eventsourcing.TestEvent;
 
-import com.google.common.base.Preconditions;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class QuotaThresholdChangedEventDTOModule implements EventDTOModule {
-    public static final String QUOTA_THRESHOLD_CHANGE = "quota-threshold-change";
+public class TestEventDTO implements EventDTO {
+    private final String type;
+    private final String data;
+    private final long eventId;
+    private final int aggregate;
 
-    @Override
+    @JsonCreator
+    public TestEventDTO(
+            @JsonProperty("type") String type,
+            @JsonProperty("data") String data,
+            @JsonProperty("eventId") long eventId,
+            @JsonProperty("aggregate") int aggregate) {
+        this.type = type;
+        this.data = data;
+        this.eventId = eventId;
+        this.aggregate = aggregate;
+    }
+
     public String getType() {
-        return QUOTA_THRESHOLD_CHANGE;
+        return type;
     }
 
-    @Override
-    public Class<? extends EventDTO> getDTOClass() {
-        return QuotaThresholdChangedEventDTO.class;
+    public String getData() {
+        return data;
     }
 
-    @Override
-    public Class<? extends Event> getEventClass() {
-        return QuotaThresholdChangedEvent.class;
+    public long getEventId() {
+        return eventId;
     }
 
+    public int getAggregate() {
+        return aggregate;
+    }
+
+    @JsonIgnore
     @Override
-    public EventDTO toDTO(Event event) {
-        Preconditions.checkArgument(event instanceof QuotaThresholdChangedEvent);
-        return QuotaThresholdChangedEventDTO.from(
-            (QuotaThresholdChangedEvent) event,
-            QUOTA_THRESHOLD_CHANGE);
+    public Event toEvent() {
+        return new TestEvent(
+            EventId.fromSerialized(eventId),
+            TestAggregateId.testId(aggregate),
+            data);
     }
 }

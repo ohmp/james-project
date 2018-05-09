@@ -17,38 +17,22 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra.dto;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.evensourcing.cassandra.dto.EventDTO;
-import org.apache.james.evensourcing.cassandra.dto.EventDTOModule;
-import org.apache.james.eventsourcing.Event;
-import org.apache.james.mailbox.quota.mailing.events.QuotaThresholdChangedEvent;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
 
-import com.google.common.base.Preconditions;
-
-public class QuotaThresholdChangedEventDTOModule implements EventDTOModule {
-    public static final String QUOTA_THRESHOLD_CHANGE = "quota-threshold-change";
+public class InMemoryEventStoreExtension implements ParameterResolver {
 
     @Override
-    public String getType() {
-        return QUOTA_THRESHOLD_CHANGE;
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return (parameterContext.getParameter().getType() == EventStore.class);
     }
 
     @Override
-    public Class<? extends EventDTO> getDTOClass() {
-        return QuotaThresholdChangedEventDTO.class;
-    }
-
-    @Override
-    public Class<? extends Event> getEventClass() {
-        return QuotaThresholdChangedEvent.class;
-    }
-
-    @Override
-    public EventDTO toDTO(Event event) {
-        Preconditions.checkArgument(event instanceof QuotaThresholdChangedEvent);
-        return QuotaThresholdChangedEventDTO.from(
-            (QuotaThresholdChangedEvent) event,
-            QUOTA_THRESHOLD_CHANGE);
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return new InMemoryEventStore();
     }
 }

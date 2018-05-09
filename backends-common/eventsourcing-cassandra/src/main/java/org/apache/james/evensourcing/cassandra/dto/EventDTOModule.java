@@ -17,38 +17,16 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra.dto;
+package org.apache.james.evensourcing.cassandra.dto;
 
-import org.apache.james.evensourcing.cassandra.dto.EventDTO;
-import org.apache.james.evensourcing.cassandra.dto.EventDTOModule;
 import org.apache.james.eventsourcing.Event;
-import org.apache.james.mailbox.quota.mailing.events.QuotaThresholdChangedEvent;
 
-import com.google.common.base.Preconditions;
+public interface EventDTOModule {
+    String getType();
 
-public class QuotaThresholdChangedEventDTOModule implements EventDTOModule {
-    public static final String QUOTA_THRESHOLD_CHANGE = "quota-threshold-change";
+    Class<? extends EventDTO> getDTOClass();
 
-    @Override
-    public String getType() {
-        return QUOTA_THRESHOLD_CHANGE;
-    }
+    Class<? extends Event> getEventClass();
 
-    @Override
-    public Class<? extends EventDTO> getDTOClass() {
-        return QuotaThresholdChangedEventDTO.class;
-    }
-
-    @Override
-    public Class<? extends Event> getEventClass() {
-        return QuotaThresholdChangedEvent.class;
-    }
-
-    @Override
-    public EventDTO toDTO(Event event) {
-        Preconditions.checkArgument(event instanceof QuotaThresholdChangedEvent);
-        return QuotaThresholdChangedEventDTO.from(
-            (QuotaThresholdChangedEvent) event,
-            QUOTA_THRESHOLD_CHANGE);
-    }
+    EventDTO toDTO(Event event);
 }
