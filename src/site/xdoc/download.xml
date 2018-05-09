@@ -108,7 +108,7 @@ is found <a href='https://www.apache.org/licenses/exports/'>here</a>.
       <subsection name="Verify the integrity of the files">
       
       <p>It is essential that you verify the integrity of the downloaded
-      files using the PGP or SAH-1 signatures.</p>
+      files using the PGP or SHA-1 signatures.</p>
       
       <p>The PGP signatures can be verified using PGP or GPG.  First
       download the <a href="https://www.apache.org/dyn/closer.lua/james/KEYS">KEYS</a>
