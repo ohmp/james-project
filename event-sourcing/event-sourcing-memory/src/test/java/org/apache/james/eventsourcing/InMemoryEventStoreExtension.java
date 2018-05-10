@@ -19,7 +19,6 @@
 
 package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsource.InMemoryEventStore;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;

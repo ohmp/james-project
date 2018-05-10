@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.eventsource;
+package org.apache.james.eventsourcing;
 
 import java.util.List;
 import java.util.Optional;

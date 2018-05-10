@@ -19,13 +19,14 @@
 
 package org.apache.james.eventsourcing.cassandra;
 
+import java.util.Set;
+
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraExtension;
 import org.apache.james.backends.cassandra.DockerCassandraExtension.DockerCassandra;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.eventsourcing.EventStore;
-import org.apache.james.eventsourcing.cassandra.dto.TestEventDTOModule;
-import org.apache.james.mailbox.quota.cassandra.dto.QuotaThresholdChangedEventDTOModule;
+import org.apache.james.eventsourcing.cassandra.dto.EventDTOModule;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -35,13 +36,15 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class CassandraGenericEventStoreExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
     private final DockerCassandraExtension dockerCassandraExtension;
+    private final Set<EventDTOModule> modules;
     private CassandraCluster cassandra;
     private DockerCassandra dockerCassandra;
     private EventStoreDao eventStoreDao;
 
-    public CassandraEventStoreExtension() {
+    public CassandraGenericEventStoreExtension(Set<EventDTOModule> modules) {
+        this.modules = modules;
         dockerCassandraExtension = new DockerCassandraExtension();
     }
 
@@ -61,9 +64,7 @@ public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAll
         cassandra = CassandraCluster.create(
                 new CassandraEventStoreModule(), dockerCassandra.getIp(), dockerCassandra.getBindingPort());
 
-        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(
-            new QuotaThresholdChangedEventDTOModule(),
-            new TestEventDTOModule());
+        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(modules);
 
         eventStoreDao = new EventStoreDao(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION,
             jsonEventSerializer);

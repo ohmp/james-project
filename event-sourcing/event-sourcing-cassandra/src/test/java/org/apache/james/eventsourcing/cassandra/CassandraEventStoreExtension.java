@@ -17,12 +17,14 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.quota.cassandra.listeners;
+package org.apache.james.eventsourcing.cassandra;
 
-import org.apache.james.mailbox.quota.mailing.listeners.QuotaThresholdMailingIntegrationTest;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.james.eventsourcing.cassandra.dto.TestEventDTOModule;
 
-@ExtendWith(CassandraEventStoreExtension.class)
-public class CassandraQuotaMailingListenersIntegrationTest implements QuotaThresholdMailingIntegrationTest {
+import com.google.common.collect.ImmutableSet;
 
+public class CassandraEventStoreExtension extends CassandraGenericEventStoreExtension {
+    public CassandraEventStoreExtension() {
+        super(ImmutableSet.of(new TestEventDTOModule()));
+    }
 }
