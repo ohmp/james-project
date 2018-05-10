@@ -467,55 +467,55 @@
         </tr>
 
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/domainlist.xml">domainlist.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/domainlist.xml">domainlist.xml</a></td>
           <td><a href="config-domainlist.html">Domain List Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/jpa/destination/conf/james-database.properties">james-database.properties</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/james-database.properties">james-database.properties</a></td>
           <td><a href="config-james-database.html">System configuration</a></td>
           <td></td>
           <td>Uses H2 local database.</td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/usersrepository.xml">usersrepository.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/usersrepository.xml">usersrepository.xml</a></td>
           <td><a href="config-users.html">Users Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/recipientrewritetable.xml">recipientrewritetable.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/recipientrewritetable.xml">recipientrewritetable.xml</a></td>
           <td><a href="config-recipientrewritetable.html">Recipient Rewrite Table Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/mailrepositorystore.xml">mailrepositorystore.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/mailrepositorystore.xml">mailrepositorystore.xml</a></td>
           <td><a href="config-mailrepositorystore.html">Mail Repository Stores Configuration</a></td>
           <td></td>
           <td>No repository stores would be available</td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/dnsservice.xml">dnsservice.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/dnsservice.xml">dnsservice.xml</a></td>
           <td><a href="config-dnsservice.html">DNS Service Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/smtpserver.xml">smtpserver.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/smtpserver.xml">smtpserver.xml</a></td>
           <td><a href="config-smtp-lmtp.html">SMTP Configuration</a></td>
           <td></td>
           <td>No SMTP server enabled</td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/lmtpserver.xml">lmtpserver.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/lmtpserver.xml">lmtpserver.xml</a></td>
           <td><a href="config-smtp-lmtp.html">LMTP Configuration</a></td>
           <td></td>
           <td>No LMTP server enabled</td>
         </tr>
         <tr>
-          <td><a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/mailetcontainer.xml">mailetcontainer.xml</a></td>
+          <td><a href="https://github.com/apache/james-project/tree/master/server/container/guice/jpa-smtp/sample-configuration/mailetcontainer.xml">mailetcontainer.xml</a></td>
           <td><a href="config-mailetcontainer.html">Mailet Container Configuration</a></td>
           <td></td>
           <td>Provides a default mailet container system.</td>
