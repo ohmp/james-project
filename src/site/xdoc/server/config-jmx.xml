@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.    
+-->
+<document>
+
+ <properties>
+  <title>Apache James Server 3 - JMX Configuration</title>
+ </properties>
+
+<body>
+
+  <section name="JMX configuration">
+
+      <subsection name="jmx.properties">
+
+          <p>Consult <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/jmx.properties">jmx.properties</a> in GIT to get some examples and hints.</p>
+
+          <p>This is used to configure the JMX MBean server via which management can be achieved (also used by via the james-cli).
+          Alternatives includes <a href="manage-webadmin.html">WebAdmin</a></p>
+
+          <dl>
+              <dt><strong>jmx.address</strong></dt>
+              <dd>The IP address (host name) the MBean Server will bind/listen to.</dd>
+              <dt><strong>jmx.port</strong></dt>
+              <dd>The port number the MBean Server will bind/listen to.</dd>
+          </dl>
+
+          <p>To access from a remote location, it has been reported that -Dcom.sun.management.jmxremote.ssl=false is
+              needed in the startup script.</p>
+
+      </subsection>
+
+  </section>
+
+</body>
+
+</document>

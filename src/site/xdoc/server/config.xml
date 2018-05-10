@@ -151,7 +151,7 @@
           <td>
             <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/jmx.properties">jmx.properties</a><br/>
           </td>
-          <td><a href="config-system.html">System Configuration</a></td>
+          <td><a href="config-jmx.html">JMX Configuration</a></td>
           <td></td>
         </tr>
         <tr>
@@ -294,7 +294,7 @@
           <td>
             <a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf//jmx.properties">jmx.properties</a><br/>
           </td>
-          <td><a href="config-system.html">System Configuration</a></td>
+          <td><a href="config-jmx.html">JMX Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
@@ -426,7 +426,7 @@
           <td>
             <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/jmx.properties">jmx.properties</a><br/>
           </td>
-          <td><a href="config-system.html">System Configuration</a></td>
+          <td><a href="config-jmx.html">JMX Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
@@ -503,14 +503,6 @@
           <td><a href="config-mailetcontainer.html">Mailet Container Configuration</a></td>
           <td></td>
           <td>Provides a default mailet container system.</td>
-        </tr>
-        <tr>
-          <td>
-            <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/jmx.properties">jmx.properties</a><br/>
-          </td>
-          <td><a href="config-system.html">System Configuration</a></td>
-          <td></td>
-          <td></td>
         </tr>
       </table>
     </section>

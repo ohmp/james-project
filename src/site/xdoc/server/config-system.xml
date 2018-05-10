@@ -110,24 +110,6 @@
 
             </subsection>
 
-            <subsection name="jmx.properties">
-
-                <p>Consult <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/jmx.properties">jmx.properties</a> in GIT to get some examples and hints.</p>
-
-                <p>This is used to configure the JMX MBean server via which all management is achieved (also used by via the james-cli).</p>
-
-                <dl>
-                    <dt><strong>jmx.address</strong></dt>
-                    <dd>The IP address (host name) the MBean Server will bind/listen to.</dd>
-                    <dt><strong>jmx.port</strong></dt>
-                    <dd>The port number the MBean Server will bind/listen to.</dd>
-                </dl>
-
-                <p>To access from a remote location, it has been reported that -Dcom.sun.management.jmxremote.ssl=false is
-                    needed in the startup script.</p>
-
-            </subsection>
-
             <subsection name="sqlResources.xml">
 
                 <p>Consult <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/sqlResources.xml">sqlResources.xml</a> in GIT to get some examples and hints.</p>

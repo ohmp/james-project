@@ -129,6 +129,7 @@
                             <item name="POP3" href="/server/config-pop3.html" />
                             <item name="FetchMail" href="/server/config-fetchmail.html" />
                             <item name="Sieve" href="/server/config-sieve.html" />
+                            <item name="JMX" href="/server/config-jmx.html" />
                         </item>
                         <item name="Backends" href="/server/config-backends.html" collapse="true">
                             <item name="Cassandra" href="/server/config-cassandra.html" />
