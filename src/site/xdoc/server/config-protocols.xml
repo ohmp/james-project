@@ -39,6 +39,7 @@
                    <li><a href="config-fetchmail.html">FetchMail</a>: Allows download of email from other servers.</li>
                    <li><a href="config-sieve.html">Sieve</a>: User defined scripts executed upon mail reception.</li>
                    <li><a href="config-jmx.html">JMX</a>: Manage James via JMX.</li>
+                   <li><a href="config-webadmin.html">WebAdmin</a>: Management REST API for James Guice wirings.</li>
                </ul>
             </p>
         </section>
