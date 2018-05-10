@@ -145,8 +145,8 @@
                             <item name="Events" href="/server/config-events.html" />
                         </item>
                         <item name="Guice specific configuration" href="/server/config-guice.html" collapse="true" >
-                            <item name="Guice" href="/server/config-guice.html" />
                             <item name="Additional mailbox listeners" href="/server/config-listeners.html" />
+                            <item name="Batch sizes" href="/server/config-batchsizes.html" />
                         </item>
                         <item name="How to..." href="/server/config-how-to.html" collapse="true" >
                             <item name="Anti Spam" href="/server/config-antispam.html" />

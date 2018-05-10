@@ -202,8 +202,8 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/batchsizes.properties">batchsizes.properties</a></td>
-          <td>Mailbox specific limits to avoid that a single request overwhelm the server</td>
-          <td>Guice only</td>
+          <td><a href="config-batchsizes.html">Mailbox specific limits to avoid that a single request overwhelm the server</a></td>
+          <td>Cassandra Guice only</td>
           <td></td>
         </tr>
         <tr>
