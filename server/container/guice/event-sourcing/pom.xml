@@ -29,6 +29,8 @@
     </parent>
 
     <artifactId>james-server-guice-event-sourcing</artifactId>
+    <name>Apache James :: Server :: Guice :: Event sourcing</name>
+    <description>Generic injections for James event sourcing system</description>
 
     <dependencies>
         <dependency>
