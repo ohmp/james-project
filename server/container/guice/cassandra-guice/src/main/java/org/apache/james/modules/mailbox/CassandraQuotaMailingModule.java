@@ -17,26 +17,21 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james;
+package org.apache.james.modules.mailbox;
 
-import org.apache.james.data.LdapUsersRepositoryModule;
-import org.apache.james.modules.server.JMXServerModule;
-import org.apache.james.server.core.configuration.Configuration;
+import org.apache.james.eventsourcing.cassandra.dto.EventDTOModule;
+import org.apache.james.mailbox.quota.cassandra.dto.QuotaThresholdChangedEventDTOModule;
 
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
 
-public class CassandraLdapJamesServerMain {
+public class CassandraQuotaMailingModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        install(new QuotaMailingModule());
 
-    public static final Module cassandraLdapServerModule = Modules.override(CassandraJamesServerMain.CASSANDRA_MODULE)
-        .with(new LdapUsersRepositoryModule());
-
-    public static void main(String[] args) throws Exception {
-        Configuration configuration = Configuration.builder().useWorkingDirectoryEnvProperty().build();
-        GuiceJamesServer server = new GuiceJamesServer(configuration)
-            .combineWith(cassandraLdapServerModule, new JMXServerModule());
-
-        server.start();
+        Multibinder.newSetBinder(binder(), EventDTOModule.class)
+            .addBinding()
+            .to(QuotaThresholdChangedEventDTOModule.class);
     }
-
 }
