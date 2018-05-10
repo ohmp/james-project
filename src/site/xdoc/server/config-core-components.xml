@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<document>
+
+    <properties>
+        <title>Apache James Server 3 - Core components Configuration</title>
+    </properties>
+
+    <body>
+        <section name="Core components Configuration">
+            <p>This section presents James core components configuration.</p>
+            <p>
+               Core components includes:<br/>
+               <ul>
+                   <li><a href="config-domainlist.html">Domain lists</a>: allows dynamic management of the domains handled by this James server. Features some configurable auto-detection.</li>
+                   <li><a href="config-dnsservice.html">DNS service</a>: configuration of domain name resolution for James</li>
+                   <li><a href="config-mailetcontainer.html">Mailet container</a>: explains how to configure Mail processing. Mails pass through the MailetContainer. The
+                       MailetContainer is a Matchers and Mailets pipeline arranged into processors.</li>
+                   <li><a href="config-mailrepositorystore.html">Mail repository store</a>: Allows the administrator to store mail being processed in the mailet-container.</li>
+                   <li><a href="config-recipientrewritetable.html">Recipient Rewrite Table</a>: Allows address rewriting.</li>
+                   <li><a href="config-users.html">Users repository</a>: Stores users handled by this James server.</li>
+               </ul>
+            </p>
+            <p>
+                Note that once configured, you can use CLI or WebAdmin to <a href="manage.html">manage</a> them.
+            </p>
+        </section>
+
+    </body>
+
+</document>
