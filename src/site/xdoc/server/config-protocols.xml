@@ -35,6 +35,7 @@
                    <li><a href="config-ssl-tls.html">SSL/TLS</a>: Use of cryptography to secure mail protocols</li>
                    <li><a href="config-smtp-lmtp.html">SMTP/LMTP</a>: SMTP and LMTP configurations files</li>
                    <li><a href="config-imap4.html">IMAP</a>: IMAP configuration files</li>
+                   <li><a href="config-jmap.html">JMAP</a>: JMAP configuration files. Only available for Cassandra guice wiring</li>
                    <li><a href="config-pop3.html">POP3</a>: POP3 configuration files</li>
                    <li><a href="config-fetchmail.html">FetchMail</a>: Allows download of email from other servers.</li>
                    <li><a href="config-sieve.html">Sieve</a>: User defined scripts executed upon mail reception.</li>
