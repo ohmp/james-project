@@ -37,6 +37,7 @@
                    <li><a href="config-elasticsearch.html">ElasticSearch</a>: For cassandra-guice and cassandra-guice-ldap wirings.
                        Settings about the connection to a ElasticSearch cluster.</li>
                    <li><a href="config-james-database.html">JPA database</a>: Settings for JPA.</li>
+                   <li><a href="config-tika.html">Tika</a>: Use for text extraction from attachments in Cassandra Guice wiring.</li>
                </ul>
             </p>
         </section>
