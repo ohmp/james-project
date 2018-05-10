@@ -134,6 +134,7 @@
                         <item name="Backends" href="/server/config-backends.html" collapse="true">
                             <item name="Cassandra" href="/server/config-cassandra.html" />
                             <item name="ElasticSearch" href="/server/config-elasticsearch.html" />
+                            <item name="JPA database" href="/server/config-james-database.html" />
                         </item>
                         <item name="Spring specific configuration" href="/server/config-spring.html" collapse="true" >
                             <item name="Mailbox" href="/server/config-mailbox.html" />

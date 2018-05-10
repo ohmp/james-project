@@ -36,6 +36,7 @@
                        Settings about the connection to a Cassandra database as well as some Cassandra code related settings.</li>
                    <li><a href="config-elasticsearch.html">ElasticSearch</a>: For cassandra-guice and cassandra-guice-ldap wirings.
                        Settings about the connection to a ElasticSearch cluster.</li>
+                   <li><a href="config-james-database.html">JPA database</a>: Settings for JPA.</li>
                </ul>
             </p>
         </section>

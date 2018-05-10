@@ -139,7 +139,7 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/james-database.properties">james-database.properties</a></td>
-          <td><a href="config-system.html">System Configuration</a></td>
+          <td><a href="config-james-database.html">System Configuration</a></td>
           <td>JPA backend configuration, if applicable</td>
         </tr>
         <tr>
@@ -352,7 +352,7 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/jpa/destination/conf/james-database.properties">james-database.properties</a></td>
-          <td><a href="config-system.html">System configuration</a></td>
+          <td><a href="config-james-database.html">System configuration</a></td>
           <td></td>
           <td>Uses H2 local database.</td>
         </tr>
@@ -458,7 +458,7 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/jpa/destination/conf/james-database.properties">james-database.properties</a></td>
-          <td><a href="config-system.html">System configuration</a></td>
+          <td><a href="config-james-database.html">System configuration</a></td>
           <td></td>
           <td>Uses H2 local database.</td>
         </tr>
