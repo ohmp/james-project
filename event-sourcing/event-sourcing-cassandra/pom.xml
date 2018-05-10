@@ -31,6 +31,7 @@
     <artifactId>apache-james-eventsourcing-cassandra</artifactId>
 
     <name>Apache James :: Event sourcing :: Cassandra</name>
+    <description>Cassandra implementation for James event sourcing system</description>
 
     <dependencies>
         <dependency>
@@ -44,11 +45,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.james</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>apache-james-eventsourcing-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.james</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>apache-james-eventsourcing-api</artifactId>
             <type>test-jar</type>
             <scope>test</scope>

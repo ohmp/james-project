@@ -31,6 +31,7 @@
     <artifactId>apache-james-eventsourcing-api</artifactId>
 
     <name>Apache James :: Event sourcing :: API</name>
+    <description>James event sourcing system</description>
 
     <dependencies>
         <dependency>
