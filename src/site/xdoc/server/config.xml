@@ -274,7 +274,7 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/tika.properties">tika.properties</a></td>
-          <td>Tika configuration for text extraction from complex attachments</td>
+          <td><a href="config-tika.html">Tika configuration</a></td>
           <td></td>
           <td>Tries to connect to the <code>tika</code> host. If none, text extraction will fail, but server will behave normally.</td>
         </tr>
