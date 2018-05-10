@@ -53,6 +53,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>apache-james-eventsourcing-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>apache-james-mailbox-cassandra</artifactId>
         </dependency>
         <dependency>
@@ -103,6 +107,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>james-server-data-jmap-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>james-server-guice-event-sourcing</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

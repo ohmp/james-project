@@ -38,6 +38,7 @@
         <module>configuration</module>
         <module>custom-mailets</module>
         <module>es-metric-reporter</module>
+        <module>event-sourcing</module>
         <module>guice-common</module>
         <module>guice-utils</module>
         <module>jmx</module>
@@ -75,6 +76,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>james-server-guice-es-resporter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>james-server-guice-event-sourcing</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
