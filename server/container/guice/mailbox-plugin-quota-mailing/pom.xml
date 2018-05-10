@@ -28,6 +28,9 @@
 
     <artifactId>james-server-guice-mailbox-plugin-quota-mailing</artifactId>
 
+    <name>Apache James :: Server :: Guice :: Mailbox :: Plugin :: Quota Mailing</name>
+    <description>Mailbox modules for Guice implementation of Quota mailing</description>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
