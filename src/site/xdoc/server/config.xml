@@ -298,6 +298,14 @@
           <td></td>
           <td></td>
         </tr>
+        <tr>
+          <td>
+            <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/cassandra/destination/conf/webadmin.properties">webadmin.properties</a><br/>
+          </td>
+          <td><a href="config-webadmin.html">Webadmin Configuration</a></td>
+          <td></td>
+          <td></td>
+        </tr>
       </table>
     </section>
 
@@ -427,6 +435,14 @@
             <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/jmx.properties">jmx.properties</a><br/>
           </td>
           <td><a href="config-jmx.html">JMX Configuration</a></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>
+            <a href="https://github.com/apache/james-project/tree/master/dockerfiles/run/guice/jpa/destination/conf/webadmin.properties">webadmin.properties</a><br/>
+          </td>
+          <td><a href="config-webadmin.html">Webadmin Configuration</a></td>
           <td></td>
           <td></td>
         </tr>
