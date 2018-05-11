@@ -41,15 +41,19 @@
             <p>To do so, just register the class that needs to be instantiated and added to global listeners. These JAR can be
                part of James source code, or provided as an extension and thus should be located in the<code>extensions-jars</code> folder.</p>
 
-            <ul>
-                Already provided additional listeners includes:
+            <p>
+                Already provided additional listeners includes:<br/>
 
-                 <li><code>org.apache.james.mailbox.spamassassin.SpamAssassinListener</code>:
+            <ul>
+
+
+                 <li><b>org.apache.james.mailbox.spamassassin.SpamAssassinListener</b>:
                      Provides per user real-time HAM/SPAM feedback to a SpamAssassin server depending on user actions.
                      Please note that a <code>spamassassin.properties</code> file is needed.</li>
-                 <li><code>org.apache.james.mailbox.cassandra.MailboxOperationLoggingListener</code>:
+                 <li><b>org.apache.james.mailbox.cassandra.MailboxOperationLoggingListener</b>:
                      For Cassandra guice wiring. Provides more insights on mailbox operations</li>
             </ul>
+            </p>
         </section>
 
     </body>
