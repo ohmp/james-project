@@ -58,6 +58,8 @@
     </subsection>
     
     <subsection name="Database (JDBC) Repositories">
+
+      <p>This implementation is <b>experimental</b>.</p>
     
       <p>These repositories store all message data in the database.</p>
     

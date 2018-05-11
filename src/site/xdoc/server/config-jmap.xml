@@ -33,6 +33,11 @@
 
             <p>Cassandra Guice proposes a JMAP implementation.</p>
 
+
+            <p><b>Disclaimer:</b> The <b>JMAP</b> protocol is currently being discussed as part of the IETF, and thus the specification is
+            not established yet. James implementation of the JMAP protocol does not match the latest state of the IETF discussions. As
+            a result, the JMAP protocol implementation should be considered <b>experimental</b>.</p>
+
             <subsection name="jmap.properties">
 
                 <p>Consult <a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/jmap.properties">jmap.properties</a> in GIT to get some examples and hints.</p>

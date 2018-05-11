@@ -41,6 +41,7 @@
 
        <!-- JDBC based repositories.  These repositories store all message data -->
        <!-- in the database. -->
+       <!-- This should be considered experimental. -->
        <mailrepository class="org.apache.james.mailrepository.jdbc.JDBCMailRepository">
            <protocols>
                <protocol>db</protocol>
@@ -58,6 +59,7 @@
        </mailrepository>
 
        <!-- These repositories store message delivery and headers in the DB, and the body to the filesystem -->
+       <!-- This should be considered experimental. -->
        <mailrepository class="org.apache.james.mailrepository.jdbc.JDBCMailRepository">
            <protocols>
                <protocol>dbfile</protocol>

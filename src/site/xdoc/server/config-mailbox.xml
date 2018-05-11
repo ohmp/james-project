@@ -37,7 +37,8 @@
 
       <dl>
         <dt><strong>provider</strong></dt>
-        <dd>Supported providers are: jpa (default), jcr, maildir, memory. Be aware that maildir will only work on unix like operation systems!</dd>
+        <dd>Supported providers are: jpa (default), memory.<br/>
+            Experimental providers includes: jcr, hbase, maildir. Be aware that maildir will only work on unix like operation systems!</dd>
       </dl>
 
       <p>See <a href="http://james.apache.org/mailbox/index.html">documentation page</a> to learn more about the different back-ends and their capabilities.</p>
