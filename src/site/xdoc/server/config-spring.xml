@@ -32,6 +32,7 @@
                    <li><a href="config-mailbox.html">Mailbox</a>: Governs which mailbox implementation should be used. <b>mailbox</b> stores users emails.</li>
                    <li><a href="config-quota.html">Quota</a>: Allow choosing which quota components should be enabled.</li>
                    <li><a href="config-events.html">Mailbox events</a>: The mailbox uses an event system. This file allow you to specify the components to be used with it.</li>
+                   <li><a href="config-indexer.html">Mailbox search</a>: Governs which component should be used to search mailbox mails.</li>
                </ul>
             </p>
 
