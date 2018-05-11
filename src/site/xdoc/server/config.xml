@@ -84,7 +84,7 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/events.xml">indexer.xml</a></td>
-          <td>Search system Configuration</td>
+          <td><a href="config-indexer.html">Search system Configuration</a></td>
           <td>Specific to spring</td>
         </tr>
         <tr>

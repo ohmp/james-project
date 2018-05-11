@@ -143,6 +143,7 @@
                             <item name="Mailbox" href="/server/config-mailbox.html" />
                             <item name="Quota" href="/server/config-quota.html" />
                             <item name="Events" href="/server/config-events.html" />
+                            <item name="Mailbox search" href="/server/config-indexer.html" />
                         </item>
                         <item name="Guice specific configuration" href="/server/config-guice.html" collapse="true" >
                             <item name="Additional mailbox listeners" href="/server/config-listeners.html" />
