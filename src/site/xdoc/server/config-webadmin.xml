@@ -31,7 +31,7 @@
 
             <subsection name="webadmin.properties">
 
-                <p>Consult <a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/webadmin.properties">tika.properties</a> in GIT to get some examples and hints.</p>
+                <p>Consult <a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/webadmin.properties">webadmin.properties</a> in GIT to get some examples and hints.</p>
 
                 <br/>
 
