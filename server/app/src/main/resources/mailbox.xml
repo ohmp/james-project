@@ -27,7 +27,8 @@
  
 <mailbox>
    <!-- supported providers are: -->
-   <!-- jpa, jcr, maildir, hbase, memory -->
+   <!-- jpa (default), memory -->
+   <!-- Experimental providers includes jcr, hbase and maildir -->
    <!--  -->
    <!-- Be aware that maildir will only work on unix like operation systems! -->
    <provider>jpa</provider>

@@ -23,14 +23,18 @@
    DO NOT USE IT AS SUCH AND ADAPT IT TO YOUR NEEDS
 -->
  
-<!-- See http://james.apache.org/server/3/config.html for usage -->
+<!-- See http://james.apache.org/server/3/config.html for usage.
+
+    Fetchmail protocol should be considered experimental, and might need
+    additional tests, refactorings and enhancements.
+ -->
 
 <!-- Fetch mail block, fetches mail from message servers and inserts it into the incoming spool -->
 <!-- Warning: It is important to prevent mail from looping by setting the  -->
 <!-- fetched domains in the<servernames>section of the<James>block      -->
 <!-- above. This block is disabled by default.                              -->
       
-<!-- See http://james.apache.org/server/2.3.0/fetchmail_configuration.html for detailed -->
+<!-- See http://james.apache.org/server/config-fetchmail.html for detailed -->
 <!-- configuration instructions and examples.                                  -->  
 
 <!-- I M P O R T A N T -->

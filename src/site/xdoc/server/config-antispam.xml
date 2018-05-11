@@ -53,8 +53,8 @@
     <subsection name="AntiSpam Mailets">
     
     <ul>
-      <li>Black listing Mailet</li>
-      <li>Grey listing Mailet</li>
+      <li>Black listing Mailet. <b>This feature is experimental.</b></li>
+      <li>Grey listing Mailet <b>This feature is experimental.</b></li>
       <li>SpamAssassin Mailet is designed to classify the messages as spam or not 
           with an configurable score threshold. Usually a message will only be 
           considered as spam if it matches multiple criteria; matching just a single test 
@@ -71,7 +71,7 @@
           in the database. Every 10 mins a thread in the BayesianAnalysis will check and update 
           the table. Also, the correct approach is to send the original spam or non-spam 
           as an attachment to another message sent to the feeder in order to avoid bias from the 
-          current sender's email header.</li>
+          current sender's email header. <b>This feature is experimental.</b></li>
     </ul>
     
     </subsection>

@@ -25,6 +25,9 @@
  
 <!-- See http://james.apache.org/server/3/config.html for usage -->
 
+<!-- The MANAGESIEVE protocol implementation in James has some known issues and
+     should be considered experimental. Contributions are welcomed!-->
+
 <managesieveservers>
 
    <managesieveserver enabled="false">

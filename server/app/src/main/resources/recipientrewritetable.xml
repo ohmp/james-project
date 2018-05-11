@@ -41,6 +41,7 @@
 <!-- Database backed RecipientRewritetable -->
 <!-- -->
 <!-- Use these configurations to store the RecipientRewriteTable in a database. -->
+<!-- This should be considered experimental-->
 <!-- 
 <recipientrewritetable class="org.apache.james.rrt.jdbc.JDBCRecipientRewriteTable" destinationURL="db://maildb/RecipientRewriteTable">
    <recursiveMapping>true</recursiveMapping>
