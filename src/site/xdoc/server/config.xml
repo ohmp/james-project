@@ -171,7 +171,7 @@
         </tr>
         <tr>
           <td><a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/sieverepository.xml">sieverepository.xml</a></td>
-          <td><a href="config-system.html">System Configuration</a></td>
+          <td><a href="config-spring.html">Spring specific Configuration</a></td>
           <td>Spring specific</td>
         </tr>
       </table>

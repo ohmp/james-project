@@ -44,7 +44,7 @@
                     <li><a href="config-users.html">Users repository</a></li>
                     <li><a href="config-mailrepositorystore.html">Mail Repository stores</a></li>
                     <li><a href="config-recipientrewritetable.html">Recipient rewrite table</a></li>
-                    <li><a>Sieve repository</a></li>
+                    <li><a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/sieverepository.xml">Sieve repository</a> which only consist of the <b>class</b> attribute.</li>
                 </ul>
             </p>
         </section>
