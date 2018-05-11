@@ -25,26 +25,29 @@
 
     <body>
 
-        <section name="Tika configuration">
+        <section name="Tika Configuration">
 
-            <p>Tika is used for text extraction from attachment, as part of the Cassandra Guices wiring.</p>
+            <p>When using ElasticSearch, you can configure an external Tika server for extracting and indexing text from attachments.
+                Thus you can significantly improve user experience upon text searches.</p>
 
-            <subsection name="tika.properties">
+            <p>Note that to use this feature you need Guice, built with ElasticSearch</p>
 
-                <p>Consult <a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/tika.properties">tika.properties</a> in GIT to get some examples and hints.</p>
+            <p>Consult <a href="https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra/destination/conf/tika.properties">tika.properties</a> to get some examples and hints.</p>
 
-                <br/>
+            Here are the different properties:
 
-                <dl>
-                    <dt><strong>tika.host</strong></dt>
-                    <dd>The host to be used when contacting Apache tika server.</dd>
-                    <dt><strong>tika.port</strong></dt>
-                    <dd>The port to be used when contacting Apache tika server.</dd>
-                    <dt><strong>tika.timeoutInMillis</strong></dt>
-                    <dd>HTTP Request timeout when contacting Tika</dd>
-                </dl>
+            <dl>
+                <dt><strong>tika.host</strong></dt>
+                <dd>IP or domain name of your Tika server. The default value is 127.0.0.1</dd>
+                <dt><strong>tika.port</strong></dt>
+                <dd>Port of your tika server. The default value is 9998</dd>
+                <dt><strong>tika.timeoutInMillis</strong></dt>
+                <dd>Timeout when issuing request to the tika server. The default value is 3 seconds.</dd>
+            </dl>
 
-            </subsection>
+            Note: You can launch a tika server using this command line:
+
+            <code><pre>docker run --name tika logicalspark/docker-tikaserver:1.15rc2</pre></code>
 
         </section>
 
