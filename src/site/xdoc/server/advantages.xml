@@ -50,7 +50,7 @@
         <subsection name="Configurable">
 
           <p>Configure the stores,...</p>
-          <p>via the well-known Spring framework - <a href="config.html">read more</a>.</p>
+          <p>via the well-known Spring framework or using Guice - <a href="config.html">read more</a>.</p>
 
           <p><img src="images/conf/config-example.png" /></p>
 
