@@ -27,7 +27,10 @@
 
   <section name="Monitor via Logging">
   
-    <p>Use the well-known log4j system.</p>
+    <p>Spring wiring uses the well-known log4j system. This page will describe how to configure it. Please note that
+    Guice wiring uses <a href="https://logback.qos.ch/manual/configuration.html">logback</a> as a logging framework,
+    and logging into <a href="https://github.com/internetitem/logback-elasticsearch-appender">ElasticSearch</a> in
+    order to ge Kibana display is supported on top of Guice.</p>
     
     <p>The log4j.properties reside in the ./conf folder. You can edit it to change the 
        logging level, per component.</p>
