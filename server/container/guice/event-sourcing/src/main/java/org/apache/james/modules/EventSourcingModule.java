@@ -19,9 +19,7 @@
 
 package org.apache.james.modules;
 
-import org.apache.james.eventsourcing.CommandDispatcher;
 import org.apache.james.eventsourcing.CommandHandler;
-import org.apache.james.eventsourcing.EventBus;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.EventSourcingSystemImpl;
 import org.apache.james.eventsourcing.Subscriber;
@@ -34,8 +32,6 @@ public class EventSourcingModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(EventSourcingSystemImpl.class).in(Scopes.SINGLETON);
-        bind(CommandDispatcher.class).in(Scopes.SINGLETON);
-        bind(EventBus.class).in(Scopes.SINGLETON);
 
         bind(EventSourcingSystem.class).to(EventSourcingSystemImpl.class);
 

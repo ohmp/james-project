@@ -19,10 +19,10 @@
 
 package org.apache.james.eventsourcing;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -73,7 +73,7 @@ public class CommandDispatcher {
     private final Map<Class, CommandHandler> handlers;
 
     @Inject
-    public CommandDispatcher(EventBus eventBus, Collection<CommandHandler> handlers) {
+    public CommandDispatcher(EventBus eventBus, Set<CommandHandler> handlers) {
         this.eventBus = eventBus;
         this.handlers = handlers.stream()
             .collect(Guavate.toImmutableMap(CommandHandler::handledClass, handler -> handler));
