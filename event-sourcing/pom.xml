@@ -36,6 +36,7 @@
     <modules>
         <module>event-sourcing-api</module>
         <module>event-sourcing-cassandra</module>
+        <module>event-sourcing-core</module>
         <module>event-sourcing-memory</module>
     </modules>
 
