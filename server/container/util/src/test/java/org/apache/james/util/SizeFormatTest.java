@@ -53,19 +53,19 @@ public class SizeFormatTest {
     @Test
     public void formatShouldHaveTwoDigitPrecision() {
         assertThat(SizeFormat.format(1024 + 100))
-            .isEqualTo("1,09 KiB");
+            .isEqualTo("1.09 KiB");
     }
 
     @Test
     public void formatShouldBeExpressedInKiBWhenAlmostMiB() {
         assertThat(SizeFormat.format(1024 * 1024 - 1))
-            .isEqualTo("1023,99 KiB");
+            .isEqualTo("1023.99 KiB");
     }
 
     @Test
     public void formatShouldKeepTwoDigitPrecisionWhenRoundingDown() {
         assertThat(SizeFormat.format(2 * 1024 * 1024 - 1))
-            .isEqualTo("1,99 MiB");
+            .isEqualTo("1.99 MiB");
     }
 
     @Test

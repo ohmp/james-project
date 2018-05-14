@@ -22,6 +22,8 @@ package org.apache.james.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
@@ -53,7 +55,8 @@ public class SizeFormat {
         }
 
         private static final int SCALE = 2;
-        private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
+        private static final DecimalFormatSymbols DECIMAL_FORMAT_SYMBOLS = new DecimalFormatSymbols(Locale.US);
+        private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##", DECIMAL_FORMAT_SYMBOLS);
 
         private final BigInteger bytesCount;
         private final String notation;

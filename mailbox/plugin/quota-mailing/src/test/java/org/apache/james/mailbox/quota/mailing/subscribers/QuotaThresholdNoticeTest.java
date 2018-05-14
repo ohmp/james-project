@@ -234,7 +234,7 @@ class QuotaThresholdNoticeTest {
             .build()
             .get()
             .generateReport(fileSystem))
-            .contains("You currently occupy 801 MiB on a total of 1,99 GiB allocated to you.");
+            .contains("You currently occupy 801 MiB on a total of 1.99 GiB allocated to you.");
     }
 
     @Test
