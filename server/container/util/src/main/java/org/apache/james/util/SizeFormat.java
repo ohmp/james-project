@@ -24,7 +24,6 @@ import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 
@@ -36,22 +35,23 @@ public class SizeFormat {
         TiB(FileUtils.ONE_TB_BI, "TiB"),
         GiB(FileUtils.ONE_GB_BI, "GiB"),
         MiB(FileUtils.ONE_MB_BI, "MiB"),
-        KiB(FileUtils.ONE_KB_BI, "KiB");
+        KiB(FileUtils.ONE_KB_BI, "KiB"),
+        Byte(BigInteger.valueOf(1), "bytes");
 
-        static Optional<Unit> locateUnit(long bytesCount) {
+        static Unit locateUnit(long bytesCount) {
             if (bytesCount / FileUtils.ONE_TB > 0) {
-                return Optional.of(TiB);
+                return TiB;
             }
             if (bytesCount / FileUtils.ONE_GB > 0) {
-                return Optional.of(GiB);
+                return GiB;
             }
             if (bytesCount / FileUtils.ONE_MB > 0) {
-                return  Optional.of(MiB);
+                return  MiB;
             }
             if (bytesCount / FileUtils.ONE_KB > 0) {
-                return  Optional.of(KiB);
+                return  KiB;
             }
-            return Optional.empty();
+            return Byte;
         }
 
         private static final int SCALE = 2;
@@ -64,6 +64,10 @@ public class SizeFormat {
         Unit(BigInteger bytesCount, String notation) {
             this.bytesCount = bytesCount;
             this.notation = notation;
+        }
+
+        public String format(long size) {
+            return asString(scaleToUnit(new BigDecimal(size))) + " " + notation;
         }
 
         public String format(BigDecimal sizeAsDecimal) {
@@ -82,10 +86,7 @@ public class SizeFormat {
     public static String format(long bytesCount) {
         Preconditions.checkArgument(bytesCount >= 0, "Formatting of a negative size is forbidden");
 
-        BigDecimal sizeAsDecimal = new BigDecimal(BigInteger.valueOf(bytesCount));
-
-        return Unit.locateUnit(sizeAsDecimal.longValue())
-            .map(unit -> unit.format(sizeAsDecimal))
-            .orElse(sizeAsDecimal + " bytes");
+        return Unit.locateUnit(bytesCount)
+            .format(bytesCount);
     }
 }
