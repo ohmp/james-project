@@ -19,21 +19,10 @@
 
 package org.apache.james.eventsourcing;
 
-import java.util.Set;
+import java.util.List;
 
-import javax.inject.Inject;
+public interface CommandHandler<C> {
+    Class<C> handledClass();
 
-public class EventSourcingSystem {
-    private final EventBus eventBus;
-    private final CommandDispatcher commandDispatcher;
-
-    @Inject
-    public EventSourcingSystem(Set<CommandDispatcher.CommandHandler<?>> handlers, Set<Subscriber> subscribers, EventStore eventStore) {
-        this.eventBus = new EventBus(eventStore, subscribers);
-        this.commandDispatcher = new CommandDispatcher(eventBus, handlers);
-    }
-
-    public void dispatch(CommandDispatcher.Command c) {
-        commandDispatcher.dispatch(c);
-    }
+    List<? extends Event> handle(C c);
 }

@@ -17,29 +17,23 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.CommandDispatcher;
-import org.apache.james.eventsourcing.CommandHandler;
-import org.apache.james.eventsourcing.EventBus;
-import org.apache.james.eventsourcing.EventSourcingSystem;
-import org.apache.james.eventsourcing.EventSourcingSystemImpl;
-import org.apache.james.eventsourcing.Subscriber;
+import java.util.Set;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
+import javax.inject.Inject;
 
-public class EventSourcingModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(EventSourcingSystemImpl.class).in(Scopes.SINGLETON);
-        bind(CommandDispatcher.class).in(Scopes.SINGLETON);
-        bind(EventBus.class).in(Scopes.SINGLETON);
+public class EventSourcingSystemImpl implements EventSourcingSystem {
+    private final EventBus eventBus;
+    private final CommandDispatcher commandDispatcher;
 
-        bind(EventSourcingSystem.class).to(EventSourcingSystemImpl.class);
+    @Inject
+    public EventSourcingSystemImpl(Set<CommandHandler> handlers, Set<Subscriber> subscribers, EventStore eventStore) {
+        this.eventBus = new EventBus(eventStore, subscribers);
+        this.commandDispatcher = new CommandDispatcher(eventBus, handlers);
+    }
 
-        Multibinder.newSetBinder(binder(), Subscriber.class);
-        Multibinder.newSetBinder(binder(), CommandHandler.class);
+    public void dispatch(Command c) {
+        commandDispatcher.dispatch(c);
     }
 }

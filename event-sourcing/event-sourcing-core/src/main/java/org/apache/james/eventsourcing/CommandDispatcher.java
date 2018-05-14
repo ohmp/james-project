@@ -34,9 +34,6 @@ public class CommandDispatcher {
 
     private static final int MAX_RETRY = 10;
 
-    public interface Command {
-    }
-
     public class UnknownCommandException extends RuntimeException {
         private final Command command;
 
@@ -71,18 +68,12 @@ public class CommandDispatcher {
         }
     }
 
-    public interface CommandHandler<C extends Command> {
-        Class<C> handledClass();
-
-        List<? extends Event> handle(C c);
-    }
-
     private final EventBus eventBus;
     @SuppressWarnings("rawtypes")
     private final Map<Class, CommandHandler> handlers;
 
     @Inject
-    public CommandDispatcher(EventBus eventBus, Collection<CommandHandler<?>> handlers) {
+    public CommandDispatcher(EventBus eventBus, Collection<CommandHandler> handlers) {
         this.eventBus = eventBus;
         this.handlers = handlers.stream()
             .collect(Guavate.toImmutableMap(CommandHandler::handledClass, handler -> handler));

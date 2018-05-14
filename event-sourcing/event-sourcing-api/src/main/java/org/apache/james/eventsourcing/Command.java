@@ -17,29 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules;
+package org.apache.james.eventsourcing;
 
-import org.apache.james.eventsourcing.CommandDispatcher;
-import org.apache.james.eventsourcing.CommandHandler;
-import org.apache.james.eventsourcing.EventBus;
-import org.apache.james.eventsourcing.EventSourcingSystem;
-import org.apache.james.eventsourcing.EventSourcingSystemImpl;
-import org.apache.james.eventsourcing.Subscriber;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
-
-public class EventSourcingModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(EventSourcingSystemImpl.class).in(Scopes.SINGLETON);
-        bind(CommandDispatcher.class).in(Scopes.SINGLETON);
-        bind(EventBus.class).in(Scopes.SINGLETON);
-
-        bind(EventSourcingSystem.class).to(EventSourcingSystemImpl.class);
-
-        Multibinder.newSetBinder(binder(), Subscriber.class);
-        Multibinder.newSetBinder(binder(), CommandHandler.class);
-    }
+public interface Command {
 }

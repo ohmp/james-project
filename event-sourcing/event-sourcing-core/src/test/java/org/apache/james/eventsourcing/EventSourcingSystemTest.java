@@ -42,7 +42,7 @@ public interface EventSourcingSystemTest {
     String PAYLOAD_2 = "payload2";
     TestAggregateId AGGREGATE_ID = TestAggregateId.testId(42);
 
-    class MyCommand implements CommandDispatcher.Command {
+    class MyCommand implements Command {
         private final String payload;
 
         public MyCommand(String payload) {
@@ -57,7 +57,7 @@ public interface EventSourcingSystemTest {
     @Test
     default void dispatchShouldApplyCommandHandlerThenCallSubscribers(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(simpleDispatcher(eventStore)),
             ImmutableSet.of(subscriber),
             eventStore);
@@ -70,7 +70,7 @@ public interface EventSourcingSystemTest {
     @Test
     default void throwingSubscribersShouldNotAbortSubscriberChain(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(simpleDispatcher(eventStore)),
             ImmutableSet.of(
                 events -> {
@@ -91,7 +91,7 @@ public interface EventSourcingSystemTest {
         when(eventStore.getEventsOfAggregate(any())).thenReturn(EventStore.History.empty());
 
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(simpleDispatcher(eventStore)),
             ImmutableSet.of(
                 events -> {
@@ -109,7 +109,7 @@ public interface EventSourcingSystemTest {
     @Test
     default void dispatchShouldApplyCommandHandlerThenStoreGeneratedEvents(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(simpleDispatcher(eventStore)),
             ImmutableSet.of(subscriber),
             eventStore);
@@ -124,7 +124,7 @@ public interface EventSourcingSystemTest {
     @Test
     default void dispatchShouldCallSubscriberForSubsequentCommands(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(simpleDispatcher(eventStore)),
             ImmutableSet.of(subscriber),
             eventStore);
@@ -138,7 +138,7 @@ public interface EventSourcingSystemTest {
     @Test
     default void dispatchShouldStoreEventsForSubsequentCommands(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(simpleDispatcher(eventStore)),
             ImmutableSet.of(subscriber),
             eventStore);
@@ -155,7 +155,7 @@ public interface EventSourcingSystemTest {
     @Test
     default void dispatcherShouldBeAbleToReturnSeveralEvents(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(wordCuttingDispatcher(eventStore)),
             ImmutableSet.of(subscriber),
             eventStore);
@@ -168,12 +168,12 @@ public interface EventSourcingSystemTest {
     @Test
     default void unknownCommandsShouldBeIgnored(EventStore eventStore) {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
-        EventSourcingSystem eventSourcingSystem = new EventSourcingSystem(
+        EventSourcingSystemImpl eventSourcingSystem = new EventSourcingSystemImpl(
             ImmutableSet.of(wordCuttingDispatcher(eventStore)),
             ImmutableSet.of(subscriber),
             eventStore);
 
-        assertThatThrownBy(() -> eventSourcingSystem.dispatch(new CommandDispatcher.Command() {}))
+        assertThatThrownBy(() -> eventSourcingSystem.dispatch(new Command() {}))
             .isInstanceOf(CommandDispatcher.UnknownCommandException.class);
     }
 
@@ -182,7 +182,7 @@ public interface EventSourcingSystemTest {
         DataCollectorSubscriber subscriber = new DataCollectorSubscriber();
 
         assertThatThrownBy(() ->
-            new EventSourcingSystem(
+            new EventSourcingSystemImpl(
                 ImmutableSet.of(wordCuttingDispatcher(eventStore),
                     simpleDispatcher(eventStore)),
                 ImmutableSet.of(subscriber),
@@ -190,8 +190,8 @@ public interface EventSourcingSystemTest {
             .isInstanceOf(IllegalArgumentException.class);
     }
 
-    default CommandDispatcher.CommandHandler<MyCommand> simpleDispatcher(EventStore eventStore) {
-        return new CommandDispatcher.CommandHandler<MyCommand>() {
+    default CommandHandler<MyCommand> simpleDispatcher(EventStore eventStore) {
+        return new CommandHandler<MyCommand>() {
             @Override
             public Class<MyCommand> handledClass() {
                 return MyCommand.class;
@@ -209,8 +209,8 @@ public interface EventSourcingSystemTest {
         };
     }
 
-    default CommandDispatcher.CommandHandler<MyCommand> wordCuttingDispatcher(EventStore eventStore) {
-        return new CommandDispatcher.CommandHandler<MyCommand>() {
+    default CommandHandler<MyCommand> wordCuttingDispatcher(EventStore eventStore) {
+        return new CommandHandler<MyCommand>() {
             @Override
             public Class<MyCommand> handledClass() {
                 return MyCommand.class;

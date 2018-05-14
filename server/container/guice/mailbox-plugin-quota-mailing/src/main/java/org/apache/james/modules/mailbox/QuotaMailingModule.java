@@ -21,7 +21,7 @@ package org.apache.james.modules.mailbox;
 
 import java.time.Duration;
 
-import org.apache.james.eventsourcing.CommandDispatcher;
+import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.mailbox.quota.mailing.QuotaMailingListenerConfiguration;
 import org.apache.james.mailbox.quota.mailing.commands.DetectThresholdCrossingHandler;
@@ -38,7 +38,7 @@ public class QuotaMailingModule extends AbstractModule {
             .addBinding()
             .to(QuotaThresholdMailer.class);
 
-        Multibinder.newSetBinder(binder(), CommandDispatcher.CommandHandler.class)
+        Multibinder.newSetBinder(binder(), CommandHandler.class)
             .addBinding()
             .to(DetectThresholdCrossingHandler.class);
 
