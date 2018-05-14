@@ -67,7 +67,7 @@ public class SizeFormat {
         }
 
         public String format(long size) {
-            return asString(scaleToUnit(new BigDecimal(size))) + " " + notation;
+            return format(new BigDecimal(size));
         }
 
         public String format(BigDecimal sizeAsDecimal) {
