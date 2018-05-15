@@ -27,9 +27,9 @@
 
         <section name="Batch sizes configuration">
 
-            <p>Limits on operations to be done at the same time. The goal is to avoid to overwhelm the database?</p>
+            <p>Limits on operations to be done at the same time. The goal is to avoid to overwhelm the database.</p>
 
-            <p>This file is for now specific to Cassandra guice wiring.</p>
+            <p>This file is for now specific to Cassandra Guice wiring.</p>
 
             <subsection name="batchsizes.properties">
 
@@ -39,16 +39,20 @@
 
                 <dl>
                     <dt><strong>fetch.metadata</strong></dt>
-                    <dd>Maximum number of messages to read at the same time at the 'metadata' fetch level.</dd>
+                    <dd>Maximum number of messages to read at the same time at the 'metadata' fetch level.<br/>
+                    This commrespond to the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.5">FAST marco defined in RFC-3501</a>.</dd>
 
                     <dt><strong>fetch.header</strong></dt>
-                    <dd>Maximum number of messages to read at the same time at the 'header' fetch level.</dd>
+                    <dd>Maximum number of messages to read at the same time at the 'header' fetch level.<br/>
+                        This commrespond to the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.5">RFC822.HEADER marco defined in RFC-3501</a>.</dd>
 
                     <dt><strong>fetch.body</strong></dt>
-                    <dd>Maximum number of messages to read at the same time at the 'body' fetch level.</dd>
+                    <dd>Maximum number of messages to read at the same time at the 'body' fetch level.<br/>
+                        This commrespond to the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.5">RFC822 marco defined in RFC-3501</a>.</dd>
 
                     <dt><strong>fetch.full</strong></dt>
-                    <dd>Maximum number of messages to read at the same time at the 'full' fetch level.</dd>
+                    <dd>Maximum number of messages to read at the same time at the 'full' fetch level.<br/>
+                        This commrespond to the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.5">FULL marco defined in RFC-3501</a>.</dd>
 
                     <dt><strong>copy</strong></dt>
                     <dd>Maximum number of messages to copy at the same time</dd>
