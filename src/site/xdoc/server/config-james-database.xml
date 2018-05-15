@@ -27,7 +27,7 @@
 
         <section name="JPA database configuration">
 
-            <p>This section applies for Spring wiring when JPA backend is chose, as well as Guice JPA's wirings.</p>
+            <p>This section applies for Spring wiring when JPA backend is chosen, as well as Guice JPA's wirings.</p>
 
             <subsection name="james-database.properties">
 
@@ -38,7 +38,7 @@
                 <p>The database connection in database.properties</p>
 
                 <p>James has the capacity to use a JDBC-compatible database for storage of both message and user
-                    data. This section explains how to configure James to utilize a database for storage.</p>
+                    data. This section explains how to configure James to use a database for storage.</p>
 
                 <p>To avoid vendor-specific issues, the JPA (Java Persistence Architecture) is used (using the Apache OpenJPA implementation).</p>
 
@@ -52,7 +52,7 @@
 
                 <dl>
                     <dt><strong>database.driverClassName</strong></dt>
-                    <dd>he class name of the database driver to be used.</dd>
+                    <dd>The class name of the database driver to be used.</dd>
                     <dt><strong>database.url</strong></dt>
                     <dd>The JDBC connection URL for your database/driver.</dd>
                     <dt><strong>database.username</strong></dt>
@@ -62,8 +62,8 @@
                     <dt><strong>vendorAdapter.database</strong></dt>
                     <dd>Supported adapters are: DB2, DERBY, H2, HSQL, INFORMIX, MYSQL, ORACLE, POSTGRESQL, SQL_SERVER, SYBASE .</dd>
                     <dt><strong>openjpa.streaming</strong></dt>
-                    <dd>true or false - Use streaming for Blobs. This is only supported on a limited set of databases atm. You
-                        should check if its supported by your DB before enable it. See <a href="http://openjpa.apache.org/builds/latest/docs/manual/ref_guide_mapping_jpa.html">http://openjpa.apache.org/builds/latest/docs/manual/ref_guide_mapping_jpa.html</a> (#7.11. LOB Streaming).</dd>
+                    <dd>true or false - Use streaming for Blobs. This is only supported on a limited set of databases at the moment. You
+                        should check if its supported by your DB before enabling it. See <a href="http://openjpa.apache.org/builds/latest/docs/manual/ref_guide_mapping_jpa.html">http://openjpa.apache.org/builds/latest/docs/manual/ref_guide_mapping_jpa.html</a> (#7.11. LOB Streaming).</dd>
                 </dl>
 
                 <p>Note for postgresql databases: Add standard_conforming_strings=off to your postgresql.xml, otherwise you
