@@ -31,8 +31,8 @@
 
           <p>Consult <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/jmx.properties">jmx.properties</a> in GIT to get some examples and hints.</p>
 
-          <p>This is used to configure the JMX MBean server via which management can be achieved (also used by via the james-cli).
-          Alternatives includes <a href="manage-webadmin.html">WebAdmin</a></p>
+          <p>This is used to configure the JMX MBean server via which management can be achieved (also used by the james-cli).
+          Alternatives include <a href="manage-webadmin.html">WebAdmin</a></p>
 
           <dl>
               <dt><strong>jmx.address</strong></dt>
