@@ -37,10 +37,10 @@
 
                 <dl>
                     <dt><strong>enabled</strong></dt>
-                    <dd>true/false. Governs whether WebAdmin should be enabled</dd>
+                    <dd>true/false. Governs whether WebAdmin should be enabled.</dd>
 
                     <dt><strong>port</strong></dt>
-                    <dd>Port the server listens on</dd>
+                    <dd>Port the server listens on.</dd>
 
                     <dt><strong>https.enabled</strong></dt>
                     <dd>true/false. Should HTTPS be enabled? Defaults to false.</dd>
@@ -49,7 +49,7 @@
                     <dd>Keystore to be used to create secure connections.</dd>
 
                     <dt><strong>https.password</strong></dt>
-                    <dd>Password to unlock keystore</dd>
+                    <dd>Password to unlock keystore.</dd>
 
                     <dt><strong>https.trust.keystore</strong></dt>
                     <dd>Self signed keystores only. Keystore to be used as certification authority.</dd>
