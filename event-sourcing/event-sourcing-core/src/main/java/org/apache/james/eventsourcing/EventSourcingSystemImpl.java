@@ -28,7 +28,7 @@ public class EventSourcingSystemImpl implements EventSourcingSystem {
     private final CommandDispatcher commandDispatcher;
 
     @Inject
-    public EventSourcingSystemImpl(Set<CommandHandler> handlers, Set<Subscriber> subscribers, EventStore eventStore) {
+    public EventSourcingSystemImpl(Set<CommandHandler<?>> handlers, Set<Subscriber> subscribers, EventStore eventStore) {
         this.eventBus = new EventBus(eventStore, subscribers);
         this.commandDispatcher = new CommandDispatcher(eventBus, handlers);
     }

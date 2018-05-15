@@ -73,7 +73,7 @@ public class CommandDispatcher {
     private final Map<Class, CommandHandler> handlers;
 
     @Inject
-    public CommandDispatcher(EventBus eventBus, Set<CommandHandler> handlers) {
+    public CommandDispatcher(EventBus eventBus, Set<CommandHandler<?>> handlers) {
         this.eventBus = eventBus;
         this.handlers = handlers.stream()
             .collect(Guavate.toImmutableMap(CommandHandler::handledClass, handler -> handler));
