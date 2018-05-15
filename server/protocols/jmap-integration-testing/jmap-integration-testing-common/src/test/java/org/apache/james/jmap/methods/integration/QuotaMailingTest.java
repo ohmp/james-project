@@ -30,7 +30,7 @@ import static org.apache.james.jmap.TestingConstants.ARGUMENTS;
 import static org.apache.james.jmap.TestingConstants.DOMAIN;
 import static org.apache.james.jmap.TestingConstants.calmlyAwait;
 import static org.apache.james.jmap.TestingConstants.jmapRequestSpecBuilder;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.contains;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -106,8 +106,8 @@ public abstract class QuotaMailingTest {
         .then()
             .statusCode(200)
             .log().ifValidationFails()
-            .body(ARGUMENTS + ".list[0].subject",
-                is("Warning: Your email usage just exceeded a configured threshold"));
+            .body(ARGUMENTS + ".list.subject",
+                contains("Warning: Your email usage just exceeded a configured threshold"));
     }
 
     private void bartSendMessageToHomer() {
