@@ -45,9 +45,12 @@
                 <dd>Timeout when issuing request to the tika server. The default value is 3 seconds.</dd>
             </dl>
 
-            Note: You can launch a tika server using this command line:
+            <p>Note: You can launch a tika server using this command line:</p>
 
             <code><pre>docker run --name tika logicalspark/docker-tikaserver:1.15rc2</pre></code>
+
+            <p>You need to know that Tika is a complex service, which implies a performance penalty. Furthermore,
+            you may want to customize the parsers used by Tika in order to avoid low-value and high-cost operations.</p>
 
         </section>
 
