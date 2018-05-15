@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.modules.mailbox;
 
+import java.util.Optional;
+
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,16 +31,30 @@ public class ListenerConfiguration {
     public static ListenerConfiguration from(HierarchicalConfiguration configuration) {
         String listenerClass = configuration.getString("class");
         Preconditions.checkState(!Strings.isNullOrEmpty(listenerClass), "class name is mandatory");
-        return new ListenerConfiguration(listenerClass);
+        return new ListenerConfiguration(listenerClass, extractSubconfiguration(configuration));
+    }
+
+    public static ListenerConfiguration forClass(String clazz) {
+        return new ListenerConfiguration(clazz, Optional.empty());
+    }
+
+    private static Optional<HierarchicalConfiguration> extractSubconfiguration(HierarchicalConfiguration configuration) {
+        return configuration.configurationsAt("configuration").stream().findFirst();
     }
 
     private final String clazz;
+    private final Optional<HierarchicalConfiguration> configuration;
 
-    @VisibleForTesting ListenerConfiguration(String clazz) {
+    private ListenerConfiguration(String clazz, Optional<HierarchicalConfiguration> configuration) {
         this.clazz = clazz;
+        this.configuration = configuration;
     }
 
     public String getClazz() {
         return clazz;
+    }
+
+    public Optional<HierarchicalConfiguration> getConfiguration() {
+        return configuration;
     }
 }

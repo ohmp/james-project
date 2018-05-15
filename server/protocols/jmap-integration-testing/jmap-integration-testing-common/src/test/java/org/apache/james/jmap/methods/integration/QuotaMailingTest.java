@@ -94,7 +94,7 @@ public abstract class QuotaMailingTest {
                 new SerializableQuotaValue<>(QuotaSize.size(100 * 1000)));
 
         bartSendMessageToHomer();
-        // Home receives a 83.995 Bytes mail, triggering the 0.80 threshold mailing
+        // Home receives a mail big enough to trigger a configured threshold
 
         calmlyAwait.atMost(30, TimeUnit.SECONDS)
             .until(() -> listMessageIdsForAccount(homerAccessToken).size() == 2);
@@ -119,7 +119,7 @@ public abstract class QuotaMailingTest {
     private void bartSendMessageToHomer() {
         String messageCreationId = "creationId";
         String outboxId = getOutboxId(bartAccessToken);
-        String eightyKBBody = Strings.repeat("123456789\n", 80 * 100);
+        String bigEnoughBody = Strings.repeat("123456789\n", 12 * 100);
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -129,7 +129,7 @@ public abstract class QuotaMailingTest {
             "        \"from\": { \"name\": \"Bob\", \"email\": \"" + BART + "\"}," +
             "        \"to\": [{ \"name\": \"User\", \"email\": \"" + HOMER + "\"}]," +
             "        \"subject\": \"Message without an attachment\"," +
-            "        \"textBody\": \"" + eightyKBBody + "\"," +
+            "        \"textBody\": \"" + bigEnoughBody + "\"," +
             "        \"htmlBody\": \"Test <b>body</b>, HTML version\"," +
             "        \"mailboxIds\": [\"" + outboxId + "\"] " +
             "      }}" +

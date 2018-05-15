@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailbox.quota.model.QuotaThreshold;
 import org.apache.james.mailbox.quota.model.QuotaThresholds;
@@ -32,6 +33,15 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 public class QuotaMailingListenerConfiguration {
+
+    public static QuotaMailingListenerConfiguration from(HierarchicalConfiguration config) {
+        Builder builder = builder();
+        config.configurationsAt("thresholds.threshold")
+            .stream()
+            .mapToDouble(node -> node.getDouble(""))
+            .forEach(value -> builder.addThreshold(new QuotaThreshold(value)));
+        return builder.build();
+    }
 
     public static class Builder {
         private ImmutableList.Builder<QuotaThreshold> thresholds;
