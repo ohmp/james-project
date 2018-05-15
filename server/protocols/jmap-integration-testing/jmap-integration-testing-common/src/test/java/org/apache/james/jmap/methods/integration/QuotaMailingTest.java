@@ -22,7 +22,6 @@ package org.apache.james.jmap.methods.integration;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.with;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
-import static org.apache.james.jmap.JmapCommonRequests.getLastMessageId;
 import static org.apache.james.jmap.JmapCommonRequests.getOutboxId;
 import static org.apache.james.jmap.JmapCommonRequests.listMessageIdsForAccount;
 import static org.apache.james.jmap.JmapURIBuilder.baseUri;
@@ -31,9 +30,12 @@ import static org.apache.james.jmap.TestingConstants.DOMAIN;
 import static org.apache.james.jmap.TestingConstants.calmlyAwait;
 import static org.apache.james.jmap.TestingConstants.jmapRequestSpecBuilder;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.jmap.api.access.AccessToken;
@@ -98,16 +100,21 @@ public abstract class QuotaMailingTest {
         calmlyAwait.atMost(30, TimeUnit.SECONDS)
             .until(() -> listMessageIdsForAccount(homerAccessToken).size() == 2);
 
+        List<String> ids = listMessageIdsForAccount(homerAccessToken);
+        String idString = ids.stream()
+            .map(id -> "\"" + id + "\"")
+            .collect(Collectors.joining(","));
+
         given()
             .header("Authorization", homerAccessToken.serialize())
-            .body("[[\"getMessages\", {\"ids\": [\"" + getLastMessageId(homerAccessToken) + "\"]}, \"#0\"]]")
+            .body("[[\"getMessages\", {\"ids\": [" + idString + "]}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()
             .statusCode(200)
             .log().ifValidationFails()
             .body(ARGUMENTS + ".list.subject",
-                contains("Warning: Your email usage just exceeded a configured threshold"));
+                hasItem("Warning: Your email usage just exceeded a configured threshold"));
     }
 
     private void bartSendMessageToHomer() {
