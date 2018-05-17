@@ -47,19 +47,18 @@ public class QuotaMailingListenerConfiguration {
             .build();
     }
 
-    private static String readSubjectTemplate(HierarchicalConfiguration config) {
-        return config.getString("subjectTemplate", DEFAULT_SUBJECT_TEMPLATE);
+    private static Optional<String> readSubjectTemplate(HierarchicalConfiguration config) {
+        return Optional.ofNullable(config.getString("subjectTemplate", null));
     }
 
-    private static String readBodyTemplate(HierarchicalConfiguration config) {
-        return config.getString("bodyTemplate", DEFAULT_BODY_TEMPLATE);
+    private static Optional<String> readBodyTemplate(HierarchicalConfiguration config) {
+        return Optional.ofNullable(config.getString("bodyTemplate", null));
     }
 
-    private static Duration readGracePeriod(HierarchicalConfiguration config) {
+    private static Optional<Duration> readGracePeriod(HierarchicalConfiguration config) {
         return Optional.ofNullable(config.getString("gracePeriod", null))
-            .map(TimeConverter::getMilliSeconds)
-            .map(Duration::ofMillis)
-            .orElse(DEFAULT_GRACE_PERIOD);
+            .map(string -> TimeConverter.getMilliSeconds(string, TimeConverter.Unit.DAYS))
+            .map(Duration::ofMillis);
     }
 
     private static ImmutableList<QuotaThreshold> readThresholds(HierarchicalConfiguration config) {
@@ -112,6 +111,21 @@ public class QuotaMailingListenerConfiguration {
         public Builder subjectTemplate(String subjectTemplate) {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(subjectTemplate), "Pass a non null/empty subjectTemplate");
             this.subjectTemplate = Optional.of(subjectTemplate);
+            return this;
+        }
+
+        public Builder gracePeriod(Optional<Duration> duration) {
+            duration.ifPresent(this::gracePeriod);
+            return this;
+        }
+
+        public Builder bodyTemplate(Optional<String> bodyTemplate) {
+            bodyTemplate.ifPresent(this::bodyTemplate);
+            return this;
+        }
+
+        public Builder subjectTemplate(Optional<String> subjectTemplate) {
+            subjectTemplate.ifPresent(this::subjectTemplate);
             return this;
         }
 
