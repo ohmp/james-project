@@ -28,19 +28,46 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailbox.quota.model.QuotaThreshold;
 import org.apache.james.mailbox.quota.model.QuotaThresholds;
+import org.apache.james.util.TimeConverter;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 public class QuotaMailingListenerConfiguration {
 
     public static QuotaMailingListenerConfiguration from(HierarchicalConfiguration config) {
-        Builder builder = builder();
-        config.configurationsAt("thresholds.threshold")
+        return builder()
+            .addThresholds(readThresholds(config))
+            .subjectTemplate(readSubjectTemplate(config))
+            .bodyTemplate(readBodyTemplate(config))
+            .gracePeriod(readGracePeriod(config))
+            .build();
+    }
+
+    private static String readSubjectTemplate(HierarchicalConfiguration config) {
+        return config.getString("subjectTemplate", DEFAULT_SUBJECT_TEMPLATE);
+    }
+
+    private static String readBodyTemplate(HierarchicalConfiguration config) {
+        return config.getString("bodyTemplate", DEFAULT_BODY_TEMPLATE);
+    }
+
+    private static Duration readGracePeriod(HierarchicalConfiguration config) {
+        return Optional.ofNullable(config.getString("gracePeriod", null))
+            .map(TimeConverter::getMilliSeconds)
+            .map(Duration::ofMillis)
+            .orElse(DEFAULT_GRACE_PERIOD);
+    }
+
+    private static ImmutableList<QuotaThreshold> readThresholds(HierarchicalConfiguration config) {
+        return config.configurationsAt("thresholds.threshold")
             .stream()
-            .mapToDouble(node -> node.getDouble(""))
-            .forEach(value -> builder.addThreshold(new QuotaThreshold(value)));
-        return builder.build();
+            .map(node -> node.getDouble(""))
+            .map(QuotaThreshold::new)
+            .collect(Guavate.toImmutableList());
     }
 
     public static class Builder {
@@ -77,11 +104,13 @@ public class QuotaMailingListenerConfiguration {
         }
         
         public Builder bodyTemplate(String bodyTemplate) {
+            Preconditions.checkArgument(!Strings.isNullOrEmpty(bodyTemplate), "Pass a non null/empty bodyTemplate");
             this.bodyTemplate = Optional.of(bodyTemplate);
             return this;
         }
 
         public Builder subjectTemplate(String subjectTemplate) {
+            Preconditions.checkArgument(!Strings.isNullOrEmpty(subjectTemplate), "Pass a non null/empty subjectTemplate");
             this.subjectTemplate = Optional.of(subjectTemplate);
             return this;
         }

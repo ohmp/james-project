@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 
-
 public class QuotaThresholdCrossingListener implements MailboxListener, Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaThresholdCrossingListener.class);
     private final EventStore eventStore;

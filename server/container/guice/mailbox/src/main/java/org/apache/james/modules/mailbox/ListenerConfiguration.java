@@ -22,7 +22,6 @@ import java.util.Optional;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -39,7 +38,9 @@ public class ListenerConfiguration {
     }
 
     private static Optional<HierarchicalConfiguration> extractSubconfiguration(HierarchicalConfiguration configuration) {
-        return configuration.configurationsAt("configuration").stream().findFirst();
+        return configuration.configurationsAt("configuration")
+            .stream()
+            .findFirst();
     }
 
     private final String clazz;
