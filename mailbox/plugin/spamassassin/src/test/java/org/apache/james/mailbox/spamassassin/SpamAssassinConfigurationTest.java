@@ -39,13 +39,13 @@ public class SpamAssassinConfigurationTest {
     @Test
     public void isEnableShouldReturnFalseWhenEmpty() {
         SpamAssassinConfiguration configuration = new SpamAssassinConfiguration(Optional.empty());
-        assertThat(configuration.isEnable()).isFalse();
+        assertThat(configuration.isEnabled()).isFalse();
     }
 
     @Test
     public void isEnableShouldReturnTrueWhenConfigured() {
         int port = 1;
         SpamAssassinConfiguration configuration = new SpamAssassinConfiguration(Optional.of(Host.from("hostname", port)));
-        assertThat(configuration.isEnable()).isTrue();
+        assertThat(configuration.isEnabled()).isTrue();
     }
 }

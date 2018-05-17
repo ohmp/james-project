@@ -45,6 +45,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>apache-james-mailbox-spamassassin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>apache-james-mailbox-scanning-search</artifactId>
             <type>test-jar</type>
         </dependency>
@@ -93,10 +97,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>james-server-guice-lmtp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>james-server-guice-mailbox-plugin-spamassassin</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

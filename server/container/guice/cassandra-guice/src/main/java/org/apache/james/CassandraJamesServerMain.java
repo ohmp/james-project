@@ -50,7 +50,6 @@ import org.apache.james.modules.server.MailRepositoriesRoutesModule;
 import org.apache.james.modules.server.MailboxRoutesModule;
 import org.apache.james.modules.server.SwaggerRoutesModule;
 import org.apache.james.modules.server.WebAdminServerModule;
-import org.apache.james.modules.spamassassin.SpamAssassinListenerModule;
 import org.apache.james.server.core.configuration.Configuration;
 
 import com.google.inject.Module;
@@ -95,8 +94,7 @@ public class CassandraJamesServerMain {
         new ElasticSearchMailboxModule(),
         new ElasticSearchMetricReporterModule(),
         new MailboxModule(),
-        new TikaMailboxModule(),
-        new SpamAssassinListenerModule());
+        new TikaMailboxModule());
 
     public static void main(String[] args) throws Exception {
         Configuration configuration = Configuration.builder().useWorkingDirectoryEnvProperty().build();
