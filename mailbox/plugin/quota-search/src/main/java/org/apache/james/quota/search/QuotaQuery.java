@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.james.core.Domain;
-import org.apache.james.mailbox.model.QuotaThreshold;
 import org.apache.james.util.streams.Limit;
 import org.apache.james.util.streams.Offset;
 
@@ -43,13 +42,13 @@ public class QuotaQuery {
             offset = Optional.empty();
         }
 
-        public Builder moreThan(QuotaThreshold quotaThreshold) {
-            clauses.add(QuotaClause.moreThan(quotaThreshold));
+        public Builder moreThan(QuotaBoundary quotaBoundary) {
+            clauses.add(QuotaClause.moreThan(quotaBoundary));
             return this;
         }
 
-        public Builder lessThan(QuotaThreshold quotaThreshold) {
-            clauses.add(QuotaClause.lessThan(quotaThreshold));
+        public Builder lessThan(QuotaBoundary quotaBoundary) {
+            clauses.add(QuotaClause.lessThan(quotaBoundary));
             return this;
         }
 

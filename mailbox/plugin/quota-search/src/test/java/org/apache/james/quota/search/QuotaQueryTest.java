@@ -19,8 +19,8 @@
 
 package org.apache.james.quota.search;
 
-import static org.apache.james.mailbox.model.QuotaThresholdFixture._50;
-import static org.apache.james.mailbox.model.QuotaThresholdFixture._75;
+import static org.apache.james.quota.search.QuotaBoundaryFixture._50;
+import static org.apache.james.quota.search.QuotaBoundaryFixture._75;
 
 import org.apache.james.core.Domain;
 import org.apache.james.util.streams.Limit;

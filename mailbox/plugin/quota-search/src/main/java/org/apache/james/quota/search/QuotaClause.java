@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.james.core.Domain;
-import org.apache.james.mailbox.model.QuotaThreshold;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -32,15 +31,15 @@ public interface QuotaClause {
 
     class LessThan implements QuotaClause {
 
-        private final QuotaThreshold quotaThreshold;
+        private final QuotaBoundary quotaBoundary;
 
-        private LessThan(QuotaThreshold quotaThreshold) {
-            Preconditions.checkNotNull(quotaThreshold, "'quotaThreshold' is mandatory");
-            this.quotaThreshold = quotaThreshold;
+        private LessThan(QuotaBoundary quotaBoundary) {
+            Preconditions.checkNotNull(quotaBoundary, "'quotaThreshold' is mandatory");
+            this.quotaBoundary = quotaBoundary;
         }
 
-        public QuotaThreshold getQuotaThreshold() {
-            return quotaThreshold;
+        public QuotaBoundary getQuotaThreshold() {
+            return quotaBoundary;
         }
 
         @Override
@@ -48,35 +47,35 @@ public interface QuotaClause {
             if (o instanceof LessThan) {
                 LessThan lessThan = (LessThan) o;
 
-                return Objects.equals(this.quotaThreshold, lessThan.quotaThreshold);
+                return Objects.equals(this.quotaBoundary, lessThan.quotaBoundary);
             }
             return false;
         }
 
         @Override
         public final int hashCode() {
-            return Objects.hash(quotaThreshold);
+            return Objects.hash(quotaBoundary);
         }
 
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                .add("quotaThreshold", quotaThreshold)
+                .add("quotaThreshold", quotaBoundary)
                 .toString();
         }
     }
 
     class MoreThan implements QuotaClause {
 
-        private final QuotaThreshold quotaThreshold;
+        private final QuotaBoundary quotaBoundary;
 
-        private MoreThan(QuotaThreshold quotaThreshold) {
-            Preconditions.checkNotNull(quotaThreshold, "'quotaThreshold' is mandatory");
-            this.quotaThreshold = quotaThreshold;
+        private MoreThan(QuotaBoundary quotaBoundary) {
+            Preconditions.checkNotNull(quotaBoundary, "'quotaRatio' is mandatory");
+            this.quotaBoundary = quotaBoundary;
         }
 
-        public QuotaThreshold getQuotaThreshold() {
-            return quotaThreshold;
+        public QuotaBoundary getQuotaThreshold() {
+            return quotaBoundary;
         }
 
         @Override
@@ -84,20 +83,20 @@ public interface QuotaClause {
             if (o instanceof MoreThan) {
                 MoreThan moreThan = (MoreThan) o;
 
-                return Objects.equals(this.quotaThreshold, moreThan.quotaThreshold);
+                return Objects.equals(this.quotaBoundary, moreThan.quotaBoundary);
             }
             return false;
         }
 
         @Override
         public final int hashCode() {
-            return Objects.hash(quotaThreshold);
+            return Objects.hash(quotaBoundary);
         }
 
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                .add("quotaThreshold", quotaThreshold)
+                .add("quotaRatio", quotaBoundary)
                 .toString();
         }
     }
@@ -174,12 +173,12 @@ public interface QuotaClause {
         }
     }
 
-    static LessThan lessThan(QuotaThreshold quotaThreshold) {
-        return new LessThan(quotaThreshold);
+    static LessThan lessThan(QuotaBoundary quotaBoundary) {
+        return new LessThan(quotaBoundary);
     }
 
-    static MoreThan moreThan(QuotaThreshold quotaThreshold) {
-        return new MoreThan(quotaThreshold);
+    static MoreThan moreThan(QuotaBoundary quotaBoundary) {
+        return new MoreThan(quotaBoundary);
     }
 
     static HasDomain hasDomain(Domain domain) {

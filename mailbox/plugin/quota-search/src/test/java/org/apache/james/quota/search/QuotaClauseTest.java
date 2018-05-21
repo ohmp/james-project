@@ -18,8 +18,8 @@
  ****************************************************************/
 package org.apache.james.quota.search;
 
-import static org.apache.james.mailbox.model.QuotaThresholdFixture._50;
-import static org.apache.james.mailbox.model.QuotaThresholdFixture._75;
+import static org.apache.james.quota.search.QuotaBoundaryFixture._50;
+import static org.apache.james.quota.search.QuotaBoundaryFixture._75;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,7 +54,7 @@ public class QuotaClauseTest implements QuotaClause {
     }
     
     @Test
-    public void AndShouldMatchBeanContract() {
+    public void andShouldMatchBeanContract() {
         EqualsVerifier.forClass(QuotaClause.And.class)
             .allFieldsShouldBeUsed()
             .verify();
@@ -73,7 +73,7 @@ public class QuotaClauseTest implements QuotaClause {
     }
 
     @Test
-    public void HasDomainClauseShouldThrowWhenDomainIsNull() {
+    public void hasDomainClauseShouldThrowWhenDomainIsNull() {
         assertThatThrownBy(() -> QuotaClause.hasDomain(null))
             .isInstanceOf(NullPointerException.class);
     }
@@ -100,7 +100,7 @@ public class QuotaClauseTest implements QuotaClause {
     }
 
     @Test
-    public void HasDomainClauseShouldInstanciate() {
+    public void hasDomainClauseShouldInstanciate() {
         Domain domain = Domain.of("domain.org");
 
         QuotaClause.HasDomain hasDomainQuery = QuotaClause.hasDomain(domain);
@@ -109,7 +109,7 @@ public class QuotaClauseTest implements QuotaClause {
     }
 
     @Test
-    public void AndClauseShouldInstanciate() {
+    public void andClauseShouldInstanciate() {
         QuotaClause.MoreThan first = QuotaClause.moreThan(_50);
         QuotaClause.MoreThan second = QuotaClause.moreThan(_75);
 
