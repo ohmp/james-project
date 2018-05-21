@@ -16,13 +16,12 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.mailbox.quota.mailing.search;
+package org.apache.james.quota.search;
 
 import java.util.List;
 
 import org.apache.james.core.User;
 
 public interface QuotaSearcher {
-
-    List<User> search(QuotaQuery query, int limit, int offset);
+    List<User> search(QuotaQuery query);
 }
