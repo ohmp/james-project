@@ -212,7 +212,7 @@ public class QuotaMailingListenerConfiguration {
             return this;
         }
 
-        public Builder subjectTemplate(Optional<String>  subjectTemplate) {
+        public Builder subjectTemplate(Optional<String> subjectTemplate) {
             subjectTemplate.ifPresent(this::subjectTemplate);
             return this;
         }
