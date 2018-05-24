@@ -55,7 +55,7 @@ public class QuotaRatioToElasticSearchJsonTest {
     }
 
     @Test
-    public void quotaRatioShouldBeWellConvertedToWhenNoDomain() throws IOException {
+    public void quotaRatioShouldBeWellConvertedToJsonWhenNoDomain() throws IOException {
         String user = "user";
         QuotaUsageUpdatedEvent event = new QuotaUsageUpdatedEvent(
                 new MockMailboxSession(user),
