@@ -55,8 +55,7 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
 
     @Override
     public List<User> search(QuotaQuery query) {
-        Stream<User> results = new ScrollIterable(client,
-            prepareSearch(query))
+        Stream<User> results = new ScrollIterable(client, prepareSearch(query))
             .stream()
             .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits()
                 .getHits()))
