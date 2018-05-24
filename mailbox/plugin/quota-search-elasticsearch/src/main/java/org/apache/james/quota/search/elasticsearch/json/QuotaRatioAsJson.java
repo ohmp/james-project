@@ -86,7 +86,7 @@ public class QuotaRatioAsJson {
     }
 
     @JsonProperty(JsonMessageConstants.QUOTA_RATIO)
-    public double getQuotaCountRatio() {
+    public double getQuotaRatio() {
         return quotaRatio;
     }
 
