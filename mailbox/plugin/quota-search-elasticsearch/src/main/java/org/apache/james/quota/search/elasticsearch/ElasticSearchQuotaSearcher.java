@@ -77,7 +77,9 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
             .addFields(USER)
             .setQuery(quotaQueryConverter.from(query));
 
-        query.getLimit().getValue().ifPresent(searchRequestBuilder::setSize);
+        query.getLimit()
+            .getValue()
+            .ifPresent(searchRequestBuilder::setSize);
 
         searchRequestBuilder.addSort(
             SortBuilders.fieldSort(USER)

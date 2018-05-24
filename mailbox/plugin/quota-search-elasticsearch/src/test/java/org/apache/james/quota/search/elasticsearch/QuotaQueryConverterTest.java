@@ -61,7 +61,7 @@ class QuotaQueryConverterTest {
     }
 
     @Test
-    void fromShouldReturnQuotaRationMatchWhenLessThan() {
+    void fromShouldReturnQuotaRatioMatchWhenLessThan() {
         QuotaQuery query = QuotaQuery.builder().lessThan(new QuotaBoundary(0.1)).build();
         QueryBuilder expected = rangeQuery(QUOTA_RATIO).lte(0.1);
 
@@ -71,7 +71,7 @@ class QuotaQueryConverterTest {
     }
 
     @Test
-    void fromShouldReturnQuotaRationMatchWhenMoreThan() {
+    void fromShouldReturnQuotaRatioMatchWhenMoreThan() {
         QuotaQuery query = QuotaQuery.builder().moreThan(new QuotaBoundary(0.1)).build();
         QueryBuilder expected = rangeQuery(QUOTA_RATIO).gte(0.1);
 

@@ -66,6 +66,10 @@ public class QuotaQueryConverter {
             return toElasticSearch(clauses.get(0));
         }
         
+        return asBoolQueryBuilder(clauses);
+    }
+
+    private BoolQueryBuilder asBoolQueryBuilder(List<QuotaClause> clauses) {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         clauses.stream()
             .map(this::toElasticSearch)
@@ -74,7 +78,7 @@ public class QuotaQueryConverter {
     }
 
     private QueryBuilder disableNestedAnd(QuotaClause clause) {
-        throw new IllegalArgumentException("Nested and clauses are not supported");
+        throw new IllegalArgumentException("Nested \"And\" clauses are not supported");
     }
 
     private TermQueryBuilder convertHasDomain(QuotaClause clause) {
