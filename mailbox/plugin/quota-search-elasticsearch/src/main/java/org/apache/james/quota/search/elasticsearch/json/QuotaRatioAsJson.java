@@ -52,14 +52,14 @@ public class QuotaRatioAsJson {
             return this;
         }
 
-        public Builder quotaRatio(double quotaCountRatio) {
-            this.quotaRatio = quotaCountRatio;
+        public Builder quotaRatio(double quotaRatio) {
+            this.quotaRatio = quotaRatio;
             return this;
         }
 
         public QuotaRatioAsJson build() {
             Preconditions.checkState(!Strings.isNullOrEmpty(user), "'user' is mandatory");
-            Preconditions.checkNotNull(quotaRatio, "'quotaCountRatio' is mandatory");
+            Preconditions.checkNotNull(quotaRatio, "'quotaRatio' is mandatory");
 
             return new QuotaRatioAsJson(user, domain, quotaRatio);
         }
