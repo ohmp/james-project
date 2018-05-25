@@ -153,6 +153,61 @@ public class CassandraMailboxMapperTest {
     }
 
     @Test
+    public void findMailboxByPathShouldReturnMailboxWhenExistsInBothTables() throws Exception {
+        mailboxDAO.save(MAILBOX)
+            .join();
+        mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+        mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+
+        Mailbox mailbox = testee.findMailboxByPath(MAILBOX_PATH);
+
+        assertThat(mailbox.generateAssociatedPath()).isEqualTo(MAILBOX_PATH);
+    }
+
+    @Test
+    public void deleteShouldRemoveMailboxWhenInBothTables() {
+        mailboxDAO.save(MAILBOX)
+            .join();
+        mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+        mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+
+        testee.delete(MAILBOX);
+
+        assertThatThrownBy(() -> testee.findMailboxByPath(MAILBOX_PATH))
+            .isInstanceOf(MailboxNotFoundException.class);
+    }
+
+    @Test
+    public void deleteShouldRemoveMailboxWhenInV1Tables() {
+        mailboxDAO.save(MAILBOX)
+            .join();
+        mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+
+        testee.delete(MAILBOX);
+
+        assertThatThrownBy(() -> testee.findMailboxByPath(MAILBOX_PATH))
+            .isInstanceOf(MailboxNotFoundException.class);
+    }
+
+    @Test
+    public void deleteShouldRemoveMailboxWhenInV2Table() {
+        mailboxDAO.save(MAILBOX)
+            .join();
+        mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+
+        testee.delete(MAILBOX);
+
+        assertThatThrownBy(() -> testee.findMailboxByPath(MAILBOX_PATH))
+            .isInstanceOf(MailboxNotFoundException.class);
+    }
+
+    @Test
     public void findMailboxByPathShouldThrowWhenDoesntExistInBothTables() {
         mailboxDAO.save(MAILBOX)
             .join();
@@ -168,6 +223,20 @@ public class CassandraMailboxMapperTest {
         mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
             .join();
     
+        List<Mailbox> mailboxes = testee.findMailboxWithPathLike(new MailboxPath(MailboxConstants.USER_NAMESPACE, USER, WILDCARD));
+
+        assertThat(mailboxes).containsOnly(MAILBOX);
+    }
+
+    @Test
+    public void findMailboxWithPathLikeShouldReturnMailboxesWhenExistsInBothTables() {
+        mailboxDAO.save(MAILBOX)
+            .join();
+        mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+        mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+
         List<Mailbox> mailboxes = testee.findMailboxWithPathLike(new MailboxPath(MailboxConstants.USER_NAMESPACE, USER, WILDCARD));
 
         assertThat(mailboxes).containsOnly(MAILBOX);
@@ -201,6 +270,27 @@ public class CassandraMailboxMapperTest {
     
         boolean hasChildren = testee.hasChildren(MAILBOX, '.');
     
+        assertThat(hasChildren).isTrue();
+    }
+
+    @Test
+    public void hasChildrenShouldReturnChildWhenExistsInBothTables() {
+        mailboxDAO.save(MAILBOX)
+            .join();
+        mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+        mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
+            .join();
+        CassandraId childMailboxId = CassandraId.timeBased();
+        MailboxPath childMailboxPath = MailboxPath.forUser(USER, "name.child");
+        Mailbox childMailbox = new SimpleMailbox(childMailboxPath, UID_VALIDITY, childMailboxId);
+        mailboxDAO.save(childMailbox)
+            .join();
+        mailboxPathDAO.save(childMailboxPath, childMailboxId)
+            .join();
+
+        boolean hasChildren = testee.hasChildren(MAILBOX, '.');
+
         assertThat(hasChildren).isTrue();
     }
 
