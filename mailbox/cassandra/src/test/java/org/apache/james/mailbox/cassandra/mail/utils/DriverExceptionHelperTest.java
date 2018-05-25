@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.cassandra.mail.utils;
 
+import static org.apache.james.mailbox.cassandra.mail.utils.DriverExceptionHelper.CLUSTERING_COLUMNS_IS_TOO_LONG;
+import static org.apache.james.mailbox.cassandra.mail.utils.DriverExceptionHelper.VALUES_MAY_NOT_BE_LARGER_THAN_64_K;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.CompletionException;
@@ -37,7 +39,7 @@ public class DriverExceptionHelperTest {
 
         assertThatThrownBy(() ->
             DriverExceptionHelper.handleStorageException(completionException))
-            .isEqualTo(completionException);
+                .isEqualTo(completionException);
     }
 
     @Test
@@ -46,7 +48,7 @@ public class DriverExceptionHelperTest {
 
         assertThatThrownBy(() ->
             DriverExceptionHelper.handleStorageException(exception))
-            .isEqualTo(exception);
+                .isEqualTo(exception);
     }
 
     @Test
@@ -56,28 +58,28 @@ public class DriverExceptionHelperTest {
 
         assertThatThrownBy(() ->
             DriverExceptionHelper.handleStorageException(exception))
-            .isInstanceOf(MailboxException.class)
-            .hasCause(invalidQueryException);
+                .isInstanceOf(MailboxException.class)
+                .hasCause(invalidQueryException);
     }
 
     @Test
     public void handleStorageExceptionShouldThrowTooLongWhenClusteringColumnsTooLong() {
-        InvalidQueryException invalidQueryException = new InvalidQueryException(DriverExceptionHelper.CLUSTERING_COLUMNS_IS_TOO_LONG);
+        InvalidQueryException invalidQueryException = new InvalidQueryException(CLUSTERING_COLUMNS_IS_TOO_LONG);
         CompletionException exception = new CompletionException("message", invalidQueryException);
 
         assertThatThrownBy(() ->
             DriverExceptionHelper.handleStorageException(exception))
-            .isInstanceOf(TooLongMailboxNameException.class);
+                .isInstanceOf(TooLongMailboxNameException.class);
     }
 
     @Test
     public void handleStorageExceptionShouldThrowTooLongWhenValueMoreThan64K() {
-        InvalidQueryException invalidQueryException = new InvalidQueryException(DriverExceptionHelper.VALUES_MAY_NOT_BE_LARGER_THAN_64_K);
+        InvalidQueryException invalidQueryException = new InvalidQueryException(VALUES_MAY_NOT_BE_LARGER_THAN_64_K);
         CompletionException exception = new CompletionException("message", invalidQueryException);
 
         assertThatThrownBy(() ->
             DriverExceptionHelper.handleStorageException(exception))
-            .isInstanceOf(TooLongMailboxNameException.class);
+                .isInstanceOf(TooLongMailboxNameException.class);
     }
 
 }
