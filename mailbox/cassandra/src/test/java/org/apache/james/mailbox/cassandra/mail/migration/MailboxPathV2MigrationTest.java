@@ -40,17 +40,19 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 public class MailboxPathV2MigrationTest {
 
-    public static final MailboxPath MAILBOX_PATH_1 = MailboxPath.forUser("bob", "Important");
-    public static final int UID_VALIDITY_1 = 452;
-    public static final SimpleMailbox MAILBOX_1 = new SimpleMailbox(MAILBOX_PATH_1, UID_VALIDITY_1);
-    public static final CassandraId MAILBOX_ID_1 = CassandraId.timeBased();
+    private static final MailboxPath MAILBOX_PATH_1 = MailboxPath.forUser("bob", "Important");
+    private static final int UID_VALIDITY_1 = 452;
+    private static final SimpleMailbox MAILBOX_1 = new SimpleMailbox(MAILBOX_PATH_1, UID_VALIDITY_1);
+    private static final CassandraId MAILBOX_ID_1 = CassandraId.timeBased();
 
-    static {
+    @BeforeClass
+    public static void setUpClass() {
         MAILBOX_1.setMailboxId(MAILBOX_ID_1);
     }
 
