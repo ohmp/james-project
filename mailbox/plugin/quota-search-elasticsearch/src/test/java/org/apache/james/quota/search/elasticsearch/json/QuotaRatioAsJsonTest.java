@@ -23,11 +23,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Optional;
 
+import org.apache.james.mailbox.model.Quota;
+import org.apache.james.mailbox.model.QuotaRatio;
+import org.apache.james.mailbox.quota.QuotaCount;
+import org.apache.james.mailbox.quota.QuotaSize;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class QuotaRatioAsJsonTest {
+
+    private static final Quota<QuotaSize> QUOTA_SIZE = Quota.<QuotaSize> builder()
+            .used(QuotaSize.size(15))
+            .computedLimit(QuotaSize.size(60))
+            .build();
+    private static final Quota<QuotaCount> QUOTA_COUNT = Quota.<QuotaCount> builder()
+            .used(QuotaCount.count(1))
+            .computedLimit(QuotaCount.count(2))
+            .build();
 
     @Test
     public void shouldMatchBeanContract() {
@@ -63,7 +76,7 @@ public class QuotaRatioAsJsonTest {
     public void getDomainShouldReturnEmptyWhenNone() {
         QuotaRatioAsJson quotaRatioAsJson = QuotaRatioAsJson.builder()
             .user("user")
-            .quotaRatio(0.3)
+            .quotaRatio(QuotaRatio.from(QUOTA_SIZE, QUOTA_COUNT))
             .build();
 
         assertThat(quotaRatioAsJson.getDomain()).isEmpty();
@@ -75,9 +88,21 @@ public class QuotaRatioAsJsonTest {
         QuotaRatioAsJson quotaRatioAsJson = QuotaRatioAsJson.builder()
             .user("user")
             .domain(Optional.of(domain))
-            .quotaRatio(0.2)
+            .quotaRatio(QuotaRatio.from(QUOTA_SIZE, QUOTA_COUNT))
             .build();
 
         assertThat(quotaRatioAsJson.getDomain()).contains(domain);
+    }
+
+    @Test
+    public void getMaxQuotaRatioShouldReturnTheMaxQuotaRatio() {
+        String domain = "domain";
+        QuotaRatioAsJson quotaRatioAsJson = QuotaRatioAsJson.builder()
+            .user("user")
+            .domain(Optional.of(domain))
+            .quotaRatio(QuotaRatio.from(QUOTA_SIZE, QUOTA_COUNT))
+            .build();
+
+        assertThat(quotaRatioAsJson.getMaxQuotaRatio()).isEqualTo(0.5);
     }
 }

@@ -43,7 +43,7 @@ public class QuotaRatioToElasticSearchJson {
         return mapper.writeValueAsString(QuotaRatioAsJson.builder()
                 .user(user)
                 .domain(event.getQuotaRoot().getDomain().map(Domain::asString))
-                .quotaRatio(QuotaRatio.from(event.getSizeQuota(), event.getCountQuota()).max())
+                .quotaRatio(QuotaRatio.from(event.getSizeQuota(), event.getCountQuota()))
                 .build());
     }
 }
