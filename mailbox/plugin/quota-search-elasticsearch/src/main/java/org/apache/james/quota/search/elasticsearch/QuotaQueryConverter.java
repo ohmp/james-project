@@ -63,16 +63,16 @@ public class QuotaQueryConverter {
             return matchAllQuery();
         }
         if (clauses.size() == 1) {
-            return toElasticSearch(clauses.get(0));
+            return singleClauseAsESQuery(clauses.get(0));
         }
         
-        return asBoolQueryBuilder(clauses);
+        return clausesAsAndESQuery(clauses);
     }
 
-    private BoolQueryBuilder asBoolQueryBuilder(List<QuotaClause> clauses) {
+    private BoolQueryBuilder clausesAsAndESQuery(List<QuotaClause> clauses) {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         clauses.stream()
-            .map(this::toElasticSearch)
+            .map(this::singleClauseAsESQuery)
             .forEach(boolQueryBuilder::must);
         return boolQueryBuilder;
     }
@@ -96,7 +96,7 @@ public class QuotaQueryConverter {
         return rangeQuery(QUOTA_RATIO).lte(lessThan.getQuotaBoundary().getRatio());
     }
 
-    private QueryBuilder toElasticSearch(QuotaClause clause) {
+    private QueryBuilder singleClauseAsESQuery(QuotaClause clause) {
         return clauseConverter.get(clause.getClass()).apply(clause);
     }
 
