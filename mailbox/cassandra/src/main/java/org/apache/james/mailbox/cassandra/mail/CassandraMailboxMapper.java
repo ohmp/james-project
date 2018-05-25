@@ -108,10 +108,26 @@ public class CassandraMailboxMapper implements MailboxMapper {
                     cassandraIdOptional
                         .map(CassandraIdAndPath::getCassandraId)
                         .map(this::retrieveMailbox)
-                        .orElse(CompletableFuture.completedFuture(Optional.empty())));
+                        .orElse(CompletableFuture.completedFuture(Optional.empty())))
+                .thenCompose(maybeMailbox -> maybeMailbox.map(this::migrate)
+                    .orElse(CompletableFuture.completedFuture(maybeMailbox)));
         } catch (CompletionException e) {
             throw DriverExceptionHelper.handleStorageException(e);
         }
+    }
+
+    private CompletableFuture<Optional<SimpleMailbox>> migrate(SimpleMailbox mailbox) {
+        CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+        return mailboxPathV2DAO.save(mailbox.generateAssociatedPath(), mailboxId)
+            .thenCompose(success -> {
+                if (success) {
+                    mailboxPathDAO.delete(mailbox.generateAssociatedPath());
+                }
+                LOGGER.info("Concurrent execution lead to data race while migrating {} to 'mailboxPathV2DAO'.",
+                    mailbox.generateAssociatedPath());
+                return CompletableFuture.completedFuture(null);
+            })
+            .thenApply(any -> Optional.of(mailbox));
     }
 
     @Override
