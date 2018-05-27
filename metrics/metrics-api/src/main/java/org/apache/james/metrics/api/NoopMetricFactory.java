@@ -62,4 +62,9 @@ public class NoopMetricFactory implements MetricFactory {
     public <T> T withMetric(String name, Supplier<T> operation) {
         return operation.get();
     }
+
+    @Override
+    public <T> void register(String name, Gauge<T> gauge) {
+
+    }
 }

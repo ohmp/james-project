@@ -26,6 +26,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.james.metrics.api.Gauge;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
@@ -63,6 +64,11 @@ public class DropWizardMetricFactory implements MetricFactory {
         } finally {
             timer.stopAndPublish();
         }
+    }
+
+    @Override
+    public <T> void register(String name, Gauge<T> gauge) {
+        metricRegistry.gauge(name, () -> gauge::get);
     }
 
     @PostConstruct
