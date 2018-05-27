@@ -34,6 +34,7 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldAcceptMandatoryValues() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+                "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.port=889\n" +
                 "tika.timeoutInMillis=500\n"));
@@ -41,6 +42,7 @@ public class TikaConfigurationReaderTest {
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)
@@ -53,12 +55,14 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldReturnDefaultOnMissingHost() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
                 "tika.port=889\n" +
                 "tika.timeoutInMillis=500\n"));
 
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("127.0.0.1")
                     .port(889)
                     .timeoutInMillis(500)
@@ -69,12 +73,14 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldReturnDefaultOnMissingPort() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.timeoutInMillis=500\n"));
 
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(9998)
                     .timeoutInMillis(500)
@@ -85,23 +91,37 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldReturnDefaultOnMissingTimeout() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.port=889\n"));
 
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(30 * 1000)
                     .build());
     }
 
+    @Test
+    public void tikaShouldBeDisabledByDefault() throws Exception {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.load(new StringReader(""));
+
+        assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
+            .isEqualTo(
+                TikaConfiguration.builder()
+                    .disabled()
+                    .build());
+    }
 
     @Test
     public void readTikaConfigurationShouldParseUnitForCacheEvictionPeriod() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.port=889\n" +
                 "tika.timeoutInMillis=500\n" +
@@ -110,6 +130,7 @@ public class TikaConfigurationReaderTest {
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)
@@ -121,6 +142,7 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldDefaultToSecondWhenMissingUnitForCacheEvitionPeriod() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.port=889\n" +
                 "tika.timeoutInMillis=500\n" +
@@ -129,6 +151,7 @@ public class TikaConfigurationReaderTest {
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)
@@ -140,6 +163,7 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldParseUnitForCacheWeightMax() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.port=889\n" +
                 "tika.timeoutInMillis=500\n" +
@@ -148,6 +172,7 @@ public class TikaConfigurationReaderTest {
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)
@@ -159,6 +184,7 @@ public class TikaConfigurationReaderTest {
     public void readTikaConfigurationShouldDefaultToByteAsSizeUnit() throws Exception {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.load(new StringReader(
+            "tika.enabled=true\n" +
             "tika.host=172.0.0.5\n" +
                 "tika.port=889\n" +
                 "tika.timeoutInMillis=500\n" +
@@ -167,6 +193,7 @@ public class TikaConfigurationReaderTest {
         assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
             .isEqualTo(
                 TikaConfiguration.builder()
+                    .enabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)
