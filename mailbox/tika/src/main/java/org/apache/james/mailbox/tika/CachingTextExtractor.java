@@ -116,12 +116,12 @@ public class CachingTextExtractor implements TextExtractor {
             return cache.get(key,
                 () -> underlying.extractContent(new ByteArrayInputStream(bytes), contentType));
         } catch (UncheckedExecutionException | ExecutionException e) {
-            return unwrap(e);
+            throw unwrap(e);
         }
     }
 
-    public ParsedContent unwrap(Exception e) throws Exception {
-        throw Optional.ofNullable(e.getCause())
+    private Exception unwrap(Exception e) {
+        return Optional.ofNullable(e.getCause())
             .filter(throwable -> throwable instanceof Exception)
             .map(throwable -> (Exception) throwable)
             .orElse(e);
