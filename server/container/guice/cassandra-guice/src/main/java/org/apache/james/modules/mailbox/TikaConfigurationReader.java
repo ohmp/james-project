@@ -31,6 +31,7 @@ import com.github.fge.lambdas.Throwing;
 
 public class TikaConfigurationReader {
     public static final String TIKA_ENABLED = "tika.enabled";
+    public static final String TIKA_CACHE_ENABLED = "tika.cache.enabled";
     public static final String TIKA_HOST = "tika.host";
     public static final String TIKA_PORT = "tika.port";
     public static final String TIKA_TIMEOUT_IN_MS = "tika.timeoutInMillis";
@@ -40,6 +41,9 @@ public class TikaConfigurationReader {
     public static TikaConfiguration readTikaConfiguration(PropertiesConfiguration configuration) {
         Optional<Boolean> enabled = Optional.ofNullable(
             configuration.getBoolean(TIKA_ENABLED, null));
+
+        Optional<Boolean> cacheEnabled = Optional.ofNullable(
+            configuration.getBoolean(TIKA_CACHE_ENABLED, null));
 
         Optional<String> host = Optional.ofNullable(
             configuration.getString(TIKA_HOST, null));
@@ -66,6 +70,7 @@ public class TikaConfigurationReader {
             .host(host)
             .port(port)
             .timeoutInMillis(timeoutInMillis)
+            .cacheEnable(cacheEnabled)
             .cacheEvictionPeriod(cacheEvictionPeriod)
             .cacheWeightInBytes(cacheWeight)
             .build();

@@ -46,6 +46,7 @@ public class TikaConfigurationReaderTest {
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)
+                    .cacheDisabled()
                     .cacheWeightInBytes(100L * 1024L *1024L)
                     .cacheEvictionPeriod(Duration.ofDays(1))
                     .build());
@@ -194,6 +195,29 @@ public class TikaConfigurationReaderTest {
             .isEqualTo(
                 TikaConfiguration.builder()
                     .enabled()
+                    .host("172.0.0.5")
+                    .port(889)
+                    .timeoutInMillis(500)
+                    .cacheWeightInBytes(1520000)
+                    .build());
+    }
+
+    @Test
+    public void readTikaConfigurationShouldEnableCacheWhenConfigured() throws Exception {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.load(new StringReader(
+            "tika.enabled=true\n" +
+            "tika.cache.enabled=true\n" +
+            "tika.host=172.0.0.5\n" +
+            "tika.port=889\n" +
+            "tika.timeoutInMillis=500\n" +
+            "tika.cache.weight.max=1520000"));
+
+        assertThat(TikaConfigurationReader.readTikaConfiguration(configuration))
+            .isEqualTo(
+                TikaConfiguration.builder()
+                    .enabled()
+                    .cacheEnabled()
                     .host("172.0.0.5")
                     .port(889)
                     .timeoutInMillis(500)

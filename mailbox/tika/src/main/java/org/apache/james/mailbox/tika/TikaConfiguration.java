@@ -33,6 +33,7 @@ public class TikaConfiguration {
 
     public static class Builder {
         private Optional<Boolean> isEnabled;
+        private Optional<Boolean> isCacheEnabled;
         private Optional<String> host;
         private Optional<Integer> port;
         private Optional<Integer> timeoutInMillis;
@@ -41,6 +42,7 @@ public class TikaConfiguration {
 
         private Builder() {
             isEnabled = Optional.empty();
+            isCacheEnabled = Optional.empty();
             host = Optional.empty();
             port = Optional.empty();
             timeoutInMillis = Optional.empty();
@@ -61,6 +63,22 @@ public class TikaConfiguration {
 
         public Builder disabled() {
             this.isEnabled = Optional.of(false);
+            return this;
+        }
+
+        public Builder cacheEnable(Optional<Boolean> isEnabled) {
+            Preconditions.checkNotNull(isEnabled);
+            this.isCacheEnabled = isEnabled;
+            return this;
+        }
+
+        public Builder cacheEnabled() {
+            this.isCacheEnabled = Optional.of(true);
+            return this;
+        }
+
+        public Builder cacheDisabled() {
+            this.isCacheEnabled = Optional.of(false);
             return this;
         }
 
@@ -123,6 +141,7 @@ public class TikaConfiguration {
 
             return new TikaConfiguration(
                 isEnabled.orElse(DEFAULT_DISABLED),
+                isCacheEnabled.orElse(DEFAULT_DISABLED),
                 host.orElse(DEFAULT_HOST),
                 port.orElse(DEFAULT_PORT),
                 timeoutInMillis.orElse(DEFAULT_TIMEOUT_IN_MS),
@@ -143,14 +162,16 @@ public class TikaConfiguration {
     }
 
     private final boolean enabled;
+    private final boolean cacheEnabled;
     private final String host;
     private final int port;
     private final int timeoutInMillis;
     private final Duration cacheEvictionPeriod;
     private final long cacheWeightInBytes;
 
-    private TikaConfiguration(boolean enabled, String host, int port, int timeoutInMillis, Duration cacheEvictionPeriod, long cacheWeightInBytes) {
+    private TikaConfiguration(boolean enabled, boolean cacheEnabled, String host, int port, int timeoutInMillis, Duration cacheEvictionPeriod, long cacheWeightInBytes) {
         this.enabled = enabled;
+        this.cacheEnabled = cacheEnabled;
         this.host = host;
         this.port = port;
         this.timeoutInMillis = timeoutInMillis;
@@ -160,6 +181,10 @@ public class TikaConfiguration {
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public boolean isCacheEnabled() {
+        return cacheEnabled;
     }
 
     public String getHost() {
