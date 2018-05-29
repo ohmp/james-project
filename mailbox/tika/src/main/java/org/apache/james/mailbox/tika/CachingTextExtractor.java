@@ -115,12 +115,7 @@ public class CachingTextExtractor implements TextExtractor {
         String key = DigestUtils.sha256Hex(bytes);
 
         ParsedContent cachedValue = cache.getIfPresent(key);
-        if (cachedValue !=
-
-
-
-
-            null) {
+        if (cachedValue != null) {
             return cachedValue;
         }
 
