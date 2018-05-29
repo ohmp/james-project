@@ -40,7 +40,6 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.Weigher;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-
 public class CachingTextExtractor implements TextExtractor {
     private final TextExtractor underlying;
     private final Cache<String, ParsedContent> cache;
