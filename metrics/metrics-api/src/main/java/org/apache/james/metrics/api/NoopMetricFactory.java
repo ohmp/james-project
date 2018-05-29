@@ -70,8 +70,4 @@ public class NoopMetricFactory implements MetricFactory {
         return operation.get();
     }
 
-    @Override
-    public <T> void register(String name, Gauge<T> gauge) {
-
-    }
 }

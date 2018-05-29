@@ -17,15 +17,26 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.metrics.api;
+package org.apache.james.metrics.dropwizard;
 
-import java.util.function.Supplier;
+import javax.inject.Inject;
 
-public interface MetricFactory {
+import org.apache.james.metrics.api.Gauge;
+import org.apache.james.metrics.api.GaugeRegistry;
 
-    Metric generate(String name);
+import com.codahale.metrics.MetricRegistry;
 
-    TimeMetric timer(String name);
+public class DropWizardGaugeRegistry implements GaugeRegistry {
+    private final MetricRegistry metricRegistry;
 
-    <T> T withMetric(String name, Supplier<T> operation);
+    @Inject
+    public DropWizardGaugeRegistry(MetricRegistry metricRegistry) {
+        this.metricRegistry = metricRegistry;
+    }
+
+    @Override
+    public <T> GaugeRegistry register(String name, Gauge<T> gauge) {
+        metricRegistry.gauge(name, () -> gauge::get);
+        return this;
+    }
 }
