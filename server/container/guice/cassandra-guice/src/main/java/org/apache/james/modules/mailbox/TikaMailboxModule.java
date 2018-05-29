@@ -78,17 +78,20 @@ public class TikaMailboxModule extends AbstractModule {
     @Provides
     @Singleton
     private TextExtractor provideTextExtractor(TikaTextExtractor textExtractor, TikaConfiguration configuration, MetricFactory metricFactory) {
-        if (configuration.isEnabled()) {
+        if (configuration.isEnabled() && configuration.isCacheEnabled()) {
+            LOGGER.info("Tika cache had been enabled.");
             return new CachingTextExtractor(
                 textExtractor,
                 configuration.getCacheEvictionPeriod(),
                 configuration.getCacheWeightInBytes(), metricFactory);
-        } else {
-            LOGGER.info("Tika text extraction has been disabled." +
-                " Using DefaultTextExtractor instead. " +
-                "No complex extraction will be done.");
-            return new DefaultTextExtractor();
         }
+        if (configuration.isEnabled()) {
+            return textExtractor;
+        }
+        LOGGER.info("Tika text extraction has been disabled." +
+            " Using DefaultTextExtractor instead. " +
+            "No complex extraction will be done.");
+        return new DefaultTextExtractor();
     }
 
 }
