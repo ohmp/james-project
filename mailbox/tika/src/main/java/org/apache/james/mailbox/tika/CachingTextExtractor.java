@@ -33,6 +33,7 @@ import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -125,5 +126,10 @@ public class CachingTextExtractor implements TextExtractor {
             .filter(throwable -> throwable instanceof Exception)
             .map(throwable -> (Exception) throwable)
             .orElse(e);
+    }
+
+    @VisibleForTesting
+    long size() {
+        return cache.size();
     }
 }
