@@ -95,8 +95,8 @@ public class CachingTextExtractor implements TextExtractor {
                 "textExtractor.cache.load.miss.count",
                 () -> cache.stats().missCount())
             .register(
-            "textExtractor.cache.size",
-            cache::size);
+                "textExtractor.cache.size",
+                cache::size);
     }
 
     private int getSize(ParsedContent parsedContent) {
