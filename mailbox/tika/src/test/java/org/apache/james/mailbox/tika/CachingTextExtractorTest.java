@@ -52,11 +52,11 @@ public class CachingTextExtractorTest {
 
     private static final ParsedContent RESULT = new ParsedContent("content", ImmutableMap.of());
     public static final String BIG_STRING = Strings.repeat("0123456789", 103 * 1024);
-    private static final ParsedContent _2M_RESULT = new ParsedContent(BIG_STRING, ImmutableMap.of());
+    private static final ParsedContent _2MiB_RESULT = new ParsedContent(BIG_STRING, ImmutableMap.of());
     private static final Function<Integer, InputStream> STREAM_GENERATOR =
         i -> new ByteArrayInputStream(String.format("content%d", i).getBytes(StandardCharsets.UTF_8));
     private static final Supplier<InputStream> INPUT_STREAM = () -> STREAM_GENERATOR.apply(1);
-    private static final long CACHE_LIMIT_10_MB = 10 * 1024 * 1024;
+    private static final long CACHE_LIMIT_10_MiB = 10 * 1024 * 1024;
     private static final String CONTENT_TYPE = "application/bytes";
 
     private CachingTextExtractor textExtractor;
@@ -67,7 +67,7 @@ public class CachingTextExtractorTest {
         wrappedTextExtractor = mock(TextExtractor.class);
         textExtractor = new CachingTextExtractor(wrappedTextExtractor,
             TikaConfiguration.DEFAULT_CACHE_EVICTION_PERIOD,
-            CACHE_LIMIT_10_MB,
+            CACHE_LIMIT_10_MiB,
             new NoopMetricFactory());
 
         when(wrappedTextExtractor.extractContent(any(), any()))
@@ -114,7 +114,7 @@ public class CachingTextExtractorTest {
     @Test
     void cacheShouldEvictEntriesWhenFull() throws Exception {
         when(wrappedTextExtractor.extractContent(any(), any()))
-            .thenReturn(_2M_RESULT);
+            .thenReturn(_2MiB_RESULT);
 
         IntStream.range(0, 10)
             .mapToObj(STREAM_GENERATOR::apply)
@@ -127,7 +127,7 @@ public class CachingTextExtractorTest {
     @Test
     void olderEntriesShouldBeEvictedFirst() throws Exception {
         when(wrappedTextExtractor.extractContent(any(), any()))
-            .thenReturn(_2M_RESULT);
+            .thenReturn(_2MiB_RESULT);
 
         IntStream.range(0, 10)
             .mapToObj(STREAM_GENERATOR::apply)
@@ -135,7 +135,7 @@ public class CachingTextExtractorTest {
 
         reset(wrappedTextExtractor);
         when(wrappedTextExtractor.extractContent(any(), any()))
-            .thenReturn(_2M_RESULT);
+            .thenReturn(_2MiB_RESULT);
 
         textExtractor.extractContent(STREAM_GENERATOR.apply(1), CONTENT_TYPE);
 
@@ -145,7 +145,7 @@ public class CachingTextExtractorTest {
     @Test
     void youngerEntriesShouldBePreservedByEviction() throws Exception {
         when(wrappedTextExtractor.extractContent(any(), any()))
-            .thenReturn(_2M_RESULT);
+            .thenReturn(_2MiB_RESULT);
 
         IntStream.range(0, 10)
             .mapToObj(STREAM_GENERATOR::apply)
@@ -153,9 +153,28 @@ public class CachingTextExtractorTest {
 
         reset(wrappedTextExtractor);
         when(wrappedTextExtractor.extractContent(any(), any()))
-            .thenReturn(_2M_RESULT);
+            .thenReturn(_2MiB_RESULT);
 
         textExtractor.extractContent(STREAM_GENERATOR.apply(9), CONTENT_TYPE);
+
+        verifyZeroInteractions(wrappedTextExtractor);
+    }
+
+    @Test
+    void frequentlyAccessedEntriesShouldBePreservedByEviction() throws Exception {
+        when(wrappedTextExtractor.extractContent(any(), any()))
+            .thenReturn(_2MiB_RESULT);
+
+        IntStream.range(0, 10)
+            .mapToObj(STREAM_GENERATOR::apply)
+            .peek(Throwing.consumer(any -> textExtractor.extractContent(INPUT_STREAM.get(), CONTENT_TYPE)))
+            .forEach(Throwing.consumer(inputStream -> textExtractor.extractContent(inputStream, CONTENT_TYPE)));
+
+        reset(wrappedTextExtractor);
+        when(wrappedTextExtractor.extractContent(any(), any()))
+            .thenReturn(_2MiB_RESULT);
+
+        textExtractor.extractContent(INPUT_STREAM.get(), CONTENT_TYPE);
 
         verifyZeroInteractions(wrappedTextExtractor);
     }
