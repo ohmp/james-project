@@ -173,8 +173,6 @@ public class CachingTextExtractorTest {
             .forEach(Throwing.consumer(inputStream -> textExtractor.extractContent(inputStream, CONTENT_TYPE)));
 
         reset(wrappedTextExtractor);
-        when(wrappedTextExtractor.extractContent(any(), any()))
-            .thenReturn(_2MiB_RESULT);
 
         textExtractor.extractContent(STREAM_GENERATOR.apply(0), CONTENT_TYPE);
 
