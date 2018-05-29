@@ -23,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -38,7 +37,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.Weigher;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class CachingTextExtractor implements TextExtractor {
     private final TextExtractor underlying;
@@ -112,19 +110,15 @@ public class CachingTextExtractor implements TextExtractor {
     public ParsedContent extractContent(InputStream inputStream, String contentType) throws Exception {
         byte[] bytes = IOUtils.toByteArray(inputStream);
         String key = DigestUtils.sha256Hex(bytes);
-        try {
-            return cache.get(key,
-                () -> underlying.extractContent(new ByteArrayInputStream(bytes), contentType));
-        } catch (UncheckedExecutionException | ExecutionException e) {
-            throw unwrap(e);
-        }
-    }
 
-    private Exception unwrap(Exception e) {
-        return Optional.ofNullable(e.getCause())
-            .filter(throwable -> throwable instanceof Exception)
-            .map(throwable -> (Exception) throwable)
-            .orElse(e);
+        ParsedContent cachedValue = cache.getIfPresent(key);
+        if (cachedValue != null) {
+            return cachedValue;
+        }
+
+        ParsedContent realValue = underlying.extractContent(new ByteArrayInputStream(bytes), contentType);
+        cache.put(key, realValue);
+        return realValue;
     }
 
     @VisibleForTesting
