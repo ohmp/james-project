@@ -79,7 +79,7 @@ public class TikaMailboxModule extends AbstractModule {
     @Singleton
     private TextExtractor provideTextExtractor(TikaTextExtractor textExtractor, TikaConfiguration configuration, MetricFactory metricFactory) {
         if (configuration.isEnabled() && configuration.isCacheEnabled()) {
-            LOGGER.info("Tika cache had been enabled.");
+            LOGGER.info("Tika cache has been enabled.");
             return new CachingTextExtractor(
                 textExtractor,
                 configuration.getCacheEvictionPeriod(),
