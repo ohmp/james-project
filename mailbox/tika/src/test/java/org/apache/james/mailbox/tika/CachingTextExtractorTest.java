@@ -141,8 +141,9 @@ public class CachingTextExtractorTest {
 
         verify(wrappedTextExtractor).extractContent(any(), any());
     }
+
     @Test
-    void youngerEntriesShouldBePreservedBEviction() throws Exception {
+    void youngerEntriesShouldBePreservedByEviction() throws Exception {
         when(wrappedTextExtractor.extractContent(any(), any()))
             .thenReturn(_2M_RESULT);
 
