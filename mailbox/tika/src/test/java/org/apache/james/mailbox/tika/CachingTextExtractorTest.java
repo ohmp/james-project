@@ -169,14 +169,14 @@ public class CachingTextExtractorTest {
 
         IntStream.range(0, 10)
             .mapToObj(STREAM_GENERATOR::apply)
-            .peek(Throwing.consumer(any -> textExtractor.extractContent(INPUT_STREAM.get(), CONTENT_TYPE)))
+            .peek(Throwing.consumer(any -> textExtractor.extractContent(STREAM_GENERATOR.apply(0), CONTENT_TYPE)))
             .forEach(Throwing.consumer(inputStream -> textExtractor.extractContent(inputStream, CONTENT_TYPE)));
 
         reset(wrappedTextExtractor);
         when(wrappedTextExtractor.extractContent(any(), any()))
             .thenReturn(_2MiB_RESULT);
 
-        textExtractor.extractContent(INPUT_STREAM.get(), CONTENT_TYPE);
+        textExtractor.extractContent(STREAM_GENERATOR.apply(0), CONTENT_TYPE);
 
         verifyZeroInteractions(wrappedTextExtractor);
     }
