@@ -39,6 +39,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.Weigher;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class CachingTextExtractor implements TextExtractor {
     private final TextExtractor underlying;
@@ -113,7 +114,7 @@ public class CachingTextExtractor implements TextExtractor {
 
         try {
             return cache.get(key, () -> retrieveAndUpdateWeight(bytes, contentType));
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | UncheckedExecutionException e) {
             throw unwrap(e);
         }
     }
