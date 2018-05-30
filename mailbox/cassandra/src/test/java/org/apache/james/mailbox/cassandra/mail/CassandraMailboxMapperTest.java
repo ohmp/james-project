@@ -55,6 +55,9 @@ public class CassandraMailboxMapperTest {
     private static final CassandraId MAILBOX_ID_2 = CassandraId.timeBased();
     private static final MailboxPath MAILBOX_PATH_2 = MailboxPath.forUser(USER, "name2");
     private static final Mailbox MAILBOX_2 = new SimpleMailbox(MAILBOX_PATH_2, UID_VALIDITY, MAILBOX_ID_2);
+
+
+    private static final Mailbox MAILBOX_BIS = new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY, MAILBOX_ID_2);
     private static final String WILDCARD = "%";
 
     @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
@@ -318,15 +321,15 @@ public class CassandraMailboxMapperTest {
     }
 
     @Test
-    public void findMailboxWithPathLikeShouldUnionBothVersions() {
+    public void findMailboxWithPathLikeShouldRemoveDuplicatesAndKeepV2() {
         mailboxDAO.save(MAILBOX).join();
         mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID).join();
 
-        mailboxDAO.save(MAILBOX_2).join();
-        mailboxPathDAO.save(MAILBOX_PATH_2, MAILBOX_ID_2).join();
+        mailboxDAO.save(MAILBOX_BIS).join();
+        mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID_2).join();
 
         assertThat(testee.findMailboxWithPathLike(
             new MailboxPath(MailboxConstants.USER_NAMESPACE, USER, WILDCARD)))
-            .containsOnly(MAILBOX, MAILBOX_2);
+            .containsOnly(MAILBOX);
     }
 }
