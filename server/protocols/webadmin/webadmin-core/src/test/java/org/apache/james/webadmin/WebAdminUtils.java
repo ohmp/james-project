@@ -24,6 +24,7 @@ import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.Port;
@@ -36,6 +37,13 @@ import com.jayway.restassured.http.ContentType;
 public class WebAdminUtils {
 
     public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, Routes... routes) throws IOException {
+        return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
+            ImmutableSet.copyOf(routes),
+            new NoAuthenticationFilter(),
+            metricFactory);
+    }
+
+    public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, List<Routes> routes) throws IOException {
         return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
             ImmutableSet.copyOf(routes),
             new NoAuthenticationFilter(),
