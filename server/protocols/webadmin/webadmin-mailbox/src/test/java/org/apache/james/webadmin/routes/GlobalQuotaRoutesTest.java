@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.james.mailbox.quota.MaxQuotaManager;
 import org.apache.james.mailbox.quota.QuotaCount;
 import org.apache.james.mailbox.quota.QuotaSize;
+import org.apache.james.quota.search.QuotaSearchTestSystem;
 import org.apache.james.webadmin.jackson.QuotaModule;
 import org.apache.james.webadmin.service.GlobalQuotaService;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -44,10 +45,13 @@ import com.jayway.restassured.path.json.JsonPath;
 
 class GlobalQuotaRoutesTest {
     @RegisterExtension
-    Extension extension = new ScanningQuotaSearchExtension(
-        testSystem -> new GlobalQuotaRoutes(
+    Extension scanningExtension = new ScanningQuotaSearchExtension(this::createGlobalQuotaRoutes);
+
+    private GlobalQuotaRoutes createGlobalQuotaRoutes(QuotaSearchTestSystem testSystem) {
+        return new GlobalQuotaRoutes(
             new GlobalQuotaService(testSystem.getMaxQuotaManager()),
-            new JsonTransformer(new QuotaModule())));
+            new JsonTransformer(new QuotaModule()));
+    }
 
     private MaxQuotaManager maxQuotaManager;
 

@@ -30,6 +30,7 @@ import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.Port;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
@@ -37,10 +38,9 @@ import com.jayway.restassured.http.ContentType;
 public class WebAdminUtils {
 
     public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, Routes... routes) throws IOException {
-        return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
-            ImmutableSet.copyOf(routes),
-            new NoAuthenticationFilter(),
-            metricFactory);
+        return createWebAdminServer(
+            metricFactory,
+            ImmutableList.copyOf(routes));
     }
 
     public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, List<Routes> routes) throws IOException {

@@ -80,15 +80,19 @@ class UserQuotaRoutesTest {
     private static final String COUNT = "count";
     private static final String SIZE = "size";
 
-    private final ScanningQuotaSearchExtension testExtension = new ScanningQuotaSearchExtension(
-        testSystem -> new UserQuotaRoutes(testSystem.getUsersRepository(),
+    private final ScanningQuotaSearchExtension scanningExtension = new ScanningQuotaSearchExtension(this::createUserQuotaRoutes);
+
+    private UserQuotaRoutes createUserQuotaRoutes(QuotaSearchTestSystem testSystem) {
+        QuotaModule quotaModule = new QuotaModule();
+        return new UserQuotaRoutes(testSystem.getUsersRepository(),
             new UserQuotaService(
                 testSystem.getMaxQuotaManager(),
                 testSystem.getQuotaManager(),
                 testSystem.getQuotaRootResolver(),
                 testSystem.getQuotaSearcher()),
-            new JsonTransformer(new QuotaModule()),
-            ImmutableSet.of(new QuotaModule())));
+            new JsonTransformer(quotaModule),
+            ImmutableSet.of(quotaModule));
+    }
 
     @BeforeEach
     public void setUp(WebAdminQuotaSearchTestSystem testSystem) throws Exception {
@@ -467,7 +471,7 @@ class UserQuotaRoutesTest {
     @Nested
     class ScanningGetUsersQuotaRouteTest implements GetUsersQuotaRouteContract {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
     }
 
     @Nested
@@ -479,7 +483,7 @@ class UserQuotaRoutesTest {
     @Nested
     class GetCount {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void getCountShouldReturnNotFoundWhenUserDoesntExist() {
@@ -521,7 +525,7 @@ class UserQuotaRoutesTest {
     @Nested
     class GetSize {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void getSizeShouldReturnNotFoundWhenUserDoesntExist() {
@@ -564,7 +568,7 @@ class UserQuotaRoutesTest {
     @Nested
     class PutCount {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void putCountShouldReturnNotFoundWhenUserDoesntExist() {
@@ -672,7 +676,7 @@ class UserQuotaRoutesTest {
     @Nested
     class PutSize {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void putSizeAcceptEscapedUsers() {
@@ -766,7 +770,7 @@ class UserQuotaRoutesTest {
     @Nested
     class DeleteCount {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void deleteCountShouldReturnNotFoundWhenUserDoesntExist() {
@@ -794,7 +798,7 @@ class UserQuotaRoutesTest {
     @Nested
     class DeleteSize {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void deleteSizeShouldReturnNotFoundWhenUserDoesntExist() {
@@ -823,7 +827,7 @@ class UserQuotaRoutesTest {
     @Nested
     class GetQuota {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void getQuotaShouldReturnNotFoundWhenUserDoesntExist() {
@@ -1071,7 +1075,7 @@ class UserQuotaRoutesTest {
     @Nested
     class PutQuota {
         @RegisterExtension
-        Extension registeredExtension = testExtension;
+        Extension registeredExtension = scanningExtension;
 
         @Test
         void putQuotaShouldReturnNotFoundWhenUserDoesntExist() {
