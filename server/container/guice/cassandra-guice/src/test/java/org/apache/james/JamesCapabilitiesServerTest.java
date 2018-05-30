@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james;
 
-import static org.apache.james.CassandraJamesServerMain.CASSANDRA_MODULE_AGGREGATE;
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,7 +67,7 @@ public class JamesCapabilitiesServerTest {
             .build();
 
         return new GuiceJamesServer(configuration)
-            .combineWith(CASSANDRA_MODULE_AGGREGATE)
+            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
             .overrideWith((binder) -> binder.bind(PersistenceAdapter.class).to(MemoryPersistenceAdapter.class))
             .overrideWith(new TestElasticSearchModule(embeddedElasticSearch),
                 cassandraServer.getModule(),

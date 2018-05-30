@@ -19,7 +19,7 @@
 
 package org.apache.james.jmap.cassandra.cucumber;
 
-import static org.apache.james.CassandraJamesServerMain.CASSANDRA_MODULE_AGGREGATE;
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
 import java.util.Arrays;
 
@@ -70,7 +70,7 @@ public class CassandraStepdefs {
             .build();
 
         mainStepdefs.jmapServer = new GuiceJamesServer(configuration)
-                .combineWith(CASSANDRA_MODULE_AGGREGATE)
+                .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
                 .overrideWith(new CassandraJmapServerModule(embeddedElasticSearch, cassandraServer.getIp(), cassandraServer.getBindingPort()))
                 .overrideWith((binder) -> binder.bind(PersistenceAdapter.class).to(MemoryPersistenceAdapter.class));
         mainStepdefs.awaitMethod = () -> embeddedElasticSearch.awaitForElasticSearch();

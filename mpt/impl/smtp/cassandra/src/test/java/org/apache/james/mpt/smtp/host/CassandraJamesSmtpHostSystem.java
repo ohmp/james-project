@@ -19,10 +19,9 @@
 
 package org.apache.james.mpt.smtp.host;
 
-import static org.apache.james.CassandraJamesServerMain.CASSANDRA_MODULE_AGGREGATE;
-
 import java.util.Iterator;
 
+import org.apache.james.CassandraJamesServerMain;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.backends.es.EmbeddedElasticSearch;
 import org.apache.james.dnsservice.api.DNSService;
@@ -92,7 +91,7 @@ public class CassandraJamesSmtpHostSystem extends ExternalSessionFactory impleme
     }
 
     @Override
-    public void afterTest() throws Exception {
+    public void afterTest() {
         jamesServer.stop();
         embeddedElasticSearch.after();
         folder.delete();
@@ -110,7 +109,7 @@ public class CassandraJamesSmtpHostSystem extends ExternalSessionFactory impleme
             .build();
 
         return new GuiceJamesServer(configuration)
-            .combineWith(CASSANDRA_MODULE_AGGREGATE, new ProtocolHandlerModule())
+            .combineWith(CassandraJamesServerMain.CASSANDRA_SERVER_MODULE, CassandraJamesServerMain.PROTOCOLS, new ProtocolHandlerModule())
             .overrideWith(new CassandraJmapServerModule(embeddedElasticSearch, cassandraHost, cassandraPort),
                 (binder) -> binder.bind(DNSService.class).toInstance(inMemoryDNSService));
     }
