@@ -159,11 +159,13 @@ public class CassandraMailboxMapper implements MailboxMapper {
 
     @Override
     public List<Mailbox> findMailboxWithPathLike(MailboxPath path) {
-        List<Mailbox> mailboxes = toMailboxes(path, mailboxPathV2DAO.listUserMailboxes(path.getNamespace(), path.getUser()));
-        if (mailboxes.isEmpty()) {
-            return toMailboxes(path, mailboxPathDAO.listUserMailboxes(path.getNamespace(), path.getUser()));
-        }
-        return mailboxes;
+        List<Mailbox> mailboxesV2 = toMailboxes(path, mailboxPathV2DAO.listUserMailboxes(path.getNamespace(), path.getUser()));
+        List<Mailbox> mailboxesV1 = toMailboxes(path, mailboxPathDAO.listUserMailboxes(path.getNamespace(), path.getUser()));
+
+        return ImmutableList.<Mailbox>builder()
+            .addAll(mailboxesV1)
+            .addAll(mailboxesV2)
+            .build();
     }
 
     private List<Mailbox> toMailboxes(MailboxPath path, CompletableFuture<Stream<CassandraIdAndPath>> listUserMailboxes) {
@@ -221,7 +223,9 @@ public class CassandraMailboxMapper implements MailboxMapper {
 
     @Override
     public boolean hasChildren(Mailbox mailbox, char delimiter) {
-        return ImmutableList.of(mailboxPathDAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser()), mailboxPathV2DAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser()))
+        return ImmutableList.of(
+                mailboxPathDAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser()),
+                mailboxPathV2DAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser()))
             .stream()
             .map(CompletableFuture::join)
             .flatMap(Function.identity())
