@@ -51,14 +51,10 @@ public class CachingTextExtractor implements TextExtractor {
         this.weightMetric = metricFactory.generate("textExtractor.cache.weight");
 
         Weigher<String, ParsedContent> weigher =
-            (key, parsedContent) -> {
-                int size = getSize(parsedContent);
-                weightMetric.add(size);
-                return size;
-            };
+            (key, parsedContent) -> computeWeight(parsedContent);
         RemovalListener<String, ParsedContent> removalListener =
             notification -> Optional.ofNullable(notification.getValue())
-                .map(this::getSize)
+                .map(this::computeWeight)
                 .ifPresent(weightMetric::remove);
 
         this.cache = CacheBuilder.<String, String>newBuilder()
@@ -99,7 +95,7 @@ public class CachingTextExtractor implements TextExtractor {
                 cache::size);
     }
 
-    private int getSize(ParsedContent parsedContent) {
+    private int computeWeight(ParsedContent parsedContent) {
         return parsedContent.getTextualContent()
             .map(String::length)
             .map(this::utf16LengthToBytesCount)
@@ -116,11 +112,16 @@ public class CachingTextExtractor implements TextExtractor {
         String key = DigestUtils.sha256Hex(bytes);
 
         try {
-            return cache.get(key,
-                () -> underlying.extractContent(new ByteArrayInputStream(bytes), contentType));
+            return cache.get(key, () -> retrieveAndUpdateWeight(bytes, contentType));
         } catch (ExecutionException e) {
             throw unwrap(e);
         }
+    }
+
+    private ParsedContent retrieveAndUpdateWeight(byte[] bytes, String contentType) throws Exception {
+        ParsedContent parsedContent = underlying.extractContent(new ByteArrayInputStream(bytes), contentType);
+        weightMetric.add(computeWeight(parsedContent));
+        return parsedContent;
     }
 
     private Exception unwrap(Exception e) {
