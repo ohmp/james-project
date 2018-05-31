@@ -256,7 +256,7 @@ class RabbitMQClusterTest {
 
             AtomicInteger counter = new AtomicInteger(0);
             InMemoryConsumer consumer = new InMemoryConsumer(resilientChannel,
-                () -> stopWhenHalthProcessed(cluster, nbMessages, counter));
+                () -> stopWhenHalfProcessed(cluster, nbMessages, counter));
             resilientChannel.basicConsume(QUEUE, consumer);
 
             awaitAtMostOneMinute.until(() -> consumer.getConsumedMessages().size() == nbMessages);
@@ -265,7 +265,7 @@ class RabbitMQClusterTest {
             assertThat(consumer.getConsumedMessages()).containsOnlyElementsOf(expectedResult);
         }
 
-        private void stopWhenHalthProcessed(DockerRabbitMQCluster cluster, int nbMessages, AtomicInteger counter) {
+        private void stopWhenHalfProcessed(DockerRabbitMQCluster cluster, int nbMessages, AtomicInteger counter) {
             if (counter.incrementAndGet() == nbMessages / 2) {
                 cluster.getRabbitMQ1().stop();
             }
