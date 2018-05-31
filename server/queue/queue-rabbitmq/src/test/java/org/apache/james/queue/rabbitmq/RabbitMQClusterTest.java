@@ -36,7 +36,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import org.apache.james.queue.rabbitmq.DockerClusterRabbitMQExtention.DockerRabbitMQCluster;
+import org.apache.james.queue.rabbitmq.DockerClusterRabbitMQExtension.DockerRabbitMQCluster;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -55,7 +55,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-@ExtendWith(DockerClusterRabbitMQExtention.class)
+@ExtendWith(DockerClusterRabbitMQExtension.class)
 class RabbitMQClusterTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQClusterTest.class);
@@ -95,9 +95,9 @@ class RabbitMQClusterTest {
 
             assertThat(stdout)
                 .contains(
-                    DockerClusterRabbitMQExtention.RABBIT_1,
-                    DockerClusterRabbitMQExtention.RABBIT_2,
-                    DockerClusterRabbitMQExtention.RABBIT_3);
+                    DockerClusterRabbitMQExtension.RABBIT_1,
+                    DockerClusterRabbitMQExtension.RABBIT_2,
+                    DockerClusterRabbitMQExtension.RABBIT_3);
         }
 
         @Test

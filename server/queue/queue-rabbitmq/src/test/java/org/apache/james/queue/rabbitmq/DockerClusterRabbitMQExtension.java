@@ -30,7 +30,7 @@ import org.testcontainers.containers.Network;
 import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.Address;
 
-public class DockerClusterRabbitMQExtention implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class DockerClusterRabbitMQExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
     public static final String RABBIT_1 = "rabbit1";
     public static final String RABBIT_2 = "rabbit2";
