@@ -38,8 +38,6 @@ public class CassandraObjectStoreModule extends AbstractModule {
         bind(ObjectStore.class).to(CassandraBlobsDAO.class);
         bind(BlobId.Factory.class).to(CassandraBlobId.Factory.class);
 
-
-
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
         cassandraDataDefinitions.addBinding().to(org.apache.james.blob.cassandra.CassandraBlobModule.class);
     }
