@@ -19,6 +19,7 @@
 
 package org.apache.james.modules.mailbox;
 
+import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.ObjectStore;
 import org.apache.james.blob.cassandra.CassandraBlobId;
@@ -26,6 +27,7 @@ import org.apache.james.blob.cassandra.CassandraBlobsDAO;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.google.inject.multibindings.Multibinder;
 
 public class CassandraObjectStoreModule extends AbstractModule {
     @Override
@@ -35,5 +37,10 @@ public class CassandraObjectStoreModule extends AbstractModule {
 
         bind(ObjectStore.class).to(CassandraBlobsDAO.class);
         bind(BlobId.Factory.class).to(CassandraBlobId.Factory.class);
+
+
+
+        Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
+        cassandraDataDefinitions.addBinding().to(org.apache.james.blob.cassandra.CassandraBlobModule.class);
     }
 }
