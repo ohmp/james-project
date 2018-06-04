@@ -28,6 +28,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.apache.james.mpt.Runner;
 import org.apache.james.mpt.api.ImapFeatures;
@@ -36,6 +37,7 @@ import org.apache.james.mpt.api.Monitor;
 import org.apache.james.mpt.host.ExternalHostSystem;
 import org.apache.james.mpt.protocol.ProtocolSessionBuilder;
 import org.apache.james.mpt.user.ScriptedUserAdder;
+import org.apache.james.util.Port;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -55,7 +57,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
     private boolean quiet = false;
     private File script;
     private Union scripts;
-    private int port = 0;
+    private Optional<Port> port = Optional.empty();
     private String host = "127.0.0.1";
     private boolean skip = false;
     private String shabang = null;
@@ -138,16 +140,16 @@ public class MailProtocolTestTask extends Task implements Monitor {
      * Gets the port against which this test will run.
      * @return port number
      */
-    public int getPort() {
-        return port;
+    public Port getPort() {
+        return port.orElseThrow(() -> new RuntimeException("Port must be set"));
     }
 
     /**
      * Sets the port aginst which this test will run.
      * @param port port number
      */
-    public void setPort(int port) {
-        this.port = port;
+    public void setPort(Port port) {
+        this.port = Optional.of(port);
     }
 
     /**
@@ -189,8 +191,8 @@ public class MailProtocolTestTask extends Task implements Monitor {
 
     @Override
     public void execute() throws BuildException {
-        if (port <= 0) {
-            throw new BuildException("Port must be set to a positive integer");
+        if (! port.isPresent()) {
+            throw new BuildException("Port must be set");
         }
         
         if (scripts == null && script == null) {
@@ -277,7 +279,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
      */
     public class AddUser {
         
-        private int port;
+        private Port port;
         private String user;
         private String passwd;
         private File script;
@@ -288,7 +290,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
          * script should be executed.
          * @return port number
          */
-        public int getPort() {
+        public Port getPort() {
             return port;
         }
 
@@ -297,7 +299,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
          * script should be executed.
          * @param port port number
          */
-        public void setPort(int port) {
+        public void setPort(Port port) {
             this.port = port;
         }
 
@@ -370,7 +372,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
                 throw new BuildException("Choose either script text or script attribute but not both.");
             }
             
-            if (port <= 0) {
+            if (port == null) {
                 throw new BuildException("'port' attribute must be set on AddUser to the port against which the script should run.");
             }
         }

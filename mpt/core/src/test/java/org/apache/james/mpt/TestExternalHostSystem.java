@@ -27,7 +27,6 @@ import org.apache.james.mpt.api.UserAdder;
 import org.apache.james.mpt.host.ExternalHostSystem;
 import org.apache.james.mpt.monitor.NullMonitor;
 import org.apache.james.mpt.session.ExternalSessionFactory;
-import org.apache.james.util.Port;
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
@@ -90,7 +89,7 @@ public class TestExternalHostSystem extends MockObjectTestCase {
     }
 
     private ExternalHostSystem buildSystem(String shabang) {
-        return new ExternalHostSystem(SUPPORTED_FEATURES, "localhost", new Port(protocol.getPort()),
+        return new ExternalHostSystem(SUPPORTED_FEATURES, "localhost", protocol.getPort(),
                 new NullMonitor(), shabang, userAdder);
     }
 }

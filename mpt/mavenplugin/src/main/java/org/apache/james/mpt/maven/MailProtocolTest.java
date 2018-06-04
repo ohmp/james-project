@@ -105,7 +105,7 @@ public class MailProtocolTest implements Monitor {
                 } else {
                     reader = new FileReader(addUser.getScriptFile());
                 }
-                final ScriptedUserAdder adder = new ScriptedUserAdder(addUser.getHost(), addUser.getPort(), this);
+                final ScriptedUserAdder adder = new ScriptedUserAdder(addUser.getHost(), addUser.getPort().orElseThrow(() -> new RuntimeException("Port should be set")), this);
                 adder.addUser(addUser.getUser(), addUser.getPasswd(), reader);
             } catch (Exception e) {
                 //getLog().error("Unable to add user", e);
@@ -151,7 +151,7 @@ public class MailProtocolTest implements Monitor {
                 throw new MojoFailureException("AddUser must contain the text of the script or a scriptFile");
             }
 
-            if (addUser.getPort() <= 0) {
+            if (! addUser.getPort().isPresent()) {
                 throw new MojoFailureException("'port' attribute must be set on AddUser to the port against which the script should run.");
             }
 
