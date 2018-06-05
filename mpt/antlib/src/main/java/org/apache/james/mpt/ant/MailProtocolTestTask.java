@@ -140,16 +140,18 @@ public class MailProtocolTestTask extends Task implements Monitor {
      * Gets the port against which this test will run.
      * @return port number
      */
-    public Port getPort() {
-        return port.orElseThrow(() -> new RuntimeException("Port must be set"));
+    public int getPort() {
+        return port
+            .map(Port::getValue)
+            .orElseThrow(() -> new RuntimeException("Port must be set"));
     }
 
     /**
      * Sets the port aginst which this test will run.
      * @param port port number
      */
-    public void setPort(Port port) {
-        this.port = Optional.of(port);
+    public void setPort(int port) {
+        this.port = Optional.of(new Port(port));
     }
 
     /**
@@ -234,7 +236,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
             userAdder.execute();
         }
         
-        final ExternalHostSystem host = new ExternalHostSystem(SUPPORTED_FEATURES, getHost(), getPort(), this, getShabang(), null);
+        final ExternalHostSystem host = new ExternalHostSystem(SUPPORTED_FEATURES, getHost(), port.get(), this, getShabang(), null);
         final ProtocolSessionBuilder builder = new ProtocolSessionBuilder();
         
         if (scripts == null) {
@@ -290,8 +292,8 @@ public class MailProtocolTestTask extends Task implements Monitor {
          * script should be executed.
          * @return port number
          */
-        public Port getPort() {
-            return port;
+        public int getPort() {
+            return port.getValue();
         }
 
         /**
@@ -299,8 +301,8 @@ public class MailProtocolTestTask extends Task implements Monitor {
          * script should be executed.
          * @param port port number
          */
-        public void setPort(Port port) {
-            this.port = port;
+        public void setPort(int port) {
+            this.port = new Port(port);
         }
 
         /**
@@ -391,7 +393,7 @@ public class MailProtocolTestTask extends Task implements Monitor {
                 } else {
                     reader = new FileReader(scriptFile);
                 }
-                final ScriptedUserAdder adder = new ScriptedUserAdder(getHost(), getPort(), MailProtocolTestTask.this);
+                final ScriptedUserAdder adder = new ScriptedUserAdder(getHost(), port, MailProtocolTestTask.this);
                 adder.addUser(getUser(), getPasswd(), reader);
             } catch (Exception e) {
                 log(e.getMessage(), Project.MSG_ERR);
