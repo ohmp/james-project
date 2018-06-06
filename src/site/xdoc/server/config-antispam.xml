@@ -88,6 +88,16 @@
 
               <dt><strong>spamassassin.port</strong></dt>
               <dd>Port used to contact SpamAssassin.</dd>
+
+              <dt><strong>spamassassin.asynchronous</strong></dt>
+              <dd>Boolean. Defaults to false.
+                  If true, a thread pool executor is used to run asynchronously SpamAssassin mailbox listener
+                  ham/spam reports. If false, the report is performed synchronously.</dd>
+
+              <dt><strong>spamassassin.client.thread.count</strong></dt>
+              <dd>Strictly positive integer.
+                  Number of threads being used for the executor's thread pool.
+                  Defaults to 8. Ignored if SpamAssassin listener runs synchronously.</dd>
           </dl>
 
           <br/>
