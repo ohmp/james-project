@@ -9,7 +9,7 @@ In the name of the James team @Linagora I will be presenting you what we did in 
 
 We have to work on some specific features to make James easier to adopt for large organizations.
 
-# What was achieved in may
+# What was achieved in May
 
 ## Notifications when soon over quota
 
@@ -24,17 +24,19 @@ We have to work on some specific features to make James easier to adopt for larg
 
 > This would allow an admin to inspect per-user quota usage, via a webadmin interface.
 >
-> Again, we provided two implementations: a scrolling one, which naively enumerates mailboxes to compute occupation, and one where quota occupation is indexed in ElasticSearch.
+> Again, we provided two implementations: a scanning one, which naively enumerates mailboxes to compute occupation, and one where quota occupation is indexed in ElasticSearch.
 
 ## Performance enhancements
 
+> In order to have a very good mail search experience, it is possible to plug Apache Tika as a text extractor into James. We use Tika as an external service that we call with HTTP. When you use this Tika extractor with ElasticSearch indexing, you get a very powerful fulltext search even on complex attachment format like LibreOffice documents.
+>
 > We did experience slow requests with our Tika server. We contributed [this issue] which significantly enhanced Tika server performance, and we introduce a cache on James side to reduce calls to tika.
 >
 > We also worked on improving massive JMAP operation performance (delete a large number of emails).
 
 # What we will work on in June
 
-## Data Loss Prevention
+## Data Leak Prevention
 
 > We should have a matcher applying rules defined by the admin. This matcher will then store suspicious emails in specific mail repository for an admin review.
 >
