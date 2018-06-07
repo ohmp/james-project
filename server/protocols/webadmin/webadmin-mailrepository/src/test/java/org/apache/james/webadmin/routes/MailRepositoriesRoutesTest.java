@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -484,16 +485,21 @@ public class MailRepositoriesRoutesTest {
             .build();
         mailRepository.store(mail);
 
-        String expectedContent = ClassLoaderUtils.getSystemResourceAsString("mail.eml");
-        given()
+        String expectedContent = ClassLoaderUtils.getSystemResourceAsString("mail.eml", StandardCharsets.UTF_8);
+
+        String actualContent = given()
             .accept(Constants.RFC822_CONTENT_TYPE)
         .when()
             .get(URL_ESCAPED_MY_REPO + "/mails/" + name)
         .then()
             .statusCode(HttpStatus.OK_200)
-            .header("Content-Length", "552")
+            .header("Content-Length", "471")
             .contentType(Constants.RFC822_CONTENT_TYPE)
-            .content(is(expectedContent));
+            .extract()
+            .body()
+            .asString();
+
+        assertThat(actualContent).isEqualToNormalizingNewlines(expectedContent);
     }
 
     @Test
