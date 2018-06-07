@@ -491,6 +491,7 @@ public class MailRepositoriesRoutesTest {
             .get(URL_ESCAPED_MY_REPO + "/mails/" + name)
         .then()
             .statusCode(HttpStatus.OK_200)
+            .header("Content-Length", "552")
             .contentType(Constants.RFC822_CONTENT_TYPE)
             .content(is(expectedContent));
     }
