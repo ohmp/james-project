@@ -7,7 +7,7 @@ categories: james update
 
 In the name of the James team @Linagora I will be presenting you what we did in the past few weeks, and plan to work on in the coming weeks.
 
-We need to work on some specific feature to make James easier to adopt for large organizations.
+We have to work on some specific features to make James easier to adopt for large organizations.
 
 # What was achieved in may
 
@@ -15,11 +15,10 @@ We need to work on some specific feature to make James easier to adopt for large
 
 > A mail needs to be sent to the user to warn him. This is an attempts to allow clients not implementing quota's RFCs to still get the warning.
 >
-> This is implemented with mailbox listeners (and not mailets), with event sourcing. We added the interfaces and implementation for implementing features in James using event sourcing with events being stored in Cassandra or in memory.
+> This is implemented with mailbox listeners (and not mailets), with event sourcing. We added the interfaces and implementations to achieve this feature in James using event sourcing with events being stored in Cassandra or in memory.
+> Such a technical solution might be very useful to implement other feature.
 >
 > This mailbox listener is optional. We allowed one to register his (potentially custom) mailbox listeners when working with Guice.
->
-> Most of the work was done during Sprint #36 but we finished this feature.
 
 ## Searching user by quota usage
 
@@ -43,8 +42,13 @@ We need to work on some specific feature to make James easier to adopt for large
 
 ### Exporting a mail account
 
-> As a user, I should be able to export the content of my mail account. This both allows easier migrations, comply with legal requirements as well as allow some forms of backups.
+> As an administrator, I should be able to export the content of my mail account. This both allows easier migrations, comply with legal requirements as well as allow some forms of backups.
 >
-> The chosen format is emls in a ZIP format, with the folder structure, and specific metadata to ease restoring a James account (flags, etc...) . An admin (via webamin) should be able to download/upload such backups in order to do export/restores.
+> The chosen format is EMLs in a ZIP format, with the folder structure described in archive meta-data, and specific metadata to ease restoring a James account (flags, etc...). An administrator (via webamin) should be able to download/upload such backups in order to do export/restores mail accounts.
+
+### Coming next
+
+Along side these features that turns out to be necessary for large organisations, our focus will be on having a distributed
+James server. To achieve this, we will propose soon a distributed mail queue based on RabbitMQ.
 
 [this issue]: https://github.com/apache/tika/pull/237
