@@ -134,7 +134,7 @@ public class MailRepositoryStoreServiceTest {
     }
 
     @Test
-    public void downloadMailShouldThrownWhenUnknownRepository() throws Exception {
+    public void retrieveMessageShouldThrownWhenUnknownRepository() throws Exception {
         when(mailRepositoryStore.get("unkown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> testee.retrieveMessage(FIRST_REPOSITORY, NAME_1))
@@ -142,7 +142,7 @@ public class MailRepositoryStoreServiceTest {
     }
 
     @Test
-    public void dowloadMailShouldThrowWhenMailRepositoryStoreThrows() throws Exception {
+    public void retrieveMessageShouldThrowWhenMailRepositoryStoreThrows() throws Exception {
         when(mailRepositoryStore.get(FIRST_REPOSITORY))
             .thenThrow(new MailRepositoryStore.MailRepositoryStoreException("message"));
 
@@ -151,7 +151,7 @@ public class MailRepositoryStoreServiceTest {
     }
 
     @Test
-    public void dowloadMailShouldReturnEmptyWhenMailNotFound() throws Exception {
+    public void retrieveMessageShouldReturnEmptyWhenMailNotFound() throws Exception {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         assertThat(testee.retrieveMessage(FIRST_REPOSITORY, NAME_1))
@@ -159,7 +159,7 @@ public class MailRepositoryStoreServiceTest {
     }
 
     @Test
-    public void dowloadMailShouldReturnThInputStreamWhenMailExists() throws Exception {
+    public void retrieveMessageShouldReturnTheMessageWhenMailExists() throws Exception {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         FakeMail mail = FakeMail.builder()
