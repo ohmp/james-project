@@ -22,7 +22,6 @@ package org.apache.james.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -57,7 +56,6 @@ public class InMemoryMailRepositoryStoreTest {
         }
     }
 
-    public static final Random RANDOM = new Random();
     private InMemoryMailRepositoryStore repositoryStore;
     private FileSystemImpl fileSystem;
     private Configuration configuration;
@@ -167,7 +165,7 @@ public class InMemoryMailRepositoryStoreTest {
         ConcurrentTestRunner concurrentTestRunner = new ConcurrentTestRunner(threadCount, operationCount,
             (threadNb, operationNb) -> repositoryStore.select(url)
                 .store(FakeMail.builder()
-                    .name("name" + RANDOM.nextInt())
+                    .name("name" + threadNb)
                     .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                         .setText("Any body"))
                     .build()));
