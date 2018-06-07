@@ -184,9 +184,8 @@ public class MailRepositoriesRoutes implements Routes {
     })
     public void defineGetMail() {
 
-        service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", Constants.JSON_CONTENT_TYPE, (request, response) -> {
-            return getMailAsJson(decodedRepositoryUrl(request), request.params("mailKey"));
-        }, jsonTransformer);
+        service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", Constants.JSON_CONTENT_TYPE,
+            (request, response) -> getMailAsJson(decodedRepositoryUrl(request), request.params("mailKey")), jsonTransformer);
 
         service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", Constants.RFC822_CONTENT_TYPE, (request, response) -> {
             response.type(Constants.RFC822_CONTENT_TYPE);
