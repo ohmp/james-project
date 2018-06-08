@@ -32,6 +32,7 @@ import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.mailrepository.file.FileMailRepository;
 import org.apache.james.mailrepository.memory.MemoryMailRepository;
+import org.apache.james.mailrepository.memory.MemoryMailRepositoryUrlStore;
 import org.apache.james.modules.server.MailStoreRepositoryModule;
 import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.server.core.configuration.FileConfigurationProvider;
@@ -44,6 +45,10 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 public class InMemoryMailRepositoryStoreTest {
+
+    private static final MailRepositoryUrl FILE_REPO = new MailRepositoryUrl("file://repo");
+
+    private MemoryMailRepositoryUrlStore urlStore;
 
     private static class MemoryMailRepositoryProvider implements MailRepositoryProvider {
         @Override
@@ -68,9 +73,10 @@ public class InMemoryMailRepositoryStoreTest {
             .configurationFromClasspath()
             .build();
         fileSystem = new FileSystemImpl(configuration.directories());
-        repositoryStore = new InMemoryMailRepositoryStore(Sets.newHashSet(
-                new MailStoreRepositoryModule.FileMailRepositoryProvider(
-                        fileSystem),
+        urlStore = new MemoryMailRepositoryUrlStore();
+        MailStoreRepositoryModule.FileMailRepositoryProvider fileProvider = new MailStoreRepositoryModule.FileMailRepositoryProvider(fileSystem);
+        repositoryStore = new InMemoryMailRepositoryStore(urlStore, Sets.newHashSet(
+            fileProvider,
                 new MemoryMailRepositoryProvider()));
         repositoryStore.configure(new FileConfigurationProvider(fileSystem, configuration)
             .getConfiguration("mailrepositorystore"));
@@ -84,25 +90,25 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test
     public void selectingARegisteredProtocolShouldWork() {
-        assertThat(repositoryStore.select(new MailRepositoryUrl("file://repo")))
+        assertThat(repositoryStore.select(FILE_REPO))
             .isInstanceOf(FileMailRepository.class);
     }
 
     @Test
     public void selectingTwiceARegisteredProtocolWithSameDestinationShouldReturnTheSameResult() {
-        assertThat(repositoryStore.select(new MailRepositoryUrl("file://repo")))
-            .isEqualTo(repositoryStore.select(new MailRepositoryUrl("file://repo")));
+        assertThat(repositoryStore.select(FILE_REPO))
+            .isEqualTo(repositoryStore.select(FILE_REPO));
     }
 
     @Test
     public void selectingTwiceARegisteredProtocolWithDifferentDestinationShouldReturnDifferentResults() {
-        assertThat(repositoryStore.select(new MailRepositoryUrl("file://repo")))
+        assertThat(repositoryStore.select(FILE_REPO))
             .isNotEqualTo(repositoryStore.select(new MailRepositoryUrl("file://repo1")));
     }
 
     @Test
     public void configureShouldThrowWhenNonValidClassesAreProvided() throws Exception {
-        repositoryStore = new InMemoryMailRepositoryStore(Sets.newHashSet(
+        repositoryStore = new InMemoryMailRepositoryStore(urlStore, Sets.newHashSet(
             new MailStoreRepositoryModule.FileMailRepositoryProvider(
                 fileSystem)));
         repositoryStore.configure(new FileConfigurationProvider(fileSystem, configuration).getConfiguration("fakemailrepositorystore"));
@@ -113,7 +119,7 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test
     public void configureShouldNotThrowOnEmptyConfiguration() throws Exception {
-        repositoryStore = new InMemoryMailRepositoryStore(Sets.newHashSet(
+        repositoryStore = new InMemoryMailRepositoryStore(urlStore, Sets.newHashSet(
             new MailStoreRepositoryModule.FileMailRepositoryProvider(
                 fileSystem)));
         repositoryStore.configure(new HierarchicalConfiguration());
@@ -139,24 +145,30 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test
     public void getUrlsResultsShouldNotBeDuplicated() {
-        MailRepositoryUrl url1 = new MailRepositoryUrl("file://repo1");
-        repositoryStore.select(url1);
-        repositoryStore.select(url1);
-        assertThat(repositoryStore.getUrls()).containsExactly(url1);
+        repositoryStore.select(FILE_REPO);
+        repositoryStore.select(FILE_REPO);
+        assertThat(repositoryStore.getUrls()).containsExactly(FILE_REPO);
     }
 
     @Test
     public void getShouldReturnEmptyWhenUrlNotInUse() {
-        assertThat(repositoryStore.get(new MailRepositoryUrl("file://repo")))
+        assertThat(repositoryStore.get(FILE_REPO))
             .isEmpty();
     }
 
     @Test
-    public void getShouldReturnPreviouslyCreatedMailRepository() {
-        MailRepositoryUrl url = new MailRepositoryUrl("file://repo");
-        MailRepository mailRepository = repositoryStore.select(url);
+    public void getShouldReturnRepositoryWhenUrlExists() {
+        urlStore.addUrl(FILE_REPO);
 
-        assertThat(repositoryStore.get(url))
+        assertThat(repositoryStore.get(FILE_REPO))
+            .isNotEmpty();
+    }
+
+    @Test
+    public void getShouldReturnPreviouslyCreatedMailRepository() {
+        MailRepository mailRepository = repositoryStore.select(FILE_REPO);
+
+        assertThat(repositoryStore.get(FILE_REPO))
             .contains(mailRepository);
     }
 

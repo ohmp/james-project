@@ -35,6 +35,7 @@ import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
+import org.apache.james.mailrepository.api.MailRepositoryUrlStore;
 import org.apache.james.mailrepository.api.Protocol;
 import org.apache.james.repository.api.Initializable;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ import com.google.inject.Inject;
 public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryMailRepositoryStore.class);
 
+    private final MailRepositoryUrlStore urlStore;
     private final Set<MailRepositoryProvider> mailRepositories;
     private final ConcurrentMap<MailRepositoryUrl, MailRepository> destinationToRepositoryAssociations;
     private final Map<Protocol, MailRepositoryProvider> protocolToRepositoryProvider;
@@ -54,7 +56,8 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
     private HierarchicalConfiguration configuration;
 
     @Inject
-    public InMemoryMailRepositoryStore(Set<MailRepositoryProvider> mailRepositories) {
+    public InMemoryMailRepositoryStore(MailRepositoryUrlStore urlStore, Set<MailRepositoryProvider> mailRepositories) {
+        this.urlStore = urlStore;
         this.mailRepositories = mailRepositories;
         this.destinationToRepositoryAssociations = new ConcurrentHashMap<>();
         this.protocolToRepositoryProvider = new HashMap<>();
@@ -63,7 +66,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
 
     @Override
     public List<MailRepositoryUrl> getUrls() {
-        return ImmutableList.copyOf(destinationToRepositoryAssociations.keySet());
+        return ImmutableList.copyOf(urlStore.retrieveUsedUrls());
     }
 
     @Override
@@ -90,11 +93,15 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
 
     @Override
     public Optional<MailRepository> get(MailRepositoryUrl url) {
-        return Optional.ofNullable(destinationToRepositoryAssociations.get(url));
+        if (urlStore.contains(url)) {
+            return Optional.of(select(url));
+        }
+        return Optional.empty();
     }
 
     @Override
     public MailRepository select(MailRepositoryUrl mailRepositoryUrl) {
+        urlStore.addUrl(mailRepositoryUrl);
         return Optional.ofNullable(destinationToRepositoryAssociations.get(mailRepositoryUrl))
             .orElseGet(Throwing.supplier(
                 () -> createNewMailRepository(mailRepositoryUrl))
