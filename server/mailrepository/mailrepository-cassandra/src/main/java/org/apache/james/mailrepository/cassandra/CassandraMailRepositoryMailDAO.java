@@ -68,6 +68,7 @@ import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.core.MailAddress;
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.util.streams.Iterators;
@@ -158,16 +159,16 @@ public class CassandraMailRepositoryMailDAO {
         );
     }
 
-    public CompletableFuture<Void> remove(MailRepositoryUrl url, String key) {
+    public CompletableFuture<Void> remove(MailRepositoryUrl url, MailKey key) {
         return executor.executeVoid(deleteMail.bind()
             .setString(REPOSITORY_NAME, url.getValue())
-            .setString(MAIL_KEY, key));
+            .setString(MAIL_KEY, key.getValue()));
     }
 
-    public CompletableFuture<Optional<MailDTO>> read(MailRepositoryUrl url, String key) {
+    public CompletableFuture<Optional<MailDTO>> read(MailRepositoryUrl url, MailKey key) {
         return executor.executeSingleRow(selectMail.bind()
             .setString(REPOSITORY_NAME, url.getValue())
-            .setString(MAIL_KEY, key))
+            .setString(MAIL_KEY, key.getValue()))
             .thenApply(rowOptional -> rowOptional.map(this::toMail));
     }
 

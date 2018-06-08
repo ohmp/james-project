@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.mail.MessagingException;
 
 import org.apache.james.lifecycle.api.LifecycleUtil;
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
@@ -99,10 +100,10 @@ public class FromRepository extends GenericMailet {
     @Override
     public void service(Mail trigger) throws MessagingException {
         trigger.setState(Mail.GHOST);
-        Collection<String> processed = new ArrayList<>();
-        Iterator<String> list = repository.list();
+        Collection<MailKey> processed = new ArrayList<>();
+        Iterator<MailKey> list = repository.list();
         while (list.hasNext()) {
-            String key = (String) list.next();
+            MailKey key = list.next();
             try {
                 Mail mail = repository.retrieve(key);
                 if (mail != null && mail.getRecipients() != null) {
@@ -123,7 +124,7 @@ public class FromRepository extends GenericMailet {
 
         if (delete) {
             for (Object aProcessed : processed) {
-                repository.remove((String) aProcessed);
+                repository.remove((MailKey) aProcessed);
             }
         }
     }

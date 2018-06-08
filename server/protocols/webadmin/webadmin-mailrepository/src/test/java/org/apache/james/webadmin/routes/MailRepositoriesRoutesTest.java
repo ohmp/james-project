@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.mailrepository.memory.MemoryMailRepository;
@@ -1024,7 +1025,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(mailRepository.list())
-            .containsOnly(NAME_2);
+            .containsOnly(new MailKey(NAME_2));
     }
 
     @Test

@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import javax.mail.MessagingException;
 
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.task.Task;
@@ -35,10 +36,10 @@ public class ReprocessingOneMailTask implements Task {
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
         private final MailRepositoryUrl repositoryUrl;
         private final String targetQueue;
-        private final String mailKey;
+        private final MailKey mailKey;
         private final Optional<String> targetProcessor;
 
-        public AdditionalInformation(MailRepositoryUrl repositoryUrl, String targetQueue, String mailKey, Optional<String> targetProcessor) {
+        public AdditionalInformation(MailRepositoryUrl repositoryUrl, String targetQueue, MailKey mailKey, Optional<String> targetProcessor) {
             this.repositoryUrl = repositoryUrl;
             this.targetQueue = targetQueue;
             this.mailKey = mailKey;
@@ -46,7 +47,7 @@ public class ReprocessingOneMailTask implements Task {
         }
 
         public String getMailKey() {
-            return mailKey;
+            return mailKey.getValue();
         }
 
         public String getTargetQueue() {
@@ -65,12 +66,12 @@ public class ReprocessingOneMailTask implements Task {
     private final ReprocessingService reprocessingService;
     private final MailRepositoryUrl repositoryUrl;
     private final String targetQueue;
-    private final String mailKey;
+    private final MailKey mailKey;
     private final Optional<String> targetProcessor;
     private final AdditionalInformation additionalInformation;
 
     public ReprocessingOneMailTask(ReprocessingService reprocessingService,
-                                   MailRepositoryUrl repositoryUrl, String targetQueue, String mailKey, Optional<String> targetProcessor) {
+                                   MailRepositoryUrl repositoryUrl, String targetQueue, MailKey mailKey, Optional<String> targetProcessor) {
         this.reprocessingService = reprocessingService;
         this.repositoryUrl = repositoryUrl;
         this.targetQueue = targetQueue;

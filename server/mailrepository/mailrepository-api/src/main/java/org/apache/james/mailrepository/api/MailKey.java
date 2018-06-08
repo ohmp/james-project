@@ -17,38 +17,50 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.utils;
+package org.apache.james.mailrepository.api;
 
-import java.util.List;
+import java.util.Objects;
 
-import javax.inject.Inject;
+import org.apache.mailet.Mail;
 
-import org.apache.james.mailrepository.api.MailKey;
-import org.apache.james.mailrepository.api.MailRepositoryStore;
-import org.apache.james.mailrepository.api.MailRepositoryUrl;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
-import com.google.common.collect.ImmutableList;
-
-public class MailRepositoryProbeImpl implements GuiceProbe {
-
-    private final MailRepositoryStore repositoryStore;
-
-    @Inject
-    public MailRepositoryProbeImpl(MailRepositoryStore repositoryStore) {
-        this.repositoryStore = repositoryStore;
+public class MailKey {
+    public static MailKey forMail(Mail mail) {
+        return new MailKey(mail.getName());
     }
 
-    /**
-     * Get the count of email currently stored in a given repository
-     */
-    public long getRepositoryMailCount(MailRepositoryUrl url) throws Exception {
-        return repositoryStore.select(url).size();
+    private final String value;
+
+    public MailKey(String value) {
+        Preconditions.checkNotNull(value);
+        this.value = value;
     }
 
-    public List<MailKey> listMailKeys(MailRepositoryUrl url) throws Exception {
-        return ImmutableList.copyOf(
-            repositoryStore.select(url)
-                .list());
+    public String getValue() {
+        return value;
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof MailKey) {
+            MailKey mailKey = (MailKey) o;
+
+            return Objects.equals(this.value, mailKey.value);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(value);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("value", value)
+            .toString();
+    }
 }

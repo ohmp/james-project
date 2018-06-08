@@ -31,6 +31,7 @@ import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.transport.matchers.All;
@@ -140,7 +141,7 @@ public class ToRepositoryTest {
             .sendMessage(RECIPIENT, RECIPIENT);
 
         awaitAtMostOneMinute.until(() -> probe.getRepositoryMailCount(CUSTOM_REPOSITORY) == 2);
-        String key = probe.listMailKeys(CUSTOM_REPOSITORY).get(0);
+        MailKey key = probe.listMailKeys(CUSTOM_REPOSITORY).get(0);
 
         with()
             .spec(webAdminAPI)
@@ -148,7 +149,7 @@ public class ToRepositoryTest {
             .queryParam("action", "reprocess")
             .patch(MailRepositoriesRoutes.MAIL_REPOSITORIES
                 + "/" + CUSTOM_REPOSITORY.encodedValue()
-                + "/mails/" + key)
+                + "/mails/" + key.getValue())
             .jsonPath()
             .get("taskId");
 

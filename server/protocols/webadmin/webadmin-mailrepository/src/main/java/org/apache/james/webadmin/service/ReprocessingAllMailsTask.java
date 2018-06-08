@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.mail.MessagingException;
 
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.task.Task;
@@ -71,7 +72,7 @@ public class ReprocessingAllMailsTask implements Task {
         }
 
         @JsonIgnore
-        public void notifyProgress(String key) {
+        public void notifyProgress(MailKey key) {
             processedCount.incrementAndGet();
         }
     }

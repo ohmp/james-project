@@ -30,6 +30,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.queue.api.MailQueueFactory;
@@ -178,7 +179,7 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineGetMail() {
         service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", (request, response) -> {
             MailRepositoryUrl url = decodedRepositoryUrl(request);
-            String mailKey = request.params("mailKey");
+            MailKey mailKey = new MailKey(request.params("mailKey"));
             try {
                 return repositoryStoreService.retrieveMail(url, mailKey)
                     .orElseThrow(() -> ErrorResponder.builder()
@@ -238,7 +239,7 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineDeleteMail() {
         service.delete(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", (request, response) -> {
             MailRepositoryUrl url = decodedRepositoryUrl(request);
-            String mailKey = request.params("mailKey");
+            MailKey mailKey = new MailKey(request.params("mailKey"));
             try {
                 response.status(HttpStatus.NO_CONTENT_204);
                 repositoryStoreService.deleteMail(url, mailKey);
@@ -376,7 +377,7 @@ public class MailRepositoriesRoutes implements Routes {
 
     private Task toOneMailReprocessingTask(Request request) throws UnsupportedEncodingException {
         MailRepositoryUrl url = decodedRepositoryUrl(request);
-        String key = request.params("key");
+        MailKey key = new MailKey(request.params("key"));
         enforceActionParameter(request);
         Optional<String> targetProcessor = Optional.ofNullable(request.queryParams("processor"));
         String targetQueue = Optional.ofNullable(request.queryParams("queue")).orElse(MailQueueFactory.SPOOL);
