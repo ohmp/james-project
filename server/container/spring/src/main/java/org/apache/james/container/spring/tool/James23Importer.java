@@ -36,6 +36,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryStore.MailRepositoryStoreException;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.server.core.MimeMessageInputStream;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -135,7 +136,7 @@ public class James23Importer {
         while (james23userRepositoryIterator.hasNext()) {
 
             String userName23 = james23userRepositoryIterator.next();
-            MailRepository mailRepository = mailRepositoryStore.select(james23MailRepositoryPath + "/" + userName23);
+            MailRepository mailRepository = mailRepositoryStore.select(new MailRepositoryUrl(james23MailRepositoryPath + "/" + userName23));
             Iterator<String> mailRepositoryIterator = mailRepository.list();
 
             String userName30 = convert23UserTo30(userName23);

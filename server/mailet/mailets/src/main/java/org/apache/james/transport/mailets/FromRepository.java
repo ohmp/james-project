@@ -29,6 +29,7 @@ import javax.mail.MessagingException;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
@@ -58,7 +59,7 @@ public class FromRepository extends GenericMailet {
     private boolean delete = false;
 
     /** The path to the repository */
-    private String repositoryPath;
+    private MailRepositoryUrl repositoryPath;
 
     /** The processor that will handle the re-spooled message(s) */
     private String processor;
@@ -72,7 +73,7 @@ public class FromRepository extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
-        repositoryPath = getInitParameter("repositoryPath");
+        repositoryPath = new MailRepositoryUrl(getInitParameter("repositoryPath"));
         processor = (getInitParameter("processor") == null) ? Mail.DEFAULT : getInitParameter("processor");
 
         try {
