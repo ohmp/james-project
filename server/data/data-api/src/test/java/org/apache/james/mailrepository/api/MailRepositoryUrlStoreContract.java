@@ -29,14 +29,14 @@ public interface MailRepositoryUrlStoreContract {
 
     @Test
     default void shouldBeEmptyByDefault(MailRepositoryUrlStore store) {
-        assertThat(store.retrieveusedUrl()).isEmpty();
+        assertThat(store.retrieveUsedUrls()).isEmpty();
     }
 
     @Test
     default void retrieveusedUrlShouldReturnAddedUrl(MailRepositoryUrlStore store) {
         store.addUrl(URL_1);
 
-        assertThat(store.retrieveusedUrl()).containsOnly(URL_1);
+        assertThat(store.retrieveUsedUrls()).containsOnly(URL_1);
     }
 
     @Test
@@ -44,7 +44,7 @@ public interface MailRepositoryUrlStoreContract {
         store.addUrl(URL_1);
         store.addUrl(URL_1);
 
-        assertThat(store.retrieveusedUrl()).containsOnly(URL_1);
+        assertThat(store.retrieveUsedUrls()).containsOnly(URL_1);
     }
 
     @Test
@@ -52,7 +52,19 @@ public interface MailRepositoryUrlStoreContract {
         store.addUrl(URL_1);
         store.addUrl(URL_2);
 
-        assertThat(store.retrieveusedUrl()).containsOnly(URL_1, URL_2);
+        assertThat(store.retrieveUsedUrls()).containsOnly(URL_1, URL_2);
+    }
+
+    @Test
+    default void containsShouldReturnFalseWhenNotExisting(MailRepositoryUrlStore store) {
+        assertThat(store.contains(URL_1)).isFalse();
+    }
+
+    @Test
+    default void containsShouldReturnTrueWhenExisting(MailRepositoryUrlStore store) {
+        store.addUrl(URL_1);
+
+        assertThat(store.contains(URL_1)).isTrue();
     }
 
 }

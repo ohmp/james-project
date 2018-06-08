@@ -25,5 +25,7 @@ public interface MailRepositoryUrlStore {
 
     void addUrl(MailRepositoryUrl url);
 
-    Set<MailRepositoryUrl> retrieveusedUrl();
+    Set<MailRepositoryUrl> retrieveUsedUrls();
+
+    boolean contains(MailRepositoryUrl url);
 }

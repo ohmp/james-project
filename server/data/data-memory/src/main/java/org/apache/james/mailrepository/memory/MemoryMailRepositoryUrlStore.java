@@ -40,7 +40,12 @@ public class MemoryMailRepositoryUrlStore implements MailRepositoryUrlStore {
     }
 
     @Override
-    public Set<MailRepositoryUrl> retrieveusedUrl() {
+    public Set<MailRepositoryUrl> retrieveUsedUrls() {
         return ImmutableSet.copyOf(urls.keySet());
+    }
+
+    @Override
+    public boolean contains(MailRepositoryUrl url) {
+        return urls.containsKey(url);
     }
 }
