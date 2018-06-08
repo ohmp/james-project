@@ -35,6 +35,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.queue.api.MailQueueFactory;
@@ -186,11 +187,16 @@ public class MailRepositoriesRoutes implements Routes {
     })
     public void defineGetMail() {
         service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", Constants.JSON_CONTENT_TYPE,
-            (request, response) -> getMailAsJson(decodedRepositoryUrl(request), request.params("mailKey")), jsonTransformer);
+            (request, response) -> getMailAsJson(
+                decodedRepositoryUrl(request),
+                new MailKey(request.params("mailKey"))),
+            jsonTransformer);
 
         service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", Constants.RFC822_CONTENT_TYPE,
             (request, response) -> writeMimeMessage(
-                getMailAsMimeMessage(decodedRepositoryUrl(request), request.params("mailKey")),
+                getMailAsMimeMessage(
+                    decodedRepositoryUrl(request),
+                    new MailKey(request.params("mailKey"))),
                 response.raw()));
     }
 
@@ -207,7 +213,7 @@ public class MailRepositoriesRoutes implements Routes {
         return byteArrayOutputStream.size();
     }
 
-    private MimeMessage getMailAsMimeMessage(MailRepositoryUrl url, String mailKey) {
+    private MimeMessage getMailAsMimeMessage(MailRepositoryUrl url, MailKey mailKey) {
         try {
             return repositoryStoreService.retrieveMessage(url, mailKey)
                 .orElseThrow(mailNotFoundError(mailKey));
@@ -216,7 +222,7 @@ public class MailRepositoriesRoutes implements Routes {
         }
     }
 
-    private MailDto getMailAsJson(MailRepositoryUrl url, String mailKey) {
+    private MailDto getMailAsJson(MailRepositoryUrl url, MailKey mailKey) {
         try {
             return repositoryStoreService.retrieveMail(url, mailKey)
                 .orElseThrow(mailNotFoundError(mailKey));
@@ -225,11 +231,11 @@ public class MailRepositoriesRoutes implements Routes {
         }
     }
 
-    private Supplier<HaltException> mailNotFoundError(String mailKey) {
+    private Supplier<HaltException> mailNotFoundError(MailKey mailKey) {
         return () -> ErrorResponder.builder()
             .statusCode(HttpStatus.NOT_FOUND_404)
             .type(ErrorResponder.ErrorType.NOT_FOUND)
-            .message("Could not retrieve " + mailKey)
+            .message("Could not retrieve " + mailKey.getValue())
             .haltError();
     }
 
@@ -283,7 +289,7 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineDeleteMail() {
         service.delete(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", (request, response) -> {
             MailRepositoryUrl url = decodedRepositoryUrl(request);
-            String mailKey = request.params("mailKey");
+            MailKey mailKey = new MailKey(request.params("mailKey"));
             try {
                 response.status(HttpStatus.NO_CONTENT_204);
                 repositoryStoreService.deleteMail(url, mailKey);
@@ -421,7 +427,7 @@ public class MailRepositoriesRoutes implements Routes {
 
     private Task toOneMailReprocessingTask(Request request) throws UnsupportedEncodingException {
         MailRepositoryUrl url = decodedRepositoryUrl(request);
-        String key = request.params("key");
+        MailKey key = new MailKey(request.params("key"));
         enforceActionParameter(request);
         Optional<String> targetProcessor = Optional.ofNullable(request.queryParams("processor"));
         String targetQueue = Optional.ofNullable(request.queryParams("queue")).orElse(MailQueueFactory.SPOOL);

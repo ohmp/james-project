@@ -17,38 +17,36 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.utils;
+package org.apache.james.webadmin.dto;
 
-import java.util.List;
-
-import javax.inject.Inject;
+import java.util.Objects;
 
 import org.apache.james.mailrepository.api.MailKey;
-import org.apache.james.mailrepository.api.MailRepositoryStore;
-import org.apache.james.mailrepository.api.MailRepositoryUrl;
 
-import com.google.common.collect.ImmutableList;
+public class MailKeyDTO {
 
-public class MailRepositoryProbeImpl implements GuiceProbe {
+    private final MailKey mailKey;
 
-    private final MailRepositoryStore repositoryStore;
-
-    @Inject
-    public MailRepositoryProbeImpl(MailRepositoryStore repositoryStore) {
-        this.repositoryStore = repositoryStore;
+    public MailKeyDTO(MailKey mailKey) {
+        this.mailKey = mailKey;
     }
 
-    /**
-     * Get the count of email currently stored in a given repository
-     */
-    public long getRepositoryMailCount(MailRepositoryUrl url) throws Exception {
-        return repositoryStore.select(url).size();
+    public String getMailKey() {
+        return mailKey.getValue();
     }
 
-    public List<MailKey> listMailKeys(MailRepositoryUrl url) throws Exception {
-        return ImmutableList.copyOf(
-            repositoryStore.select(url)
-                .list());
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof MailKeyDTO) {
+            MailKeyDTO that = (MailKeyDTO) o;
+
+            return Objects.equals(this.mailKey, that.mailKey);
+        }
+        return false;
     }
 
+    @Override
+    public final int hashCode() {
+        return Objects.hash(mailKey);
+    }
 }

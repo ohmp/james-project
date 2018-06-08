@@ -26,6 +26,7 @@ import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraExtension;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.TestBlobId;
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
@@ -41,7 +42,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 public class CassandraMailRepositoryMailDAOTest {
 
     static final MailRepositoryUrl URL = new MailRepositoryUrl("proto://url");
-    static final String KEY_1 = "key1";
+    static final MailKey KEY_1 = new MailKey("key1");
     static final TestBlobId.Factory BLOB_ID_FACTORY = new TestBlobId.Factory();
 
     CassandraCluster cassandra;
@@ -80,7 +81,7 @@ public class CassandraMailRepositoryMailDAOTest {
 
         testee.store(URL,
             FakeMail.builder()
-                .name(KEY_1)
+                .name(KEY_1.getValue())
                 .sender(MailAddressFixture.SENDER)
                 .recipients(MailAddressFixture.RECIPIENT1, MailAddressFixture.RECIPIENT2)
                 .errorMessage(errorMessage)
@@ -122,7 +123,7 @@ public class CassandraMailRepositoryMailDAOTest {
 
         testee.store(URL,
             FakeMail.builder()
-                .name(KEY_1)
+                .name(KEY_1.getValue())
                 .build(),
             blobIdHeader,
             blobIdBody)
@@ -144,7 +145,7 @@ public class CassandraMailRepositoryMailDAOTest {
 
         testee.store(URL,
             FakeMail.builder()
-                .name(KEY_1)
+                .name(KEY_1.getValue())
                 .build(),
             blobIdHeader,
             blobIdBody)

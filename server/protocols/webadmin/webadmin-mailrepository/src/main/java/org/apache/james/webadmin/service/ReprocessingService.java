@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
 
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
@@ -47,7 +48,7 @@ public class ReprocessingService {
         this.mailRepositoryStoreService = mailRepositoryStoreService;
     }
 
-    public void reprocessAll(MailRepositoryUrl url, Optional<String> targetProcessor, String targetQueue, Consumer<String> keyListener) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
+    public void reprocessAll(MailRepositoryUrl url, Optional<String> targetProcessor, String targetQueue, Consumer<MailKey> keyListener) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
         MailRepository repository = mailRepositoryStoreService.getRepository(url);
         MailQueue mailQueue = getMailQueue(targetQueue);
 
@@ -56,14 +57,14 @@ public class ReprocessingService {
             .forEach(Throwing.consumer(key -> reprocess(repository, mailQueue, key, targetProcessor)));
     }
 
-    public void reprocess(MailRepositoryUrl url, String key, Optional<String> targetProcessor, String targetQueue) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
+    public void reprocess(MailRepositoryUrl url, MailKey key, Optional<String> targetProcessor, String targetQueue) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
         MailRepository repository = mailRepositoryStoreService.getRepository(url);
         MailQueue mailQueue = getMailQueue(targetQueue);
 
         reprocess(repository, mailQueue, key, targetProcessor);
     }
 
-    private void reprocess(MailRepository repository, MailQueue mailQueue, String key, Optional<String> targetProcessor) throws MessagingException {
+    private void reprocess(MailRepository repository, MailQueue mailQueue, MailKey key, Optional<String> targetProcessor) throws MessagingException {
         Mail mail = repository.retrieve(key);
         targetProcessor.ifPresent(mail::setState);
         mailQueue.enQueue(mail);

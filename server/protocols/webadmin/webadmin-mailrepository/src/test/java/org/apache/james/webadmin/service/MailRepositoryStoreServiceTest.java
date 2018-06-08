@@ -29,6 +29,7 @@ import java.util.Optional;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.mailrepository.memory.MemoryMailRepository;
@@ -36,7 +37,7 @@ import org.apache.james.server.core.MimeMessageInputStream;
 import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.util.streams.Limit;
 import org.apache.james.util.streams.Offset;
-import org.apache.james.webadmin.dto.MailKey;
+import org.apache.james.webadmin.dto.MailKeyDTO;
 import org.apache.james.webadmin.dto.MailRepositoryResponse;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
@@ -47,8 +48,8 @@ import com.google.common.collect.ImmutableList;
 public class MailRepositoryStoreServiceTest {
     private static final MailRepositoryUrl FIRST_REPOSITORY = new MailRepositoryUrl("url://repository");
     private static final MailRepositoryUrl SECOND_REPOSITORY = new MailRepositoryUrl("url://repository2");
-    private static final String NAME_1 = "name1";
-    private static final String NAME_2 = "name2";
+    private static final MailKey NAME_1 = new MailKey("name1");
+    private static final MailKey NAME_2 = new MailKey("name2");
 
     private MailRepositoryStore mailRepositoryStore;
     private MailRepositoryStoreService testee;
@@ -106,14 +107,14 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         repository.store(FakeMail.builder()
-            .name(NAME_1)
+            .name(NAME_1.getValue())
             .build());
         repository.store(FakeMail.builder()
-            .name(NAME_2)
+            .name(NAME_2.getValue())
             .build());
 
         assertThat(testee.listMails(FIRST_REPOSITORY, Offset.none(), Limit.unlimited()).get())
-            .containsOnly(new MailKey(NAME_1), new MailKey(NAME_2));
+            .containsOnly(new MailKeyDTO(NAME_1), new MailKeyDTO(NAME_2));
     }
 
     @Test
@@ -121,17 +122,17 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         repository.store(FakeMail.builder()
-            .name(NAME_1)
+            .name(NAME_1.getValue())
             .build());
         repository.store(FakeMail.builder()
-            .name(NAME_2)
+            .name(NAME_2.getValue())
             .build());
         repository.store(FakeMail.builder()
             .name("name3")
             .build());
 
         assertThat(testee.listMails(FIRST_REPOSITORY, Offset.from(1), Limit.from(1)).get())
-            .containsOnly(new MailKey(NAME_2));
+            .containsOnly(new MailKeyDTO(NAME_2));
     }
 
     @Test
@@ -164,7 +165,7 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         FakeMail mail = FakeMail.builder()
-            .name(NAME_1)
+            .name(NAME_1.getValue())
             .fileName("mail.eml")
             .build();
         repository.store(mail);
