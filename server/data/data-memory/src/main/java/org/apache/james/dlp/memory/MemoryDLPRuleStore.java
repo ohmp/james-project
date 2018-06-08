@@ -31,11 +31,14 @@ import org.apache.james.dlp.api.DLPRulesStore;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 public class MemoryDLPRuleStore implements DLPRulesStore {
 
     private static class Entry {
+        public static Entry empty(DLPRuleId id) {
+            return new Entry(id, Optional.empty());
+        }
+
         private final DLPRuleId id;
         private final Optional<DLPRule> payload;
 
@@ -65,11 +68,11 @@ public class MemoryDLPRuleStore implements DLPRulesStore {
 
     public MemoryDLPRuleStore(MemoryDLPRuleId.Factory factory) {
         this.factory = factory;
-        entries = Multimaps.synchronizedMultimap(ArrayListMultimap.<Domain, Entry>create());
+        entries = ArrayListMultimap.create();
     }
 
     @Override
-    public Map<DLPRuleId, DLPRule> retrieveRules(Domain domain) {
+    public synchronized Map<DLPRuleId, DLPRule> retrieveRules(Domain domain) {
         return entries.get(domain)
             .stream()
             .filter(entry -> entry.payload.isPresent())
@@ -79,7 +82,7 @@ public class MemoryDLPRuleStore implements DLPRulesStore {
     }
 
     @Override
-    public Optional<DLPRule> retrieveRule(Domain domain, DLPRuleId dlpRuleId) {
+    public synchronized Optional<DLPRule> retrieveRule(Domain domain, DLPRuleId dlpRuleId) {
         return entries.get(domain)
             .stream()
             .filter(entry -> entry.id.equals(dlpRuleId))
@@ -88,24 +91,27 @@ public class MemoryDLPRuleStore implements DLPRulesStore {
     }
 
     @Override
-    public DLPRuleId store(Domain domain, DLPRule rule) {
+    public synchronized DLPRuleId store(Domain domain, DLPRule rule) {
         DLPRuleId ruleId = factory.generate();
         entries.put(domain, new Entry(ruleId, Optional.of(rule)));
         return ruleId;
     }
 
     @Override
-    public void update(Domain domain, DLPRuleId dlpRuleId, DLPRule newRule) {
+    public synchronized void update(Domain domain, DLPRuleId dlpRuleId, DLPRule newRule) {
+        if (entries.containsValue(Entry.empty(dlpRuleId))) {
+            entries.remove(domain, Entry.empty(dlpRuleId));
+        }
         entries.put(domain, new Entry(dlpRuleId, Optional.of(newRule)));
     }
 
     @Override
-    public void delete(Domain domain, DLPRuleId dlpRuleId) {
-        entries.remove(domain, new Entry(dlpRuleId, Optional.empty()));
+    public synchronized void delete(Domain domain, DLPRuleId dlpRuleId) {
+        entries.remove(domain, Entry.empty(dlpRuleId));
     }
 
     @Override
-    public void clear(Domain domain) {
+    public synchronized void clear(Domain domain) {
         entries.removeAll(domain);
     }
 }
