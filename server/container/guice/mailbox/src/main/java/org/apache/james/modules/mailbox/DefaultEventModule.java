@@ -55,8 +55,6 @@ public class DefaultEventModule extends AbstractModule {
         bind(DefaultDelegatingMailboxListener.class).in(Scopes.SINGLETON);
         bind(DelegatingMailboxListener.class).to(DefaultDelegatingMailboxListener.class);
 
-        bind(EventDelivery.class).to(SynchronousEventDelivery.class);
-
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(ListenerRegistrationPerformer.class);
 
         bind(ListeningCurrentQuotaUpdater.class).in(Scopes.SINGLETON);
