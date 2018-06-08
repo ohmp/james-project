@@ -20,6 +20,7 @@
 package org.apache.james.backends.jpa;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -40,17 +41,35 @@ public class TransactionRunner {
     }
 
     public void run(Consumer<EntityManager> runnable) {
+        runAndRetrieveResult(entityManager -> {
+                runnable.accept(entityManager);
+                return null;
+            },
+            e -> null);
+    }
+
+    public <T> T runAndRetrieveResult(Function<EntityManager, T> toResult) {
+        return runAndRetrieveResult(toResult,
+            e -> {
+                throw new RuntimeException(e);
+            });
+    }
+
+    public <T> T runAndRetrieveResult(Function<EntityManager, T> toResult,
+                                      Function<PersistenceException, T> errorHandler) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            runnable.accept(entityManager);
+            T result = toResult.apply(entityManager);
             transaction.commit();
+            return result;
         } catch (PersistenceException e) {
             LOGGER.warn("Could not execute transaction", e);
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+            return errorHandler.apply(e);
         } finally {
             entityManager.close();
         }
