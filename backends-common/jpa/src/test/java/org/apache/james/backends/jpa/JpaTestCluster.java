@@ -22,6 +22,7 @@ package org.apache.james.backends.jpa;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -36,6 +37,7 @@ public class JpaTestCluster {
     }
 
     public static JpaTestCluster create(List<Class<?>> clazz) {
+        System.out.println(clazz);
         HashMap<String, String> properties = new HashMap<>();
         properties.put("openjpa.ConnectionDriverName", org.h2.Driver.class.getName());
         properties.put("openjpa.ConnectionURL", "jdbc:h2:mem:mailboxintegrationtesting;DB_CLOSE_DELAY=-1"); // Memory H2 database
