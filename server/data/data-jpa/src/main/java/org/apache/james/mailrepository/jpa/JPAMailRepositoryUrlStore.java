@@ -43,7 +43,7 @@ public class JPAMailRepositoryUrlStore implements MailRepositoryUrlStore {
     }
 
     @Override
-    public Set<MailRepositoryUrl> retrieveusedUrl() {
+    public Set<MailRepositoryUrl> retrieveUsedUrls() {
         return transactionRunner.runAndRetrieveResult(entityManager ->
             entityManager
                 .createNamedQuery("listUrls", JPAUrl.class)
@@ -51,6 +51,13 @@ public class JPAMailRepositoryUrlStore implements MailRepositoryUrlStore {
                 .stream()
                 .map(JPAUrl::toMailRepositoryUrl)
                 .collect(Guavate.toImmutableSet()));
+    }
+
+    @Override
+    public boolean contains(MailRepositoryUrl url) {
+        return transactionRunner.runAndRetrieveResult(entityManager ->
+            entityManager
+                .contains(JPAUrl.from(url)));
     }
 }
 
