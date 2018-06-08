@@ -43,9 +43,16 @@ public class CassandraMailRepositoryUrlStore implements MailRepositoryUrlStore {
     }
 
     @Override
-    public Set<MailRepositoryUrl> retrieveusedUrl() {
-        return urlsDao.retrieveusedUrl()
+    public Set<MailRepositoryUrl> retrieveUsedUrls() {
+        return urlsDao.retrieveUsedUrls()
             .join()
             .collect(Guavate.toImmutableSet());
+    }
+
+    @Override
+    public boolean contains(MailRepositoryUrl url) {
+        return urlsDao.retrieve(url)
+            .join()
+            .isPresent();
     }
 }
