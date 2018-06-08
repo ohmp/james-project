@@ -30,6 +30,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.mailrepository.memory.MemoryMailRepository;
 import org.apache.james.server.core.MimeMessageInputStream;
 import org.apache.james.util.ClassLoaderUtils;
@@ -44,8 +45,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 public class MailRepositoryStoreServiceTest {
-    private static final String FIRST_REPOSITORY = "url://repository";
-    private static final String SECOND_REPOSITORY = "url://repository2";
+    private static final MailRepositoryUrl FIRST_REPOSITORY = new MailRepositoryUrl("url://repository");
+    private static final MailRepositoryUrl SECOND_REPOSITORY = new MailRepositoryUrl("url://repository2");
     private static final String NAME_1 = "name1";
     private static final String NAME_2 = "name2";
 
@@ -71,7 +72,7 @@ public class MailRepositoryStoreServiceTest {
             .thenReturn(ImmutableList.of(FIRST_REPOSITORY));
         assertThat(testee.listMailRepositories())
             .extracting(MailRepositoryResponse::getRepository)
-            .containsOnly(FIRST_REPOSITORY);
+            .containsOnly(FIRST_REPOSITORY.getValue());
     }
 
     @Test
@@ -80,7 +81,7 @@ public class MailRepositoryStoreServiceTest {
             .thenReturn(ImmutableList.of(FIRST_REPOSITORY, SECOND_REPOSITORY));
         assertThat(testee.listMailRepositories())
             .extracting(MailRepositoryResponse::getRepository)
-            .containsOnly(FIRST_REPOSITORY, SECOND_REPOSITORY);
+            .containsOnly(FIRST_REPOSITORY.getValue(), SECOND_REPOSITORY.getValue());
     }
 
     @Test
@@ -135,7 +136,7 @@ public class MailRepositoryStoreServiceTest {
 
     @Test
     public void retrieveMessageShouldThrownWhenUnknownRepository() throws Exception {
-        when(mailRepositoryStore.get("unkown")).thenReturn(Optional.empty());
+        when(mailRepositoryStore.get(new MailRepositoryUrl("unkown"))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> testee.retrieveMessage(FIRST_REPOSITORY, NAME_1))
             .isInstanceOf(NullPointerException.class);

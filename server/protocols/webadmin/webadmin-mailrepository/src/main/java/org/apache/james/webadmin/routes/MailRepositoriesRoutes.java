@@ -22,8 +22,6 @@ package org.apache.james.webadmin.routes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -38,6 +36,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.apache.james.mailrepository.api.MailRepositoryStore;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
@@ -144,7 +143,7 @@ public class MailRepositoriesRoutes implements Routes {
             Offset offset = ParametersExtractor.extractOffset(request);
             Limit limit = ParametersExtractor.extractLimit(request);
             String encodedUrl = request.params("encodedUrl");
-            String url = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.displayName());
+            MailRepositoryUrl url = MailRepositoryUrl.fromEncoded(encodedUrl);
             try {
                 return repositoryStoreService.listMails(url, offset, limit)
                     .orElseThrow(() -> ErrorResponder.builder()
@@ -186,7 +185,6 @@ public class MailRepositoriesRoutes implements Routes {
         @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "Not found - Could not retrieve the given mail.")
     })
     public void defineGetMail() {
-
         service.get(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", Constants.JSON_CONTENT_TYPE,
             (request, response) -> getMailAsJson(decodedRepositoryUrl(request), request.params("mailKey")), jsonTransformer);
 
@@ -209,7 +207,7 @@ public class MailRepositoriesRoutes implements Routes {
         return byteArrayOutputStream.size();
     }
 
-    private MimeMessage getMailAsMimeMessage(String url, String mailKey) {
+    private MimeMessage getMailAsMimeMessage(MailRepositoryUrl url, String mailKey) {
         try {
             return repositoryStoreService.retrieveMessage(url, mailKey)
                 .orElseThrow(mailNotFoundError(mailKey));
@@ -218,7 +216,7 @@ public class MailRepositoriesRoutes implements Routes {
         }
     }
 
-    private MailDto getMailAsJson(String url, String mailKey) {
+    private MailDto getMailAsJson(MailRepositoryUrl url, String mailKey) {
         try {
             return repositoryStoreService.retrieveMail(url, mailKey)
                 .orElseThrow(mailNotFoundError(mailKey));
@@ -255,7 +253,7 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineGetMailRepository() {
         service.get(MAIL_REPOSITORIES + "/:encodedUrl", (request, response) -> {
             String encodedUrl = request.params("encodedUrl");
-            String url = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.displayName());
+            MailRepositoryUrl url = MailRepositoryUrl.fromEncoded(encodedUrl);
             try {
                 long size = repositoryStoreService.size(url)
                     .orElseThrow(() -> ErrorResponder.builder()
@@ -284,7 +282,7 @@ public class MailRepositoriesRoutes implements Routes {
     })
     public void defineDeleteMail() {
         service.delete(MAIL_REPOSITORIES + "/:encodedUrl/mails/:mailKey", (request, response) -> {
-            String url = decodedRepositoryUrl(request);
+            MailRepositoryUrl url = decodedRepositoryUrl(request);
             String mailKey = request.params("mailKey");
             try {
                 response.status(HttpStatus.NO_CONTENT_204);
@@ -311,7 +309,7 @@ public class MailRepositoriesRoutes implements Routes {
     })
     public void defineDeleteAll() {
         service.delete(MAIL_REPOSITORIES + "/:encodedUrl/mails", (request, response) -> {
-            String url = decodedRepositoryUrl(request);
+            MailRepositoryUrl url = decodedRepositoryUrl(request);
             try {
                 Task task = repositoryStoreService.createClearMailRepositoryTask(url);
                 TaskId taskId = taskManager.submit(task);
@@ -370,7 +368,7 @@ public class MailRepositoriesRoutes implements Routes {
     }
 
     private Task toAllMailReprocessingTask(Request request) throws UnsupportedEncodingException, MailRepositoryStore.MailRepositoryStoreException, MessagingException {
-        String url = decodedRepositoryUrl(request);
+        MailRepositoryUrl url = decodedRepositoryUrl(request);
         enforceActionParameter(request);
         Optional<String> targetProcessor = Optional.ofNullable(request.queryParams("processor"));
         String targetQueue = Optional.ofNullable(request.queryParams("queue")).orElse(MailQueueFactory.SPOOL);
@@ -422,7 +420,7 @@ public class MailRepositoriesRoutes implements Routes {
     }
 
     private Task toOneMailReprocessingTask(Request request) throws UnsupportedEncodingException {
-        String url = decodedRepositoryUrl(request);
+        MailRepositoryUrl url = decodedRepositoryUrl(request);
         String key = request.params("key");
         enforceActionParameter(request);
         Optional<String> targetProcessor = Optional.ofNullable(request.queryParams("processor"));
@@ -442,7 +440,7 @@ public class MailRepositoriesRoutes implements Routes {
         }
     }
 
-    private String decodedRepositoryUrl(Request request) throws UnsupportedEncodingException {
-        return URLDecoder.decode(request.params("encodedUrl"), StandardCharsets.UTF_8.displayName());
+    private MailRepositoryUrl decodedRepositoryUrl(Request request) throws UnsupportedEncodingException {
+        return MailRepositoryUrl.fromEncoded(request.params("encodedUrl"));
     }
 }

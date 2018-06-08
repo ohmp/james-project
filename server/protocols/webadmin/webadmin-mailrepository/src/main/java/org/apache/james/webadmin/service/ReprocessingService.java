@@ -27,6 +27,7 @@ import javax.mail.MessagingException;
 
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.util.streams.Iterators;
@@ -46,7 +47,7 @@ public class ReprocessingService {
         this.mailRepositoryStoreService = mailRepositoryStoreService;
     }
 
-    public void reprocessAll(String url, Optional<String> targetProcessor, String targetQueue, Consumer<String> keyListener) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
+    public void reprocessAll(MailRepositoryUrl url, Optional<String> targetProcessor, String targetQueue, Consumer<String> keyListener) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
         MailRepository repository = mailRepositoryStoreService.getRepository(url);
         MailQueue mailQueue = getMailQueue(targetQueue);
 
@@ -55,7 +56,7 @@ public class ReprocessingService {
             .forEach(Throwing.consumer(key -> reprocess(repository, mailQueue, key, targetProcessor)));
     }
 
-    public void reprocess(String url, String key, Optional<String> targetProcessor, String targetQueue) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
+    public void reprocess(MailRepositoryUrl url, String key, Optional<String> targetProcessor, String targetQueue) throws MailRepositoryStore.MailRepositoryStoreException, MessagingException {
         MailRepository repository = mailRepositoryStoreService.getRepository(url);
         MailQueue mailQueue = getMailQueue(targetQueue);
 

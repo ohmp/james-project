@@ -40,6 +40,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.ObjectStore;
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.util.BodyOffsetInputStream;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
@@ -50,13 +51,13 @@ import com.google.common.primitives.Bytes;
 
 public class CassandraMailRepository implements MailRepository {
 
-    private final String url;
+    private final MailRepositoryUrl url;
     private final CassandraMailRepositoryKeysDAO keysDAO;
     private final CassandraMailRepositoryCountDAO countDAO;
     private final CassandraMailRepositoryMailDAO mailDAO;
     private final ObjectStore objectStore;
 
-    public CassandraMailRepository(String url, CassandraMailRepositoryKeysDAO keysDAO, CassandraMailRepositoryCountDAO countDAO, CassandraMailRepositoryMailDAO mailDAO, ObjectStore objectStore) {
+    public CassandraMailRepository(MailRepositoryUrl url, CassandraMailRepositoryKeysDAO keysDAO, CassandraMailRepositoryCountDAO countDAO, CassandraMailRepositoryMailDAO mailDAO, ObjectStore objectStore) {
         this.url = url;
         this.keysDAO = keysDAO;
         this.countDAO = countDAO;

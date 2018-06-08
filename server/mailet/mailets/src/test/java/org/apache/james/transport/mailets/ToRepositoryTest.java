@@ -73,7 +73,7 @@ public class ToRepositoryTest {
 
     @Test
     public void initShouldThrowWhenMailStoreThrows() throws Exception {
-        when(mailRepositoryStore.select(any(String.class))).thenThrow(new RuntimeException());
+        when(mailRepositoryStore.select(any())).thenThrow(new RuntimeException());
         expectedException.expect(MessagingException.class);
 
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
@@ -85,7 +85,7 @@ public class ToRepositoryTest {
     @Test
     public void serviceShouldStoreMailIntoRepository() throws Exception {
         MailRepository mailRepository = mock(MailRepository.class);
-        when(mailRepositoryStore.select(any(String.class))).thenReturn(mailRepository);
+        when(mailRepositoryStore.select(any())).thenReturn(mailRepository);
 
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
@@ -100,7 +100,7 @@ public class ToRepositoryTest {
     @Test
     public void serviceShouldGhostMailIfPassThroughNotSet() throws Exception {
         MailRepository mailRepository = mock(MailRepository.class);
-        when(mailRepositoryStore.select(any(String.class))).thenReturn(mailRepository);
+        when(mailRepositoryStore.select(any())).thenReturn(mailRepository);
 
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
@@ -119,7 +119,7 @@ public class ToRepositoryTest {
                 .setProperty("passThrough", "false")
                 .build();
         MailRepository mailRepository = mock(MailRepository.class);
-        when(mailRepositoryStore.select(any(String.class))).thenReturn(mailRepository);
+        when(mailRepositoryStore.select(any())).thenReturn(mailRepository);
         mailet.init(mailetConfig);
 
         mailet.service(message);
@@ -134,7 +134,7 @@ public class ToRepositoryTest {
                 .setProperty("passThrough", "true")
                 .build();
         MailRepository mailRepository = mock(MailRepository.class);
-        when(mailRepositoryStore.select(any(String.class))).thenReturn(mailRepository);
+        when(mailRepositoryStore.select(any())).thenReturn(mailRepository);
         mailet.init(mailetConfig);
 
         mailet.service(message);
