@@ -21,6 +21,9 @@ package org.apache.james.mailrepository.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.TimeUnit;
+
+import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.jupiter.api.Test;
 
 public interface MailRepositoryUrlStoreContract {
@@ -65,6 +68,19 @@ public interface MailRepositoryUrlStoreContract {
         store.add(URL_1);
 
         assertThat(store.contains(URL_1)).isTrue();
+    }
+
+    @Test
+    default void addShouldWorkInConcurrentEnvironment(MailRepositoryUrlStore store) throws Exception {
+        int operationCount = 10;
+        int threadCount = 10;
+        ConcurrentTestRunner testRunner = new ConcurrentTestRunner(threadCount, operationCount,
+            (a, b) -> store.add(new MailRepositoryUrl("proto://" + a + "/" + b)))
+            .run();
+        testRunner.awaitTermination(1, TimeUnit.MINUTES);
+        testRunner.assertNoException();
+
+        assertThat(store.list()).hasSize(threadCount * operationCount);
     }
 
 }
