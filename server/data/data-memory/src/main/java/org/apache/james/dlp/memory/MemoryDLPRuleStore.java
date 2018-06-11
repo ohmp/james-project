@@ -19,6 +19,7 @@
 
 package org.apache.james.dlp.memory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -82,32 +83,10 @@ public class MemoryDLPRuleStore implements DLPRulesStore {
     }
 
     @Override
-    public synchronized Optional<DLPRule> retrieveRule(Domain domain, DLPRuleId dlpRuleId) {
-        return entries.get(domain)
-            .stream()
-            .filter(entry -> entry.id.equals(dlpRuleId))
-            .findAny()
-            .flatMap(entry -> entry.payload);
-    }
-
-    @Override
-    public synchronized DLPRuleId store(Domain domain, DLPRule rule) {
-        DLPRuleId ruleId = factory.generate();
-        entries.put(domain, new Entry(ruleId, Optional.of(rule)));
-        return ruleId;
-    }
-
-    @Override
-    public synchronized void update(Domain domain, DLPRuleId dlpRuleId, DLPRule newRule) {
-        if (entries.containsValue(Entry.empty(dlpRuleId))) {
-            entries.remove(domain, Entry.empty(dlpRuleId));
-        }
-        entries.put(domain, new Entry(dlpRuleId, Optional.of(newRule)));
-    }
-
-    @Override
-    public synchronized void delete(Domain domain, DLPRuleId dlpRuleId) {
-        entries.remove(domain, Entry.empty(dlpRuleId));
+    public void store(Domain domain, List<DLPRule> rules) {
+        entries.putAll(domain, rules.stream()
+            .map(rule -> new Entry(factory.generate(), Optional.of(rule)))
+            .collect(Guavate.toImmutableList()));
     }
 
     @Override

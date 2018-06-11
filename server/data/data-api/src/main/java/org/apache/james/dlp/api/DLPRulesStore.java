@@ -19,22 +19,22 @@
 
 package org.apache.james.dlp.api;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.james.core.Domain;
+
+import com.google.common.collect.ImmutableList;
 
 public interface DLPRulesStore {
 
     Map<DLPRuleId, DLPRule> retrieveRules(Domain domain);
 
-    Optional<DLPRule> retrieveRule(Domain domain, DLPRuleId dlpRuleId);
+    void store(Domain domain, List<DLPRule> rules);
 
-    DLPRuleId store(Domain domain, DLPRule rule);
-
-    void update(Domain domain, DLPRuleId dlpRuleId, DLPRule newRule);
-
-    void delete(Domain domain, DLPRuleId dlpRuleId);
+    default void store(Domain domain, DLPRule rule) {
+        store(domain, ImmutableList.of(rule));
+    }
 
     void clear(Domain domain);
     

@@ -22,14 +22,12 @@ package org.apache.james.dlp.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import java.util.AbstractMap;
-
 import org.apache.james.core.Domain;
 import org.junit.jupiter.api.Test;
 
-public interface DLPRuleStoreContract {
+import com.google.common.collect.ImmutableList;
 
-    DLPRuleId unknownId();
+public interface DLPRuleStoreContract {
 
     DLPRule RULE = DLPRule.builder()
         .explanation("explanation")
@@ -50,49 +48,25 @@ public interface DLPRuleStoreContract {
     }
 
     @Test
-    default void retrieveRuleShouldReturnEmptyWhenDoNotExist(DLPRulesStore dlpRulesStore) {
-        assertThat(dlpRulesStore.retrieveRule(Domain.LOCALHOST, unknownId()))
-            .isEmpty();
-    }
-
-    @Test
-    default void storeShouldReturnUsedRuleId(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId = dlpRulesStore.store(Domain.LOCALHOST, RULE);
-
-        assertThat(ruleId).isNotNull();
-    }
-
-    @Test
-    default void retrieveRuleShouldReturnExistingEntry(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId = dlpRulesStore.store(Domain.LOCALHOST, RULE);
-
-        assertThat(dlpRulesStore.retrieveRule(Domain.LOCALHOST, ruleId))
-            .contains(RULE);
-    }
-
-    @Test
     default void retrieveRulesShouldReturnExistingEntries(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId1 = dlpRulesStore.store(Domain.LOCALHOST, RULE);
-        DLPRuleId ruleId2 = dlpRulesStore.store(Domain.LOCALHOST, RULE_2);
+        dlpRulesStore.store(Domain.LOCALHOST, ImmutableList.of(RULE, RULE_2));
 
-        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST))
-            .containsOnly(new AbstractMap.SimpleEntry<>(ruleId1, RULE),
-                new AbstractMap.SimpleEntry<>(ruleId2, RULE_2));
+        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST).values())
+            .containsOnly(RULE, RULE_2);
     }
 
     @Test
     default void retrieveRulesShouldNotReturnEntriesOfOtherDomains(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId1 = dlpRulesStore.store(Domain.LOCALHOST, RULE);
+        dlpRulesStore.store(Domain.LOCALHOST, RULE);
         dlpRulesStore.store(Domain.of("any.com"), RULE_2);
 
-        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST))
-            .containsOnly(new AbstractMap.SimpleEntry<>(ruleId1, RULE));
+        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST).values())
+            .containsOnly(RULE);
     }
 
     @Test
-    default void clearShouldRemoveAllEnriesOfADomain(DLPRulesStore dlpRulesStore) {
-        dlpRulesStore.store(Domain.LOCALHOST, RULE);
-        dlpRulesStore.store(Domain.LOCALHOST, RULE_2);
+    default void clearShouldRemoveAllEntriesOfADomain(DLPRulesStore dlpRulesStore) {
+        dlpRulesStore.store(Domain.LOCALHOST, ImmutableList.of(RULE, RULE_2));
 
         dlpRulesStore.clear(Domain.LOCALHOST);
 
@@ -107,51 +81,16 @@ public interface DLPRuleStoreContract {
     }
 
     @Test
-    default void clearShouldOnlyRemoveEnriesOfADomain(DLPRulesStore dlpRulesStore) {
+    default void clearShouldOnlyRemoveEntriesOfADomain(DLPRulesStore dlpRulesStore) {
         Domain otherDomain = Domain.of("any.com");
+
         dlpRulesStore.store(Domain.LOCALHOST, RULE);
-        DLPRuleId ruleId2 = dlpRulesStore.store(otherDomain, RULE_2);
+        dlpRulesStore.store(otherDomain, RULE_2);
 
         dlpRulesStore.clear(Domain.LOCALHOST);
 
-        assertThat(dlpRulesStore.retrieveRules(otherDomain))
-            .containsOnly(new AbstractMap.SimpleEntry<>(ruleId2, RULE_2));
-    }
-
-    @Test
-    default void deleteShouldRemoveSpecifiedEntry(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId1 = dlpRulesStore.store(Domain.LOCALHOST, RULE);
-        DLPRuleId ruleId2 = dlpRulesStore.store(Domain.LOCALHOST, RULE_2);
-
-        dlpRulesStore.delete(Domain.LOCALHOST, ruleId1);
-
-        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST))
-            .containsOnly(new AbstractMap.SimpleEntry<>(ruleId2, RULE_2));
-    }
-
-    @Test
-    default void deleteShouldNotFailWhenEntryDoNotExist(DLPRulesStore dlpRulesStore) {
-        assertThatCode(() -> dlpRulesStore.delete(Domain.LOCALHOST, unknownId()))
-            .doesNotThrowAnyException();
-    }
-
-    @Test
-    default void updateShouldUpdateExistingRules(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId1 = dlpRulesStore.store(Domain.LOCALHOST, RULE);
-
-        dlpRulesStore.update(Domain.LOCALHOST, ruleId1, RULE_2);
-
-        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST))
-            .containsOnly(new AbstractMap.SimpleEntry<>(ruleId1, RULE_2));
-    }
-
-    @Test
-    default void updateShouldCreateExistingRules(DLPRulesStore dlpRulesStore) {
-        DLPRuleId ruleId = unknownId();
-        dlpRulesStore.update(Domain.LOCALHOST, ruleId, RULE_2);
-
-        assertThat(dlpRulesStore.retrieveRules(Domain.LOCALHOST))
-            .containsOnly(new AbstractMap.SimpleEntry<>(ruleId, RULE_2));
+        assertThat(dlpRulesStore.retrieveRules(otherDomain).values())
+            .containsOnly(RULE_2);
     }
 
 }
