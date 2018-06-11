@@ -17,9 +17,10 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.dlp.eventsourcing;
+package org.apache.james.dlp.memory;
 
 import org.apache.james.dlp.api.DLPRulesStore;
+import org.apache.james.dlp.eventsourcing.EventSourcingDLPRuleStore;
 import org.apache.james.eventsourcing.eventstore.memory.InMemoryEventStore;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;

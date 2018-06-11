@@ -19,20 +19,10 @@
 
 package org.apache.james.dlp.memory;
 
-import org.apache.james.dlp.api.DLPRulesStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import org.apache.james.dlp.api.DLPRuleStoreContract;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class MemoryDLPRuleStoreExtension implements ParameterResolver {
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == DLPRulesStore.class);
-    }
+@ExtendWith(InMemoryEventSourcingDLPRuleStoreExtension.class)
+public class EventSourcingDLPRuleStoreTest implements DLPRuleStoreContract {
 
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new MemoryDLPRuleStore();
-    }
 }
