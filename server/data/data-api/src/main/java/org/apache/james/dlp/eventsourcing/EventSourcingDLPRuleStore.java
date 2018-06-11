@@ -1,0 +1,104 @@
+/****************************************************************
+ * Licensed to the Apache Software Foundation (ASF) under one   *
+ * or more contributor license agreements.  See the NOTICE file *
+ * distributed with this work for additional information        *
+ * regarding copyright ownership.  The ASF licenses this file   *
+ * to you under the Apache License, Version 2.0 (the            *
+ * "License"); you may not use this file except in compliance   *
+ * with the License.  You may obtain a copy of the License at   *
+ *                                                              *
+ *   http://www.apache.org/licenses/LICENSE-2.0                 *
+ *                                                              *
+ * Unless required by applicable law or agreed to in writing,   *
+ * software distributed under the License is distributed on an  *
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
+ * KIND, either express or implied.  See the License for the    *
+ * specific language governing permissions and limitations      *
+ * under the License.                                           *
+ ****************************************************************/
+
+package org.apache.james.dlp.eventsourcing;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+
+import javax.inject.Inject;
+
+import org.apache.james.core.Domain;
+import org.apache.james.dlp.api.DLPRule;
+import org.apache.james.dlp.api.DLPRuleId;
+import org.apache.james.dlp.api.DLPRulesStore;
+import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregateId;
+import org.apache.james.dlp.eventsourcing.commands.ClearCommand;
+import org.apache.james.dlp.eventsourcing.commands.ClearCommandHandler;
+import org.apache.james.dlp.eventsourcing.commands.StoreCommand;
+import org.apache.james.dlp.eventsourcing.commands.StoreCommandHandler;
+import org.apache.james.dlp.eventsourcing.events.StoreEvent;
+import org.apache.james.eventsourcing.Event;
+import org.apache.james.eventsourcing.EventSourcingSystem;
+import org.apache.james.eventsourcing.Subscriber;
+import org.apache.james.eventsourcing.eventstore.EventStore;
+import org.apache.james.eventsourcing.eventstore.History;
+
+import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+public class EventSourcingDLPRuleStore implements DLPRulesStore {
+
+    private static final ImmutableSet<Subscriber> NO_SUBSCRIBER = ImmutableSet.of();
+
+    private final EventSourcingSystem eventSourcingSystem;
+    private final EventStore eventStore;
+
+    @Inject
+    public EventSourcingDLPRuleStore(EventStore eventStore) {
+        this.eventSourcingSystem = new EventSourcingSystem(
+            ImmutableSet.of(
+                new ClearCommandHandler(eventStore),
+                new StoreCommandHandler(eventStore)),
+            NO_SUBSCRIBER,
+            eventStore);
+        this.eventStore = eventStore;
+    }
+
+    @Override
+    public Map<DLPRuleId, DLPRule> retrieveRules(Domain domain) {
+        return getLastEvent(domain)
+            .filter(event -> event instanceof StoreEvent)
+            .map(event -> (StoreEvent) event)
+            .map(this::toRules)
+            .orElse(ImmutableMap.of());
+    }
+
+    @Override
+    public void store(Domain domain, List<DLPRule> rules) {
+        eventSourcingSystem.dispatch(new StoreCommand(domain, rules));
+    }
+
+    @Override
+    public void clear(Domain domain) {
+        eventSourcingSystem.dispatch(new ClearCommand(domain));
+    }
+
+    private Optional<Event> getLastEvent(Domain domain) {
+        History eventsOfAggregate = eventStore.getEventsOfAggregate(new DLPRuleAggregateId(domain));
+        return eventsOfAggregate.getEvents()
+            .stream()
+            .min(Comparator.reverseOrder());
+    }
+
+    private Map<DLPRuleId, DLPRule> toRules(StoreEvent lastEvent) {
+        AtomicInteger atomicInteger = new AtomicInteger();
+        return lastEvent.getRules()
+            .stream()
+            .collect(
+                Guavate.toImmutableMap(
+                    rule -> new SimpleDLPRuleId(atomicInteger.incrementAndGet()),
+                    Function.identity()));
+    }
+}
