@@ -167,7 +167,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
     private MailRepository retrieveMailRepository(MailRepositoryUrl mailRepositoryUrl) throws MailRepositoryStoreException {
         Protocol protocol = mailRepositoryUrl.getProtocol();
         return Optional.ofNullable(protocolToRepositoryProvider.get(protocol))
-            .orElseThrow(() -> new MailRepositoryStoreException("No Mail Repository associated with " + protocol))
+            .orElseThrow(() -> new MailRepositoryStoreException("No Mail Repository associated with " + protocol.getValue()))
             .provide(mailRepositoryUrl);
     }
 
