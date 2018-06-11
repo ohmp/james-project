@@ -36,6 +36,6 @@ public class MailRepositoryResponse {
     }
 
     public String getId() throws UnsupportedEncodingException {
-        return repository.encodedValue();
+        return repository.urlEncoded();
     }
 }

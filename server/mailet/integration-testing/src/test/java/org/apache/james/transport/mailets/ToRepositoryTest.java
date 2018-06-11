@@ -117,7 +117,7 @@ public class ToRepositoryTest {
             .queryParam("processor", ProcessorConfiguration.STATE_TRANSPORT)
             .queryParam("action", "reprocess")
         .patch(MailRepositoriesRoutes.MAIL_REPOSITORIES
-                + "/" + CUSTOM_REPOSITORY.encodedValue()
+                + "/" + CUSTOM_REPOSITORY.urlEncoded()
                 + "/mails")
             .jsonPath()
             .getString("taskId");
@@ -148,7 +148,7 @@ public class ToRepositoryTest {
             .queryParam("processor", ProcessorConfiguration.STATE_TRANSPORT)
             .queryParam("action", "reprocess")
             .patch(MailRepositoriesRoutes.MAIL_REPOSITORIES
-                + "/" + CUSTOM_REPOSITORY.encodedValue()
+                + "/" + CUSTOM_REPOSITORY.urlEncoded()
                 + "/mails/" + key.getValue())
             .jsonPath()
             .get("taskId");

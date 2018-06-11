@@ -65,7 +65,7 @@ public class MailRepositoryUrlTest {
 
     @Test
     public void encodedValueShouldEncodeUnderlyingValue() throws Exception {
-        assertThat(new MailRepositoryUrl("url://myRepo").encodedValue())
+        assertThat(new MailRepositoryUrl("url://myRepo").urlEncoded())
             .isEqualTo("url%3A%2F%2FmyRepo");
     }
 }

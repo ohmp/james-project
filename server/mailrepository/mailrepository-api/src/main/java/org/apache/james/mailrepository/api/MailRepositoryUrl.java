@@ -47,7 +47,7 @@ public class MailRepositoryUrl {
         return value;
     }
 
-    public String encodedValue() throws UnsupportedEncodingException {
+    public String urlEncoded() throws UnsupportedEncodingException {
         return URLEncoder.encode(value, StandardCharsets.UTF_8.displayName());
     }
 
