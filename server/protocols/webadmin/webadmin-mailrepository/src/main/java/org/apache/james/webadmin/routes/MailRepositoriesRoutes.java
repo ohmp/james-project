@@ -185,7 +185,7 @@ public class MailRepositoriesRoutes implements Routes {
                     .orElseThrow(() -> ErrorResponder.builder()
                         .statusCode(HttpStatus.NOT_FOUND_404)
                         .type(ErrorResponder.ErrorType.NOT_FOUND)
-                        .message("Could not retrieve " + mailKey)
+                        .message("Could not retrieve " + mailKey.getValue())
                         .haltError());
             } catch (MailRepositoryStore.MailRepositoryStoreException | MessagingException e) {
                 throw ErrorResponder.builder()
