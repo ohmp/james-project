@@ -162,13 +162,13 @@ public class CassandraMailRepositoryMailDAO {
     public CompletableFuture<Void> remove(MailRepositoryUrl url, MailKey key) {
         return executor.executeVoid(deleteMail.bind()
             .setString(REPOSITORY_NAME, url.asString())
-            .setString(MAIL_KEY, key.getValue()));
+            .setString(MAIL_KEY, key.asString()));
     }
 
     public CompletableFuture<Optional<MailDTO>> read(MailRepositoryUrl url, MailKey key) {
         return executor.executeSingleRow(selectMail.bind()
             .setString(REPOSITORY_NAME, url.asString())
-            .setString(MAIL_KEY, key.getValue()))
+            .setString(MAIL_KEY, key.asString()))
             .thenApply(rowOptional -> rowOptional.map(this::toMail));
     }
 

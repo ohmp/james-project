@@ -69,7 +69,7 @@ public interface MailRepositoryContract {
             .of(new MailAddress("rec1@domain.com"),
                 new MailAddress("rec2@domain.com"));
         MailAddress sender = new MailAddress("sender@domain.com");
-        MailImpl mail = new MailImpl(key.getValue(), sender, recipients, mailContent);
+        MailImpl mail = new MailImpl(key.asString(), sender, recipients, mailContent);
         mail.setAttribute(TEST_ATTRIBUTE, "testValue");
         return mail;
     }

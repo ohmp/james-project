@@ -81,7 +81,7 @@ public class CassandraMailRepositoryKeysDAO {
     public CompletableFuture<Void> store(MailRepositoryUrl url, MailKey key) {
         return executor.executeVoid(insertKey.bind()
             .setString(REPOSITORY_NAME, url.asString())
-            .setString(MAIL_KEY, key.getValue()));
+            .setString(MAIL_KEY, key.asString()));
     }
 
     public CompletableFuture<Stream<MailKey>> list(MailRepositoryUrl url) {
@@ -94,6 +94,6 @@ public class CassandraMailRepositoryKeysDAO {
     public CompletableFuture<Void> remove(MailRepositoryUrl url, MailKey key) {
         return executor.executeVoid(deleteKey.bind()
             .setString(REPOSITORY_NAME, url.asString())
-            .setString(MAIL_KEY, key.getValue()));
+            .setString(MAIL_KEY, key.asString()));
     }
 }

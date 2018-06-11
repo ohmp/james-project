@@ -607,7 +607,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
             }
 
             retrieveMessage = conn.prepareStatement(sqlQueries.getSqlString("retrieveMessageSQL", true));
-            retrieveMessage.setString(1, key.getValue());
+            retrieveMessage.setString(1, key.asString());
             retrieveMessage.setString(2, repositoryName);
             rsMessage = retrieveMessage.executeQuery();
             if (DEEP_DEBUG) {
@@ -626,7 +626,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
                 try {
                     retrieveMessageAttr = conn.prepareStatement(retrieveMessageAttrSql);
 
-                    retrieveMessageAttr.setString(1, key.getValue());
+                    retrieveMessageAttr.setString(1, key.asString());
                     retrieveMessageAttr.setString(2, repositoryName);
                     rsMessageAttr = retrieveMessageAttr.executeQuery();
 
@@ -663,7 +663,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
 
             MailImpl mc = new MailImpl();
             mc.setAttributesRaw(attributes);
-            mc.setName(key.getValue());
+            mc.setName(key.asString());
             mc.setState(rsMessage.getString(1));
             mc.setErrorMessage(rsMessage.getString(2));
             String sender = rsMessage.getString(3);
@@ -682,7 +682,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
             mc.setRemoteAddr(rsMessage.getString(6));
             mc.setLastUpdated(rsMessage.getTimestamp(7));
 
-            MimeMessageJDBCSource source = new MimeMessageJDBCSource(this, key.getValue(), sr);
+            MimeMessageJDBCSource source = new MimeMessageJDBCSource(this, key.asString(), sr);
             MimeMessageCopyOnWriteProxy message = new MimeMessageCopyOnWriteProxy(source);
             mc.setMessage(message);
             return mc;
@@ -706,12 +706,12 @@ public class JDBCMailRepository extends AbstractMailRepository {
         try {
             conn = datasource.getConnection();
             removeMessage = conn.prepareStatement(sqlQueries.getSqlString("removeMessageSQL", true));
-            removeMessage.setString(1, key.getValue());
+            removeMessage.setString(1, key.asString());
             removeMessage.setString(2, repositoryName);
             removeMessage.execute();
 
             if (sr != null) {
-                sr.remove(key.getValue());
+                sr.remove(key.asString());
             }
         } catch (Exception me) {
             throw new MessagingException("Exception while removing mail: " + me.getMessage(), me);

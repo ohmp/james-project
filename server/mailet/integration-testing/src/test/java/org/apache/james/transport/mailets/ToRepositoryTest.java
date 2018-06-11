@@ -149,7 +149,7 @@ public class ToRepositoryTest {
             .queryParam("action", "reprocess")
             .patch(MailRepositoriesRoutes.MAIL_REPOSITORIES
                 + "/" + CUSTOM_REPOSITORY.urlEncoded()
-                + "/mails/" + key.getValue())
+                + "/mails/" + key.asString())
             .jsonPath()
             .get("taskId");
 

@@ -38,7 +38,7 @@ public class MailKey {
         this.value = value;
     }
 
-    public String getValue() {
+    public String asString() {
         return value;
     }
 

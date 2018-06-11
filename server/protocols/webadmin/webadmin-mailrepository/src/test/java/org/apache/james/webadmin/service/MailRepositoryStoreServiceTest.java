@@ -107,10 +107,10 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         repository.store(FakeMail.builder()
-            .name(NAME_1.getValue())
+            .name(NAME_1.asString())
             .build());
         repository.store(FakeMail.builder()
-            .name(NAME_2.getValue())
+            .name(NAME_2.asString())
             .build());
 
         assertThat(testee.listMails(FIRST_REPOSITORY, Offset.none(), Limit.unlimited()).get())
@@ -122,10 +122,10 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         repository.store(FakeMail.builder()
-            .name(NAME_1.getValue())
+            .name(NAME_1.asString())
             .build());
         repository.store(FakeMail.builder()
-            .name(NAME_2.getValue())
+            .name(NAME_2.asString())
             .build());
         repository.store(FakeMail.builder()
             .name("name3")
@@ -165,7 +165,7 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.get(FIRST_REPOSITORY)).thenReturn(Optional.of(repository));
 
         FakeMail mail = FakeMail.builder()
-            .name(NAME_1.getValue())
+            .name(NAME_1.asString())
             .fileName("mail.eml")
             .build();
         repository.store(mail);

@@ -32,7 +32,7 @@ public class MailKeyDTO {
     }
 
     public String getMailKey() {
-        return mailKey.getValue();
+        return mailKey.asString();
     }
 
     @Override

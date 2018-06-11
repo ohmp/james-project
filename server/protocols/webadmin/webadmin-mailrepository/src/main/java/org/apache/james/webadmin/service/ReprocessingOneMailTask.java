@@ -47,7 +47,7 @@ public class ReprocessingOneMailTask implements Task {
         }
 
         public String getMailKey() {
-            return mailKey.getValue();
+            return mailKey.asString();
         }
 
         public String getTargetQueue() {

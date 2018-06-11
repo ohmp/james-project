@@ -81,7 +81,7 @@ public class CassandraMailRepositoryMailDAOTest {
 
         testee.store(URL,
             FakeMail.builder()
-                .name(KEY_1.getValue())
+                .name(KEY_1.asString())
                 .sender(MailAddressFixture.SENDER)
                 .recipients(MailAddressFixture.RECIPIENT1, MailAddressFixture.RECIPIENT2)
                 .errorMessage(errorMessage)
@@ -101,7 +101,7 @@ public class CassandraMailRepositoryMailDAOTest {
         assertAll(
             () -> assertThat(mailDTO.getBodyBlobId()).isEqualTo(blobIdBody),
             () -> assertThat(mailDTO.getHeaderBlobId()).isEqualTo(blobIdHeader),
-            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1.getValue()),
+            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1.asString()),
             () -> assertThat(partialMail.getErrorMessage()).isEqualTo(errorMessage),
             () -> assertThat(partialMail.getState()).isEqualTo(state),
             () -> assertThat(partialMail.getRemoteAddr()).isEqualTo(remoteAddr),
@@ -123,7 +123,7 @@ public class CassandraMailRepositoryMailDAOTest {
 
         testee.store(URL,
             FakeMail.builder()
-                .name(KEY_1.getValue())
+                .name(KEY_1.asString())
                 .build(),
             blobIdHeader,
             blobIdBody)
@@ -135,7 +135,7 @@ public class CassandraMailRepositoryMailDAOTest {
         assertAll(
             () -> assertThat(mailDTO.getBodyBlobId()).isEqualTo(blobIdBody),
             () -> assertThat(mailDTO.getHeaderBlobId()).isEqualTo(blobIdHeader),
-            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1.getValue()));
+            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1.asString()));
     }
 
     @Test
@@ -145,7 +145,7 @@ public class CassandraMailRepositoryMailDAOTest {
 
         testee.store(URL,
             FakeMail.builder()
-                .name(KEY_1.getValue())
+                .name(KEY_1.asString())
                 .build(),
             blobIdHeader,
             blobIdBody)

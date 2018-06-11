@@ -534,14 +534,14 @@ public class MBoxMailRepository implements MailRepository, Configurable {
         loadKeys();
         MailImpl res;
 
-        MimeMessage foundMessage = findMessage(key.getValue());
+        MimeMessage foundMessage = findMessage(key.asString());
         if (foundMessage == null) {
             LOGGER.error("found message is null!");
             return null;
         }
         res = new MailImpl();
         res.setMessage(foundMessage);
-        res.setName(key.getValue());
+        res.setName(key.asString());
         LOGGER.debug("Retrieving entry for key {}", key);
         return res;
     }

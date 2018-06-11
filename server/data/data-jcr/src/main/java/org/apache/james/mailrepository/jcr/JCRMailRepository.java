@@ -147,7 +147,7 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
         try {
             Session session = login();
             try {
-                String name = toSafeName(key.getValue());
+                String name = toSafeName(key.asString());
                 QueryManager manager = session.getWorkspace().getQueryManager();
                 Query query = manager.createQuery("/jcr:root/" + MAIL_PATH + "//element(" + name + ",james:mail)", Query.XPATH);
                 NodeIterator iterator = query.execute().getNodes();
@@ -598,7 +598,7 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
         try {
             Session session = login();
             try {
-                String name = ISO9075.encode(Text.escapeIllegalJcrChars(key.getValue()));
+                String name = ISO9075.encode(Text.escapeIllegalJcrChars(key.asString()));
                 QueryManager manager = session.getWorkspace().getQueryManager();
                 Query query = manager.createQuery("/jcr:root/" + MAIL_PATH + "//element(" + name + ",james:mail)", Query.XPATH);
                 NodeIterator nodes = query.execute().getNodes();

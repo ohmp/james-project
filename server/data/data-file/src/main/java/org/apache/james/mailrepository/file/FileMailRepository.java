@@ -223,7 +223,7 @@ public class FileMailRepository extends AbstractMailRepository {
         try {
             Mail mc;
             try {
-                mc = (Mail) objectRepository.get(key.getValue());
+                mc = (Mail) objectRepository.get(key.asString());
             } catch (RuntimeException re) {
                 if (re.getCause() instanceof Error) {
                     LOGGER.warn("Error when retrieving mail, not deleting: {}", re, re);
@@ -233,7 +233,7 @@ public class FileMailRepository extends AbstractMailRepository {
                 }
                 return null;
             }
-            MimeMessageStreamRepositorySource source = new MimeMessageStreamRepositorySource(streamRepository, destination, key.getValue());
+            MimeMessageStreamRepositorySource source = new MimeMessageStreamRepositorySource(streamRepository, destination, key.asString());
             mc.setMessage(new MimeMessageCopyOnWriteProxy(source));
 
             return mc;
@@ -246,10 +246,10 @@ public class FileMailRepository extends AbstractMailRepository {
     @Override
     protected void internalRemove(MailKey key) throws MessagingException {
         if (keys != null) {
-            keys.remove(key.getValue());
+            keys.remove(key.asString());
         }
-        streamRepository.remove(key.getValue());
-        objectRepository.remove(key.getValue());
+        streamRepository.remove(key.asString());
+        objectRepository.remove(key.asString());
     }
 
     @Override
