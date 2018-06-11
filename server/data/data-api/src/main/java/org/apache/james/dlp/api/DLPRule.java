@@ -28,7 +28,8 @@ import com.google.common.base.Preconditions;
 public class DLPRule {
 
     public static class Builder {
-        public static final boolean NOT_TARGETTED = false;
+        public static final boolean NOT_TARGETED = false;
+
         private Optional<Boolean> targetsSender;
         private Optional<Boolean> targetsRecipients;
         private Optional<Boolean> targetsContent;
@@ -74,9 +75,9 @@ public class DLPRule {
                 explanation,
                 expression.get(),
                 new Targets(
-                    targetsSender.orElse(NOT_TARGETTED),
-                    targetsRecipients.orElse(NOT_TARGETTED),
-                    targetsContent.orElse(NOT_TARGETTED)));
+                    targetsSender.orElse(NOT_TARGETED),
+                    targetsRecipients.orElse(NOT_TARGETED),
+                    targetsContent.orElse(NOT_TARGETED)));
         }
     }
 
