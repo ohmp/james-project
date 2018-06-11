@@ -92,6 +92,6 @@ public class UrlsDao {
     }
 
     private MailRepositoryUrl toUrl(Row row) {
-        return new MailRepositoryUrl(row.getString(URL));
+        return MailRepositoryUrl.from(row.getString(URL));
     }
 }

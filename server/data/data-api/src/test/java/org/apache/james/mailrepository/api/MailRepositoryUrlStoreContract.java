@@ -27,8 +27,8 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.jupiter.api.Test;
 
 public interface MailRepositoryUrlStoreContract {
-    MailRepositoryUrl URL_1 = new MailRepositoryUrl("proto://var/mail/toto");
-    MailRepositoryUrl URL_2 = new MailRepositoryUrl("proto://var/mail/tata");
+    MailRepositoryUrl URL_1 = MailRepositoryUrl.from("proto://var/mail/toto");
+    MailRepositoryUrl URL_2 = MailRepositoryUrl.from("proto://var/mail/tata");
 
     @Test
     default void retrieveUsedUrlsShouldBeEmptyByDefault(MailRepositoryUrlStore store) {
@@ -75,7 +75,7 @@ public interface MailRepositoryUrlStoreContract {
         int operationCount = 10;
         int threadCount = 10;
         ConcurrentTestRunner testRunner = new ConcurrentTestRunner(threadCount, operationCount,
-            (a, b) -> store.add(new MailRepositoryUrl("proto://" + a + "/" + b)))
+            (a, b) -> store.add(MailRepositoryUrl.from("proto://" + a + "/" + b)))
             .run();
         testRunner.awaitTermination(1, TimeUnit.MINUTES);
         testRunner.assertNoException();

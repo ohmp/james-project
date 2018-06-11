@@ -41,7 +41,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 @ExtendWith(DockerCassandraExtension.class)
 public class CassandraMailRepositoryMailDAOTest {
 
-    static final MailRepositoryUrl URL = new MailRepositoryUrl("proto://url");
+    static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
     static final MailKey KEY_1 = new MailKey("key1");
     static final TestBlobId.Factory BLOB_ID_FACTORY = new TestBlobId.Factory();
 

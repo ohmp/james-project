@@ -36,7 +36,7 @@ import com.jayway.awaitility.core.ConditionFactory;
 
 public class CassandraMailRepositoryIntegrationTest {
 
-    private static final MailRepositoryUrl SENDER_DENIED_URL = new MailRepositoryUrl("cassandra://var/mail/sender-denied/");
+    private static final MailRepositoryUrl SENDER_DENIED_URL = MailRepositoryUrl.from("cassandra://var/mail/sender-denied/");
 
     @ClassRule
     public static DockerCassandraRule cassandra = new DockerCassandraRule();

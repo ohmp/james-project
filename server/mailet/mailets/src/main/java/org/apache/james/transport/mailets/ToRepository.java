@@ -53,7 +53,7 @@ public class ToRepository extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
-        repositoryPath = new MailRepositoryUrl(getInitParameter("repositoryPath"));
+        repositoryPath = MailRepositoryUrl.from(getInitParameter("repositoryPath"));
         passThrough = getPassThroughParameter();
         repository = selectRepository();
     }

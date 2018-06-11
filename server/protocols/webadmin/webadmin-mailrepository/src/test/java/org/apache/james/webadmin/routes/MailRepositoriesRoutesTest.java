@@ -76,7 +76,7 @@ import com.jayway.restassured.parsing.Parser;
 
 public class MailRepositoriesRoutesTest {
 
-    public static final MailRepositoryUrl URL_MY_REPO = new MailRepositoryUrl("url://myRepo");
+    public static final MailRepositoryUrl URL_MY_REPO = MailRepositoryUrl.from("url://myRepo");
     public static final String URL_ESCAPED_MY_REPO = "url%3A%2F%2FmyRepo";
     public static final String MY_REPO_MAILS = "url%3A%2F%2FmyRepo/mails";
     public static final String CUSTOM_QUEUE = "customQueue";
@@ -153,7 +153,7 @@ public class MailRepositoriesRoutesTest {
 
     @Test
     public void getMailRepositoriesShouldReturnTwoRepositoriesWhenTwo() {
-        ImmutableList<MailRepositoryUrl> myRepositories = ImmutableList.of(URL_MY_REPO, new MailRepositoryUrl("url://mySecondRepo"));
+        ImmutableList<MailRepositoryUrl> myRepositories = ImmutableList.of(URL_MY_REPO, MailRepositoryUrl.from("url://mySecondRepo"));
         when(mailRepositoryStore.getUrls())
             .thenReturn(myRepositories);
 

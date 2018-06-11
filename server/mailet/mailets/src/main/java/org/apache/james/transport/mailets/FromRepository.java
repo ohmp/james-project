@@ -74,7 +74,7 @@ public class FromRepository extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
-        repositoryPath = new MailRepositoryUrl(getInitParameter("repositoryPath"));
+        repositoryPath = MailRepositoryUrl.from(getInitParameter("repositoryPath"));
         processor = (getInitParameter("processor") == null) ? Mail.DEFAULT : getInitParameter("processor");
 
         try {

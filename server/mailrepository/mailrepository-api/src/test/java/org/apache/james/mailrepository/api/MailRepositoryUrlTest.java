@@ -35,37 +35,37 @@ public class MailRepositoryUrlTest {
 
     @Test
     public void constructorShouldThrowWhenNull() {
-        assertThatThrownBy(() -> new MailRepositoryUrl(null))
+        assertThatThrownBy(() -> MailRepositoryUrl.from(null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     public void constructorShouldThrowWhenNoSeparator() {
-        assertThatThrownBy(() -> new MailRepositoryUrl("invalid"))
+        assertThatThrownBy(() -> MailRepositoryUrl.from("invalid"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void getProtocolShouldReturnValue() {
-        assertThat(new MailRepositoryUrl("proto://abc").getProtocol())
+        assertThat(MailRepositoryUrl.from("proto://abc").getProtocol())
             .isEqualTo(new Protocol("proto"));
     }
 
     @Test
     public void getProtocolShouldReturnValueWhenEmpty() {
-        assertThat(new MailRepositoryUrl("://abc").getProtocol())
+        assertThat(MailRepositoryUrl.from("://abc").getProtocol())
             .isEqualTo(new Protocol(""));
     }
 
     @Test
     public void fromEncodedShouldReturnDecodedValue() throws Exception {
         assertThat(MailRepositoryUrl.fromEncoded("url%3A%2F%2FmyRepo"))
-            .isEqualTo(new MailRepositoryUrl("url://myRepo"));
+            .isEqualTo(MailRepositoryUrl.from("url://myRepo"));
     }
 
     @Test
     public void encodedValueShouldEncodeUnderlyingValue() throws Exception {
-        assertThat(new MailRepositoryUrl("url://myRepo").urlEncoded())
+        assertThat(MailRepositoryUrl.from("url://myRepo").urlEncoded())
             .isEqualTo("url%3A%2F%2FmyRepo");
     }
 }

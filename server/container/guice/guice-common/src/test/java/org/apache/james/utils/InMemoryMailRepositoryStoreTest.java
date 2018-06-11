@@ -46,7 +46,7 @@ import com.google.common.collect.Sets;
 
 public class InMemoryMailRepositoryStoreTest {
 
-    private static final MailRepositoryUrl FILE_REPO = new MailRepositoryUrl("file://repo");
+    private static final MailRepositoryUrl FILE_REPO = MailRepositoryUrl.from("file://repo");
 
     private MemoryMailRepositoryUrlStore urlStore;
 
@@ -85,7 +85,7 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test(expected = MailRepositoryStore.MailRepositoryStoreException.class)
     public void selectingANonRegisteredProtocolShouldFail() {
-        repositoryStore.select(new MailRepositoryUrl("proto://repo"));
+        repositoryStore.select(MailRepositoryUrl.from("proto://repo"));
     }
 
     @Test
@@ -103,7 +103,7 @@ public class InMemoryMailRepositoryStoreTest {
     @Test
     public void selectingTwiceARegisteredProtocolWithDifferentDestinationShouldReturnDifferentResults() {
         assertThat(repositoryStore.select(FILE_REPO))
-            .isNotEqualTo(repositoryStore.select(new MailRepositoryUrl("file://repo1")));
+            .isNotEqualTo(repositoryStore.select(MailRepositoryUrl.from("file://repo1")));
     }
 
     @Test
@@ -134,9 +134,9 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test
     public void getUrlsShouldReturnUsedUrls() {
-        MailRepositoryUrl url1 = new MailRepositoryUrl("file://repo1");
-        MailRepositoryUrl url2 = new MailRepositoryUrl("file://repo2");
-        MailRepositoryUrl url3 = new MailRepositoryUrl("file://repo3");
+        MailRepositoryUrl url1 = MailRepositoryUrl.from("file://repo1");
+        MailRepositoryUrl url2 = MailRepositoryUrl.from("file://repo2");
+        MailRepositoryUrl url3 = MailRepositoryUrl.from("file://repo3");
         repositoryStore.select(url1);
         repositoryStore.select(url2);
         repositoryStore.select(url3);
@@ -174,7 +174,7 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test
     public void selectShouldNotReturnDifferentResultsWhenUsedInAConcurrentEnvironment() throws Exception {
-        MailRepositoryUrl url = new MailRepositoryUrl("memory://repo");
+        MailRepositoryUrl url = MailRepositoryUrl.from("memory://repo");
         int threadCount = 10;
         int operationCount = 1;
 

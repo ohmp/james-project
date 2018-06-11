@@ -75,7 +75,7 @@ public class GroupMappingTest {
     private static final String USER_DOMAIN2 = "user@" + DOMAIN2;
     private static final String MESSAGE_CONTENT = "any text";
     public static final String RRT_ERROR = "rrt-error";
-    public static final MailRepositoryUrl RRT_ERROR_REPOSITORY = new MailRepositoryUrl("file://var/mail/rrt-error/");
+    public static final MailRepositoryUrl RRT_ERROR_REPOSITORY = MailRepositoryUrl.from("file://var/mail/rrt-error/");
 
     private TemporaryJamesServer jamesServer;
     private MimeMessage message;

@@ -33,10 +33,14 @@ public class MailRepositoryUrl {
         return new MailRepositoryUrl(URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.displayName()));
     }
 
+    public static final MailRepositoryUrl from(String url) {
+        return new MailRepositoryUrl(url);
+    }
+
     private final String value;
     private final Protocol protocol;
 
-    public MailRepositoryUrl(String value) {
+    private MailRepositoryUrl(String value) {
         Preconditions.checkNotNull(value);
         Preconditions.checkArgument(value.contains(":"), "':' is mandatory to delimit protocol");
         this.value = value;

@@ -37,7 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DockerCassandraExtension.class)
 class CassandraMailRepositoryTest implements MailRepositoryContract {
-    static final MailRepositoryUrl URL = new MailRepositoryUrl("proto://url");
+    static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
     static final CassandraBlobId.Factory BLOB_ID_FACTORY = new CassandraBlobId.Factory();
 
     CassandraMailRepository cassandraMailRepository;

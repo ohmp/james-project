@@ -137,7 +137,7 @@ public class James23Importer {
         while (james23userRepositoryIterator.hasNext()) {
 
             String userName23 = james23userRepositoryIterator.next();
-            MailRepository mailRepository = mailRepositoryStore.select(new MailRepositoryUrl(james23MailRepositoryPath + "/" + userName23));
+            MailRepository mailRepository = mailRepositoryStore.select(MailRepositoryUrl.from(james23MailRepositoryPath + "/" + userName23));
             Iterator<MailKey> mailRepositoryIterator = mailRepository.list();
 
             String userName30 = convert23UserTo30(userName23);

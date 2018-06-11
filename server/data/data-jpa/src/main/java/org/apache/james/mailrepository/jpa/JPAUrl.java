@@ -60,6 +60,6 @@ public class JPAUrl {
     }
 
     public MailRepositoryUrl toMailRepositoryUrl() {
-        return new MailRepositoryUrl(value);
+        return MailRepositoryUrl.from(value);
     }
 }

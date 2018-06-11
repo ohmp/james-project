@@ -34,8 +34,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(DockerCassandraExtension.class)
 public class CassandraMailRepositoryKeysDAOTest {
 
-    static final MailRepositoryUrl URL = new MailRepositoryUrl("proto://url");
-    static final MailRepositoryUrl URL2 = new MailRepositoryUrl("proto://url2");
+    static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
+    static final MailRepositoryUrl URL2 = MailRepositoryUrl.from("proto://url2");
     static final MailKey KEY_1 = new MailKey("key1");
     static final MailKey KEY_2 = new MailKey("key2");
     static final MailKey KEY_3 = new MailKey("key3");

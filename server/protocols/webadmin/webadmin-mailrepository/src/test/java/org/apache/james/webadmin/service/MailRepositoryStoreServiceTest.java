@@ -46,8 +46,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 public class MailRepositoryStoreServiceTest {
-    private static final MailRepositoryUrl FIRST_REPOSITORY = new MailRepositoryUrl("url://repository");
-    private static final MailRepositoryUrl SECOND_REPOSITORY = new MailRepositoryUrl("url://repository2");
+    private static final MailRepositoryUrl FIRST_REPOSITORY = MailRepositoryUrl.from("url://repository");
+    private static final MailRepositoryUrl SECOND_REPOSITORY = MailRepositoryUrl.from("url://repository2");
     private static final MailKey NAME_1 = new MailKey("name1");
     private static final MailKey NAME_2 = new MailKey("name2");
 

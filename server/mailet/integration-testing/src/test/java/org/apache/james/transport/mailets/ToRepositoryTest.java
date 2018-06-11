@@ -53,7 +53,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 public class ToRepositoryTest {
     private static final String RECIPIENT = "touser@" + DEFAULT_DOMAIN;
-    public static final MailRepositoryUrl CUSTOM_REPOSITORY = new MailRepositoryUrl("file://var/mail/custom/");
+    public static final MailRepositoryUrl CUSTOM_REPOSITORY = MailRepositoryUrl.from("file://var/mail/custom/");
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
