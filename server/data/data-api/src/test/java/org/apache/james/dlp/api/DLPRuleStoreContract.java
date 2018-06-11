@@ -31,8 +31,17 @@ public interface DLPRuleStoreContract {
 
     DLPRuleId unknownId();
 
-    DLPRule RULE = new DLPRule("explanation", "regex", new DLPRule.Targets(true, false, false));
-    DLPRule RULE_2 = new DLPRule("explanation2", "regex2", new DLPRule.Targets(true, true, false));
+    DLPRule RULE = DLPRule.builder()
+        .explanation("explanation")
+        .expression("regex")
+        .targetsSender()
+        .build();
+    DLPRule RULE_2 = DLPRule.builder()
+        .explanation("explanation2")
+        .expression("regex2")
+        .targetsSender()
+        .targetsRecipients()
+        .build();
 
     @Test
     default void retrieveRulesShouldReturnEmptyWhenNone(DLPRulesStore dlpRulesStore) {

@@ -20,10 +20,65 @@
 package org.apache.james.dlp.api;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 public class DLPRule {
+
+    public static class Builder {
+        public static final boolean NOT_TARGETTED = false;
+        private Optional<Boolean> targetsSender;
+        private Optional<Boolean> targetsRecipients;
+        private Optional<Boolean> targetsContent;
+        private Optional<String> explanation;
+        private Optional<String> expression;
+
+        public Builder() {
+            targetsSender = Optional.empty();
+            targetsRecipients = Optional.empty();
+            targetsContent = Optional.empty();
+            explanation = Optional.empty();
+            expression = Optional.empty();
+        }
+
+        public Builder targetsSender() {
+            this.targetsSender = Optional.of(true);
+            return this;
+        }
+
+        public Builder targetsRecipients() {
+            this.targetsRecipients = Optional.of(true);
+            return this;
+        }
+
+        public Builder targetsContent() {
+            this.targetsContent = Optional.of(true);
+            return this;
+        }
+
+        public Builder expression(String expression) {
+            this.expression = Optional.of(expression);
+            return this;
+        }
+
+        public Builder explanation(String explanation) {
+            this.explanation = Optional.of(explanation);
+            return this;
+        }
+
+        public DLPRule build() {
+            Preconditions.checkState(expression.isPresent(), "`expression` in mandatory");
+            return new DLPRule(
+                explanation,
+                expression.get(),
+                new Targets(
+                    targetsSender.orElse(NOT_TARGETTED),
+                    targetsRecipients.orElse(NOT_TARGETTED),
+                    targetsContent.orElse(NOT_TARGETTED)));
+        }
+    }
 
     public static class Targets {
         private final boolean senderTargeted;
@@ -75,17 +130,21 @@ public class DLPRule {
         }
     }
 
-    private final String explanation;
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    private final Optional<String> explanation;
     private final String regexp;
     private final Targets targets;
 
-    public DLPRule(String explanation, String regexp, Targets targets) {
+    private DLPRule(Optional<String> explanation, String regexp, Targets targets) {
         this.explanation = explanation;
         this.regexp = regexp;
         this.targets = targets;
     }
 
-    public String getExplanation() {
+    public Optional<String> getExplanation() {
         return explanation;
     }
 
