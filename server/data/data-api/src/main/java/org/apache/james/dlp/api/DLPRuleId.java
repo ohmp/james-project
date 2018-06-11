@@ -19,15 +19,44 @@
 
 package org.apache.james.dlp.api;
 
-public interface DLPRuleId {
+import java.util.Objects;
 
-    interface Factory {
-        
-        DLPRuleId fromString(String serialized);
+import com.google.common.base.MoreObjects;
 
-        DLPRuleId generate();
-        
+public class DLPRuleId {
+    private final int id;
+
+    public DLPRuleId(int id) {
+        this.id = id;
     }
-    
-    String serialize();
+
+    public String serialize() {
+        return String.valueOf(id);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof DLPRuleId) {
+            DLPRuleId that = (DLPRuleId) o;
+
+            return Objects.equals(this.id, that.id);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("id", id)
+            .toString();
+    }
 }

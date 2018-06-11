@@ -33,8 +33,6 @@ public class MemoryDLPRuleStoreExtension implements ParameterResolver {
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        MemoryDLPRuleId.Factory factory = new MemoryDLPRuleId.Factory();
-
-        return new MemoryDLPRuleStore(factory);
+        return new MemoryDLPRuleStore();
     }
 }

@@ -21,8 +21,8 @@ package org.apache.james.dlp.memory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.apache.james.core.Domain;
 import org.apache.james.dlp.api.DLPRule;
@@ -35,58 +35,25 @@ import com.google.common.collect.Multimap;
 
 public class MemoryDLPRuleStore implements DLPRulesStore {
 
-    private static class Entry {
-        public static Entry empty(DLPRuleId id) {
-            return new Entry(id, Optional.empty());
-        }
+    private final Multimap<Domain, DLPRule> entries;
 
-        private final DLPRuleId id;
-        private final Optional<DLPRule> payload;
-
-        public Entry(DLPRuleId id, Optional<DLPRule> payload) {
-            this.id = id;
-            this.payload = payload;
-        }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof Entry) {
-                Entry entry = (Entry) o;
-
-                return Objects.equals(this.id, entry.id);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(id);
-        }
-    }
-
-    private final Multimap<Domain, Entry> entries;
-    private final MemoryDLPRuleId.Factory factory;
-
-    public MemoryDLPRuleStore(MemoryDLPRuleId.Factory factory) {
-        this.factory = factory;
+    public MemoryDLPRuleStore() {
         entries = ArrayListMultimap.create();
     }
 
     @Override
     public synchronized Map<DLPRuleId, DLPRule> retrieveRules(Domain domain) {
+        AtomicInteger atomicInteger = new AtomicInteger();
         return entries.get(domain)
             .stream()
-            .filter(entry -> entry.payload.isPresent())
             .collect(Guavate.toImmutableMap(
-                entry -> entry.id,
-                entry -> entry.payload.get()));
+                entry -> new DLPRuleId(atomicInteger.incrementAndGet()),
+                Function.identity()));
     }
 
     @Override
     public void store(Domain domain, List<DLPRule> rules) {
-        entries.putAll(domain, rules.stream()
-            .map(rule -> new Entry(factory.generate(), Optional.of(rule)))
-            .collect(Guavate.toImmutableList()));
+        entries.putAll(domain, rules);
     }
 
     @Override
