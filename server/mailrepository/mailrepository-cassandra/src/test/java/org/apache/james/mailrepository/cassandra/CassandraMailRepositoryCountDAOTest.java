@@ -31,8 +31,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DockerCassandraExtension.class)
 public class CassandraMailRepositoryCountDAOTest {
-    static final MailRepositoryUrl URL = new MailRepositoryUrl("url");
-    static final MailRepositoryUrl URL2 = new MailRepositoryUrl("url2");
+    static final MailRepositoryUrl URL = new MailRepositoryUrl("proto://url");
+    static final MailRepositoryUrl URL2 = new MailRepositoryUrl("proto://url2");
 
     CassandraCluster cassandra;
     CassandraMailRepositoryCountDAO testee;
