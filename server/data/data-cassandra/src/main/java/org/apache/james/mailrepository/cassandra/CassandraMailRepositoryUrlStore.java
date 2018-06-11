@@ -38,12 +38,12 @@ public class CassandraMailRepositoryUrlStore implements MailRepositoryUrlStore {
     }
 
     @Override
-    public void addUrl(MailRepositoryUrl url) {
+    public void add(MailRepositoryUrl url) {
         urlsDao.addUrl(url).join();
     }
 
     @Override
-    public Set<MailRepositoryUrl> retrieveUsedUrls() {
+    public Set<MailRepositoryUrl> list() {
         return urlsDao.retrieveUsedUrls()
             .join()
             .collect(Guavate.toImmutableSet());
