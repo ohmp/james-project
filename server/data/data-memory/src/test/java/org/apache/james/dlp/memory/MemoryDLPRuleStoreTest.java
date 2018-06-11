@@ -19,16 +19,10 @@
 
 package org.apache.james.dlp.memory;
 
-import org.apache.james.dlp.api.DLPRuleId;
 import org.apache.james.dlp.api.DLPRuleStoreContract;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(MemoryDLPRuleStoreExtension.class)
 public class MemoryDLPRuleStoreTest implements DLPRuleStoreContract {
-
-    @Override
-    public DLPRuleId unknownId() {
-        return new MemoryDLPRuleId.Factory().generate();
-    }
 
 }
