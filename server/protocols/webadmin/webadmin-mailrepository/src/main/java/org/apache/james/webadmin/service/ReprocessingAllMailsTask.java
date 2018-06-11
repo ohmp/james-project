@@ -60,7 +60,7 @@ public class ReprocessingAllMailsTask implements Task {
         }
 
         public String getRepositoryUrl() {
-            return repositoryUrl.getValue();
+            return repositoryUrl.asString();
         }
 
         public long getRemainingCount() {

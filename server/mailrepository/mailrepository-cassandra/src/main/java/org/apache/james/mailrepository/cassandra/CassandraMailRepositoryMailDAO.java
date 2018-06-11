@@ -140,7 +140,7 @@ public class CassandraMailRepositoryMailDAO {
 
     public CompletableFuture<Void> store(MailRepositoryUrl url, Mail mail, BlobId headerId, BlobId bodyId) throws MessagingException {
         return executor.executeVoid(insertMail.bind()
-            .setString(REPOSITORY_NAME, url.getValue())
+            .setString(REPOSITORY_NAME, url.asString())
             .setString(MAIL_KEY, mail.getName())
             .setString(HEADER_BLOB_ID, headerId.asString())
             .setString(BODY_BLOB_ID, bodyId.asString())
@@ -161,13 +161,13 @@ public class CassandraMailRepositoryMailDAO {
 
     public CompletableFuture<Void> remove(MailRepositoryUrl url, MailKey key) {
         return executor.executeVoid(deleteMail.bind()
-            .setString(REPOSITORY_NAME, url.getValue())
+            .setString(REPOSITORY_NAME, url.asString())
             .setString(MAIL_KEY, key.getValue()));
     }
 
     public CompletableFuture<Optional<MailDTO>> read(MailRepositoryUrl url, MailKey key) {
         return executor.executeSingleRow(selectMail.bind()
-            .setString(REPOSITORY_NAME, url.getValue())
+            .setString(REPOSITORY_NAME, url.asString())
             .setString(MAIL_KEY, key.getValue()))
             .thenApply(rowOptional -> rowOptional.map(this::toMail));
     }

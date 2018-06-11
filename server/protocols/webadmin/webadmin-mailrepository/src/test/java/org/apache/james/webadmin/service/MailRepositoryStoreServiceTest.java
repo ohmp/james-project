@@ -73,7 +73,7 @@ public class MailRepositoryStoreServiceTest {
             .thenReturn(ImmutableList.of(FIRST_REPOSITORY));
         assertThat(testee.listMailRepositories())
             .extracting(MailRepositoryResponse::getRepository)
-            .containsOnly(FIRST_REPOSITORY.getValue());
+            .containsOnly(FIRST_REPOSITORY.asString());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class MailRepositoryStoreServiceTest {
             .thenReturn(ImmutableList.of(FIRST_REPOSITORY, SECOND_REPOSITORY));
         assertThat(testee.listMailRepositories())
             .extracting(MailRepositoryResponse::getRepository)
-            .containsOnly(FIRST_REPOSITORY.getValue(), SECOND_REPOSITORY.getValue());
+            .containsOnly(FIRST_REPOSITORY.asString(), SECOND_REPOSITORY.asString());
     }
 
     @Test

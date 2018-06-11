@@ -59,7 +59,7 @@ public class ReprocessingOneMailTask implements Task {
         }
 
         public String getRepositoryUrl() {
-            return repositoryUrl.getValue();
+            return repositoryUrl.asString();
         }
     }
 

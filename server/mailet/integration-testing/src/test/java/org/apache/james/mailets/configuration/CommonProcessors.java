@@ -107,7 +107,7 @@ public class CommonProcessors {
                 .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(ToRepository.class)
-                        .addProperty("repositoryPath", ERROR_REPOSITORY.getValue()))
+                        .addProperty("repositoryPath", ERROR_REPOSITORY.asString()))
                 .build();
     }
 

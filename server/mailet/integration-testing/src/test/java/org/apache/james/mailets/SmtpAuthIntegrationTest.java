@@ -92,7 +92,7 @@ public class SmtpAuthIntegrationTest {
             .addMailet(MailetConfiguration.builder()
                 .matcher(All.class)
                 .mailet(ToRepository.class)
-                .addProperty("repositoryPath", DROPPED_MAILS.getValue()));
+                .addProperty("repositoryPath", DROPPED_MAILS.asString()));
     }
 
     @After

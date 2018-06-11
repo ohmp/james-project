@@ -73,7 +73,7 @@ public class ToRepositoryTest {
                 .addMailet(MailetConfiguration.builder()
                     .matcher(All.class)
                     .mailet(ToRepository.class)
-                    .addProperty("repositoryPath", CUSTOM_REPOSITORY.getValue())));
+                    .addProperty("repositoryPath", CUSTOM_REPOSITORY.asString())));
 
         jamesServer = TemporaryJamesServer.builder()
             .withMailetContainer(mailetContainer)

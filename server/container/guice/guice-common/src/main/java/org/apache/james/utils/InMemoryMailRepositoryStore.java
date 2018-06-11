@@ -145,7 +145,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
             config.addConfiguration(defaultProtocolConfig);
         }
         DefaultConfigurationBuilder builder = new DefaultConfigurationBuilder();
-        builder.addProperty("[@destinationURL]", mailRepositoryUrl.getValue());
+        builder.addProperty("[@destinationURL]", mailRepositoryUrl.asString());
         config.addConfiguration(builder);
         return config;
     }

@@ -147,7 +147,7 @@ public class MailRepositoriesRoutesTest {
         .then()
             .statusCode(HttpStatus.OK_200)
             .body("", hasSize(1))
-            .body("[0].repository", is(URL_MY_REPO.getValue()))
+            .body("[0].repository", is(URL_MY_REPO.asString()))
             .body("[0].id", is(URL_ESCAPED_MY_REPO));
     }
 
@@ -170,7 +170,7 @@ public class MailRepositoriesRoutesTest {
 
         assertThat(mailRepositories)
             .containsOnlyElementsOf(myRepositories.stream()
-                .map(MailRepositoryUrl::getValue)
+                .map(MailRepositoryUrl::asString)
                 .collect(Guavate.toImmutableList()));
     }
 
@@ -382,7 +382,7 @@ public class MailRepositoriesRoutesTest {
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
-            .body("repository", is(URL_MY_REPO.getValue()))
+            .body("repository", is(URL_MY_REPO.asString()))
             .body("id", is(URL_ESCAPED_MY_REPO));
     }
 
@@ -612,7 +612,7 @@ public class MailRepositoriesRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(ClearMailRepositoryTask.TYPE))
-            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.getValue()))
+            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.asString()))
             .body("additionalInformation.initialCount", is(2))
             .body("additionalInformation.remainingCount", is(0))
             .body("startedDate", is(notNullValue()))
@@ -739,7 +739,7 @@ public class MailRepositoriesRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(ReprocessingAllMailsTask.TYPE))
-            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.getValue()))
+            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.asString()))
             .body("additionalInformation.initialCount", is(2))
             .body("additionalInformation.remainingCount", is(0))
             .body("additionalInformation.targetProcessor", isEmptyOrNullString())
@@ -778,7 +778,7 @@ public class MailRepositoriesRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(ReprocessingAllMailsTask.TYPE))
-            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.getValue()))
+            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.asString()))
             .body("additionalInformation.initialCount", is(2))
             .body("additionalInformation.remainingCount", is(0))
             .body("additionalInformation.targetProcessor", is(transport))
@@ -1011,7 +1011,7 @@ public class MailRepositoriesRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(ReprocessingOneMailTask.TYPE))
-            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.getValue()))
+            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.asString()))
             .body("additionalInformation.mailKey", is(NAME_1))
             .body("additionalInformation.targetProcessor", isEmptyOrNullString())
             .body("additionalInformation.targetQueue", is(MailQueueFactory.SPOOL))
@@ -1049,7 +1049,7 @@ public class MailRepositoriesRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(ReprocessingOneMailTask.TYPE))
-            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.getValue()))
+            .body("additionalInformation.repositoryUrl", is(URL_MY_REPO.asString()))
             .body("additionalInformation.mailKey", is(NAME_1))
             .body("additionalInformation.targetProcessor", is(transport))
             .body("additionalInformation.targetQueue", is(CUSTOM_QUEUE))

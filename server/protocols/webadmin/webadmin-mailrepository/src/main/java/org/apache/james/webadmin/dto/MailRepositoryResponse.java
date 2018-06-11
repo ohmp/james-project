@@ -32,7 +32,7 @@ public class MailRepositoryResponse {
     }
 
     public String getRepository() {
-        return repository.getValue();
+        return repository.asString();
     }
 
     public String getId() throws UnsupportedEncodingException {

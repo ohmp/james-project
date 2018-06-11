@@ -112,7 +112,7 @@ public class GroupMappingTest {
                     .matcher(All.class)
                     .mailet(ToRepository.class)
                     .addProperty("passThrough", "true")
-                    .addProperty("repositoryPath", RRT_ERROR_REPOSITORY.getValue()))
+                    .addProperty("repositoryPath", RRT_ERROR_REPOSITORY.asString()))
                 .addMailet(MailetConfiguration.builder()
                     .matcher(IsSenderInRRTLoop.class)
                     .mailet(Null.class))

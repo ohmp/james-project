@@ -77,17 +77,17 @@ public class CassandraMailRepositoryCountDAO {
 
     public CompletableFuture<Void> increment(MailRepositoryUrl url) {
         return executor.executeVoid(increment.bind()
-            .setString(REPOSITORY_NAME, url.getValue()));
+            .setString(REPOSITORY_NAME, url.asString()));
     }
 
     public CompletableFuture<Void> decrement(MailRepositoryUrl url) {
         return executor.executeVoid(decrement.bind()
-            .setString(REPOSITORY_NAME, url.getValue()));
+            .setString(REPOSITORY_NAME, url.asString()));
     }
 
     public CompletableFuture<Long> getCount(MailRepositoryUrl url) {
         return executor.executeSingleRow(select.bind()
-                .setString(REPOSITORY_NAME, url.getValue()))
+                .setString(REPOSITORY_NAME, url.asString()))
             .thenApply(this::toCount);
     }
 

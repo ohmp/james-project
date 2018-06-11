@@ -43,7 +43,7 @@ public class MailRepositoryUrl {
         this.protocol = new Protocol(value.substring(0, value.indexOf(':')));
     }
 
-    public String getValue() {
+    public String asString() {
         return value;
     }
 
