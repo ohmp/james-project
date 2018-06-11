@@ -21,6 +21,7 @@ package org.apache.james.mailrepository.jpa;
 
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
 
 import org.apache.james.backends.jpa.TransactionRunner;
@@ -32,6 +33,7 @@ import com.github.steveash.guavate.Guavate;
 public class JPAMailRepositoryUrlStore implements MailRepositoryUrlStore {
     private final TransactionRunner transactionRunner;
 
+    @Inject
     public JPAMailRepositoryUrlStore(EntityManagerFactory entityManagerFactory) {
         this.transactionRunner = new TransactionRunner(entityManagerFactory);
     }
