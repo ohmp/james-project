@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class TransactionRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionRunner.class);
+    public static final Function<PersistenceException, Object> IGNORE_EXCEPTION = e -> null;
 
     private final EntityManagerFactory entityManagerFactory;
 
@@ -45,7 +46,7 @@ public class TransactionRunner {
                 runnable.accept(entityManager);
                 return null;
             },
-            e -> null);
+            IGNORE_EXCEPTION);
     }
 
     public <T> T runAndRetrieveResult(Function<EntityManager, T> toResult) {
