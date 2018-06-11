@@ -35,12 +35,12 @@ public class MemoryMailRepositoryUrlStore implements MailRepositoryUrlStore {
     }
 
     @Override
-    public void addUrl(MailRepositoryUrl url) {
+    public void add(MailRepositoryUrl url) {
         urls.add(url);
     }
 
     @Override
-    public Set<MailRepositoryUrl> retrieveUsedUrls() {
+    public Set<MailRepositoryUrl> list() {
         return ImmutableSet.copyOf(urls);
     }
 

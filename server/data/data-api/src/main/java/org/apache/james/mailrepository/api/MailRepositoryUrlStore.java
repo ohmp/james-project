@@ -23,9 +23,9 @@ import java.util.Set;
 
 public interface MailRepositoryUrlStore {
 
-    void addUrl(MailRepositoryUrl url);
+    void add(MailRepositoryUrl url);
 
-    Set<MailRepositoryUrl> retrieveUsedUrls();
+    Set<MailRepositoryUrl> list();
 
     boolean contains(MailRepositoryUrl url);
 }
