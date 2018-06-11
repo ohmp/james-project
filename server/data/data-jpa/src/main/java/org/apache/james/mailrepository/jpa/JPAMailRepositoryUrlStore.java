@@ -57,7 +57,7 @@ public class JPAMailRepositoryUrlStore implements MailRepositoryUrlStore {
     public boolean contains(MailRepositoryUrl url) {
         return transactionRunner.runAndRetrieveResult(entityManager ->
             ! entityManager.createNamedQuery("getUrl", JPAUrl.class)
-                .setParameter("value", url.getValue())
+                .setParameter("value", url.asString())
                 .getResultList()
                 .isEmpty());
     }

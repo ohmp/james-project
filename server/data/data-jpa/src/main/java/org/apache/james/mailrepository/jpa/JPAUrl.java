@@ -35,7 +35,7 @@ import org.apache.james.mailrepository.api.MailRepositoryUrl;
     @NamedQuery(name = "getUrl", query = "SELECT url FROM JamesMailRepos url WHERE url.value=:value")})
 public class JPAUrl {
     public static JPAUrl from(MailRepositoryUrl url) {
-        return new JPAUrl(url.getValue());
+        return new JPAUrl(url.asString());
     }
 
     @Id
