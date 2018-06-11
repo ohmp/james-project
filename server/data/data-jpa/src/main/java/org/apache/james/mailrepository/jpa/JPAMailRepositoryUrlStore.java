@@ -37,13 +37,13 @@ public class JPAMailRepositoryUrlStore implements MailRepositoryUrlStore {
     }
 
     @Override
-    public void addUrl(MailRepositoryUrl url) {
+    public void add(MailRepositoryUrl url) {
         transactionRunner.run(entityManager ->
             entityManager.merge(JPAUrl.from(url)));
     }
 
     @Override
-    public Set<MailRepositoryUrl> retrieveUsedUrls() {
+    public Set<MailRepositoryUrl> list() {
         return transactionRunner.runAndRetrieveResult(entityManager ->
             entityManager
                 .createNamedQuery("listUrls", JPAUrl.class)
