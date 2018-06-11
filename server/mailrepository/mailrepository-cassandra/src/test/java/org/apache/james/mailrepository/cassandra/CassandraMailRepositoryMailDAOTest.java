@@ -101,7 +101,7 @@ public class CassandraMailRepositoryMailDAOTest {
         assertAll(
             () -> assertThat(mailDTO.getBodyBlobId()).isEqualTo(blobIdBody),
             () -> assertThat(mailDTO.getHeaderBlobId()).isEqualTo(blobIdHeader),
-            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1),
+            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1.getValue()),
             () -> assertThat(partialMail.getErrorMessage()).isEqualTo(errorMessage),
             () -> assertThat(partialMail.getState()).isEqualTo(state),
             () -> assertThat(partialMail.getRemoteAddr()).isEqualTo(remoteAddr),
@@ -135,7 +135,7 @@ public class CassandraMailRepositoryMailDAOTest {
         assertAll(
             () -> assertThat(mailDTO.getBodyBlobId()).isEqualTo(blobIdBody),
             () -> assertThat(mailDTO.getHeaderBlobId()).isEqualTo(blobIdHeader),
-            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1));
+            () -> assertThat(partialMail.getName()).isEqualTo(KEY_1.getValue()));
     }
 
     @Test
