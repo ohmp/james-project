@@ -98,7 +98,7 @@ public class EventSourcingDLPRuleStore implements DLPRulesStore {
             .stream()
             .collect(
                 Guavate.toImmutableMap(
-                    rule -> new SimpleDLPRuleId(atomicInteger.incrementAndGet()),
+                    rule -> new DLPRuleId(atomicInteger.incrementAndGet()),
                     Function.identity()));
     }
 }
