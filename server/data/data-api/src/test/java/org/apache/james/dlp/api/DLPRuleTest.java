@@ -88,6 +88,19 @@ public class DLPRuleTest {
     }
 
     @Test
+    void dlpRuleShouldHaveNoTargetsWhenNoneSpecified() {
+        DLPRule dlpRule = DLPRule.builder()
+            .expression("regex")
+            .build();
+
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(dlpRule.getTargets().isContentTargeted()).isFalse();
+        softly.assertThat(dlpRule.getTargets().isRecipientTargeted()).isFalse();
+        softly.assertThat(dlpRule.getTargets().isSenderTargeted()).isFalse();
+        softly.assertAll();
+    }
+
+    @Test
     void targetsRecipientsShouldBeReportedInTargets() {
         DLPRule dlpRule = DLPRule.builder()
             .targetsRecipients()
