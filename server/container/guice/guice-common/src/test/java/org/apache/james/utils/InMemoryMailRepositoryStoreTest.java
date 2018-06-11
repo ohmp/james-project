@@ -158,7 +158,7 @@ public class InMemoryMailRepositoryStoreTest {
 
     @Test
     public void getShouldReturnRepositoryWhenUrlExists() {
-        urlStore.addUrl(FILE_REPO);
+        urlStore.add(FILE_REPO);
 
         assertThat(repositoryStore.get(FILE_REPO))
             .isNotEmpty();

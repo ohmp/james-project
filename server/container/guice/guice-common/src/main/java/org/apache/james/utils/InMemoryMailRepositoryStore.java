@@ -66,7 +66,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
 
     @Override
     public List<MailRepositoryUrl> getUrls() {
-        return ImmutableList.copyOf(urlStore.retrieveUsedUrls());
+        return ImmutableList.copyOf(urlStore.list());
     }
 
     @Override
@@ -108,7 +108,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
     }
 
     private MailRepository createNewMailRepository(MailRepositoryUrl mailRepositoryUrl) throws MailRepositoryStoreException {
-        urlStore.addUrl(mailRepositoryUrl);
+        urlStore.add(mailRepositoryUrl);
         MailRepository newMailRepository = retrieveMailRepository(mailRepositoryUrl);
         newMailRepository = initializeNewRepository(newMailRepository, createRepositoryCombinedConfig(mailRepositoryUrl));
         MailRepository previousRepository = destinationToRepositoryAssociations.putIfAbsent(mailRepositoryUrl, newMailRepository);
