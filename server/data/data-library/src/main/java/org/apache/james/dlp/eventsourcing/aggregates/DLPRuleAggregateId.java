@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 import org.apache.james.core.Domain;
 import org.apache.james.eventsourcing.AggregateId;
 
+import com.google.common.base.Preconditions;
+
 public class DLPRuleAggregateId implements AggregateId {
     private static final String SEPARATOR = "/";
     private static final String PREFIX = "DLPRule";
@@ -33,6 +35,8 @@ public class DLPRuleAggregateId implements AggregateId {
     private final Domain domain;
 
     public DLPRuleAggregateId(Domain domain) {
+        Preconditions.checkNotNull(domain);
+
         this.domain = domain;
     }
 

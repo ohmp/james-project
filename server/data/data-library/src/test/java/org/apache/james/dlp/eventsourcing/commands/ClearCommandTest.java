@@ -19,46 +19,25 @@
 
 package org.apache.james.dlp.eventsourcing.commands;
 
-import java.util.Objects;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.james.core.Domain;
-import org.apache.james.eventsourcing.Command;
+import org.junit.Test;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class ClearCommand implements Command {
-    private final Domain senderDomain;
+public class ClearCommandTest {
 
-    public ClearCommand(Domain senderDomain) {
-        Preconditions.checkNotNull(senderDomain);
-
-        this.senderDomain = senderDomain;
+    @Test
+    public void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(ClearCommand.class)
+            .allFieldsShouldBeUsed()
+            .verify();
     }
 
-    public Domain getSenderDomain() {
-        return senderDomain;
+    @Test
+    public void constructorShouldThrowWhenNullDomain() {
+        assertThatThrownBy(() -> new ClearCommand(null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof ClearCommand) {
-            ClearCommand that = (ClearCommand) o;
-
-            return Objects.equals(this.senderDomain, that.senderDomain);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(senderDomain);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("senderDomain", senderDomain)
-            .toString();
-    }
 }

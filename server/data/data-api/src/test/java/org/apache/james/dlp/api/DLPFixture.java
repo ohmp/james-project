@@ -17,48 +17,18 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.dlp.eventsourcing.commands;
+package org.apache.james.dlp.api;
 
-import java.util.Objects;
-
-import org.apache.james.core.Domain;
-import org.apache.james.eventsourcing.Command;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-
-public class ClearCommand implements Command {
-    private final Domain senderDomain;
-
-    public ClearCommand(Domain senderDomain) {
-        Preconditions.checkNotNull(senderDomain);
-
-        this.senderDomain = senderDomain;
-    }
-
-    public Domain getSenderDomain() {
-        return senderDomain;
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof ClearCommand) {
-            ClearCommand that = (ClearCommand) o;
-
-            return Objects.equals(this.senderDomain, that.senderDomain);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(senderDomain);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("senderDomain", senderDomain)
-            .toString();
-    }
+public interface DLPFixture {
+    DLPRule RULE = DLPRule.builder()
+        .explanation("explanation")
+        .expression("regex")
+        .targetsSender()
+        .build();
+    DLPRule RULE_2 = DLPRule.builder()
+        .explanation("explanation2")
+        .expression("regex2")
+        .targetsSender()
+        .targetsRecipients()
+        .build();
 }

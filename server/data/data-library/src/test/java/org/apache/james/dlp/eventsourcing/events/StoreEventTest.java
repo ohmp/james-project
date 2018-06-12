@@ -19,59 +19,43 @@
 
 package org.apache.james.dlp.eventsourcing.events;
 
-import java.util.Objects;
+import static org.apache.james.dlp.api.DLPFixture.RULE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.james.core.Domain;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregateId;
-import org.apache.james.eventsourcing.AggregateId;
-import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.EventId;
+import org.junit.Test;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
-public class ClearEvent implements Event {
-    private final DLPRuleAggregateId aggregateId;
-    private final EventId eventId;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-    public ClearEvent(DLPRuleAggregateId aggregateId, EventId eventId) {
-        Preconditions.checkNotNull(aggregateId);
-        Preconditions.checkNotNull(eventId);
+public class StoreEventTest {
 
-        this.aggregateId = aggregateId;
-        this.eventId = eventId;
+    @Test
+    public void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(StoreEvent.class)
+            .allFieldsShouldBeUsed()
+            .verify();
     }
 
-    @Override
-    public EventId eventId() {
-        return eventId;
+    @Test
+    public void constructorShouldThrowWhenNullAggregateId() {
+        assertThatThrownBy(() -> new StoreEvent(null, EventId.first(), ImmutableList.of(RULE)))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Override
-    public AggregateId getAggregateId() {
-        return aggregateId;
+    @Test
+    public void constructorShouldThrowWhenNullEventId() {
+        assertThatThrownBy(() -> new StoreEvent(new DLPRuleAggregateId(Domain.LOCALHOST), null, ImmutableList.of(RULE)))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof ClearEvent) {
-            ClearEvent that = (ClearEvent) o;
-
-            return Objects.equals(this.aggregateId, that.aggregateId)
-                && Objects.equals(this.eventId, that.eventId);
-        }
-        return false;
+    @Test
+    public void constructorShouldThrowWhenNullRules() {
+        assertThatThrownBy(() -> new StoreEvent(new DLPRuleAggregateId(Domain.LOCALHOST), EventId.first(), null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Override
-    public final int hashCode() {
-        return Objects.hash(aggregateId, eventId);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("aggregateId", aggregateId)
-            .add("eventId", eventId)
-            .toString();
-    }
 }

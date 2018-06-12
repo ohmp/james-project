@@ -28,6 +28,7 @@ import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.EventId;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 public class StoreEvent implements Event {
     private final DLPRuleAggregateId aggregateId;
@@ -35,6 +36,10 @@ public class StoreEvent implements Event {
     private final List<DLPRule> rules;
 
     public StoreEvent(DLPRuleAggregateId aggregateId, EventId eventId, List<DLPRule> rules) {
+        Preconditions.checkNotNull(aggregateId);
+        Preconditions.checkNotNull(eventId);
+        Preconditions.checkNotNull(rules);
+
         this.aggregateId = aggregateId;
         this.eventId = eventId;
         this.rules = rules;

@@ -19,59 +19,34 @@
 
 package org.apache.james.dlp.eventsourcing.events;
 
-import java.util.Objects;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.james.core.Domain;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregateId;
-import org.apache.james.eventsourcing.AggregateId;
-import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.EventId;
+import org.junit.Test;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class ClearEvent implements Event {
-    private final DLPRuleAggregateId aggregateId;
-    private final EventId eventId;
+public class ClearEventTest {
 
-    public ClearEvent(DLPRuleAggregateId aggregateId, EventId eventId) {
-        Preconditions.checkNotNull(aggregateId);
-        Preconditions.checkNotNull(eventId);
-
-        this.aggregateId = aggregateId;
-        this.eventId = eventId;
+    @Test
+    public void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(ClearEvent.class)
+            .allFieldsShouldBeUsed()
+            .verify();
     }
 
-    @Override
-    public EventId eventId() {
-        return eventId;
+    @Test
+    public void constructorShouldThrowWhenNullAggregateId() {
+        assertThatThrownBy(() -> new ClearEvent(null, EventId.first()))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Override
-    public AggregateId getAggregateId() {
-        return aggregateId;
+    @Test
+    public void constructorShouldThrowWhenNullEventId() {
+        assertThatThrownBy(() -> new ClearEvent(new DLPRuleAggregateId(Domain.LOCALHOST), null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof ClearEvent) {
-            ClearEvent that = (ClearEvent) o;
-
-            return Objects.equals(this.aggregateId, that.aggregateId)
-                && Objects.equals(this.eventId, that.eventId);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(aggregateId, eventId);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("aggregateId", aggregateId)
-            .add("eventId", eventId)
-            .toString();
-    }
 }

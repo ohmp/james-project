@@ -27,12 +27,16 @@ import org.apache.james.dlp.api.DLPRule;
 import org.apache.james.eventsourcing.Command;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 public class StoreCommand implements Command {
     private final Domain domain;
     private final List<DLPRule> rules;
 
     public StoreCommand(Domain domain, List<DLPRule> rules) {
+        Preconditions.checkNotNull(domain);
+        Preconditions.checkNotNull(rules);
+
         this.domain = domain;
         this.rules = rules;
     }
