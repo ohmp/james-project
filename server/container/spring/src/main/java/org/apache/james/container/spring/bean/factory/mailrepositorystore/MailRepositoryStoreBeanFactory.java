@@ -174,7 +174,7 @@ public class MailRepositoryStoreBeanFactory extends AbstractBeanFactory implemen
                 config.addConfiguration(defConf);
             }
             DefaultConfigurationBuilder builder = new DefaultConfigurationBuilder();
-            builder.addProperty("[@destinationURL]", destination);
+            builder.addProperty("[@destinationURL]", destination.asString());
             config.addConfiguration(builder);
 
             try {
