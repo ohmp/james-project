@@ -63,6 +63,8 @@ public class MailRepositoryStoreServiceTest {
 
     @Test
     public void listMailRepositoriesShouldReturnEmptyWhenEmpty() {
+        when(mailRepositoryStore.getUrls()).thenReturn(Stream.empty());
+
         assertThat(testee.listMailRepositories()).isEmpty();
     }
 

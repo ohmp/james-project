@@ -124,6 +124,8 @@ public class MailRepositoriesRoutesTest {
 
     @Test
     public void getMailRepositoriesShouldReturnEmptyWhenEmpty() {
+        when(mailRepositoryStore.getUrls()).thenReturn(Stream.empty());
+
         List<Object> mailRepositories =
             when()
                 .get()
