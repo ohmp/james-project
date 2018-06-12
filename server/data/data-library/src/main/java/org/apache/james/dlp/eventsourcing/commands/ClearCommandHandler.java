@@ -21,14 +21,11 @@ package org.apache.james.dlp.eventsourcing.commands;
 
 import java.util.List;
 
+import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregate;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregateId;
-import org.apache.james.dlp.eventsourcing.events.ClearEvent;
 import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.EventStore;
-import org.apache.james.eventsourcing.eventstore.History;
-
-import com.google.common.collect.ImmutableList;
 
 public class ClearCommandHandler implements CommandHandler<ClearCommand> {
 
@@ -46,9 +43,10 @@ public class ClearCommandHandler implements CommandHandler<ClearCommand> {
     @Override
     public List<? extends Event> handle(ClearCommand clearCommand) {
         DLPRuleAggregateId aggregateId = new DLPRuleAggregateId(clearCommand.getSenderDomain());
-        History eventsOfAggregate = eventStore.getEventsOfAggregate(aggregateId);
-        return ImmutableList.of(new ClearEvent(
-            aggregateId,
-            eventsOfAggregate.getNextEventId()));
+
+        return DLPRuleAggregate.load(
+                aggregateId,
+                eventStore.getEventsOfAggregate(aggregateId))
+            .clear();
     }
 }

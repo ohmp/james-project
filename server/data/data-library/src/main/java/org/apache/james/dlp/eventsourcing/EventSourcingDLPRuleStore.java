@@ -19,9 +19,7 @@
 
 package org.apache.james.dlp.eventsourcing;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -29,17 +27,15 @@ import javax.inject.Inject;
 import org.apache.james.core.Domain;
 import org.apache.james.dlp.api.DLPRule;
 import org.apache.james.dlp.api.DLPRulesStore;
+import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregate;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregateId;
 import org.apache.james.dlp.eventsourcing.commands.ClearCommand;
 import org.apache.james.dlp.eventsourcing.commands.ClearCommandHandler;
 import org.apache.james.dlp.eventsourcing.commands.StoreCommand;
 import org.apache.james.dlp.eventsourcing.commands.StoreCommandHandler;
-import org.apache.james.dlp.eventsourcing.events.StoreEvent;
-import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.eventsourcing.eventstore.EventStore;
-import org.apache.james.eventsourcing.eventstore.History;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -63,12 +59,13 @@ public class EventSourcingDLPRuleStore implements DLPRulesStore {
 
     @Override
     public Stream<DLPRule> retrieveRules(Domain domain) {
-        return getLastEvent(domain)
-            .filter(event -> event instanceof StoreEvent)
-            .map(event -> (StoreEvent) event)
-            .map(StoreEvent::getRules)
-            .map(List::stream)
-            .orElse(Stream.of());
+
+        DLPRuleAggregateId aggregateId = new DLPRuleAggregateId(domain);
+
+        return DLPRuleAggregate.load(
+                aggregateId,
+                eventStore.getEventsOfAggregate(aggregateId))
+            .retrieveRules();
     }
 
     @Override
@@ -81,10 +78,4 @@ public class EventSourcingDLPRuleStore implements DLPRulesStore {
         eventSourcingSystem.dispatch(new ClearCommand(domain));
     }
 
-    private Optional<Event> getLastEvent(Domain domain) {
-        History eventsOfAggregate = eventStore.getEventsOfAggregate(new DLPRuleAggregateId(domain));
-        return eventsOfAggregate.getEvents()
-            .stream()
-            .min(Comparator.reverseOrder());
-    }
 }

@@ -21,14 +21,11 @@ package org.apache.james.dlp.eventsourcing.commands;
 
 import java.util.List;
 
+import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregate;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPRuleAggregateId;
-import org.apache.james.dlp.eventsourcing.events.StoreEvent;
 import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.EventStore;
-import org.apache.james.eventsourcing.eventstore.History;
-
-import com.google.common.collect.ImmutableList;
 
 public class StoreCommandHandler implements CommandHandler<StoreCommand> {
 
@@ -46,10 +43,10 @@ public class StoreCommandHandler implements CommandHandler<StoreCommand> {
     @Override
     public List<? extends Event> handle(StoreCommand storeCommand) {
         DLPRuleAggregateId aggregateId = new DLPRuleAggregateId(storeCommand.getDomain());
-        History eventsOfAggregate = eventStore.getEventsOfAggregate(aggregateId);
-        return ImmutableList.of(new StoreEvent(
-            aggregateId,
-            eventsOfAggregate.getNextEventId(),
-            storeCommand.getRules()));
+
+        return DLPRuleAggregate.load(
+                aggregateId,
+                eventStore.getEventsOfAggregate(aggregateId))
+            .store(storeCommand.getRules());
     }
 }
