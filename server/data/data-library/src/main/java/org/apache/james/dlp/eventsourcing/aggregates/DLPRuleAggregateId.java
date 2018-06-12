@@ -20,8 +20,6 @@
 package org.apache.james.dlp.eventsourcing.aggregates;
 
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.james.core.Domain;
 import org.apache.james.eventsourcing.AggregateId;
@@ -42,10 +40,7 @@ public class DLPRuleAggregateId implements AggregateId {
 
     @Override
     public String asAggregateKey() {
-        return Stream.of(
-                PREFIX,
-                domain.asString())
-            .collect(Collectors.joining(SEPARATOR));
+        return PREFIX + SEPARATOR + domain.asString();
     }
 
     @Override
