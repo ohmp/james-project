@@ -20,15 +20,16 @@
 package org.apache.james.dlp.api;
 
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Domain;
 
 import com.google.common.collect.ImmutableList;
 
 public interface DLPRulesStore {
 
-    Map<DLPRuleId, DLPRule> retrieveRules(Domain domain);
+    Stream<Pair<DLPRuleId, DLPRule>> retrieveRules(Domain domain);
 
     void store(Domain domain, List<DLPRule> rules);
 

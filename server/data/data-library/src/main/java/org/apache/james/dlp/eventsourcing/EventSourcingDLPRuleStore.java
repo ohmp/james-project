@@ -21,13 +21,13 @@ package org.apache.james.dlp.eventsourcing;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Domain;
 import org.apache.james.dlp.api.DLPRule;
 import org.apache.james.dlp.api.DLPRuleId;
@@ -44,8 +44,6 @@ import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.eventsourcing.eventstore.History;
 
-import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 public class EventSourcingDLPRuleStore implements DLPRulesStore {
@@ -67,12 +65,12 @@ public class EventSourcingDLPRuleStore implements DLPRulesStore {
     }
 
     @Override
-    public Map<DLPRuleId, DLPRule> retrieveRules(Domain domain) {
+    public Stream<Pair<DLPRuleId, DLPRule>> retrieveRules(Domain domain) {
         return getLastEvent(domain)
             .filter(event -> event instanceof StoreEvent)
             .map(event -> (StoreEvent) event)
             .map(this::toRules)
-            .orElse(ImmutableMap.of());
+            .orElse(Stream.of());
     }
 
     @Override
@@ -92,13 +90,10 @@ public class EventSourcingDLPRuleStore implements DLPRulesStore {
             .min(Comparator.reverseOrder());
     }
 
-    private Map<DLPRuleId, DLPRule> toRules(StoreEvent lastEvent) {
+    private Stream<Pair<DLPRuleId, DLPRule>> toRules(StoreEvent lastEvent) {
         AtomicInteger atomicInteger = new AtomicInteger();
         return lastEvent.getRules()
             .stream()
-            .collect(
-                Guavate.toImmutableMap(
-                    rule -> new DLPRuleId(atomicInteger.incrementAndGet()),
-                    Function.identity()));
+            .map(rule -> Pair.of(new DLPRuleId(atomicInteger.incrementAndGet()), rule));
     }
 }
