@@ -83,4 +83,17 @@ public interface MailRepositoryUrlStoreContract {
         assertThat(store.list()).hasSize(threadCount * operationCount);
     }
 
+    @Test
+    default void addShouldNotAddDuplicatesInConcurrentEnvironment(MailRepositoryUrlStore store) throws Exception {
+        int operationCount = 10;
+        int threadCount = 10;
+        ConcurrentTestRunner testRunner = new ConcurrentTestRunner(threadCount, operationCount,
+            (a, b) -> store.add(MailRepositoryUrl.from("proto://" + b)))
+            .run();
+        testRunner.awaitTermination(1, TimeUnit.MINUTES);
+        testRunner.assertNoException();
+
+        assertThat(store.list()).hasSize(operationCount);
+    }
+
 }
