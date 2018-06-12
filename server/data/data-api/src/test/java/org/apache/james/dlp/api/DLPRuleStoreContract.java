@@ -24,7 +24,6 @@ import static org.apache.james.dlp.api.DLPFixture.RULE_2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Domain;
 import org.junit.jupiter.api.Test;
 
@@ -43,8 +42,7 @@ public interface DLPRuleStoreContract {
         dlpRulesStore.store(Domain.LOCALHOST, ImmutableList.of(RULE, RULE_2));
 
         assertThat(
-            dlpRulesStore.retrieveRules(Domain.LOCALHOST)
-                .map(Pair::getValue))
+            dlpRulesStore.retrieveRules(Domain.LOCALHOST))
             .containsOnly(RULE, RULE_2);
     }
 
@@ -54,8 +52,7 @@ public interface DLPRuleStoreContract {
         dlpRulesStore.store(Domain.of("any.com"), RULE_2);
 
         assertThat(
-            dlpRulesStore.retrieveRules(Domain.LOCALHOST)
-                .map(Pair::getValue))
+            dlpRulesStore.retrieveRules(Domain.LOCALHOST))
             .containsOnly(RULE);
     }
 
@@ -85,8 +82,7 @@ public interface DLPRuleStoreContract {
         dlpRulesStore.clear(Domain.LOCALHOST);
 
         assertThat(
-            dlpRulesStore.retrieveRules(otherDomain)
-                .map(Pair::getValue))
+            dlpRulesStore.retrieveRules(otherDomain))
             .containsOnly(RULE_2);
     }
 

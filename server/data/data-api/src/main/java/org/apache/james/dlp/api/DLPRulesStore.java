@@ -22,14 +22,13 @@ package org.apache.james.dlp.api;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Domain;
 
 import com.google.common.collect.ImmutableList;
 
 public interface DLPRulesStore {
 
-    Stream<Pair<DLPRuleId, DLPRule>> retrieveRules(Domain domain);
+    Stream<DLPRule> retrieveRules(Domain domain);
 
     void store(Domain domain, List<DLPRule> rules);
 
