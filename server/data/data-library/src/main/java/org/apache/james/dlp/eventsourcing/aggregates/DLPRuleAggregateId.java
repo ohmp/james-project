@@ -28,7 +28,7 @@ import org.apache.james.eventsourcing.AggregateId;
 
 public class DLPRuleAggregateId implements AggregateId {
     private static final String SEPARATOR = "/";
-    private static final String PREFIX = "QuotaThreasholdEvents";
+    private static final String PREFIX = "DLPRule";
 
     private final Domain domain;
 
