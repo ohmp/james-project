@@ -137,7 +137,7 @@ public class MailRepositoryStoreServiceTest {
 
     @Test
     public void retrieveMessageShouldThrownWhenUnknownRepository() throws Exception {
-        when(mailRepositoryStore.get(new MailRepositoryUrl("unkown"))).thenReturn(Optional.empty());
+        when(mailRepositoryStore.get(MailRepositoryUrl.from("proto://unkown"))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> testee.retrieveMessage(FIRST_REPOSITORY, NAME_1))
             .isInstanceOf(NullPointerException.class);
