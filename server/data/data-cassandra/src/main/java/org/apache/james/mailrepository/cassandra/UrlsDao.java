@@ -76,12 +76,13 @@ public class UrlsDao {
     public CompletableFuture<Void> addUrl(MailRepositoryUrl url) {
         return executor.executeVoid(
             insert.bind()
-            .setString(URL, url.asString()));
+                .setString(URL, url.asString()));
     }
 
     public CompletableFuture<Optional<MailRepositoryUrl>> retrieve(MailRepositoryUrl url) {
-        return executor.executeSingleRow(select.bind()
-            .setString(URL, url.asString()))
+        return executor.executeSingleRow(
+            select.bind()
+                .setString(URL, url.asString()))
             .thenApply(optional -> optional.map(this::toUrl));
     }
 
