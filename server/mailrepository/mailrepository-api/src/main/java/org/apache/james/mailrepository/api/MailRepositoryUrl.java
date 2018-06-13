@@ -27,6 +27,7 @@ import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 
 public class MailRepositoryUrl {
     public static final MailRepositoryUrl fromEncoded(String encodedUrl) throws UnsupportedEncodingException {
@@ -44,7 +45,9 @@ public class MailRepositoryUrl {
         Preconditions.checkNotNull(value);
         Preconditions.checkArgument(value.contains(":"), "':' is mandatory to delimit protocol");
         this.value = value;
-        this.protocol = new Protocol(value.substring(0, value.indexOf(':')));
+        this.protocol = new Protocol(Splitter.on(':')
+            .splitToList(value)
+            .get(0));
     }
 
     public String asString() {
