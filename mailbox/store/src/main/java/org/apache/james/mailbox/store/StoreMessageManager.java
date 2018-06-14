@@ -419,7 +419,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
                 MessageMetaData data = appendMessageToStore(message, attachments, mailboxSession);
 
                 Mailbox mailbox = getMailboxEntity();
-                dispatcher.added(mailboxSession, mailbox, message);
+                dispatcher.added(mailboxSession, mailbox, SimpleMailboxMessage.copy(message.getMailboxId(), message));
                 return new ComposedMessageId(mailbox.getMailboxId(), data.getMessageId(), data.getUid());
             }, true);
 
