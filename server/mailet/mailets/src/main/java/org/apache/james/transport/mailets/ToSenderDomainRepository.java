@@ -61,6 +61,8 @@ import com.github.fge.lambdas.consumers.ThrowingConsumer;
  * &lt;/mailet&gt;
  */
 public class ToSenderDomainRepository extends GenericMailet {
+    public static final String URL_PREFIX = "urlPrefix";
+    public static final String PASS_THROUGH = "passThrough";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ToSenderDomainRepository.class);
     private static final boolean DEFAULT_CONSUME = false;
@@ -78,9 +80,9 @@ public class ToSenderDomainRepository extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
-        urlPrefix = Optional.ofNullable(getInitParameter("urlPrefix"))
+        urlPrefix = Optional.ofNullable(getInitParameter(URL_PREFIX))
             .orElseThrow(() -> new MessagingException("'urlPrefix' is a mandatory configuration property"));
-        passThrough = getInitParameter("passThrough", DEFAULT_CONSUME);
+        passThrough = getInitParameter(PASS_THROUGH, DEFAULT_CONSUME);
         allowRepositoryCreation = getInitParameter("allowRepositoryCreation", DEFAULT_ALLOW_REPOSITORY_CREATION);
     }
 
