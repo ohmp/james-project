@@ -50,8 +50,8 @@ import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 import org.apache.mailet.base.test.FakeMail;
+import org.eclipse.jetty.http.HttpStatus;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -60,8 +60,6 @@ import com.google.inject.util.Modules;
 import com.jayway.restassured.specification.RequestSpecification;
 
 public class DlpIntegrationTest {
-    private static final String OTHER_DOMAIN = "other.org";
-    private static final String RECIPIENT3 = "user4@" + OTHER_DOMAIN;
     public static final String REPOSITORY_PREFIX = "file://var/mail/dlp/quarantine/";
     public static final JwtConfiguration NO_JWT_CONFIGURATION = new JwtConfiguration(Optional.empty());
 
@@ -76,16 +74,12 @@ public class DlpIntegrationTest {
     private TemporaryJamesServer jamesServer;
     private RequestSpecification specification;
 
-    @Before
-    public void setup() throws Exception {
+    private void createJamesServer(MailetConfiguration.Builder dlpMailet) throws Exception {
         MailetContainer.Builder mailets = TemporaryJamesServer.DEFAULT_MAILET_CONTAINER_CONFIGURATION
             .putProcessor(
                 ProcessorConfiguration.transport()
                     .addMailet(MailetConfiguration.BCC_STRIPPER)
-                    .addMailet(MailetConfiguration.builder()
-                        .matcher(Dlp.class)
-                        .mailet(ToSenderDomainRepository.class)
-                        .addProperty(ToSenderDomainRepository.URL_PREFIX, REPOSITORY_PREFIX))
+                    .addMailet(dlpMailet)
                     .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(Null.class)));
@@ -104,11 +98,9 @@ public class DlpIntegrationTest {
         jamesServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DEFAULT_DOMAIN)
-            .addDomain(OTHER_DOMAIN)
             .addUser(FROM, PASSWORD)
             .addUser(RECIPIENT, PASSWORD)
-            .addUser(RECIPIENT2, PASSWORD)
-            .addUser(RECIPIENT3, PASSWORD);
+            .addUser(RECIPIENT2, PASSWORD);
         WebAdminGuiceProbe webAdminGuiceProbe = jamesServer.getProbe(WebAdminGuiceProbe.class);
         webAdminGuiceProbe.await();
         specification = WebAdminUtils.buildRequestSpecification(webAdminGuiceProbe.getWebAdminPort()).build();
@@ -121,6 +113,11 @@ public class DlpIntegrationTest {
 
     @Test
     public void dlpShouldStoreMatchingEmails() throws Exception {
+        createJamesServer(MailetConfiguration.builder()
+            .matcher(Dlp.class)
+            .mailet(ToSenderDomainRepository.class)
+            .addProperty(ToSenderDomainRepository.URL_PREFIX, REPOSITORY_PREFIX));
+
         given()
             .spec(specification)
             .body("[{" +
@@ -143,6 +140,123 @@ public class DlpIntegrationTest {
                 .recipient(RECIPIENT));
 
         MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
+        awaitAtMostOneMinute.until(() ->
+            given()
+                .spec(specification)
+            .get("/mailRepositories/" + repositoryUrl.urlEncoded() + "/mails")
+                .jsonPath()
+                .getList(".")
+                .size() == 1);
+    }
+
+    @Test
+    public void dlpShouldNotCreateRepositoryWhenNotAllowed() throws Exception {
+        createJamesServer(MailetConfiguration.builder()
+            .matcher(Dlp.class)
+            .mailet(ToSenderDomainRepository.class)
+            .addProperty(ToSenderDomainRepository.URL_PREFIX, REPOSITORY_PREFIX)
+            .addProperty(ToSenderDomainRepository.ALLOW_REPOSITORY_CREATION, "false"));
+
+        given()
+            .spec(specification)
+            .body("[{" +
+                "  \"id\": \"1\"," +
+                "  \"expression\": \"match me\"," +
+                "  \"explanation\": \"A simple DLP rule.\"," +
+                "  \"targetsSender\": false," +
+                "  \"targetsRecipients\": false," +
+                "  \"targetsContent\": true" +
+                "}]")
+            .put("/dlp/rules/" + DEFAULT_DOMAIN);
+
+        messageSender.connect(LOCALHOST_IP, SMTP_PORT)
+            .sendMessage(FakeMail.builder()
+                .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                    .addToRecipient(RECIPIENT)
+                    .setSender(FROM)
+                    .setText("match me"))
+                .sender(FROM)
+                .recipient(RECIPIENT));
+
+        MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
+        given()
+            .spec(specification)
+        .get("/mailRepositories/" + repositoryUrl.urlEncoded() + "/mails")
+            .then()
+            .statusCode(HttpStatus.NOT_FOUND_404);
+    }
+
+    @Test
+    public void dlpShouldCreateRepositoryWhenAllowed() throws Exception {
+        createJamesServer(MailetConfiguration.builder()
+            .matcher(Dlp.class)
+            .mailet(ToSenderDomainRepository.class)
+            .addProperty(ToSenderDomainRepository.URL_PREFIX, REPOSITORY_PREFIX)
+            .addProperty(ToSenderDomainRepository.ALLOW_REPOSITORY_CREATION, "true"));
+
+        given()
+            .spec(specification)
+            .body("[{" +
+                "  \"id\": \"1\"," +
+                "  \"expression\": \"match me\"," +
+                "  \"explanation\": \"A simple DLP rule.\"," +
+                "  \"targetsSender\": false," +
+                "  \"targetsRecipients\": false," +
+                "  \"targetsContent\": true" +
+                "}]")
+            .put("/dlp/rules/" + DEFAULT_DOMAIN);
+
+        messageSender.connect(LOCALHOST_IP, SMTP_PORT)
+            .sendMessage(FakeMail.builder()
+                .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                    .addToRecipient(RECIPIENT)
+                    .setSender(FROM)
+                    .setText("match me"))
+                .sender(FROM)
+                .recipient(RECIPIENT));
+
+        MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
+        given()
+            .spec(specification)
+        .get("/mailRepositories/" + repositoryUrl.urlEncoded() + "/mails")
+            .then()
+            .statusCode(HttpStatus.NOT_FOUND_404);
+    }
+
+    @Test
+    public void dlpShouldStoreMailWhenNotAllowedButRepositoryExists() throws Exception {
+        createJamesServer(MailetConfiguration.builder()
+            .matcher(Dlp.class)
+            .mailet(ToSenderDomainRepository.class)
+            .addProperty(ToSenderDomainRepository.URL_PREFIX, REPOSITORY_PREFIX)
+            .addProperty(ToSenderDomainRepository.ALLOW_REPOSITORY_CREATION, "false"));
+
+        MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
+        given()
+            .spec(specification)
+            .put("/mailRepositories/" + repositoryUrl.urlEncoded());
+
+        given()
+            .spec(specification)
+            .body("[{" +
+                "  \"id\": \"1\"," +
+                "  \"expression\": \"match me\"," +
+                "  \"explanation\": \"A simple DLP rule.\"," +
+                "  \"targetsSender\": false," +
+                "  \"targetsRecipients\": false," +
+                "  \"targetsContent\": true" +
+                "}]")
+            .put("/dlp/rules/" + DEFAULT_DOMAIN);
+
+        messageSender.connect(LOCALHOST_IP, SMTP_PORT)
+            .sendMessage(FakeMail.builder()
+                .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                    .addToRecipient(RECIPIENT)
+                    .setSender(FROM)
+                    .setText("match me"))
+                .sender(FROM)
+                .recipient(RECIPIENT));
+
         awaitAtMostOneMinute.until(() ->
             given()
                 .spec(specification)
