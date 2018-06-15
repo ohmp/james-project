@@ -419,9 +419,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
                 MessageMetaData data = appendMessageToStore(message, attachments, mailboxSession);
 
                 Mailbox mailbox = getMailboxEntity();
-                SimpleMailboxMessage copy = SimpleMailboxMessage.copy(message.getMailboxId(), message);
-                copy.setUid(message.getUid());
-                copy.setModSeq(message.getModSeq());
+                MailboxMessage copy = copyMessage(message);
                 dispatcher.added(mailboxSession, mailbox, copy);
                 return new ComposedMessageId(mailbox.getMailboxId(), data.getMessageId(), data.getUid());
             }, true);
@@ -465,6 +463,13 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
      */
     protected MailboxMessage createMessage(Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, List<MessageAttachment> attachments) throws MailboxException {
         return new SimpleMailboxMessage(messageIdFactory.generate(), internalDate, size, bodyStartOctet, content, flags, propertyBuilder, getMailboxEntity().getMailboxId(), attachments);
+    }
+
+    protected MailboxMessage copyMessage(MailboxMessage message) throws MailboxException {
+        SimpleMailboxMessage copy = SimpleMailboxMessage.copyWithoutAttachments(message.getMailboxId(), message);
+        copy.setUid(message.getUid());
+        copy.setModSeq(message.getModSeq());
+        return copy;
     }
 
     @Override
