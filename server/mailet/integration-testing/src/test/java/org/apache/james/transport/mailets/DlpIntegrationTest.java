@@ -120,14 +120,14 @@ public class DlpIntegrationTest {
 
         given()
             .spec(specification)
-            .body("[{" +
+            .body("{\"rules\":[{" +
                 "  \"id\": \"1\"," +
                 "  \"expression\": \"match me\"," +
                 "  \"explanation\": \"A simple DLP rule.\"," +
                 "  \"targetsSender\": false," +
                 "  \"targetsRecipients\": false," +
                 "  \"targetsContent\": true" +
-                "}]")
+                "}]}")
             .put("/dlp/rules/" + DEFAULT_DOMAIN);
 
         messageSender.connect(LOCALHOST_IP, SMTP_PORT)
@@ -139,14 +139,7 @@ public class DlpIntegrationTest {
                 .sender(FROM)
                 .recipient(RECIPIENT));
 
-        MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
-        awaitAtMostOneMinute.until(() ->
-            given()
-                .spec(specification)
-            .get("/mailRepositories/" + repositoryUrl.urlEncoded() + "/mails")
-                .jsonPath()
-                .getList(".")
-                .size() == 1);
+        awaitAtMostOneMinute.until(() -> containsExactlyOneMail(MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN)));
     }
 
     @Test
@@ -159,14 +152,14 @@ public class DlpIntegrationTest {
 
         given()
             .spec(specification)
-            .body("[{" +
+            .body("{\"rules\":[[{" +
                 "  \"id\": \"1\"," +
                 "  \"expression\": \"match me\"," +
                 "  \"explanation\": \"A simple DLP rule.\"," +
                 "  \"targetsSender\": false," +
                 "  \"targetsRecipients\": false," +
                 "  \"targetsContent\": true" +
-                "}]")
+                "}]}")
             .put("/dlp/rules/" + DEFAULT_DOMAIN);
 
         messageSender.connect(LOCALHOST_IP, SMTP_PORT)
@@ -193,17 +186,18 @@ public class DlpIntegrationTest {
             .mailet(ToSenderDomainRepository.class)
             .addProperty(ToSenderDomainRepository.URL_PREFIX, REPOSITORY_PREFIX)
             .addProperty(ToSenderDomainRepository.ALLOW_REPOSITORY_CREATION, "true"));
+        MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
 
         given()
             .spec(specification)
-            .body("[{" +
+            .body("{\"rules\":[{" +
                 "  \"id\": \"1\"," +
                 "  \"expression\": \"match me\"," +
                 "  \"explanation\": \"A simple DLP rule.\"," +
                 "  \"targetsSender\": false," +
                 "  \"targetsRecipients\": false," +
                 "  \"targetsContent\": true" +
-                "}]")
+                "}]}")
             .put("/dlp/rules/" + DEFAULT_DOMAIN);
 
         messageSender.connect(LOCALHOST_IP, SMTP_PORT)
@@ -215,12 +209,7 @@ public class DlpIntegrationTest {
                 .sender(FROM)
                 .recipient(RECIPIENT));
 
-        MailRepositoryUrl repositoryUrl = MailRepositoryUrl.from(REPOSITORY_PREFIX + DEFAULT_DOMAIN);
-        given()
-            .spec(specification)
-        .get("/mailRepositories/" + repositoryUrl.urlEncoded() + "/mails")
-            .then()
-            .statusCode(HttpStatus.NOT_FOUND_404);
+        awaitAtMostOneMinute.until(() -> containsExactlyOneMail(repositoryUrl));
     }
 
     @Test
@@ -238,14 +227,14 @@ public class DlpIntegrationTest {
 
         given()
             .spec(specification)
-            .body("[{" +
+            .body("{\"rules\":[{" +
                 "  \"id\": \"1\"," +
                 "  \"expression\": \"match me\"," +
                 "  \"explanation\": \"A simple DLP rule.\"," +
                 "  \"targetsSender\": false," +
                 "  \"targetsRecipients\": false," +
                 "  \"targetsContent\": true" +
-                "}]")
+                "}]}")
             .put("/dlp/rules/" + DEFAULT_DOMAIN);
 
         messageSender.connect(LOCALHOST_IP, SMTP_PORT)
@@ -257,12 +246,20 @@ public class DlpIntegrationTest {
                 .sender(FROM)
                 .recipient(RECIPIENT));
 
-        awaitAtMostOneMinute.until(() ->
-            given()
+        awaitAtMostOneMinute.until(() -> containsExactlyOneMail(repositoryUrl));
+    }
+
+    private boolean containsExactlyOneMail(MailRepositoryUrl repositoryUrl) {
+        try {
+            return given()
                 .spec(specification)
                 .get("/mailRepositories/" + repositoryUrl.urlEncoded() + "/mails")
+                .prettyPeek()
                 .jsonPath()
                 .getList(".")
-                .size() == 1);
+                .size() == 1;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
