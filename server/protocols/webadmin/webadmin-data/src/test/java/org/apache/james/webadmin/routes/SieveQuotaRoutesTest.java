@@ -20,25 +20,23 @@
 package org.apache.james.webadmin.routes;
 
 import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
-import static com.jayway.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.apache.james.webadmin.routes.SieveQuotaRoutes.ROOT_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.base.Charsets;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.builder.RequestSpecBuilder;
-import com.jayway.restassured.http.ContentType;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.sieverepository.api.SieveQuotaRepository;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.utils.JsonTransformer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.eclipse.jetty.http.HttpStatus;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.http.ContentType;
 
 public class SieveQuotaRoutesTest {
 
@@ -47,7 +45,7 @@ public class SieveQuotaRoutesTest {
     private WebAdminServer webAdminServer;
     private SieveQuotaRepository sieveRepository;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sieveRepository = new InMemorySieveQuotaRepository();
         webAdminServer = WebAdminUtils.createWebAdminServer(
@@ -56,21 +54,17 @@ public class SieveQuotaRoutesTest {
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
-        RestAssured.requestSpecification = new RequestSpecBuilder()
-                .setContentType(ContentType.JSON)
-                .setAccept(ContentType.JSON)
-                .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(Charsets.UTF_8)))
-                .setPort(webAdminServer.getPort().toInt())
-                .build();
+        RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
+            .build();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    public void tearDown() {
         webAdminServer.destroy();
     }
 
     @Test
-    public void getGlobalSieveQuotaShouldReturn404WhenNoQuotaSet() throws Exception {
+    public void getGlobalSieveQuotaShouldReturn404WhenNoQuotaSet() {
         given()
             .get(SieveQuotaRoutes.ROOT_PATH)
         .then()
@@ -79,14 +73,14 @@ public class SieveQuotaRoutesTest {
 
     @Test
     public void getGlobalSieveQuotaShouldReturnStoredValue() throws Exception {
-        final long value = 1000L;
+        long value = 1000L;
         sieveRepository.setQuota(value);
 
-        final long actual =
+        long actual =
             given()
                 .get(SieveQuotaRoutes.ROOT_PATH)
             .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
                 .extract()
                 .as(Long.class);
@@ -97,41 +91,41 @@ public class SieveQuotaRoutesTest {
     @Test
     public void updateGlobalSieveQuotaShouldUpdateStoredValue() throws Exception {
         sieveRepository.setQuota(500L);
-        final long requiredSize = 1024L;
+        long requiredSize = 1024L;
 
         given()
             .body(requiredSize)
             .put(SieveQuotaRoutes.ROOT_PATH)
         .then()
-            .statusCode(200);
+            .statusCode(HttpStatus.NO_CONTENT_204);
 
         assertThat(sieveRepository.getQuota()).isEqualTo(requiredSize);
     }
 
     @Test
-    public void updateGlobalSieveQuotaShouldReturn400WhenMalformedJSON() throws Exception {
+    public void updateGlobalSieveQuotaShouldReturn400WhenMalformedJSON() {
         given()
             .body("invalid")
             .put(SieveQuotaRoutes.ROOT_PATH)
         .then()
-            .statusCode(400);
+            .statusCode(HttpStatus.BAD_REQUEST_400);
     }
 
     @Test
-    public void updateGlobalSieveQuotaShouldReturn400WhenRequestedSizeNotPositiveInteger() throws Exception {
+    public void updateGlobalSieveQuotaShouldReturn400WhenRequestedSizeNotPositiveInteger() {
         given()
             .body(-100L)
             .put(SieveQuotaRoutes.ROOT_PATH)
         .then()
-            .statusCode(400);
+            .statusCode(HttpStatus.BAD_REQUEST_400);
     }
 
     @Test
-    public void removeGlobalSieveQuotaShouldReturn404WhenNoQuotaSet() throws Exception {
+    public void removeGlobalSieveQuotaShouldReturn404WhenNoQuotaSet() {
         given()
             .delete(SieveQuotaRoutes.ROOT_PATH)
         .then()
-            .statusCode(404);
+            .statusCode(HttpStatus.NOT_FOUND_404);
     }
 
     @Test
@@ -141,27 +135,27 @@ public class SieveQuotaRoutesTest {
         given()
             .delete(SieveQuotaRoutes.ROOT_PATH)
         .then()
-            .statusCode(204);
+            .statusCode(HttpStatus.NO_CONTENT_204);
     }
 
     @Test
-    public void getPerUserQuotaShouldReturn404WhenNoQuotaSetForUser() throws Exception {
+    public void getPerUserQuotaShouldReturn404WhenNoQuotaSetForUser() {
         given()
             .get(ROOT_PATH + SEPARATOR + USER_A)
         .then()
-            .statusCode(404);
+            .statusCode(HttpStatus.NOT_FOUND_404);
     }
 
     @Test
     public void getPerUserSieveQuotaShouldReturnedStoredValue() throws Exception {
-        final long value = 1024L;
+        long value = 1024L;
         sieveRepository.setQuota(USER_A, value);
 
-        final long actual =
+        long actual =
             given()
                 .get(ROOT_PATH + SEPARATOR + USER_A)
             .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
                 .extract()
                 .as(Long.class);
@@ -172,41 +166,41 @@ public class SieveQuotaRoutesTest {
     @Test
     public void updatePerUserSieveQuotaShouldUpdateStoredValue() throws Exception {
         sieveRepository.setQuota(USER_A, 500L);
-        final long requiredSize = 1024L;
+        long requiredSize = 1024L;
 
         given()
             .body(requiredSize)
             .put(ROOT_PATH + SEPARATOR + USER_A)
         .then()
-            .statusCode(200);
+            .statusCode(HttpStatus.NO_CONTENT_204);
 
         assertThat(sieveRepository.getQuota(USER_A)).isEqualTo(requiredSize);
     }
 
     @Test
-    public void updatePerUserSieveQuotaShouldReturn400WhenMalformedJSON() throws Exception {
+    public void updatePerUserSieveQuotaShouldReturn400WhenMalformedJSON() {
         given()
             .body("invalid")
             .put(ROOT_PATH + SEPARATOR + USER_A)
         .then()
-            .statusCode(400);
+            .statusCode(HttpStatus.BAD_REQUEST_400);
     }
 
     @Test
-    public void updatePerUserSieveQuotaShouldReturn400WhenRequestedSizeNotPositiveInteger() throws Exception {
+    public void updatePerUserSieveQuotaShouldReturn400WhenRequestedSizeNotPositiveInteger() {
         given()
             .body(-100L)
             .put(ROOT_PATH + SEPARATOR + USER_A)
         .then()
-            .statusCode(400);
+            .statusCode(HttpStatus.BAD_REQUEST_400);
     }
 
     @Test
-    public void removePerUserSieveQuotaShouldReturn404WhenNoQuotaSetForUser() throws Exception {
+    public void removePerUserSieveQuotaShouldReturn404WhenNoQuotaSetForUser() {
         given()
             .delete(ROOT_PATH + SEPARATOR + USER_A)
         .then()
-            .statusCode(404);
+            .statusCode(HttpStatus.NOT_FOUND_404);
     }
 
     @Test
@@ -216,6 +210,6 @@ public class SieveQuotaRoutesTest {
         given()
             .delete(ROOT_PATH + SEPARATOR + USER_A)
         .then()
-            .statusCode(204);
+            .statusCode(HttpStatus.NO_CONTENT_204);
     }
 }

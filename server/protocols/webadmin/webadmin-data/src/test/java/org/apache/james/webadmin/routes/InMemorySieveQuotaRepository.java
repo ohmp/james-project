@@ -19,71 +19,62 @@
 
 package org.apache.james.webadmin.routes;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.james.sieverepository.api.SieveQuotaRepository;
 import org.apache.james.sieverepository.api.exception.QuotaNotFoundException;
-import org.apache.james.sieverepository.api.exception.StorageException;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemorySieveQuotaRepository implements SieveQuotaRepository {
 
-    private boolean isGlobalQuotaSet = false;
-    private long globalQuota = 0L;
+    private Optional<Long> globalQuota = Optional.empty();
 
     private Map<String, Long> userQuota = new ConcurrentHashMap<>();
 
     @Override
-    public boolean hasQuota() throws StorageException {
-        return isGlobalQuotaSet;
+    public boolean hasQuota() {
+        return globalQuota.isPresent();
     }
 
     @Override
-    public long getQuota() throws QuotaNotFoundException, StorageException {
-        if (!isGlobalQuotaSet) {
+    public long getQuota() throws QuotaNotFoundException {
+        return globalQuota.orElseThrow(QuotaNotFoundException::new);
+    }
+
+    @Override
+    public void setQuota(long quota) {
+        this.globalQuota = Optional.of(quota);
+    }
+
+    @Override
+    public void removeQuota() throws QuotaNotFoundException {
+        if (!globalQuota.isPresent()) {
             throw new QuotaNotFoundException();
         }
-        return globalQuota;
+        globalQuota = Optional.empty();
     }
 
     @Override
-    public void setQuota(final long quota) throws StorageException {
-        this.globalQuota = quota;
-        this.isGlobalQuotaSet = true;
-    }
-
-    @Override
-    public void removeQuota() throws QuotaNotFoundException, StorageException {
-        if (!isGlobalQuotaSet) {
-            throw new QuotaNotFoundException();
-        }
-        globalQuota = 0L;
-        isGlobalQuotaSet = false;
-    }
-
-    @Override
-    public boolean hasQuota(final String user) throws StorageException {
+    public boolean hasQuota(String user) {
         return userQuota.containsKey(user);
     }
 
     @Override
-    public long getQuota(final String user) throws QuotaNotFoundException, StorageException {
-        final Long quotaValue = userQuota.get(user);
-        if (quotaValue == null) {
-            throw new QuotaNotFoundException();
-        }
-        return quotaValue;
+    public long getQuota(String user) throws QuotaNotFoundException {
+        return Optional.ofNullable(userQuota.get(user))
+            .orElseThrow(QuotaNotFoundException::new);
     }
 
     @Override
-    public void setQuota(final String user, final long quota) throws StorageException {
+    public void setQuota(String user, long quota) {
         userQuota.put(user, quota);
     }
 
     @Override
-    public void removeQuota(final String user) throws QuotaNotFoundException, StorageException {
-        final Long quotaValue = userQuota.get(user);
-        if (quotaValue == null) {
+    public void removeQuota(String user) throws QuotaNotFoundException {
+        Optional<Long> quotaValue = Optional.ofNullable(userQuota.get(user));
+        if (!quotaValue.isPresent()) {
             throw new QuotaNotFoundException();
         }
         userQuota.remove(user);
