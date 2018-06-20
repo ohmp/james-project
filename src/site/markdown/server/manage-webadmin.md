@@ -34,6 +34,7 @@ In case of any error, the system will return an error message which is json form
  - [Administrating mail repositories](#Administrating_mail_repositories)
  - [Administrating mail queues](#Administrating_mail_queues)
  - [Administrating DLP Configuration](#Administrating_dlp_configuration)
+ - [Administrating Sieve quotas](#Administrating_Sieve_quotas)
  - [Task management](#Task_management)
 
 ## Administrating domains
@@ -1868,6 +1869,118 @@ Response codes:
  - 404: The domain does not exist.
  - 500: Internal error
 
+## Administrating Sieve quotas
+
+Some limitations on space Users Sieve script can occupy can be configured by default, and overridden by user.
+
+ - [Retieving global sieve quota](#Retieving_global_sieve_quota)
+ - [Updating global sieve quota](#Updating_global_sieve_quota)
+ - [Removing global sieve quota](#Removing_global_sieve_quota)
+ - [Retieving user sieve quota](#Retieving_user_sieve_quota)
+ - [Updating user sieve quota](#Updating_user_sieve_quota)
+ - [Removing user sieve quota](#Removing_user_sieve_quota)
+
+### Retieving global sieve quota
+
+This endpoints allow to retrieve the global Sieve quota, which will be users default:
+
+```
+curl -XGET http://ip:port/sieve/quota
+```
+
+Will return the bytes count allowed by user per default on this server.
+
+```
+102400
+```
+
+Response codes:
+ - 200: Request is a success and the value is returned
+ - 404: No quota is being configured
+ - 500: Internal error! Something went bad on James side.
+
+### Updating global sieve quota
+
+This endpoints allow to update the global Sieve quota, which will be users default:
+
+```
+curl -XPUT http://ip:port/sieve/quota
+```
+
+With the body being the bytes count allowed by user per default on this server.
+
+```
+102400
+```
+
+Response codes:
+ - 204: Operation succeeded
+ - 400: Invalid payload
+ - 500: Internal error
+
+### Removing global sieve quota
+
+This endpoints allow to remove the global Sieve quota. There will no more be users default:
+
+```
+curl -XDELETE http://ip:port/sieve/quota
+```
+
+Response codes:
+ - 204: Operation succeeded
+ - 404: No global quota existed before
+ - 500: Internal error
+
+### Retrieving user sieve quota
+
+This endpoints allow to retrieve the Sieve quota of a user, which will be this users quota:
+
+```
+curl -XGET http://ip:port/sieve/quota/user@domain.com
+```
+
+Will return the bytes count allowed for this user.
+
+```
+102400
+```
+
+Response codes:
+ - 200: Request is a success and the value is returned
+ - 404: No quota is being configured for this user
+ - 500: Internal error! Something went bad on James side.
+
+### Updating user sieve quota
+
+This endpoints allow to update the Sieve quota of a user, which will be users default:
+
+```
+curl -XPUT http://ip:port/sieve/quota/user@domain.com
+```
+
+With the body being the bytes count allowed for this user on this server.
+
+```
+102400
+```
+
+Response codes:
+ - 204: Operation succeeded
+ - 400: Invalid payload
+ - 500: Internal error
+
+### Removing user sieve quota
+
+This endpoints allow to remove the Sieve quota of a user. There will no more quota for this userrrrrrr:
+
+```
+curl -XDELETE http://ip:port/sieve/quota/user@domain.com
+```
+
+Response codes:
+ - 204: Operation succeeded
+ - 404: No quota configured for this user.
+ - 500: Internal error
 
 ## Task management
 
