@@ -19,12 +19,13 @@
 
 package org.apache.james.transport.mailets;
 
+import java.util.Optional;
+
+import javax.mail.MessagingException;
+
 import org.apache.james.queue.api.MailPrioritySupport;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
-
-import javax.mail.MessagingException;
-import java.util.Optional;
 
 /**
  * This mailet sets the priority of the incoming mail.
@@ -57,6 +58,6 @@ public class WithPriority extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-    	mail.setAttribute(MailPrioritySupport.MAIL_PRIORITY, priority);
+        mail.setAttribute(MailPrioritySupport.MAIL_PRIORITY, priority);
     }
 }
