@@ -1811,19 +1811,19 @@ Response codes:
 
 Some limitations on space Users Sieve script can occupy can be configured by default, and overridden by user.
 
- - [Retieving global sieve quota](#Retieving_global_sieve_quota)
+ - [Retrieving global sieve quota](#Retieving_global_sieve_quota)
  - [Updating global sieve quota](#Updating_global_sieve_quota)
  - [Removing global sieve quota](#Removing_global_sieve_quota)
  - [Retieving user sieve quota](#Retieving_user_sieve_quota)
  - [Updating user sieve quota](#Updating_user_sieve_quota)
  - [Removing user sieve quota](#Removing_user_sieve_quota)
 
-### Retieving global sieve quota
+### Retrieving global sieve quota
 
-This endpoints allow to retrieve the global Sieve quota, which will be users default:
+This endpoints allows to retrieve the global Sieve quota, which will be users default:
 
 ```
-curl -XGET http://ip:port/sieve/quota
+curl -XGET http://ip:port/sieve/quota/default
 ```
 
 Will return the bytes count allowed by user per default on this server.
@@ -1835,14 +1835,13 @@ Will return the bytes count allowed by user per default on this server.
 Response codes:
  - 200: Request is a success and the value is returned
  - 404: No quota is being configured
- - 500: Internal error! Something went bad on James side.
 
 ### Updating global sieve quota
 
-This endpoints allow to update the global Sieve quota, which will be users default:
+This endpoints allows to update the global Sieve quota, which will be users default:
 
 ```
-curl -XPUT http://ip:port/sieve/quota
+curl -XPUT http://ip:port/sieve/quota/default
 ```
 
 With the body being the bytes count allowed by user per default on this server.
@@ -1854,27 +1853,24 @@ With the body being the bytes count allowed by user per default on this server.
 Response codes:
  - 204: Operation succeeded
  - 400: Invalid payload
- - 500: Internal error
 
 ### Removing global sieve quota
 
-This endpoints allow to remove the global Sieve quota. There will no more be users default:
+This endpoints allows to remove the global Sieve quota. There will no more be users default:
 
 ```
-curl -XDELETE http://ip:port/sieve/quota
+curl -XDELETE http://ip:port/sieve/quota/default
 ```
 
 Response codes:
  - 204: Operation succeeded
- - 404: No global quota existed before
- - 500: Internal error
 
 ### Retrieving user sieve quota
 
-This endpoints allow to retrieve the Sieve quota of a user, which will be this users quota:
+This endpoints allows to retrieve the Sieve quota of a user, which will be this users quota:
 
 ```
-curl -XGET http://ip:port/sieve/quota/user@domain.com
+curl -XGET http://ip:port/sieve/quota/users/user@domain.com
 ```
 
 Will return the bytes count allowed for this user.
@@ -1886,14 +1882,13 @@ Will return the bytes count allowed for this user.
 Response codes:
  - 200: Request is a success and the value is returned
  - 404: No quota is being configured for this user
- - 500: Internal error! Something went bad on James side.
 
 ### Updating user sieve quota
 
-This endpoints allow to update the Sieve quota of a user, which will be users default:
+This endpoints allows to update the Sieve quota of a user, which will be users default:
 
 ```
-curl -XPUT http://ip:port/sieve/quota/user@domain.com
+curl -XPUT http://ip:port/sieve/quota/users/user@domain.com
 ```
 
 With the body being the bytes count allowed for this user on this server.
@@ -1905,20 +1900,17 @@ With the body being the bytes count allowed for this user on this server.
 Response codes:
  - 204: Operation succeeded
  - 400: Invalid payload
- - 500: Internal error
 
 ### Removing user sieve quota
 
-This endpoints allow to remove the Sieve quota of a user. There will no more quota for this userrrrrrr:
+This endpoints allows to remove the Sieve quota of a user. There will no more quota for this userrrrrrr:
 
 ```
-curl -XDELETE http://ip:port/sieve/quota/user@domain.com
+curl -XDELETE http://ip:port/sieve/quota/users/user@domain.com
 ```
 
 Response codes:
  - 204: Operation succeeded
- - 404: No quota configured for this user.
- - 500: Internal error
 
 ## Task management
 
