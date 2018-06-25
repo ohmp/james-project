@@ -2,7 +2,6 @@
 
 package org.apache.james.sieve.cassandra.model;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
