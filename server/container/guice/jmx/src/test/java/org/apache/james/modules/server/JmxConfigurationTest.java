@@ -51,7 +51,7 @@ public class JmxConfigurationTest {
                 "jmx.port=889\n"));
 
         assertThat(JmxConfiguration.fromProperties(configuration))
-            .isEqualTo(new JmxConfiguration(Optional.of(Host.from("172.0.0.5", 889))));
+            .isEqualTo(new JmxConfiguration(JmxConfiguration.ENABLED, Optional.of(Host.from("172.0.0.5", 889))));
     }
 
     @Test
