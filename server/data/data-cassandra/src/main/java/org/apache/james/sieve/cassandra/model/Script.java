@@ -68,7 +68,7 @@ public class Script {
             return new Script(name,
                 content,
                 isActive.get(),
-                size.orElse((long) content.getValue().getBytes(StandardCharsets.UTF_8).length));
+                size.orElse((long) content.length()));
         }
 
     }
