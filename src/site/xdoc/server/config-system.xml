@@ -118,7 +118,7 @@
 
                 <dl>
                     <dt><strong>jmx.enabled</strong></dt>
-                    <dd>(Guice only). Boolean. Should the JMX server de enabled? Defaults to `true`.</dd>
+                    <dd>(Guice only). Boolean. Should the JMX server be enabled? Defaults to `true`.</dd>
                     <dt><strong>jmx.address</strong></dt>
                     <dd>The IP address (host name) the MBean Server will bind/listen to.</dd>
                     <dt><strong>jmx.port</strong></dt>
