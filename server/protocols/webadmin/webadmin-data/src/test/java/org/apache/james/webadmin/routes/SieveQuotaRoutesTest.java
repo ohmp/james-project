@@ -65,11 +65,11 @@ public class SieveQuotaRoutesTest {
     }
 
     @Test
-    void getGlobalSieveQuotaShouldReturn404WhenNoQuotaSet() {
+    void getGlobalSieveQuotaShouldReturn204WhenNoQuotaSet() {
         given()
             .get("/sieve/quota/default")
         .then()
-            .statusCode(404);
+            .statusCode(204);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class SieveQuotaRoutesTest {
     }
 
     @Test
-    void removeGlobalSieveQuotaShouldReturn404WhenNoQuotaSet() {
+    void removeGlobalSieveQuotaShouldReturn204WhenNoQuotaSet() {
         given()
             .delete("/sieve/quota/default")
         .then()
@@ -140,11 +140,11 @@ public class SieveQuotaRoutesTest {
     }
 
     @Test
-    void getPerUserQuotaShouldReturn404WhenNoQuotaSetForUser() {
+    void getPerUserQuotaShouldReturn204WhenNoQuotaSetForUser() {
         given()
             .get("/sieve/quota/users/" + USER_A.asString())
         .then()
-            .statusCode(HttpStatus.NOT_FOUND_404);
+            .statusCode(HttpStatus.NO_CONTENT_204);
     }
 
     @Test
