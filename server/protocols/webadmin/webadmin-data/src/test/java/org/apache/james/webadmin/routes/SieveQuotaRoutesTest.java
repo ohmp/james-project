@@ -197,7 +197,7 @@ public class SieveQuotaRoutesTest {
     }
 
     @Test
-    public void removePerUserSieveQuotaShouldReturn404WhenNoQuotaSetForUser() {
+    public void removePerUserSieveQuotaShouldReturn204WhenNoQuotaSetForUser() {
         given()
             .delete("/sieve/quota/users/" + USER_A.asString())
         .then()
