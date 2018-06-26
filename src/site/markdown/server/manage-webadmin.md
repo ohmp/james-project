@@ -19,6 +19,9 @@ In case of any error, the system will return an error message which is json form
 }
 ```
 
+Also be aware that, in case things go wrong, all endpoints might return a 500 internal error (with a JSON body formatted
+as exposed above). To avoid information duplication, this is ommited on endpoint specific documentation.
+
 ## Navigation menu
 
  - [Administrating domains](#Administrating_domains)
