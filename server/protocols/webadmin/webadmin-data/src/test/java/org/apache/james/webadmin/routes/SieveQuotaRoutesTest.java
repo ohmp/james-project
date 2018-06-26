@@ -148,7 +148,7 @@ public class SieveQuotaRoutesTest {
     }
 
     @Test
-    public void getPerUserSieveQuotaShouldReturnedStoredValue() throws Exception {
+    public void getPerUserSieveQuotaShouldReturnStoredValue() throws Exception {
         QuotaSize value = QuotaSize.size(1024L);
         sieveRepository.setQuota(USER_A, value);
 
