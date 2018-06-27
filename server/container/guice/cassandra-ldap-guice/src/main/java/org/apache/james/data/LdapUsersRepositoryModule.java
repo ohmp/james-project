@@ -60,7 +60,7 @@ public class LdapUsersRepositoryModule extends AbstractModule {
         private final ReadOnlyUsersLDAPRepository usersRepository;
 
         @Inject
-        public LdapUsersRepositoryConfigurationPerformer( LdapRepositoryConfiguration configuration, ReadOnlyUsersLDAPRepository usersRepository) {
+        public LdapUsersRepositoryConfigurationPerformer(LdapRepositoryConfiguration configuration, ReadOnlyUsersLDAPRepository usersRepository) {
             this.configuration = configuration;
             this.usersRepository = usersRepository;
         }
