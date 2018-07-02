@@ -174,7 +174,7 @@ class ForwardRoutesTest {
         }
 
         @Test
-        void putUserInForwardShouldReturnCreated() {
+        void putUserInForwardShouldReturnNoContent() {
             when()
                 .put(ALICE + SEPARATOR + "targets" + SEPARATOR + BOB)
             .then()
@@ -193,7 +193,7 @@ class ForwardRoutesTest {
         }
 
         @Test
-        void putUserWithSlashInForwardShouldReturnCreated() {
+        void putUserWithSlashInForwardShouldReturnNoContent() {
             when()
                 .put(BOB + SEPARATOR + "targets" + SEPARATOR + ALICE_WITH_ENCODED_SLASH)
             .then()
@@ -227,7 +227,7 @@ class ForwardRoutesTest {
         }
 
         @Test
-        void putUserInForwardWithEncodedSlashShouldReturnCreated() {
+        void putUserInForwardWithEncodedSlashShouldReturnNoContent() {
             when()
                 .put(ALICE_WITH_ENCODED_SLASH + SEPARATOR + "targets" + SEPARATOR + BOB)
             .then()

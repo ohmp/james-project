@@ -223,7 +223,7 @@ class GroupsRoutesTest {
         }
 
         @Test
-        void putUserInGroupWithEncodedSlashShouldReturnCreated() {
+        void putUserInGroupWithEncodedSlashShouldReturnNoContent() {
             when()
                 .put(GROUP_WITH_ENCODED_SLASH + SEPARATOR + USER_A)
             .then()
