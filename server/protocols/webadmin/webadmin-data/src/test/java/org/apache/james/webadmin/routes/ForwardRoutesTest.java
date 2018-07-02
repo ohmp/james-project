@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin.routes;
 
+import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.with;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
@@ -177,7 +178,18 @@ class ForwardRoutesTest {
             when()
                 .put(ALICE + SEPARATOR + "targets" + SEPARATOR + BOB)
             .then()
-                .statusCode(HttpStatus.CREATED_201);
+                .statusCode(HttpStatus.NO_CONTENT_204);
+        }
+
+        @Test
+        void putUserShouldBeIdempotent() {
+            given()
+                .put(ALICE + SEPARATOR + "targets" + SEPARATOR + BOB);
+
+            when()
+                .put(ALICE + SEPARATOR + "targets" + SEPARATOR + BOB)
+            .then()
+                .statusCode(HttpStatus.NO_CONTENT_204);
         }
 
         @Test
@@ -185,7 +197,7 @@ class ForwardRoutesTest {
             when()
                 .put(BOB + SEPARATOR + "targets" + SEPARATOR + ALICE_WITH_ENCODED_SLASH)
             .then()
-                .statusCode(HttpStatus.CREATED_201);
+                .statusCode(HttpStatus.NO_CONTENT_204);
         }
 
         @Test
@@ -219,7 +231,7 @@ class ForwardRoutesTest {
             when()
                 .put(ALICE_WITH_ENCODED_SLASH + SEPARATOR + "targets" + SEPARATOR + BOB)
             .then()
-                .statusCode(HttpStatus.CREATED_201);
+                .statusCode(HttpStatus.NO_CONTENT_204);
         }
 
         @Test
@@ -337,7 +349,7 @@ class ForwardRoutesTest {
             when()
                 .delete(ALICE + SEPARATOR + "targets" + SEPARATOR + BOB)
             .then()
-                .statusCode(HttpStatus.OK_200);
+                .statusCode(HttpStatus.NO_CONTENT_204);
         }
 
         @Test
