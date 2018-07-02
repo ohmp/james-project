@@ -168,7 +168,7 @@ public class GroupsRoutes implements Routes {
         return halt(HttpStatus.NO_CONTENT_204);
     }
 
-    private void addGroupMember( MappingSource source, MailAddress userAddress) throws RecipientRewriteTableException {
+    private void addGroupMember(MappingSource source, MailAddress userAddress) throws RecipientRewriteTableException {
         try {
             recipientRewriteTable.addGroupMapping(source, userAddress.asString());
         } catch (MappingAlreadyExistsException e) {
