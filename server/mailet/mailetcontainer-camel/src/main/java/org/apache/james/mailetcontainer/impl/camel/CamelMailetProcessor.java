@@ -128,7 +128,6 @@ public class CamelMailetProcessor extends AbstractStateMailetProcessor implement
 
         private final List<MatcherMailetPair> pairs;
         private final MetricFactory metricFactory;
-        private boolean isMatched;
 
         private MailetContainerRouteBuilder(CamelMailetProcessor container, MetricFactory metricFactory, List<MatcherMailetPair> pairs) {
             this.container = container;
@@ -174,7 +173,7 @@ public class CamelMailetProcessor extends AbstractStateMailetProcessor implement
 
         private void handleMailet(Exchange exchange, CamelMailetProcessor container, CamelProcessor mailetProccessor) throws Exception {
             Mail mail = exchange.getIn().getBody(Mail.class);
-            isMatched = mail.removeAttribute(MatcherSplitter.MATCHER_MATCHED_ATTRIBUTE) != null;
+            boolean isMatched = mail.removeAttribute(MatcherSplitter.MATCHER_MATCHED_ATTRIBUTE) != null;
             if (isMatched) {
                 mailetProccessor.process(mail);
             }
