@@ -379,6 +379,31 @@ class DomainQuotaRoutesTest {
     }
 
     @Test
+    void getQuotaShouldDisplayScopesWhenUnlimited() throws Exception {
+        int maxMessage = 42;
+        maxQuotaManager.setGlobalMaxMessage(QuotaCount.unlimited());
+        maxQuotaManager.setGlobalMaxStorage(QuotaSize.size(42));
+        maxQuotaManager.setDomainMaxMessage(TROUVÉ_COM, QuotaCount.count(maxMessage));
+        maxQuotaManager.setDomainMaxStorage(TROUVÉ_COM, QuotaSize.unlimited());
+
+        String json =
+            given()
+                .get(QUOTA_DOMAINS + "/" + TROUVÉ_COM.name())
+            .then()
+                .statusCode(HttpStatus.OK_200)
+                .contentType(ContentType.JSON)
+                .extract()
+                .asString();
+
+        assertThatJson(json)
+            .isEqualTo("{" +
+                "\"global\":{\"count\":-1,\"size\":42}," +
+                "\"domain\":{\"count\":42,\"size\":-1}," +
+                "\"computed\":{\"count\":42,\"size\":-1}" +
+            "}");
+    }
+
+    @Test
     void getQuotaShouldDisplayScopedInformation() throws Exception {
         int maxMessage = 42;
         maxQuotaManager.setDomainMaxMessage(TROUVÉ_COM, QuotaCount.count(maxMessage));
