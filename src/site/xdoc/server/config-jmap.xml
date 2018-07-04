@@ -45,7 +45,7 @@
 
                     <dt><strong>tls.keystoreURL</strong></dt>
                     <dd>Keystore to be used for generating authentication tokens for password authentication mechanism.
-                    This do not need to be the same keystore than the ones used by TLS based protocols.</dd>
+                    This should not be the same keystore than the ones used by TLS based protocols.</dd>
 
                     <dt><strong>tls.secret</strong></dt>
                     <dd>Password used to read the keystore</dd>
