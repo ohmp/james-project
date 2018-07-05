@@ -27,6 +27,7 @@ import org.apache.james.mailbox.jpa.JPAMailboxFixture;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.model.AnnotationMapperTest;
+import org.junit.After;
 import org.junit.Before;
 
 public class JpaAnnotationMapperTest extends AnnotationMapperTest {
@@ -41,9 +42,14 @@ public class JpaAnnotationMapperTest extends AnnotationMapperTest {
         super.setUp();
     }
 
+    @After
+    public void tearDown() {
+        JPA_TEST_CLUSTER.clear(JPAMailboxFixture.MAILBOX_TABLE_NAMES);
+    }
+
     @Override
     protected AnnotationMapper createAnnotationMapper() {
-        return new JPAAnnotationMapper(JPA_TEST_CLUSTER.getEntityManagerFactory());
+        return new TransactionalAnnotationMapper(new JPAAnnotationMapper(JPA_TEST_CLUSTER.getEntityManagerFactory()));
     }
 
     @Override
