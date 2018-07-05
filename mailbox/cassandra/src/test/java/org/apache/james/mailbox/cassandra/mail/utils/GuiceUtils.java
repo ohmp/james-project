@@ -22,6 +22,7 @@ package org.apache.james.mailbox.cassandra.mail.utils;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
+import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.ObjectStore;
 import org.apache.james.blob.cassandra.CassandraBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
@@ -38,7 +39,7 @@ public class GuiceUtils {
         return Guice.createInjector(
             Modules.combine(
                 binder -> binder.bind(MessageId.Factory.class).toInstance(new CassandraMessageId.Factory()),
-                binder -> binder.bind(org.apache.james.blob.api.BlobId.Factory.class).toInstance(new CassandraBlobId.Factory()),
+                binder -> binder.bind(BlobId.Factory.class).toInstance(new CassandraBlobId.Factory()),
                 binder -> binder.bind(ObjectStore.class).to(CassandraBlobsDAO.class),
                 binder -> binder.bind(Session.class).toInstance(cluster.getConf()),
                 binder -> binder.bind(CassandraTypesProvider.class).toInstance(cluster.getTypesProvider()),
