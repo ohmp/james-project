@@ -44,7 +44,7 @@ public class JpaMailboxMapperTest extends MailboxMapperTest {
 
     @Override
     protected MailboxMapper createMailboxMapper() {
-        return new JPAMailboxMapper(JPA_TEST_CLUSTER.getEntityManagerFactory());
+        return new TransactionalMailboxMapper(new JPAMailboxMapper(JPA_TEST_CLUSTER.getEntityManagerFactory()));
     }
 
     @Override
