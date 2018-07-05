@@ -47,8 +47,8 @@ public class CassandraAttachmentOwnerDAOTest {
 
     @Before
     public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(new CassandraAttachmentModule(),
-            cassandraServer.getIp(), cassandraServer.getBindingPort());
+        cassandra = CassandraCluster.create(CassandraAttachmentModule.CASSANDRA_ATTACHMENT_OWNER_TABLE,
+            cassandraServer.getHost());
         testee = new CassandraAttachmentOwnerDAO(cassandra.getConf(),
             CassandraUtils.WITH_DEFAULT_CONFIGURATION);
     }
