@@ -26,8 +26,6 @@ import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.mail.utils.GuiceUtils;
 import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
-import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
-import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.MailboxMapperACLTest;
@@ -46,9 +44,7 @@ public class CassandraMailboxMapperAclTest extends MailboxMapperACLTest {
     public void setUp() throws Exception {
         CassandraModuleComposite modules = new CassandraModuleComposite(
             new CassandraAclModule(),
-            new CassandraMailboxModule(),
-            new CassandraModSeqModule(),
-            new CassandraUidModule());
+            new CassandraMailboxModule());
         this.cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
         super.setUp();
     }
