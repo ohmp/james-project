@@ -17,29 +17,33 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.inmemory.mail;
+package org.apache.james.backends.cassandra;
 
-import org.apache.james.mailbox.inmemory.InMemoryId;
-import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.store.mail.AnnotationMapper;
-import org.apache.james.mailbox.store.mail.model.AnnotationMapperContract;
+import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-public class MemoryAnnotationMapperTest implements AnnotationMapperContract {
-    private AnnotationMapper testee;
+public class CassandraTestRunner {
+    protected static DockerCassandraRule dockerCassandra = new DockerCassandraRule();
 
-    @BeforeEach
-    void setUp() {
-        testee = new InMemoryAnnotationMapper();
+    static { // BeforeAll is played for each inner class
+        dockerCassandra.start();
+        // Rely on test containers for automated test cleanup
     }
 
-    @Override
-    public MailboxId mailboxId() {
-        return InMemoryId.of(1);
-    }
+    public abstract class Runner {
+        public CassandraCluster cassandra;
 
-    @Override
-    public AnnotationMapper testee() {
-        return testee;
+        public abstract CassandraModule module();
+
+        @BeforeEach
+        void setUpCassandraCluster() {
+            cassandra = CassandraCluster.create(module(), dockerCassandra.getHost());
+        }
+
+        @AfterEach
+        void tearDownCassandraCluster() {
+            cassandra.close();
+        }
     }
 }
