@@ -23,74 +23,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import java.util.stream.LongStream;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
-import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.github.fge.lambdas.Throwing;
 
-public class CassandraUidProviderTest {
-    private static final CassandraId CASSANDRA_ID = new CassandraId.Factory().fromString("e22b3ac0-a80b-11e7-bb00-777268d65503");
+public interface CassandraUidProviderTest {
+    CassandraId CASSANDRA_ID = new CassandraId.Factory().fromString("e22b3ac0-a80b-11e7-bb00-777268d65503");
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private final CassandraCluster cassandra = CassandraCluster.create(new CassandraUidModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
-    
-    private CassandraUidProvider uidProvider;
-    private SimpleMailbox mailbox;
+    int UID_VALIDITY = 1234;
+    SimpleMailbox mailbox = new SimpleMailbox(new MailboxPath("gsoc", "ieugen", "Trash"), UID_VALIDITY);
 
-    @Before
-    public void setUpClass() throws Exception {
-        uidProvider = new CassandraUidProvider(cassandra.getConf());
-        MailboxPath path = new MailboxPath("gsoc", "ieugen", "Trash");
-        mailbox = new SimpleMailbox(path, 1234);
+    @BeforeAll
+    static void setMailboxId() {
         mailbox.setMailboxId(CASSANDRA_ID);
     }
-    
-    @After
-    public void cleanUp() {
-        cassandra.close();
-    }
+
+    CassandraUidProvider testee();
 
     @Test
-    public void lastUidShouldRetrieveValueStoredByNextUid() throws Exception {
+    default void lastUidShouldRetrieveValueStoredByNextUid() throws Exception {
         int nbEntries = 100;
-        Optional<MessageUid> result = uidProvider.lastUid(null, mailbox);
+        Optional<MessageUid> result = testee().lastUid(null, mailbox);
         assertThat(result).isEmpty();
         LongStream.range(0, nbEntries)
             .forEach(Throwing.longConsumer(value -> {
-                        MessageUid uid = uidProvider.nextUid(null, mailbox);
-                        assertThat(uid).isEqualTo(uidProvider.lastUid(null, mailbox).get());
+                        MessageUid uid = testee().nextUid(null, mailbox);
+                        assertThat(uid).isEqualTo(testee().lastUid(null, mailbox).get());
                 })
             );
     }
 
     @Test
-    public void nextUidShouldIncrementValueByOne() throws Exception {
+    default void nextUidShouldIncrementValueByOne() {
         int nbEntries = 100;
         LongStream.range(1, nbEntries)
             .forEach(Throwing.longConsumer(value -> {
-                        MessageUid result = uidProvider.nextUid(null, mailbox);
+                        MessageUid result = testee().nextUid(null, mailbox);
                         assertThat(value).isEqualTo(result.asLong());
                 })
             );
     }
 
     @Test
-    public void nextUidShouldGenerateUniqueValuesWhenParallelCalls() throws Exception {
+    default void nextUidShouldGenerateUniqueValuesWhenParallelCalls() {
         int nbEntries = 100;
         long nbValues = LongStream.range(0, nbEntries)
             .parallel()
             .boxed()
-            .map(Throwing.function(x -> uidProvider.nextUid(null, mailbox)))
+            .map(Throwing.function(x -> testee().nextUid(null, mailbox)))
             .distinct()
             .count();
         assertThat(nbValues).isEqualTo(nbEntries);

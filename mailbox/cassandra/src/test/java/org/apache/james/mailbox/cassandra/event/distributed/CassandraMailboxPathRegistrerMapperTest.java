@@ -24,97 +24,77 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
-import org.apache.james.mailbox.cassandra.modules.CassandraRegistrationModule;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.publisher.Topic;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CassandraMailboxPathRegistrerMapperTest {
+public interface CassandraMailboxPathRegistrerMapperTest {
+    MailboxPath MAILBOX_PATH = new MailboxPath("namespace", "user", "name");
+    MailboxPath MAILBOX_PATH_2 = new MailboxPath("namespace2", "user2", "name2");
+    Topic TOPIC = new Topic("topic");
+    int CASSANDRA_TIME_OUT_IN_S = 100;
+    Topic TOPIC_2 = new Topic("topic2");
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private final CassandraCluster cassandra = CassandraCluster.create(new CassandraRegistrationModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
-    private static final MailboxPath MAILBOX_PATH = new MailboxPath("namespace", "user", "name");
-    private static final MailboxPath MAILBOX_PATH_2 = new MailboxPath("namespace2", "user2", "name2");
-    private static final Topic TOPIC = new Topic("topic");
-    private static final int CASSANDRA_TIME_OUT_IN_S = 100;
-    private static final Topic TOPIC_2 = new Topic("topic2");
+    CassandraCluster cassandra();
 
-    private CassandraMailboxPathRegisterMapper mapper;
+    CassandraMailboxPathRegisterMapper testee();
 
-    @Before
-    public void setUp() {
-        mapper = new CassandraMailboxPathRegisterMapper(cassandra.getConf(),
-            cassandra.getTypesProvider(),
-            CassandraUtils.WITH_DEFAULT_CONFIGURATION,
-            CASSANDRA_TIME_OUT_IN_S);
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
+    @Test
+    default void getTopicsShouldReturnEmptyResultByDefault() {
+        assertThat(testee().getTopics(MAILBOX_PATH)).isEmpty();
     }
 
     @Test
-    public void getTopicsShouldReturnEmptyResultByDefault() {
-        assertThat(mapper.getTopics(MAILBOX_PATH)).isEmpty();
+    default void doRegisterShouldWork() {
+        testee().doRegister(MAILBOX_PATH, TOPIC);
+        assertThat(testee().getTopics(MAILBOX_PATH)).containsOnly(TOPIC);
     }
 
     @Test
-    public void doRegisterShouldWork() {
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
-        assertThat(mapper.getTopics(MAILBOX_PATH)).containsOnly(TOPIC);
+    default void doRegisterShouldBeMailboxPathSpecific() {
+        testee().doRegister(MAILBOX_PATH, TOPIC);
+        assertThat(testee().getTopics(MAILBOX_PATH_2)).isEmpty();
     }
 
     @Test
-    public void doRegisterShouldBeMailboxPathSpecific() {
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
-        assertThat(mapper.getTopics(MAILBOX_PATH_2)).isEmpty();
+    default void doRegisterShouldAllowMultipleTopics() {
+        testee().doRegister(MAILBOX_PATH, TOPIC);
+        testee().doRegister(MAILBOX_PATH, TOPIC_2);
+        assertThat(testee().getTopics(MAILBOX_PATH)).containsOnly(TOPIC, TOPIC_2);
     }
 
     @Test
-    public void doRegisterShouldAllowMultipleTopics() {
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
-        mapper.doRegister(MAILBOX_PATH, TOPIC_2);
-        assertThat(mapper.getTopics(MAILBOX_PATH)).containsOnly(TOPIC, TOPIC_2);
+    default void doUnRegisterShouldWork() {
+        testee().doRegister(MAILBOX_PATH, TOPIC);
+        testee().doUnRegister(MAILBOX_PATH, TOPIC);
+        assertThat(testee().getTopics(MAILBOX_PATH)).isEmpty();
     }
 
     @Test
-    public void doUnRegisterShouldWork() {
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
-        mapper.doUnRegister(MAILBOX_PATH, TOPIC);
-        assertThat(mapper.getTopics(MAILBOX_PATH)).isEmpty();
+    default void doUnregisterShouldBeMailboxSpecific() {
+        testee().doRegister(MAILBOX_PATH, TOPIC);
+        testee().doUnRegister(MAILBOX_PATH_2, TOPIC);
+        assertThat(testee().getTopics(MAILBOX_PATH)).containsOnly(TOPIC);
     }
 
     @Test
-    public void doUnregisterShouldBeMailboxSpecific() {
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
-        mapper.doUnRegister(MAILBOX_PATH_2, TOPIC);
-        assertThat(mapper.getTopics(MAILBOX_PATH)).containsOnly(TOPIC);
+    default void doUnregisterShouldBeTopicSpecific() {
+        testee().doRegister(MAILBOX_PATH, TOPIC);
+        testee().doUnRegister(MAILBOX_PATH, TOPIC_2);
+        assertThat(testee().getTopics(MAILBOX_PATH)).containsOnly(TOPIC);
     }
 
     @Test
-    public void doUnregisterShouldBeTopicSpecific() {
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
-        mapper.doUnRegister(MAILBOX_PATH, TOPIC_2);
-        assertThat(mapper.getTopics(MAILBOX_PATH)).containsOnly(TOPIC);
-    }
-
-    @Test
-    public void entriesShouldExpire() throws Exception {
+    default void entriesShouldExpire() throws Exception {
         int verySmallTimeoutInSecond = 1;
-        mapper = new CassandraMailboxPathRegisterMapper(cassandra.getConf(),
-            cassandra.getTypesProvider(),
+        CassandraMailboxPathRegisterMapper testee = new CassandraMailboxPathRegisterMapper(cassandra().getConf(),
+            cassandra().getTypesProvider(),
             CassandraUtils.WITH_DEFAULT_CONFIGURATION,
             verySmallTimeoutInSecond);
-        mapper.doRegister(MAILBOX_PATH, TOPIC);
+        testee.doRegister(MAILBOX_PATH, TOPIC);
         Thread.sleep(2 * TimeUnit.SECONDS.toMillis(verySmallTimeoutInSecond));
-        assertThat(mapper.getTopics(MAILBOX_PATH)).isEmpty();
+        assertThat(testee.getTopics(MAILBOX_PATH)).isEmpty();
     }
 
 }

@@ -21,56 +21,37 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
-import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest {
+public interface CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest {
 
-    @Override
-    CassandraModule module() {
-        return new CassandraModuleComposite(
-            CassandraMailboxModule.MAILBOX_PATH_TABLE,
-            CassandraMailboxModule.MAILBOX_BASE_TYPE);
-    }
-
-    @Override
-    CassandraMailboxPathDAO testee() {
-        return new CassandraMailboxPathDAOImpl(cassandra.getConf(), cassandra.getTypesProvider());
-    }
+    CassandraMailboxPathDAOImpl testee();
 
     @Test
-    public void countAllShouldReturnEntryCount() {
-        testee.save(USER_INBOX_MAILBOXPATH, INBOX_ID).join();
-        testee.save(USER_OUTBOX_MAILBOXPATH, OUTBOX_ID).join();
-        testee.save(OTHER_USER_MAILBOXPATH, otherMailboxId).join();
+    default void countAllShouldReturnEntryCount() {
+        testee().save(USER_INBOX_MAILBOXPATH, INBOX_ID).join();
+        testee().save(USER_OUTBOX_MAILBOXPATH, OUTBOX_ID).join();
+        testee().save(OTHER_USER_MAILBOXPATH, otherMailboxId).join();
 
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.countAll().join())
+        assertThat(testee().countAll().join())
             .isEqualTo(3);
     }
 
     @Test
-    public void countAllShouldReturnZeroByDefault() {
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.countAll().join())
+    default void countAllShouldReturnZeroByDefault() {
+        assertThat(testee().countAll().join())
             .isEqualTo(0);
     }
 
     @Test
-    public void readAllShouldReturnAllStoredData() {
-        testee.save(USER_INBOX_MAILBOXPATH, INBOX_ID).join();
-        testee.save(USER_OUTBOX_MAILBOXPATH, OUTBOX_ID).join();
-        testee.save(OTHER_USER_MAILBOXPATH, otherMailboxId).join();
+    default void readAllShouldReturnAllStoredData() {
+        testee().save(USER_INBOX_MAILBOXPATH, INBOX_ID).join();
+        testee().save(USER_OUTBOX_MAILBOXPATH, OUTBOX_ID).join();
+        testee().save(OTHER_USER_MAILBOXPATH, otherMailboxId).join();
 
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.readAll().join().collect(Guavate.toImmutableList()))
+        assertThat(testee().readAll().join().collect(Guavate.toImmutableList()))
             .containsOnly(
                 new CassandraIdAndPath(INBOX_ID, USER_INBOX_MAILBOXPATH),
                 new CassandraIdAndPath(OUTBOX_ID, USER_OUTBOX_MAILBOXPATH),
@@ -78,10 +59,8 @@ public class CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest
     }
 
     @Test
-    public void readAllShouldReturnEmptyByDefault() {
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.readAll().join().collect(Guavate.toImmutableList()))
+    default void readAllShouldReturnEmptyByDefault() {
+        assertThat(testee().readAll().join().collect(Guavate.toImmutableList()))
             .isEmpty();
     }
 }

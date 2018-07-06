@@ -28,96 +28,76 @@ import java.util.stream.Collectors;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
-import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MessageRange;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CassandraMessageIdDAOTest {
-
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-
-    private CassandraMessageId.Factory messageIdFactory;
-    private CassandraMessageIdDAO testee;
+public interface CassandraMessageIdDAOTest {
 
 
-    @Before
-    public void setUp() {
-        cassandra = CassandraCluster.create(CassandraMessageModule.CASSANDRA_MESSAGE_ID_TABLE, cassandraServer.getHost());
-        messageIdFactory = new CassandraMessageId.Factory();
-        testee = new CassandraMessageIdDAO(cassandra.getConf(), messageIdFactory);
-    }
+    CassandraMessageId.Factory messageIdFactory = new CassandraMessageId.Factory();
 
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+
+    CassandraMessageIdDAO testee();
 
     @Test
-    public void deleteShouldNotThrowWhenRowDoesntExist() {
-        testee.delete(CassandraId.timeBased(), MessageUid.of(1))
+    default void deleteShouldNotThrowWhenRowDoesntExist() {
+        testee().delete(CassandraId.timeBased(), MessageUid.of(1))
             .join();
     }
 
     @Test
-    public void deleteShouldDeleteWhenRowExists() {
+    default void deleteShouldDeleteWhenRowExists() {
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
         CassandraMessageId messageId = messageIdFactory.generate();
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                 .flags(new Flags())
                 .modSeq(1)
                 .build())
             .join();
 
-        testee.delete(mailboxId, messageUid).join();
+        testee().delete(mailboxId, messageUid).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.isPresent()).isFalse();
     }
 
     @Test
-    public void deleteShouldDeleteOnlyConcernedRowWhenMultipleRowExists() {
+    default void deleteShouldDeleteOnlyConcernedRowWhenMultipleRowExists() {
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
         MessageUid messageUid2 = MessageUid.of(2);
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraMessageId messageId2 = messageIdFactory.generate();
-        CompletableFuture.allOf(testee.insert(
+        CompletableFuture.allOf(testee().insert(
                 ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()),
-                testee.insert(ComposedMessageIdWithMetaData.builder()
+                testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId2, messageUid2))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()))
         .join();
 
-        testee.delete(mailboxId, messageUid).join();
+        testee().delete(mailboxId, messageUid).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.isPresent()).isFalse();
-        Optional<ComposedMessageIdWithMetaData> messageNotDeleted = testee.retrieve(mailboxId, messageUid2).join();
+        Optional<ComposedMessageIdWithMetaData> messageNotDeleted = testee().retrieve(mailboxId, messageUid2).join();
         assertThat(messageNotDeleted.isPresent()).isTrue();
     }
 
     @Test
-    public void insertShouldWork() {
+    default void insertShouldWork() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
@@ -127,20 +107,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        testee.insert(composedMessageIdWithMetaData).join();
+        testee().insert(composedMessageIdWithMetaData).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(composedMessageIdWithMetaData);
     }
 
     @Test
-    public void updateShouldUpdateModSeq() {
+    default void updateShouldUpdateModSeq() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -152,20 +132,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateAnsweredFlag() {
+    default void updateShouldUpdateAnsweredFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -177,20 +157,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.ANSWERED))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateDeletedFlag() {
+    default void updateShouldUpdateDeletedFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -202,20 +182,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.DELETED))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateDraftFlag() {
+    default void updateShouldUpdateDraftFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -227,20 +207,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.DRAFT))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateFlaggedFlag() {
+    default void updateShouldUpdateFlaggedFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -252,20 +232,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.FLAGGED))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateRecentFlag() {
+    default void updateShouldUpdateRecentFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -277,20 +257,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.RECENT))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateSeenFlag() {
+    default void updateShouldUpdateSeenFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -302,20 +282,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.SEEN))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateUserFlag() {
+    default void updateShouldUpdateUserFlag() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -327,20 +307,20 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags(Flag.USER))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateUserFlags() {
+    default void updateShouldUpdateUserFlags() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -354,14 +334,14 @@ public class CassandraMessageIdDAOTest {
                 .flags(flags)
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId).join();
+        testee().updateMetadata(expectedComposedMessageId).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
         assertThat(message.get()).isEqualTo(expectedComposedMessageId);
     }
 
     @Test
-    public void retrieveShouldRetrieveWhenKeyMatches() {
+    default void retrieveShouldRetrieveWhenKeyMatches() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
@@ -370,15 +350,15 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        testee.insert(composedMessageIdWithMetaData).join();
+        testee().insert(composedMessageIdWithMetaData).join();
 
-        Optional<ComposedMessageIdWithMetaData> message = testee.retrieve(mailboxId, messageUid).join();
+        Optional<ComposedMessageIdWithMetaData> message = testee().retrieve(mailboxId, messageUid).join();
 
         assertThat(message.get()).isEqualTo(composedMessageIdWithMetaData);
     }
 
     @Test
-    public void retrieveMessagesShouldRetrieveAllWhenRangeAll() {
+    default void retrieveMessagesShouldRetrieveAllWhenRangeAll() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraMessageId messageId2 = messageIdFactory.generate();
         CassandraId mailboxId = CassandraId.timeBased();
@@ -395,18 +375,18 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        CompletableFuture.allOf(testee.insert(composedMessageIdWithMetaData),
-                testee.insert(composedMessageIdWithMetaData2))
+        CompletableFuture.allOf(testee().insert(composedMessageIdWithMetaData),
+                testee().insert(composedMessageIdWithMetaData2))
         .join();
 
-        List<ComposedMessageIdWithMetaData> messages = testee.retrieveMessages(mailboxId, MessageRange.all()).join()
+        List<ComposedMessageIdWithMetaData> messages = testee().retrieveMessages(mailboxId, MessageRange.all()).join()
                 .collect(Collectors.toList());
 
         assertThat(messages).containsOnly(composedMessageIdWithMetaData, composedMessageIdWithMetaData2);
     }
 
     @Test
-    public void retrieveMessagesShouldRetrieveSomeWhenRangeFrom() {
+    default void retrieveMessagesShouldRetrieveSomeWhenRangeFrom() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraMessageId messageId2 = messageIdFactory.generate();
         CassandraMessageId messageId3 = messageIdFactory.generate();
@@ -425,24 +405,24 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        CompletableFuture.allOf(testee.insert(
+        CompletableFuture.allOf(testee().insert(
                 ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()),
-                testee.insert(composedMessageIdWithMetaData),
-                testee.insert(composedMessageIdWithMetaData2))
+                testee().insert(composedMessageIdWithMetaData),
+                testee().insert(composedMessageIdWithMetaData2))
         .join();
 
-        List<ComposedMessageIdWithMetaData> messages = testee.retrieveMessages(mailboxId, MessageRange.from(messageUid2)).join()
+        List<ComposedMessageIdWithMetaData> messages = testee().retrieveMessages(mailboxId, MessageRange.from(messageUid2)).join()
                 .collect(Collectors.toList());
 
         assertThat(messages).containsOnly(composedMessageIdWithMetaData, composedMessageIdWithMetaData2);
     }
 
     @Test
-    public void retrieveMessagesShouldRetrieveSomeWhenRange() {
+    default void retrieveMessagesShouldRetrieveSomeWhenRange() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraMessageId messageId2 = messageIdFactory.generate();
         CassandraMessageId messageId3 = messageIdFactory.generate();
@@ -453,7 +433,7 @@ public class CassandraMessageIdDAOTest {
         MessageUid messageUid3 = MessageUid.of(3);
         MessageUid messageUid4 = MessageUid.of(4);
 
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                 .flags(new Flags())
                 .modSeq(1)
@@ -471,23 +451,23 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        CompletableFuture.allOf(testee.insert(composedMessageIdWithMetaData),
-                testee.insert(composedMessageIdWithMetaData2),
-                testee.insert(ComposedMessageIdWithMetaData.builder()
+        CompletableFuture.allOf(testee().insert(composedMessageIdWithMetaData),
+                testee().insert(composedMessageIdWithMetaData2),
+                testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId4, messageUid4))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()))
         .join();
 
-        List<ComposedMessageIdWithMetaData> messages = testee.retrieveMessages(mailboxId, MessageRange.range(messageUid2, messageUid3)).join()
+        List<ComposedMessageIdWithMetaData> messages = testee().retrieveMessages(mailboxId, MessageRange.range(messageUid2, messageUid3)).join()
                 .collect(Collectors.toList());
 
         assertThat(messages).containsOnly(composedMessageIdWithMetaData, composedMessageIdWithMetaData2);
     }
 
     @Test
-    public void retrieveMessagesShouldRetrieveOneWhenRangeOne() {
+    default void retrieveMessagesShouldRetrieveOneWhenRangeOne() {
         CassandraMessageId messageId = messageIdFactory.generate();
         CassandraMessageId messageId2 = messageIdFactory.generate();
         CassandraMessageId messageId3 = messageIdFactory.generate();
@@ -501,21 +481,21 @@ public class CassandraMessageIdDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        CompletableFuture.allOf(testee.insert(
+        CompletableFuture.allOf(testee().insert(
                 ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()),
-                testee.insert(composedMessageIdWithMetaData),
-                testee.insert(ComposedMessageIdWithMetaData.builder()
+                testee().insert(composedMessageIdWithMetaData),
+                testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId3, messageUid3))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()))
         .join();
 
-        List<ComposedMessageIdWithMetaData> messages = testee.retrieveMessages(mailboxId, MessageRange.one(messageUid2)).join()
+        List<ComposedMessageIdWithMetaData> messages = testee().retrieveMessages(mailboxId, MessageRange.one(messageUid2)).join()
                 .collect(Collectors.toList());
 
         assertThat(messages).containsOnly(composedMessageIdWithMetaData);

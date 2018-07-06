@@ -23,77 +23,59 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.stream.LongStream;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
-import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.github.fge.lambdas.Throwing;
 
-public class CassandraModSeqProviderTest {
-    private static final CassandraId CASSANDRA_ID = new CassandraId.Factory().fromString("e22b3ac0-a80b-11e7-bb00-777268d65503");
+public interface CassandraModSeqProviderTest {
+    CassandraId CASSANDRA_ID = new CassandraId.Factory().fromString("e22b3ac0-a80b-11e7-bb00-777268d65503");
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    
-    private CassandraModSeqProvider modSeqProvider;
-    private SimpleMailbox mailbox;
 
-    @Before
-    public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(
-            new CassandraModSeqModule(),
-            cassandraServer.getIp(),
-            cassandraServer.getBindingPort());
-        modSeqProvider = new CassandraModSeqProvider(cassandra.getConf());
-        MailboxPath path = new MailboxPath("gsoc", "ieugen", "Trash");
-        mailbox = new SimpleMailbox(path, 1234);
+    int UID_VALIDITY = 1234;
+    SimpleMailbox mailbox = new SimpleMailbox(new MailboxPath("gsoc", "ieugen", "Trash"), UID_VALIDITY);
+
+    @BeforeAll
+    static void setMailboxId() {
         mailbox.setMailboxId(CASSANDRA_ID);
     }
-    
-    @After
-    public void cleanUp() {
-        cassandra.close();
-    }
+
+    CassandraModSeqProvider testee();
 
     @Test
-    public void highestModSeqShouldRetrieveValueStoredNextModSeq() throws Exception {
+    default void highestModSeqShouldRetrieveValueStoredNextModSeq() throws Exception {
         int nbEntries = 100;
-        long result = modSeqProvider.highestModSeq(null, mailbox);
+        long result = testee().highestModSeq(null, mailbox);
         assertEquals(0, result);
         LongStream.range(0, nbEntries)
             .forEach(Throwing.longConsumer(value -> {
-                        long uid = modSeqProvider.nextModSeq(null, mailbox);
-                        assertThat(uid).isEqualTo(modSeqProvider.highestModSeq(null, mailbox));
+                        long uid = testee().nextModSeq(null, mailbox);
+                        assertThat(uid).isEqualTo(testee().highestModSeq(null, mailbox));
                 })
             );
     }
 
     @Test
-    public void nextModSeqShouldIncrementValueByOne() throws Exception {
+    default void nextModSeqShouldIncrementValueByOne() throws Exception {
         int nbEntries = 100;
-        long lastUid = modSeqProvider.highestModSeq(null, mailbox);
+        long lastUid = testee().highestModSeq(null, mailbox);
         LongStream.range(lastUid + 1, lastUid + nbEntries)
             .forEach(Throwing.longConsumer(value -> {
-                        long result = modSeqProvider.nextModSeq(null, mailbox);
+                        long result = testee().nextModSeq(null, mailbox);
                         assertThat(value).isEqualTo(result);
                 })
             );
     }
 
     @Test
-    public void nextModSeqShouldGenerateUniqueValuesWhenParallelCalls() throws Exception {
+    default void nextModSeqShouldGenerateUniqueValuesWhenParallelCalls() {
         int nbEntries = 100;
         long nbValues = LongStream.range(0, nbEntries)
             .parallel()
-            .map(Throwing.longUnaryOperator(x -> modSeqProvider.nextModSeq(null, mailbox)))
+            .map(Throwing.longUnaryOperator(x -> testee().nextModSeq(null, mailbox)))
             .distinct()
             .count();
         assertThat(nbValues).isEqualTo(nbEntries);

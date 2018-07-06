@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance   *
  * with the License.  You may obtain a copy of the License at   *
  *                                                              *
- * http://www.apache.org/licenses/LICENSE-2.0                   *
+ *   http://www.apache.org/licenses/LICENSE-2.0                 *
  *                                                              *
  * Unless required by applicable law or agreed to in writing,   *
  * software distributed under the License is distributed on an  *
@@ -17,24 +17,33 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.cassandra.mail;
+package org.apache.james.backends.cassandra;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
-import org.apache.james.backends.cassandra.utils.CassandraUtils;
-import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-public class CassandraMailboxPathV2DAOTest extends CassandraMailboxPathDAOTest {
+public class CassandraTestRunner {
+    protected static DockerCassandraRule dockerCassandra = new DockerCassandraRule();
 
-    @Override
-    CassandraModule module() {
-        return new CassandraModuleComposite(
-            CassandraMailboxModule.MAILBOX_PATH_V2_TABLE,
-            CassandraMailboxModule.MAILBOX_BASE_TYPE);
+    static { // BeforeAll is played for each inner class
+        dockerCassandra.start();
+        // Rely on test containers for automated test cleanup
     }
 
-    @Override
-    CassandraMailboxPathDAO testee() {
-        return new CassandraMailboxPathV2DAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+    public abstract class Runner {
+        public CassandraCluster cassandra;
+
+        public abstract CassandraModule module();
+
+        @BeforeEach
+        void setUpCassandraCluster() {
+            cassandra = CassandraCluster.create(module(), dockerCassandra.getHost());
+        }
+
+        @AfterEach
+        void tearDownCassandraCluster() {
+            cassandra.close();
+        }
     }
 }

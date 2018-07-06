@@ -24,49 +24,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
-import org.apache.james.mailbox.cassandra.modules.CassandraDeletedMessageModule;
 import org.apache.james.mailbox.model.MessageRange;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraDeletedMessageDAOTest {
+public interface CassandraDeletedMessageDAOTest {
     
-    public static final CassandraId MAILBOX_ID = CassandraId.of(UUID.fromString("110e8400-e29b-11d4-a716-446655440000"));
-    public static final MessageUid UID_1 = MessageUid.of(1);
-    public static final MessageUid UID_2 = MessageUid.of(2);
-    public static final MessageUid UID_3 = MessageUid.of(3);
-    public static final MessageUid UID_4 = MessageUid.of(4);
-    public static final MessageUid UID_7 = MessageUid.of(7);
-    public static final MessageUid UID_8 = MessageUid.of(8);
+    CassandraId MAILBOX_ID = CassandraId.of(UUID.fromString("110e8400-e29b-11d4-a716-446655440000"));
+    MessageUid UID_1 = MessageUid.of(1);
+    MessageUid UID_2 = MessageUid.of(2);
+    MessageUid UID_3 = MessageUid.of(3);
+    MessageUid UID_4 = MessageUid.of(4);
+    MessageUid UID_7 = MessageUid.of(7);
+    MessageUid UID_8 = MessageUid.of(8);
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    private CassandraDeletedMessageDAO testee;
-
-    @Before
-    public void setUp() {
-        cassandra = CassandraCluster.create(
-            new CassandraDeletedMessageModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
-        testee = new CassandraDeletedMessageDAO(cassandra.getConf());
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraDeletedMessageDAO testee();
 
     @Test
-    public void retrieveDeletedMessageShouldReturnEmptyByDefault() {
-        List<MessageUid> result = testee
+    default void retrieveDeletedMessageShouldReturnEmptyByDefault() {
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
@@ -75,11 +54,11 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void addDeletedMessageShouldThenBeReportedAsDeletedMessage() {
-        testee.addDeleted(MAILBOX_ID, UID_1).join();
-        testee.addDeleted(MAILBOX_ID, UID_2).join();
+    default void addDeletedMessageShouldThenBeReportedAsDeletedMessage() {
+        testee().addDeleted(MAILBOX_ID, UID_1).join();
+        testee().addDeleted(MAILBOX_ID, UID_2).join();
 
-        List<MessageUid> result = testee.retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
+        List<MessageUid> result = testee().retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
 
@@ -87,11 +66,11 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void addDeletedMessageShouldBeIdempotent() {
-        testee.addDeleted(MAILBOX_ID, UID_1).join();
-        testee.addDeleted(MAILBOX_ID, UID_1).join();
+    default void addDeletedMessageShouldBeIdempotent() {
+        testee().addDeleted(MAILBOX_ID, UID_1).join();
+        testee().addDeleted(MAILBOX_ID, UID_1).join();
 
-        List<MessageUid> result = testee.retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
+        List<MessageUid> result = testee().retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
 
@@ -100,10 +79,10 @@ public class CassandraDeletedMessageDAOTest {
 
 
     @Test
-    public void removeUnreadShouldReturnEmptyWhenNoData() {
-        testee.removeDeleted(MAILBOX_ID, UID_1).join();
+    default void removeUnreadShouldReturnEmptyWhenNoData() {
+        testee().removeDeleted(MAILBOX_ID, UID_1).join();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
@@ -112,13 +91,13 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void removeDeletedMessageShouldNotAffectOtherMessage() {
-        testee.addDeleted(MAILBOX_ID, UID_2).join();
-        testee.addDeleted(MAILBOX_ID, UID_1).join();
+    default void removeDeletedMessageShouldNotAffectOtherMessage() {
+        testee().addDeleted(MAILBOX_ID, UID_2).join();
+        testee().addDeleted(MAILBOX_ID, UID_1).join();
 
-        testee.removeDeleted(MAILBOX_ID, UID_1).join();
+        testee().removeDeleted(MAILBOX_ID, UID_1).join();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
@@ -127,12 +106,12 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void removeDeletedShouldRemoveSpecifiedUID() {
-        testee.addDeleted(MAILBOX_ID, UID_2).join();
+    default void removeDeletedShouldRemoveSpecifiedUID() {
+        testee().addDeleted(MAILBOX_ID, UID_2).join();
 
-        testee.removeDeleted(MAILBOX_ID, UID_2).join();
+        testee().removeDeleted(MAILBOX_ID, UID_2).join();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
@@ -140,20 +119,20 @@ public class CassandraDeletedMessageDAOTest {
         assertThat(result).isEmpty();
     }
 
-    private void addMessageForRetrieveTest() {
-        testee.addDeleted(MAILBOX_ID, UID_1).join();
-        testee.addDeleted(MAILBOX_ID, UID_2).join();
-        testee.addDeleted(MAILBOX_ID, UID_3).join();
-        testee.addDeleted(MAILBOX_ID, UID_4).join();
-        testee.addDeleted(MAILBOX_ID, UID_7).join();
-        testee.addDeleted(MAILBOX_ID, UID_8).join();
+    default void addMessageForRetrieveTest() {
+        testee().addDeleted(MAILBOX_ID, UID_1).join();
+        testee().addDeleted(MAILBOX_ID, UID_2).join();
+        testee().addDeleted(MAILBOX_ID, UID_3).join();
+        testee().addDeleted(MAILBOX_ID, UID_4).join();
+        testee().addDeleted(MAILBOX_ID, UID_7).join();
+        testee().addDeleted(MAILBOX_ID, UID_8).join();
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnAllMessageForMessageRangeAll() {
+    default void retrieveDeletedMessageShouldReturnAllMessageForMessageRangeAll() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
             .join()
             .collect(Guavate.toImmutableList());
@@ -162,10 +141,10 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnOneMessageForMessageRangeOneIfThisMessageIsPresent() {
+    default void retrieveDeletedMessageShouldReturnOneMessageForMessageRangeOneIfThisMessageIsPresent() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.one(UID_1))
             .join()
             .collect(Guavate.toImmutableList());
@@ -174,10 +153,10 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnNoMessageForMessageRangeOneIfThisMessageIsNotPresent() {
+    default void retrieveDeletedMessageShouldReturnNoMessageForMessageRangeOneIfThisMessageIsNotPresent() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.one(MessageUid.of(42)))
             .join()
             .collect(Guavate.toImmutableList());
@@ -186,10 +165,10 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnMessageInRangeForMessageRangeRange() {
+    default void retrieveDeletedMessageShouldReturnMessageInRangeForMessageRangeRange() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.range(MessageUid.of(3), MessageUid.of(7)))
             .join()
             .collect(Guavate.toImmutableList());
@@ -198,10 +177,10 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnNoMessageForMessageRangeRangeIfNoDeletedMessageInThatRange() {
+    default void retrieveDeletedMessageShouldReturnNoMessageForMessageRangeRangeIfNoDeletedMessageInThatRange() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.range(MessageUid.of(5), MessageUid.of(6)))
             .join()
             .collect(Guavate.toImmutableList());
@@ -210,10 +189,10 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnNoMessageForMessageRangeFromIfNoDeletedMessageWithIdBiggerOrSameThanFrom() {
+    default void retrieveDeletedMessageShouldReturnNoMessageForMessageRangeFromIfNoDeletedMessageWithIdBiggerOrSameThanFrom() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.from(MessageUid.of(9)))
             .join()
             .collect(Guavate.toImmutableList());
@@ -222,10 +201,10 @@ public class CassandraDeletedMessageDAOTest {
     }
 
     @Test
-    public void retrieveDeletedMessageShouldReturnDeletedMessageWithIdBiggerOrSameThanFrom() {
+    default void retrieveDeletedMessageShouldReturnDeletedMessageWithIdBiggerOrSameThanFrom() {
         addMessageForRetrieveTest();
 
-        List<MessageUid> result = testee
+        List<MessageUid> result = testee()
             .retrieveDeletedMessage(MAILBOX_ID, MessageRange.from(MessageUid.of(4)))
             .join()
             .collect(Guavate.toImmutableList());

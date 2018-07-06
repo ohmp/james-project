@@ -24,90 +24,62 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
-import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraMailboxDAOTest {
+public interface CassandraMailboxDAOTest {
 
-    public static final int UID_VALIDITY_1 = 145;
-    public static final int UID_VALIDITY_2 = 147;
-    public static final MailboxPath NEW_MAILBOX_PATH = MailboxPath.forUser("user", "xyz");
-    public static CassandraId CASSANDRA_ID_1 = CassandraId.timeBased();
-    public static CassandraId CASSANDRA_ID_2 = CassandraId.timeBased();
+    int UID_VALIDITY_1 = 145;
+    int UID_VALIDITY_2 = 147;
+    MailboxPath NEW_MAILBOX_PATH = MailboxPath.forUser("user", "xyz");
+    CassandraId CASSANDRA_ID_1 = CassandraId.timeBased();
+    CassandraId CASSANDRA_ID_2 = CassandraId.timeBased();
+    SimpleMailbox mailbox1 = new SimpleMailbox(MailboxPath.forUser("user", "abcd"),
+        UID_VALIDITY_1,
+        CASSANDRA_ID_1);
+    SimpleMailbox mailbox2 = new SimpleMailbox(MailboxPath.forUser("user", "defg"),
+        UID_VALIDITY_2,
+        CASSANDRA_ID_2);
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    private CassandraMailboxDAO testee;
-    private SimpleMailbox mailbox1;
-    private SimpleMailbox mailbox2;
-
-    @Before
-    public void setUp() {
-        CassandraModuleComposite modules = new CassandraModuleComposite(
-            CassandraMailboxModule.MAILBOX_BASE_TYPE,
-            CassandraMailboxModule.MAILBOX_TABLE);
-        cassandra = CassandraCluster.create(modules, cassandraServer.getIp(), cassandraServer.getBindingPort());
-
-        testee = new CassandraMailboxDAO(cassandra.getConf(), cassandra.getTypesProvider());
-
-        mailbox1 = new SimpleMailbox(MailboxPath.forUser("user", "abcd"),
-            UID_VALIDITY_1,
-            CASSANDRA_ID_1);
-        mailbox2 = new SimpleMailbox(MailboxPath.forUser("user", "defg"),
-            UID_VALIDITY_2,
-            CASSANDRA_ID_2);
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraMailboxDAO testee();
 
     @Test
-    public void retrieveMailboxShouldReturnEmptyWhenNone() {
-        assertThat(testee.retrieveMailbox(CASSANDRA_ID_1).join())
+    default void retrieveMailboxShouldReturnEmptyWhenNone() {
+        assertThat(testee().retrieveMailbox(CASSANDRA_ID_1).join())
             .isEmpty();
     }
 
     @Test
-    public void saveShouldAddAMailbox() {
-        testee.save(mailbox1).join();
+    default void saveShouldAddAMailbox() {
+        testee().save(mailbox1).join();
 
-        Optional<SimpleMailbox> readMailbox = testee.retrieveMailbox(CASSANDRA_ID_1)
+        Optional<SimpleMailbox> readMailbox = testee().retrieveMailbox(CASSANDRA_ID_1)
             .join();
         assertThat(readMailbox.isPresent()).isTrue();
         assertThat(readMailbox.get()).isEqualToComparingFieldByField(mailbox1);
     }
 
     @Test
-    public void saveShouldOverride() {
-        testee.save(mailbox1).join();
+    default void saveShouldOverride() {
+        testee().save(mailbox1).join();
 
         mailbox2.setMailboxId(CASSANDRA_ID_1);
-        testee.save(mailbox2).join();
+        testee().save(mailbox2).join();
 
 
-        Optional<SimpleMailbox> readMailbox = testee.retrieveMailbox(CASSANDRA_ID_1)
+        Optional<SimpleMailbox> readMailbox = testee().retrieveMailbox(CASSANDRA_ID_1)
             .join();
         assertThat(readMailbox.isPresent()).isTrue();
         assertThat(readMailbox.get()).isEqualToComparingFieldByField(mailbox2);
     }
 
     @Test
-    public void retrieveAllMailboxesShouldBeEmptyByDefault() {
-        List<SimpleMailbox> mailboxes = testee.retrieveAllMailboxes()
+    default void retrieveAllMailboxesShouldBeEmptyByDefault() {
+        List<SimpleMailbox> mailboxes = testee().retrieveAllMailboxes()
             .join()
             .collect(Guavate.toImmutableList());
 
@@ -115,10 +87,10 @@ public class CassandraMailboxDAOTest {
     }
 
     @Test
-    public void retrieveAllMailboxesShouldReturnSingleMailbox() {
-        testee.save(mailbox1).join();
+    default void retrieveAllMailboxesShouldReturnSingleMailbox() {
+        testee().save(mailbox1).join();
 
-        List<SimpleMailbox> mailboxes = testee.retrieveAllMailboxes()
+        List<SimpleMailbox> mailboxes = testee().retrieveAllMailboxes()
             .join()
             .collect(Guavate.toImmutableList());
 
@@ -126,11 +98,11 @@ public class CassandraMailboxDAOTest {
     }
 
     @Test
-    public void retrieveAllMailboxesShouldReturnMultiMailboxes() {
-        testee.save(mailbox1).join();
-        testee.save(mailbox2).join();
+    default void retrieveAllMailboxesShouldReturnMultiMailboxes() {
+        testee().save(mailbox1).join();
+        testee().save(mailbox2).join();
 
-        List<SimpleMailbox> mailboxes = testee.retrieveAllMailboxes()
+        List<SimpleMailbox> mailboxes = testee().retrieveAllMailboxes()
             .join()
             .collect(Guavate.toImmutableList());
 
@@ -138,35 +110,35 @@ public class CassandraMailboxDAOTest {
     }
 
     @Test
-    public void deleteShouldNotFailWhenMailboxIsAbsent() {
-        testee.delete(CASSANDRA_ID_1).join();
+    default void deleteShouldNotFailWhenMailboxIsAbsent() {
+        testee().delete(CASSANDRA_ID_1).join();
     }
 
     @Test
-    public void deleteShouldRemoveExistingMailbox() {
-        testee.save(mailbox1).join();
+    default void deleteShouldRemoveExistingMailbox() {
+        testee().save(mailbox1).join();
 
-        testee.delete(CASSANDRA_ID_1).join();
+        testee().delete(CASSANDRA_ID_1).join();
 
-        assertThat(testee.retrieveMailbox(CASSANDRA_ID_1).join())
+        assertThat(testee().retrieveMailbox(CASSANDRA_ID_1).join())
             .isEmpty();
     }
 
     @Test
-    public void updateShouldNotFailWhenMailboxIsAbsent() {
-        testee.updatePath(CASSANDRA_ID_1, NEW_MAILBOX_PATH).join();
+    default void updateShouldNotFailWhenMailboxIsAbsent() {
+        testee().updatePath(CASSANDRA_ID_1, NEW_MAILBOX_PATH).join();
     }
 
     @Test
-    public void updateShouldChangeMailboxPath() {
-        testee.save(mailbox1).join();
+    default void updateShouldChangeMailboxPath() {
+        testee().save(mailbox1).join();
 
-        testee.updatePath(CASSANDRA_ID_1, NEW_MAILBOX_PATH).join();
+        testee().updatePath(CASSANDRA_ID_1, NEW_MAILBOX_PATH).join();
 
         mailbox1.setNamespace(NEW_MAILBOX_PATH.getNamespace());
         mailbox1.setUser(NEW_MAILBOX_PATH.getUser());
         mailbox1.setName(NEW_MAILBOX_PATH.getName());
-        Optional<SimpleMailbox> readMailbox = testee.retrieveMailbox(CASSANDRA_ID_1).join();
+        Optional<SimpleMailbox> readMailbox = testee().retrieveMailbox(CASSANDRA_ID_1).join();
         assertThat(readMailbox.isPresent()).isTrue();
         assertThat(readMailbox.get()).isEqualToComparingFieldByField(mailbox1);
     }

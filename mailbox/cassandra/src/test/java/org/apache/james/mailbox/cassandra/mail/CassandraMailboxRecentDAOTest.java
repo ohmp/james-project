@@ -23,110 +23,91 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.IntStream;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
-import org.apache.james.mailbox.cassandra.modules.CassandraMailboxRecentsModule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraMailboxRecentDAOTest {
-    public static final MessageUid UID1 = MessageUid.of(36L);
-    public static final MessageUid UID2 = MessageUid.of(37L);
-    public static final CassandraId CASSANDRA_ID = CassandraId.timeBased();
+public interface CassandraMailboxRecentDAOTest {
+    MessageUid UID1 = MessageUid.of(36L);
+    MessageUid UID2 = MessageUid.of(37L);
+    CassandraId CASSANDRA_ID = CassandraId.timeBased();
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    private CassandraMailboxRecentsDAO testee;
 
-    @Before
-    public void setUp() {
-        cassandra = CassandraCluster.create(new CassandraMailboxRecentsModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
-        testee = new CassandraMailboxRecentsDAO(cassandra.getConf());
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraMailboxRecentsDAO testee();
 
     @Test
-    public void getRecentMessageUidsInMailboxShouldBeEmptyByDefault() throws Exception {
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+    default void getRecentMessageUidsInMailboxShouldBeEmptyByDefault() {
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).isEmpty();
     }
 
     @Test
-    public void addToRecentShouldAddUidWhenEmpty() throws Exception {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+    default void addToRecentShouldAddUidWhenEmpty() {
+        testee().addToRecent(CASSANDRA_ID, UID1).join();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).containsOnly(UID1);
     }
 
     @Test
-    public void removeFromRecentShouldRemoveUidWhenOnlyOneUid() throws Exception {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+    default void removeFromRecentShouldRemoveUidWhenOnlyOneUid() {
+        testee().addToRecent(CASSANDRA_ID, UID1).join();
 
-        testee.removeFromRecent(CASSANDRA_ID, UID1).join();
+        testee().removeFromRecent(CASSANDRA_ID, UID1).join();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).isEmpty();
     }
 
     @Test
-    public void removeFromRecentShouldNotFailIfNotExisting() throws Exception {
-        testee.removeFromRecent(CASSANDRA_ID, UID1).join();
+    default void removeFromRecentShouldNotFailIfNotExisting() {
+        testee().removeFromRecent(CASSANDRA_ID, UID1).join();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).isEmpty();
     }
 
     @Test
-    public void addToRecentShouldAddUidWhenNotEmpty() throws Exception {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+    default void addToRecentShouldAddUidWhenNotEmpty() {
+        testee().addToRecent(CASSANDRA_ID, UID1).join();
 
-        testee.addToRecent(CASSANDRA_ID, UID2).join();
+        testee().addToRecent(CASSANDRA_ID, UID2).join();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).containsOnly(UID1, UID2);
     }
 
     @Test
-    public void removeFromRecentShouldOnlyRemoveUidWhenNotEmpty() throws Exception {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
-        testee.addToRecent(CASSANDRA_ID, UID2).join();
+    default void removeFromRecentShouldOnlyRemoveUidWhenNotEmpty() {
+        testee().addToRecent(CASSANDRA_ID, UID1).join();
+        testee().addToRecent(CASSANDRA_ID, UID2).join();
 
-        testee.removeFromRecent(CASSANDRA_ID, UID2).join();
+        testee().removeFromRecent(CASSANDRA_ID, UID2).join();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).containsOnly(UID1);
     }
 
     @Test
-    public void addToRecentShouldBeIdempotent() throws Exception {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+    default void addToRecentShouldBeIdempotent() {
+        testee().addToRecent(CASSANDRA_ID, UID1).join();
+        testee().addToRecent(CASSANDRA_ID, UID1).join();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).containsOnly(UID1);
     }
 
     @Test
-    public void getRecentMessageUidsInMailboxShouldNotTimeoutWhenOverPagingLimit() throws Exception {
+    default void getRecentMessageUidsInMailboxShouldNotTimeoutWhenOverPagingLimit() {
         int pageSize = 5000;
         int size = pageSize + 1000;
         IntStream.range(0, size)
             .parallel()
-            .forEach(i -> testee.addToRecent(CASSANDRA_ID, MessageUid.of(i + 1)).join());
+            .forEach(i -> testee().addToRecent(CASSANDRA_ID, MessageUid.of(i + 1)).join());
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
+        assertThat(testee().getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
             .collect(Guavate.toImmutableList())).hasSize(size);
     }
 }

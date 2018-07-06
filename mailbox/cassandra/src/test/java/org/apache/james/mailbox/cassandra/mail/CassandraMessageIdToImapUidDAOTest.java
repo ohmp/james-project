@@ -27,105 +27,83 @@ import java.util.stream.Stream;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
-import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.driver.core.utils.UUIDs;
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraMessageIdToImapUidDAOTest {
+public interface CassandraMessageIdToImapUidDAOTest {
+    CassandraMessageId.Factory messageIdFactory = new CassandraMessageId.Factory();
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    private CassandraMessageId.Factory messageIdFactory;
-
-    private CassandraMessageIdToImapUidDAO testee;
-
-    @Before
-    public void setUp() {
-        cassandra = CassandraCluster.create(CassandraMessageModule.MESSAGE_ID_TO_IMAP_UID_TABLE, cassandraServer.getHost());
-        messageIdFactory = new CassandraMessageId.Factory();
-        testee = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), messageIdFactory);
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraMessageIdToImapUidDAO testee();
 
     @Test
-    public void deleteShouldNotThrowWhenRowDoesntExist() {
-        testee.delete(messageIdFactory.of(UUIDs.timeBased()), CassandraId.timeBased())
+    default void deleteShouldNotThrowWhenRowDoesntExist() {
+        testee().delete(messageIdFactory.of(UUIDs.timeBased()), CassandraId.timeBased())
             .join();
     }
 
     @Test
-    public void deleteShouldDeleteWhenRowExists() {
+    default void deleteShouldDeleteWhenRowExists() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                     .flags(new Flags())
                     .modSeq(1)
                     .build())
                 .join();
 
-        testee.delete(messageId, mailboxId).join();
+        testee().delete(messageId, mailboxId).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).isEmpty();
     }
 
     @Test
-    public void deleteShouldDeleteOnlyConcernedRowWhenMultipleRowExists() {
+    default void deleteShouldDeleteOnlyConcernedRowWhenMultipleRowExists() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         CassandraId mailboxId2 = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
         MessageUid messageUid2 = MessageUid.of(2);
         CompletableFuture.allOf(
-            testee.insert(ComposedMessageIdWithMetaData.builder()
+            testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()),
-            testee.insert(ComposedMessageIdWithMetaData.builder()
+            testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId2, messageId, messageUid2))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()))
         .join();
 
-        testee.delete(messageId, mailboxId).join();
+        testee().delete(messageId, mailboxId).join();
 
         ComposedMessageIdWithMetaData expectedComposedMessageId = ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(mailboxId2, messageId, messageUid2))
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.empty()).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.empty()).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void insertShouldWork() {
+    default void insertShouldWork() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                 .flags(new Flags())
                 .modSeq(1)
@@ -137,12 +115,12 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldReturnTrueWhenOldModSeqMatches() {
+    default void updateShouldReturnTrueWhenOldModSeqMatches() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
@@ -152,15 +130,15 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        testee.insert(composedMessageIdWithFlags).join();
+        testee().insert(composedMessageIdWithFlags).join();
 
-        Boolean result = testee.updateMetadata(composedMessageIdWithFlags, 1).join();
+        Boolean result = testee().updateMetadata(composedMessageIdWithFlags, 1).join();
 
         assertThat(result).isTrue();
     }
 
     @Test
-    public void updateShouldReturnFalseWhenOldModSeqDoesntMatch() {
+    default void updateShouldReturnFalseWhenOldModSeqDoesntMatch() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
@@ -170,21 +148,21 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        testee.insert(composedMessageIdWithFlags).join();
+        testee().insert(composedMessageIdWithFlags).join();
 
-        Boolean result = testee.updateMetadata(composedMessageIdWithFlags, 3).join();
+        Boolean result = testee().updateMetadata(composedMessageIdWithFlags, 3).join();
 
         assertThat(result).isFalse();
     }
 
     @Test
-    public void updateShouldUpdateModSeq() {
+    default void updateShouldUpdateModSeq() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -196,20 +174,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags())
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateAnsweredFlag() {
+    default void updateShouldUpdateAnsweredFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -221,20 +199,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.ANSWERED))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateDeletedFlag() {
+    default void updateShouldUpdateDeletedFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -246,20 +224,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.DELETED))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateDraftFlag() {
+    default void updateShouldUpdateDraftFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -271,20 +249,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.DRAFT))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateFlaggedFlag() {
+    default void updateShouldUpdateFlaggedFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -296,20 +274,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.FLAGGED))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateRecentFlag() {
+    default void updateShouldUpdateRecentFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -321,20 +299,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.RECENT))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateSeenFlag() {
+    default void updateShouldUpdateSeenFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -346,20 +324,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.SEEN))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateUserFlag() {
+    default void updateShouldUpdateUserFlag() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -371,20 +349,20 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.USER))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void updateShouldUpdateUserFlags() {
+    default void updateShouldUpdateUserFlags() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
 
         ComposedMessageId composedMessageId = new ComposedMessageId(mailboxId, messageId, messageUid);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(composedMessageId)
                 .flags(new Flags())
                 .modSeq(1)
@@ -398,18 +376,18 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(flags)
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).join();
+        testee().updateMetadata(expectedComposedMessageId, 1).join();
 
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void retrieveShouldReturnOneMessageWhenKeyMatches() {
+    default void retrieveShouldReturnOneMessageWhenKeyMatches() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
-        testee.insert(ComposedMessageIdWithMetaData.builder()
+        testee().insert(ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                 .flags(new Flags())
                 .modSeq(1)
@@ -421,25 +399,25 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.of(mailboxId)).join();
 
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId);
     }
 
     @Test
-    public void retrieveShouldReturnMultipleMessagesWhenMessageIdMatches() {
+    default void retrieveShouldReturnMultipleMessagesWhenMessageIdMatches() {
         CassandraMessageId messageId = messageIdFactory.of(UUIDs.timeBased());
         CassandraId mailboxId = CassandraId.timeBased();
         CassandraId mailboxId2 = CassandraId.timeBased();
         MessageUid messageUid = MessageUid.of(1);
         MessageUid messageUid2 = MessageUid.of(2);
         CompletableFuture.allOf(
-                testee.insert(ComposedMessageIdWithMetaData.builder()
+                testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId, messageId, messageUid))
                     .flags(new Flags())
                     .modSeq(1)
                     .build()),
-                testee.insert(ComposedMessageIdWithMetaData.builder()
+                testee().insert(ComposedMessageIdWithMetaData.builder()
                     .composedMessageId(new ComposedMessageId(mailboxId2, messageId, messageUid2))
                     .flags(new Flags())
                     .modSeq(1)
@@ -456,7 +434,7 @@ public class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags())
                 .modSeq(1)
                 .build();
-        Stream<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.empty()).join();
+        Stream<ComposedMessageIdWithMetaData> messages = testee().retrieve(messageId, Optional.empty()).join();
 
         assertThat(messages.collect(Guavate.toImmutableList())).containsOnly(expectedComposedMessageId, expectedComposedMessageId2);
     }
