@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james.mailbox.mock;
 
-import java.io.UnsupportedEncodingException;
+import java.util.stream.IntStream;
 
 import javax.mail.Flags;
 
@@ -28,6 +28,8 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
+
+import com.github.fge.lambdas.Throwing;
 
 public class DataProvisioner {
     
@@ -68,45 +70,62 @@ public class DataProvisioner {
      * Utility method to feed the Mailbox Manager with a number of 
      * mailboxes and messages per mailbox.
      */
-    public static void feedMailboxManager(MailboxManager mailboxManager) throws MailboxException, UnsupportedEncodingException {
-        for (int i = 0; i < DOMAIN_COUNT; i++) {
-            for (int j = 0; j < USER_COUNT; j++) {
-                String user = "user" + j + "@localhost" + i;
-
-                provisionUser(mailboxManager, user);
-            }
-        }
+    public static void feedMailboxManager(MailboxManager mailboxManager) {
+        IntStream.range(0, DOMAIN_COUNT)
+            .mapToObj(i -> "localhost" + i)
+            .forEach(domain -> provisionDomain(mailboxManager, domain));
     }
 
-    private static void provisionUser(MailboxManager mailboxManager, String user) throws MailboxException, UnsupportedEncodingException {
+    public static void provisionDomain(MailboxManager mailboxManager, String domain) {
+        IntStream.range(0, USER_COUNT)
+            .mapToObj(i -> "user" + i + "@" + domain)
+            .forEach(Throwing.consumer(user -> provisionUser(mailboxManager, user)));
+    }
+
+    private static void provisionUser(MailboxManager mailboxManager, String user) throws MailboxException {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
+        mailboxManager.startProcessingRequest(mailboxSession);
+
         createMailbox(mailboxManager, mailboxSession, MailboxPath.inbox(mailboxSession));
 
-        for (int k = 0; k < SUB_MAILBOXES_COUNT; k++) {
-            String subFolderName = MailboxConstants.INBOX + ".SUB_FOLDER_" + k;
-            createMailbox(mailboxManager, mailboxSession, MailboxPath.forUser(user, subFolderName));
+        IntStream.range(0, SUB_MAILBOXES_COUNT)
+            .mapToObj(i -> MailboxConstants.INBOX + ".SUB_FOLDER_" + i)
+            .peek(name -> createMailbox(mailboxManager, mailboxSession, MailboxPath.forUser(user, name)))
+            .forEach(name ->  createSubSubMailboxes(mailboxManager, mailboxSession, name));
 
-            for (int l = 0; l < SUB_SUB_MAILBOXES_COUNT; l++) {
-                String subSubfolderName = subFolderName + ".SUBSUB_FOLDER_" + l;
-                createMailbox(mailboxManager, mailboxSession, MailboxPath.forUser(user, subSubfolderName));
-            }
-        }
+        mailboxManager.endProcessingRequest(mailboxSession);
         mailboxManager.logout(mailboxSession, true);
     }
 
-    private static void createMailbox(MailboxManager mailboxManager, MailboxSession mailboxSession, MailboxPath mailboxPath) throws MailboxException, UnsupportedEncodingException {
-        mailboxManager.startProcessingRequest(mailboxSession);
-        mailboxManager.createMailbox(mailboxPath, mailboxSession);
-        MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
-        for (int j = 0; j < MESSAGE_PER_MAILBOX_COUNT; j++) {
+    private static void createSubSubMailboxes(MailboxManager mailboxManager,MailboxSession mailboxSession, String subFolderName) {
+        IntStream.range(0, SUB_SUB_MAILBOXES_COUNT)
+            .mapToObj(i -> subFolderName + ".SUBSUB_FOLDER_" + i)
+            .forEach(name -> createMailbox(mailboxManager, mailboxSession, MailboxPath.forUser(mailboxSession.getUser().getUserName(), name)));
+
+    }
+
+    private static void createMailbox(MailboxManager mailboxManager, MailboxSession mailboxSession, MailboxPath mailboxPath) {
+        try {
+            mailboxManager.createMailbox(mailboxPath, mailboxSession);
+            MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
+
+            IntStream.range(0, MESSAGE_PER_MAILBOX_COUNT)
+                .forEach(i -> appendMessage(messageManager, mailboxSession));
+        } catch (MailboxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void appendMessage(MessageManager messageManager, MailboxSession mailboxSession) {
+        try {
             messageManager.appendMessage(
                 MessageManager.AppendCommand.builder()
                     .recent()
                     .withFlags(new Flags(Flags.Flag.RECENT))
                     .build(MockMail.MAIL_TEXT_PLAIN),
                 mailboxSession);
+        } catch (MailboxException e) {
+            throw new RuntimeException(e);
         }
-        mailboxManager.endProcessingRequest(mailboxSession);
     }
-    
 }
