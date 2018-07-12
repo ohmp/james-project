@@ -19,8 +19,6 @@
 
 package org.apache.james.queue.jms;
 
-import java.util.concurrent.ExecutorService;
-
 import javax.jms.ConnectionFactory;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -44,7 +42,7 @@ public class JMSMailQueueTest implements DelayedManageableMailQueueContract, Pri
     private JMSMailQueue mailQueue;
 
     @BeforeEach
-    public void setUp(BrokerService broker) throws Exception {
+    void setUp(BrokerService broker) {
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?create=false");
         RawMailQueueItemDecoratorFactory mailQueueItemDecoratorFactory = new RawMailQueueItemDecoratorFactory();
         NoopMetricFactory metricFactory = new NoopMetricFactory();
@@ -53,7 +51,7 @@ public class JMSMailQueueTest implements DelayedManageableMailQueueContract, Pri
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() {
         mailQueue.dispose();
     }
 
