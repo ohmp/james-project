@@ -18,12 +18,13 @@
  ****************************************************************/
 package org.apache.james.queue.jms;
 
-import com.github.fge.lambdas.Throwing;
+import java.io.Serializable;
+import java.util.Optional;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SerializationUtils;
 
-import java.io.Serializable;
-import java.util.Optional;
+import com.github.fge.lambdas.Throwing;
 
 /**
  * This class is similar to {@link SerializationUtils}. Unlike {@link SerializationUtils} this class operates with
@@ -33,7 +34,7 @@ import java.util.Optional;
  * deserialization. The operation consists in encoding/decoding the serialized/deserialized data in Base64, so that data
  * can be safely transmitted over the wire.
  */
-public final class JMSSerializationUtils {
+public class JMSSerializationUtils {
     /**
      * Serialize the input object using standard mechanisms then encodes result using base64 encoding.
      *

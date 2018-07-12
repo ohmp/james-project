@@ -18,18 +18,18 @@
  ****************************************************************/
 package org.apache.james.queue.jms;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.SerializationException;
-import org.junit.jupiter.api.Test;
+import static org.apache.james.queue.jms.JMSSerializationUtils.deserialize;
+import static org.apache.james.queue.jms.JMSSerializationUtils.serialize;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.apache.james.queue.jms.JMSSerializationUtils.deserialize;
-import static org.apache.james.queue.jms.JMSSerializationUtils.serialize;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.SerializationException;
+import org.junit.jupiter.api.Test;
 
 class JMSSerializationUtilsTest {
     /**
@@ -51,13 +51,13 @@ class JMSSerializationUtilsTest {
     void trySerializeShouldReturnString() {
         SerializableStringHolder value = new SerializableStringHolder("value");
 
-        String expected = "rO0ABXNyAE1vcmcuYXBhY2hlLmphbWVzLnF1ZXVlLmptcy5KTVNTZXJpYWxp" +
+        String serializedIntegerString = "rO0ABXNyAE1vcmcuYXBhY2hlLmphbWVzLnF1ZXVlLmptcy5KTVNTZXJpYWxp" +
                 "emF0aW9uVXRpbHNUZXN0JFNlcmlhbGl6YWJsZVN0cmluZ0hvbGRlcsy4/DEA" +
                 "8nRZAgABTAAFdmFsdWV0ABJMamF2YS9sYW5nL1N0cmluZzt4cHQABXZhbHVl";
 
         String actual = serialize(value);
 
-        assertThat(actual).isEqualTo(expected);
+        assertThat(actual).isEqualTo(serializedIntegerString);
     }
 
     @Test

@@ -20,7 +20,6 @@ package org.apache.james.queue.jms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -51,7 +50,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.collections.iterators.EnumerationIterator;
-import org.apache.commons.lang3.SerializationException;
 import org.apache.james.core.MailAddress;
 import org.apache.james.lifecycle.api.Disposable;
 import org.apache.james.metrics.api.Metric;
