@@ -21,40 +21,26 @@ package org.apache.james.mpt.testsuite;
 
 import java.util.Locale;
 
-import org.apache.james.mpt.host.ManageSieveHostSystem;
+import org.apache.james.mpt.HostSystemProvider;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-public abstract class CheckScriptTest {
+public interface UnauthenticatedContract extends HostSystemProvider {
+    String USER = "user";
+    String PASSWORD = "password";
 
-    public static final String USER = "user";
-    public static final String PASSWORD = "password";
-    
-    protected abstract ManageSieveHostSystem createManageSieveHostSystem();
-    
-    private ManageSieveHostSystem hostSystem;
-    private SimpleScriptedTestProtocol simpleScriptedTestProtocol;
-
-    @Before
-    public void setUp() throws Exception {
-        hostSystem = createManageSieveHostSystem();
-        hostSystem.beforeTest();
-        simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem)
+    default SimpleScriptedTestProtocol unauthenticatedContractProtocol() throws Exception {
+        return new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem())
                 .withUser(USER, PASSWORD)
                 .withLocale(Locale.US);
     }
     
-    @After
-    public void tearDown() throws Exception {
-        hostSystem.afterTest();
+    @Test
+    default void unauthenticatedCommandShouldWork() throws Exception {
+        unauthenticatedContractProtocol()
+            .withLocale(Locale.US)
+            .run("unauthenticate");
     }
 
-    @Test
-    public void checkScriptShouldWork() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("checkscript");
-    }
 }

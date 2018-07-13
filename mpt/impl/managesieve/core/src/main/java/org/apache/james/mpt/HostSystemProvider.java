@@ -17,44 +17,10 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mpt.testsuite;
-
-import java.util.Locale;
+package org.apache.james.mpt;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
-public abstract class AuthenticateTest {
-
-    public static final String USER = "user";
-    public static final String PASSWORD = "password";
-    
-    protected abstract ManageSieveHostSystem createManageSieveHostSystem();
-    
-    private ManageSieveHostSystem hostSystem;
-    private SimpleScriptedTestProtocol simpleScriptedTestProtocol;
-
-    @Before
-    public void setUp() throws Exception {
-        hostSystem = createManageSieveHostSystem();
-        hostSystem.beforeTest();
-        simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem)
-                .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
-    }
-    
-    @After
-    public void tearDown() throws Exception {
-        hostSystem.afterTest();
-    }
-
-    @Test
-    public void authenticateShouldWork() throws Exception {
-        simpleScriptedTestProtocol
-            .withLocale(Locale.US)
-            .run("authenticate");
-    }
+public interface HostSystemProvider {
+    ManageSieveHostSystem hostSystem();
 }
