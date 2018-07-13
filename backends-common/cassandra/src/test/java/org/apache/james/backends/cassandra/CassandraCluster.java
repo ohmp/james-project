@@ -18,9 +18,6 @@
  ****************************************************************/
 package org.apache.james.backends.cassandra;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
@@ -34,29 +31,23 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 public final class CassandraCluster implements AutoCloseable {
+    public static CassandraCluster create(CassandraModule module, Host host) {
+        return new CassandraCluster(module, host);
+    }
+
     private Session session;
     private CassandraTypesProvider typesProvider;
     private Cluster cluster;
 
-    public static CassandraCluster create(CassandraModule module, String host, int port) {
-        return new CassandraCluster(module, host, port);
-    }
-
-    public static CassandraCluster create(CassandraModule module, Host host) {
-        return new CassandraCluster(module, host.getHostName(), host.getPort());
-    }
-    
-    @Inject
-    private CassandraCluster(CassandraModule module, @Named("cassandraHost") String host, @Named("cassandraPort") int port) throws RuntimeException {
+    private CassandraCluster(CassandraModule module, Host host) throws RuntimeException {
         try {
             String keyspace = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(10);
             cluster = ClusterBuilder.builder()
-                .host(host)
-                .port(port)
+                .servers(host)
                 .build();
             session = new SessionWithInitializedTablesFactory(
                 ClusterConfiguration.builder()
-                    .host(Host.from(host, port))
+                    .host(host)
                     .keyspace(keyspace)
                     .replicationFactor(1)
                     .maxRetry(10)

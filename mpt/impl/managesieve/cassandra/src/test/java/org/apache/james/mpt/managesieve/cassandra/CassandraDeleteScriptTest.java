@@ -38,7 +38,7 @@ public class CassandraDeleteScriptTest extends DeleteScriptTest {
     @Override
     @Before
     public void setUp() throws Exception {
-        Injector injector = Guice.createInjector(new CassandraModule(cassandraServer.getIp(), cassandraServer.getBindingPort()));
+        Injector injector = Guice.createInjector(new CassandraModule(cassandraServer.getHost()));
         system = injector.getInstance(ManageSieveHostSystem.class);
         system.beforeTest();
         super.setUp();
