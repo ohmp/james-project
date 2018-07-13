@@ -17,39 +17,22 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.cassandra.access;
+package org.apache.james.jmap.memory.access;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.jmap.api.access.AccessTokenRepository;
-import org.apache.james.jmap.api.access.AccessTokenRepositoryTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.apache.james.jmap.api.access.AccessTokenRepositoryContract;
+import org.junit.jupiter.api.BeforeEach;
 
-public class CassandraAccessTokenRepositoryTest extends AccessTokenRepositoryTest {
-    
+public class MemoryAccessTokenRepositoryContract implements AccessTokenRepositoryContract {
+    private AccessTokenRepository testee;
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
+    @BeforeEach
+    void setUp() {
+        testee = new MemoryAccessTokenRepository(AccessTokenRepositoryContract.TTL_IN_MS);
+    }
 
     @Override
-    @Before
-    public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(new CassandraAccessModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
-        super.setUp();
+    public AccessTokenRepository testee() {
+        return testee;
     }
-    
-    @After
-    public void tearDown() throws Exception {
-        cassandra.close();
-    }
-    
-    @Override
-    protected AccessTokenRepository provideAccessTokenRepository() {
-        return new CassandraAccessTokenRepository(
-            new CassandraAccessTokenDAO(cassandra.getConf(), AccessTokenRepositoryTest.TTL_IN_MS));
-    }
-
 }
