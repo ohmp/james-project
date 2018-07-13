@@ -27,18 +27,10 @@ import java.util.Optional;
 
 import javax.mail.Flags;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
-import org.apache.james.mailbox.cassandra.modules.CassandraApplicableFlagsModule;
-import org.apache.james.mailbox.cassandra.modules.CassandraDeletedMessageModule;
-import org.apache.james.mailbox.cassandra.modules.CassandraFirstUnseenModule;
-import org.apache.james.mailbox.cassandra.modules.CassandraMailboxCounterModule;
-import org.apache.james.mailbox.cassandra.modules.CassandraMailboxRecentsModule;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -47,233 +39,215 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraIndexTableHandlerTest {
+public interface CassandraIndexTableHandlerTest {
 
-    public static final CassandraId MAILBOX_ID = CassandraId.timeBased();
-    public static final MessageUid MESSAGE_UID = MessageUid.of(18L);
-    public static final CassandraMessageId CASSANDRA_MESSAGE_ID = new CassandraMessageId.Factory().generate();
-    public static final int UID_VALIDITY = 15;
-    public static final long MODSEQ = 17;
+    CassandraId MAILBOX_ID = CassandraId.timeBased();
+    MessageUid MESSAGE_UID = MessageUid.of(18L);
+    CassandraMessageId CASSANDRA_MESSAGE_ID = new CassandraMessageId.Factory().generate();
+    int UID_VALIDITY = 15;
+    long MODSEQ = 17;
+    Mailbox mailbox = new SimpleMailbox(MailboxPath.forUser("user", "name"),
+        UID_VALIDITY, MAILBOX_ID);
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    private CassandraMailboxCounterDAO mailboxCounterDAO;
-    private CassandraMailboxRecentsDAO mailboxRecentsDAO;
-    private CassandraApplicableFlagDAO applicableFlagDAO;
-    private CassandraFirstUnseenDAO firstUnseenDAO;
-    private CassandraIndexTableHandler testee;
-    private CassandraDeletedMessageDAO deletedMessageDAO;
-    private Mailbox mailbox;
 
-    @Before
-    public void setUp() {
-        cassandra = CassandraCluster.create(
-            new CassandraModuleComposite(
-                new CassandraMailboxCounterModule(),
-                new CassandraMailboxRecentsModule(),
-                new CassandraFirstUnseenModule(),
-                new CassandraApplicableFlagsModule(),
-                new CassandraDeletedMessageModule()), cassandraServer.getIp(), cassandraServer.getBindingPort());
-        mailboxCounterDAO = new CassandraMailboxCounterDAO(cassandra.getConf());
-        mailboxRecentsDAO = new CassandraMailboxRecentsDAO(cassandra.getConf());
-        firstUnseenDAO = new CassandraFirstUnseenDAO(cassandra.getConf());
-        applicableFlagDAO = new CassandraApplicableFlagDAO(cassandra.getConf());
-        deletedMessageDAO = new CassandraDeletedMessageDAO(cassandra.getConf());
+    class Testee {
+        private final CassandraMailboxCounterDAO mailboxCounterDAO;
+        private final CassandraMailboxRecentsDAO mailboxRecentsDAO;
+        private final CassandraApplicableFlagDAO applicableFlagDAO;
+        private final CassandraFirstUnseenDAO firstUnseenDAO;
+        private final CassandraIndexTableHandler indexTableHandler;
+        private final CassandraDeletedMessageDAO deletedMessageDAO;
 
-        testee = new CassandraIndexTableHandler(mailboxRecentsDAO,
-                                                mailboxCounterDAO,
-                                                firstUnseenDAO,
-                                                applicableFlagDAO,
-                                                deletedMessageDAO);
-
-        mailbox = new SimpleMailbox(MailboxPath.forUser("user", "name"),
-            UID_VALIDITY,
-            MAILBOX_ID);
+        public Testee(CassandraMailboxCounterDAO mailboxCounterDAO, CassandraMailboxRecentsDAO mailboxRecentsDAO,
+                      CassandraApplicableFlagDAO applicableFlagDAO, CassandraFirstUnseenDAO firstUnseenDAO,
+                      CassandraIndexTableHandler indexTableHandler, CassandraDeletedMessageDAO deletedMessageDAO) {
+            this.mailboxCounterDAO = mailboxCounterDAO;
+            this.mailboxRecentsDAO = mailboxRecentsDAO;
+            this.applicableFlagDAO = applicableFlagDAO;
+            this.firstUnseenDAO = firstUnseenDAO;
+            this.indexTableHandler = indexTableHandler;
+            this.deletedMessageDAO = deletedMessageDAO;
+        }
     }
 
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+    Testee testee();
 
     @Test
-    public void updateIndexOnAddShouldIncrementMessageCount() throws Exception {
+    default void updateIndexOnAddShouldIncrementMessageCount() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
 
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countMessagesInMailbox(mailbox).join();
+
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
+
+        Optional<Long> actual = testee().mailboxCounterDAO.countMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(1);
     }
 
     @Test
-    public void updateIndexOnAddShouldIncrementUnseenMessageCountWhenUnseen() throws Exception {
+    default void updateIndexOnAddShouldIncrementUnseenMessageCountWhenUnseen() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
 
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(1);
     }
 
     @Test
-    public void updateIndexOnAddShouldNotIncrementUnseenMessageCountWhenSeen() throws Exception {
+    default void updateIndexOnAddShouldNotIncrementUnseenMessageCountWhenSeen() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
 
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(0);
     }
 
     @Test
-    public void updateIndexOnAddShouldNotAddRecentWhenNoRecent() throws Exception {
+    default void updateIndexOnAddShouldNotAddRecentWhenNoRecent() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
 
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        assertThat(mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
+        assertThat(testee().mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
             .collect(Guavate.toImmutableList()))
             .isEmpty();
     }
 
     @Test
-    public void updateIndexOnAddShouldAddRecentWhenRecent() throws Exception {
+    default void updateIndexOnAddShouldAddRecentWhenRecent() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.RECENT));
         when(message.getUid()).thenReturn(MESSAGE_UID);
 
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        assertThat(mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
+        assertThat(testee().mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
             .collect(Guavate.toImmutableList()))
             .containsOnly(MESSAGE_UID);
     }
 
     @Test
-    public void updateIndexOnDeleteShouldDecrementMessageCount() throws Exception {
+    default void updateIndexOnDeleteShouldDecrementMessageCount() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
                 new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
                 new Flags(Flags.Flag.RECENT),
                 MODSEQ),
             MAILBOX_ID).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(0);
     }
 
     @Test
-    public void updateIndexOnDeleteShouldDecrementUnseenMessageCountWhenUnseen() throws Exception {
+    default void updateIndexOnDeleteShouldDecrementUnseenMessageCountWhenUnseen() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
                 new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
                 new Flags(),
                 MODSEQ),
             MAILBOX_ID).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(0);
     }
 
     @Test
-    public void updateIndexOnDeleteShouldNotDecrementUnseenMessageCountWhenSeen() throws Exception {
+    default void updateIndexOnDeleteShouldNotDecrementUnseenMessageCountWhenSeen() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
                 new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
                 new Flags(Flags.Flag.SEEN),
                 MODSEQ),
             MAILBOX_ID).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(1);
     }
 
     @Test
-    public void updateIndexOnDeleteShouldRemoveRecentWhenRecent() throws Exception {
+    default void updateIndexOnDeleteShouldRemoveRecentWhenRecent() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.RECENT));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
                 new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
                 new Flags(Flags.Flag.RECENT),
                 MODSEQ),
             MAILBOX_ID).join();
 
-        assertThat(mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
+        assertThat(testee().mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
             .collect(Guavate.toImmutableList()))
             .isEmpty();
     }
 
     @Test
-    public void updateIndexOnDeleteShouldRemoveUidFromRecentAnyway() throws Exception {
+    default void updateIndexOnDeleteShouldRemoveUidFromRecentAnyway() {
         // Clean up strategy if some flags updates missed
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.RECENT));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
                 new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
                 new Flags(),
                 MODSEQ),
             MAILBOX_ID).join();
 
-        assertThat(mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
+        assertThat(testee().mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
             .collect(Guavate.toImmutableList()))
             .isEmpty();
     }
 
     @Test
-    public void updateIndexOnDeleteShouldDeleteMessageFromDeletedMessage() throws Exception {
+    default void updateIndexOnDeleteShouldDeleteMessageFromDeletedMessage() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        deletedMessageDAO.addDeleted(MAILBOX_ID, MESSAGE_UID).join();
+        testee().deletedMessageDAO.addDeleted(MAILBOX_ID, MESSAGE_UID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
                 new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
                 new Flags(),
                 MODSEQ),
             MAILBOX_ID).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -281,51 +255,51 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotChangeMessageCount() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotChangeMessageCount() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.RECENT))
             .oldFlags(new Flags())
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(1);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldDecrementUnseenMessageCountWhenSeenIsSet() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldDecrementUnseenMessageCountWhenSeenIsSet() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.SEEN))
             .oldFlags(new Flags())
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(0);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldSaveMessageInDeletedMessageWhenDeletedFlagIsSet() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldSaveMessageInDeletedMessageWhenDeletedFlagIsSet() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.DELETED))
             .oldFlags(new Flags())
@@ -333,7 +307,7 @@ public class CassandraIndexTableHandlerTest {
             .build()).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -341,15 +315,15 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldRemoveMessageInDeletedMessageWhenDeletedFlagIsUnset() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldRemoveMessageInDeletedMessageWhenDeletedFlagIsUnset() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        deletedMessageDAO.addDeleted(MAILBOX_ID, MESSAGE_UID).join();
+        testee().deletedMessageDAO.addDeleted(MAILBOX_ID, MESSAGE_UID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags(Flags.Flag.DELETED))
@@ -357,7 +331,7 @@ public class CassandraIndexTableHandlerTest {
             .build()).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -365,15 +339,15 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotRemoveMessageInDeletedMessageWhenDeletedFlagIsNotUnset() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotRemoveMessageInDeletedMessageWhenDeletedFlagIsNotUnset() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        deletedMessageDAO.addDeleted(MAILBOX_ID, MESSAGE_UID).join();
+        testee().deletedMessageDAO.addDeleted(MAILBOX_ID, MESSAGE_UID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags(Flags.Flag.SEEN))
@@ -381,7 +355,7 @@ public class CassandraIndexTableHandlerTest {
             .build()).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -389,13 +363,13 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotSaveMessageInDeletedMessageWhenDeletedFlagIsNotSet() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotSaveMessageInDeletedMessageWhenDeletedFlagIsNotSet() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.RECENT))
             .oldFlags(new Flags())
@@ -403,7 +377,7 @@ public class CassandraIndexTableHandlerTest {
             .build()).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -411,123 +385,123 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldIncrementUnseenMessageCountWhenSeenIsUnset() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldIncrementUnseenMessageCountWhenSeenIsUnset() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags(Flags.Flag.SEEN))
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(1);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothSeen() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothSeen() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.SEEN))
             .oldFlags(new Flags(Flags.Flag.SEEN))
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(0);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothUnSeen() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothUnSeen() throws Exception {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags())
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<Long> actual = mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
+        Optional<Long> actual = testee().mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(1);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldAddRecentOnSettingRecentFlag() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldAddRecentOnSettingRecentFlag() {
         // Clean up strategy if some flags updates missed
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.RECENT))
             .oldFlags(new Flags())
             .modSeq(MODSEQ)
             .build()).join();
 
-        assertThat(mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
+        assertThat(testee().mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
             .collect(Guavate.toImmutableList()))
             .containsOnly(MESSAGE_UID);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldRemoveRecentOnUnsettingRecentFlag() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldRemoveRecentOnUnsettingRecentFlag() {
         // Clean up strategy if some flags updates missed
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.RECENT));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags(Flags.Flag.RECENT))
             .modSeq(MODSEQ)
             .build()).join();
 
-        assertThat(mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
+        assertThat(testee().mailboxRecentsDAO.getRecentMessageUidsInMailbox(MAILBOX_ID).join()
             .collect(Guavate.toImmutableList()))
             .isEmpty();
     }
 
     @Test
-    public void updateIndexOnAddShouldUpdateFirstUnseenWhenUnseen() throws Exception {
+    default void updateIndexOnAddShouldUpdateFirstUnseenWhenUnseen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(MESSAGE_UID);
     }
 
     @Test
-    public void updateIndexOnAddShouldSaveMessageInDeletedWhenDeleted() throws Exception {
+    default void updateIndexOnAddShouldSaveMessageInDeletedWhenDeleted() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.DELETED));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -535,14 +509,14 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnAddShouldNotSaveMessageInDeletedWhenNotDeleted() throws Exception {
+    default void updateIndexOnAddShouldNotSaveMessageInDeletedWhenNotDeleted() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
         assertThat(
-            deletedMessageDAO
+            testee().deletedMessageDAO
                 .retrieveDeletedMessage(MAILBOX_ID, MessageRange.all())
                 .join()
                 .collect(Guavate.toImmutableList()))
@@ -550,142 +524,142 @@ public class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    public void updateIndexOnAddShouldNotUpdateFirstUnseenWhenSeen() throws Exception {
+    default void updateIndexOnAddShouldNotUpdateFirstUnseenWhenSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isFalse();
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldUpdateLastUnseenWhenSetToSeen() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldUpdateLastUnseenWhenSetToSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.SEEN))
             .oldFlags(new Flags())
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isFalse();
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldUpdateLastUnseenWhenSetToUnseen() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldUpdateLastUnseenWhenSetToUnseen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags(Flags.Flag.SEEN))
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(MESSAGE_UID);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotUpdateLastUnseenWhenKeepUnseen() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotUpdateLastUnseenWhenKeepUnseen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(new Flags())
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(MESSAGE_UID);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldNotUpdateLastUnseenWhenKeepSeen() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldNotUpdateLastUnseenWhenKeepSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags(Flags.Flag.SEEN))
             .oldFlags(new Flags(Flags.Flag.SEEN))
             .modSeq(MODSEQ)
             .build()).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isFalse();
     }
 
     @Test
-    public void updateIndexOnDeleteShouldUpdateFirstUnseenWhenUnseen() throws Exception {
+    default void updateIndexOnDeleteShouldUpdateFirstUnseenWhenUnseen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
+        testee().indexTableHandler.updateIndexOnDelete(new ComposedMessageIdWithMetaData(
             new ComposedMessageId(MAILBOX_ID, CASSANDRA_MESSAGE_ID, MESSAGE_UID),
             new Flags(),
             MODSEQ), MAILBOX_ID).join();
 
-        Optional<MessageUid> actual = firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
+        Optional<MessageUid> actual = testee().firstUnseenDAO.retrieveFirstUnread(MAILBOX_ID).join();
         assertThat(actual.isPresent()).isFalse();
     }
 
     @Test
-    public void updateIndexOnAddShouldUpdateApplicableFlag() throws Exception {
+    default void updateIndexOnAddShouldUpdateApplicableFlag() {
         Flags customFlags = new Flags("custom");
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(customFlags);
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        Flags applicableFlag = applicableFlagDAO.retrieveApplicableFlag(MAILBOX_ID).join().get();
+        Flags applicableFlag = testee().applicableFlagDAO.retrieveApplicableFlag(MAILBOX_ID).join().get();
 
         assertThat(applicableFlag).isEqualTo(customFlags);
     }
 
     @Test
-    public void updateIndexOnFlagsUpdateShouldUnionApplicableFlag() throws Exception {
+    default void updateIndexOnFlagsUpdateShouldUnionApplicableFlag() {
         Flags customFlag = new Flags("custom");
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(customFlag);
         when(message.getUid()).thenReturn(MESSAGE_UID);
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
         Flags customBis = new Flags("customBis");
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(customBis)
             .oldFlags(customFlag)
             .modSeq(MODSEQ)
             .build()).join();
 
-        Flags applicableFlag = applicableFlagDAO.retrieveApplicableFlag(MAILBOX_ID).join().get();
+        Flags applicableFlag = testee().applicableFlagDAO.retrieveApplicableFlag(MAILBOX_ID).join().get();
 
         assertThat(applicableFlag).isEqualTo(new FlagsBuilder().add(customFlag, customBis).build());
     }
 
     @Test
-    public void applicableFlagShouldKeepAllFlagsEvenTheMessageRemovesFlag() throws Exception {
+    default void applicableFlagShouldKeepAllFlagsEvenTheMessageRemovesFlag(){
         Flags messageFlags = FlagsBuilder.builder()
             .add("custom1", "custom2", "custom3")
             .build();
@@ -694,16 +668,16 @@ public class CassandraIndexTableHandlerTest {
         when(message.createFlags()).thenReturn(messageFlags);
         when(message.getUid()).thenReturn(MESSAGE_UID);
 
-        testee.updateIndexOnAdd(message, MAILBOX_ID).join();
+        testee().indexTableHandler.updateIndexOnAdd(message, MAILBOX_ID).join();
 
-        testee.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
+        testee().indexTableHandler.updateIndexOnFlagsUpdate(MAILBOX_ID, UpdatedFlags.builder()
             .uid(MESSAGE_UID)
             .newFlags(new Flags())
             .oldFlags(messageFlags)
             .modSeq(MODSEQ)
             .build()).join();
 
-        Flags applicableFlag = applicableFlagDAO.retrieveApplicableFlag(MAILBOX_ID).join().get();
+        Flags applicableFlag = testee().applicableFlagDAO.retrieveApplicableFlag(MAILBOX_ID).join().get();
         assertThat(applicableFlag).isEqualTo(messageFlags);
     }
 }

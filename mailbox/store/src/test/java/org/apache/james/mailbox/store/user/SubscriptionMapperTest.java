@@ -26,103 +26,95 @@ import java.util.List;
 import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.store.user.model.Subscription;
 import org.apache.james.mailbox.store.user.model.impl.SimpleSubscription;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public abstract class SubscriptionMapperTest {
-    private static final String USER_1 = "user1";
-    private static final String USER_2 = "user2";
-    private static final String MAILBOX_1 = "mailbox1";
-    private static final String MAILBOX_2 = "mailbox2";
+public interface SubscriptionMapperTest {
+    String USER_1 = "user1";
+    String USER_2 = "user2";
+    String MAILBOX_1 = "mailbox1";
+    String MAILBOX_2 = "mailbox2";
 
-    private SubscriptionMapper testee;
-
-    protected abstract SubscriptionMapper createSubscriptionMapper();
-
-    @Before
-    public void setUp() {
-        testee = createSubscriptionMapper();
-    }
+    SubscriptionMapper testee();
 
     @Test
-    public void findSubscriptionsForUserShouldBeEmptyByDefault() throws SubscriptionException {
-        List<Subscription> subscriptions = testee.findSubscriptionsForUser(USER_1);
+    default void findSubscriptionsForUserShouldBeEmptyByDefault() throws SubscriptionException {
+        List<Subscription> subscriptions = testee().findSubscriptionsForUser(USER_1);
 
         assertThat(subscriptions).isEmpty();
     }
 
     @Test
-    public void findMailboxSubscriptionForUserShouldReturnNullByDefault() throws SubscriptionException {
-        Subscription subscriptions = testee.findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
+    default void findMailboxSubscriptionForUserShouldReturnNullByDefault() throws SubscriptionException {
+        Subscription subscriptions = testee().findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
 
         assertThat(subscriptions).isNull();
     }
 
     @Test
-    public void findMailboxSubscriptionForUserShouldReturnSubscription() throws SubscriptionException {
+    default void findMailboxSubscriptionForUserShouldReturnSubscription() throws SubscriptionException {
         SimpleSubscription subscription = new SimpleSubscription(USER_1, MAILBOX_1);
-        testee.save(subscription);
+        testee().save(subscription);
 
-        List<Subscription> results = testee.findSubscriptionsForUser(USER_1);
+        List<Subscription> results = testee().findSubscriptionsForUser(USER_1);
 
         assertThat(results).containsOnly(subscription);
     }
 
     @Test
-    public void findSubscriptionsForUserShouldReturnSubscriptions() throws SubscriptionException {
+    default void findSubscriptionsForUserShouldReturnSubscriptions() throws SubscriptionException {
         SimpleSubscription subscription1 = new SimpleSubscription(USER_1, MAILBOX_1);
         SimpleSubscription subscription2 = new SimpleSubscription(USER_1, MAILBOX_2);
-        testee.save(subscription1);
-        testee.save(subscription2);
+        testee().save(subscription1);
+        testee().save(subscription2);
 
-        List<Subscription> results = testee.findSubscriptionsForUser(USER_1);
+        List<Subscription> results = testee().findSubscriptionsForUser(USER_1);
 
         assertThat(results).containsOnly(subscription1, subscription2);
     }
 
     @Test
-    public void findSubscriptionsForUserShouldReturnOnlyUserSubscriptions() throws SubscriptionException {
+    default void findSubscriptionsForUserShouldReturnOnlyUserSubscriptions() throws SubscriptionException {
         SimpleSubscription subscription1 = new SimpleSubscription(USER_1,MAILBOX_1);
         SimpleSubscription subscription2 = new SimpleSubscription(USER_2,MAILBOX_2);
-        testee.save(subscription1);
-        testee.save(subscription2);
+        testee().save(subscription1);
+        testee().save(subscription2);
 
-        List<Subscription> results = testee.findSubscriptionsForUser(USER_1);
+        List<Subscription> results = testee().findSubscriptionsForUser(USER_1);
 
         assertThat(results).containsOnly(subscription1);
     }
 
     @Test
-    public void findMailboxSubscriptionForUserShouldReturnOnlyUserSubscriptions() throws SubscriptionException {
+    default void findMailboxSubscriptionForUserShouldReturnOnlyUserSubscriptions() throws SubscriptionException {
         SimpleSubscription subscription1 = new SimpleSubscription(USER_1,MAILBOX_1);
         SimpleSubscription subscription2 = new SimpleSubscription(USER_2,MAILBOX_1);
-        testee.save(subscription1);
-        testee.save(subscription2);
+        testee().save(subscription1);
+        testee().save(subscription2);
 
-        Subscription result = testee.findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
+        Subscription result = testee().findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
 
         assertThat(result).isEqualTo(result);
     }
 
     @Test
-    public void findMailboxSubscriptionForUserShouldReturnSubscriptionConcerningTheMailbox() throws SubscriptionException {
+    default void findMailboxSubscriptionForUserShouldReturnSubscriptionConcerningTheMailbox() throws SubscriptionException {
         SimpleSubscription subscription1 = new SimpleSubscription(USER_1,MAILBOX_1);
         SimpleSubscription subscription2 = new SimpleSubscription(USER_1,MAILBOX_2);
-        testee.save(subscription1);
-        testee.save(subscription2);
+        testee().save(subscription1);
+        testee().save(subscription2);
 
-        Subscription result = testee.findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
+        Subscription result = testee().findMailboxSubscriptionForUser(USER_1,MAILBOX_1);
 
         assertThat(result).isEqualTo(result);
     }
 
     @Test
-    public void deleteShouldRemoveSubscription() throws SubscriptionException {
+    default void deleteShouldRemoveSubscription() throws SubscriptionException {
         SimpleSubscription subscription = new SimpleSubscription(USER_1, MAILBOX_1);
-        testee.save(subscription);
+        testee().save(subscription);
 
-        testee.delete(subscription);
+        testee().delete(subscription);
 
-        assertThat(testee.findSubscriptionsForUser(USER_1)).isEmpty();
+        assertThat(testee().findSubscriptionsForUser(USER_1)).isEmpty();
     }
 }

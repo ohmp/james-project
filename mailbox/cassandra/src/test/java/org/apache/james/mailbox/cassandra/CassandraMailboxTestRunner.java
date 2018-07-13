@@ -33,21 +33,28 @@ import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
 import org.apache.james.mailbox.cassandra.event.distributed.CassandraMailboxPathRegisterMapper;
 import org.apache.james.mailbox.cassandra.event.distributed.CassandraMailboxPathRegistrerMapperTest;
+import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.mail.CassandraACLMapper;
 import org.apache.james.mailbox.cassandra.mail.CassandraACLMapperTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraAnnotationMapper;
 import org.apache.james.mailbox.cassandra.mail.CassandraApplicableFlagDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraApplicableFlagDAOTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2Test;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentFallbackTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentMapper;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentMessageIdDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentOwnerDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentOwnerDAOTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraDeletedMessageDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraDeletedMessageDAOTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraFirstUnseenDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraFirstUnseenDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraIndexTableHandler;
+import org.apache.james.mailbox.cassandra.mail.CassandraIndexTableHandlerTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxCounterDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxCounterDAOTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxDAO;
@@ -73,8 +80,14 @@ import org.apache.james.mailbox.cassandra.mail.CassandraUidProvider;
 import org.apache.james.mailbox.cassandra.mail.CassandraUidProviderTest;
 import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAOTest;
+import org.apache.james.mailbox.cassandra.mail.migration.AttachmentMessageIdCreation;
+import org.apache.james.mailbox.cassandra.mail.migration.AttachmentMessageIdCreationTest;
+import org.apache.james.mailbox.cassandra.mail.migration.AttachmentV2Migration;
+import org.apache.james.mailbox.cassandra.mail.migration.AttachmentV2MigrationTest;
+import org.apache.james.mailbox.cassandra.mail.migration.MailboxPathV2MigrationTest;
 import org.apache.james.mailbox.cassandra.mail.utils.GuiceUtils;
 import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraAnnotationModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraApplicableFlagsModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraDeletedMessageModule;
@@ -84,8 +97,29 @@ import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxRecentsModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraQuotaModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraRegistrationModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraSubscriptionModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
+import org.apache.james.mailbox.cassandra.quota.CassandraCurrentQuotaManager;
+import org.apache.james.mailbox.cassandra.quota.CassandraPerUserMaxQuotaManager;
+import org.apache.james.mailbox.cassandra.user.CassandraSubscriptionMapper;
+import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.store.mail.AnnotationMapper;
+import org.apache.james.mailbox.store.mail.AttachmentMapper;
+import org.apache.james.mailbox.store.mail.MailboxMapper;
+import org.apache.james.mailbox.store.mail.model.AnnotationMapperTest;
+import org.apache.james.mailbox.store.mail.model.AttachmentMapperTest;
+import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxMapperACLTest;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
+import org.apache.james.mailbox.store.quota.GenericMaxQuotaManagerTest;
+import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManager;
+import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManagerTest;
+import org.apache.james.mailbox.store.user.SubscriptionMapper;
+import org.apache.james.mailbox.store.user.SubscriptionMapperTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -571,6 +605,333 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraMailboxPathRegisterMapper testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class IndexTableHandlerTest extends Runner implements CassandraIndexTableHandlerTest {
+        private Testee testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraMailboxCounterModule(),
+                new CassandraMailboxRecentsModule(),
+                new CassandraFirstUnseenModule(),
+                new CassandraApplicableFlagsModule(),
+                new CassandraDeletedMessageModule());
+        }
+
+        @BeforeEach
+        void setUp() {
+            CassandraMailboxCounterDAO mailboxCounterDAO = new CassandraMailboxCounterDAO(cassandra.getConf());
+            CassandraMailboxRecentsDAO mailboxRecentsDAO = new CassandraMailboxRecentsDAO(cassandra.getConf());
+            CassandraFirstUnseenDAO firstUnseenDAO = new CassandraFirstUnseenDAO(cassandra.getConf());
+            CassandraApplicableFlagDAO applicableFlagDAO = new CassandraApplicableFlagDAO(cassandra.getConf());
+            CassandraDeletedMessageDAO deletedMessageDAO = new CassandraDeletedMessageDAO(cassandra.getConf());
+
+            testee = new Testee(
+                mailboxCounterDAO,
+                mailboxRecentsDAO,
+                applicableFlagDAO,
+                firstUnseenDAO,
+                new CassandraIndexTableHandler(mailboxRecentsDAO,
+                    mailboxCounterDAO,
+                    firstUnseenDAO,
+                    applicableFlagDAO,
+                    deletedMessageDAO),
+                deletedMessageDAO);
+        }
+
+        @Override
+        public Testee testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class AttachmentMapperTestRunner extends Runner implements AttachmentMapperTest {
+        private AttachmentMapper testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraAttachmentModule(),
+                new CassandraBlobModule());
+        }
+
+        @BeforeEach
+        void setUp() {
+            testee = GuiceUtils.testInjector(cassandra)
+                .getInstance(CassandraAttachmentMapper.class);
+        }
+
+        @Override
+        public AttachmentMapper testee() {
+            return testee;
+        }
+
+        @Override
+        public MessageId generateMessageId() {
+            return new CassandraMessageId.Factory().generate();
+        }
+    }
+
+    @Nested
+    class AnnotationMapperTestRunner extends Runner implements AnnotationMapperTest {
+        private AnnotationMapper testee;
+        private CassandraId cassandraId;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraAnnotationModule();
+        }
+
+        @BeforeEach
+        void setUp() {
+            testee = GuiceUtils.testInjector(cassandra)
+                .getInstance(CassandraAnnotationMapper.class);
+            cassandraId = CassandraId.timeBased();
+        }
+
+        @Override
+        public AnnotationMapper testee() {
+            return testee;
+        }
+
+        @Override
+        public MailboxId mailboxId() {
+            return cassandraId;
+        }
+    }
+
+    @Nested
+    class SubscriptionMapperTestRunner extends Runner implements SubscriptionMapperTest {
+        private SubscriptionMapper testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraSubscriptionModule();
+        }
+
+        @BeforeEach
+        void setUp() {
+            testee = GuiceUtils.testInjector(cassandra)
+                .getInstance(CassandraSubscriptionMapper.class);
+        }
+
+        @Override
+        public SubscriptionMapper testee() {
+            return testee;
+        }
+
+    }
+
+    @Nested
+    class MailboxMapperAclTestRunner extends Runner implements MailboxMapperACLTest {
+        private MailboxMapper testee;
+        private SimpleMailbox mailbox;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraAclModule(),
+                new CassandraMailboxModule());
+        }
+
+        @BeforeEach
+        void setUp() throws MailboxException {
+            testee = GuiceUtils.testInjector(cassandra)
+                .getInstance(CassandraMailboxMapper.class);
+            mailbox = new SimpleMailbox(benwaInboxPath, UID_VALIDITY);
+            mailbox.setMailboxId(CassandraId.timeBased());
+            testee().save(mailbox());
+        }
+
+        @Override
+        public MailboxMapper testee() {
+            return testee;
+        }
+
+        @Override
+        public Mailbox mailbox() {
+            return mailbox;
+        }
+    }
+
+    @Nested
+    class AttachmentMessageIdCreationTestRunner extends Runner implements AttachmentMessageIdCreationTest {
+        private AttachmentMessageIdCreationTest.Testee testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraMessageModule(),
+                new CassandraAttachmentModule(),
+                new CassandraBlobModule());
+        }
+
+        @BeforeEach
+        void setUp() {
+            CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf());
+            CassandraMessageDAO cassandraMessageDAO = new CassandraMessageDAO(cassandra.getConf(), cassandra.getTypesProvider(),
+                blobsDAO, new CassandraBlobId.Factory(), CassandraUtils.WITH_DEFAULT_CONFIGURATION, messageIdFactory);
+
+            CassandraAttachmentMessageIdDAO attachmentMessageIdDAO = new CassandraAttachmentMessageIdDAO(cassandra.getConf(),
+                new CassandraMessageId.Factory(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+
+            AttachmentMessageIdCreation migration = new AttachmentMessageIdCreation(cassandraMessageDAO, attachmentMessageIdDAO);
+
+            testee = new AttachmentMessageIdCreationTest.Testee(blobsDAO, cassandraMessageDAO, attachmentMessageIdDAO, migration);
+        }
+
+        @Override
+        public AttachmentMessageIdCreationTest.Testee testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class AttachmentV2MigrationTestRunner extends Runner implements AttachmentV2MigrationTest {
+        private AttachmentV2MigrationTest.Testee testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraAttachmentModule(),
+                new CassandraBlobModule());
+        }
+
+        @BeforeEach
+        void setUp() {
+            CassandraAttachmentDAO attachmentDAO = new CassandraAttachmentDAO(cassandra.getConf(),
+                CassandraUtils.WITH_DEFAULT_CONFIGURATION,
+                CassandraConfiguration.DEFAULT_CONFIGURATION);
+            CassandraAttachmentDAOV2 attachmentDAOV2 = new CassandraAttachmentDAOV2(BLOB_ID_FACTORY, cassandra.getConf());
+            CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf());
+            AttachmentV2Migration migration = new AttachmentV2Migration(attachmentDAO, attachmentDAOV2, blobsDAO);
+
+            testee = new AttachmentV2MigrationTest.Testee(attachmentDAO, attachmentDAOV2, blobsDAO, migration);
+
+        }
+
+        @Override
+        public AttachmentV2MigrationTest.Testee testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class MailboxPathV2MigrationTestRunner extends Runner implements MailboxPathV2MigrationTest {
+        private MailboxPathV2MigrationTest.Testee testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraMailboxModule(),
+                new CassandraAclModule());
+        }
+
+        @BeforeEach
+        void setUp() {
+            CassandraMailboxPathDAOImpl daoV1 = new CassandraMailboxPathDAOImpl(
+                cassandra.getConf(),
+                cassandra.getTypesProvider(),
+                CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+            CassandraMailboxPathV2DAO daoV2 = new CassandraMailboxPathV2DAO(
+                cassandra.getConf(),
+                CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+
+            CassandraUserMailboxRightsDAO userMailboxRightsDAO = new CassandraUserMailboxRightsDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+            CassandraMailboxDAO mailboxDAO = new CassandraMailboxDAO(cassandra.getConf(), cassandra.getTypesProvider());
+            CassandraMailboxMapper mailboxMapper = new CassandraMailboxMapper(
+                mailboxDAO,
+                daoV1,
+                daoV2,
+                userMailboxRightsDAO,
+                new CassandraACLMapper(cassandra.getConf(), userMailboxRightsDAO, CassandraConfiguration.DEFAULT_CONFIGURATION));
+
+            testee = new Testee(daoV1, daoV2, mailboxMapper, mailboxDAO);
+        }
+
+        @Override
+        public MailboxPathV2MigrationTest.Testee testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class AttachmentFallbackTest extends Runner implements CassandraAttachmentFallbackTest {
+        private CassandraAttachmentFallbackTest.Testee testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                new CassandraAttachmentModule(),
+                new CassandraBlobModule());
+        }
+
+        @BeforeEach
+        void setUp() {
+            CassandraAttachmentDAOV2 attachmentDAOV2 = new CassandraAttachmentDAOV2(BLOB_ID_FACTORY, cassandra.getConf());
+            CassandraAttachmentDAO attachmentDAO = new CassandraAttachmentDAO(cassandra.getConf(),
+                CassandraUtils.WITH_DEFAULT_CONFIGURATION,
+                CassandraConfiguration.DEFAULT_CONFIGURATION);
+            CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf());
+            CassandraAttachmentMessageIdDAO attachmentMessageIdDAO = new CassandraAttachmentMessageIdDAO(cassandra.getConf(), new CassandraMessageId.Factory(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+            CassandraAttachmentOwnerDAO ownerDAO = new CassandraAttachmentOwnerDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+            CassandraAttachmentMapper attachmentMapper = new CassandraAttachmentMapper(attachmentDAO, attachmentDAOV2, blobsDAO, attachmentMessageIdDAO, ownerDAO);
+
+            testee = new Testee(attachmentDAOV2, attachmentDAO, attachmentMapper, blobsDAO, attachmentMessageIdDAO);
+        }
+
+        @Override
+        public CassandraAttachmentFallbackTest.Testee testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class GenericMaxQuotaManagerTestRunner extends Runner implements GenericMaxQuotaManagerTest {
+        private CassandraPerUserMaxQuotaManager testee;
+
+        @Override
+        public CassandraModule module() {
+            return new CassandraModuleComposite(
+                CassandraQuotaModule.MAX_QUOTA_TABLE,
+                CassandraQuotaModule.DOMAIN_QUOTA_TABLE,
+                CassandraQuotaModule.USER_QUOTA_TABLE);
+        }
+
+        @BeforeEach
+        void setUp() {
+            testee = GuiceUtils.testInjector(cassandra)
+                .getInstance(CassandraPerUserMaxQuotaManager.class);
+        }
+
+        @Override
+        public CassandraPerUserMaxQuotaManager testee() {
+            return testee;
+        }
+    }
+
+    @Nested
+    class StoreCurrentQuotaManagerTestRunner extends Runner implements StoreCurrentQuotaManagerTest {
+        private StoreCurrentQuotaManager testee;
+
+        @Override
+        public CassandraModule module() {
+            return CassandraQuotaModule.CURRENT_QUOTA_TABLE;
+        }
+
+        @BeforeEach
+        void setUp() {
+            testee = new CassandraCurrentQuotaManager(cassandra.getConf());
+        }
+
+        @Override
+        public StoreCurrentQuotaManager testee() {
             return testee;
         }
     }
