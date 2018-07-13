@@ -18,6 +18,9 @@
  ****************************************************************/
 package org.apache.james.backends.cassandra;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
@@ -38,6 +41,11 @@ public final class CassandraCluster implements AutoCloseable {
     private Session session;
     private CassandraTypesProvider typesProvider;
     private Cluster cluster;
+
+    @Inject
+    private CassandraCluster(CassandraModule module, @Named("cassandraHost") String host, @Named("cassandraPort") int port) throws RuntimeException {
+        this(module, Host.from(host, port));
+    }
 
     private CassandraCluster(CassandraModule module, Host host) throws RuntimeException {
         try {
