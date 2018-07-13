@@ -17,38 +17,22 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.cassandra.vacation;
+package org.apache.james.jmap.memory.access;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
-import org.apache.james.jmap.api.vacation.AbstractNotificationRegistryTest;
-import org.apache.james.jmap.api.vacation.NotificationRegistry;
-import org.apache.james.util.date.ZonedDateTimeProvider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.apache.james.jmap.api.access.AccessTokenRepository;
+import org.apache.james.jmap.api.access.AccessTokenRepositoryContract;
+import org.junit.jupiter.api.BeforeEach;
 
-public class CassandraNotificationRegistryTest extends AbstractNotificationRegistryTest {
+public class MemoryAccessTokenRepositoryContract implements AccessTokenRepositoryContract {
+    private AccessTokenRepository testee;
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
+    @BeforeEach
+    void setUp() {
+        testee = new MemoryAccessTokenRepository(AccessTokenRepositoryContract.TTL_IN_MS);
+    }
 
     @Override
-    @Before
-    public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(CassandraNotificationRegistryModule.MODULE, cassandraServer.getHost());
-        super.setUp();
+    public AccessTokenRepository accessTokenRepository() {
+        return testee;
     }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
-    
-    @Override
-    protected NotificationRegistry createNotificationRegistry(ZonedDateTimeProvider zonedDateTimeProvider) {
-        return new CassandraNotificationRegistry(zonedDateTimeProvider, new CassandraNotificationRegistryDAO(cassandra.getConf()));
-    }
-
 }
