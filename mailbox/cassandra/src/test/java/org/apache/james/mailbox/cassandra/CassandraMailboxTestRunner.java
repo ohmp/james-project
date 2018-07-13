@@ -883,7 +883,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
             CassandraAttachmentOwnerDAO ownerDAO = new CassandraAttachmentOwnerDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
             CassandraAttachmentMapper attachmentMapper = new CassandraAttachmentMapper(attachmentDAO, attachmentDAOV2, blobsDAO, attachmentMessageIdDAO, ownerDAO);
 
-            testee = new Testee(attachmentDAOV2, attachmentDAO, attachmentMapper, blobsDAO, attachmentMessageIdDAO);
+            testee = new Testee(attachmentDAOV2, attachmentDAO, attachmentMapper, blobsDAO);
         }
 
         @Override

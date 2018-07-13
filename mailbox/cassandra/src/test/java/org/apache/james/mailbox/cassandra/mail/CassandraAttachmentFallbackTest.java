@@ -24,24 +24,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
-import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
-import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.cassandra.CassandraBlobId;
-import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
-import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
-import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
@@ -55,15 +43,13 @@ public interface CassandraAttachmentFallbackTest {
         private final CassandraAttachmentDAO attachmentDAO;
         private final CassandraAttachmentMapper attachmentMapper;
         private final CassandraBlobsDAO blobsDAO;
-        private final CassandraAttachmentMessageIdDAO attachmentMessageIdDAO;
 
         public Testee(CassandraAttachmentDAOV2 attachmentDAOV2, CassandraAttachmentDAO attachmentDAO, CassandraAttachmentMapper attachmentMapper,
-                      CassandraBlobsDAO blobsDAO, CassandraAttachmentMessageIdDAO attachmentMessageIdDAO) {
+                      CassandraBlobsDAO blobsDAO) {
             this.attachmentDAOV2 = attachmentDAOV2;
             this.attachmentDAO = attachmentDAO;
             this.attachmentMapper = attachmentMapper;
             this.blobsDAO = blobsDAO;
-            this.attachmentMessageIdDAO = attachmentMessageIdDAO;
         }
     }
 
