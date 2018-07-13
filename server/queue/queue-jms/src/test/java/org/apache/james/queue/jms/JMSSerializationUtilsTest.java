@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -76,7 +77,7 @@ class JMSSerializationUtilsTest {
     @Test
     void deserializeShouldThrowWhenNotSerializedBytesAreEncodedInBase64() {
         assertThatExceptionOfType(SerializationException.class)
-                .isThrownBy(() -> deserialize(Base64.encodeBase64String("abc".getBytes())));
+                .isThrownBy(() -> deserialize(Base64.encodeBase64String("abc".getBytes(StandardCharsets.UTF_8))));
     }
 
     private static class SerializableStringHolder implements Serializable {

@@ -59,7 +59,6 @@ public class JMSSerializationUtils {
      */
     public static <T extends Serializable> T deserialize(String object) {
         return Optional.ofNullable(object)
-                .map(String::getBytes)
                 .map(Throwing.function(Base64::decodeBase64))
                 .<T>map(SerializationUtils::deserialize)
                 .orElse(null);
