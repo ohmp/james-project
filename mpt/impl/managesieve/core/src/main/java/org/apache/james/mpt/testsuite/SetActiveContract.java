@@ -17,41 +17,36 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mpt.managesieve.cassandra;
+package org.apache.james.mpt.testsuite;
 
-import org.apache.james.backends.cassandra.DockerCassandraRule;
+import java.util.Locale;
+
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.LogoutTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+public interface SetActiveContract {
+    String USER = "user";
+    String PASSWORD = "password";
 
-public class CassandraLogoutTest extends LogoutTest {
-    
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private ManageSieveHostSystem system;
+    ManageSieveHostSystem hostSystem();
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        Injector injector = Guice.createInjector(new CassandraModule(cassandraServer.getHost()));
-        system = injector.getInstance(ManageSieveHostSystem.class);
-        system.beforeTest();
-        super.setUp();
-    }
-    
-    @Override
-    protected ManageSieveHostSystem createManageSieveHostSystem() {
-        return system;
+    default SimpleScriptedTestProtocol protocol() throws Exception {
+        return new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem())
+                .withUser(USER, PASSWORD)
+                .withLocale(Locale.US);
     }
 
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        system.afterTest();
+    @AfterEach
+    default void tearDown() throws Exception {
+        hostSystem().afterTest();
+    }
+
+    @Test
+    default void setActiveShouldWork() throws Exception {
+        protocol()
+            .withLocale(Locale.US)
+            .run("setactive");
     }
 }
