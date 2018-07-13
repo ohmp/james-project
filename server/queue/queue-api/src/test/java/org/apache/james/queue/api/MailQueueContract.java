@@ -332,9 +332,9 @@ public interface MailQueueContract {
         @Override
         public final boolean equals(Object o) {
             if (o instanceof SerializableAttribute) {
-                SerializableAttribute toto = (SerializableAttribute) o;
+                SerializableAttribute that = (SerializableAttribute) o;
 
-                return Objects.equals(this.value, toto.value);
+                return Objects.equals(this.value, that.value);
             }
             return false;
         }
