@@ -22,9 +22,6 @@ package org.apache.james.mailrepository.cassandra;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraExtension;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.TestBlobId;
 import org.apache.james.mailrepository.api.MailKey;
@@ -33,46 +30,24 @@ import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-@ExtendWith(DockerCassandraExtension.class)
-public class CassandraMailRepositoryMailDAOTest {
+public interface CassandraMailRepositoryMailDAOContract {
+    MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
+    MailKey KEY_1 = new MailKey("key1");
+    TestBlobId.Factory BLOB_ID_FACTORY = new TestBlobId.Factory();
 
-    static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
-    static final MailKey KEY_1 = new MailKey("key1");
-    static final TestBlobId.Factory BLOB_ID_FACTORY = new TestBlobId.Factory();
-
-    CassandraCluster cassandra;
-    CassandraMailRepositoryMailDAO testee;
-
-    @BeforeEach
-    public void setUp(DockerCassandraExtension.DockerCassandra dockerCassandra) {
-        cassandra = CassandraCluster.create(
-            new CassandraModuleComposite(
-                CassandraMailRepositoryModule.HEADER_TYPE,
-                CassandraMailRepositoryModule.MAIL_REPOSITORY_TABLE),
-            dockerCassandra.getHost());
-
-        testee = new CassandraMailRepositoryMailDAO(cassandra.getConf(), BLOB_ID_FACTORY, cassandra.getTypesProvider());
-    }
-
-    @AfterEach
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraMailRepositoryMailDAO mailDAO();
 
     @Test
-    public void readShouldReturnEmptyWhenAbsent() {
-        assertThat(testee.read(URL, KEY_1).join())
+    default void readShouldReturnEmptyWhenAbsent() {
+        assertThat(mailDAO().read(URL, KEY_1).join())
             .isEmpty();
     }
 
     @Test
-    public void readShouldReturnAllMailMetadata() throws Exception {
+    default void readShouldReturnAllMailMetadata() throws Exception {
         BlobId blobIdBody = BLOB_ID_FACTORY.from("blobHeader");
         BlobId blobIdHeader = BLOB_ID_FACTORY.from("blobBody");
         String errorMessage = "error message";
@@ -83,7 +58,7 @@ public class CassandraMailRepositoryMailDAOTest {
         String attributeName = "att1";
         ImmutableList<String> attributeValue = ImmutableList.of("value1", "value2");
 
-        testee.store(URL,
+        mailDAO().store(URL,
             FakeMail.builder()
                 .name(KEY_1.asString())
                 .sender(MailAddressFixture.SENDER)
@@ -99,7 +74,7 @@ public class CassandraMailRepositoryMailDAOTest {
             blobIdBody)
             .join();
 
-        CassandraMailRepositoryMailDAO.MailDTO mailDTO = testee.read(URL, KEY_1).join().get();
+        CassandraMailRepositoryMailDAO.MailDTO mailDTO = mailDAO().read(URL, KEY_1).join().get();
 
         Mail partialMail = mailDTO.getMailBuilder().build();
         assertAll(
@@ -121,11 +96,11 @@ public class CassandraMailRepositoryMailDAOTest {
     }
 
     @Test
-    public void storeShouldAcceptMailWithOnlyName() throws Exception {
+    default void storeShouldAcceptMailWithOnlyName() throws Exception {
         BlobId blobIdBody = BLOB_ID_FACTORY.from("blobHeader");
         BlobId blobIdHeader = BLOB_ID_FACTORY.from("blobBody");
 
-        testee.store(URL,
+        mailDAO().store(URL,
             FakeMail.builder()
                 .name(KEY_1.asString())
                 .build(),
@@ -133,7 +108,7 @@ public class CassandraMailRepositoryMailDAOTest {
             blobIdBody)
             .join();
 
-        CassandraMailRepositoryMailDAO.MailDTO mailDTO = testee.read(URL, KEY_1).join().get();
+        CassandraMailRepositoryMailDAO.MailDTO mailDTO = mailDAO().read(URL, KEY_1).join().get();
 
         Mail partialMail = mailDTO.getMailBuilder().build();
         assertAll(
@@ -143,11 +118,11 @@ public class CassandraMailRepositoryMailDAOTest {
     }
 
     @Test
-    public void removeShouldDeleteMailMetaData() throws Exception {
+    default void removeShouldDeleteMailMetaData() throws Exception {
         BlobId blobIdBody = BLOB_ID_FACTORY.from("blobHeader");
         BlobId blobIdHeader = BLOB_ID_FACTORY.from("blobBody");
 
-        testee.store(URL,
+        mailDAO().store(URL,
             FakeMail.builder()
                 .name(KEY_1.asString())
                 .build(),
@@ -155,9 +130,9 @@ public class CassandraMailRepositoryMailDAOTest {
             blobIdBody)
             .join();
 
-        testee.remove(URL, KEY_1).join();
+        mailDAO().remove(URL, KEY_1).join();
 
-        assertThat(testee.read(URL, KEY_1).join())
+        assertThat(mailDAO().read(URL, KEY_1).join())
             .isEmpty();
     }
 
