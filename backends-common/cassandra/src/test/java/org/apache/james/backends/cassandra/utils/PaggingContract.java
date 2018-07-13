@@ -27,49 +27,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.util.CompletableFutureUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.utils.UUIDs;
 
-public class PaggingTest {
-    
-    private static final String TABLE_NAME = "test";
-    private static final String ID = "id";
-    private static final String CLUSTERING = "clustering";
-    private static final UUID UUID = UUIDs.timeBased();
+public interface PaggingContract {
+    String TABLE_NAME = "test";
+    String ID = "id";
+    String CLUSTERING = "clustering";
+    UUID UUID = UUIDs.timeBased();
+    CassandraModule MODULE = CassandraModule.table(TABLE_NAME)
+        .statement(statement -> statement
+            .ifNotExists()
+            .addPartitionKey(ID, DataType.timeuuid())
+            .addClusteringColumn(CLUSTERING, DataType.bigint()))
+        .build();
 
-    @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
-    private CassandraAsyncExecutor executor;
-
-    @Before
-    public void setUp() {
-        CassandraModule modules = CassandraModule.table(TABLE_NAME)
-            .statement(statement -> statement
-                .ifNotExists()
-                .addPartitionKey(ID, DataType.timeuuid())
-                .addClusteringColumn(CLUSTERING, DataType.bigint()))
-            .build();
-        cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
-        executor = new CassandraAsyncExecutor(cassandra.getConf());
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraAsyncExecutor executor();
 
     @Test
-    public void pagingShouldWork() {
+    default void pagingShouldWork() {
         int fetchSize = 200;
         int size = 2 * fetchSize + 50;
 
@@ -77,14 +57,14 @@ public class PaggingTest {
             IntStream.range(0, size)
                 .boxed()
                 .map(i ->
-                    executor
+                    executor()
                         .executeVoid(insertInto(TABLE_NAME)
                             .value(ID, UUID)
                             .value(CLUSTERING, i))))
             .join();
 
         assertThat(
-            executor.execute(select()
+            executor().execute(select()
                 .from(TABLE_NAME)
                 .where(eq(ID, UUID))
                 .setFetchSize(fetchSize))
