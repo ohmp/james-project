@@ -21,83 +21,63 @@ package org.apache.james.mailrepository.cassandra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraExtension;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(DockerCassandraExtension.class)
-public class CassandraMailRepositoryCountDAOTest {
-    static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
-    static final MailRepositoryUrl URL2 = MailRepositoryUrl.from("proto://url2");
+public interface CassandraMailRepositoryCountDAOTest {
+    MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
+    MailRepositoryUrl URL2 = MailRepositoryUrl.from("proto://url2");
 
-    CassandraCluster cassandra;
-    CassandraMailRepositoryCountDAO testee;
-
-    @BeforeEach
-    public void setUp(DockerCassandraExtension.DockerCassandra dockerCassandra) {
-        cassandra = CassandraCluster.create(
-            CassandraMailRepositoryModule.COUNT_TABLE, dockerCassandra.getHost());
-
-        testee = new CassandraMailRepositoryCountDAO(cassandra.getConf());
-    }
-
-    @AfterEach
-    public void tearDown() {
-        cassandra.close();
-    }
+    CassandraMailRepositoryCountDAO testee();
 
     @Test
-    public void getCountShouldReturnZeroWhenEmpty() {
-        assertThat(testee.getCount(URL).join())
+    default void getCountShouldReturnZeroWhenEmpty() {
+        assertThat(testee().getCount(URL).join())
             .isEqualTo(0L);
     }
 
     @Test
-    public void getCountShouldReturnOneWhenIncrementedOneTime() {
-        testee.increment(URL).join();
+    default void getCountShouldReturnOneWhenIncrementedOneTime() {
+        testee().increment(URL).join();
 
-        assertThat(testee.getCount(URL).join())
+        assertThat(testee().getCount(URL).join())
             .isEqualTo(1L);
     }
 
     @Test
-    public void incrementShouldNotAffectOtherUrls() {
-        testee.increment(URL).join();
+    default void incrementShouldNotAffectOtherUrls() {
+        testee().increment(URL).join();
 
-        assertThat(testee.getCount(URL2).join())
+        assertThat(testee().getCount(URL2).join())
             .isEqualTo(0L);
     }
 
     @Test
-    public void incrementCanBeAppliedSeveralTime() {
-        testee.increment(URL).join();
-        testee.increment(URL).join();
+    default void incrementCanBeAppliedSeveralTime() {
+        testee().increment(URL).join();
+        testee().increment(URL).join();
 
-        assertThat(testee.getCount(URL).join())
+        assertThat(testee().getCount(URL).join())
             .isEqualTo(2L);
     }
 
     @Test
-    public void decrementShouldDecreaseCount() {
-        testee.increment(URL).join();
-        testee.increment(URL).join();
-        testee.increment(URL).join();
+    default void decrementShouldDecreaseCount() {
+        testee().increment(URL).join();
+        testee().increment(URL).join();
+        testee().increment(URL).join();
 
-        testee.decrement(URL).join();
+        testee().decrement(URL).join();
 
-        assertThat(testee.getCount(URL).join())
+        assertThat(testee().getCount(URL).join())
             .isEqualTo(2L);
     }
 
     @Test
-    public void decrementCanLeadToNegativeCount() {
-        testee.decrement(URL).join();
+    default void decrementCanLeadToNegativeCount() {
+        testee().decrement(URL).join();
 
-        assertThat(testee.getCount(URL).join())
+        assertThat(testee().getCount(URL).join())
             .isEqualTo(-1L);
     }
 }
