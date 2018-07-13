@@ -23,37 +23,31 @@ import java.util.Locale;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-public abstract class StartTlsTest {
+public interface StartTlsTest {
 
-    public static final String USER = "user";
-    public static final String PASSWORD = "password";
-    
-    protected abstract ManageSieveHostSystem createManageSieveHostSystem();
-    
-    private ManageSieveHostSystem hostSystem;
-    private SimpleScriptedTestProtocol simpleScriptedTestProtocol;
+    String USER = "user";
+    String PASSWORD = "password";
 
-    @Before
-    public void setUp() throws Exception {
-        hostSystem = createManageSieveHostSystem();
-        hostSystem.beforeTest();
-        simpleScriptedTestProtocol = new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem)
+    ManageSieveHostSystem hostSystem();
+
+
+    default SimpleScriptedTestProtocol protocol() throws Exception {
+        return new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem())
                 .withUser(USER, PASSWORD)
                 .withLocale(Locale.US);
     }
-    
-    @After
-    public void tearDown() throws Exception {
-        hostSystem.afterTest();
+
+    @AfterEach
+    default void tearDown() throws Exception {
+        hostSystem().afterTest();
     }
 
     @Test
-    public void startTlsShouldWork() throws Exception {
-        simpleScriptedTestProtocol
+    default void startTlsShouldWork() throws Exception {
+        protocol()
             .withLocale(Locale.US)
             .run("starttls");
     }
