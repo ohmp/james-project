@@ -183,8 +183,6 @@ public abstract class SetMessagesMethodTest {
             () -> HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD));
         accessToken = accessTokens.get(0);
         bobAccessToken = accessTokens.get(1);
-
-        await();
     }
 
     @After
