@@ -46,6 +46,10 @@ public final class CassandraCluster implements AutoCloseable {
     private CassandraTypesProvider typesProvider;
     private Cluster cluster;
 
+    public static CassandraCluster create(CassandraModule module, String host, int port) {
+        return new CassandraCluster(module, host, port);
+    }
+
     @Inject
     private CassandraCluster(CassandraModule module, @Named("cassandraHost") String host, @Named("cassandraPort") int port) throws RuntimeException {
         this(module, Host.from(host, port));
@@ -62,8 +66,6 @@ public final class CassandraCluster implements AutoCloseable {
                     .host(host)
                     .keyspace(KEYSPACE)
                     .replicationFactor(1)
-                    .maxRetry(10)
-                    .minDelay(5000)
                     .build(),
                 ClusterWithKeyspaceCreatedFactory
                     .config(cluster, KEYSPACE)
