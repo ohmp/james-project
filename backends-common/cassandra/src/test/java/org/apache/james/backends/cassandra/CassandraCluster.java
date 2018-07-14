@@ -21,8 +21,8 @@ package org.apache.james.backends.cassandra;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.text.RandomStringGenerator;
 import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.init.CassandraTableManager;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.init.ClusterBuilder;
 import org.apache.james.backends.cassandra.init.ClusterWithKeyspaceCreatedFactory;
@@ -34,10 +34,14 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 public final class CassandraCluster implements AutoCloseable {
+
+    public static final String KEYSPACE = "testing";
+
     public static CassandraCluster create(CassandraModule module, Host host) {
         return new CassandraCluster(module, host);
     }
 
+    private final CassandraModule module;
     private Session session;
     private CassandraTypesProvider typesProvider;
     private Cluster cluster;
@@ -48,21 +52,21 @@ public final class CassandraCluster implements AutoCloseable {
     }
 
     private CassandraCluster(CassandraModule module, Host host) throws RuntimeException {
+        this.module = module;
         try {
-            String keyspace = new RandomStringGenerator.Builder().withinRange('a', 'z').build().generate(10);
             cluster = ClusterBuilder.builder()
                 .servers(host)
                 .build();
             session = new SessionWithInitializedTablesFactory(
                 ClusterConfiguration.builder()
                     .host(host)
-                    .keyspace(keyspace)
+                    .keyspace(KEYSPACE)
                     .replicationFactor(1)
                     .maxRetry(10)
                     .minDelay(5000)
                     .build(),
                 ClusterWithKeyspaceCreatedFactory
-                    .config(cluster, keyspace)
+                    .config(cluster, KEYSPACE)
                     .replicationFactor(1)
                     .disableDurableWrites()
                     .clusterWithInitializedKeyspace(),
@@ -84,6 +88,7 @@ public final class CassandraCluster implements AutoCloseable {
 
     @Override
     public void close() {
+        new CassandraTableManager(module, session).clearAllTables();
         cluster.closeAsync();
     }
 }

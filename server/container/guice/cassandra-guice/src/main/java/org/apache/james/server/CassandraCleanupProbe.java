@@ -17,44 +17,24 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.cassandra;
+package org.apache.james.server;
 
-import java.io.IOException;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
-import org.apache.james.GuiceJamesServer;
-import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.InMemoryDNSService;
-import org.apache.james.jmap.VacationRelayIntegrationTest;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.apache.james.backends.cassandra.init.CassandraTableManager;
+import org.apache.james.utils.GuiceProbe;
 
-public class CassandraVacationRelayIntegrationTest extends VacationRelayIntegrationTest {
+public class CassandraCleanupProbe implements GuiceProbe {
+    private final CassandraTableManager tableManager;
 
-    private final InMemoryDNSService inMemoryDNSService = new InMemoryDNSService();
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @Rule
-    public CassandraJmapTestRule rule = CassandraJmapTestRule.defaultTestRule();
-
-    @Override
-    protected GuiceJamesServer getJmapServer() throws IOException {
-        return rule.jmapServer(
-                cassandra.getModule(),
-                (binder) -> binder.bind(DNSService.class).toInstance(inMemoryDNSService));
+    @Inject
+    public CassandraCleanupProbe(CassandraTableManager tableManager) {
+        this.tableManager = tableManager;
     }
 
-    @Override
-    protected void await() {
-        rule.await();
+    @PreDestroy
+    public void clearAllTables() {
+        tableManager.clearAllTables();
     }
-
-    @Override
-    protected InMemoryDNSService getInMemoryDns() {
-        return inMemoryDNSService;
-    }
-
 }

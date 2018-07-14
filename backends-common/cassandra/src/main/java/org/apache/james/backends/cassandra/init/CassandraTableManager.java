@@ -19,7 +19,12 @@
 
 package org.apache.james.backends.cassandra.init;
 
+import javax.inject.Inject;
+
 import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.components.CassandraTable;
+import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
+import org.apache.james.util.FluentFutureStream;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -29,6 +34,7 @@ public class CassandraTableManager {
     private final Session session;
     private final CassandraModule module;
 
+    @Inject
     public CassandraTableManager(CassandraModule module, Session session) {
         this.session = session;
         this.module = module;
@@ -41,11 +47,13 @@ public class CassandraTableManager {
     }
 
     public void clearAllTables() {
-        module.moduleTables()
-            .forEach(table -> clearTable(table.getName()));
-    }
-
-    private void clearTable(String tableName) {
-        session.execute(QueryBuilder.truncate(tableName));
+        CassandraAsyncExecutor executor = new CassandraAsyncExecutor(session);
+        FluentFutureStream.of(
+            module.moduleTables()
+                .stream()
+                .map(CassandraTable::getName)
+                .map(QueryBuilder::truncate)
+                .map(executor::execute))
+            .join();
     }
 }
