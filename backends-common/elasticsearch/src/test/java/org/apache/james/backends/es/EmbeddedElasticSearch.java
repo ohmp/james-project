@@ -24,7 +24,6 @@ import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.elasticsearch.action.admin.indices.flush.FlushAction;
