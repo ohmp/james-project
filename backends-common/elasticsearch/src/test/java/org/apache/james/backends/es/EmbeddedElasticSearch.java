@@ -69,7 +69,6 @@ public class EmbeddedElasticSearch extends ExternalResource {
                 .build())
             .node();
         node.start();
-        awaitForElasticSearch();
     }
 
     @Override
@@ -87,7 +86,6 @@ public class EmbeddedElasticSearch extends ExternalResource {
      */
     public void awaitForElasticSearch() {
         await().atMost(Duration.TEN_SECONDS)
-            .pollDelay(1, TimeUnit.MILLISECONDS)
             .until(this::flush);
     }
 
