@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMailRepositoryCountDAOTest {
+public interface CassandraMailRepositoryCountDAOContract {
     MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
     MailRepositoryUrl URL2 = MailRepositoryUrl.from("proto://url2");
 

@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 
 class CassandraMailRepositoryTestRunner extends CassandraTestRunner {
     @Nested
-    class MailRepositoryCountDAOTest extends Runner implements CassandraMailRepositoryCountDAOTest {
+    class MailRepositoryCountDAOTest extends Runner implements CassandraMailRepositoryCountDAOContract {
         private CassandraMailRepositoryCountDAO testee;
 
         @Override
@@ -56,7 +56,7 @@ class CassandraMailRepositoryTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailRepositoryKeysDAOTest extends Runner implements CassandraMailRepositoryKeysDAOTest {
+    class MailRepositoryKeysDAOTest extends Runner implements CassandraMailRepositoryKeysDAOContract {
         private CassandraMailRepositoryKeysDAO testee;
 
         @Override
@@ -76,7 +76,7 @@ class CassandraMailRepositoryTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailRepositoryMailDAOTest extends Runner implements CassandraMailRepositoryMailDAOTest {
+    class MailRepositoryMailDAOTest extends Runner implements CassandraMailRepositoryMailDAOContract {
         private CassandraMailRepositoryMailDAO testee;
 
         @Override

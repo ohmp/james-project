@@ -25,7 +25,7 @@ import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMailRepositoryKeysDAOTest {
+public interface CassandraMailRepositoryKeysDAOContract {
     MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
     MailRepositoryUrl URL2 = MailRepositoryUrl.from("proto://url2");
     MailKey KEY_1 = new MailKey("key1");

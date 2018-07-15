@@ -33,7 +33,7 @@ import org.apache.mailet.base.test.FakeMail;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-public interface CassandraMailRepositoryMailDAOTest {
+public interface CassandraMailRepositoryMailDAOContract {
 
     MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
     MailKey KEY_1 = new MailKey("key1");
