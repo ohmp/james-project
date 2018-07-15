@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.UnauthenticatedTest;
+import org.apache.james.mpt.testsuite.UnauthenticatedContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileUnauthenticatedTest implements UnauthenticatedTest {
+public class FileUnauthenticatedTest implements UnauthenticatedContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

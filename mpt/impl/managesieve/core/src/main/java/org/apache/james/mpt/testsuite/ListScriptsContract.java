@@ -26,7 +26,7 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface UnauthenticatedTest {
+public interface ListScriptsContract {
     String USER = "user";
     String PASSWORD = "password";
     
@@ -42,12 +42,11 @@ public interface UnauthenticatedTest {
     default void tearDown() throws Exception {
         hostSystem().afterTest();
     }
-    
+
     @Test
-    default void unauthenticatedCommandShouldWork() throws Exception {
+    default void listScriptsShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("unauthenticate");
+            .run("listscripts");
     }
-
 }

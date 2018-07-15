@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.NoopTest;
+import org.apache.james.mpt.testsuite.NoopContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileNoopTest implements NoopTest {
+public class FileNoopTest implements NoopContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

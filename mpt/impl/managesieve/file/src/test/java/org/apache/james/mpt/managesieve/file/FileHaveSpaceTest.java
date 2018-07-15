@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.HaveSpaceTest;
+import org.apache.james.mpt.testsuite.HaveSpaceContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileHaveSpaceTest implements HaveSpaceTest {
+public class FileHaveSpaceTest implements HaveSpaceContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

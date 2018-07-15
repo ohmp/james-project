@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.LogoutTest;
+import org.apache.james.mpt.testsuite.LogoutContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileLogoutTest implements LogoutTest {
+public class FileLogoutTest implements LogoutContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

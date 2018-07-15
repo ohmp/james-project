@@ -26,12 +26,10 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface CapabilityTest {
-
+public interface SetActiveContract {
     String USER = "user";
     String PASSWORD = "password";
 
-    
     ManageSieveHostSystem hostSystem();
 
     default SimpleScriptedTestProtocol protocol() throws Exception {
@@ -46,9 +44,9 @@ public interface CapabilityTest {
     }
 
     @Test
-    default void capabilityShouldWork() throws Exception {
+    default void setActiveShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("capability");
+            .run("setactive");
     }
 }

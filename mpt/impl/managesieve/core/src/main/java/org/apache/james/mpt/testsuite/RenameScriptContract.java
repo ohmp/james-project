@@ -26,11 +26,11 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface PutScriptTest {
+public interface RenameScriptContract {
 
     String USER = "user";
     String PASSWORD = "password";
-
+    
     ManageSieveHostSystem hostSystem();
 
     default SimpleScriptedTestProtocol protocol() throws Exception {
@@ -45,9 +45,9 @@ public interface PutScriptTest {
     }
 
     @Test
-    default void putScriptShouldWork() throws Exception {
+    default void renameScriptShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("putscript");
+            .run("renamescript");
     }
 }

@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.DeleteScriptTest;
+import org.apache.james.mpt.testsuite.DeleteScriptContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileDeleteScriptTest implements DeleteScriptTest {
+public class FileDeleteScriptTest implements DeleteScriptContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

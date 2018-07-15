@@ -26,7 +26,7 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface LogoutTest {
+public interface AuthenticateContract {
 
     String USER = "user";
     String PASSWORD = "password";
@@ -45,9 +45,9 @@ public interface LogoutTest {
     }
 
     @Test
-    default void logoutShouldWork() throws Exception {
+    default void authenticateShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("logout");
+            .run("authenticate");
     }
 }

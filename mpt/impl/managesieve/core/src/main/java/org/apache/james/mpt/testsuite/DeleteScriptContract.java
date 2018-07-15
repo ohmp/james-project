@@ -26,7 +26,7 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface DeleteScriptTest {
+public interface DeleteScriptContract {
 
     String USER = "user";
     String PASSWORD = "password";

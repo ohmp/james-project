@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.CapabilityTest;
+import org.apache.james.mpt.testsuite.CapabilityContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileCapabilityTest implements CapabilityTest {
+public class FileCapabilityTest implements CapabilityContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

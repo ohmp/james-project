@@ -21,20 +21,20 @@ package org.apache.james.mpt.managesieve.cassandra;
 
 import org.apache.james.backends.cassandra.CassandraTestRunner;
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.AuthenticateTest;
-import org.apache.james.mpt.testsuite.CapabilityTest;
-import org.apache.james.mpt.testsuite.CheckScriptTest;
-import org.apache.james.mpt.testsuite.DeleteScriptTest;
-import org.apache.james.mpt.testsuite.GetScriptTest;
-import org.apache.james.mpt.testsuite.HaveSpaceTest;
-import org.apache.james.mpt.testsuite.ListScriptsTest;
-import org.apache.james.mpt.testsuite.LogoutTest;
-import org.apache.james.mpt.testsuite.NoopTest;
-import org.apache.james.mpt.testsuite.PutScriptTest;
-import org.apache.james.mpt.testsuite.RenameScriptTest;
-import org.apache.james.mpt.testsuite.SetActiveTest;
-import org.apache.james.mpt.testsuite.StartTlsTest;
-import org.apache.james.mpt.testsuite.UnauthenticatedTest;
+import org.apache.james.mpt.testsuite.AuthenticateContract;
+import org.apache.james.mpt.testsuite.CapabilityContract;
+import org.apache.james.mpt.testsuite.CheckScriptContract;
+import org.apache.james.mpt.testsuite.DeleteScriptContract;
+import org.apache.james.mpt.testsuite.GetScriptContract;
+import org.apache.james.mpt.testsuite.HaveSpaceContract;
+import org.apache.james.mpt.testsuite.ListScriptsContract;
+import org.apache.james.mpt.testsuite.LogoutContract;
+import org.apache.james.mpt.testsuite.NoopContract;
+import org.apache.james.mpt.testsuite.PutScriptContract;
+import org.apache.james.mpt.testsuite.RenameScriptContract;
+import org.apache.james.mpt.testsuite.SetActiveContract;
+import org.apache.james.mpt.testsuite.StartTlsContract;
+import org.apache.james.mpt.testsuite.UnauthenticatedContract;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
@@ -43,7 +43,7 @@ import com.google.inject.Injector;
 
 class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     @Nested
-    class CassandraAuthenticateTest implements AuthenticateTest {
+    class CassandraAuthenticateTest implements AuthenticateContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -60,7 +60,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraCapabilityTest implements CapabilityTest {
+    class CassandraCapabilityTest implements CapabilityContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -77,7 +77,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraCheckScriptTest implements CheckScriptTest {
+    class CassandraCheckScriptTest implements CheckScriptContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -94,7 +94,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraDeleteScriptTest implements DeleteScriptTest {
+    class CassandraDeleteScriptTest implements DeleteScriptContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -111,7 +111,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraGetScriptTest implements GetScriptTest {
+    class CassandraGetScriptTest implements GetScriptContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -128,7 +128,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraHaveSpaceTest implements HaveSpaceTest {
+    class CassandraHaveSpaceTest implements HaveSpaceContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -145,7 +145,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraListScriptsTest implements ListScriptsTest {
+    class CassandraListScriptsTest implements ListScriptsContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -162,7 +162,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraLogoutTest implements LogoutTest {
+    class CassandraLogoutTest implements LogoutContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -179,7 +179,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraNoopTest implements NoopTest {
+    class CassandraNoopTest implements NoopContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -196,7 +196,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraPutScriptTest implements PutScriptTest {
+    class CassandraPutScriptTest implements PutScriptContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -213,7 +213,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraRenameScriptTest implements RenameScriptTest {
+    class CassandraRenameScriptTest implements RenameScriptContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -230,7 +230,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraSetActiveTest implements SetActiveTest {
+    class CassandraSetActiveTest implements SetActiveContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -247,7 +247,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraStartTlsTest implements StartTlsTest {
+    class CassandraStartTlsTest implements StartTlsContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach
@@ -264,7 +264,7 @@ class CassandraManageSieveMPTTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class CassandraUnauthenticatedTest implements UnauthenticatedTest {
+    class CassandraUnauthenticatedTest implements UnauthenticatedContract {
         private ManageSieveHostSystem system;
 
         @BeforeEach

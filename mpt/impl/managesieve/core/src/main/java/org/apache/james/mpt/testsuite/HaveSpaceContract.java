@@ -26,29 +26,32 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface NoopTest {
+public interface HaveSpaceContract {
 
     String USER = "user";
     String PASSWORD = "password";
+
     
     ManageSieveHostSystem hostSystem();
 
     default SimpleScriptedTestProtocol protocol() throws Exception {
         return new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem())
                 .withUser(USER, PASSWORD)
-                .withLocale(Locale.US);
+                .withLocale(Locale.US)
+                .withPreparedCommand(system ->
+                    ((ManageSieveHostSystem) system).setMaxQuota(USER, 50));
     }
 
     @AfterEach
     default void tearDown() throws Exception {
         hostSystem().afterTest();
     }
-    
+
     @Test
-    default void noopShouldWork() throws Exception {
+    default void haveSpaceShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("noop");
+            .run("havespace");
     }
 
 }

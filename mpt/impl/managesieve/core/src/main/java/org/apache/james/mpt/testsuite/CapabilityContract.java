@@ -26,13 +26,13 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface StartTlsTest {
+public interface CapabilityContract {
 
     String USER = "user";
     String PASSWORD = "password";
 
+    
     ManageSieveHostSystem hostSystem();
-
 
     default SimpleScriptedTestProtocol protocol() throws Exception {
         return new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem())
@@ -46,9 +46,9 @@ public interface StartTlsTest {
     }
 
     @Test
-    default void startTlsShouldWork() throws Exception {
+    default void capabilityShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("starttls");
+            .run("capability");
     }
 }

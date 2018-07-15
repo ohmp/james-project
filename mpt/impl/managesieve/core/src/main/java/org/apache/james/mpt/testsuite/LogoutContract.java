@@ -26,11 +26,11 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface CheckScriptTest {
+public interface LogoutContract {
 
     String USER = "user";
     String PASSWORD = "password";
-
+    
     ManageSieveHostSystem hostSystem();
 
     default SimpleScriptedTestProtocol protocol() throws Exception {
@@ -45,9 +45,9 @@ public interface CheckScriptTest {
     }
 
     @Test
-    default void checkScriptShouldWork() throws Exception {
+    default void logoutShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("checkscript");
+            .run("logout");
     }
 }

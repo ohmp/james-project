@@ -26,7 +26,8 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface ListScriptsTest {
+public interface NoopContract {
+
     String USER = "user";
     String PASSWORD = "password";
     
@@ -42,11 +43,12 @@ public interface ListScriptsTest {
     default void tearDown() throws Exception {
         hostSystem().afterTest();
     }
-
+    
     @Test
-    default void listScriptsShouldWork() throws Exception {
+    default void noopShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("listscripts");
+            .run("noop");
     }
+
 }

@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.RenameScriptTest;
+import org.apache.james.mpt.testsuite.RenameScriptContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileRenameScriptTest implements RenameScriptTest {
+public class FileRenameScriptTest implements RenameScriptContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

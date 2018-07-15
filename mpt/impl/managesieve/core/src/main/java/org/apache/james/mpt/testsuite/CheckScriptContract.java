@@ -26,7 +26,8 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface SetActiveTest {
+public interface CheckScriptContract {
+
     String USER = "user";
     String PASSWORD = "password";
 
@@ -44,9 +45,9 @@ public interface SetActiveTest {
     }
 
     @Test
-    default void setActiveShouldWork() throws Exception {
+    default void checkScriptShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("setactive");
+            .run("checkscript");
     }
 }

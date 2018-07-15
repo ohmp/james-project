@@ -20,13 +20,13 @@
 package org.apache.james.mpt.managesieve.file;
 
 import org.apache.james.mpt.host.ManageSieveHostSystem;
-import org.apache.james.mpt.testsuite.GetScriptTest;
+import org.apache.james.mpt.testsuite.GetScriptContract;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class FileGetScriptTest implements GetScriptTest {
+public class FileGetScriptTest implements GetScriptContract {
     private ManageSieveHostSystem system;
 
     @BeforeEach

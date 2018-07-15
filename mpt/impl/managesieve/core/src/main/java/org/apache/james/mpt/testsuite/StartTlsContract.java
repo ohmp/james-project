@@ -26,20 +26,18 @@ import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public interface HaveSpaceTest {
+public interface StartTlsContract {
 
     String USER = "user";
     String PASSWORD = "password";
 
-    
     ManageSieveHostSystem hostSystem();
+
 
     default SimpleScriptedTestProtocol protocol() throws Exception {
         return new SimpleScriptedTestProtocol("/org/apache/james/managesieve/scripts/", hostSystem())
                 .withUser(USER, PASSWORD)
-                .withLocale(Locale.US)
-                .withPreparedCommand(system ->
-                    ((ManageSieveHostSystem) system).setMaxQuota(USER, 50));
+                .withLocale(Locale.US);
     }
 
     @AfterEach
@@ -48,10 +46,9 @@ public interface HaveSpaceTest {
     }
 
     @Test
-    default void haveSpaceShouldWork() throws Exception {
+    default void startTlsShouldWork() throws Exception {
         protocol()
             .withLocale(Locale.US)
-            .run("havespace");
+            .run("starttls");
     }
-
 }
