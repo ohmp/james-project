@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public interface CassandraTypeProviderTest {
+public interface CassandraTypeProviderContract {
     String TYPE_NAME = "typename";
     String PROPERTY = "property";
     CassandraModule MODULE = CassandraModule.forType(

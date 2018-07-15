@@ -20,19 +20,19 @@
 package org.apache.james.backends.cassandra;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraTypeProviderTest;
+import org.apache.james.backends.cassandra.init.CassandraTypeProviderContract;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
-import org.apache.james.backends.cassandra.utils.PaggingTest;
+import org.apache.james.backends.cassandra.utils.PaggingContract;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
-import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAOTest;
+import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAOContract;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
 class CassandraBackendTestRunner extends CassandraTestRunner {
     @Nested
-    class SchemaVersionDAOTest extends Runner implements CassandraSchemaVersionDAOTest {
+    class SchemaVersionDAOTest extends Runner implements CassandraSchemaVersionDAOContract {
         private CassandraSchemaVersionDAO testee;
 
         @Override
@@ -52,7 +52,7 @@ class CassandraBackendTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class PaggingTestRunner extends Runner implements PaggingTest {
+    class PaggingTestRunner extends Runner implements PaggingContract {
         private CassandraAsyncExecutor testee;
 
         @Override
@@ -72,7 +72,7 @@ class CassandraBackendTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class TypeProviderTest extends Runner implements CassandraTypeProviderTest {
+    class TypeProviderTest extends Runner implements CassandraTypeProviderContract {
         @Override
         public CassandraModule module() {
             return MODULE;

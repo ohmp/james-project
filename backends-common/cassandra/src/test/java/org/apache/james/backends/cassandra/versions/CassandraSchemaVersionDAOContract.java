@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-public interface CassandraSchemaVersionDAOTest {
+public interface CassandraSchemaVersionDAOContract {
 
     CassandraSchemaVersionDAO testee();
 

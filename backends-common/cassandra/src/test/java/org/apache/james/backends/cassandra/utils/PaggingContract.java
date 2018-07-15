@@ -35,7 +35,7 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.datastax.driver.core.utils.UUIDs;
 
-public interface PaggingTest {
+public interface PaggingContract {
     String TABLE_NAME = "test";
     String ID = "id";
     String CLUSTERING = "clustering";
