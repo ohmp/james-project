@@ -24,6 +24,7 @@ import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.elasticsearch.action.admin.indices.flush.FlushAction;
@@ -85,7 +86,9 @@ public class EmbeddedElasticSearch extends ExternalResource {
      * This method ensure that ElasticSearch service is up and indices are updated
      */
     public void awaitForElasticSearch() {
-        await().atMost(Duration.TEN_SECONDS).until(this::flush);
+        await().atMost(Duration.TEN_SECONDS)
+            .pollDelay(1, TimeUnit.MILLISECONDS)
+            .until(this::flush);
     }
 
     private boolean flush() {
