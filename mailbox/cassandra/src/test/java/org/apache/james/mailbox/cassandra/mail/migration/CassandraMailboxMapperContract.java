@@ -46,7 +46,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public interface MailboxPathV2MigrationTest {
+public interface CassandraMailboxMapperContract {
 
     MailboxPath MAILBOX_PATH_1 = MailboxPath.forUser("bob", "Important");
     int UID_VALIDITY_1 = 452;

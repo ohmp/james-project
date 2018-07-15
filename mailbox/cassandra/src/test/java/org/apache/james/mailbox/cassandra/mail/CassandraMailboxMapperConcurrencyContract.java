@@ -30,7 +30,7 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMailboxMapperConcurrencyTest {
+public interface CassandraMailboxMapperConcurrencyContract {
 
     int UID_VALIDITY = 52;
     MailboxPath MAILBOX_PATH = MailboxPath.forUser("user", "name");

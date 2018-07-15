@@ -29,7 +29,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.publisher.Topic;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMailboxPathRegistrerMapperTest {
+public interface CassandraMailboxPathRegistrerMapperContract {
     MailboxPath MAILBOX_PATH = new MailboxPath("namespace", "user", "name");
     MailboxPath MAILBOX_PATH_2 = new MailboxPath("namespace2", "user2", "name2");
     Topic TOPIC = new Topic("topic");

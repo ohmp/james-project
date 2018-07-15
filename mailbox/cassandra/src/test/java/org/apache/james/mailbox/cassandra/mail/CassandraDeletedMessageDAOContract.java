@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface CassandraDeletedMessageDAOTest {
+public interface CassandraDeletedMessageDAOContract {
     
     CassandraId MAILBOX_ID = CassandraId.of(UUID.fromString("110e8400-e29b-11d4-a716-446655440000"));
     MessageUid UID_1 = MessageUid.of(1);

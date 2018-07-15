@@ -25,7 +25,7 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraFirstUnseenDAOTest {
+public interface CassandraFirstUnseenDAOContract {
     
     CassandraId MAILBOX_ID = CassandraId.timeBased();
     MessageUid UID_1 = MessageUid.of(1);

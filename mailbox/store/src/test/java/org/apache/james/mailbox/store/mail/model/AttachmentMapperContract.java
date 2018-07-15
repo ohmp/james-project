@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
-public interface AttachmentMapperTest {
+public interface AttachmentMapperContract {
     AttachmentId UNKNOWN_ATTACHMENT_ID = AttachmentId.from("unknown");
     Username OWNER = Username.fromRawValue("owner");
     Username ADDITIONAL_OWNER = Username.fromRawValue("additionalOwner");

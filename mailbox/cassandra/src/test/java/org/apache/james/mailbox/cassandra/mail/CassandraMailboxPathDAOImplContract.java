@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest {
+public interface CassandraMailboxPathDAOImplContract extends CassandraMailboxPathDAOContract {
 
     CassandraMailboxPathDAOImpl testee();
 

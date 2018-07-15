@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface CassandraMailboxRecentDAOTest {
+public interface CassandraMailboxRecentDAOContract {
     MessageUid UID1 = MessageUid.of(36L);
     MessageUid UID2 = MessageUid.of(37L);
     CassandraId CASSANDRA_ID = CassandraId.timeBased();

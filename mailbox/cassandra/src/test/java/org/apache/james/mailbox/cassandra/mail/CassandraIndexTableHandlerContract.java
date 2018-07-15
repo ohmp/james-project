@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface CassandraIndexTableHandlerTest {
+public interface CassandraIndexTableHandlerContract {
 
     CassandraId MAILBOX_ID = CassandraId.timeBased();
     MessageUid MESSAGE_UID = MessageUid.of(18L);

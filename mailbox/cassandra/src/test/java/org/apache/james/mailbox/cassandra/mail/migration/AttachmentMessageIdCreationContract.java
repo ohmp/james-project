@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public interface AttachmentMessageIdCreationTest {
+public interface AttachmentMessageIdCreationContract {
     CassandraMessageId.Factory messageIdFactory = new CassandraMessageId.Factory();
     CassandraMessageId messageId = messageIdFactory.generate();
 

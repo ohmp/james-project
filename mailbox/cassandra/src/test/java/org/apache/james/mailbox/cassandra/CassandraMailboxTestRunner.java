@@ -32,59 +32,58 @@ import org.apache.james.blob.cassandra.CassandraBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
 import org.apache.james.mailbox.cassandra.event.distributed.CassandraMailboxPathRegisterMapper;
-import org.apache.james.mailbox.cassandra.event.distributed.CassandraMailboxPathRegistrerMapperTest;
+import org.apache.james.mailbox.cassandra.event.distributed.CassandraMailboxPathRegistrerMapperContract;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.mail.CassandraACLMapper;
-import org.apache.james.mailbox.cassandra.mail.CassandraACLMapperTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraACLMapperContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraAnnotationMapper;
 import org.apache.james.mailbox.cassandra.mail.CassandraApplicableFlagDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraApplicableFlagDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraApplicableFlagDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
-import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2Test;
-import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentFallbackTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2Contract;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentFallbackContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentMapper;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentMessageIdDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentOwnerDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentOwnerDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentOwnerDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraDeletedMessageDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraDeletedMessageDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraDeletedMessageDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraFirstUnseenDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraFirstUnseenDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraFirstUnseenDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraIndexTableHandler;
-import org.apache.james.mailbox.cassandra.mail.CassandraIndexTableHandlerTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraIndexTableHandlerContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxCounterDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxCounterDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxCounterDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxMapper;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxMapperConcurrencyTest;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxMapperTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxMapperConcurrencyContract;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOImpl;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOImplTest;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOImplContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathV2DAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraMailboxRecentDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxRecentDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxRecentsDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdToImapUidDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdToImapUidDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdToImapUidDAOContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraModSeqProvider;
-import org.apache.james.mailbox.cassandra.mail.CassandraModSeqProviderTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraModSeqProviderContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraUidProvider;
-import org.apache.james.mailbox.cassandra.mail.CassandraUidProviderTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraUidProviderContract;
 import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAO;
-import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAOTest;
+import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAOContract;
 import org.apache.james.mailbox.cassandra.mail.migration.AttachmentMessageIdCreation;
-import org.apache.james.mailbox.cassandra.mail.migration.AttachmentMessageIdCreationTest;
+import org.apache.james.mailbox.cassandra.mail.migration.AttachmentMessageIdCreationContract;
 import org.apache.james.mailbox.cassandra.mail.migration.AttachmentV2Migration;
-import org.apache.james.mailbox.cassandra.mail.migration.AttachmentV2MigrationTest;
-import org.apache.james.mailbox.cassandra.mail.migration.MailboxPathV2MigrationTest;
+import org.apache.james.mailbox.cassandra.mail.migration.AttachmentV2MigrationContract;
+import org.apache.james.mailbox.cassandra.mail.migration.CassandraMailboxMapperContract;
 import org.apache.james.mailbox.cassandra.mail.utils.GuiceUtils;
 import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraAnnotationModule;
@@ -110,23 +109,23 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
-import org.apache.james.mailbox.store.mail.model.AnnotationMapperTest;
-import org.apache.james.mailbox.store.mail.model.AttachmentMapperTest;
+import org.apache.james.mailbox.store.mail.model.AnnotationMapperContract;
+import org.apache.james.mailbox.store.mail.model.AttachmentMapperContract;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
-import org.apache.james.mailbox.store.mail.model.MailboxMapperACLTest;
+import org.apache.james.mailbox.store.mail.model.MailboxMapperACLContract;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.mailbox.store.quota.GenericMaxQuotaManagerTest;
 import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManager;
-import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManagerTest;
+import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManagerContract;
 import org.apache.james.mailbox.store.user.SubscriptionMapper;
-import org.apache.james.mailbox.store.user.SubscriptionMapperTest;
+import org.apache.james.mailbox.store.user.SubscriptionMapperContract;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
 class CassandraMailboxTestRunner extends CassandraTestRunner {
     @Nested
-    class ApplicableFlagDAOTest extends Runner implements CassandraApplicableFlagDAOTest {
+    class ApplicableFlagDAOTest extends Runner implements CassandraApplicableFlagDAOContract {
         private CassandraApplicableFlagDAO testee;
 
         @Override
@@ -146,7 +145,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class AttachmentDAOTest extends Runner implements CassandraAttachmentDAOTest {
+    class AttachmentDAOTest extends Runner implements CassandraAttachmentDAOContract {
         private CassandraAttachmentDAO testee;
 
         @Override
@@ -168,7 +167,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class AttachmentDAOV2Test extends Runner implements CassandraAttachmentDAOV2Test {
+    class AttachmentDAOV2Test extends Runner implements CassandraAttachmentDAOV2Contract {
         private CassandraAttachmentDAOV2 testee;
 
         @Override
@@ -188,7 +187,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class AttachmentOwnerDAOTest extends Runner implements CassandraAttachmentOwnerDAOTest {
+    class AttachmentOwnerDAOTest extends Runner implements CassandraAttachmentOwnerDAOContract {
         private CassandraAttachmentOwnerDAO testee;
 
         @Override
@@ -208,7 +207,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class DeletedMessageDAOTest extends Runner implements CassandraDeletedMessageDAOTest {
+    class DeletedMessageDAOTest extends Runner implements CassandraDeletedMessageDAOContract {
         private CassandraDeletedMessageDAO testee;
 
         @Override
@@ -228,7 +227,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class FirstUnseenDAOTest extends Runner implements CassandraFirstUnseenDAOTest {
+    class FirstUnseenDAOTest extends Runner implements CassandraFirstUnseenDAOContract {
         private CassandraFirstUnseenDAO testee;
 
         @Override
@@ -248,7 +247,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxCounterDAOTest extends Runner implements CassandraMailboxCounterDAOTest {
+    class MailboxCounterDAOTest extends Runner implements CassandraMailboxCounterDAOContract {
         private CassandraMailboxCounterDAO testee;
 
         @Override
@@ -268,7 +267,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxDAOTest extends Runner implements CassandraMailboxDAOTest {
+    class MailboxDAOTest extends Runner implements CassandraMailboxDAOContract {
         private CassandraMailboxDAO testee;
 
         @Override
@@ -291,7 +290,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class UserMailboxRightsDAOTest extends Runner implements CassandraUserMailboxRightsDAOTest {
+    class UserMailboxRightsDAOTest extends Runner implements CassandraUserMailboxRightsDAOContract {
         private CassandraUserMailboxRightsDAO testee;
 
         @Override
@@ -311,7 +310,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class UidProviderTest extends Runner implements CassandraUidProviderTest {
+    class UidProviderTest extends Runner implements CassandraUidProviderContract {
         private CassandraUidProvider uidProvider;
 
         @Override
@@ -331,7 +330,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class ModSedProviderTest extends Runner implements CassandraModSeqProviderTest {
+    class ModSedProviderTest extends Runner implements CassandraModSeqProviderContract {
         private CassandraModSeqProvider modSeqProvider;
 
         @Override
@@ -351,7 +350,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MessageIdToImapUidDAOTest extends Runner implements CassandraMessageIdToImapUidDAOTest {
+    class MessageIdToImapUidDAOTest extends Runner implements CassandraMessageIdToImapUidDAOContract {
         private CassandraMessageIdToImapUidDAO testee;
 
         @Override
@@ -371,7 +370,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MessageIdDAOTest extends Runner implements CassandraMessageIdDAOTest {
+    class MessageIdDAOTest extends Runner implements CassandraMessageIdDAOContract {
         private CassandraMessageIdDAO testee;
 
         @Override
@@ -391,7 +390,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MessageDAOTest extends Runner implements CassandraMessageDAOTest {
+    class MessageDAOTest extends Runner implements CassandraMessageDAOContract {
         private CassandraMessageDAO testee;
 
         @Override
@@ -417,7 +416,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxRecentDAOTest extends Runner implements CassandraMailboxRecentDAOTest {
+    class MailboxRecentDAOTest extends Runner implements CassandraMailboxRecentDAOContract {
         private CassandraMailboxRecentsDAO testee;
 
         @Override
@@ -437,7 +436,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxPathDAOImplTest extends Runner implements CassandraMailboxPathDAOImplTest {
+    class MailboxPathDAOImplTest extends Runner implements CassandraMailboxPathDAOImplContract {
         protected CassandraMailboxPathDAOImpl testee;
 
         @Override
@@ -459,7 +458,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxPathDAOV2Test extends Runner implements CassandraMailboxPathDAOTest {
+    class MailboxPathDAOV2Test extends Runner implements CassandraMailboxPathDAOContract {
         protected CassandraMailboxPathV2DAO testee;
 
         @Override
@@ -481,7 +480,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxMapperConcurrencyTest extends Runner implements CassandraMailboxMapperConcurrencyTest {
+    class MailboxMapperConcurrencyTest extends Runner implements CassandraMailboxMapperConcurrencyContract {
         private CassandraMailboxMapper testee;
 
         @Override
@@ -502,7 +501,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxMapperTest extends Runner implements CassandraMailboxMapperTest {
+    class MailboxMapperTest extends Runner implements org.apache.james.mailbox.cassandra.mail.CassandraMailboxMapperContract {
 
         private Testee testee;
 
@@ -543,7 +542,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class ACLMapperTest extends Runner implements CassandraACLMapperTest {
+    class ACLMapperTest extends Runner implements CassandraACLMapperContract {
 
         private CassandraACLMapper testee;
         private ExecutorService executor;
@@ -582,7 +581,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxPathRegisterMapperTest extends Runner implements CassandraMailboxPathRegistrerMapperTest {
+    class MailboxPathRegisterMapperTest extends Runner implements CassandraMailboxPathRegistrerMapperContract {
         private CassandraMailboxPathRegisterMapper testee;
 
         @Override
@@ -610,7 +609,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class IndexTableHandlerTest extends Runner implements CassandraIndexTableHandlerTest {
+    class IndexTableHandlerTest extends Runner implements CassandraIndexTableHandlerContract {
         private Testee testee;
 
         @Override
@@ -651,7 +650,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class AttachmentMapperTestRunner extends Runner implements AttachmentMapperTest {
+    class AttachmentMapperTestRunner extends Runner implements AttachmentMapperContract {
         private AttachmentMapper testee;
 
         @Override
@@ -679,7 +678,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class AnnotationMapperTestRunner extends Runner implements AnnotationMapperTest {
+    class AnnotationMapperTestRunner extends Runner implements AnnotationMapperContract {
         private AnnotationMapper testee;
         private CassandraId cassandraId;
 
@@ -707,7 +706,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class SubscriptionMapperTestRunner extends Runner implements SubscriptionMapperTest {
+    class SubscriptionMapperTestRunner extends Runner implements SubscriptionMapperContract {
         private SubscriptionMapper testee;
 
         @Override
@@ -729,7 +728,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class MailboxMapperAclTestRunner extends Runner implements MailboxMapperACLTest {
+    class MailboxMapperAclTestRunner extends Runner implements MailboxMapperACLContract {
         private MailboxMapper testee;
         private SimpleMailbox mailbox;
 
@@ -761,8 +760,8 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class AttachmentMessageIdCreationTestRunner extends Runner implements AttachmentMessageIdCreationTest {
-        private AttachmentMessageIdCreationTest.Testee testee;
+    class AttachmentMessageIdCreationTestRunner extends Runner implements AttachmentMessageIdCreationContract {
+        private AttachmentMessageIdCreationContract.Testee testee;
 
         @Override
         public CassandraModule module() {
@@ -783,18 +782,18 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
             AttachmentMessageIdCreation migration = new AttachmentMessageIdCreation(cassandraMessageDAO, attachmentMessageIdDAO);
 
-            testee = new AttachmentMessageIdCreationTest.Testee(blobsDAO, cassandraMessageDAO, attachmentMessageIdDAO, migration);
+            testee = new AttachmentMessageIdCreationContract.Testee(blobsDAO, cassandraMessageDAO, attachmentMessageIdDAO, migration);
         }
 
         @Override
-        public AttachmentMessageIdCreationTest.Testee testee() {
+        public AttachmentMessageIdCreationContract.Testee testee() {
             return testee;
         }
     }
 
     @Nested
-    class AttachmentV2MigrationTestRunner extends Runner implements AttachmentV2MigrationTest {
-        private AttachmentV2MigrationTest.Testee testee;
+    class AttachmentV2MigrationTestRunner extends Runner implements AttachmentV2MigrationContract {
+        private AttachmentV2MigrationContract.Testee testee;
 
         @Override
         public CassandraModule module() {
@@ -812,19 +811,19 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
             CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf());
             AttachmentV2Migration migration = new AttachmentV2Migration(attachmentDAO, attachmentDAOV2, blobsDAO);
 
-            testee = new AttachmentV2MigrationTest.Testee(attachmentDAO, attachmentDAOV2, blobsDAO, migration);
+            testee = new AttachmentV2MigrationContract.Testee(attachmentDAO, attachmentDAOV2, blobsDAO, migration);
 
         }
 
         @Override
-        public AttachmentV2MigrationTest.Testee testee() {
+        public AttachmentV2MigrationContract.Testee testee() {
             return testee;
         }
     }
 
     @Nested
-    class MailboxPathV2MigrationTestRunner extends Runner implements MailboxPathV2MigrationTest {
-        private MailboxPathV2MigrationTest.Testee testee;
+    class MailboxPathV2MigrationTestRunner extends Runner implements CassandraMailboxMapperContract {
+        private CassandraMailboxMapperContract.Testee testee;
 
         @Override
         public CassandraModule module() {
@@ -856,14 +855,14 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         }
 
         @Override
-        public MailboxPathV2MigrationTest.Testee testee() {
+        public CassandraMailboxMapperContract.Testee testee() {
             return testee;
         }
     }
 
     @Nested
-    class AttachmentFallbackTest extends Runner implements CassandraAttachmentFallbackTest {
-        private CassandraAttachmentFallbackTest.Testee testee;
+    class AttachmentFallbackTest extends Runner implements CassandraAttachmentFallbackContract {
+        private CassandraAttachmentFallbackContract.Testee testee;
 
         @Override
         public CassandraModule module() {
@@ -887,7 +886,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         }
 
         @Override
-        public CassandraAttachmentFallbackTest.Testee testee() {
+        public CassandraAttachmentFallbackContract.Testee testee() {
             return testee;
         }
     }
@@ -917,7 +916,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
     }
 
     @Nested
-    class StoreCurrentQuotaManagerTestRunner extends Runner implements StoreCurrentQuotaManagerTest {
+    class StoreCurrentQuotaManagerTestRunner extends Runner implements StoreCurrentQuotaManagerContract {
         private StoreCurrentQuotaManager testee;
 
         @Override

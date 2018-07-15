@@ -38,7 +38,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraACLMapperTest {
+public interface CassandraACLMapperContract {
 
     CassandraId MAILBOX_ID = CassandraId.of(UUID.fromString("464765a0-e4e7-11e4-aba4-710c1de3782b"));
 

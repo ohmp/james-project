@@ -36,7 +36,7 @@ import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MessageRange;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMessageIdDAOTest {
+public interface CassandraMessageIdDAOContract {
 
 
     CassandraMessageId.Factory messageIdFactory = new CassandraMessageId.Factory();

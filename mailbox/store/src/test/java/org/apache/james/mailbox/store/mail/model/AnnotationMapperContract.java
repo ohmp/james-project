@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
-public interface AnnotationMapperTest {
+public interface AnnotationMapperContract {
     MailboxAnnotationKey PRIVATE_USER_KEY = new MailboxAnnotationKey("/private/commentuser");
     MailboxAnnotationKey PRIVATE_UPPER_CASE_KEY = new MailboxAnnotationKey("/PRIVATE/COMMENT");
     MailboxAnnotationKey PRIVATE_KEY = new MailboxAnnotationKey("/private/comment");

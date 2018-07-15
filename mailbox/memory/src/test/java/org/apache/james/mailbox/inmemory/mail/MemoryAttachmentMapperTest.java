@@ -22,10 +22,10 @@ package org.apache.james.mailbox.inmemory.mail;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
-import org.apache.james.mailbox.store.mail.model.AttachmentMapperTest;
+import org.apache.james.mailbox.store.mail.model.AttachmentMapperContract;
 import org.junit.jupiter.api.BeforeEach;
 
-public class MemoryAttachmentMapperTest implements AttachmentMapperTest {
+public class MemoryAttachmentMapperTest implements AttachmentMapperContract {
 
     private AttachmentMapper testee;
 

@@ -55,7 +55,7 @@ import com.google.common.primitives.Bytes;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public interface CassandraMessageDAOTest {
+public interface CassandraMessageDAOContract {
     int BODY_START = 16;
     CassandraId MAILBOX_ID = CassandraId.timeBased();
     String CONTENT = "Subject: Test7 \n\nBody7\n.\n";

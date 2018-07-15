@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface CassandraAttachmentDAOTest {
+public interface CassandraAttachmentDAOContract {
     AttachmentId ATTACHMENT_ID = AttachmentId.from("id1");
     AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
 

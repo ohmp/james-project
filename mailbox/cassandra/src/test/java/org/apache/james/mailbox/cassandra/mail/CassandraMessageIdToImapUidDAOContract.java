@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.driver.core.utils.UUIDs;
 
-public interface CassandraMessageIdToImapUidDAOTest {
+public interface CassandraMessageIdToImapUidDAOContract {
     CassandraMessageId.Factory messageIdFactory = new CassandraMessageId.Factory();
 
     CassandraMessageIdToImapUidDAO testee();

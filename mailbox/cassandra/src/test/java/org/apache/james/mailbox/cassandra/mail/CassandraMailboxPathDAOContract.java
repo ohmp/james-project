@@ -31,7 +31,7 @@ import com.github.steveash.guavate.Guavate;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public interface CassandraMailboxPathDAOTest {
+public interface CassandraMailboxPathDAOContract {
     String USER = "user";
     String OTHER_USER = "other";
     CassandraId INBOX_ID = CassandraId.timeBased();

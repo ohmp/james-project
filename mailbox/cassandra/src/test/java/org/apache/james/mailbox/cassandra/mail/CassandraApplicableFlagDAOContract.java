@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
-public interface CassandraApplicableFlagDAOTest {
+public interface CassandraApplicableFlagDAOContract {
 
     String USER_FLAG = "User Flag";
     String USER_FLAG2 = "User Flag 2";

@@ -29,7 +29,7 @@ import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
 import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraUserMailboxRightsDAOTest {
+public interface CassandraUserMailboxRightsDAOContract {
 
     String USER_NAME = "userName";
     EntryKey ENTRY_KEY = EntryKey.createUserEntryKey(USER_NAME);

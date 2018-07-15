@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.fge.lambdas.Throwing;
 
-public interface CassandraModSeqProviderTest {
+public interface CassandraModSeqProviderContract {
     CassandraId CASSANDRA_ID = new CassandraId.Factory().fromString("e22b3ac0-a80b-11e7-bb00-777268d65503");
 
 

@@ -27,7 +27,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMailboxCounterDAOTest {
+public interface CassandraMailboxCounterDAOContract {
     int UID_VALIDITY = 15;
     CassandraId MAILBOX_ID = CassandraId.timeBased();
     SimpleMailbox mailbox = new SimpleMailbox(MailboxPath.forUser("user", "name"), UID_VALIDITY, MAILBOX_ID);

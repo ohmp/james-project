@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
-import org.apache.james.mailbox.store.mail.model.MailboxMapperACLTest;
+import org.apache.james.mailbox.store.mail.model.MailboxMapperACLContract;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.junit.jupiter.api.BeforeEach;
 
-public class MemoryMailboxMapperAclTest implements MailboxMapperACLTest {
+public class MemoryMailboxMapperAclTest implements MailboxMapperACLContract {
     private final AtomicInteger counter = new AtomicInteger();
 
     private MailboxMapper testee;

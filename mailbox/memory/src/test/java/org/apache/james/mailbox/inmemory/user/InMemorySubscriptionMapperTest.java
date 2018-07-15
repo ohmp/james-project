@@ -20,10 +20,10 @@
 package org.apache.james.mailbox.inmemory.user;
 
 import org.apache.james.mailbox.store.user.SubscriptionMapper;
-import org.apache.james.mailbox.store.user.SubscriptionMapperTest;
+import org.apache.james.mailbox.store.user.SubscriptionMapperContract;
 import org.junit.jupiter.api.BeforeEach;
 
-public class InMemorySubscriptionMapperTest implements SubscriptionMapperTest {
+public class InMemorySubscriptionMapperTest implements SubscriptionMapperContract {
     private SubscriptionMapper testee;
 
     @BeforeEach

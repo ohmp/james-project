@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface CassandraMailboxDAOTest {
+public interface CassandraMailboxDAOContract {
 
     int UID_VALIDITY_1 = 145;
     int UID_VALIDITY_2 = 147;

@@ -33,7 +33,7 @@ import org.apache.james.mailbox.model.AttachmentId;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-public interface CassandraAttachmentFallbackTest {
+public interface CassandraAttachmentFallbackContract {
     AttachmentId ATTACHMENT_ID_1 = AttachmentId.from("id1");
     AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
     CassandraBlobId.Factory BLOB_ID_FACTORY = new CassandraBlobId.Factory();

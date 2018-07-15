@@ -24,11 +24,11 @@ import org.apache.james.mailbox.jpa.JPAId;
 import org.apache.james.mailbox.jpa.JPAMailboxFixture;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
-import org.apache.james.mailbox.store.mail.model.AnnotationMapperTest;
+import org.apache.james.mailbox.store.mail.model.AnnotationMapperContract;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-public class JpaAnnotationMapperTest implements AnnotationMapperTest {
+public class JpaAnnotationMapperTest implements AnnotationMapperContract {
     public static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES);
 
     private AnnotationMapper testee;

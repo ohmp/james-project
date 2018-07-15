@@ -34,7 +34,7 @@ import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraMailboxMapperTest {
+public interface CassandraMailboxMapperContract {
     
     int UID_VALIDITY = 52;
     String USER = "user";

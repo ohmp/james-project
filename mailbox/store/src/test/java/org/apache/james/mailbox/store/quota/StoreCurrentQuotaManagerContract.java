@@ -29,7 +29,7 @@ import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.junit.jupiter.api.Test;
 
-public interface StoreCurrentQuotaManagerTest {
+public interface StoreCurrentQuotaManagerContract {
     QuotaRoot QUOTA_ROOT = QuotaRoot.quotaRoot("benwa", Optional.empty());
     
     StoreCurrentQuotaManager testee();

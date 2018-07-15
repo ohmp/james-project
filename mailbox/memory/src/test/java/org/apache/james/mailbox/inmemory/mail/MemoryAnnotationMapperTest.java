@@ -22,10 +22,10 @@ package org.apache.james.mailbox.inmemory.mail;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
-import org.apache.james.mailbox.store.mail.model.AnnotationMapperTest;
+import org.apache.james.mailbox.store.mail.model.AnnotationMapperContract;
 import org.junit.jupiter.api.BeforeEach;
 
-public class MemoryAnnotationMapperTest implements AnnotationMapperTest {
+public class MemoryAnnotationMapperTest implements AnnotationMapperContract {
     private AnnotationMapper testee;
 
     @BeforeEach

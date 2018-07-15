@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
 
-public interface MailboxMapperACLTest {
+public interface MailboxMapperACLContract {
     long UID_VALIDITY = 42;
     boolean POSITIVE = true;
     boolean NEGATIVE = !POSITIVE;

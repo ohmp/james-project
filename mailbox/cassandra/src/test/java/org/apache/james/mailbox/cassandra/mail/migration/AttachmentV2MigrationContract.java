@@ -37,7 +37,7 @@ import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.junit.jupiter.api.Test;
 
-public interface AttachmentV2MigrationTest {
+public interface AttachmentV2MigrationContract {
     AttachmentId ATTACHMENT_ID = AttachmentId.from("id1");
     AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
     CassandraBlobId.Factory BLOB_ID_FACTORY = new CassandraBlobId.Factory();

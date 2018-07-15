@@ -21,42 +21,50 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.util.stream.IntStream;
 
-import org.apache.james.blob.api.BlobId;
-import org.apache.james.blob.cassandra.CassandraBlobId;
-import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2.DAOAttachment;
-import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
+import org.apache.james.mailbox.store.mail.model.Username;
 import org.junit.jupiter.api.Test;
 
-public interface CassandraAttachmentDAOV2Test {
+public interface CassandraAttachmentOwnerDAOContract {
     AttachmentId ATTACHMENT_ID = AttachmentId.from("id1");
-    CassandraBlobId.Factory BLOB_ID_FACTORY = new CassandraBlobId.Factory();
+    Username OWNER_1 = Username.fromRawValue("owner1");
+    Username OWNER_2 = Username.fromRawValue("owner2");
 
-    CassandraAttachmentDAOV2 testee();
+    CassandraAttachmentOwnerDAO testee();
 
     @Test
-    default void getAttachmentShouldReturnEmptyWhenAbsent() {
-        Optional<DAOAttachment> attachment = testee().getAttachment(ATTACHMENT_ID).join();
-
-        assertThat(attachment).isEmpty();
+    default void retrieveOwnersShouldReturnEmptyByDefault() {
+        assertThat(testee().retrieveOwners(ATTACHMENT_ID).join())
+            .isEmpty();
     }
 
     @Test
-    default void getAttachmentShouldReturnAttachmentWhenStored() {
-        Attachment attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID)
-            .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-        BlobId blobId = BLOB_ID_FACTORY.from("blobId");
-        DAOAttachment daoAttachment = CassandraAttachmentDAOV2.from(attachment, blobId);
-        testee().storeAttachment(daoAttachment).join();
+    default void retrieveOwnersShouldReturnAddedOwner() {
+        testee().addOwner(ATTACHMENT_ID, OWNER_1).join();
 
-        Optional<DAOAttachment> actual = testee().getAttachment(ATTACHMENT_ID).join();
+        assertThat(testee().retrieveOwners(ATTACHMENT_ID).join())
+            .containsOnly(OWNER_1);
+    }
 
-        assertThat(actual).contains(daoAttachment);
+    @Test
+    default void retrieveOwnersShouldReturnAddedOwners() {
+        testee().addOwner(ATTACHMENT_ID, OWNER_1).join();
+        testee().addOwner(ATTACHMENT_ID, OWNER_2).join();
+
+        assertThat(testee().retrieveOwners(ATTACHMENT_ID).join())
+            .containsOnly(OWNER_1, OWNER_2);
+    }
+
+    @Test
+    default void retrieveOwnersShouldNotThrowWhenMoreReferencesThanPaging() {
+        int referenceCountExceedingPaging = 5050;
+        IntStream.range(0, referenceCountExceedingPaging)
+            .boxed()
+            .forEach(i -> testee().addOwner(ATTACHMENT_ID, Username.fromRawValue("owner" + i)).join());
+
+        assertThat(testee().retrieveOwners(ATTACHMENT_ID).join())
+            .hasSize(referenceCountExceedingPaging);
     }
 }

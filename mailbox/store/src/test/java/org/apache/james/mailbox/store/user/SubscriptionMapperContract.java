@@ -28,7 +28,7 @@ import org.apache.james.mailbox.store.user.model.Subscription;
 import org.apache.james.mailbox.store.user.model.impl.SimpleSubscription;
 import org.junit.jupiter.api.Test;
 
-public interface SubscriptionMapperTest {
+public interface SubscriptionMapperContract {
     String USER_1 = "user1";
     String USER_2 = "user2";
     String MAILBOX_1 = "mailbox1";
