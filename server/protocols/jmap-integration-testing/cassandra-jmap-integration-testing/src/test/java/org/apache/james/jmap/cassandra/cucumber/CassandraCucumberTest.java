@@ -27,10 +27,35 @@ import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(features = "classpath:cucumber/SetMessages.feature",
+@CucumberOptions(features = {"classpath:cucumber/DownloadEndpoint.feature",
+    "classpath:cucumber/DownloadGet.feature",
+    "classpath:cucumber/DownloadPost.feature",
+    "classpath:cucumber/GetMessages.feature",
+    "classpath:cucumber/ImapKeywordsConsistency.feature",
+    "classpath:cucumber/ImapSetMessagesMailboxesUpdatesCompatibility.feature",
+    "classpath:cucumber/sharing/SharingParentMailboxWithAndWithoutChildren.feature",
+    "classpath:cucumber/sharing/SharingChildrenWithoutSharingParent.feature",
+    "classpath:cucumber/sharing/SharingMailboxWithOtherDomain.feature",
+    "classpath:cucumber/sharing/MailboxCreationAndSharing.feature",
+    "classpath:cucumber/sharing/MailboxDeletionAndSharing.feature",
+    "classpath:cucumber/sharing/MoveMailboxAndSharing.feature",
+    "classpath:cucumber/sharing/RenamingMailboxAndSharing.feature",
+    "classpath:cucumber/sharing/GetMessageAndSharing.feature",
+    "classpath:cucumber/sharing/SetMessagesOnSharedMailbox.feature",
+    "classpath:cucumber/sharing/DownloadAndSharing.feature",
+    "classpath:cucumber/sharing/KeywordsConsistencyOnDelegationMailbox.feature",
+    "classpath:cucumber/sharing/GetMessageListAndSharing.feature",
+    "classpath:cucumber/sharing/MoveMessageAndSharing.feature",
+    "classpath:cucumber/sharing/SetFlagAndSharing.feature",
+    "classpath:cucumber/sharing/CopyAndSharing.feature",
+    "classpath:cucumber/MailboxModification.feature",
+    "classpath:cucumber/SetMailboxes.feature",
+    "classpath:cucumber/SetMessages.feature",
+    "classpath:cucumber/UploadEndpoint.feature"},
                 glue = {"org.apache.james.jmap.methods.integration", "org.apache.james.jmap.cassandra.cucumber"},
+                tags = {"~@Ignore"},
                 strict = true)
-public class CassandraSetMessagesMethodCucumberTest {
+public class CassandraCucumberTest {
 
     @BeforeClass
     public static void init() {
