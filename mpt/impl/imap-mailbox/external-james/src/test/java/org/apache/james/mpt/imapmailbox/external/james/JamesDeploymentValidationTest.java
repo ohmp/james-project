@@ -26,6 +26,7 @@ import org.apache.james.mpt.api.ImapHostSystem;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -34,11 +35,14 @@ public class JamesDeploymentValidationTest extends DeploymentValidation {
 
     private ImapHostSystem system;
 
+    @BeforeClass
+    public static void checks() {
+        Assume.assumeNotNull(System.getenv(ENV_JAMES_ADDRESS), System.getenv(ENV_JAMES_IMAP_PORT));
+    }
+
     @Override
     @Before
     public void setUp() throws Exception {
-        Assume.assumeNotNull(System.getenv(ENV_JAMES_ADDRESS), System.getenv(ENV_JAMES_IMAP_PORT));
-
         Injector injector = Guice.createInjector(new ExternalJamesModule());
         system = injector.getInstance(ImapHostSystem.class);
         system.beforeTest();
