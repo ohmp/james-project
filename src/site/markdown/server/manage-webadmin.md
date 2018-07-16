@@ -834,8 +834,6 @@ Response codes:
 curl -XDELETE http://ip:port/quota/count
 ```
 
-Resource name usernameToBeUsed should be an existing user
-
 Response codes:
 
  - 204: The quota has been updated to unlimited value.
