@@ -510,7 +510,7 @@ public class StoreMailboxManager implements MailboxManager {
                             // notify listeners
                             dispatcher.mailboxAdded(mailboxSession, m);
                         } catch (MailboxExistsException e) {
-                            // ignore
+                            LOGGER.info("{} mailbox was created concurrently", m.generateAssociatedPath());
                         }
                     }
                     return null;
