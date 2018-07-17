@@ -22,16 +22,15 @@ package org.apache.james.mailbox.cassandra.modules;
 import static com.datastax.driver.core.DataType.text;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.mailbox.cassandra.table.CassandraSubscriptionTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraSubscriptionModule extends CassandraModuleComposite {
+public class CassandraSubscriptionModule {
 
     public static final int PER_USER_CACHED_SUBSCRIPTIONS = 100;
 
-    public static final CassandraModule SUBSCRIPTION_TABLE = CassandraModule.forTable(CassandraSubscriptionTable.TABLE_NAME,
+    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraSubscriptionTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSubscriptionTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSubscriptionTable.USER, text())
@@ -40,9 +39,5 @@ public class CassandraSubscriptionModule extends CassandraModuleComposite {
             .comment("Holds per user list of IMAP subscriptions")
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(PER_USER_CACHED_SUBSCRIPTIONS)));
-
-    public CassandraSubscriptionModule() {
-        super(SUBSCRIPTION_TABLE);
-    }
 
 }

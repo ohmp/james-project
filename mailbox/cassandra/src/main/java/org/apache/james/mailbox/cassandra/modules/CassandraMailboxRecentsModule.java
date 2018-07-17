@@ -23,15 +23,14 @@ import static com.datastax.driver.core.DataType.bigint;
 import static com.datastax.driver.core.DataType.timeuuid;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.mailbox.cassandra.table.CassandraMailboxRecentsTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMailboxRecentsModule extends CassandraModuleComposite {
+public class CassandraMailboxRecentsModule {
 
-    public static final CassandraModule RECENT_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraMailboxRecentsTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMailboxRecentsTable.TABLE_NAME)
             .ifNotExists()
@@ -43,9 +42,5 @@ public class CassandraMailboxRecentsModule extends CassandraModuleComposite {
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraMailboxRecentsModule() {
-        super(RECENT_TABLE);
-    }
 
 }

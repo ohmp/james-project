@@ -23,15 +23,14 @@ import static com.datastax.driver.core.DataType.text;
 import static com.datastax.driver.core.DataType.uuid;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.jmap.cassandra.access.table.CassandraAccessTokenTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraAccessModule extends CassandraModuleComposite {
+public class CassandraAccessModule {
 
-    public static final CassandraModule ACCESS_TOKEN_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraAccessTokenTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAccessTokenTable.TABLE_NAME)
             .ifNotExists()
@@ -41,9 +40,5 @@ public class CassandraAccessModule extends CassandraModuleComposite {
             .comment("Holds JMAP access token required to process to authentication.")
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraAccessModule() {
-        super(ACCESS_TOKEN_TABLE);
-    }
 
 }

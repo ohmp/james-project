@@ -23,15 +23,14 @@ import static com.datastax.driver.core.DataType.bigint;
 import static com.datastax.driver.core.DataType.timeuuid;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraModSeqModule extends CassandraModuleComposite {
+public class CassandraModSeqModule {
 
-    public static final CassandraModule MODSEQ_TABLE = CassandraModule.forTable(CassandraMessageModseqTable.TABLE_NAME,
+    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraMessageModseqTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMessageModseqTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageModseqTable.MAILBOX_ID, timeuuid())
@@ -41,9 +40,5 @@ public class CassandraModSeqModule extends CassandraModuleComposite {
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraModSeqModule() {
-        super(MODSEQ_TABLE);
-    }
 
 }

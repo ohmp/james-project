@@ -23,23 +23,18 @@ import static com.datastax.driver.core.DataType.cint;
 import static com.datastax.driver.core.DataType.timeuuid;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.versions.table.CassandraSchemaVersionTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraSchemaVersionModule extends CassandraModuleComposite {
+public class CassandraSchemaVersionModule {
 
-    public static final CassandraModule VERSION_TABLE = CassandraModule.forTable(CassandraSchemaVersionTable.TABLE_NAME,
+    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraSchemaVersionTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSchemaVersionTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSchemaVersionTable.KEY, timeuuid())
             .addClusteringColumn(CassandraSchemaVersionTable.VALUE, cint())
             .withOptions()
             .comment("Holds the history of the versions of the schema used."));
-
-    public CassandraSchemaVersionModule() {
-        super(VERSION_TABLE);
-    }
 
 }

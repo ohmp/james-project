@@ -23,14 +23,13 @@ import static com.datastax.driver.core.DataType.text;
 import static com.datastax.driver.core.DataType.timeuuid;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.mailbox.cassandra.table.CassandraAnnotationTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraAnnotationModule extends CassandraModuleComposite {
-    public static final CassandraModule ANNOTATION_TABLE = CassandraModule.forTable(
+public class CassandraAnnotationModule {
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraAnnotationTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAnnotationTable.TABLE_NAME)
             .ifNotExists()
@@ -42,9 +41,5 @@ public class CassandraAnnotationModule extends CassandraModuleComposite {
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraAnnotationModule() {
-        super(ANNOTATION_TABLE);
-    }
 
 }

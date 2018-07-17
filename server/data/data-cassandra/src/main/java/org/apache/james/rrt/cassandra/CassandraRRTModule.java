@@ -22,15 +22,14 @@ package org.apache.james.rrt.cassandra;
 import static com.datastax.driver.core.DataType.text;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTableTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraRRTModule extends CassandraModuleComposite {
+public class CassandraRRTModule {
 
-    public static final CassandraModule RRT_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraRecipientRewriteTableTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraRecipientRewriteTableTable.TABLE_NAME)
             .ifNotExists()
@@ -41,9 +40,5 @@ public class CassandraRRTModule extends CassandraModuleComposite {
             .comment("Holds address re-writing rules.")
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraRRTModule() {
-        super(RRT_TABLE);
-    }
 
 }
