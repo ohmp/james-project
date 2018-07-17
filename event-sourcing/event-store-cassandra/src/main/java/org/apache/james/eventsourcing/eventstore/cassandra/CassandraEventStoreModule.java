@@ -20,14 +20,13 @@
 package org.apache.james.eventsourcing.eventstore.cassandra;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraEventStoreModule extends CassandraModuleComposite {
-    public static final CassandraModule EVENT_TABLE = CassandraModule.forTable(
+public class CassandraEventStoreModule {
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraEventStoreTable.EVENTS_TABLE,
         SchemaBuilder.createTable(CassandraEventStoreTable.EVENTS_TABLE)
             .ifNotExists()
@@ -38,9 +37,5 @@ public class CassandraEventStoreModule extends CassandraModuleComposite {
             .comment("Store events of a EventSourcing aggregate")
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraEventStoreModule() {
-        super(EVENT_TABLE);
-    }
 
 }

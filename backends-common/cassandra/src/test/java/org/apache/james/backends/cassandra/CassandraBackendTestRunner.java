@@ -37,7 +37,7 @@ class CassandraBackendTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraSchemaVersionModule();
+            return CassandraSchemaVersionModule.MODULE;
         }
 
         @BeforeEach

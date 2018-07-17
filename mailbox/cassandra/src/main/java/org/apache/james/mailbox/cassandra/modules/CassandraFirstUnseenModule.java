@@ -20,16 +20,15 @@
 package org.apache.james.mailbox.cassandra.modules;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.mailbox.cassandra.table.CassandraFirstUnseenTable;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraFirstUnseenModule extends CassandraModuleComposite {
+public class CassandraFirstUnseenModule {
 
-    public static final CassandraModule FIRST_UNSEEN_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraFirstUnseenTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraFirstUnseenTable.TABLE_NAME)
             .ifNotExists()
@@ -42,7 +41,4 @@ public class CassandraFirstUnseenModule extends CassandraModuleComposite {
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
             .clusteringOrder(CassandraFirstUnseenTable.UID, SchemaBuilder.Direction.ASC));
 
-    public CassandraFirstUnseenModule() {
-        super(FIRST_UNSEEN_TABLE);
-    }
 }

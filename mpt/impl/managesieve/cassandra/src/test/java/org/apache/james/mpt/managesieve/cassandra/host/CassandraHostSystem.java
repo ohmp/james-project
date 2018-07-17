@@ -47,7 +47,7 @@ public class CassandraHostSystem extends JamesManageSieveHostSystem {
     public void beforeTest() throws Exception {
         CassandraModuleComposite modules = new CassandraModuleComposite(
                 new CassandraSieveRepositoryModule(),
-                new CassandraUsersRepositoryModule());
+                CassandraUsersRepositoryModule.MODULE);
         cassandra = CassandraCluster.create(modules, cassandraHost);
         super.beforeTest();
     }

@@ -22,14 +22,13 @@ package org.apache.james.user.cassandra;
 import static com.datastax.driver.core.DataType.text;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.user.cassandra.tables.CassandraUserTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraUsersRepositoryModule extends CassandraModuleComposite {
+public class CassandraUsersRepositoryModule {
 
-    public static final CassandraModule USER_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraUserTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraUserTable.TABLE_NAME)
             .ifNotExists()
@@ -39,9 +38,5 @@ public class CassandraUsersRepositoryModule extends CassandraModuleComposite {
             .addColumn(CassandraUserTable.ALGORITHM, text())
             .withOptions()
             .comment("Holds users of this James server."));
-
-    public CassandraUsersRepositoryModule() {
-        super(USER_TABLE);
-    }
 
 }

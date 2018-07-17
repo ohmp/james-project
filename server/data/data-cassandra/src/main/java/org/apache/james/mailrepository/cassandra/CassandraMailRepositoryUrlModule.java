@@ -22,14 +22,13 @@ package org.apache.james.mailrepository.cassandra;
 import static com.datastax.driver.core.DataType.text;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMailRepositoryUrlModule extends CassandraModuleComposite {
+public class CassandraMailRepositoryUrlModule {
 
-    public static final CassandraModule URL_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         UrlsTable.TABLE_NAME,
         SchemaBuilder.createTable(UrlsTable.TABLE_NAME)
             .ifNotExists()
@@ -39,7 +38,4 @@ public class CassandraMailRepositoryUrlModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public CassandraMailRepositoryUrlModule() {
-        super(URL_TABLE);
-    }
 }

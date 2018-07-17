@@ -24,15 +24,14 @@ import static com.datastax.driver.core.DataType.text;
 import static com.datastax.driver.core.DataType.timeuuid;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.mailbox.cassandra.table.CassandraApplicableFlagTable;
 import org.apache.james.mailbox.cassandra.table.Flag;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraApplicableFlagsModule extends CassandraModuleComposite {
-    public static final CassandraModule APPLICABLE_FLAGS_TABLE = CassandraModule.forTable(CassandraApplicableFlagTable.TABLE_NAME,
+public class CassandraApplicableFlagsModule {
+    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraApplicableFlagTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraApplicableFlagTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraApplicableFlagTable.MAILBOX_ID, timeuuid())
@@ -43,9 +42,5 @@ public class CassandraApplicableFlagsModule extends CassandraModuleComposite {
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraApplicableFlagsModule() {
-        super(APPLICABLE_FLAGS_TABLE);
-    }
 
 }

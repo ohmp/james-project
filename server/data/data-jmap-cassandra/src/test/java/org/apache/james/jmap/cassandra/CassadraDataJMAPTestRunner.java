@@ -51,7 +51,7 @@ class CassadraDataJMAPTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return  new CassandraModuleComposite(new CassandraVacationModule(), new CassandraZonedDateTimeModule());
+            return  new CassandraModuleComposite(CassandraVacationModule.MODULE, CassandraZonedDateTimeModule.MODULE);
         }
 
         @BeforeEach
@@ -71,7 +71,7 @@ class CassadraDataJMAPTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraModuleComposite(new CassandraAccessModule(), new CassandraZonedDateTimeModule());
+            return new CassandraModuleComposite(CassandraAccessModule.MODULE, CassandraZonedDateTimeModule.MODULE);
         }
 
         @BeforeEach
@@ -93,7 +93,7 @@ class CassadraDataJMAPTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraNotificationRegistryModule();
+            return CassandraNotificationRegistryModule.MODULE;
         }
 
         @BeforeEach

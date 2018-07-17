@@ -24,15 +24,14 @@ import static org.apache.james.mailbox.cassandra.table.CassandraDeletedMessageTa
 import static org.apache.james.mailbox.cassandra.table.CassandraDeletedMessageTable.UID;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraDeletedMessageModule extends CassandraModuleComposite {
+public class CassandraDeletedMessageModule {
 
-    public static final CassandraModule DELETED_MESSAGE_TABLE = CassandraModule.forTable(TABLE_NAME,
+    public static final CassandraModule MODULE = CassandraModule.forTable(TABLE_NAME,
         SchemaBuilder.createTable(TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(MAILBOX_ID, DataType.timeuuid())
@@ -42,9 +41,5 @@ public class CassandraDeletedMessageModule extends CassandraModuleComposite {
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraDeletedMessageModule() {
-        super(DELETED_MESSAGE_TABLE);
-    }
 
 }

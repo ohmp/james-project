@@ -130,7 +130,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraApplicableFlagsModule();
+            return CassandraApplicableFlagsModule.MODULE;
         }
 
         @BeforeEach
@@ -212,7 +212,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraDeletedMessageModule();
+            return CassandraDeletedMessageModule.MODULE;
         }
 
         @BeforeEach
@@ -232,7 +232,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraFirstUnseenModule();
+            return CassandraFirstUnseenModule.MODULE;
         }
 
         @BeforeEach
@@ -252,7 +252,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraMailboxCounterModule();
+            return CassandraMailboxCounterModule.MODULE;
         }
 
         @BeforeEach
@@ -315,7 +315,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraUidModule();
+            return CassandraUidModule.MODULE;
         }
 
         @BeforeEach
@@ -335,7 +335,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraModSeqModule();
+            return CassandraModSeqModule.MODULE;
         }
 
         @BeforeEach
@@ -421,7 +421,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraMailboxRecentsModule();
+            return CassandraMailboxRecentsModule.MODULE;
         }
 
         @BeforeEach
@@ -615,11 +615,11 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraMailboxCounterModule(),
-                new CassandraMailboxRecentsModule(),
-                new CassandraFirstUnseenModule(),
-                new CassandraApplicableFlagsModule(),
-                new CassandraDeletedMessageModule());
+                CassandraMailboxCounterModule.MODULE,
+                CassandraMailboxRecentsModule.MODULE,
+                CassandraFirstUnseenModule.MODULE,
+                CassandraApplicableFlagsModule.MODULE,
+                CassandraDeletedMessageModule.MODULE);
         }
 
         @BeforeEach
@@ -684,7 +684,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraAnnotationModule();
+            return CassandraAnnotationModule.MODULE;
         }
 
         @BeforeEach
@@ -711,7 +711,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraSubscriptionModule();
+            return CassandraSubscriptionModule.MODULE;
         }
 
         @BeforeEach

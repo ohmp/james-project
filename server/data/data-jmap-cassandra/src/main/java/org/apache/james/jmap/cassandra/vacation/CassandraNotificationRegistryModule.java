@@ -22,15 +22,14 @@ package org.apache.james.jmap.cassandra.vacation;
 import static com.datastax.driver.core.DataType.text;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.jmap.cassandra.vacation.tables.CassandraNotificationTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraNotificationRegistryModule extends CassandraModuleComposite {
+public class CassandraNotificationRegistryModule {
 
-    public static final CassandraModule NOTIFICATION_TABLE = CassandraModule.forTable(
+    public static final CassandraModule MODULE = CassandraModule.forTable(
         CassandraNotificationTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraNotificationTable.TABLE_NAME)
             .ifNotExists()
@@ -41,8 +40,4 @@ public class CassandraNotificationRegistryModule extends CassandraModuleComposit
             .compactionOptions(SchemaBuilder.dateTieredStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
-    public CassandraNotificationRegistryModule() {
-        super(NOTIFICATION_TABLE);
-    }
 }
