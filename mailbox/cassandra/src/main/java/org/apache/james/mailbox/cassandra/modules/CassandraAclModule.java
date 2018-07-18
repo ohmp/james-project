@@ -31,8 +31,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraUserMailboxRightsTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraAclModule extends CassandraModuleComposite {
-    public static final CassandraModule CASSANDRA_ACL_TABLE = CassandraModule.forTable(
+public interface CassandraAclModule{
+    CassandraModule CASSANDRA_ACL_TABLE = CassandraModule.forTable(
         CassandraACLTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraACLTable.TABLE_NAME)
             .ifNotExists()
@@ -44,7 +44,7 @@ public class CassandraAclModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public static final CassandraModule CASSANDRA_USER_MAILBOX_RIGHTS_TABLE = CassandraModule.forTable(
+    CassandraModule CASSANDRA_USER_MAILBOX_RIGHTS_TABLE = CassandraModule.forTable(
         CassandraUserMailboxRightsTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraUserMailboxRightsTable.TABLE_NAME)
             .ifNotExists()
@@ -57,8 +57,7 @@ public class CassandraAclModule extends CassandraModuleComposite {
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
             .comment("Denormalisation table. Allow to retrieve non personal mailboxIds a user has right on"));
 
-    public CassandraAclModule() {
-        super(CASSANDRA_ACL_TABLE,
-            CASSANDRA_USER_MAILBOX_RIGHTS_TABLE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        CASSANDRA_ACL_TABLE,
+        CASSANDRA_USER_MAILBOX_RIGHTS_TABLE);
 }

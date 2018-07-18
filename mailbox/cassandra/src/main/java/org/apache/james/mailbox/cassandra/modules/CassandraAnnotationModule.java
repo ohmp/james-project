@@ -28,8 +28,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraAnnotationTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraAnnotationModule {
-    public static final CassandraModule MODULE = CassandraModule.forTable(
+public interface CassandraAnnotationModule {
+    CassandraModule MODULE = CassandraModule.forTable(
         CassandraAnnotationTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAnnotationTable.TABLE_NAME)
             .ifNotExists()

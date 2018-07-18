@@ -35,9 +35,9 @@ import org.apache.james.sieve.cassandra.tables.CassandraSieveTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraSieveRepositoryModule extends CassandraModuleComposite {
+public interface CassandraSieveRepositoryModule {
 
-    public static final CassandraModule SIEVE_TABLE = CassandraModule.forTable(
+    CassandraModule SIEVE_TABLE = CassandraModule.forTable(
         CassandraSieveTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSieveTable.TABLE_NAME)
             .ifNotExists()
@@ -49,7 +49,7 @@ public class CassandraSieveRepositoryModule extends CassandraModuleComposite {
             .withOptions()
             .comment("Holds SIEVE scripts."));
 
-    public static final CassandraModule SIEVE_SPACE_TABLE = CassandraModule.forTable(
+    CassandraModule SIEVE_SPACE_TABLE = CassandraModule.forTable(
         CassandraSieveSpaceTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSieveSpaceTable.TABLE_NAME)
             .ifNotExists()
@@ -58,7 +58,7 @@ public class CassandraSieveRepositoryModule extends CassandraModuleComposite {
             .withOptions()
             .comment("Holds per user current space occupied by SIEVE scripts."));
 
-    public static final CassandraModule SIEVE_QUOTA_TABLE = CassandraModule.forTable(
+    CassandraModule SIEVE_QUOTA_TABLE = CassandraModule.forTable(
         CassandraSieveQuotaTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSieveQuotaTable.TABLE_NAME)
             .ifNotExists()
@@ -67,7 +67,7 @@ public class CassandraSieveRepositoryModule extends CassandraModuleComposite {
             .withOptions()
             .comment("Holds per user size limitations for SIEVE script storage."));
 
-    public static final CassandraModule SIEVE_GLOBAL_QUOTA_TABLE = CassandraModule.forTable(
+    CassandraModule SIEVE_GLOBAL_QUOTA_TABLE = CassandraModule.forTable(
         CassandraSieveClusterQuotaTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSieveClusterQuotaTable.TABLE_NAME)
             .ifNotExists()
@@ -76,7 +76,7 @@ public class CassandraSieveRepositoryModule extends CassandraModuleComposite {
             .withOptions()
             .comment("Holds default size limitations for SIEVE script storage."));
 
-    public static final CassandraModule SIEVE_ACTIVE_TABLE = CassandraModule.forTable(
+    CassandraModule SIEVE_ACTIVE_TABLE = CassandraModule.forTable(
         CassandraSieveActiveTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSieveActiveTable.TABLE_NAME)
             .ifNotExists()
@@ -86,13 +86,11 @@ public class CassandraSieveRepositoryModule extends CassandraModuleComposite {
             .withOptions()
             .comment("Denormalisation table. Allows per user direct active SIEVE script retrieval."));
 
-    public CassandraSieveRepositoryModule() {
-        super(
-            SIEVE_TABLE,
-            SIEVE_SPACE_TABLE,
-            SIEVE_QUOTA_TABLE,
-            SIEVE_GLOBAL_QUOTA_TABLE,
-            SIEVE_ACTIVE_TABLE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        SIEVE_TABLE,
+        SIEVE_SPACE_TABLE,
+        SIEVE_QUOTA_TABLE,
+        SIEVE_GLOBAL_QUOTA_TABLE,
+        SIEVE_ACTIVE_TABLE);
 
 }

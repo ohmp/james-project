@@ -89,7 +89,7 @@ public class CassandraMessageDAOTest {
         cassandra = CassandraCluster.create(new CassandraModuleComposite(CassandraMessageModule.ATTACHMENT_TYPE,
                 CassandraMessageModule.PROPERTY_TYPE,
                 CassandraMessageModule.CASSANDRA_MESSAGE_V2_TABLE,
-            new CassandraBlobModule()),
+                CassandraBlobModule.MODULE),
             cassandraServer.getHost());
         messageIdFactory = new CassandraMessageId.Factory();
         messageId = messageIdFactory.generate();

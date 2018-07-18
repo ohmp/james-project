@@ -25,8 +25,8 @@ import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraEventStoreModule {
-    public static final CassandraModule MODULE = CassandraModule.forTable(
+public interface CassandraEventStoreModule {
+    CassandraModule MODULE = CassandraModule.forTable(
         CassandraEventStoreTable.EVENTS_TABLE,
         SchemaBuilder.createTable(CassandraEventStoreTable.EVENTS_TABLE)
             .ifNotExists()

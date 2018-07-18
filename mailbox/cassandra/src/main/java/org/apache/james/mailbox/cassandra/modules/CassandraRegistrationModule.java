@@ -27,9 +27,9 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxPathRegisterTabl
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraRegistrationModule extends CassandraModuleComposite {
+public interface CassandraRegistrationModule {
 
-    public static final CassandraModule MAILBOX_PATH_TYPE = CassandraModule.forType(
+    CassandraModule MAILBOX_PATH_TYPE = CassandraModule.forType(
         CassandraMailboxPathRegisterTable.MAILBOX_PATH,
         SchemaBuilder.createType(CassandraMailboxPathRegisterTable.MAILBOX_PATH)
             .ifNotExists()
@@ -37,7 +37,7 @@ public class CassandraRegistrationModule extends CassandraModuleComposite {
             .addColumn(CassandraMailboxPathRegisterTable.MailboxPath.NAME, text())
             .addColumn(CassandraMailboxPathRegisterTable.MailboxPath.USER, text()));
 
-    public static final CassandraModule MAILBOX_PATH_REGISTER_TABLE = CassandraModule.forTable(
+    CassandraModule MAILBOX_PATH_REGISTER_TABLE = CassandraModule.forTable(
         CassandraMailboxPathRegisterTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMailboxPathRegisterTable.TABLE_NAME)
             .ifNotExists()
@@ -46,8 +46,7 @@ public class CassandraRegistrationModule extends CassandraModuleComposite {
             .withOptions()
             .compactionOptions(SchemaBuilder.dateTieredStrategy()));
 
-    public CassandraRegistrationModule() {
-        super(MAILBOX_PATH_REGISTER_TABLE,
-            MAILBOX_PATH_TYPE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        MAILBOX_PATH_REGISTER_TABLE,
+        MAILBOX_PATH_TYPE);
 }

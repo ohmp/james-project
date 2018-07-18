@@ -32,16 +32,16 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMailboxModule extends CassandraModuleComposite {
+public interface CassandraMailboxModule {
 
-    public static final CassandraModule MAILBOX_BASE_TYPE = CassandraModule.forType(
+    CassandraModule MAILBOX_BASE_TYPE = CassandraModule.forType(
         CassandraMailboxTable.MAILBOX_BASE,
         SchemaBuilder.createType(CassandraMailboxTable.MAILBOX_BASE)
             .ifNotExists()
             .addColumn(CassandraMailboxTable.MailboxBase.NAMESPACE, text())
             .addColumn(CassandraMailboxTable.MailboxBase.USER, text()));
 
-    public static final CassandraModule MAILBOX_TABLE = CassandraModule.forTable(
+    CassandraModule MAILBOX_TABLE = CassandraModule.forTable(
         CassandraMailboxTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMailboxTable.TABLE_NAME)
             .ifNotExists()
@@ -54,7 +54,7 @@ public class CassandraMailboxModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public static final CassandraModule MAILBOX_PATH_TABLE = CassandraModule.forTable(
+    CassandraModule MAILBOX_PATH_TABLE = CassandraModule.forTable(
         CassandraMailboxPathTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMailboxPathTable.TABLE_NAME)
             .ifNotExists()
@@ -67,7 +67,7 @@ public class CassandraMailboxModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public static final CassandraModule MAILBOX_PATH_V2_TABLE = CassandraModule.forTable(
+    CassandraModule MAILBOX_PATH_V2_TABLE = CassandraModule.forTable(
         CassandraMailboxPathV2Table.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMailboxPathV2Table.TABLE_NAME)
             .ifNotExists()
@@ -81,11 +81,9 @@ public class CassandraMailboxModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public CassandraMailboxModule() {
-        super(
-            MAILBOX_TABLE,
-            MAILBOX_PATH_TABLE,
-            MAILBOX_PATH_V2_TABLE,
-            MAILBOX_BASE_TYPE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        MAILBOX_TABLE,
+        MAILBOX_PATH_TABLE,
+        MAILBOX_PATH_V2_TABLE,
+        MAILBOX_BASE_TYPE);
 }
