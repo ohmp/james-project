@@ -3385,7 +3385,7 @@
                             <buildAll>true</buildAll>
                             <skipTestsForNotImpactedModules>true</skipTestsForNotImpactedModules>
                             <impacted>true</impacted>
-                            <ignoreAllReactorProjects>true</ignoreAllReactorProjects>
+                            <ignoreAllReactorProjects>false</ignoreAllReactorProjects>
                         </configuration>
                     </plugin>
                 </plugins>
