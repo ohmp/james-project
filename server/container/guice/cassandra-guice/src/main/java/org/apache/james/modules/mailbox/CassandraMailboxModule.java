@@ -63,6 +63,7 @@ import org.apache.james.mailbox.cassandra.modules.CassandraDeletedMessageModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraFirstUnseenModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxCounterModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxRecentsModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraModSeqModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraSubscriptionModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
@@ -166,7 +167,7 @@ public class CassandraMailboxModule extends AbstractModule {
         cassandraDataDefinitions.addBinding().toInstance(CassandraAclModule.MODULE);
         cassandraDataDefinitions.addBinding().toInstance(CassandraAttachmentModule.MODULE);
         cassandraDataDefinitions.addBinding().toInstance(org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule.MODULE);
-        cassandraDataDefinitions.addBinding().to(org.apache.james.mailbox.cassandra.modules.CassandraMessageModule.class);
+        cassandraDataDefinitions.addBinding().toInstance(CassandraMessageModule.MODULE);
         cassandraDataDefinitions.addBinding().toInstance(CassandraMailboxCounterModule.MODULE);
         cassandraDataDefinitions.addBinding().toInstance(CassandraAnnotationModule.MODULE);
         cassandraDataDefinitions.addBinding().toInstance(CassandraApplicableFlagsModule.MODULE);
