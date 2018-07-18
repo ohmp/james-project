@@ -33,23 +33,23 @@ import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMailRepositoryModule extends CassandraModuleComposite {
+public interface CassandraMailRepositoryModule {
 
-    public static final CassandraModule COUNT_TABLE = CassandraModule.forTable(
+    CassandraModule COUNT_TABLE = CassandraModule.forTable(
         MailRepositoryTable.COUNT_TABLE,
         SchemaBuilder.createTable(MailRepositoryTable.COUNT_TABLE)
             .ifNotExists()
             .addPartitionKey(MailRepositoryTable.REPOSITORY_NAME, text())
             .addColumn(MailRepositoryTable.COUNT, counter()));
 
-    public static final CassandraModule KEYS_TABLE = CassandraModule.forTable(
+    CassandraModule KEYS_TABLE = CassandraModule.forTable(
         MailRepositoryTable.KEYS_TABLE_NAME,
         SchemaBuilder.createTable(MailRepositoryTable.KEYS_TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(MailRepositoryTable.REPOSITORY_NAME, text())
             .addClusteringColumn(MailRepositoryTable.MAIL_KEY, text()));
 
-    public static final CassandraModule MAIL_REPOSITORY_TABLE = CassandraModule.forTable(
+    CassandraModule MAIL_REPOSITORY_TABLE = CassandraModule.forTable(
         MailRepositoryTable.CONTENT_TABLE_NAME,
         SchemaBuilder.createTable(MailRepositoryTable.CONTENT_TABLE_NAME)
             .ifNotExists()
@@ -71,17 +71,16 @@ public class CassandraMailRepositoryModule extends CassandraModuleComposite {
             .comment("Stores the mails for a given repository. " +
                 "Content is stored with other blobs"));
 
-    public static final CassandraModule HEADER_TYPE = CassandraModule.forType(
+    CassandraModule HEADER_TYPE = CassandraModule.forType(
         MailRepositoryTable.HEADER_TYPE,
         SchemaBuilder.createType(MailRepositoryTable.HEADER_TYPE)
             .ifNotExists()
             .addColumn(MailRepositoryTable.HEADER_NAME, text())
             .addColumn(MailRepositoryTable.HEADER_VALUE, text()));
 
-    public CassandraMailRepositoryModule() {
-        super(COUNT_TABLE,
-            KEYS_TABLE,
-            MAIL_REPOSITORY_TABLE,
-            HEADER_TYPE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        COUNT_TABLE,
+        KEYS_TABLE,
+        MAIL_REPOSITORY_TABLE,
+        HEADER_TYPE);
 }

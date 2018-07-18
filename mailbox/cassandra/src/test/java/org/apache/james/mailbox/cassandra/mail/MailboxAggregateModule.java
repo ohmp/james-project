@@ -38,11 +38,11 @@ import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
 
 public class MailboxAggregateModule {
     public static CassandraModule MODULE = new CassandraModuleComposite(
-        new CassandraAclModule(),
-        new CassandraMailboxModule(),
-        new CassandraMessageModule(),
-        new CassandraBlobModule(),
-        new CassandraAttachmentModule(),
+        CassandraAclModule.MODULE,
+        CassandraMailboxModule.MODULE,
+        CassandraMessageModule.MODULE,
+        CassandraBlobModule.MODULE,
+        CassandraAttachmentModule.MODULE,
         CassandraMailboxCounterModule.MODULE,
         CassandraMailboxRecentsModule.MODULE,
         CassandraFirstUnseenModule.MODULE,

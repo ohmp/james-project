@@ -34,9 +34,9 @@ import org.apache.james.mailbox.cassandra.table.CassandraAttachmentV2Table;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraAttachmentModule extends CassandraModuleComposite {
+public interface CassandraAttachmentModule {
 
-    public static final CassandraModule CASSANDRA_ATTACHMENT_TABLE = CassandraModule.forTable(CassandraAttachmentTable.TABLE_NAME,
+    CassandraModule CASSANDRA_ATTACHMENT_TABLE = CassandraModule.forTable(CassandraAttachmentTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAttachmentTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraAttachmentTable.ID, text())
@@ -45,7 +45,8 @@ public class CassandraAttachmentModule extends CassandraModuleComposite {
             .addColumn(CassandraAttachmentTable.SIZE, bigint())
             .withOptions()
             .comment("Holds attachment for fast attachment retrieval"));
-    public static final CassandraModule CASSANDRA_ATTACHMENT_V2_TABLE = CassandraModule.forTable(CassandraAttachmentV2Table.TABLE_NAME,
+
+    CassandraModule CASSANDRA_ATTACHMENT_V2_TABLE = CassandraModule.forTable(CassandraAttachmentV2Table.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAttachmentV2Table.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraAttachmentV2Table.ID_AS_UUID, uuid())
@@ -59,7 +60,8 @@ public class CassandraAttachmentModule extends CassandraModuleComposite {
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
             .comment("Holds attachment for fast attachment retrieval. Content of messages is stored" +
                 "in `blobs` and `blobparts` tables."));
-    public static final CassandraModule CASSANDRA_ATTACHMENT_MESSAGE_ID_TABLE = CassandraModule.forTable(CassandraAttachmentMessageIdTable.TABLE_NAME,
+
+    CassandraModule CASSANDRA_ATTACHMENT_MESSAGE_ID_TABLE = CassandraModule.forTable(CassandraAttachmentMessageIdTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAttachmentMessageIdTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraAttachmentMessageIdTable.ATTACHMENT_ID_AS_UUID, uuid())
@@ -70,7 +72,8 @@ public class CassandraAttachmentModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
             .comment("Holds ids of messages owning the attachment"));
-    public static final CassandraModule CASSANDRA_ATTACHMENT_OWNER_TABLE = CassandraModule.forTable(CassandraAttachmentOwnerTable.TABLE_NAME,
+
+    CassandraModule CASSANDRA_ATTACHMENT_OWNER_TABLE = CassandraModule.forTable(CassandraAttachmentOwnerTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraAttachmentOwnerTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraAttachmentOwnerTable.ID, uuid())
@@ -81,11 +84,9 @@ public class CassandraAttachmentModule extends CassandraModuleComposite {
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
             .comment("Holds explicit owners of some attachments"));
 
-    public CassandraAttachmentModule() {
-        super(
-            CASSANDRA_ATTACHMENT_TABLE,
-            CASSANDRA_ATTACHMENT_V2_TABLE,
-            CASSANDRA_ATTACHMENT_MESSAGE_ID_TABLE,
-            CASSANDRA_ATTACHMENT_OWNER_TABLE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        CASSANDRA_ATTACHMENT_TABLE,
+        CASSANDRA_ATTACHMENT_V2_TABLE,
+        CASSANDRA_ATTACHMENT_MESSAGE_ID_TABLE,
+        CASSANDRA_ATTACHMENT_OWNER_TABLE);
 }

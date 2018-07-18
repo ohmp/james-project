@@ -26,9 +26,9 @@ import org.apache.james.mailbox.cassandra.table.CassandraFirstUnseenTable;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraFirstUnseenModule {
+public interface CassandraFirstUnseenModule {
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(
+    CassandraModule MODULE = CassandraModule.forTable(
         CassandraFirstUnseenTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraFirstUnseenTable.TABLE_NAME)
             .ifNotExists()

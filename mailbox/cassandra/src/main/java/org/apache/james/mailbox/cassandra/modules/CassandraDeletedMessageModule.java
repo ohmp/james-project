@@ -29,9 +29,9 @@ import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraDeletedMessageModule {
+public interface CassandraDeletedMessageModule {
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(TABLE_NAME,
+    CassandraModule MODULE = CassandraModule.forTable(TABLE_NAME,
         SchemaBuilder.createTable(TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(MAILBOX_ID, DataType.timeuuid())

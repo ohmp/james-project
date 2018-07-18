@@ -46,7 +46,7 @@ public class CassandraMessageIdManagerQuotaTest extends AbstractMessageIdManager
     public void setUp() throws Exception {
         CassandraModule modules = new CassandraModuleComposite(
             MailboxAggregateModule.MODULE,
-            new CassandraQuotaModule());
+            CassandraQuotaModule.MODULE);
         cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
         super.setUp();
     }

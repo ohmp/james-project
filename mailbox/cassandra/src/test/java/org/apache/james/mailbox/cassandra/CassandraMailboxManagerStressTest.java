@@ -41,7 +41,7 @@ public class CassandraMailboxManagerStressTest extends MailboxManagerStressTest 
     public void setup() throws Exception {
         CassandraModule modules = new CassandraModuleComposite(
             MailboxAggregateModule.MODULE,
-            new CassandraQuotaModule());
+            CassandraQuotaModule.MODULE);
         cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
         super.setUp();
     }

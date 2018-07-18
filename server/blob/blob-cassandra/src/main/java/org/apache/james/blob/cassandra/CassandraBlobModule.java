@@ -25,9 +25,9 @@ import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraBlobModule extends CassandraModuleComposite {
+public interface CassandraBlobModule {
 
-    public static final CassandraModule BLOB_PART_TABLE = CassandraModule.forTable(
+    CassandraModule BLOB_PART_TABLE = CassandraModule.forTable(
         BlobTable.BlobParts.TABLE_NAME,
         SchemaBuilder.createTable(BlobTable.BlobParts.TABLE_NAME)
             .ifNotExists()
@@ -38,7 +38,7 @@ public class CassandraBlobModule extends CassandraModuleComposite {
             .comment("Holds blob parts composing blobs ." +
                 "Messages` headers and bodies are stored, chunked in blobparts."));
 
-    public static final CassandraModule BLOB_TABLE = CassandraModule.forTable(
+    CassandraModule BLOB_TABLE = CassandraModule.forTable(
         BlobTable.TABLE_NAME,
         SchemaBuilder.createTable(BlobTable.TABLE_NAME)
             .ifNotExists()
@@ -48,9 +48,7 @@ public class CassandraBlobModule extends CassandraModuleComposite {
             .comment("Holds information for retrieving all blob parts composing this blob. " +
                 "Messages` headers and bodies are stored as blobparts."));
 
-    public CassandraBlobModule() {
-        super(
-            BLOB_TABLE,
-            BLOB_PART_TABLE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        BLOB_TABLE,
+        BLOB_PART_TABLE);
 }

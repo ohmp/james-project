@@ -28,9 +28,9 @@ import org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraModSeqModule {
+public interface CassandraModSeqModule {
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraMessageModseqTable.TABLE_NAME,
+    CassandraModule MODULE = CassandraModule.forTable(CassandraMessageModseqTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMessageModseqTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageModseqTable.MAILBOX_ID, timeuuid())

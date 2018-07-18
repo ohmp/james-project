@@ -26,11 +26,11 @@ import org.apache.james.mailbox.cassandra.table.CassandraSubscriptionTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraSubscriptionModule {
+public interface CassandraSubscriptionModule {
 
-    public static final int PER_USER_CACHED_SUBSCRIPTIONS = 100;
+    int PER_USER_CACHED_SUBSCRIPTIONS = 100;
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraSubscriptionTable.TABLE_NAME,
+    CassandraModule MODULE = CassandraModule.forTable(CassandraSubscriptionTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSubscriptionTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSubscriptionTable.USER, text())

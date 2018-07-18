@@ -398,7 +398,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
             return new CassandraModuleComposite(CassandraMessageModule.ATTACHMENT_TYPE,
                 CassandraMessageModule.PROPERTY_TYPE,
                 CassandraMessageModule.CASSANDRA_MESSAGE_V2_TABLE,
-                new CassandraBlobModule());
+                CassandraBlobModule.MODULE);
         }
 
         @BeforeEach
@@ -485,7 +485,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return  new CassandraModuleComposite(new CassandraMailboxModule(), new CassandraAclModule());
+            return  new CassandraModuleComposite(CassandraMailboxModule.MODULE, CassandraAclModule.MODULE);
         }
 
         @BeforeEach
@@ -507,7 +507,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraModuleComposite(new CassandraMailboxModule(), new CassandraAclModule());
+            return new CassandraModuleComposite(CassandraMailboxModule.MODULE, CassandraAclModule.MODULE);
         }
 
         @BeforeEach
@@ -549,7 +549,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraAclModule();
+            return CassandraAclModule.MODULE;
         }
 
         @BeforeEach
@@ -586,7 +586,7 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
 
         @Override
         public CassandraModule module() {
-            return new CassandraRegistrationModule();
+            return CassandraRegistrationModule.MODULE;
         }
 
         @BeforeEach
@@ -656,8 +656,8 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraAttachmentModule(),
-                new CassandraBlobModule());
+                CassandraAttachmentModule.MODULE,
+                CassandraBlobModule.MODULE);
         }
 
         @BeforeEach
@@ -735,8 +735,8 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraAclModule(),
-                new CassandraMailboxModule());
+                CassandraAclModule.MODULE,
+                CassandraMailboxModule.MODULE);
         }
 
         @BeforeEach
@@ -766,9 +766,9 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraMessageModule(),
-                new CassandraAttachmentModule(),
-                new CassandraBlobModule());
+                CassandraMessageModule.MODULE,
+                CassandraAttachmentModule.MODULE,
+                CassandraBlobModule.MODULE);
         }
 
         @BeforeEach
@@ -798,8 +798,8 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraAttachmentModule(),
-                new CassandraBlobModule());
+                CassandraAttachmentModule.MODULE,
+                CassandraBlobModule.MODULE);
         }
 
         @BeforeEach
@@ -828,8 +828,8 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraMailboxModule(),
-                new CassandraAclModule());
+                CassandraMailboxModule.MODULE,
+                CassandraAclModule.MODULE);
         }
 
         @BeforeEach
@@ -867,8 +867,8 @@ class CassandraMailboxTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraAttachmentModule(),
-                new CassandraBlobModule());
+                CassandraAttachmentModule.MODULE,
+                CassandraBlobModule.MODULE);
         }
 
         @BeforeEach

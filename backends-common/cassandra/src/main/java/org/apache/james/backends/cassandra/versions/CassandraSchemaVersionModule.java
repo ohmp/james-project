@@ -27,9 +27,9 @@ import org.apache.james.backends.cassandra.versions.table.CassandraSchemaVersion
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraSchemaVersionModule {
+public interface CassandraSchemaVersionModule {
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraSchemaVersionTable.TABLE_NAME,
+    CassandraModule MODULE = CassandraModule.forTable(CassandraSchemaVersionTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraSchemaVersionTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSchemaVersionTable.KEY, timeuuid())

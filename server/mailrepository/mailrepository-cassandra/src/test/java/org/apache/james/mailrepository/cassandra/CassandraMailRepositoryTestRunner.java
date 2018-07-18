@@ -107,8 +107,8 @@ class CassandraMailRepositoryTestRunner extends CassandraTestRunner {
         @Override
         public CassandraModule module() {
             return new CassandraModuleComposite(
-                new CassandraMailRepositoryModule(),
-                new CassandraBlobModule());
+                CassandraMailRepositoryModule.MODULE,
+                CassandraBlobModule.MODULE);
         }
 
         @BeforeEach

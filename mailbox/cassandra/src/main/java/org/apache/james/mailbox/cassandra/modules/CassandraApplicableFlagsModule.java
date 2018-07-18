@@ -30,8 +30,8 @@ import org.apache.james.mailbox.cassandra.table.Flag;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraApplicableFlagsModule {
-    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraApplicableFlagTable.TABLE_NAME,
+public interface CassandraApplicableFlagsModule {
+    CassandraModule MODULE = CassandraModule.forTable(CassandraApplicableFlagTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraApplicableFlagTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraApplicableFlagTable.MAILBOX_ID, timeuuid())

@@ -28,9 +28,9 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxCountersTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMailboxCounterModule {
+public interface CassandraMailboxCounterModule {
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(
+    CassandraModule MODULE = CassandraModule.forTable(
         CassandraMailboxCountersTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMailboxCountersTable.TABLE_NAME)
             .ifNotExists()

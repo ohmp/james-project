@@ -33,9 +33,9 @@ import org.apache.james.mailbox.cassandra.table.CassandraMaxQuota;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraQuotaModule extends CassandraModuleComposite {
+public interface CassandraQuotaModule {
 
-    public static final CassandraModule CURRENT_QUOTA_TABLE = CassandraModule.forTable(
+    CassandraModule CURRENT_QUOTA_TABLE = CassandraModule.forTable(
         CassandraCurrentQuota.TABLE_NAME,
         SchemaBuilder.createTable(CassandraCurrentQuota.TABLE_NAME)
             .ifNotExists()
@@ -47,7 +47,7 @@ public class CassandraQuotaModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public static final CassandraModule MAX_QUOTA_TABLE = CassandraModule.forTable(
+    CassandraModule MAX_QUOTA_TABLE = CassandraModule.forTable(
         CassandraMaxQuota.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMaxQuota.TABLE_NAME)
             .ifNotExists()
@@ -59,7 +59,7 @@ public class CassandraQuotaModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public static final CassandraModule DOMAIN_QUOTA_TABLE = CassandraModule.forTable(
+    CassandraModule DOMAIN_QUOTA_TABLE = CassandraModule.forTable(
         CassandraDomainMaxQuota.TABLE_NAME,
         SchemaBuilder.createTable(CassandraDomainMaxQuota.TABLE_NAME)
             .ifNotExists()
@@ -71,7 +71,7 @@ public class CassandraQuotaModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public static final CassandraModule USER_QUOTA_TABLE = CassandraModule.forTable(
+    CassandraModule USER_QUOTA_TABLE = CassandraModule.forTable(
         CassandraGlobalMaxQuota.TABLE_NAME,
         SchemaBuilder.createTable(CassandraGlobalMaxQuota.TABLE_NAME)
             .ifNotExists()
@@ -82,10 +82,9 @@ public class CassandraQuotaModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
 
-    public CassandraQuotaModule() {
-        super(CURRENT_QUOTA_TABLE,
-            MAX_QUOTA_TABLE,
-            DOMAIN_QUOTA_TABLE,
-            USER_QUOTA_TABLE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(
+        CURRENT_QUOTA_TABLE,
+        MAX_QUOTA_TABLE,
+        DOMAIN_QUOTA_TABLE,
+        USER_QUOTA_TABLE);
 }

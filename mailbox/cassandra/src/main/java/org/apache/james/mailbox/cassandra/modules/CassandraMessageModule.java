@@ -37,12 +37,12 @@ import org.apache.james.mailbox.cassandra.table.MessageIdToImapUid;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMessageModule extends CassandraModuleComposite {
+public interface CassandraMessageModule {
 
-    public static final int CACHED_MESSAGE_ID_ROWS = 1000;
-    public static final int CACHED_IMAP_UID_ROWS = 100;
+    int CACHED_MESSAGE_ID_ROWS = 1000;
+    int CACHED_IMAP_UID_ROWS = 100;
 
-    public static final CassandraModule CASSANDRA_MESSAGE_ID_TABLE = CassandraModule.forTable(
+    CassandraModule CASSANDRA_MESSAGE_ID_TABLE = CassandraModule.forTable(
         CassandraMessageIdTable.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMessageIdTable.TABLE_NAME)
             .ifNotExists()
@@ -64,7 +64,7 @@ public class CassandraMessageModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CACHED_MESSAGE_ID_ROWS)));
 
-    public static final CassandraModule MESSAGE_ID_TO_IMAP_UID_TABLE = CassandraModule.forTable(
+    CassandraModule MESSAGE_ID_TO_IMAP_UID_TABLE = CassandraModule.forTable(
         MessageIdToImapUid.TABLE_NAME,
         SchemaBuilder.createTable(MessageIdToImapUid.TABLE_NAME)
             .ifNotExists()
@@ -86,7 +86,7 @@ public class CassandraMessageModule extends CassandraModuleComposite {
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CACHED_IMAP_UID_ROWS)));
 
-    public static final CassandraModule CASSANDRA_MESSAGE_V2_TABLE = CassandraModule.forTable(
+    CassandraModule CASSANDRA_MESSAGE_V2_TABLE = CassandraModule.forTable(
         CassandraMessageV2Table.TABLE_NAME,
         SchemaBuilder.createTable(CassandraMessageV2Table.TABLE_NAME)
             .ifNotExists()
@@ -104,7 +104,7 @@ public class CassandraMessageModule extends CassandraModuleComposite {
             .comment("Holds message metadata, independently of any mailboxes. Content of messages is stored " +
                 "in `blobs` and `blobparts` tables."));
 
-    public static final CassandraModule PROPERTY_TYPE = CassandraModule.forType(
+    CassandraModule PROPERTY_TYPE = CassandraModule.forType(
         CassandraMessageV2Table.PROPERTIES,
         SchemaBuilder.createType(CassandraMessageV2Table.PROPERTIES)
             .ifNotExists()
@@ -112,7 +112,7 @@ public class CassandraMessageModule extends CassandraModuleComposite {
             .addColumn(CassandraMessageV2Table.Properties.NAME, text())
             .addColumn(CassandraMessageV2Table.Properties.VALUE, text()));
 
-    public static final CassandraModule ATTACHMENT_TYPE = CassandraModule.forType(
+    CassandraModule ATTACHMENT_TYPE = CassandraModule.forType(
         CassandraMessageV2Table.ATTACHMENTS,
         SchemaBuilder.createType(CassandraMessageV2Table.ATTACHMENTS)
             .ifNotExists()
@@ -121,11 +121,9 @@ public class CassandraMessageModule extends CassandraModuleComposite {
             .addColumn(CassandraMessageV2Table.Attachments.CID, text())
             .addColumn(CassandraMessageV2Table.Attachments.IS_INLINE, cboolean()));
 
-    public CassandraMessageModule() {
-        super(CASSANDRA_MESSAGE_V2_TABLE,
-            MESSAGE_ID_TO_IMAP_UID_TABLE,
-            CASSANDRA_MESSAGE_ID_TABLE,
-            PROPERTY_TYPE,
-            ATTACHMENT_TYPE);
-    }
+    CassandraModule MODULE = new CassandraModuleComposite(CASSANDRA_MESSAGE_V2_TABLE,
+        MESSAGE_ID_TO_IMAP_UID_TABLE,
+        CASSANDRA_MESSAGE_ID_TABLE,
+        PROPERTY_TYPE,
+        ATTACHMENT_TYPE);
 }
