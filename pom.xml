@@ -3381,7 +3381,7 @@
                         <version>2.6</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <referenceBranch>apache/master</referenceBranch>
+                            <referenceBranch>${env.JAMES_PARTIAL_BUILD_BASE_BRANCH}</referenceBranch>
                             <buildAll>true</buildAll>
                             <skipTestsForNotImpactedModules>true</skipTestsForNotImpactedModules>
                             <impacted>true</impacted>
