@@ -44,6 +44,7 @@ public class GuiceJamesServer {
     protected final Module module;
     private Stager<PreDestroy> preDestroy;
     private GuiceProbeProvider guiceProbeProvider;
+    private CleanupTasksPerformer cleanupTasksPerformer;
     private boolean isStarted = false;
 
     public GuiceJamesServer(Configuration configuration) {
@@ -73,11 +74,13 @@ public class GuiceJamesServer {
         preDestroy = injector.getInstance(Key.get(new TypeLiteral<Stager<PreDestroy>>() {}));
         injector.getInstance(ConfigurationsPerformer.class).initModules();
         guiceProbeProvider = injector.getInstance(GuiceProbeProvider.class);
+        cleanupTasksPerformer = injector.getInstance(CleanupTasksPerformer.class);
         isStarted = true;
     }
 
     public void stop() {
         if (preDestroy != null) {
+            cleanupTasksPerformer.clean();
             preDestroy.stage();
             isStarted = false;
         }
