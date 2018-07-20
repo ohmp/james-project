@@ -42,9 +42,8 @@ public interface CassandraMessageModule {
     int CACHED_MESSAGE_ID_ROWS = 1000;
     int CACHED_IMAP_UID_ROWS = 100;
 
-    CassandraModule CASSANDRA_MESSAGE_ID_TABLE = CassandraModule.forTable(
-        CassandraMessageIdTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMessageIdTable.TABLE_NAME)
+    CassandraModule CASSANDRA_MESSAGE_ID_TABLE = CassandraModule.table(CassandraMessageIdTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMessageIdTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageIds.MAILBOX_ID, timeuuid())
             .addClusteringColumn(CassandraMessageIds.IMAP_UID, bigint())
@@ -62,11 +61,11 @@ public interface CassandraMessageModule {
             .comment("Holds mailbox and flags for each message, lookup by mailbox ID + UID")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CACHED_MESSAGE_ID_ROWS)));
+                SchemaBuilder.rows(CACHED_MESSAGE_ID_ROWS)))
+        .build();
 
-    CassandraModule MESSAGE_ID_TO_IMAP_UID_TABLE = CassandraModule.forTable(
-        MessageIdToImapUid.TABLE_NAME,
-        SchemaBuilder.createTable(MessageIdToImapUid.TABLE_NAME)
+    CassandraModule MESSAGE_ID_TO_IMAP_UID_TABLE = CassandraModule.table(MessageIdToImapUid.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(MessageIdToImapUid.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageIds.MESSAGE_ID, timeuuid())
             .addClusteringColumn(CassandraMessageIds.MAILBOX_ID, timeuuid())
@@ -84,11 +83,11 @@ public interface CassandraMessageModule {
             .comment("Holds mailbox and flags for each message, lookup by message ID")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CACHED_IMAP_UID_ROWS)));
+                SchemaBuilder.rows(CACHED_IMAP_UID_ROWS)))
+        .build();
 
-    CassandraModule CASSANDRA_MESSAGE_V2_TABLE = CassandraModule.forTable(
-        CassandraMessageV2Table.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMessageV2Table.TABLE_NAME)
+    CassandraModule CASSANDRA_MESSAGE_V2_TABLE = CassandraModule.table(CassandraMessageV2Table.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMessageV2Table.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageIds.MESSAGE_ID, timeuuid())
             .addColumn(CassandraMessageV2Table.INTERNAL_DATE, timestamp())
@@ -102,24 +101,25 @@ public interface CassandraMessageModule {
             .addUDTListColumn(CassandraMessageV2Table.PROPERTIES, SchemaBuilder.frozen(CassandraMessageV2Table.PROPERTIES))
             .withOptions()
             .comment("Holds message metadata, independently of any mailboxes. Content of messages is stored " +
-                "in `blobs` and `blobparts` tables."));
+                "in `blobs` and `blobparts` tables."))
+        .build();
 
-    CassandraModule PROPERTY_TYPE = CassandraModule.forType(
-        CassandraMessageV2Table.PROPERTIES,
-        SchemaBuilder.createType(CassandraMessageV2Table.PROPERTIES)
+    CassandraModule PROPERTY_TYPE = CassandraModule.type(CassandraMessageV2Table.PROPERTIES)
+        .statement(SchemaBuilder.createType(CassandraMessageV2Table.PROPERTIES)
             .ifNotExists()
             .addColumn(CassandraMessageV2Table.Properties.NAMESPACE, text())
             .addColumn(CassandraMessageV2Table.Properties.NAME, text())
-            .addColumn(CassandraMessageV2Table.Properties.VALUE, text()));
+            .addColumn(CassandraMessageV2Table.Properties.VALUE, text()))
+        .build();
 
-    CassandraModule ATTACHMENT_TYPE = CassandraModule.forType(
-        CassandraMessageV2Table.ATTACHMENTS,
-        SchemaBuilder.createType(CassandraMessageV2Table.ATTACHMENTS)
+    CassandraModule ATTACHMENT_TYPE = CassandraModule.type(CassandraMessageV2Table.ATTACHMENTS)
+        .statement(SchemaBuilder.createType(CassandraMessageV2Table.ATTACHMENTS)
             .ifNotExists()
             .addColumn(CassandraMessageV2Table.Attachments.ID, text())
             .addColumn(CassandraMessageV2Table.Attachments.NAME, text())
             .addColumn(CassandraMessageV2Table.Attachments.CID, text())
-            .addColumn(CassandraMessageV2Table.Attachments.IS_INLINE, cboolean()));
+            .addColumn(CassandraMessageV2Table.Attachments.IS_INLINE, cboolean()))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(CASSANDRA_MESSAGE_V2_TABLE,
         MESSAGE_ID_TO_IMAP_UID_TABLE,

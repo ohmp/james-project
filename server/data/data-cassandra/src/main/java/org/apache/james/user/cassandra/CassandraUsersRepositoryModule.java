@@ -28,15 +28,15 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraUsersRepositoryModule {
 
-    public static final CassandraModule MODULE = CassandraModule.forTable(
-        CassandraUserTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraUserTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(CassandraUserTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraUserTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraUserTable.NAME, text())
             .addColumn(CassandraUserTable.REALNAME, text())
             .addColumn(CassandraUserTable.PASSWORD, text())
             .addColumn(CassandraUserTable.ALGORITHM, text())
             .withOptions()
-            .comment("Holds users of this James server."));
+            .comment("Holds users of this James server."))
+        .build();
 
 }

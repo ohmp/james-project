@@ -29,9 +29,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraModSeqModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(CassandraMessageModseqTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMessageModseqTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraMessageModseqTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMessageModseqTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageModseqTable.MAILBOX_ID, timeuuid())
             .addColumn(CassandraMessageModseqTable.NEXT_MODSEQ, bigint())
@@ -39,6 +38,6 @@ public interface CassandraModSeqModule {
             .comment("Holds and is used to generate MODSEQ. A monotic counter is implemented on top of this table.")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

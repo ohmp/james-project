@@ -27,26 +27,26 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraBlobModule {
 
-    CassandraModule BLOB_PART_TABLE = CassandraModule.forTable(
-        BlobTable.BlobParts.TABLE_NAME,
-        SchemaBuilder.createTable(BlobTable.BlobParts.TABLE_NAME)
+    CassandraModule BLOB_PART_TABLE = CassandraModule.table(BlobTable.BlobParts.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(BlobTable.BlobParts.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(BlobTable.ID, DataType.text())
             .addClusteringColumn(BlobTable.BlobParts.CHUNK_NUMBER, DataType.cint())
             .addColumn(BlobTable.BlobParts.DATA, DataType.blob())
             .withOptions()
             .comment("Holds blob parts composing blobs ." +
-                "Messages` headers and bodies are stored, chunked in blobparts."));
+                "Messages` headers and bodies are stored, chunked in blobparts."))
+        .build();
 
-    CassandraModule BLOB_TABLE = CassandraModule.forTable(
-        BlobTable.TABLE_NAME,
-        SchemaBuilder.createTable(BlobTable.TABLE_NAME)
+    CassandraModule BLOB_TABLE = CassandraModule.table(BlobTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(BlobTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(BlobTable.ID, DataType.text())
             .addClusteringColumn(BlobTable.NUMBER_OF_CHUNK, DataType.cint())
             .withOptions()
             .comment("Holds information for retrieving all blob parts composing this blob. " +
-                "Messages` headers and bodies are stored as blobparts."));
+                "Messages` headers and bodies are stored as blobparts."))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(
         BLOB_TABLE,

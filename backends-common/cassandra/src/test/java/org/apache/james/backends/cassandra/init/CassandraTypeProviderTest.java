@@ -44,11 +44,11 @@ public class CassandraTypeProviderTest {
 
     @Before
     public void setUp() {
-        module = CassandraModule.forType(
-            TYPE_NAME,
-            SchemaBuilder.createType(TYPE_NAME)
+        module = CassandraModule.type(TYPE_NAME)
+            .statement(SchemaBuilder.createType(TYPE_NAME)
                 .ifNotExists()
-                .addColumn(PROPERTY, text()));
+                .addColumn(PROPERTY, text()))
+            .build();
         cassandra = CassandraCluster.create(module, cassandraServer.getIp(), cassandraServer.getBindingPort());
         cassandra.getTypesProvider();
     }

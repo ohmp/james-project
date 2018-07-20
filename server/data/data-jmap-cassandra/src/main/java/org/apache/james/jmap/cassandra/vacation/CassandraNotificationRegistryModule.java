@@ -28,10 +28,8 @@ import org.apache.james.jmap.cassandra.vacation.tables.CassandraNotificationTabl
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraNotificationRegistryModule {
-
-    public static final CassandraModule MODULE = CassandraModule.forTable(
-        CassandraNotificationTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraNotificationTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(CassandraNotificationTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraNotificationTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraNotificationTable.ACCOUNT_ID, text())
             .addClusteringColumn(CassandraNotificationTable.RECIPIENT_ID, text())
@@ -39,5 +37,6 @@ public class CassandraNotificationRegistryModule {
             .comment("Stores registry of vacation notification being sent.")
             .compactionOptions(SchemaBuilder.dateTieredStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

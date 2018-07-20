@@ -34,24 +34,22 @@ import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraMailRepositoryModule {
-
-    CassandraModule COUNT_TABLE = CassandraModule.forTable(
-        MailRepositoryTable.COUNT_TABLE,
-        SchemaBuilder.createTable(MailRepositoryTable.COUNT_TABLE)
+    CassandraModule COUNT_TABLE = CassandraModule.table(MailRepositoryTable.COUNT_TABLE)
+        .statement(SchemaBuilder.createTable(MailRepositoryTable.COUNT_TABLE)
             .ifNotExists()
             .addPartitionKey(MailRepositoryTable.REPOSITORY_NAME, text())
-            .addColumn(MailRepositoryTable.COUNT, counter()));
+            .addColumn(MailRepositoryTable.COUNT, counter()))
+        .build();
 
-    CassandraModule KEYS_TABLE = CassandraModule.forTable(
-        MailRepositoryTable.KEYS_TABLE_NAME,
-        SchemaBuilder.createTable(MailRepositoryTable.KEYS_TABLE_NAME)
+    CassandraModule KEYS_TABLE = CassandraModule.table(MailRepositoryTable.KEYS_TABLE_NAME)
+        .statement(SchemaBuilder.createTable(MailRepositoryTable.KEYS_TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(MailRepositoryTable.REPOSITORY_NAME, text())
-            .addClusteringColumn(MailRepositoryTable.MAIL_KEY, text()));
+            .addClusteringColumn(MailRepositoryTable.MAIL_KEY, text()))
+        .build();
 
-    CassandraModule MAIL_REPOSITORY_TABLE = CassandraModule.forTable(
-        MailRepositoryTable.CONTENT_TABLE_NAME,
-        SchemaBuilder.createTable(MailRepositoryTable.CONTENT_TABLE_NAME)
+    CassandraModule MAIL_REPOSITORY_TABLE = CassandraModule.table(MailRepositoryTable.CONTENT_TABLE_NAME)
+        .statement(SchemaBuilder.createTable(MailRepositoryTable.CONTENT_TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(MailRepositoryTable.REPOSITORY_NAME, text())
             .addPartitionKey(MailRepositoryTable.MAIL_KEY, text())
@@ -69,14 +67,15 @@ public interface CassandraMailRepositoryModule {
             .addUDTMapColumn(MailRepositoryTable.PER_RECIPIENT_SPECIFIC_HEADERS, text(), frozen(MailRepositoryTable.HEADER_TYPE))
             .withOptions()
             .comment("Stores the mails for a given repository. " +
-                "Content is stored with other blobs"));
+                "Content is stored with other blobs"))
+        .build();
 
-    CassandraModule HEADER_TYPE = CassandraModule.forType(
-        MailRepositoryTable.HEADER_TYPE,
-        SchemaBuilder.createType(MailRepositoryTable.HEADER_TYPE)
+    CassandraModule HEADER_TYPE = CassandraModule.type(MailRepositoryTable.HEADER_TYPE)
+        .statement(SchemaBuilder.createType(MailRepositoryTable.HEADER_TYPE)
             .ifNotExists()
             .addColumn(MailRepositoryTable.HEADER_NAME, text())
-            .addColumn(MailRepositoryTable.HEADER_VALUE, text()));
+            .addColumn(MailRepositoryTable.HEADER_VALUE, text()))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(
         COUNT_TABLE,

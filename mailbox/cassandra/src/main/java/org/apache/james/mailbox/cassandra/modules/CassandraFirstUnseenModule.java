@@ -27,10 +27,8 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraFirstUnseenModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(
-        CassandraFirstUnseenTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraFirstUnseenTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraFirstUnseenTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraFirstUnseenTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraFirstUnseenTable.MAILBOX_ID, DataType.timeuuid())
             .addClusteringColumn(CassandraFirstUnseenTable.UID, DataType.bigint())
@@ -39,6 +37,6 @@ public interface CassandraFirstUnseenModule {
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
-            .clusteringOrder(CassandraFirstUnseenTable.UID, SchemaBuilder.Direction.ASC));
-
+            .clusteringOrder(CassandraFirstUnseenTable.UID, SchemaBuilder.Direction.ASC))
+        .build();
 }

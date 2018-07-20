@@ -30,9 +30,8 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraDeletedMessageModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(TABLE_NAME,
-        SchemaBuilder.createTable(TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(TABLE_NAME)
+        .statement(SchemaBuilder.createTable(TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(MAILBOX_ID, DataType.timeuuid())
             .addClusteringColumn(UID, DataType.bigint())
@@ -40,6 +39,6 @@ public interface CassandraDeletedMessageModule {
             .comment("Denormalisation table. Allows to retrieve UID marked as DELETED in specific mailboxes.")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

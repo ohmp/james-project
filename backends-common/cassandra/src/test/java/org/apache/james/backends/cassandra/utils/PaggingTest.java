@@ -54,13 +54,13 @@ public class PaggingTest {
 
     @Before
     public void setUp() {
-        CassandraModule modules = CassandraModule.forTable(
-            TABLE_NAME,
-            SchemaBuilder.createTable(TABLE_NAME)
+        CassandraModule modules = CassandraModule.table(TABLE_NAME)
+            .statement(SchemaBuilder.createTable(TABLE_NAME)
                 .ifNotExists()
                 .addPartitionKey(ID, DataType.timeuuid())
-                .addClusteringColumn(CLUSTERING, DataType.bigint()));
-        cassandra = CassandraCluster.create(modules, cassandraServer.getIp(), cassandraServer.getBindingPort());
+                .addClusteringColumn(CLUSTERING, DataType.bigint()))
+            .build();
+        cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
         executor = new CassandraAsyncExecutor(cassandra.getConf());
     }
 

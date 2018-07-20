@@ -29,9 +29,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraAnnotationTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraAnnotationModule {
-    CassandraModule MODULE = CassandraModule.forTable(
-        CassandraAnnotationTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraAnnotationTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraAnnotationTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraAnnotationTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraAnnotationTable.MAILBOX_ID, timeuuid())
             .addClusteringColumn(CassandraAnnotationTable.KEY, text())
@@ -40,6 +39,6 @@ public interface CassandraAnnotationModule {
             .comment("Holds Cassandra mailbox annotations")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

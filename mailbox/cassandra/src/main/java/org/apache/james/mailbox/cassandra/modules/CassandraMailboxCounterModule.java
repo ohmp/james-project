@@ -29,10 +29,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxCountersTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraMailboxCounterModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(
-        CassandraMailboxCountersTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMailboxCountersTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraMailboxCountersTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMailboxCountersTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMailboxCountersTable.MAILBOX_ID, timeuuid())
             .addColumn(CassandraMailboxCountersTable.COUNT, counter())
@@ -41,6 +39,6 @@ public interface CassandraMailboxCounterModule {
             .comment("Holds messages count and unseen message count for each mailbox.")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

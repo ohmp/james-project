@@ -28,15 +28,13 @@ import org.apache.james.domainlist.cassandra.tables.CassandraDomainsTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraDomainListModule {
-
-    public static final CassandraModule MODULE = CassandraModule.forTable(
-        CassandraDomainsTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraDomainsTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(CassandraDomainsTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraDomainsTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraDomainsTable.DOMAIN, text())
             .withOptions()
             .comment("Holds domains this James server is operating on.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

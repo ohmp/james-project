@@ -29,10 +29,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxRecentsTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraMailboxRecentsModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(
-        CassandraMailboxRecentsTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMailboxRecentsTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraMailboxRecentsTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMailboxRecentsTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMailboxRecentsTable.MAILBOX_ID, timeuuid())
             .addClusteringColumn(CassandraMailboxRecentsTable.RECENT_MESSAGE_UID, bigint())
@@ -41,6 +39,6 @@ public interface CassandraMailboxRecentsModule {
                 " is a SELECT optimisation.")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

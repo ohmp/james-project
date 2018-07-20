@@ -32,9 +32,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraUserMailboxRightsTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraAclModule{
-    CassandraModule CASSANDRA_ACL_TABLE = CassandraModule.forTable(
-        CassandraACLTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraACLTable.TABLE_NAME)
+    CassandraModule CASSANDRA_ACL_TABLE = CassandraModule.table(CassandraACLTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraACLTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraACLTable.ID, timeuuid())
             .addColumn(CassandraACLTable.ACL, text())
@@ -42,11 +41,11 @@ public interface CassandraAclModule{
             .withOptions()
             .comment("Holds mailbox ACLs")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
-    CassandraModule CASSANDRA_USER_MAILBOX_RIGHTS_TABLE = CassandraModule.forTable(
-        CassandraUserMailboxRightsTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraUserMailboxRightsTable.TABLE_NAME)
+    CassandraModule CASSANDRA_USER_MAILBOX_RIGHTS_TABLE = CassandraModule.table(CassandraUserMailboxRightsTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraUserMailboxRightsTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraUserMailboxRightsTable.USER_NAME, text())
             .addClusteringColumn(CassandraUserMailboxRightsTable.MAILBOX_ID, timeuuid())
@@ -55,7 +54,8 @@ public interface CassandraAclModule{
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION))
-            .comment("Denormalisation table. Allow to retrieve non personal mailboxIds a user has right on"));
+            .comment("Denormalisation table. Allow to retrieve non personal mailboxIds a user has right on"))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(
         CASSANDRA_ACL_TABLE,

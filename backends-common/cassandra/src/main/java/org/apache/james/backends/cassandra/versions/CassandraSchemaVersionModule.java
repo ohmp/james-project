@@ -28,13 +28,12 @@ import org.apache.james.backends.cassandra.versions.table.CassandraSchemaVersion
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraSchemaVersionModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(CassandraSchemaVersionTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSchemaVersionTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraSchemaVersionTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSchemaVersionTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSchemaVersionTable.KEY, timeuuid())
             .addClusteringColumn(CassandraSchemaVersionTable.VALUE, cint())
             .withOptions()
-            .comment("Holds the history of the versions of the schema used."));
-
+            .comment("Holds the history of the versions of the schema used."))
+        .build();
 }

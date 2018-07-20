@@ -29,16 +29,14 @@ import org.apache.james.jmap.cassandra.access.table.CassandraAccessTokenTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraAccessModule {
-
-    public static final CassandraModule MODULE = CassandraModule.forTable(
-        CassandraAccessTokenTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraAccessTokenTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(CassandraAccessTokenTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraAccessTokenTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraAccessTokenTable.TOKEN, uuid())
             .addColumn(CassandraAccessTokenTable.USERNAME, text())
             .withOptions()
             .comment("Holds JMAP access token required to process to authentication.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

@@ -27,14 +27,6 @@ import com.google.common.collect.ImmutableList;
 
 public interface CassandraModule {
 
-    static CassandraModule forType(String name, CreateType statement) {
-        return type(name).statement(statement).build();
-    }
-
-    static CassandraModule forTable(String name, Statement statement) {
-        return table(name).statement(statement).build();
-    }
-
     class Impl implements CassandraModule {
         private final List<CassandraTable> tables;
         private final List<CassandraType> types;

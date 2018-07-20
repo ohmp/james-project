@@ -31,8 +31,8 @@ import org.apache.james.mailbox.cassandra.table.Flag;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraApplicableFlagsModule {
-    CassandraModule MODULE = CassandraModule.forTable(CassandraApplicableFlagTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraApplicableFlagTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraApplicableFlagTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraApplicableFlagTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraApplicableFlagTable.MAILBOX_ID, timeuuid())
             .addColumn(Flag.USER_FLAGS, set(text()))
@@ -41,6 +41,6 @@ public interface CassandraApplicableFlagsModule {
                 "stores user flags.")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

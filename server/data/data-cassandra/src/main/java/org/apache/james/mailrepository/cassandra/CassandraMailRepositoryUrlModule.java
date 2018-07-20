@@ -27,15 +27,13 @@ import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraMailRepositoryUrlModule {
-
-    public static final CassandraModule MODULE = CassandraModule.forTable(
-        UrlsTable.TABLE_NAME,
-        SchemaBuilder.createTable(UrlsTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(UrlsTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(UrlsTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(UrlsTable.URL, text())
             .withOptions()
             .comment("Holds the list of available mail repository")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

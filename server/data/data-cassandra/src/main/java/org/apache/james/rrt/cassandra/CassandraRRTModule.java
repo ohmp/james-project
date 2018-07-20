@@ -28,10 +28,8 @@ import org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTableTable
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraRRTModule {
-
-    public static final CassandraModule MODULE = CassandraModule.forTable(
-        CassandraRecipientRewriteTableTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraRecipientRewriteTableTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(CassandraRecipientRewriteTableTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraRecipientRewriteTableTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraRecipientRewriteTableTable.USER, text())
             .addClusteringColumn(CassandraRecipientRewriteTableTable.DOMAIN, text())
@@ -39,6 +37,6 @@ public class CassandraRRTModule {
             .withOptions()
             .comment("Holds address re-writing rules.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

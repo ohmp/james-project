@@ -27,16 +27,14 @@ import org.apache.james.backends.cassandra.components.CassandraModule;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraZonedDateTimeModule {
-
     String ZONED_DATE_TIME = "zonedDateTime";
     String DATE = "date";
     String TIME_ZONE = "timeZone";
 
-    CassandraModule MODULE = CassandraModule.forType(
-        ZONED_DATE_TIME,
-        SchemaBuilder.createType(ZONED_DATE_TIME)
+    CassandraModule MODULE = CassandraModule.type(ZONED_DATE_TIME)
+        .statement(SchemaBuilder.createType(ZONED_DATE_TIME)
             .ifNotExists()
             .addColumn(DATE, timestamp())
-            .addColumn(TIME_ZONE, text()));
-
+            .addColumn(TIME_ZONE, text()))
+        .build();
 }

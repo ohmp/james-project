@@ -37,9 +37,8 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraSieveRepositoryModule {
 
-    CassandraModule SIEVE_TABLE = CassandraModule.forTable(
-        CassandraSieveTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSieveTable.TABLE_NAME)
+    CassandraModule SIEVE_TABLE = CassandraModule.table(CassandraSieveTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSieveTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSieveTable.USER_NAME, text())
             .addClusteringColumn(CassandraSieveTable.SCRIPT_NAME, text())
@@ -47,44 +46,45 @@ public interface CassandraSieveRepositoryModule {
             .addColumn(CassandraSieveTable.IS_ACTIVE, cboolean())
             .addColumn(CassandraSieveTable.SIZE, bigint())
             .withOptions()
-            .comment("Holds SIEVE scripts."));
+            .comment("Holds SIEVE scripts."))
+        .build();
 
-    CassandraModule SIEVE_SPACE_TABLE = CassandraModule.forTable(
-        CassandraSieveSpaceTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSieveSpaceTable.TABLE_NAME)
+    CassandraModule SIEVE_SPACE_TABLE = CassandraModule.table(CassandraSieveSpaceTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSieveSpaceTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSieveSpaceTable.USER_NAME, text())
             .addColumn(CassandraSieveSpaceTable.SPACE_USED, counter())
             .withOptions()
-            .comment("Holds per user current space occupied by SIEVE scripts."));
+            .comment("Holds per user current space occupied by SIEVE scripts."))
+        .build();
 
-    CassandraModule SIEVE_QUOTA_TABLE = CassandraModule.forTable(
-        CassandraSieveQuotaTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSieveQuotaTable.TABLE_NAME)
+    CassandraModule SIEVE_QUOTA_TABLE = CassandraModule.table(CassandraSieveQuotaTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSieveQuotaTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSieveQuotaTable.USER_NAME, text())
             .addColumn(CassandraSieveQuotaTable.QUOTA, bigint())
             .withOptions()
-            .comment("Holds per user size limitations for SIEVE script storage."));
+            .comment("Holds per user size limitations for SIEVE script storage."))
+        .build();
 
-    CassandraModule SIEVE_GLOBAL_QUOTA_TABLE = CassandraModule.forTable(
-        CassandraSieveClusterQuotaTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSieveClusterQuotaTable.TABLE_NAME)
+    CassandraModule SIEVE_GLOBAL_QUOTA_TABLE = CassandraModule.table(CassandraSieveClusterQuotaTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSieveClusterQuotaTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSieveClusterQuotaTable.NAME, text())
             .addColumn(CassandraSieveClusterQuotaTable.VALUE, bigint())
             .withOptions()
-            .comment("Holds default size limitations for SIEVE script storage."));
+            .comment("Holds default size limitations for SIEVE script storage."))
+        .build();
 
-    CassandraModule SIEVE_ACTIVE_TABLE = CassandraModule.forTable(
-        CassandraSieveActiveTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSieveActiveTable.TABLE_NAME)
+    CassandraModule SIEVE_ACTIVE_TABLE = CassandraModule.table(CassandraSieveActiveTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSieveActiveTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSieveActiveTable.USER_NAME, text())
             .addColumn(CassandraSieveActiveTable.SCRIPT_NAME, text())
             .addColumn(CassandraSieveActiveTable.DATE, timestamp())
             .withOptions()
-            .comment("Denormalisation table. Allows per user direct active SIEVE script retrieval."));
+            .comment("Denormalisation table. Allows per user direct active SIEVE script retrieval."))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(
         SIEVE_TABLE,

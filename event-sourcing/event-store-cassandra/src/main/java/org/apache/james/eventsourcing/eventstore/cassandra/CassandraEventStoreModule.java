@@ -26,9 +26,8 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraEventStoreModule {
-    CassandraModule MODULE = CassandraModule.forTable(
-        CassandraEventStoreTable.EVENTS_TABLE,
-        SchemaBuilder.createTable(CassandraEventStoreTable.EVENTS_TABLE)
+    CassandraModule MODULE = CassandraModule.table(CassandraEventStoreTable.EVENTS_TABLE)
+        .statement(SchemaBuilder.createTable(CassandraEventStoreTable.EVENTS_TABLE)
             .ifNotExists()
             .addPartitionKey(CassandraEventStoreTable.AGGREGATE_ID, DataType.varchar())
             .addClusteringColumn(CassandraEventStoreTable.EVENT_ID, DataType.cint())
@@ -36,6 +35,6 @@ public interface CassandraEventStoreModule {
             .withOptions()
             .comment("Store events of a EventSourcing aggregate")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

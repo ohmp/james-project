@@ -35,9 +35,8 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraQuotaModule {
 
-    CassandraModule CURRENT_QUOTA_TABLE = CassandraModule.forTable(
-        CassandraCurrentQuota.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraCurrentQuota.TABLE_NAME)
+    CassandraModule CURRENT_QUOTA_TABLE = CassandraModule.table(CassandraCurrentQuota.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraCurrentQuota.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraCurrentQuota.QUOTA_ROOT, text())
             .addColumn(CassandraCurrentQuota.MESSAGE_COUNT, counter())
@@ -45,11 +44,11 @@ public interface CassandraQuotaModule {
             .withOptions()
             .comment("Holds per quota-root current values. Quota-roots defines groups of mailboxes which shares quotas limitations.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
-    CassandraModule MAX_QUOTA_TABLE = CassandraModule.forTable(
-        CassandraMaxQuota.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMaxQuota.TABLE_NAME)
+    CassandraModule MAX_QUOTA_TABLE = CassandraModule.table(CassandraMaxQuota.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMaxQuota.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMaxQuota.QUOTA_ROOT, text())
             .addColumn(CassandraMaxQuota.MESSAGE_COUNT, bigint())
@@ -57,11 +56,11 @@ public interface CassandraQuotaModule {
             .withOptions()
             .comment("Holds per quota-root limitations. Limitations can concern the number of messages in a quota-root or the total size of a quota-root.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
-    CassandraModule DOMAIN_QUOTA_TABLE = CassandraModule.forTable(
-        CassandraDomainMaxQuota.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraDomainMaxQuota.TABLE_NAME)
+    CassandraModule DOMAIN_QUOTA_TABLE = CassandraModule.table(CassandraDomainMaxQuota.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraDomainMaxQuota.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraDomainMaxQuota.DOMAIN, text())
             .addColumn(CassandraDomainMaxQuota.MESSAGE_COUNT, bigint())
@@ -69,18 +68,19 @@ public interface CassandraQuotaModule {
             .withOptions()
             .comment("Holds per domain limitations. Limitations can concern the number of messages in a quota-root or the total size of a quota-root.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
-    CassandraModule USER_QUOTA_TABLE = CassandraModule.forTable(
-        CassandraGlobalMaxQuota.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraGlobalMaxQuota.TABLE_NAME)
+    CassandraModule USER_QUOTA_TABLE = CassandraModule.table(CassandraGlobalMaxQuota.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraGlobalMaxQuota.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraGlobalMaxQuota.TYPE, text())
             .addColumn(CassandraGlobalMaxQuota.VALUE, bigint())
             .withOptions()
             .comment("Holds defaults limitations definition.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(
         CURRENT_QUOTA_TABLE,

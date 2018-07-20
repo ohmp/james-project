@@ -29,9 +29,8 @@ import org.apache.james.mailbox.cassandra.table.CassandraMessageUidTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraUidModule {
-
-    CassandraModule MODULE = CassandraModule.forTable(CassandraMessageUidTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMessageUidTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraMessageUidTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMessageUidTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMessageUidTable.MAILBOX_ID, timeuuid())
             .addColumn(CassandraMessageUidTable.NEXT_UID, bigint())
@@ -39,6 +38,6 @@ public interface CassandraUidModule {
             .comment("Holds and is used to generate UID. A monotic counter is implemented on top of this table.")
             .compactionOptions(SchemaBuilder.leveledStrategy())
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }

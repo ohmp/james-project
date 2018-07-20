@@ -33,17 +33,15 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public interface CassandraMailboxModule {
-
-    CassandraModule MAILBOX_BASE_TYPE = CassandraModule.forType(
-        CassandraMailboxTable.MAILBOX_BASE,
-        SchemaBuilder.createType(CassandraMailboxTable.MAILBOX_BASE)
+    CassandraModule MAILBOX_BASE_TYPE = CassandraModule.type(CassandraMailboxTable.MAILBOX_BASE)
+        .statement(SchemaBuilder.createType(CassandraMailboxTable.MAILBOX_BASE)
             .ifNotExists()
             .addColumn(CassandraMailboxTable.MailboxBase.NAMESPACE, text())
-            .addColumn(CassandraMailboxTable.MailboxBase.USER, text()));
+            .addColumn(CassandraMailboxTable.MailboxBase.USER, text()))
+        .build();
 
-    CassandraModule MAILBOX_TABLE = CassandraModule.forTable(
-        CassandraMailboxTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMailboxTable.TABLE_NAME)
+    CassandraModule MAILBOX_TABLE = CassandraModule.table(CassandraMailboxTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMailboxTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMailboxTable.ID, timeuuid())
             .addUDTColumn(CassandraMailboxTable.MAILBOX_BASE, SchemaBuilder.frozen(CassandraMailboxTable.MAILBOX_BASE))
@@ -52,11 +50,11 @@ public interface CassandraMailboxModule {
             .withOptions()
             .comment("Holds the mailboxes information.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
-    CassandraModule MAILBOX_PATH_TABLE = CassandraModule.forTable(
-        CassandraMailboxPathTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMailboxPathTable.TABLE_NAME)
+    CassandraModule MAILBOX_PATH_TABLE = CassandraModule.table(CassandraMailboxPathTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMailboxPathTable.TABLE_NAME)
             .ifNotExists()
             .addUDTPartitionKey(CassandraMailboxPathTable.NAMESPACE_AND_USER, SchemaBuilder.frozen(CassandraMailboxTable.MAILBOX_BASE))
             .addClusteringColumn(CassandraMailboxPathTable.MAILBOX_NAME, text())
@@ -65,11 +63,11 @@ public interface CassandraMailboxModule {
             .comment("Denormalisation table. Allow to retrieve mailboxes belonging to a certain user. This is a " +
                 "LIST optimisation.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
-    CassandraModule MAILBOX_PATH_V2_TABLE = CassandraModule.forTable(
-        CassandraMailboxPathV2Table.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraMailboxPathV2Table.TABLE_NAME)
+    CassandraModule MAILBOX_PATH_V2_TABLE = CassandraModule.table(CassandraMailboxPathV2Table.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraMailboxPathV2Table.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraMailboxPathV2Table.NAMESPACE, text())
             .addPartitionKey(CassandraMailboxPathV2Table.USER, text())
@@ -79,7 +77,8 @@ public interface CassandraMailboxModule {
             .comment("Denormalisation table. Allow to retrieve mailboxes belonging to a certain user. This is a " +
                 "LIST optimisation.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 
     CassandraModule MODULE = new CassandraModuleComposite(
         MAILBOX_TABLE,

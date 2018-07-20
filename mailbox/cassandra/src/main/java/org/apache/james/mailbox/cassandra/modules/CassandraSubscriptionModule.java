@@ -30,14 +30,14 @@ public interface CassandraSubscriptionModule {
 
     int PER_USER_CACHED_SUBSCRIPTIONS = 100;
 
-    CassandraModule MODULE = CassandraModule.forTable(CassandraSubscriptionTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraSubscriptionTable.TABLE_NAME)
+    CassandraModule MODULE = CassandraModule.table(CassandraSubscriptionTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraSubscriptionTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraSubscriptionTable.USER, text())
             .addClusteringColumn(CassandraSubscriptionTable.MAILBOX, text())
             .withOptions()
             .comment("Holds per user list of IMAP subscriptions")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(PER_USER_CACHED_SUBSCRIPTIONS)));
-
+                SchemaBuilder.rows(PER_USER_CACHED_SUBSCRIPTIONS)))
+        .build();
 }

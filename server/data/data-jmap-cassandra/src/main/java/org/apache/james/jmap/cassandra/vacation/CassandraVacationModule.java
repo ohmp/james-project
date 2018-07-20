@@ -30,9 +30,8 @@ import org.apache.james.jmap.cassandra.vacation.tables.CassandraVacationTable;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraVacationModule {
-
-    public static final CassandraModule MODULE = CassandraModule.forTable(CassandraVacationTable.TABLE_NAME,
-        SchemaBuilder.createTable(CassandraVacationTable.TABLE_NAME)
+    public static final CassandraModule MODULE = CassandraModule.table(CassandraVacationTable.TABLE_NAME)
+        .statement(SchemaBuilder.createTable(CassandraVacationTable.TABLE_NAME)
             .ifNotExists()
             .addPartitionKey(CassandraVacationTable.ACCOUNT_ID, text())
             .addColumn(CassandraVacationTable.IS_ENABLED, cboolean())
@@ -44,6 +43,6 @@ public class CassandraVacationModule {
             .withOptions()
             .comment("Holds vacation definition. Allow one to automatically respond to emails with a custom message.")
             .caching(SchemaBuilder.KeyCaching.ALL,
-                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)));
-
+                SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .build();
 }
