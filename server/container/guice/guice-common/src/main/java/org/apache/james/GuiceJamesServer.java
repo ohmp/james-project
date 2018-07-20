@@ -80,8 +80,8 @@ public class GuiceJamesServer {
     }
 
     public void stop() {
+        Optional.ofNullable(cleanupTasksPerformer).ifPresent(CleanupTasksPerformer::clean);
         if (preDestroy != null) {
-            Optional.ofNullable(cleanupTasksPerformer).ifPresent(CleanupTasksPerformer::clean);
             preDestroy.stage();
             isStarted = false;
         }
