@@ -31,7 +31,6 @@ import org.apache.james.mailbox.cassandra.ids.CassandraMessageId.Factory;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
@@ -103,11 +102,6 @@ public class CassandraMapperProvider implements MapperProvider {
     @Override
     public boolean supportPartialAttachmentFetch() {
         return true;
-    }
-
-    @Override
-    public AnnotationMapper createAnnotationMapper() throws MailboxException {
-        return mapperFactory.getAnnotationMapper(mailboxSession);
     }
 
     @Override

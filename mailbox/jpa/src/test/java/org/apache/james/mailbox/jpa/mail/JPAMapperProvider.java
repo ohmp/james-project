@@ -34,7 +34,6 @@ import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
-import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
@@ -74,11 +73,6 @@ public class JPAMapperProvider implements MapperProvider {
     @Override
     public AttachmentMapper createAttachmentMapper() throws MailboxException {
         throw new NotImplementedException();
-    }
-
-    @Override
-    public AnnotationMapper createAnnotationMapper() throws MailboxException {
-        return new TransactionalAnnotationMapper(new JPAAnnotationMapper(jpaTestCluster.getEntityManagerFactory()));
     }
 
     @Override
