@@ -28,34 +28,109 @@ import com.google.common.collect.ImmutableList;
 public interface CassandraModule {
 
     static CassandraModule forType(String name, CreateType statement) {
-        return new CassandraModule() {
-            @Override
-            public List<CassandraTable> moduleTables() {
-                return ImmutableList.of();
-            }
-
-            @Override
-            public List<CassandraType> moduleTypes() {
-                return ImmutableList.of(new CassandraType(name, statement));
-            }
-        };
+        return type(name).statement(statement).build();
     }
 
     static CassandraModule forTable(String name, Statement statement) {
-        return new CassandraModule() {
-            @Override
-            public List<CassandraTable> moduleTables() {
-                return ImmutableList.of(
-                    new CassandraTable(name, statement)
-                );
-            }
-
-            @Override
-            public List<CassandraType> moduleTypes() {
-                return ImmutableList.of();
-            }
-        };
+        return table(name).statement(statement).build();
     }
+
+    class Impl implements CassandraModule {
+        private final List<CassandraTable> tables;
+        private final List<CassandraType> types;
+
+        private Impl(List<CassandraTable> tables, List<CassandraType> types) {
+            this.tables = tables;
+            this.types = types;
+        }
+
+        @Override
+        public List<CassandraTable> moduleTables() {
+            return tables;
+        }
+
+        @Override
+        public List<CassandraType> moduleTypes() {
+            return types;
+        }
+    }
+
+    class Builder {
+        private ImmutableList.Builder<CassandraTable> tables;
+        private ImmutableList.Builder<CassandraType> types;
+
+        private Builder() {
+            tables = ImmutableList.builder();
+            types = ImmutableList.builder();
+        }
+
+        public TableBuilder table(String tableName) {
+            return new TableBuilder(this, tableName);
+        }
+
+        public TypeBuilder type(String typeName) {
+            return new TypeBuilder(this, typeName);
+        }
+
+        public Impl build() {
+            return new Impl(
+                tables.build(),
+                types.build());
+        }
+
+        private Builder addTable(CassandraTable table) {
+            tables.add(table);
+            return this;
+        }
+
+        private Builder addType(CassandraType type) {
+            types.add(type);
+            return this;
+        }
+    }
+
+    class TableBuilder {
+        private final Builder originalBuilderReference;
+        private final String tableName;
+
+        private TableBuilder(Builder originalBuilderReference, String tableName) {
+            this.originalBuilderReference = originalBuilderReference;
+            this.tableName = tableName;
+        }
+
+        public Builder statement(Statement createStatement) {
+            return originalBuilderReference.addTable(
+                new CassandraTable(tableName, createStatement));
+        }
+    }
+
+    class TypeBuilder {
+        private final Builder originalBuilderReference;
+        private final String typeName;
+
+        private TypeBuilder(Builder originalBuilderReference, String typeName) {
+            this.originalBuilderReference = originalBuilderReference;
+            this.typeName = typeName;
+        }
+
+        public Builder statement(CreateType createStatement) {
+            return originalBuilderReference.addType(
+                new CassandraType(typeName, createStatement));
+        }
+    }
+
+    static Builder builder() {
+        return new Builder();
+    }
+
+    static TypeBuilder type(String typeName) {
+        return builder().type(typeName);
+    }
+
+    static TableBuilder table(String tableName) {
+        return builder().table(tableName);
+    }
+
 
     List<CassandraTable> moduleTables();
 
