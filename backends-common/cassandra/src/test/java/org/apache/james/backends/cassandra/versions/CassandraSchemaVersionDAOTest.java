@@ -27,7 +27,9 @@ import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -35,9 +37,14 @@ public class CassandraSchemaVersionDAOTest {
 
     @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
 
-    private CassandraCluster cassandra;
+    private static CassandraCluster cassandra;
 
     private CassandraSchemaVersionDAO testee;
+
+    @BeforeClass
+    public static void setUpClass() {
+        cassandra = CassandraCluster.create(new CassandraSchemaVersionModule(), cassandraServer.getHost());
+    }
 
     @Before
     public void setUp() {
@@ -48,7 +55,12 @@ public class CassandraSchemaVersionDAOTest {
 
     @After
     public void tearDown() {
-        cassandra.close();
+        cassandra.clearTables();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cassandra.closeCluster();
     }
 
     @Test

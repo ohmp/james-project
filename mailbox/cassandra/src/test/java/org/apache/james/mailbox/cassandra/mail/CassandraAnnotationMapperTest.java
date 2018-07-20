@@ -28,14 +28,20 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.model.AnnotationMapperTest;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
 public class CassandraAnnotationMapperTest extends AnnotationMapperTest {
     
     @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
+    private static CassandraCluster cassandra;
+
+    @BeforeClass
+    public static void setUpClass() {
+        cassandra = CassandraCluster.create(new CassandraAnnotationModule(), cassandraServer.getHost());
+    }
 
     @Override
     @Before
@@ -46,7 +52,12 @@ public class CassandraAnnotationMapperTest extends AnnotationMapperTest {
     
     @After
     public void tearDown() {
-        cassandra.close();
+        cassandra.clearTables();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cassandra.closeCluster();
     }
 
     @Override

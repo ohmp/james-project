@@ -29,7 +29,9 @@ import org.apache.james.core.User;
 import org.apache.james.sieve.cassandra.model.ActiveScriptInfo;
 import org.apache.james.sieverepository.api.ScriptName;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -40,9 +42,14 @@ public class CassandraActiveScriptDAOTest {
     public static final ScriptName NEW_SCRIPT_NAME = new ScriptName("newScriptName");
 
     @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    
-    private CassandraCluster cassandra;
+    private static CassandraCluster cassandra;
+
     private CassandraActiveScriptDAO activeScriptDAO;
+
+    @BeforeClass
+    public static void setUpClass() {
+        cassandra = CassandraCluster.create(new CassandraSieveRepositoryModule(), cassandraServer.getHost());
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -52,7 +59,12 @@ public class CassandraActiveScriptDAOTest {
 
     @After
     public void tearDown() {
-        cassandra.close();
+        cassandra.clearTables();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cassandra.closeCluster();
     }
 
     @Test

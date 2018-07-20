@@ -32,7 +32,9 @@ import org.apache.james.mailbox.store.mail.model.Username;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -44,9 +46,14 @@ public class CassandraAttachmentOwnerDAOTest {
     @ClassRule
     public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
 
-    private CassandraCluster cassandra;
+    private static CassandraCluster cassandra;
 
     private CassandraAttachmentOwnerDAO testee;
+
+    @BeforeClass
+    public static void setUpClass() {
+        cassandra = CassandraCluster.create(new CassandraAttachmentModule(), cassandraServer.getHost());
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -58,7 +65,12 @@ public class CassandraAttachmentOwnerDAOTest {
 
     @After
     public void tearDown() {
-        cassandra.close();
+        cassandra.clearTables();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cassandra.closeCluster();
     }
 
     @Test
