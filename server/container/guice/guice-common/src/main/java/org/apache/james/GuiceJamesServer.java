@@ -20,6 +20,7 @@ package org.apache.james;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PreDestroy;
 
@@ -80,7 +81,7 @@ public class GuiceJamesServer {
 
     public void stop() {
         if (preDestroy != null) {
-            cleanupTasksPerformer.clean();
+            Optional.ofNullable(cleanupTasksPerformer).ifPresent(CleanupTasksPerformer::clean);
             preDestroy.stage();
             isStarted = false;
         }
