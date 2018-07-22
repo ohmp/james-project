@@ -39,7 +39,7 @@ import com.nurkiewicz.asyncretry.RetryExecutor;
 
 public class RetryExecutorUtilTest {
     private static final int MAX_RETRIES = 3;
-    private static final int MIN_DELAY = 3000;
+    private static final int MIN_DELAY = 00;
     @Mock
     protected FaultyService serviceMock;
 
