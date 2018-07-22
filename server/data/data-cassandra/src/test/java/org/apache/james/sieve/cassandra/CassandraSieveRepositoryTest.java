@@ -43,7 +43,6 @@ public class CassandraSieveRepositoryTest extends AbstractSieveRepositoryTest {
     @Override
     @Before
     public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(new CassandraSieveRepositoryModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
         super.setUp();
     }
     

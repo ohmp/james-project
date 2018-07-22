@@ -58,11 +58,6 @@ public class CassandraAttachmentDAOV2Test {
 
     @Before
     public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(
-            new CassandraAttachmentModule(),
-            cassandraServer.getIp(),
-            cassandraServer.getBindingPort());
-
         testee = new CassandraAttachmentDAOV2(BLOB_ID_FACTORY, cassandra.getConf());
     }
 

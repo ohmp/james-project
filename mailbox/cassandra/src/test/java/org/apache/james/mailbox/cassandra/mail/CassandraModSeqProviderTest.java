@@ -55,10 +55,6 @@ public class CassandraModSeqProviderTest {
 
     @Before
     public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(
-            new CassandraModSeqModule(),
-            cassandraServer.getIp(),
-            cassandraServer.getBindingPort());
         modSeqProvider = new CassandraModSeqProvider(cassandra.getConf());
         MailboxPath path = new MailboxPath("gsoc", "ieugen", "Trash");
         mailbox = new SimpleMailbox(path, 1234);

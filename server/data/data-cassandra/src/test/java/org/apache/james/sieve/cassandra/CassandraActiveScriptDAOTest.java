@@ -53,7 +53,6 @@ public class CassandraActiveScriptDAOTest {
 
     @Before
     public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(new CassandraSieveRepositoryModule(), cassandraServer.getIp(), cassandraServer.getBindingPort());
         activeScriptDAO = new CassandraActiveScriptDAO(cassandra.getConf());
     }
 

@@ -76,13 +76,6 @@ public class AttachmentV2MigrationTest {
 
     @Before
     public void setUp() {
-        CassandraCluster cassandra = CassandraCluster.create(
-            new CassandraModuleComposite(
-                new CassandraAttachmentModule(),
-                new CassandraBlobModule()),
-            cassandraServer.getIp(),
-            cassandraServer.getBindingPort());
-
         attachmentDAO = new CassandraAttachmentDAO(cassandra.getConf(),
             CassandraUtils.WITH_DEFAULT_CONFIGURATION,
             CassandraConfiguration.DEFAULT_CONFIGURATION);
