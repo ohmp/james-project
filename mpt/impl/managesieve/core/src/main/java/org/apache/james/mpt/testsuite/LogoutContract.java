@@ -24,11 +24,9 @@ import java.util.Locale;
 import org.apache.james.mpt.HostSystemProvider;
 import org.apache.james.mpt.host.ManageSieveHostSystem;
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 public interface LogoutContract extends HostSystemProvider {
-
     String USER = "user";
     String PASSWORD = "password";
     
