@@ -37,7 +37,8 @@ import com.rabbitmq.client.GetResponse;
 
 public class AmqpRule extends ExternalResource {
 
-    public static final boolean AUTO_ACK = true;
+    private static final boolean AUTO_ACK = true;
+
     private final SwarmGenericContainer rabbitMqContainer;
     private final String exchangeName;
     private final String routingKey;
