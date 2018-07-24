@@ -62,7 +62,6 @@ public class CassandraAttachmentFallbackTest {
     private CassandraBlobsDAO blobsDAO;
     private CassandraAttachmentMessageIdDAO attachmentMessageIdDAO;
 
-
     @BeforeClass
     public static void setUpClass() {
         CassandraModuleComposite modules = new CassandraModuleComposite(

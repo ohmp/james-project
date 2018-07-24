@@ -49,7 +49,6 @@ public class CassandraMessageIdToImapUidDAOTest {
 
     @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
 
-
     private static CassandraCluster cassandra;
 
     private CassandraMessageId.Factory messageIdFactory;

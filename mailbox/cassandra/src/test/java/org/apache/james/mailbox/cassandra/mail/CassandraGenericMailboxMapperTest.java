@@ -43,7 +43,6 @@ public class CassandraGenericMailboxMapperTest extends MailboxMapperTest {
     
     private static CassandraCluster cassandra;
 
-
     @BeforeClass
     public static void setUpClass() {
         CassandraModuleComposite modules = new CassandraModuleComposite(

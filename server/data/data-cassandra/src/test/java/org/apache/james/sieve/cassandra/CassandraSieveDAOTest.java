@@ -66,7 +66,6 @@ public class CassandraSieveDAOTest {
 
     private CassandraSieveDAO sieveDAO;
 
-
     @BeforeClass
     public static void setUpClass() {
         cassandra = CassandraCluster.create(new CassandraSieveRepositoryModule(), cassandraServer.getHost());

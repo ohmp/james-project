@@ -79,7 +79,6 @@ public class AttachmentMessageIdCreationTest {
     private SimpleMailboxMessage message;
     private CassandraMessageId messageId;
 
-
     @BeforeClass
     public static void setUpClass() {
         CassandraModuleComposite modules = new CassandraModuleComposite(

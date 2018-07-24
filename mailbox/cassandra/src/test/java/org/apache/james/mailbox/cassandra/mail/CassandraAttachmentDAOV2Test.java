@@ -50,7 +50,6 @@ public class CassandraAttachmentDAOV2Test {
 
     private CassandraAttachmentDAOV2 testee;
 
-
     @BeforeClass
     public static void setUpClass() {
         cassandra = CassandraCluster.create(new CassandraAttachmentModule(), cassandraServer.getHost());

@@ -83,7 +83,6 @@ public class CassandraBasedRegisteredDistributedMailboxDelegatingListenerTest {
     private EventCollector eventCollectorOnce3;
     private MailboxSession mailboxSession;
 
-
     @BeforeClass
     public static void setUpClass() {
         cassandra = CassandraCluster.create(new CassandraRegistrationModule(), cassandraServer.getHost());

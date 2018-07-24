@@ -57,7 +57,6 @@ public class CassandraACLMapperTest {
     private CassandraACLMapper cassandraACLMapper;
     private ExecutorService executor;
 
-
     @BeforeClass
     public static void setUpClass() {
         cassandra = CassandraCluster.create(new CassandraAclModule(), cassandraServer.getHost());

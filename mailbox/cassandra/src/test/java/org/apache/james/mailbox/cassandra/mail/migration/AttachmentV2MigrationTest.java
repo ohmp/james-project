@@ -65,7 +65,6 @@ public class AttachmentV2MigrationTest {
     private Attachment attachment1;
     private Attachment attachment2;
 
-
     @BeforeClass
     public static void setUpClass() {
         CassandraModuleComposite modules = new CassandraModuleComposite(
