@@ -69,7 +69,7 @@ public class CassandraSubscriptionManagerTest extends AbstractSubscriptionManage
         CassandraModuleComposite modules = new CassandraModuleComposite(
             new CassandraSubscriptionModule(),
             new CassandraMailboxCounterModule());
-        cassandra = CassandraCluster.create(modules, cassandraServer.getIp(), cassandraServer.getBindingPort());
+        cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
     }
 
     @Before

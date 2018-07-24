@@ -73,7 +73,7 @@ public class CassandraMessageIdManagerQuotaTest extends AbstractMessageIdManager
             new CassandraAnnotationModule(),
             new CassandraApplicableFlagsModule(),
             new CassandraQuotaModule());
-        cassandra = CassandraCluster.create(modules, cassandraServer.getIp(), cassandraServer.getBindingPort());
+        cassandra = CassandraCluster.create(modules, cassandraServer.getHost());
     }
 
     @Override
