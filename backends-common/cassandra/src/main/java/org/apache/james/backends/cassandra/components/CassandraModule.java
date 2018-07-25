@@ -116,7 +116,8 @@ public interface CassandraModule {
         private TableBuilder(Builder originalBuilderReference, String tableName) {
             this.originalBuilderReference = originalBuilderReference;
             this.tableName = tableName;
-            comment = Optional.empty();
+            this.comment = Optional.empty();
+            this.options = Optional.empty();
         }
 
         public TableBuilder comment(String comment) {
