@@ -29,11 +29,11 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraDomainListModule {
     public static final CassandraModule MODULE = CassandraModule.table(CassandraDomainsTable.TABLE_NAME)
-        .statement(statement -> statement
-            .addPartitionKey(CassandraDomainsTable.DOMAIN, text())
-            .withOptions()
-            .comment("Holds domains this James server is operating on.")
+        .comment("Holds domains this James server is operating on.")
+        .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .statement(statement -> statement
+            .addPartitionKey(CassandraDomainsTable.DOMAIN, text()))
         .build();
 }

@@ -30,12 +30,12 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 public class CassandraAccessModule {
     public static final CassandraModule MODULE = CassandraModule.table(CassandraAccessTokenTable.TABLE_NAME)
-        .statement(statement -> statement
-            .addPartitionKey(CassandraAccessTokenTable.TOKEN, uuid())
-            .addColumn(CassandraAccessTokenTable.USERNAME, text())
-            .withOptions()
-            .comment("Holds JMAP access token required to process to authentication.")
+        .comment("Holds JMAP access token required to process to authentication.")
+        .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
+        .statement(statement -> statement
+            .addPartitionKey(CassandraAccessTokenTable.TOKEN, uuid())
+            .addColumn(CassandraAccessTokenTable.USERNAME, text()))
         .build();
 }
