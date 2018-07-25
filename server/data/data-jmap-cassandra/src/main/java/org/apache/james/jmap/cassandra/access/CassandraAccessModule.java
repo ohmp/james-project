@@ -28,8 +28,8 @@ import org.apache.james.jmap.cassandra.access.table.CassandraAccessTokenTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraAccessModule {
-    public static final CassandraModule MODULE = CassandraModule.table(CassandraAccessTokenTable.TABLE_NAME)
+public interface CassandraAccessModule {
+    CassandraModule MODULE = CassandraModule.table(CassandraAccessTokenTable.TABLE_NAME)
         .comment("Holds JMAP access token required to process to authentication.")
         .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,

@@ -27,8 +27,8 @@ import org.apache.james.jmap.cassandra.vacation.tables.CassandraNotificationTabl
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraNotificationRegistryModule {
-    public static final CassandraModule MODULE = CassandraModule.table(CassandraNotificationTable.TABLE_NAME)
+public interface CassandraNotificationRegistryModule {
+    CassandraModule MODULE = CassandraModule.table(CassandraNotificationTable.TABLE_NAME)
         .comment("Stores registry of vacation notification being sent.")
         .options(options -> options
             .compactionOptions(SchemaBuilder.dateTieredStrategy())

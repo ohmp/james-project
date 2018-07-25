@@ -29,8 +29,8 @@ import org.apache.james.jmap.cassandra.vacation.tables.CassandraVacationTable;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraVacationModule {
-    public static final CassandraModule MODULE = CassandraModule.table(CassandraVacationTable.TABLE_NAME)
+public interface CassandraVacationModule {
+    CassandraModule MODULE = CassandraModule.table(CassandraVacationTable.TABLE_NAME)
         .comment("Holds vacation definition. Allow one to automatically respond to emails with a custom message.")
         .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,
