@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 ### Changed
 - Multiple libraries updates
+- Drop partially implemented Kafka distributed events
+- `${project.groupId}` in dependencyManagement is harmful
 
 ## [3.1.0] - date?
 ### Added
