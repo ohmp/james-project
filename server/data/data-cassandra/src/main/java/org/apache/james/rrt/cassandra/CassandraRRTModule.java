@@ -27,8 +27,8 @@ import org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTableTable
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraRRTModule {
-    public static final CassandraModule MODULE = CassandraModule.table(CassandraRecipientRewriteTableTable.TABLE_NAME)
+public interface CassandraRRTModule {
+    CassandraModule MODULE = CassandraModule.table(CassandraRecipientRewriteTableTable.TABLE_NAME)
         .comment("Holds address re-writing rules.")
         .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,

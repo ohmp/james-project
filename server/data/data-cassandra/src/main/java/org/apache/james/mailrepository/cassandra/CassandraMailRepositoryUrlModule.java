@@ -26,8 +26,8 @@ import org.apache.james.backends.cassandra.utils.CassandraConstants;
 
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
-public class CassandraMailRepositoryUrlModule {
-    public static final CassandraModule MODULE = CassandraModule.table(UrlsTable.TABLE_NAME)
+public interface CassandraMailRepositoryUrlModule {
+    CassandraModule MODULE = CassandraModule.table(UrlsTable.TABLE_NAME)
         .comment("Holds the list of available mail repository")
         .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,
