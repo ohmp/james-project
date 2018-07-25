@@ -19,6 +19,8 @@
 
 package org.apache.james.backends.cassandra.components;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -26,6 +28,7 @@ import java.util.function.Function;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.CreateType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -67,6 +70,24 @@ public interface CassandraModule {
 
         public TypeBuilder type(String typeName) {
             return new TypeBuilder(this, typeName);
+        }
+
+        public Builder module(CassandraModule module) {
+            return modules(ImmutableList.of(module));
+        }
+
+        public Builder modules(Collection<CassandraModule> modules) {
+            tables.addAll(modules.stream()
+                .flatMap(module -> module.moduleTables().stream())
+                .collect(Guavate.toImmutableList()));
+            types.addAll(modules.stream()
+                .flatMap(module -> module.moduleTypes().stream())
+                .collect(Guavate.toImmutableList()));
+            return this;
+        }
+
+        public Builder modules(CassandraModule... modules) {
+            return this.modules(Arrays.asList(modules));
         }
 
         public Impl build() {
@@ -151,6 +172,16 @@ public interface CassandraModule {
 
     static TableBuilder table(String tableName) {
         return builder().table(tableName);
+    }
+
+    static CassandraModule aggregateModules(CassandraModule... modules) {
+        return aggregateModules(Arrays.asList(modules));
+    }
+
+    static CassandraModule aggregateModules(Collection<CassandraModule> modules) {
+        return builder()
+            .modules(modules)
+            .build();
     }
 
     List<CassandraTable> moduleTables();
