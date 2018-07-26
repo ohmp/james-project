@@ -50,4 +50,7 @@ public class TikaContainerStaticRule implements TestRule {
     public int getTimeoutInMillis() {
         return tikaContainer.getTimeoutInMillis();
     }
+    
+    // Cleanup will be performed by test container resource reaper
+
 }
