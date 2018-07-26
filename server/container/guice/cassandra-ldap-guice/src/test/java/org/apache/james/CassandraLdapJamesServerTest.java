@@ -33,6 +33,7 @@ import org.apache.james.utils.SpoolerProbe;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,6 +64,11 @@ public class CassandraLdapJamesServerTest extends AbstractJmapJamesServerTest {
     public IMAPMessageReader imapMessageReader = new IMAPMessageReader();
     @Rule
     public SMTPMessageSender messageSender = new SMTPMessageSender(Domain.LOCALHOST.asString());
+
+    @BeforeClass
+    public static void setUpClass() {
+        ldapContainer.start();
+    }
 
     @Override
     protected GuiceJamesServer createJamesServer() throws IOException {
