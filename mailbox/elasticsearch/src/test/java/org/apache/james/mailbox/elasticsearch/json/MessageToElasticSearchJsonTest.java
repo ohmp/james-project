@@ -36,7 +36,7 @@ import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
-import org.apache.james.mailbox.tika.TikaContainerStaticRule;
+import org.apache.james.mailbox.tika.TikaContainerSingletonRule;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MessageId;
@@ -73,7 +73,7 @@ public class MessageToElasticSearchJsonTest {
     private PropertyBuilder propertyBuilder;
 
     @ClassRule
-    public static TikaContainerStaticRule tika = TikaContainerStaticRule.rule;
+    public static TikaContainerSingletonRule tika = TikaContainerSingletonRule.rule;
 
     @Before
     public void setUp() throws Exception {

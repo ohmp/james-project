@@ -33,7 +33,7 @@ import javax.mail.Flags;
 
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
-import org.apache.james.mailbox.tika.TikaContainerStaticRule;
+import org.apache.james.mailbox.tika.TikaContainerSingletonRule;
 import org.apache.james.mailbox.extractor.ParsedContent;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
@@ -61,7 +61,7 @@ public class IndexableMessageTest {
     public static final MessageUid MESSAGE_UID = MessageUid.of(154);
 
     @ClassRule
-    public static TikaContainerStaticRule tika = TikaContainerStaticRule.rule;
+    public static TikaContainerSingletonRule tika = TikaContainerSingletonRule.rule;
 
     private TikaTextExtractor textExtractor;
 
