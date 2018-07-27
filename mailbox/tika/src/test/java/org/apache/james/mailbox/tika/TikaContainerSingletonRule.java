@@ -23,13 +23,13 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-public class TikaContainerStaticRule implements TestRule {
+public class TikaContainerSingletonRule implements TestRule {
 
-    public static final TikaContainerStaticRule rule = new TikaContainerStaticRule(new TikaContainer());
+    public static final TikaContainerSingletonRule rule = new TikaContainerSingletonRule(new TikaContainer());
 
     private final TikaContainer tikaContainer;
 
-    public TikaContainerStaticRule(TikaContainer tikaContainer) {
+    private TikaContainerSingletonRule(TikaContainer tikaContainer) {
         this.tikaContainer = tikaContainer;
         this.tikaContainer.start();
     }
