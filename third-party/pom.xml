@@ -26,17 +26,15 @@
         <version>3.2.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>james-backends-common</artifactId>
+    <artifactId>third-party</artifactId>
     <packaging>pom</packaging>
 
-    <name>Apache JAMES backends common</name>
-    <description>Apache James Backends: common utils to access backends</description>
-    <inceptionYear>2015</inceptionYear>
+    <name>Apache JAMES third party</name>
+    <description>Common utilities for integrating with third party software</description>
+    <inceptionYear>2018</inceptionYear>
 
     <modules>
-        <module>cassandra</module>
-        <module>elasticsearch</module>
-        <module>jpa</module>
+        <module>spamassassin</module>
     </modules>
 
 </project>

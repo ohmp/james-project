@@ -22,11 +22,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.james</groupId>
-        <artifactId>james-backends-common</artifactId>
+        <artifactId>third-party</artifactId>
         <version>3.2.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>apache-james-backends-spamassassin</artifactId>
+    <artifactId>apache-james-spamassassin</artifactId>
 
     <dependencies>
         <dependency>
@@ -89,6 +89,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
 </project>
