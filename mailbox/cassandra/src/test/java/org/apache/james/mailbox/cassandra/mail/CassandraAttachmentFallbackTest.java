@@ -65,7 +65,6 @@ public class CassandraAttachmentFallbackTest {
 
     @BeforeClass
     public static void setUpClass() {
-        DockerCassandraSingleton.restart();
         CassandraModule modules = CassandraModule.aggregateModules(
             CassandraAttachmentModule.MODULE,
             CassandraBlobModule.MODULE);
