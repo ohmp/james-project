@@ -23,11 +23,6 @@ public class DockerCassandraSingleton {
 
     public static final DockerCassandra singleton = new DockerCassandra();
 
-    public static ContainerLifecycleConfiguration containerLifecycleConfiguration = ContainerLifecycleConfiguration.builder()
-        .container(singleton.getRawContainer())
-        .iterationsBetweenRestart(50)
-        .build();
-
     static {
         singleton.start();
     }
