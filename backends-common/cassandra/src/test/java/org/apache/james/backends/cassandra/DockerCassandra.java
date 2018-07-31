@@ -58,8 +58,6 @@ public class DockerCassandra {
                         .run("sed -i -e \"s/num_tokens/\\#num_tokens/\" " + CASSANDRA_YAML)
                         //don't wait for other nodes communication to happen
                         .run("echo \"JVM_OPTS=\\\"\\$JVM_OPTS -Dcassandra.skip_wait_for_gossip_to_settle=0\\\"\" >> " + CASSANDRA_ENV)
-                        //make sure commit log disk flush won't happen
-                        .run("sed -i -e \"s/commitlog_sync_period_in_ms: 10000/commitlog_sync_period_in_ms: 9999999/\" " + CASSANDRA_YAML)
                         //auto_bootstrap should be useless when no existing data
                         .run("echo auto_bootstrap: false >> " + CASSANDRA_YAML)
                         .run("echo \"-Xms1500M\" >> " + JVM_OPTIONS)
@@ -70,7 +68,7 @@ public class DockerCassandra {
                         .run("sed -i -e \"s/key_cache_size_in_mb:/key_cache_size_in_mb: 256/\" " + CASSANDRA_YAML)
                         .run("sed -i -e \"s/row_cache_size_in_mb: 0/row_cache_size_in_mb: 512/\" " + CASSANDRA_YAML)
                         .build()))
-            .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withTmpFs(ImmutableMap.of("/var/lib/cassandra", "rw,noexec,nosuid,size=100m")))            .withCreateContainerCmdModifier(cmd -> cmd.withMemory(2000 * 1024 * 1024L))
+            .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withTmpFs(ImmutableMap.of("/var/lib/cassandra", "rw,noexec,nosuid,size=1g")))            .withCreateContainerCmdModifier(cmd -> cmd.withMemory(2000 * 1024 * 1024L))
             .withExposedPorts(CASSANDRA_PORT)
             .withLogConsumer(DockerCassandra::displayDockerLog);
         cassandraContainer
