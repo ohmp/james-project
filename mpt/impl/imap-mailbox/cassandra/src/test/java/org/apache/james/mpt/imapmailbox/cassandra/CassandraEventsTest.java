@@ -20,21 +20,17 @@
 package org.apache.james.mpt.imapmailbox.cassandra;
 
 import org.apache.james.backends.cassandra.DockerCassandraRule;
-import org.apache.james.backends.cassandra.DockerCassandraSingleton;
 import org.apache.james.mpt.api.ImapHostSystem;
 import org.apache.james.mpt.imapmailbox.cassandra.host.CassandraHostSystemRule;
 import org.apache.james.mpt.imapmailbox.suite.Events;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.rules.TestRule;
 
 public class CassandraEventsTest extends Events {
     @ClassRule
     public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
     @Rule
     public CassandraHostSystemRule cassandraHostSystemRule = new CassandraHostSystemRule(cassandraServer);
-    @Rule
-    public TestRule containerLifecycleTestRule = DockerCassandraSingleton.containerLifecycleConfiguration.asTestRule();
 
     @Override
     protected ImapHostSystem createImapHostSystem() {
