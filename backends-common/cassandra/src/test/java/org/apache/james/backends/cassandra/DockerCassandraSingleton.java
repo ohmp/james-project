@@ -19,41 +19,16 @@
 
 package org.apache.james.backends.cassandra;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.util.Host;
-
 public class DockerCassandraSingleton {
-    public static DockerCassandra singleton = new DockerCassandra();
 
-    private static final int maxItemCount = 1000;
-    private static final AtomicInteger pastCreatedItemCount = new AtomicInteger(0);
+    public static final DockerCassandra singleton = new DockerCassandra();
+
+    public static ContainerLifecycleConfiguration containerLifecycleConfiguration = ContainerLifecycleConfiguration.builder()
+        .container(singleton.getRawContainer())
+        .iterationsBetweenRestart(50)
+        .build();
 
     static {
-        singleton.start();
-    }
-
-    public static Host getManagedHost(CassandraModule module) {
-        int itemCount = module.moduleTables().size() + module.moduleTypes().size();
-
-        if (tooManyCassandraItemsCreated(itemCount)) {
-            reinitItemCount(itemCount);
-            restart();
-        }
-        return singleton.getHost();
-    }
-
-    private static void reinitItemCount(int itemCount) {
-        pastCreatedItemCount.set(itemCount);
-    }
-
-    private static boolean tooManyCassandraItemsCreated(int itemCount) {
-        return pastCreatedItemCount.addAndGet(itemCount) > maxItemCount;
-    }
-
-    public static void restart() {
-        singleton.stop();
         singleton.start();
     }
 
