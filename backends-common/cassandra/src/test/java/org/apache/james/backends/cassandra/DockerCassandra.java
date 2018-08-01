@@ -47,29 +47,19 @@ public class DockerCassandra {
     public DockerCassandra() {
         client = DockerClientFactory.instance().client();
         boolean deleteOnExit = false;
+        int cassandraMemory = 1000;
+        long cassandraContainerMemory = Float.valueOf(cassandraMemory * 1.2f * 1024 * 1024L).longValue();
         cassandraContainer = new GenericContainer<>(
             new ImageFromDockerfile("cassandra_2_2_12", deleteOnExit)
                 .withDockerfileFromBuilder(builder ->
                     builder
                         .from("cassandra:2.2.12")
                         .env("ENV CASSANDRA_CONFIG", "/etc/cassandra")
-                        //avoiding token range computation helps starting faster
-                        .run("echo \"JVM_OPTS=\\\"\\$JVM_OPTS -Dcassandra.initial_token=0\\\"\" >> " + CASSANDRA_ENV)
-                        .run("sed -i -e \"s/num_tokens/\\#num_tokens/\" " + CASSANDRA_YAML)
-                        //don't wait for other nodes communication to happen
-                        .run("echo \"JVM_OPTS=\\\"\\$JVM_OPTS -Dcassandra.skip_wait_for_gossip_to_settle=0\\\"\" >> " + CASSANDRA_ENV)
-                        //auto_bootstrap should be useless when no existing data
-                        .run("echo auto_bootstrap: false >> " + CASSANDRA_YAML)
-                        .run("echo \"-Xms1500M\" >> " + JVM_OPTIONS)
-                        .run("echo \"-Xmx1500M\" >> " + JVM_OPTIONS)
-                        // disable assertions (modest performance benefit)
-                        .run("sed -i -e 's/JVM_OPTS=\"$JVM_OPTS -ea\"/JVM_OPTS=\"$JVM_OPTS -da\"/' " + CASSANDRA_ENV)
-                        // use caches for keys & rows
-                        .run("sed -i -e \"s/key_cache_size_in_mb:/key_cache_size_in_mb: 256/\" " + CASSANDRA_YAML)
-                        .run("sed -i -e \"s/row_cache_size_in_mb: 0/row_cache_size_in_mb: 512/\" " + CASSANDRA_YAML)
+                        .run("echo \"-Xms" + cassandraMemory + "M\" >> " + JVM_OPTIONS)
+                        .run("echo \"-Xmx" + cassandraMemory + "M\" >> " + JVM_OPTIONS)
                         .build()))
-            .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withTmpFs(ImmutableMap.of("/var/lib/cassandra", "rw,noexec,nosuid,size=1g")))
-            .withCreateContainerCmdModifier(cmd -> cmd.withMemory(2000 * 1024 * 1024L))
+            .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withTmpFs(ImmutableMap.of("/var/lib/cassandra", "rw,noexec,nosuid,size=200m")))
+            .withCreateContainerCmdModifier(cmd -> cmd.withMemory(cassandraContainerMemory))
             .withExposedPorts(CASSANDRA_PORT)
             .withLogConsumer(DockerCassandra::displayDockerLog);
         cassandraContainer
