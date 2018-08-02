@@ -24,7 +24,6 @@ import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.function.Function;
 
 import org.apache.james.util.docker.Images;
@@ -108,12 +107,14 @@ public class FakeSmtp implements TestRule {
     }
 
     public void clean() {
-        List<String> ids = given(requestSpecification(), RESPONSE_SPECIFICATION)
+        given(requestSpecification(), RESPONSE_SPECIFICATION)
             .get("/api/email")
             .jsonPath()
-            .getList("id", String.class);
-
-        ids.forEach(id -> given(requestSpecification(), RESPONSE_SPECIFICATION)
-            .get("/api/email/delete/" + id));
+            .getList("id", String.class)
+            .stream()
+            .mapToInt(Integer::valueOf)
+            .max()
+            .ifPresent(id -> given(requestSpecification(), RESPONSE_SPECIFICATION)
+                .get("/api/email/purge/" + id));
     }
 }
