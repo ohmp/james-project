@@ -33,7 +33,6 @@ import org.apache.james.utils.SpoolerProbe;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +55,8 @@ public class CassandraLdapJamesServerTest extends AbstractJmapJamesServerTest {
         .domain(DOMAIN)
         .password(ADMIN_PASSWORD)
         .build();
+    @ClassRule
+    public static DockerCassandraRule cassandraRule = new DockerCassandraRule();
     @Rule
     public CassandraLdapJmapTestRule cassandraLdapJmap = CassandraLdapJmapTestRule.defaultTestRule();
     private IMAPClient imapClient = new IMAPClient();
@@ -65,22 +66,13 @@ public class CassandraLdapJamesServerTest extends AbstractJmapJamesServerTest {
     @Rule
     public SMTPMessageSender messageSender = new SMTPMessageSender(Domain.LOCALHOST.asString());
 
-    @BeforeClass
-    public static void setUpClass() {
-        ldapContainer.start();
-    }
-
     @Override
     protected GuiceJamesServer createJamesServer() throws IOException {
-        return cassandraLdapJmap.jmapServer(ldapContainer.getLdapHost());
+        return cassandraLdapJmap.jmapServer(ldapContainer.getLdapHost(), cassandraRule.getModule());
     }
 
     @Override
     protected void clean() {
-        if (ldapContainer != null) {
-            ldapContainer.stop();
-        }
-
         try {
             imapClient.disconnect();
         } catch (IOException e) {
