@@ -20,8 +20,9 @@ package org.apache.james.user.ldap;
 
 import org.apache.james.util.docker.SwarmGenericContainer;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -60,15 +61,13 @@ public class LdapGenericContainer extends ExternalResource {
 
         private SwarmGenericContainer createContainer() {
             return new SwarmGenericContainer(
-                new ImageFromDockerfile()
-                    .withFileFromClasspath("populate.ldif", "ldif-files/populate.ldif")
-                    .withFileFromClasspath("Dockerfile", "ldif-files/Dockerfile"))
-                .withAffinityToContainer()
-                .withEnv("SLAPD_DOMAIN", domain)
-                .withEnv("SLAPD_PASSWORD", password)
-                .withEnv("SLAPD_CONFIG_PASSWORD", password)
-                .withExposedPorts(LdapGenericContainer.DEFAULT_LDAP_PORT)
-                .waitingFor(new HostPortWaitStrategy());
+                new GenericContainer<>("dinkel/openldap:latest")
+                    .withClasspathResourceMapping("ldif-files/populate.ldif", "/etc/ldap/prepopulate/prepop.ldif", BindMode.READ_ONLY)
+                    .withEnv("SLAPD_DOMAIN", domain)
+                    .withEnv("SLAPD_PASSWORD", password)
+                    .withEnv("SLAPD_CONFIG_PASSWORD", password)
+                    .withExposedPorts(DEFAULT_LDAP_PORT)
+                    .waitingFor(new HostPortWaitStrategy()));
         }
     }
 
