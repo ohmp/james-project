@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 import org.apache.james.util.docker.Images;
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.awaitility.core.ConditionFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -44,27 +44,27 @@ import io.restassured.specification.ResponseSpecification;
 public class FakeSmtp implements TestRule {
 
     public static FakeSmtp withSmtpPort(Integer smtpPort) {
-        JamesContainer container = fakeSmtpContainer()
+        TestContainerRule container = fakeSmtpContainer()
             .withCommands("node", "cli", "--listen", "80", "--smtp", smtpPort.toString());
 
         return new FakeSmtp(container, smtpPort);
     }
 
-    private static JamesContainer fakeSmtpContainer() {
-        return new JamesContainer(Images.FAKE_SMTP)
+    private static TestContainerRule fakeSmtpContainer() {
+        return new TestContainerRule(Images.FAKE_SMTP)
             .waitingFor(new HostPortWaitStrategy());
     }
 
     private static final int SMTP_PORT = 25;
     private static final ResponseSpecification RESPONSE_SPECIFICATION = new ResponseSpecBuilder().build();
-    private final JamesContainer container;
+    private final TestContainerRule container;
     private final Integer smtpPort;
 
     public FakeSmtp() {
         this(fakeSmtpContainer().withExposedPorts(SMTP_PORT), SMTP_PORT);
     }
 
-    public FakeSmtp(JamesContainer container, Integer smtpPort) {
+    public FakeSmtp(TestContainerRule container, Integer smtpPort) {
         this.smtpPort = smtpPort;
         this.container = container;
     }
@@ -101,7 +101,7 @@ public class FakeSmtp implements TestRule {
             .build();
     }
 
-    public JamesContainer getContainer() {
+    public TestContainerRule getContainer() {
         return container;
     }
 

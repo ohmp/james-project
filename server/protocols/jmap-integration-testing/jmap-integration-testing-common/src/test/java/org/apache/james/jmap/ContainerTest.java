@@ -27,7 +27,7 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.util.docker.Images;
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -35,7 +35,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 public class ContainerTest {
 
     @Rule
-    public JamesContainer container = new JamesContainer(Images.NGINX)
+    public TestContainerRule container = new TestContainerRule(Images.NGINX)
         .withExposedPorts(80)
         .waitingFor(new HttpWaitStrategy().forStatusCode(200));
 

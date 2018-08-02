@@ -41,7 +41,7 @@ import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.spamassassin.SpamAssassinResult;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.util.docker.Images;
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
@@ -57,7 +57,7 @@ public class SpamAssassinTest {
     private static final String SPAM_CONTENT = "XJS*C4JDBQADN1.NSBN3*2IDNEN*GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34X";
 
     @Rule
-    public JamesContainer spamAssassinContainer = new JamesContainer(Images.SPAMASSASSIN)
+    public TestContainerRule spamAssassinContainer = new TestContainerRule(Images.SPAMASSASSIN)
         .withExposedPorts(783)
         .waitingFor(new HostPortWaitStrategy());
     @Rule

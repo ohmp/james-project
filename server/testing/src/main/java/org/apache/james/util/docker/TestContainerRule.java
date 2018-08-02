@@ -35,14 +35,14 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
-public class JamesContainer implements TestRule {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JamesContainer.class);
+public class TestContainerRule implements TestRule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestContainerRule.class);
     private static final String NO_DOCKER_ENVIRONMENT = "Could not find a valid Docker environment.";
     private static final String SKIPPING_TEST_CAUTION = "Skipping all docker tests as no Docker environment was found";
 
     private GenericContainer<?> container;
 
-    public JamesContainer(String dockerImageName) {
+    public TestContainerRule(String dockerImageName) {
         try {
             this.container = new GenericContainer<>(dockerImageName);
         } catch (IllegalStateException e) {
@@ -50,7 +50,7 @@ public class JamesContainer implements TestRule {
         }
     }
 
-    public JamesContainer(ImageFromDockerfile imageFromDockerfile) {
+    public TestContainerRule(ImageFromDockerfile imageFromDockerfile) {
         try {
             this.container = new GenericContainer<>(imageFromDockerfile);
         } catch (IllegalStateException e) {
@@ -58,7 +58,7 @@ public class JamesContainer implements TestRule {
         }
     }
 
-    public JamesContainer(GenericContainer<?> container) {
+    public TestContainerRule(GenericContainer<?> container) {
         this.container = container;
     }
     
@@ -69,27 +69,27 @@ public class JamesContainer implements TestRule {
         }
     }
 
-    public JamesContainer withEnv(String key, String value) {
+    public TestContainerRule withEnv(String key, String value) {
         container.addEnv(key, value);
         return this;
     }
 
-    public JamesContainer withExposedPorts(Integer... ports) {
+    public TestContainerRule withExposedPorts(Integer... ports) {
         container.withExposedPorts(ports);
         return this;
     }
 
-    public JamesContainer waitingFor(WaitStrategy waitStrategy) {
+    public TestContainerRule waitingFor(WaitStrategy waitStrategy) {
         container.waitingFor(waitStrategy);
         return this;
     }
 
-    public JamesContainer withStartupTimeout(Duration startupTimeout) {
+    public TestContainerRule withStartupTimeout(Duration startupTimeout) {
         container.withStartupTimeout(startupTimeout);
         return this;
     }
 
-    public JamesContainer withCommands(String... commands) {
+    public TestContainerRule withCommands(String... commands) {
         container.withCommand(commands);
         return this;
     }

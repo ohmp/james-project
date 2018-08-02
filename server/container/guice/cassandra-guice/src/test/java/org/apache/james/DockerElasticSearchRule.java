@@ -23,7 +23,7 @@ import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.modules.mailbox.ElasticSearchConfiguration;
 import org.apache.james.util.Host;
 import org.apache.james.util.docker.Images;
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -41,7 +41,7 @@ public class DockerElasticSearchRule implements GuiceModuleTestRule {
             .build();
     }
 
-    private JamesContainer elasticSearchContainer = new JamesContainer(Images.ELASTICSEARCH)
+    private TestContainerRule elasticSearchContainer = new TestContainerRule(Images.ELASTICSEARCH)
         .withExposedPorts(ELASTIC_SEARCH_HTTP_PORT, ELASTIC_SEARCH_PORT);
 
     @Override
@@ -64,7 +64,7 @@ public class DockerElasticSearchRule implements GuiceModuleTestRule {
         return elasticSearchContainer.getHostIp();
     }
 
-    public JamesContainer getElasticSearchContainer() {
+    public TestContainerRule getElasticSearchContainer() {
         return elasticSearchContainer;
     }
 
