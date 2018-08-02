@@ -40,7 +40,6 @@ import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.mailrepository.api.MailRepositoryUrlStore;
 import org.apache.james.mailrepository.api.Protocol;
 import org.apache.james.repository.api.Initializable;
-import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,8 +105,7 @@ public class InMemoryMailRepositoryStore implements MailRepositoryStore, Configu
     public Stream<MailRepository> getByPath(MailRepositoryPath path) {
         return urlStore.listDistinct()
             .filter(url -> url.getPath().equals(path))
-            .map(this::get)
-            .flatMap(OptionalUtils::toStream);
+            .map(this::select);
     }
 
     @Override
