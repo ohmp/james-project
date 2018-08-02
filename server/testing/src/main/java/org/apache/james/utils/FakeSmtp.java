@@ -24,6 +24,7 @@ import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.james.util.docker.Images;
@@ -65,7 +66,7 @@ public class FakeSmtp implements TestRule {
         this(fakeSmtpContainer().withExposedPorts(SMTP_PORT), SMTP_PORT);
     }
 
-    public FakeSmtp(SwarmGenericContainer container, Integer smtpPort) {
+    private FakeSmtp(SwarmGenericContainer container, Integer smtpPort) {
         this.smtpPort = smtpPort;
         this.container = container;
     }
@@ -104,5 +105,15 @@ public class FakeSmtp implements TestRule {
 
     public SwarmGenericContainer getContainer() {
         return container;
+    }
+
+    public void clean() {
+        List<String> ids = given(requestSpecification(), RESPONSE_SPECIFICATION)
+            .get("/api/email")
+            .jsonPath()
+            .getList("id", String.class);
+
+        ids.forEach(id -> given(requestSpecification(), RESPONSE_SPECIFICATION)
+            .get("/api/email/delete/" + id));
     }
 }
