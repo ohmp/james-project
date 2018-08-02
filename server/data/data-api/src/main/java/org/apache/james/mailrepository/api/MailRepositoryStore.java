@@ -44,11 +44,17 @@ public interface MailRepositoryStore {
     /**
      * Returns the {@link MailRepository} for the given url.
      * This mail repository will not be created if it does not exist.
+     *
+     * Note that if the repository had been created by another James server, and the repository do not exist locally, then
+     * this repository will be created locally.
      */
     Optional<MailRepository> get(MailRepositoryUrl url) throws MailRepositoryStoreException;
 
     /**
      * Returns all the {@link MailRepository} for the given path.
+     *
+     * Note that if the repository had been created by another James server, and the repository do not exist locally, then
+     * this repository will be created locally.
      */
     Stream<MailRepository> getByPath(MailRepositoryPath path) throws MailRepositoryStoreException;
 
