@@ -20,6 +20,7 @@ package org.apache.james.user.ldap;
 
 import org.apache.james.util.docker.TestContainerRule;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
@@ -88,6 +89,7 @@ public class LdapGenericContainer extends ExternalResource {
     }
 
     public void start() {
+        DockerClientFactory.instance().client().pullImageCmd("dinkel/openldap:latest");
         container.start();
     }
 
