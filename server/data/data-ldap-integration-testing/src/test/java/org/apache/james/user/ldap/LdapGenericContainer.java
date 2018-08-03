@@ -20,10 +20,9 @@ package org.apache.james.user.ldap;
 
 import org.apache.james.util.docker.TestContainerRule;
 import org.junit.rules.ExternalResource;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -62,8 +61,12 @@ public class LdapGenericContainer extends ExternalResource {
 
         private TestContainerRule createContainer() {
             return new TestContainerRule(
-                new GenericContainer<>("dinkel/openldap:latest")
-                    .withClasspathResourceMapping("ldif-files/populate.ldif", "/etc/ldap/prepopulate/prepop.ldif", BindMode.READ_ONLY)
+                new GenericContainer<>(
+                    new ImageFromDockerfile()
+                        .withDockerfileFromBuilder(
+                            builder -> builder
+                                .from("dinkel/openldap:latest")
+                                .copy(ClassLoader.getSystemResource("ldif-files/populate.ldif").getFile(), "/etc/ldap/prepopulate/prepop.ldif")))
                     .withEnv("SLAPD_DOMAIN", domain)
                     .withEnv("SLAPD_PASSWORD", password)
                     .withEnv("SLAPD_CONFIG_PASSWORD", password)
@@ -89,7 +92,6 @@ public class LdapGenericContainer extends ExternalResource {
     }
 
     public void start() {
-        DockerClientFactory.instance().client().pullImageCmd("dinkel/openldap:latest");
         container.start();
     }
 
