@@ -20,9 +20,9 @@ package org.apache.james.user.ldap;
 
 import org.apache.james.util.docker.TestContainerRule;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -60,17 +60,9 @@ public class LdapGenericContainer extends ExternalResource {
         }
 
         private TestContainerRule createContainer() {
-            String ldifFilePath = ClassLoader.getSystemResource("ldif-files/populate.ldif").getFile();
-            boolean deleteOnExit = true;
-
             return new TestContainerRule(
-                new GenericContainer<>(
-                    new ImageFromDockerfile("james_testing_ldap", !deleteOnExit)
-                        .withDockerfileFromBuilder(
-                            builder -> builder
-                                .from("dinkel/openldap:latest")
-                                .copy(ldifFilePath, "/etc/ldap/prepopulate/prepop.ldif")
-                                .build()))
+                new GenericContainer<>("dinkel/openldap:latest")
+                    .withClasspathResourceMapping("ldif-files/populate.ldif", "/etc/ldap/prepopulate/prepop.ldif", BindMode.READ_ONLY)
                     .withEnv("SLAPD_DOMAIN", domain)
                     .withEnv("SLAPD_PASSWORD", password)
                     .withEnv("SLAPD_CONFIG_PASSWORD", password)
