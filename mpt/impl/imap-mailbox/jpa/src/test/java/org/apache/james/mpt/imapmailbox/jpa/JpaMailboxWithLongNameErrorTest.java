@@ -33,6 +33,7 @@ public class JpaMailboxWithLongNameErrorTest extends MailboxWithLongNameError {
     @Before
     public void setUp() throws Exception {
         system = JPAHostSystem.build();
+        system.beforeTest();
         super.setUp();
     }
     
