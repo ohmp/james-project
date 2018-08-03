@@ -60,13 +60,17 @@ public class LdapGenericContainer extends ExternalResource {
         }
 
         private TestContainerRule createContainer() {
+            String ldifFilePath = ClassLoader.getSystemResource("ldif-files/populate.ldif").getFile();
+            boolean deleteOnExit = true;
+
             return new TestContainerRule(
                 new GenericContainer<>(
-                    new ImageFromDockerfile()
+                    new ImageFromDockerfile("james_testing_ldap", !deleteOnExit)
                         .withDockerfileFromBuilder(
                             builder -> builder
                                 .from("dinkel/openldap:latest")
-                                .copy(ClassLoader.getSystemResource("ldif-files/populate.ldif").getFile(), "/etc/ldap/prepopulate/prepop.ldif")))
+                                .copy(ldifFilePath, "/etc/ldap/prepopulate/prepop.ldif")
+                                .build()))
                     .withEnv("SLAPD_DOMAIN", domain)
                     .withEnv("SLAPD_PASSWORD", password)
                     .withEnv("SLAPD_CONFIG_PASSWORD", password)
