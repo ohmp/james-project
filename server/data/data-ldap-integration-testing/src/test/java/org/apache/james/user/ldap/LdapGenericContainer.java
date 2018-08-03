@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james.user.ldap;
 
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -59,8 +59,8 @@ public class LdapGenericContainer extends ExternalResource {
             return new LdapGenericContainer(createContainer());
         }
 
-        private JamesContainer createContainer() {
-            return new JamesContainer(
+        private TestContainerRule createContainer() {
+            return new TestContainerRule(
                 new GenericContainer<>("dinkel/openldap:latest")
                     .withClasspathResourceMapping("ldif-files/populate.ldif", "/etc/ldap/prepopulate/prepop.ldif", BindMode.READ_ONLY)
                     .withEnv("SLAPD_DOMAIN", domain)
@@ -71,9 +71,9 @@ public class LdapGenericContainer extends ExternalResource {
         }
     }
 
-    private final JamesContainer container;
+    private final TestContainerRule container;
 
-    private LdapGenericContainer(JamesContainer container) {
+    private LdapGenericContainer(TestContainerRule container) {
         this.container = container;
     }
 

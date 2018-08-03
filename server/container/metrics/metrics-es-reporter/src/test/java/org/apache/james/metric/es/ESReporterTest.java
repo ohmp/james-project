@@ -32,7 +32,7 @@ import org.apache.james.metrics.dropwizard.DropWizardMetricFactory;
 import org.apache.james.metrics.es.ESMetricReporter;
 import org.apache.james.metrics.es.ESReporterConfiguration;
 import org.apache.james.util.docker.Images;
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.awaitility.Duration;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -53,7 +53,7 @@ public class ESReporterTest {
     public static final int ES_HTTP_PORT = 9200;
 
     @Rule
-    public JamesContainer esContainer = new JamesContainer(Images.ELASTICSEARCH)
+    public TestContainerRule esContainer = new TestContainerRule(Images.ELASTICSEARCH)
         .withExposedPorts(ES_HTTP_PORT, ES_APPLICATIVE_PORT);
 
     private ClientProvider clientProvider;

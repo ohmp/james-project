@@ -21,7 +21,7 @@ package org.apache.james.backends.es;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.james.util.docker.JamesContainer;
+import org.apache.james.util.docker.TestContainerRule;
 import org.awaitility.Awaitility;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -38,11 +38,11 @@ public class ClientProviderImplConnectionTest {
     private static final int ES_APPLICATIVE_PORT = 9300;
 
     @Rule
-    public JamesContainer es1 = new JamesContainer(DOCKER_ES_IMAGE)
+    public TestContainerRule es1 = new TestContainerRule(DOCKER_ES_IMAGE)
         .withExposedPorts(ES_APPLICATIVE_PORT);
 
     @Rule
-    public JamesContainer es2 = new JamesContainer(DOCKER_ES_IMAGE)
+    public TestContainerRule es2 = new TestContainerRule(DOCKER_ES_IMAGE)
         .withExposedPorts(ES_APPLICATIVE_PORT);
 
     @Test
