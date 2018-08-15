@@ -214,9 +214,13 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
                     mailQueueSize.decrement();
                     return createMailQueueItem(session, consumer, message);
                 } else {
-                    session.commit();
-                    closeConsumer(consumer);
-                    closeSession(session);
+                    MessageConsumer consumerToClose = consumer;
+                    Session sessionToClose = session;
+                    consumer = null;
+                    session = null;
+                    sessionToClose.commit();
+                    closeConsumer(consumerToClose);
+                    closeSession(sessionToClose);
                 }
 
             } catch (Exception e) {
