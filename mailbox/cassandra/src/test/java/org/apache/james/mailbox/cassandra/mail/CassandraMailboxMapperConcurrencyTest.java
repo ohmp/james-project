@@ -81,6 +81,7 @@ public class CassandraMailboxMapperConcurrencyTest {
         boolean termination = ConcurrentTestRunner.builder()
             .threadCount(THREAD_COUNT)
             .operationCount(OPERATION_COUNT)
+            .avoidLoggingOnException()
             .build((a, b) -> testee.save(new SimpleMailbox(MAILBOX_PATH, UID_VALIDITY)))
             .run()
             .awaitTermination(1, TimeUnit.MINUTES);
@@ -99,6 +100,7 @@ public class CassandraMailboxMapperConcurrencyTest {
         boolean termination = ConcurrentTestRunner.builder()
             .threadCount(THREAD_COUNT)
             .operationCount(OPERATION_COUNT)
+            .avoidLoggingOnException()
             .build((a, b) -> testee.save(mailbox))
             .run()
             .awaitTermination(1, TimeUnit.MINUTES);

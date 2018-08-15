@@ -37,14 +37,17 @@ import com.google.common.base.Preconditions;
 public class ConcurrentTestRunner {
 
     public static final int DEFAULT_OPERATION_COUNT = 1;
+    public static final boolean DEFAULT_LOG_ON_EXCEPTION = true;
 
     public static class Builder {
         private Optional<Integer> threadCount;
-        private Optional<Integer>  operationCount;
+        private Optional<Integer> operationCount;
+        private Optional<Boolean> logOnException;
 
         public Builder() {
             threadCount = Optional.empty();
             operationCount = Optional.empty();
+            logOnException = Optional.empty();
         }
 
         public Builder threadCount(int threadCount) {
@@ -59,6 +62,11 @@ public class ConcurrentTestRunner {
             return this;
         }
 
+        public Builder avoidLoggingOnException() {
+            this.logOnException = Optional.of(false);
+            return this;
+        }
+
         public ConcurrentTestRunner build(BiConsumer operation) {
             Preconditions.checkState(threadCount.isPresent(), "'threadCount' is compulsory");
             Preconditions.checkNotNull(operation);
@@ -66,6 +74,7 @@ public class ConcurrentTestRunner {
             return new ConcurrentTestRunner(
                 threadCount.get(),
                 operationCount.orElse(DEFAULT_OPERATION_COUNT),
+                logOnException.orElse(DEFAULT_LOG_ON_EXCEPTION),
                 operation);
         }
     }
@@ -77,11 +86,13 @@ public class ConcurrentTestRunner {
     private class ConcurrentRunnableTask implements Runnable {
         private final int threadNumber;
         private final BiConsumer biConsumer;
+        private final boolean logOnException;
         private Exception exception;
 
-        public ConcurrentRunnableTask(int threadNumber, BiConsumer biConsumer) {
+        public ConcurrentRunnableTask(int threadNumber, BiConsumer biConsumer, boolean logOnException) {
             this.threadNumber = threadNumber;
             this.biConsumer = biConsumer;
+            this.logOnException = logOnException;
         }
 
         @Override
@@ -92,7 +103,9 @@ public class ConcurrentTestRunner {
                 try {
                     biConsumer.consume(threadNumber, i);
                 } catch (Exception e) {
-                    LOGGER.error("Error caught during concurrent testing", e);
+                    if (logOnException) {
+                        LOGGER.error("Error caught during concurrent testing", e);
+                    }
                     exception = e;
                 }
             }
@@ -110,15 +123,17 @@ public class ConcurrentTestRunner {
 
     private final int threadCount;
     private final int operationCount;
+    private final boolean logOnException;
     private final CountDownLatch countDownLatch;
     private final BiConsumer biConsumer;
     private final ExecutorService executorService;
     private final List<Future<?>> futures;
 
-    private ConcurrentTestRunner(int threadCount, int operationCount, BiConsumer biConsumer) {
+    private ConcurrentTestRunner(int threadCount, int operationCount, boolean logOnException, BiConsumer biConsumer) {
         this.threadCount = threadCount;
         this.operationCount = operationCount;
         this.countDownLatch = new CountDownLatch(threadCount);
+        this.logOnException = logOnException;
         this.biConsumer = biConsumer;
         this.executorService = Executors.newFixedThreadPool(threadCount);
         this.futures = new ArrayList<>();
@@ -126,7 +141,7 @@ public class ConcurrentTestRunner {
 
     public ConcurrentTestRunner run() {
         for (int i = 0; i < threadCount; i++) {
-            futures.add(executorService.submit(new ConcurrentRunnableTask(i, biConsumer)));
+            futures.add(executorService.submit(new ConcurrentRunnableTask(i, biConsumer, logOnException)));
         }
         return this;
     }
