@@ -22,7 +22,7 @@
 <mailetcontainer enableJmx="false">
 
     <context>
-        <postmaster>postmaster@james.minet.net</postmaster>
+        <postmaster>postmaster@localhost</postmaster>
     </context>
 
     <spooler>
@@ -66,7 +66,7 @@
             </mailet>
             <mailet match="relay-allowed" class="RemoteDelivery">
                 <outgoingQueue>outgoing</outgoingQueue>
-                <delayTime>5000, 100000, 500000</delayTime>
+                <delayTime>5000, 100000, 23*500000</delayTime>
                 <maxRetries>25</maxRetries>
                 <maxDnsProblemRetries>0</maxDnsProblemRetries>
                 <deliveryThreads>10</deliveryThreads>

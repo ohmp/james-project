@@ -481,7 +481,7 @@ Regards, Postmaster XXX.YYY
           <delayTime>3 hours</delayTime>
           <delayTime>6 hours</delayTime>
           -->
-          <delayTime>5000, 100000, 500000</delayTime>
+          <delayTime>5000</delayTime>
           <maxRetries>1</maxRetries>
             
           <!-- The max reties which will used if no A or MX record for the domain was found. -->
