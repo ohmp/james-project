@@ -101,7 +101,7 @@ public class MailboxCopierImpl implements MailboxCopier {
                     dstMailboxManager.createMailbox(mailboxPath, dstMailboxSession);
                     LOGGER.info("Destination mailbox {}/{} created with path={} after {} ms.", i, mailboxPathList.size(), mailboxPath, Calendar.getInstance().getTimeInMillis() - start.getTimeInMillis());
                 } catch (MailboxExistsException e) {
-                    LOGGER.error("Mailbox {} with path={} already exists.", i, mailboxPath, e);
+                    LOGGER.error("Mailbox {} with path={} already exists.", i, mailboxPath);
                 }
                 dstMailboxManager.endProcessingRequest(dstMailboxSession);
 
