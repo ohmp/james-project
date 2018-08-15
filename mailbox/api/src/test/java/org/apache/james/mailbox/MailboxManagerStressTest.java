@@ -36,11 +36,13 @@ import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mime4j.dom.Message;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 
 public abstract class MailboxManagerStressTest {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(MailboxManagerStressTest.class);
     private static final int APPEND_OPERATIONS = 200;
 
     private MailboxManager mailboxManager;
@@ -102,7 +104,7 @@ public abstract class MailboxManagerStressTest {
                                 .setSubject("test")
                                 .setBody("testmail", StandardCharsets.UTF_8)), mailboxSession);
 
-                    System.out.println("Append message with uid=" + messageId.getUid());
+                    LOGGER.debug("Append message with uid={}", messageId.getUid());
                     if (uids.put(messageId.getUid(), new Object()) != null) {
                         fail.set(true);
                     }
