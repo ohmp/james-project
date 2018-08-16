@@ -2,9 +2,7 @@
 
 printUsage() {
    echo "Usage : "
-   echo "./integration_tests.sh URL BRANCH JAMES_IP JAMES_IMAP_PORT"
-   echo "    JAMES_IP: IP of the James server to be tests"
-   echo "    JAMES_IMAP_PORT: Exposed IMAP port of this James server"
+   echo "./integration_tests.sh URL BRANCH"
    echo "    SHA1(optional): Branch to build or master if none"
    exit 1
 }
@@ -20,38 +18,19 @@ do
          ;;
       *)
          if ! [ -z "$1" ]; then
-            JAMES_ADDRESS=$1
-         fi
-         if ! [ -z "$2" ]; then
-            JAMES_IMAP_PORT=$2
-         fi
-         if ! [ -z "$3" ]; then
-            SHA1=$3
+            SHA1=$1
          fi
          ;;
    esac
 done
 
-if [ -z "$JAMES_ADDRESS" ]; then
-   echo "You must provide a JAMES_ADDRESS"
-   printUsage
-fi
-
-if [ -z "$JAMES_IMAP_PORT" ]; then
-   echo "You must provide a JAMES_IMAP_PORT"
-   printUsage
-fi
-
 if [ -z "$SHA1" ]; then
    SHA1=master
 fi
 
-export JAMES_ADDRESS=$JAMES_ADDRESS
-export JAMES_IMAP_PORT=$JAMES_IMAP_PORT
+echo $SHA1
 
 git clone $ORIGIN/.
 git checkout $SHA1
 
-
-mvn -DskipTests -pl org.apache.james:apache-james-mpt-external-james -am compile
-mvn -Dtest=JamesDeploymentValidation -pl org.apache.james:apache-james-mpt-external-james test
+mvn clean package -Pvalidating-deployment -pl org.apache.james:deployment-testing
