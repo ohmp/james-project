@@ -1,5 +1,11 @@
 # James deployment validation
 
+Testing all docker images:
+
+```
+mvn clean package -Pvalidating-deployment -pl org.apache.james:deployment-testing
+```
+
 ## Validating Cassandra guice deployment
 
 The test class is **CassandraGuiceDeploymentTest**.
