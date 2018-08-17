@@ -1315,7 +1315,7 @@ All rights reserved.
                 <resource name='commons-codec-1.5.jar'/>
                 <resource name='commons-collections-3.2.1.jar'/>
                 <resource name='commons-compress-1.1.jar'/>
-                <resource name='commons-configuration-1.6.jar'/>
+                <resource name='commons-configuration-1.10.jar'/>
                 <resource name='commons-daemon-1.0.5.jar'/>
                 <resource name='commons-dbcp-1.4.jar'/>
                 <resource name='commons-httpclient-3.0.1.jar'/>
