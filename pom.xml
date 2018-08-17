@@ -661,7 +661,6 @@
         <jasypt.version>1.9.2</jasypt.version>
         <guice.version>4.2.0</guice.version>
         <jackrabbit-core.version>2.5.2</jackrabbit-core.version>
-        <jackson1.version>1.9.2</jackson1.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 
@@ -2304,26 +2303,6 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>1.60</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
-                <version>${jackson1.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-jaxrs</artifactId>
-                <version>${jackson1.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
-                <version>${jackson1.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-xc</artifactId>
-                <version>${jackson1.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
