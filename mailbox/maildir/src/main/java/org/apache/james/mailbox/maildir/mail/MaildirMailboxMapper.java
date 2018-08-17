@@ -264,13 +264,15 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
      * Stores a copy of a mailbox in a cache valid for one request. This is to enable
      * referring to renamed mailboxes via id.
      * @param mailbox The mailbox to cache
-     * @return The id of the cached mailbox
+     * @return the cached mailbox
      */
     private Mailbox cacheMailbox(Mailbox mailbox) {
-        mailboxCache.add(new SimpleMailbox(mailbox));
-        int id = mailboxCache.size() - 1;
-        ((SimpleMailbox) mailbox).setMailboxId(MaildirId.of(id));
-        return mailbox;
+        synchronized (mailboxCache) {
+            mailboxCache.add(new SimpleMailbox(mailbox));
+            int id = mailboxCache.size() - 1;
+            mailbox.setMailboxId(MaildirId.of(id));
+            return mailbox;
+        }
     }
     
     /**
@@ -283,10 +285,12 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         if (mailboxId == null) {
             throw new MailboxNotFoundException("null");
         }
-        try {
-            return mailboxCache.get(mailboxId.getRawId());
-        } catch (IndexOutOfBoundsException e) {
-            throw new MailboxNotFoundException(mailboxId);
+        synchronized (mailboxCache) {
+            try {
+                return mailboxCache.get(mailboxId.getRawId());
+            } catch (IndexOutOfBoundsException e) {
+                throw new MailboxNotFoundException(mailboxId);
+            }
         }
     }
     
