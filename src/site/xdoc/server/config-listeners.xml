@@ -60,6 +60,8 @@
                      For Cassandra guice wiring. Provides more insights on mailbox operations</li>
                  <li><code>org.apache.james.mailbox.quota.mailing.listeners.QuotaThresholdCrossingListener</code>:
                      For Cassandra guice wiring. Sends emails to users exceeding 80% and 99% of their quota to warn them</li>
+                 <li><code>org.apache.james.quota.search.elasticsearch.events.ElasticSearchQuotaMailboxListener</code>:
+                     For Cassandra guice wiring. Index quota to allow to search user in a given ratio occupation range</li>
             </ul>
         </section>
 
