@@ -114,7 +114,7 @@ public class MailetConfiguration implements SerializableAsXml {
             .mailet(RemoteDelivery.class)
             .addProperty("outgoingQueue", "outgoing")
             .addProperty("delayTime", "5000, 100000, 500000")
-            .addProperty("maxRetries", "2")
+            .addProperty("maxRetries", "3")
             .addProperty("maxDnsProblemRetries", "0")
             .addProperty("deliveryThreads", "2")
             .addProperty("sendpartial", "true");

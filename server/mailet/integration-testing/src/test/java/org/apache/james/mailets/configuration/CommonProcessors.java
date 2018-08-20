@@ -106,7 +106,7 @@ public class CommonProcessors {
                         .matcher(SMTPAuthSuccessful.class)
                         .mailet(RemoteDelivery.class)
                         .addProperty("outgoingQueue", "outgoing")
-                        .addProperty("delayTime", "5000, 100000, 500000")
+                        .addProperty("delayTime", "5000, 100000, 23*500000")
                         .addProperty("maxRetries", "25")
                         .addProperty("maxDnsProblemRetries", "0")
                         .addProperty("deliveryThreads", "10")
