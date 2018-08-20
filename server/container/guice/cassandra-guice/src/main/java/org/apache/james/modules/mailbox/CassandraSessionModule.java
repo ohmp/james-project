@@ -64,6 +64,7 @@ public class CassandraSessionModule extends AbstractModule {
     private static final String LOCALHOST = "127.0.0.1";
     private static final String BATCHSIZES_FILE_NAME = "batchsizes";
     private static final String CASSANDRA_FILE_NAME = "cassandra";
+    private static final int CASSANDRA_PORT = 9042;
 
     @Override
     protected void configure() {
@@ -134,9 +135,9 @@ public class CassandraSessionModule extends AbstractModule {
         try {
             return ClusterConfiguration.from(propertiesProvider.getConfiguration(CASSANDRA_FILE_NAME));
         } catch (FileNotFoundException e) {
-            LOGGER.warn("Could not locate cassandra configuration file. Defaulting to node " + LOCALHOST + ":9042");
+            LOGGER.warn("Could not locate cassandra configuration file. Defaulting to node " + LOCALHOST + ":" + CASSANDRA_PORT);
             return ClusterConfiguration.builder()
-                .host(Host.from(LOCALHOST, 9042))
+                .host(Host.from(LOCALHOST, CASSANDRA_PORT))
                 .build();
         }
     }
