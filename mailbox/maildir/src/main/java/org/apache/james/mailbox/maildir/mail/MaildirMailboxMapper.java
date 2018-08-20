@@ -59,13 +59,14 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     /**
      * A request-scoped list of mailboxes in order to refer to them via id
      */
-    private MailboxCache mailboxCache;
+    private final MailboxCache mailboxCache;
 
     private final MailboxSession session;
     
     public MaildirMailboxMapper(MaildirStore maildirStore, MailboxSession session) {
         this.maildirStore = maildirStore;
         this.session = session;
+        this.mailboxCache = new MailboxCache();
     }
 
     @Override
