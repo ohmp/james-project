@@ -34,6 +34,7 @@
     <logger name="org.apache.james" level="WARN" >
         <appender-ref ref="CONSOLE" />
     </logger>
+    <logger name="org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager" level="ERROR"/>
 
     <logger name="org.apache.james.backends.cassandra.DockerCassandraRule" level="WARN" >
         <appender-ref ref="CONSOLE" />

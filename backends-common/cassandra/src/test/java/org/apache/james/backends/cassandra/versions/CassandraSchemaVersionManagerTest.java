@@ -143,7 +143,7 @@ public class CassandraSchemaVersionManagerTest {
         when(schemaVersionDAO.getCurrentSchemaVersion())
             .thenReturn(CompletableFuture.completedFuture(Optional.of(CassandraSchemaVersionManager.DEFAULT_VERSION)));
 
-        SchemaState schemaState = new CassandraSchemaVersionManager(schemaVersionDAO).computeSchemaState();
+        SchemaState schemaState = new CassandraSchemaVersionManager(schemaVersionDAO, logIfVersdionIsMissing).computeSchemaState();
 
         assertThat(schemaState)
             .isNotEqualTo(TOO_RECENT)
@@ -155,7 +155,7 @@ public class CassandraSchemaVersionManagerTest {
         when(schemaVersionDAO.getCurrentSchemaVersion())
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        CassandraSchemaVersionManager testee = new CassandraSchemaVersionManager(schemaVersionDAO);
+        CassandraSchemaVersionManager testee = new CassandraSchemaVersionManager(schemaVersionDAO, logIfVersdionIsMissing);
 
         assertThat(testee.getMinimumSupportedVersion()).isEqualTo(CassandraSchemaVersionManager.MIN_VERSION);
     }
@@ -165,7 +165,7 @@ public class CassandraSchemaVersionManagerTest {
         when(schemaVersionDAO.getCurrentSchemaVersion())
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        CassandraSchemaVersionManager testee = new CassandraSchemaVersionManager(schemaVersionDAO);
+        CassandraSchemaVersionManager testee = new CassandraSchemaVersionManager(schemaVersionDAO, logIfVersdionIsMissing);
 
         assertThat(testee.getMaximumSupportedVersion()).isEqualTo(CassandraSchemaVersionManager.MAX_VERSION);
     }
