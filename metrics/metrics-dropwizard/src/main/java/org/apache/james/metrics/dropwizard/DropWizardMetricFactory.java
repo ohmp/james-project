@@ -30,7 +30,7 @@ import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 
-import com.codahale.metrics.jmx.JmxReporter;
+import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 
 public class DropWizardMetricFactory implements MetricFactory {
