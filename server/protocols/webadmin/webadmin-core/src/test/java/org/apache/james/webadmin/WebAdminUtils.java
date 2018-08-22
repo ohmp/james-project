@@ -23,12 +23,16 @@ import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Set;
 
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.Port;
+import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 
-import com.google.common.collect.ImmutableSet;
+import com.github.steveash.guavate.Guavate;
+
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 
@@ -36,9 +40,31 @@ public class WebAdminUtils {
 
     public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, Routes... routes) {
         return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
-            ImmutableSet.copyOf(routes),
+            privateRoutes(routes),
+            publicRoutes(routes),
             new NoAuthenticationFilter(),
             metricFactory);
+    }
+
+    public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, AuthenticationFilter authenticationFilter, Routes... routes) {
+        return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
+            privateRoutes(routes),
+            publicRoutes(routes),
+            authenticationFilter,
+            metricFactory);
+    }
+
+    private static Set<Routes> privateRoutes(Routes[] routes) {
+        return Arrays.stream(routes)
+                .filter(route -> !(route instanceof PublicRoutes))
+                .collect(Guavate.toImmutableSet());
+    }
+
+    private static Set<PublicRoutes> publicRoutes(Routes[] routes) {
+        return Arrays.stream(routes)
+                .filter(PublicRoutes.class::isInstance)
+                .map(PublicRoutes.class::cast)
+                .collect(Guavate.toImmutableSet());
     }
 
     public static RequestSpecBuilder buildRequestSpecification(WebAdminServer webAdminServer) {
