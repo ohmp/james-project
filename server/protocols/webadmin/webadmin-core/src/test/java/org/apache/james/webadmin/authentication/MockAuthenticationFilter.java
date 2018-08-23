@@ -17,37 +17,20 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.swagger.routes;
+package org.apache.james.webadmin.authentication;
 
-import javax.inject.Inject;
+import spark.Request;
+import spark.Response;
 
-import org.apache.james.webadmin.PublicRoutes;
-import org.apache.james.webadmin.WebAdminConfiguration;
-import org.apache.james.webadmin.swagger.SwaggerParser;
-import org.eclipse.jetty.http.HttpStatus;
-
-import spark.Service;
-
-public class SwaggerRoutes implements PublicRoutes {
-    public static final String SWAGGER_ENDPOINT = "/james-swagger";
-    private static final String APP_PACKAGE = "org.apache.james.webadmin.routes";
-    private final WebAdminConfiguration webAdminConfiguration;
-
-    @Inject
-    public SwaggerRoutes(WebAdminConfiguration webAdminConfiguration) {
-        this.webAdminConfiguration = webAdminConfiguration;
-    }
+public class MockAuthenticationFilter implements AuthenticationFilter {
+    private boolean hasBeenAuthenticated = false;
 
     @Override
-    public String getBasePath() {
-        return SWAGGER_ENDPOINT;
+    public void handle(Request request, Response response) throws Exception {
+        hasBeenAuthenticated = true;
     }
 
-    @Override
-    public void define(Service service) {
-        service.get(SWAGGER_ENDPOINT, (request, response) -> {
-            response.status(HttpStatus.OK_200);
-            return SwaggerParser.getSwaggerJson(APP_PACKAGE, webAdminConfiguration);
-        });
+    public boolean hasBeenAuthenticated() {
+        return hasBeenAuthenticated;
     }
 }

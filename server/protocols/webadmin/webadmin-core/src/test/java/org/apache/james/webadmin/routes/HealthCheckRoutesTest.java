@@ -19,29 +19,26 @@
 
 package org.apache.james.webadmin.routes;
 
-import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
-import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
-
+import io.restassured.RestAssured;
 import org.apache.james.core.healthcheck.ComponentName;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.core.healthcheck.Result;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
-import org.apache.james.webadmin.authentication.AuthenticationFilter;
+import org.apache.james.webadmin.authentication.MockAuthenticationFilter;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.restassured.RestAssured;
-import spark.Request;
-import spark.Response;
+import java.util.HashSet;
+import java.util.Set;
+
+import static io.restassured.RestAssured.when;
+import static io.restassured.RestAssured.with;
+import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HealthCheckRoutesTest {
 
@@ -86,23 +83,9 @@ public class HealthCheckRoutesTest {
         webAdminServer.destroy();
     }
 
-    private static class MockAuthenticationFilter implements AuthenticationFilter {
-
-        private boolean hasBeenAuthenticated = false;
-
-        @Override
-        public void handle(Request request, Response response) throws Exception {
-            hasBeenAuthenticated = true;
-        }
-
-        public boolean hasBeenAuthenticated() {
-            return hasBeenAuthenticated;
-        }
-    }
-
     @Test
     public void validateHealthchecksShouldNotNeedAuthentication() {
-        given()
+        with()
             .get();
 
         assertThat(authenticationFilter.hasBeenAuthenticated()).isFalse();

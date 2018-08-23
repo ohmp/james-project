@@ -88,10 +88,10 @@ public class WebAdminServer implements Configurable {
             configureCORS();
             configureMetrics();
             service.before((request, response) -> response.type(Constants.JSON_CONTENT_TYPE));
-            service.before(authenticationFilter);
             configureMDC();
             routesList.forEach(routes -> {
                 service.before(routes.getBasePath(), authenticationFilter);
+                service.before(routes.getBasePath() + "/*", authenticationFilter);
                 routes.define(service);
             });
             publicRoutes.forEach(routes -> routes.define(service));

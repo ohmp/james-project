@@ -39,11 +39,7 @@ import io.restassured.http.ContentType;
 public class WebAdminUtils {
 
     public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, Routes... routes) {
-        return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
-            privateRoutes(routes),
-            publicRoutes(routes),
-            new NoAuthenticationFilter(),
-            metricFactory);
+        return createWebAdminServer(metricFactory, new NoAuthenticationFilter(), routes);
     }
 
     public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, AuthenticationFilter authenticationFilter, Routes... routes) {

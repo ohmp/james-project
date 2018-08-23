@@ -59,6 +59,11 @@ public class HealthCheckRoutes implements PublicRoutes {
     }
 
     @Override
+    public String getBasePath() {
+        return HEALTHCHECK;
+    }
+
+    @Override
     public void define(Service service) {
         this.service = service;
 
