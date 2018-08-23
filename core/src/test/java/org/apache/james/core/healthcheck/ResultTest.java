@@ -19,6 +19,7 @@
 package org.apache.james.core.healthcheck;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +47,13 @@ public class ResultTest {
     }
 
     @Test
+    public void isUnhealthyShouldBeFalseWhenHealthy() {
+        Result result = Result.healthy();
+
+        assertThat(result.isUnHealthy()).isFalse();
+    }
+
+    @Test
     public void statusShouldBeUnhealthyWhenUnhealthy() {
         Result result = Result.unhealthy("cause");
 
@@ -54,7 +62,7 @@ public class ResultTest {
 
     @Test
     public void causeMayBeEmptyWhenUnhealthy() {
-        Result result = Result.unhealthy(null);
+        Result result = Result.unhealthy();
 
         assertThat(result.getCause()).isEmpty();
     }
@@ -69,8 +77,21 @@ public class ResultTest {
 
     @Test
     public void isHealthyShouldBeFalseWhenUnhealthy() {
-        Result result = Result.unhealthy(null);
+        Result result = Result.unhealthy();
 
         assertThat(result.isHealthy()).isFalse();
+    }
+
+    @Test
+    public void isUnhealthyShouldBeTrueWhenUnhealthy() {
+        Result result = Result.unhealthy();
+
+        assertThat(result.isUnHealthy()).isTrue();
+    }
+
+    @Test
+    public void unhealthyShouldThrowWhenNullCause() {
+        assertThatThrownBy(() -> Result.unhealthy(null))
+            .isInstanceOf(NullPointerException.class);
     }
 }

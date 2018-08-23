@@ -16,45 +16,17 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+
 package org.apache.james.core.healthcheck;
 
-import java.util.Optional;
+public class ComponentName {
+    private final String name;
 
-public class Result {
-
-    public static Result healthy() {
-        return new Result(ResultStatus.HEALTHY, Optional.empty());
+    public ComponentName(String name) {
+        this.name = name;
     }
 
-    public static Result unhealthy(String cause) {
-        return new Result(ResultStatus.UNHEALTHY, Optional.of(cause));
-    }
-
-    public static Result unhealthy() {
-        return new Result(ResultStatus.UNHEALTHY, Optional.empty());
-    }
-
-    private final ResultStatus status;
-    private final Optional<String> cause;
-
-    private Result(ResultStatus status, Optional<String> cause) {
-        this.status = status;
-        this.cause = cause;
-    }
-
-    public ResultStatus getStatus() {
-        return status;
-    }
-
-    public boolean isHealthy() {
-        return status == ResultStatus.HEALTHY;
-    }
-
-    public boolean isUnHealthy() {
-        return status == ResultStatus.UNHEALTHY;
-    }
-
-    public Optional<String> getCause() {
-        return cause;
+    public String getName() {
+        return name;
     }
 }

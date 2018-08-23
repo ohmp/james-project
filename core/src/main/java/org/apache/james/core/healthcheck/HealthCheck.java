@@ -19,6 +19,7 @@
 package org.apache.james.core.healthcheck;
 
 public interface HealthCheck {
+    ComponentName componentName();
 
     Result check();
 }
