@@ -21,6 +21,9 @@ package org.apache.james.jmap.api.filtering;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Arrays;
+import java.util.function.Function;
+
 import org.apache.james.core.User;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.jmap.api.filtering.impl.EventSourcingFilteringManagement;
@@ -31,9 +34,16 @@ import com.google.common.collect.ImmutableList;
 public interface FilteringManagementContract {
 
     String BART_SIMPSON_CARTOON = "bart@simpson.cartoon";
-    Rule RULE_1 = Rule.of("1");
-    Rule RULE_2 = Rule.of("2");
-    Rule RULE_3 = Rule.of("3");
+    String NAME = "a name";
+    Rule.Condition CONDITION = Rule.Condition.of(
+            Rule.Condition.Field.of("cc"),
+            Rule.Condition.Comparator.of("contains"),
+            "something");
+    Rule.Action ACTION = Rule.Action.ofMailboxIds("id-01");
+    Rule.Builder RULE_BUILER = Rule.builder().name(NAME).condition(CONDITION).action(ACTION);
+    Rule RULE_1 = RULE_BUILER.id(Rule.Id.of("1")).build();
+    Rule RULE_2 = RULE_BUILER.id(Rule.Id.of("2")).build();
+    Rule RULE_3 = RULE_BUILER.id(Rule.Id.of("3")).build();
 
     default FilteringManagement instanciateFilteringManagement(EventStore eventStore) {
         return new EventSourcingFilteringManagement(eventStore);
