@@ -19,27 +19,27 @@
 
 package org.apache.james.webadmin.routes;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-
+import com.github.steveash.guavate.Guavate;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.core.healthcheck.ComponentName;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.core.healthcheck.Result;
 import org.apache.james.webadmin.PublicRoutes;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.steveash.guavate.Guavate;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import spark.Response;
 import spark.Service;
+
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import java.util.List;
+import java.util.Set;
 
 @Api(tags = "Healthchecks")
 @Path(HealthCheckRoutes.HEALTHCHECK)
@@ -75,24 +75,32 @@ public class HealthCheckRoutes implements PublicRoutes {
     public void validateHealthchecks() {
         service.get(HEALTHCHECK,
             (request, response) -> {
-                List<Result> anyUnhealthy = retrieveUnhealthyHealthChecks();
+                List<Pair<ComponentName, Result>> anyUnhealthy = retrieveUnhealthyHealthChecks();
 
-                if (!anyUnhealthy.isEmpty()) {
-                    anyUnhealthy.stream()
-                        .forEach(result -> LOGGER.error("HealthCheck failed " + result.getCause().orElse("")));
-
-                    response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                } else {
-                    response.status(HttpStatus.OK_200);
-                }
+                anyUnhealthy.forEach(this::logFailedCheck);
+                response.status(getCorrespondingStatusCode(anyUnhealthy));
                 return response;
             });
     }
 
-    private List<Result> retrieveUnhealthyHealthChecks() {
+    private int getCorrespondingStatusCode(List<Pair<ComponentName, Result>> anyUnhealthy) {
+        if (anyUnhealthy.isEmpty()) {
+            return HttpStatus.OK_200;
+        } else {
+            return HttpStatus.INTERNAL_SERVER_ERROR_500;
+        }
+    }
+
+    private void logFailedCheck(Pair<ComponentName, Result> pair) {
+        LOGGER.error("HealthCheck failed for {} : {}",
+            pair.getKey().getName(),
+            pair.getValue().getCause().orElse(""));
+    }
+
+    private List<Pair<ComponentName, Result>> retrieveUnhealthyHealthChecks() {
         return healthChecks.stream()
-            .map(HealthCheck::check)
-            .filter(check -> !check.isHealthy())
+            .map(healthCheck -> Pair.of(healthCheck.componentName(), healthCheck.check()))
+            .filter(pair -> pair.getValue().isUnHealthy())
             .collect(Guavate.toImmutableList());
     }
 }

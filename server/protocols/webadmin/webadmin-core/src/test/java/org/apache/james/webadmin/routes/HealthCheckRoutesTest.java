@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.james.core.healthcheck.ComponentName;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.core.healthcheck.Result;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
@@ -43,6 +44,20 @@ import spark.Request;
 import spark.Response;
 
 public class HealthCheckRoutesTest {
+
+    private static HealthCheck healthCheck(ComponentName componentName, Result result) {
+        return new HealthCheck() {
+            @Override
+            public ComponentName componentName() {
+                return componentName;
+            }
+
+            @Override
+            public Result check() {
+                return result;
+            }
+        };
+    }
 
     private WebAdminServer webAdminServer;
     private Set<HealthCheck> healthChecks;
@@ -103,20 +118,8 @@ public class HealthCheckRoutesTest {
 
     @Test
     public void validateHealthchecksShouldReturnOkWhenHealthChecksAreHealthy() {
-        healthChecks.add(new HealthCheck() {
-            
-            @Override
-            public Result check() {
-                return Result.healthy();
-            }
-        });
-        healthChecks.add(new HealthCheck() {
-            
-            @Override
-            public Result check() {
-                return Result.healthy();
-            }
-        });
+        healthChecks.add(healthCheck(new ComponentName("component-1"), Result.healthy()));
+        healthChecks.add(healthCheck(new ComponentName("component-2"), Result.healthy()));
 
         when()
             .get()
@@ -126,20 +129,8 @@ public class HealthCheckRoutesTest {
 
     @Test
     public void validateHealthchecksShouldReturnInternalErrorWhenOneHealthCheckIsUnhealthy() {
-        healthChecks.add(new HealthCheck() {
-            
-            @Override
-            public Result check() {
-                return Result.unhealthy("cause");
-            }
-        });
-        healthChecks.add(new HealthCheck() {
-            
-            @Override
-            public Result check() {
-                return Result.healthy();
-            }
-        });
+        healthChecks.add(healthCheck(new ComponentName("component-1"), Result.unhealthy("cause")));
+        healthChecks.add(healthCheck(new ComponentName("component-2"), Result.healthy()));
 
         when()
             .get()
@@ -149,20 +140,8 @@ public class HealthCheckRoutesTest {
 
     @Test
     public void validateHealthchecksShouldReturnInternalErrorWhenAllHealthChecksAreUnhealthy() {
-        healthChecks.add(new HealthCheck() {
-            
-            @Override
-            public Result check() {
-                return Result.unhealthy("cause");
-            }
-        });
-        healthChecks.add(new HealthCheck() {
-            
-            @Override
-            public Result check() {
-                return Result.unhealthy(null);
-            }
-        });
+        healthChecks.add(healthCheck(new ComponentName("component-1"), Result.unhealthy("cause")));
+        healthChecks.add(healthCheck(new ComponentName("component-1"), Result.unhealthy()));
 
         when()
             .get()
