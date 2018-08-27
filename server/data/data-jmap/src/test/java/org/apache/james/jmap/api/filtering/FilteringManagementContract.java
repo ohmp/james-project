@@ -18,32 +18,27 @@
  ****************************************************************/
 package org.apache.james.jmap.api.filtering;
 
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_1;
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_2;
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_3;
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_FROM;
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_RECIPIENT;
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_SUBJECT;
+import static org.apache.james.jmap.api.filtering.RuleFixture.RULE_TO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
-import java.util.function.Function;
+import java.util.List;
 
 import org.apache.james.core.User;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.jmap.api.filtering.impl.EventSourcingFilteringManagement;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
 public interface FilteringManagementContract {
 
     String BART_SIMPSON_CARTOON = "bart@simpson.cartoon";
-    String NAME = "a name";
-    Rule.Condition CONDITION = Rule.Condition.of(
-            Rule.Condition.Field.of("cc"),
-            Rule.Condition.Comparator.of("contains"),
-            "something");
-    Rule.Action ACTION = Rule.Action.ofMailboxIds("id-01");
-    Rule.Builder RULE_BUILER = Rule.builder().name(NAME).condition(CONDITION).action(ACTION);
-    Rule RULE_1 = RULE_BUILER.id(Rule.Id.of("1")).build();
-    Rule RULE_2 = RULE_BUILER.id(Rule.Id.of("2")).build();
-    Rule RULE_3 = RULE_BUILER.id(Rule.Id.of("3")).build();
+    User USER = User.fromUsername(BART_SIMPSON_CARTOON);
 
     default FilteringManagement instanciateFilteringManagement(EventStore eventStore) {
         return new EventSourcingFilteringManagement(eventStore);
@@ -51,71 +46,90 @@ public interface FilteringManagementContract {
 
     @Test
     default void listingRulesForUnknownUserShouldReturnEmptyList(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
-        assertThat(instanciateFilteringManagement(eventStore).listRulesForUser(user)).isEmpty();
+        assertThat(instanciateFilteringManagement(eventStore).listRulesForUser(USER))
+            .isEmpty();
     }
 
     @Test
     default void listingRulesShouldThrowWhenNullUser(EventStore eventStore) {
         User user = null;
-        assertThatThrownBy(() -> instanciateFilteringManagement(eventStore).listRulesForUser(user)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> instanciateFilteringManagement(eventStore).listRulesForUser(user))
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     default void listingRulesShouldReturnDefinedRules(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(RULE_1, RULE_2));
-        assertThat(testee.listRulesForUser(user)).containsExactly(RULE_1, RULE_2);
+
+        testee.defineRulesForUser(USER, RULE_1, RULE_2);
+
+        assertThat(testee.listRulesForUser(USER))
+            .containsExactly(RULE_1, RULE_2);
     }
 
     @Test
     default void listingRulesShouldReturnLastDefinedRules(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(RULE_1, RULE_2));
-        testee.defineRulesForUser(user, ImmutableList.of(RULE_2, RULE_1));
-        assertThat(testee.listRulesForUser(user)).containsExactly(RULE_2, RULE_1);
+
+        testee.defineRulesForUser(USER, RULE_1, RULE_2);
+        testee.defineRulesForUser(USER, RULE_2, RULE_1);
+
+        assertThat(testee.listRulesForUser(USER))
+            .containsExactly(RULE_2, RULE_1);
     }
 
     @Test
     default void definingRulesShouldThrowWhenDuplicateRules(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        assertThatThrownBy(() -> testee.defineRulesForUser(user, ImmutableList.of(RULE_1, RULE_1)))
+
+        assertThatThrownBy(() -> testee.defineRulesForUser(USER, RULE_1, RULE_1))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     default void definingRulesShouldThrowWhenNullUser(EventStore eventStore) {
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        assertThatThrownBy(() -> testee.defineRulesForUser(null, ImmutableList.of(RULE_1, RULE_1)))
+
+        assertThatThrownBy(() -> testee.defineRulesForUser(null, RULE_1, RULE_1))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     default void definingRulesShouldThrowWhenNullRuleList(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        assertThatThrownBy(() -> testee.defineRulesForUser(user, null))
+
+        List<Rule> rules = null;
+        assertThatThrownBy(() -> testee.defineRulesForUser(USER, rules))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     default void definingRulesShouldKeepOrdering(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(RULE_3, RULE_2, RULE_1));
-        assertThat(testee.listRulesForUser(user)).containsExactly(RULE_3, RULE_2, RULE_1);
+        testee.defineRulesForUser(USER, RULE_3, RULE_2, RULE_1);
+
+        assertThat(testee.listRulesForUser(USER))
+            .containsExactly(RULE_3, RULE_2, RULE_1);
     }
 
     @Test
     default void definingEmptyRuleListShouldRemoveExistingRules(EventStore eventStore) {
-        User user = User.fromUsername(BART_SIMPSON_CARTOON);
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(RULE_3, RULE_2, RULE_1));
-        testee.defineRulesForUser(user, ImmutableList.of());
-        assertThat(testee.listRulesForUser(user)).isEmpty();
+
+        testee.defineRulesForUser(USER, RULE_3, RULE_2, RULE_1);
+        testee.clearRulesForUser(USER);
+
+        assertThat(testee.listRulesForUser(USER)).isEmpty();
+    }
+
+    @Test
+    default void allFieldsAndComparatorShouldWellBeStored(EventStore eventStore) {
+        FilteringManagement testee = instanciateFilteringManagement(eventStore);
+
+        testee.defineRulesForUser(USER, RULE_FROM, RULE_RECIPIENT, RULE_SUBJECT, RULE_TO, RULE_1);
+
+        assertThat(testee.listRulesForUser(USER))
+            .containsExactly(RULE_FROM, RULE_RECIPIENT, RULE_SUBJECT, RULE_TO, RULE_1);
     }
 
 }
