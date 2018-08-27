@@ -185,33 +185,70 @@ public class Rule {
         }
     }
 
-
     public static class Action {
 
-        public static Action ofMailboxIds(List<String> mailboxIds) {
-            Preconditions.checkNotNull(mailboxIds, "mailboxIds should no be null");
-            return new Action(mailboxIds);
+        public static Action of(AppendInMailboxes appendInMailboxes) {
+            return new Action(appendInMailboxes);
         }
 
-        public static Action ofMailboxIds(String... mailboxIds) {
-            return ofMailboxIds(Arrays.asList(mailboxIds));
-        }
+        private final AppendInMailboxes appendInMailboxes;
 
-        private final ImmutableList<String> mailboxIds;
-
-        private Action(List<String> mailboxIds) {
-            this.mailboxIds = ImmutableList.copyOf(mailboxIds);
+        private Action(AppendInMailboxes appendInMailboxes) {
+            this.appendInMailboxes = appendInMailboxes;
         }
         
-        public ImmutableList<String> getMailboxIds() {
-            return mailboxIds;
+        public AppendInMailboxes getAppendInMailboxes() {
+            return appendInMailboxes;
         }
 
         @Override
         public final boolean equals(Object o) {
             if (o instanceof Action) {
                 Action action = (Action) o;
-                return Objects.equals(mailboxIds, action.mailboxIds);
+                return Objects.equals(appendInMailboxes, action.appendInMailboxes);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(appendInMailboxes);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                .add("appendInMailboxes", appendInMailboxes)
+                .toString();
+        }
+    }
+
+    public static class AppendInMailboxes {
+
+        public static AppendInMailboxes ofMailboxIds(List<String> mailboxIds) {
+            Preconditions.checkNotNull(mailboxIds, "mailboxIds should no be null");
+            return new AppendInMailboxes(mailboxIds);
+        }
+
+        public static AppendInMailboxes ofMailboxIds(String... mailboxIds) {
+            return ofMailboxIds(Arrays.asList(mailboxIds));
+        }
+
+        private final ImmutableList<String> mailboxIds;
+
+        private AppendInMailboxes(List<String> mailboxIds) {
+            this.mailboxIds = ImmutableList.copyOf(mailboxIds);
+        }
+
+        public ImmutableList<String> getMailboxIds() {
+            return mailboxIds;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof AppendInMailboxes) {
+                AppendInMailboxes appendInMailboxes = (AppendInMailboxes) o;
+                return Objects.equals(mailboxIds, appendInMailboxes.mailboxIds);
             }
             return false;
         }
