@@ -36,7 +36,7 @@ public class RuleTest {
     private static final String CONDITION_FIELD = "cc";
     private static final String NAME = "a name";
     public static final Rule.Condition CONDITION = Rule.Condition.of(Rule.Condition.Field.of(CONDITION_FIELD), Rule.Condition.Comparator.of(CONDITION_COMPARATOR), "something");
-    public static final Rule.Action ACTION = Rule.Action.of(Rule.AppendInMailboxes.ofMailboxIds(ACTION_MAILBOXIDS));
+    public static final Rule.Action ACTION = Rule.Action.of(Rule.Action.AppendInMailboxes.withMailboxIds(ACTION_MAILBOXIDS));
     public static final Rule.Id UNIQUE_ID = Rule.Id.of("uniqueId");
 
     @Test

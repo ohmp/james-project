@@ -112,7 +112,7 @@ public class RuleDTO {
                 Rule.Condition.Comparator.of(comparator),
                 value))
             .name(name)
-            .action(Rule.Action.of(Rule.AppendInMailboxes.ofMailboxIds(mailboxIds)))
+            .action(Rule.Action.of(Rule.Action.AppendInMailboxes.withMailboxIds(mailboxIds)))
             .build();
     }
 
