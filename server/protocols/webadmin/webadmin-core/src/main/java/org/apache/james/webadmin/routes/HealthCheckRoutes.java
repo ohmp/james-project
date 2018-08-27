@@ -95,12 +95,12 @@ public class HealthCheckRoutes implements Routes {
         switch (result.getStatus()) {
         case UNHEALTHY:
             LOGGER.error("HealthCheck failed for {} : {}",
-                    result.getComponentName().toString(),
+                    result.getComponentName().getName(),
                     result.getCause().orElse(""));
             break;
         case DEGRADED:
             LOGGER.warn("HealthCheck is unstable for {} : {}",
-                    result.getComponentName().toString(),
+                    result.getComponentName().getName(),
                     result.getCause().orElse(""));
             break;
         case HEALTHY:
