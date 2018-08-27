@@ -25,124 +25,123 @@ import org.junit.jupiter.api.Test;
 
 public class ResultTest {
 
+    private static final ComponentName COMPONENT_NAME = new ComponentName("component");
+
     @Test
     public void componentNameShouldBeKeptWhenHealthy() {
-        ComponentName componentName = new ComponentName("component");
-        Result result = Result.healthy(componentName);
+        Result result = Result.healthy(COMPONENT_NAME);
 
-        assertThat(result.getComponentName()).isEqualTo(componentName);
+        assertThat(result.getComponentName()).isEqualTo(COMPONENT_NAME);
     }
 
     @Test
     public void componentNameShouldBeKeptWhenUnhealthy() {
-        ComponentName componentName = new ComponentName("component");
-        Result result = Result.unhealthy(componentName);
+        Result result = Result.unhealthy(COMPONENT_NAME);
 
-        assertThat(result.getComponentName()).isEqualTo(componentName);
+        assertThat(result.getComponentName()).isEqualTo(COMPONENT_NAME);
     }
 
     @Test
     public void componentNameShouldBeKeptWhenDegraded() {
-        ComponentName componentName = new ComponentName("component");
-        Result result = Result.degraded(componentName);
+        Result result = Result.degraded(COMPONENT_NAME);
 
-        assertThat(result.getComponentName()).isEqualTo(componentName);
+        assertThat(result.getComponentName()).isEqualTo(COMPONENT_NAME);
     }
 
     @Test
     public void statusShouldBeHealthyWhenHealthy() {
-        Result result = Result.healthy(new ComponentName("component"));
+        Result result = Result.healthy(COMPONENT_NAME);
 
         assertThat(result.getStatus()).isEqualTo(ResultStatus.HEALTHY);
     }
 
     @Test
     public void causeShouldBeEmptyWhenHealthy() {
-        Result result = Result.healthy(new ComponentName("component"));
+        Result result = Result.healthy(COMPONENT_NAME);
 
         assertThat(result.getCause()).isEmpty();
     }
 
     @Test
     public void isHealthyShouldBeTrueWhenHealthy() {
-        Result result = Result.healthy(new ComponentName("component"));
+        Result result = Result.healthy(COMPONENT_NAME);
 
         assertThat(result.isHealthy()).isTrue();
     }
 
     @Test
     public void isDegradedShouldBeFalseWhenHealthy() {
-        Result result = Result.healthy(new ComponentName("component"));
+        Result result = Result.healthy(COMPONENT_NAME);
 
         assertThat(result.isDegraded()).isFalse();
     }
 
     @Test
     public void isUnhealthyShouldBeFalseWhenHealthy() {
-        Result result = Result.healthy(new ComponentName("component"));
+        Result result = Result.healthy(COMPONENT_NAME);
 
         assertThat(result.isUnHealthy()).isFalse();
     }
 
     @Test
     public void statusShouldBeDegradedWhenDegraded() {
-        Result result = Result.degraded(new ComponentName("component"), "cause");
+        Result result = Result.degraded(COMPONENT_NAME, "cause");
 
         assertThat(result.getStatus()).isEqualTo(ResultStatus.DEGRADED);
     }
 
     @Test
     public void causeMayBeEmptyWhenDegraded() {
-        Result result = Result.degraded(new ComponentName("component"));
+        Result result = Result.degraded(COMPONENT_NAME);
 
         assertThat(result.getCause()).isEmpty();
     }
 
     @Test
     public void degradedShouldThrowWhenNullCause() {
-        assertThatThrownBy(() -> Result.degraded(new ComponentName("component"), null))
+        assertThatThrownBy(() -> Result.degraded(COMPONENT_NAME, null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     public void causeShouldBeKeptWhenNotDegraded() {
         String cause = "cause";
-        Result result = Result.degraded(new ComponentName("component"), cause);
+        Result result = Result.degraded(COMPONENT_NAME, cause);
 
         assertThat(result.getCause()).contains(cause);
     }
 
     @Test
     public void isHealthyShouldBeFalseWhenDegraded() {
-        Result result = Result.degraded(new ComponentName("component"));
+        Result result = Result.degraded(COMPONENT_NAME);
 
         assertThat(result.isHealthy()).isFalse();
     }
 
     @Test
     public void isDegradedShouldBeFalseWhenDegraded() {
-        Result result = Result.degraded(new ComponentName("component"));
+        Result result = Result.degraded(COMPONENT_NAME);
 
         assertThat(result.isDegraded()).isTrue();
     }
 
     @Test
     public void isUnhealthyShouldBeTrueWhenDegraded() {
-        Result result = Result.degraded(new ComponentName("component"));
+        Result result = Result.degraded(COMPONENT_NAME);
 
         assertThat(result.isUnHealthy()).isFalse();
     }
 
     @Test
     public void statusShouldBeUnhealthyWhenUnhealthy() {
-        Result result = Result.unhealthy(new ComponentName("component"), "cause");
+        Result result = Result.unhealthy(COMPONENT_NAME, "cause");
 
         assertThat(result.getStatus()).isEqualTo(ResultStatus.UNHEALTHY);
     }
 
     @Test
     public void causeMayBeEmptyWhenUnhealthy() {
-        Result result = Result.unhealthy(new ComponentName("component"));
+        Result result = Result.unhealthy(COMPONENT_NAME);
 
         assertThat(result.getCause()).isEmpty();
     }
@@ -150,35 +149,35 @@ public class ResultTest {
     @Test
     public void causeShouldBeKeptWhenNotEmpty() {
         String cause = "cause";
-        Result result = Result.unhealthy(new ComponentName("component"), cause);
+        Result result = Result.unhealthy(COMPONENT_NAME, cause);
 
         assertThat(result.getCause()).contains(cause);
     }
 
     @Test
     public void isHealthyShouldBeFalseWhenUnhealthy() {
-        Result result = Result.unhealthy(new ComponentName("component"));
+        Result result = Result.unhealthy(COMPONENT_NAME);
 
         assertThat(result.isHealthy()).isFalse();
     }
 
     @Test
     public void isDegradedShouldBeFalseWhenUnhealthy() {
-        Result result = Result.unhealthy(new ComponentName("component"));
+        Result result = Result.unhealthy(COMPONENT_NAME);
 
         assertThat(result.isDegraded()).isFalse();
     }
 
     @Test
     public void isUnhealthyShouldBeTrueWhenUnhealthy() {
-        Result result = Result.unhealthy(new ComponentName("component"));
+        Result result = Result.unhealthy(COMPONENT_NAME);
 
         assertThat(result.isUnHealthy()).isTrue();
     }
 
     @Test
     public void unhealthyShouldThrowWhenNullCause() {
-        assertThatThrownBy(() -> Result.unhealthy(new ComponentName("component"), null))
+        assertThatThrownBy(() -> Result.unhealthy(COMPONENT_NAME, null))
             .isInstanceOf(NullPointerException.class);
     }
 }
