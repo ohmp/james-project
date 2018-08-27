@@ -22,8 +22,9 @@ package org.apache.james.jmap.api.filtering;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.james.core.User;
+
+import com.google.common.collect.ImmutableList;
 
 public interface FilteringManagement {
 
