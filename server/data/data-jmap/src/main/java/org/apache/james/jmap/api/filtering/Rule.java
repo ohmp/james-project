@@ -35,8 +35,8 @@ public class Rule {
     public static class Id {
 
         public static Id of(String id) {
-            Preconditions.checkNotNull(id, "id should no be null");
-            Preconditions.checkArgument(StringUtils.isNotBlank(id), "id should no be empty");
+            Preconditions.checkNotNull(id, "id should not be null");
+            Preconditions.checkArgument(StringUtils.isNotBlank(id), "id should not be empty");
             return new Id(id);
         }
 
@@ -130,10 +130,10 @@ public class Rule {
         }
 
         public static Condition of(Field field, Comparator comparator, String value) {
-            Preconditions.checkNotNull(field, "field should no be null");
-            Preconditions.checkNotNull(comparator, "comparator should no be null");
-            Preconditions.checkNotNull(value, "value should no be null");
-            Preconditions.checkArgument(StringUtils.isNotBlank(value), "value should no be empty");
+            Preconditions.checkNotNull(field, "field should not be null");
+            Preconditions.checkNotNull(comparator, "comparator should not be null");
+            Preconditions.checkNotNull(value, "value should not be null");
+            Preconditions.checkArgument(StringUtils.isNotBlank(value), "value should not be empty");
             return new Condition(field, comparator, value);
         }
 
@@ -190,7 +190,7 @@ public class Rule {
         public static class AppendInMailboxes {
 
             public static AppendInMailboxes withMailboxIds(List<String> mailboxIds) {
-                Preconditions.checkNotNull(mailboxIds, "mailboxIds should no be null");
+                Preconditions.checkNotNull(mailboxIds, "mailboxIds should not be null");
                 return new AppendInMailboxes(mailboxIds);
             }
 
