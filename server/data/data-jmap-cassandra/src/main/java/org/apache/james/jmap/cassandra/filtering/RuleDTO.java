@@ -68,7 +68,7 @@ public class RuleDTO {
 
         public Rule.Condition toCondition() {
             return Rule.Condition.of(
-                    Rule.Condition.Field.valueOf(field),
+                    Rule.Condition.Field.of(field),
                     Rule.Condition.Comparator.of(comparator),
                     value);
         }
