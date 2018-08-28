@@ -97,8 +97,8 @@ public abstract class FilterTest {
 
     @Test
     public void setFilterShouldOverwritePreviouslyStoredRules() {
-        MailboxId m1 = randomMailboxId();
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox1 = randomMailboxId();
+        MailboxId mailbox2 = randomMailboxId();
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -116,7 +116,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox2.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -140,7 +140,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "            \"mailboxIds\": [\"" + m1.serialize() + "\"]" +
+                  "            \"mailboxIds\": [\"" + mailbox1.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -167,12 +167,12 @@ public abstract class FilterTest {
             .body(ARGUMENTS + ".singleton[0].condition.field", equalTo("from"))
             .body(ARGUMENTS + ".singleton[0].condition.comparator", equalTo("exactly-equals"))
             .body(ARGUMENTS + ".singleton[0].condition.value", equalTo("marvin@h2.g2"))
-            .body(ARGUMENTS + ".singleton[0].action.appendIn.mailboxIds", containsInAnyOrder(m1.serialize()));
+            .body(ARGUMENTS + ".singleton[0].action.appendIn.mailboxIds", containsInAnyOrder(mailbox1.serialize()));
     }
 
     @Test
     public void setFilterShouldReturnUpdatedSingleton() {
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox = randomMailboxId();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -190,7 +190,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -206,7 +206,7 @@ public abstract class FilterTest {
 
     @Test
     public void setFilterShouldRejectDuplicatedRules() {
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox = randomMailboxId();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -224,7 +224,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }," +
@@ -238,7 +238,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -256,8 +256,8 @@ public abstract class FilterTest {
 
     @Test
     public void setFilterShouldRejectRulesTargetingSeveralMailboxes() {
-        MailboxId m1 = randomMailboxId();
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox1 = randomMailboxId();
+        MailboxId mailbox2 = randomMailboxId();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -275,7 +275,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m1.serialize() + "\",\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox1.serialize() + "\",\"" + mailbox2.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -333,8 +333,8 @@ public abstract class FilterTest {
 
     @Test
     public void getFilterFilterShouldRetrievePreviouslyStoredRules() {
-        MailboxId m1 = randomMailboxId();
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox1 = randomMailboxId();
+        MailboxId mailbox2 = randomMailboxId();
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -352,7 +352,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "            \"mailboxIds\": [\"" + m1.serialize() + "\"]" +
+                  "            \"mailboxIds\": [\"" + mailbox1.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }," +
@@ -366,7 +366,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox2.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -393,18 +393,18 @@ public abstract class FilterTest {
             .body(ARGUMENTS + ".singleton[0].condition.field", equalTo("from"))
             .body(ARGUMENTS + ".singleton[0].condition.comparator", equalTo("exactly-equals"))
             .body(ARGUMENTS + ".singleton[0].condition.value", equalTo("marvin@h2.g2"))
-            .body(ARGUMENTS + ".singleton[0].action.appendIn.mailboxIds", containsInAnyOrder(m1.serialize()))
+            .body(ARGUMENTS + ".singleton[0].action.appendIn.mailboxIds", containsInAnyOrder(mailbox1.serialize()))
             .body(ARGUMENTS + ".singleton[1].id", equalTo("3000-34e"))
             .body(ARGUMENTS + ".singleton[1].name", equalTo("My last rule"))
             .body(ARGUMENTS + ".singleton[1].condition.field", equalTo("subject"))
             .body(ARGUMENTS + ".singleton[1].condition.comparator", equalTo("contains"))
             .body(ARGUMENTS + ".singleton[1].condition.value", equalTo("question"))
-            .body(ARGUMENTS + ".singleton[1].action.appendIn.mailboxIds", containsInAnyOrder(m2.serialize()));
+            .body(ARGUMENTS + ".singleton[1].action.appendIn.mailboxIds", containsInAnyOrder(mailbox2.serialize()));
     }
 
     @Test
     public void setFilterFilterShouldClearPreviouslyStoredRulesWhenEmptyBody() {
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox = randomMailboxId();
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -422,7 +422,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
@@ -459,7 +459,7 @@ public abstract class FilterTest {
 
     @Test
     public void allFieldsAndComparatorsShouldBeSupported() {
-        MailboxId m2 = randomMailboxId();
+        MailboxId mailbox = randomMailboxId();
 
         with()
             .header("Authorization", accessToken.serialize())
@@ -477,7 +477,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }," +
@@ -491,7 +491,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }," +
@@ -505,7 +505,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }," +
@@ -519,7 +519,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }," +
@@ -533,7 +533,7 @@ public abstract class FilterTest {
                   "      }," +
                   "      \"action\": {" +
                   "        \"appendIn\": {" +
-                  "          \"mailboxIds\": [\"" + m2.serialize() + "\"]" +
+                  "          \"mailboxIds\": [\"" + mailbox.serialize() + "\"]" +
                   "        }" +
                   "      }" +
                   "    }" +
