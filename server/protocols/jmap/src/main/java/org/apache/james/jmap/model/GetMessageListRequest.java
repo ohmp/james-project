@@ -80,7 +80,7 @@ public class GetMessageListRequest implements JmapRequest {
         public Builder position(long position) {
             this.position = Optional.of(
                 Number.DEFAULT_FACTORY.from(position)
-                        .orElseThrow(() -> new IllegalArgumentException(Number.VALIDATION_MESSAGE)));
+                    .orElseThrow(() -> new IllegalArgumentException(Number.VALIDATION_MESSAGE)));
             return this;
         }
 
