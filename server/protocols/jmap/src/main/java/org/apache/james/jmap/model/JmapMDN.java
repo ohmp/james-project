@@ -142,7 +142,7 @@ public class JmapMDN {
 
     public Message generateMDNMessage(Message originalMessage, MailboxSession mailboxSession) throws ParseException, IOException, InvalidOriginMessageForMDNException {
 
-        User user = mailboxSession.getUser().toCoreUser();
+        User user = mailboxSession.getUser().getCoreUser();
 
         return MDN.builder()
             .report(generateReport(originalMessage, mailboxSession))

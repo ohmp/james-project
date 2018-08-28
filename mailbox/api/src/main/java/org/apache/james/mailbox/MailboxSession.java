@@ -109,7 +109,7 @@ public interface MailboxSession {
         
         boolean isSameUser(String username);
 
-        default org.apache.james.core.User toCoreUser() {
+        default org.apache.james.core.User getCoreUser() {
             return org.apache.james.core.User.fromUsername(getUserName());
         }
     }
