@@ -108,7 +108,7 @@ public abstract class FilterTest {
                   "    \"singleton\": [" +
                   "    {" +
                   "      \"id\": \"3000-34e\"," +
-                  "      \"name\": \"My last rule\"," +
+                  "      \"name\": \"My first rule\"," +
                   "      \"condition\": {" +
                   "        \"field\": \"subject\"," +
                   "        \"comparator\": \"contains\"," +
@@ -132,7 +132,7 @@ public abstract class FilterTest {
                   "    \"singleton\": [" +
                   "    {" +
                   "      \"id\": \"42-ac\"," +
-                  "      \"name\": \"My first rule\"," +
+                  "      \"name\": \"My last rule\"," +
                   "      \"condition\": {" +
                   "        \"field\": \"from\"," +
                   "        \"comparator\": \"exactly-equals\"," +
@@ -163,7 +163,7 @@ public abstract class FilterTest {
             .body(NAME, equalTo("filter"))
             .body(ARGUMENTS + ".singleton", hasSize(1))
             .body(ARGUMENTS + ".singleton[0].id", equalTo("42-ac"))
-            .body(ARGUMENTS + ".singleton[0].name", equalTo("My first rule"))
+            .body(ARGUMENTS + ".singleton[0].name", equalTo("My last rule"))
             .body(ARGUMENTS + ".singleton[0].condition.field", equalTo("from"))
             .body(ARGUMENTS + ".singleton[0].condition.comparator", equalTo("exactly-equals"))
             .body(ARGUMENTS + ".singleton[0].condition.value", equalTo("marvin@h2.g2"))
@@ -332,7 +332,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void getFilterFilterShouldRetrievePreviouslyStoredRules() {
+    public void getFilterShouldRetrievePreviouslyStoredRules() {
         MailboxId mailbox1 = randomMailboxId();
         MailboxId mailbox2 = randomMailboxId();
 
@@ -403,7 +403,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterFilterShouldClearPreviouslyStoredRulesWhenEmptyBody() {
+    public void setFilterShouldClearPreviouslyStoredRulesWhenEmptyBody() {
         MailboxId mailbox = randomMailboxId();
 
         with()
