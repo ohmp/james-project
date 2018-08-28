@@ -72,23 +72,6 @@ public class JmapRuleDTO {
                     Rule.Condition.Comparator.of(comparator),
                     value);
         }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof ConditionDTO) {
-                ConditionDTO other = (ConditionDTO) o;
-
-                return Objects.equals(this.field, other.field)
-                        && Objects.equals(this.comparator, other.comparator)
-                        && Objects.equals(this.value, other.value);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(field, comparator, value);
-        }
     }
 
     public static class ActionDTO {
@@ -113,21 +96,6 @@ public class JmapRuleDTO {
             public Rule.Action.AppendInMailboxes toAppendInMailboxes() {
                 return Rule.Action.AppendInMailboxes.withMailboxIds(mailboxIds);
             }
-
-            @Override
-            public final boolean equals(Object o) {
-                if (o instanceof AppendInMailboxesDTO) {
-                    AppendInMailboxesDTO that = (AppendInMailboxesDTO) o;
-
-                    return Objects.equals(this.mailboxIds, that.mailboxIds);
-                }
-                return false;
-            }
-
-            @Override
-            public final int hashCode() {
-                return Objects.hash(mailboxIds);
-            }
         }
 
         public static ActionDTO from(Rule.Action action) {
@@ -147,21 +115,6 @@ public class JmapRuleDTO {
 
         public Rule.Action toAction() {
             return Rule.Action.of(appendIn.toAppendInMailboxes());
-        }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof ActionDTO) {
-                ActionDTO actionDTO = (ActionDTO) o;
-
-                return Objects.equals(this.appendIn, actionDTO.appendIn);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(appendIn);
         }
     }
 
@@ -228,24 +181,6 @@ public class JmapRuleDTO {
             .name(name)
             .action(actionDTO.toAction())
             .build();
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof JmapRuleDTO) {
-            JmapRuleDTO ruleDTO = (JmapRuleDTO) o;
-
-            return Objects.equals(this.id, ruleDTO.id)
-                   && Objects.equals(this.name, ruleDTO.name)
-                   && Objects.equals(this.conditionDTO, ruleDTO.conditionDTO)
-                   && Objects.equals(this.actionDTO, ruleDTO.actionDTO);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(id, name, conditionDTO, actionDTO);
     }
 
     @Override
