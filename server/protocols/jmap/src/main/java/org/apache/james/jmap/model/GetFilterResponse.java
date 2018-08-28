@@ -36,10 +36,10 @@ public class GetFilterResponse implements Method.Response {
 
         private String accountId;
         private String state;
-        private ImmutableList.Builder<JmapRuleDTO> singleton;
+        private ImmutableList.Builder<JmapRuleDTO> rules;
 
         public Builder() {
-            this.singleton = ImmutableList.builder();
+            this.rules = ImmutableList.builder();
         }
 
         public Builder accountId(String accountId) {
@@ -53,25 +53,25 @@ public class GetFilterResponse implements Method.Response {
         }
 
         public Builder rules(List<Rule> rules) {
-            this.singleton.addAll(rules.stream()
+            this.rules.addAll(rules.stream()
                 .map(JmapRuleDTO::from)
                 .collect(ImmutableList.toImmutableList()));
             return this;
         }
 
         public GetFilterResponse build() {
-            return new GetFilterResponse(accountId, state, singleton.build());
+            return new GetFilterResponse(accountId, state, rules.build());
         }
     }
 
     private final String accountId;
     private final String state;
-    private final List<JmapRuleDTO> list;
+    private final List<JmapRuleDTO> rules;
 
-    private GetFilterResponse(String accountId, String state, List<JmapRuleDTO> list) {
+    private GetFilterResponse(String accountId, String state, List<JmapRuleDTO> rules) {
         this.accountId = accountId;
         this.state = state;
-        this.list = list;
+        this.rules = rules;
     }
 
     public String getAccountId() {
@@ -83,6 +83,6 @@ public class GetFilterResponse implements Method.Response {
     }
 
     public List<JmapRuleDTO> getSingleton() {
-        return list;
+        return rules;
     }
 }
