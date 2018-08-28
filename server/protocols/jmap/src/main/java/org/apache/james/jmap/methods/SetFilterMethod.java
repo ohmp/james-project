@@ -140,7 +140,7 @@ public class SetFilterMethod implements Method {
             .collect(ImmutableList.toImmutableList());
 
         ensureNoDuplicatedRules(rules);
-        ensureNoMultiMailboxRules(rules);
+        ensureNoMultipleMailboxRules(rules);
 
         filteringManagement.defineRulesForUser(user, rules);
 
@@ -151,7 +151,7 @@ public class SetFilterMethod implements Method {
             .build());
     }
 
-    private void ensureNoMultiMailboxRules(ImmutableList<Rule> rules) throws MultipleMailboxIdException {
+    private void ensureNoMultipleMailboxRules(ImmutableList<Rule> rules) throws MultipleMailboxIdException {
         ImmutableList<Rule.Id> idWithMultipleMailboxes = rules.stream()
             .filter(rule -> rule.getAction().getAppendInMailboxes().getMailboxIds().size() > 1)
             .map(Rule::getId)
