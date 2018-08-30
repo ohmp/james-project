@@ -102,7 +102,7 @@ public class ActionApplier {
             String attributeNameForUser = DELIVERY_PATH_PREFIX + user.asString();
             mail.setAttribute(attributeNameForUser, mailboxName);
         } catch (MailboxNotFoundException e) {
-            LOGGER.info("Mailbox {} does not exist, but it was mentioned in a JMAP filtering rule", e);
+            LOGGER.info("Mailbox {} does not exist, but it was mentioned in a JMAP filtering rule", mailboxId, e);
         }
     }
 }
