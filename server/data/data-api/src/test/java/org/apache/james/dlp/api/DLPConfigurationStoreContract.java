@@ -24,6 +24,7 @@ import static org.apache.james.dlp.api.DLPFixture.RULE_2;
 import static org.apache.james.dlp.api.DLPFixture.RULE_UPDATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.core.Domain;
 import org.junit.jupiter.api.Test;
@@ -108,10 +109,9 @@ public interface DLPConfigurationStoreContract {
     }
 
     @Test
-    default void storeShouldRemoveDuplicates(DLPConfigurationStore dlpConfigurationStore) {
-        dlpConfigurationStore.store(Domain.LOCALHOST, RULE, RULE);
-
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE);
+    default void storeShouldRejectDuplicates(DLPConfigurationStore dlpConfigurationStore) {
+        assertThatThrownBy(() -> dlpConfigurationStore.store(Domain.LOCALHOST, RULE, RULE))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
