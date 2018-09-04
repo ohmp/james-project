@@ -33,10 +33,10 @@ public interface DLPConfigurationStore extends DLPConfigurationLoader {
 
     default void store(Domain domain, DLPConfigurationItem firstRules, DLPConfigurationItem... rules) {
         store(domain, new DLPConfiguration(
-            Stream.concat(
-                Stream.of(firstRules),
-                Arrays.stream(rules))
-            .collect(ImmutableList.toImmutableList())));
+            ImmutableList.<DLPConfigurationItem>builder()
+                .add(firstRules)
+                .addAll(Arrays.asList(rules))
+                .build()));
     }
 
     void clear(Domain domain);
