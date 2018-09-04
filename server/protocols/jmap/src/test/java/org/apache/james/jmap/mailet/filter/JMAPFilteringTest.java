@@ -170,6 +170,11 @@ class JMAPFilteringTest {
                     .valueToMatch(UNSCRAMBLED_SUBJECT.toUpperCase(Locale.FRENCH));
         }
 
+        public FilteringArgumentBuilder testForUpperCase() {
+            return description(description.get() + " (different case)")
+                .valueToMatch(valueToMatch.get().toUpperCase(Locale.US));
+        }
+
         public Arguments build() {
             Preconditions.checkState(description.isPresent());
             Preconditions.checkState(field.isPresent());
@@ -177,19 +182,12 @@ class JMAPFilteringTest {
             
             return Arguments.of(description.get(), field.get(), mimeMessageBuilder, valueToMatch.get());
         }
+    }
 
-        public Stream<Arguments> buildForBothCase() {
-            Preconditions.checkState(description.isPresent());
-            Preconditions.checkState(field.isPresent());
-            Preconditions.checkState(valueToMatch.isPresent());
-
-            return Stream.of(
-                build(),
-                description(description.get() + " (different case)")
-                    .valueToMatch(valueToMatch.get().toUpperCase(Locale.US))
-                    .build());
-        }
-
+    static Stream<Arguments> forBothCase(FilteringArgumentBuilder builder) {
+        return Stream.of(
+            builder.build(),
+            builder.testForUpperCase().build());
     }
 
     static FilteringArgumentBuilder argumentBuilder() {
@@ -283,7 +281,7 @@ class JMAPFilteringTest {
                         .description("Full header exact match in a full " + fieldAndHeader.headerName + " with an invalid structure")
                         .header(fieldAndHeader.headerName, "Benoit <invalid")
                         .valueToMatch("Benoit <invalid"))
-                    .flatMap(FilteringArgumentBuilder::buildForBothCase)),
+                    .flatMap(JMAPFilteringTest::forBothCase)),
 
             Stream.of(
                 argumentBuilder().description("Full header match with multiple to and cc headers")
@@ -379,7 +377,7 @@ class JMAPFilteringTest {
                         .header(fieldAndHeader.headerName,"Benoit <invalid")
                         .valueToMatch("nvali"))
 
-                    .flatMap(FilteringArgumentBuilder::buildForBothCase)),
+                    .flatMap(JMAPFilteringTest::forBothCase)),
             Stream.of(
                 argumentBuilder().description("multiple to and cc headers (partial matching)").field(RECIPIENT)
                     .ccRecipient(USER_1_FULL_ADDRESS)
