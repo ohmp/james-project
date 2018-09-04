@@ -20,6 +20,7 @@
 package org.apache.james.webadmin.dto;
 
 import org.apache.james.dlp.api.DLPConfiguration;
+import org.apache.james.dlp.api.DLPConfiguration.DuplicateRulesIdsException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -53,7 +54,7 @@ public class DLPConfigurationDTO {
     }
 
     @JsonIgnore
-    public DLPConfiguration toDLPConfiguration() {
+    public DLPConfiguration toDLPConfiguration() throws DuplicateRulesIdsException {
         return new DLPConfiguration(rules.stream()
             .map(DLPConfigurationItemDTO::toDLPConfiguration)
             .collect(Guavate.toImmutableList()));

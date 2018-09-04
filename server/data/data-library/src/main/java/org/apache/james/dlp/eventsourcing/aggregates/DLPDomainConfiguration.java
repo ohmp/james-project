@@ -34,7 +34,6 @@ import org.apache.james.eventsourcing.eventstore.History;
 import org.apache.james.util.OptionalUtils;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -95,8 +94,6 @@ public class DLPDomainConfiguration {
     }
 
     public List<Event> store(DLPConfiguration updatedRules) {
-        Preconditions.checkArgument(shouldNotContainDuplicates(updatedRules));
-
         ImmutableSet<DLPConfigurationItem> existingRules = retrieveRules().getItems().stream().collect(Guavate.toImmutableSet());
         ImmutableSet<DLPConfigurationItem> updatedRulesSet = ImmutableSet.copyOf(updatedRules.getItems());
 
@@ -110,10 +107,6 @@ public class DLPDomainConfiguration {
 
         events.forEach(this::apply);
         return events;
-    }
-
-    private boolean shouldNotContainDuplicates(DLPConfiguration items) {
-        return !items.containsDuplicates();
     }
 
     private EventId computeNextEventId(Optional<Event> removedRulesEvent) {

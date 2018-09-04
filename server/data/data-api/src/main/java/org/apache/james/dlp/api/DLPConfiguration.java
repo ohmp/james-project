@@ -26,10 +26,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class DLPConfiguration {
+
+    public static final class DuplicateRulesIdsException extends RuntimeException {
+    }
+
     private final ImmutableList<DLPConfigurationItem> items;
 
-    public DLPConfiguration(ImmutableList<DLPConfigurationItem> items) {
+    public DLPConfiguration(ImmutableList<DLPConfigurationItem> items) throws DuplicateRulesIdsException {
         Preconditions.checkNotNull(items);
+        checkNotContainDuplicateIds(items);
 
         this.items = items;
     }
@@ -38,13 +43,15 @@ public class DLPConfiguration {
         return items;
     }
 
-    public boolean containsDuplicates() {
+    private void checkNotContainDuplicateIds(ImmutableList<DLPConfigurationItem> items) throws DuplicateRulesIdsException {
         long uniqueIdCount = items.stream()
             .map(DLPConfigurationItem::getId)
             .distinct()
             .count();
 
-        return uniqueIdCount != items.size();
+        if (uniqueIdCount != items.size()) {
+            throw new DuplicateRulesIdsException();
+        }
     }
 
     @Override

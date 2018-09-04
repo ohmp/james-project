@@ -33,6 +33,7 @@ import javax.ws.rs.Produces;
 
 import org.apache.james.core.Domain;
 import org.apache.james.dlp.api.DLPConfiguration;
+import org.apache.james.dlp.api.DLPConfiguration.DuplicateRulesIdsException;
 import org.apache.james.dlp.api.DLPConfigurationItem;
 import org.apache.james.dlp.api.DLPConfigurationItem.Id;
 import org.apache.james.dlp.api.DLPConfigurationStore;
@@ -126,8 +127,7 @@ public class DLPConfigurationRoutes implements Routes {
             Domain senderDomain = parseDomain(request);
             DLPConfigurationDTO dto = jsonExtractor.parse(request.body());
 
-            DLPConfiguration rules = dto.toDLPConfiguration();
-            shouldNotContainDuplicates(rules);
+            DLPConfiguration rules = constructRules(dto);
 
             dlpConfigurationStore.store(senderDomain, rules);
 
@@ -136,13 +136,15 @@ public class DLPConfigurationRoutes implements Routes {
         });
     }
 
-    private void shouldNotContainDuplicates(DLPConfiguration items) {
-        if (items.containsDuplicates()) {
-            ErrorResponder.builder()
-                .statusCode(HttpStatus.BAD_REQUEST_400)
-                .type(ErrorType.INVALID_ARGUMENT)
-                .message("'id' duplicates are not allowed in DLP rules")
-                .haltError();
+    private DLPConfiguration constructRules(DLPConfigurationDTO dto) {
+        try {
+            return dto.toDLPConfiguration();
+        } catch (DuplicateRulesIdsException e) {
+            throw ErrorResponder.builder()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .type(ErrorType.INVALID_ARGUMENT)
+            .message("'id' duplicates are not allowed in DLP rules")
+            .haltError();
         }
     }
 
