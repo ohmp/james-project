@@ -35,6 +35,7 @@ public class DockerRabbitMQ {
 
     private static final String DEFAULT_RABBIT_NODE = "my-rabbit";
     private static final int DEFAULT_RABBITMQ_PORT = 5672;
+    private static final int DEFAULT_RABBITMQ_ADMIN_PORT = 15672;
     private static final String DEFAULT_RABBITMQ_USERNAME = "guest";
     private static final String DEFAULT_RABBITMQ_PASSWORD = "guest";
     private static final String RABBITMQ_ERLANG_COOKIE = "RABBITMQ_ERLANG_COOKIE";
@@ -57,7 +58,7 @@ public class DockerRabbitMQ {
         container = new GenericContainer<>(Images.RABBITMQ)
                 .withCreateContainerCmdModifier(cmd -> cmd.withName(hostName.orElse("localhost")))
                 .withCreateContainerCmdModifier(cmd -> cmd.withHostName(hostName.orElse(DEFAULT_RABBIT_NODE)))
-                .withExposedPorts(DEFAULT_RABBITMQ_PORT)
+                .withExposedPorts(DEFAULT_RABBITMQ_PORT, DEFAULT_RABBITMQ_ADMIN_PORT)
                 .waitingFor(RabbitMQWaitStrategy.withDefaultTimeout(this))
                 .withLogConsumer(frame -> LOGGER.debug(frame.getUtf8String()))
                 .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig()
@@ -75,6 +76,8 @@ public class DockerRabbitMQ {
     public Integer getPort() {
         return container.getMappedPort(DEFAULT_RABBITMQ_PORT);
     }
+
+    public Integer getAdminPort() { return container.getMappedPort(DEFAULT_RABBITMQ_ADMIN_PORT); }
 
     public String getUsername() {
         return DEFAULT_RABBITMQ_USERNAME;
