@@ -2126,6 +2126,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>fluent-hc</artifactId>
+                <version>${apache.httpcomponents.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient-osgi</artifactId>
                 <version>${apache.httpcomponents.version}</version>
                 <exclusions>

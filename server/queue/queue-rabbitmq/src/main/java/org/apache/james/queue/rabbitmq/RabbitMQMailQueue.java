@@ -16,44 +16,38 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+
 package org.apache.james.queue.rabbitmq;
 
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import java.util.concurrent.TimeUnit;
 
-public class DockerRabbitMQExtension implements BeforeAllCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
+import org.apache.james.queue.api.MailQueue;
+import org.apache.mailet.Mail;
 
-    private DockerRabbitMQ rabbitMQ;
+public class RabbitMQMailQueue implements MailQueue {
+    private final String name;
 
-    @Override
-    public void beforeAll(ExtensionContext extensionContext) {
-        rabbitMQ = DockerRabbitMQ.withoutCookie();
-        rabbitMQ.start();
+    public RabbitMQMailQueue(String name) {
+        this.name = name;
     }
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception  {
-        rabbitMQ.reset();
+    public String getName() {
+        return name;
     }
 
     @Override
-    public void afterAll(ExtensionContext extensionContext) {
-        rabbitMQ.stop();
+    public void enQueue(Mail mail, long delay, TimeUnit unit) throws MailQueueException {
+
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (parameterContext.getParameter().getType() == DockerRabbitMQ.class);
+    public void enQueue(Mail mail) throws MailQueueException {
+
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return rabbitMQ;
+    public MailQueueItem deQueue() throws MailQueueException, InterruptedException {
+        return null;
     }
-
 }
