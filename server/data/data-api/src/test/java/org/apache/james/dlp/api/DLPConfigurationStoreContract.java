@@ -109,7 +109,7 @@ public interface DLPConfigurationStoreContract {
     }
 
     @Test
-    default void storeShouldRejectDuplicates(DLPConfigurationStore dlpConfigurationStore) {
+    default void storeShouldRejectIdDuplicates(DLPConfigurationStore dlpConfigurationStore) {
         assertThatThrownBy(() -> dlpConfigurationStore.store(Domain.LOCALHOST, RULE, RULE))
             .isInstanceOf(IllegalArgumentException.class);
     }
