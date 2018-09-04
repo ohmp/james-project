@@ -21,7 +21,6 @@ package org.apache.james.dlp.api;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.apache.james.core.Domain;
 
