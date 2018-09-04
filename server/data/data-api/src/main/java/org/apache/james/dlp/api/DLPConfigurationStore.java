@@ -22,6 +22,7 @@ package org.apache.james.dlp.api;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.james.core.Domain;
 
@@ -31,8 +32,11 @@ public interface DLPConfigurationStore extends DLPConfigurationLoader {
 
     void store(Domain domain, List<DLPConfigurationItem> rule);
 
-    default void store(Domain domain, DLPConfigurationItem... rules) {
-        store(domain, Arrays.stream(rules).collect(ImmutableList.toImmutableList()));
+    default void store(Domain domain, DLPConfigurationItem firstRules, DLPConfigurationItem... rules) {
+        store(domain, Stream.concat(
+                Stream.of(firstRules),
+                Arrays.stream(rules))
+            .collect(ImmutableList.toImmutableList()));
     }
 
     void clear(Domain domain);
