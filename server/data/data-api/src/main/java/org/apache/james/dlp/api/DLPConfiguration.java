@@ -17,37 +17,55 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.dlp.eventsourcing.commands;
+package org.apache.james.dlp.api;
 
-import static org.apache.james.dlp.api.DLPFixture.RULE;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.util.Objects;
 
-import org.apache.james.core.Domain;
-import org.apache.james.dlp.api.DLPConfiguration;
-import org.junit.Test;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+public class DLPConfiguration {
+    private final ImmutableList<DLPConfigurationItem> items;
 
-public class StoreCommandTest {
+    public DLPConfiguration(ImmutableList<DLPConfigurationItem> items) {
+        Preconditions.checkNotNull(items);
 
-    @Test
-    public void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(StoreCommand.class)
-            .verify();
+        this.items = items;
     }
 
-    @Test
-    public void constructorShouldThrowWhenNullDomain() {
-        assertThatThrownBy(() -> new StoreCommand(null, new DLPConfiguration(ImmutableList.of(RULE))))
-            .isInstanceOf(NullPointerException.class);
+    public ImmutableList<DLPConfigurationItem> getItems() {
+        return items;
     }
 
-    @Test
-    public void constructorShouldThrowWhenNullRules() {
-        assertThatThrownBy(() -> new StoreCommand(Domain.LOCALHOST, null))
-            .isInstanceOf(NullPointerException.class);
+    public boolean containsDuplicates() {
+        long uniqueIdCount = items.stream()
+            .map(DLPConfigurationItem::getId)
+            .distinct()
+            .count();
+
+        return uniqueIdCount != items.size();
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof DLPConfiguration) {
+            DLPConfiguration dlpConfiguration = (DLPConfiguration) o;
+
+            return Objects.equals(this.items, dlpConfiguration.items);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(items);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("items", items)
+            .toString();
+    }
 }

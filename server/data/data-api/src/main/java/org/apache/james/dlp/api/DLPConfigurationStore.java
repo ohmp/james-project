@@ -20,7 +20,6 @@
 package org.apache.james.dlp.api;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -30,13 +29,14 @@ import com.google.common.collect.ImmutableList;
 
 public interface DLPConfigurationStore extends DLPConfigurationLoader {
 
-    void store(Domain domain, List<DLPConfigurationItem> rule);
+    void store(Domain domain, DLPConfiguration rule);
 
     default void store(Domain domain, DLPConfigurationItem firstRules, DLPConfigurationItem... rules) {
-        store(domain, Stream.concat(
+        store(domain, new DLPConfiguration(
+            Stream.concat(
                 Stream.of(firstRules),
                 Arrays.stream(rules))
-            .collect(ImmutableList.toImmutableList()));
+            .collect(ImmutableList.toImmutableList())));
     }
 
     void clear(Domain domain);

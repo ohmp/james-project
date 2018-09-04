@@ -24,10 +24,6 @@ import static org.apache.james.webadmin.Constants.EMPTY_BODY;
 import static org.apache.james.webadmin.Constants.JSON_CONTENT_TYPE;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
-
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -36,6 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.apache.james.core.Domain;
+import org.apache.james.dlp.api.DLPConfiguration;
 import org.apache.james.dlp.api.DLPConfigurationItem;
 import org.apache.james.dlp.api.DLPConfigurationItem.Id;
 import org.apache.james.dlp.api.DLPConfigurationStore;
@@ -129,7 +126,7 @@ public class DLPConfigurationRoutes implements Routes {
             Domain senderDomain = parseDomain(request);
             DLPConfigurationDTO dto = jsonExtractor.parse(request.body());
 
-            List<DLPConfigurationItem> rules = dto.toDLPConfigurations();
+            DLPConfiguration rules = dto.toDLPConfiguration();
             shouldNotContainDuplicates(rules);
 
             dlpConfigurationStore.store(senderDomain, rules);
@@ -139,23 +136,14 @@ public class DLPConfigurationRoutes implements Routes {
         });
     }
 
-    private void shouldNotContainDuplicates(Collection<DLPConfigurationItem> items) {
-        if (containsDuplicate(items)) {
+    private void shouldNotContainDuplicates(DLPConfiguration items) {
+        if (items.containsDuplicates()) {
             ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("'id' duplicates are not allowed in DLP rules")
                 .haltError();
         }
-    }
-
-    private boolean containsDuplicate(Collection<DLPConfigurationItem> items) {
-        long uniqueIdCount = items.stream()
-            .map(DLPConfigurationItem::getId)
-            .distinct()
-            .count();
-
-        return uniqueIdCount != items.size();
     }
 
     @GET
@@ -177,7 +165,7 @@ public class DLPConfigurationRoutes implements Routes {
     public void defineList(Service service) {
         service.get(SPECIFIC_DLP_RULE_DOMAIN, (request, response) -> {
             Domain senderDomain = parseDomain(request);
-            Stream<DLPConfigurationItem> dlpConfigurations = dlpConfigurationStore.list(senderDomain);
+            DLPConfiguration dlpConfigurations = dlpConfigurationStore.list(senderDomain);
 
             DLPConfigurationDTO dto = DLPConfigurationDTO.toDTO(dlpConfigurations);
             response.status(HttpStatus.OK_200);

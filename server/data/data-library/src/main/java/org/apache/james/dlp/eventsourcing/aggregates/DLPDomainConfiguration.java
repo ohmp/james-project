@@ -19,12 +19,12 @@
 
 package org.apache.james.dlp.eventsourcing.aggregates;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.james.dlp.api.DLPConfiguration;
 import org.apache.james.dlp.api.DLPConfigurationItem;
 import org.apache.james.dlp.eventsourcing.events.ConfigurationItemsAdded;
 import org.apache.james.dlp.eventsourcing.events.ConfigurationItemsRemoved;
@@ -79,12 +79,12 @@ public class DLPDomainConfiguration {
         this.history = history;
     }
 
-    public Stream<DLPConfigurationItem> retrieveRules() {
-        return state.rules.stream();
+    public DLPConfiguration retrieveRules() {
+        return new DLPConfiguration(ImmutableList.copyOf(state.rules));
     }
 
     public List<Event> clear() {
-        ImmutableList<DLPConfigurationItem> rules = retrieveRules().collect(Guavate.toImmutableList());
+        ImmutableList<DLPConfigurationItem> rules = retrieveRules().getItems();
         if (!rules.isEmpty()) {
             ImmutableList<Event> events = ImmutableList.of(new ConfigurationItemsRemoved(aggregateId, history.getNextEventId(), rules));
             events.forEach(this::apply);
@@ -94,11 +94,11 @@ public class DLPDomainConfiguration {
         }
     }
 
-    public List<Event> store(List<DLPConfigurationItem> updatedRules) {
+    public List<Event> store(DLPConfiguration updatedRules) {
         Preconditions.checkArgument(shouldNotContainDuplicates(updatedRules));
 
-        ImmutableSet<DLPConfigurationItem> existingRules = retrieveRules().collect(Guavate.toImmutableSet());
-        ImmutableSet<DLPConfigurationItem> updatedRulesSet = ImmutableSet.copyOf(updatedRules);
+        ImmutableSet<DLPConfigurationItem> existingRules = retrieveRules().getItems().stream().collect(Guavate.toImmutableSet());
+        ImmutableSet<DLPConfigurationItem> updatedRulesSet = ImmutableSet.copyOf(updatedRules.getItems());
 
         Optional<Event> removedRulesEvent = generateRemovedRulesEvent(existingRules, updatedRulesSet);
         Optional<Event> addedRulesEvent = generateAddedRulesEvent(existingRules, updatedRulesSet, computeNextEventId(removedRulesEvent));
@@ -112,12 +112,8 @@ public class DLPDomainConfiguration {
         return events;
     }
 
-    private boolean shouldNotContainDuplicates(Collection<DLPConfigurationItem> items) {
-        long uniqueIdCount = items.stream()
-            .map(DLPConfigurationItem::getId)
-            .distinct()
-            .count();
-        return uniqueIdCount == items.size();
+    private boolean shouldNotContainDuplicates(DLPConfiguration items) {
+        return !items.containsDuplicates();
     }
 
     private EventId computeNextEventId(Optional<Event> removedRulesEvent) {
