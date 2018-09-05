@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 
 import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.ConnectionFactory;
@@ -59,7 +61,9 @@ public class DockerRabbitMQ {
                 .withCreateContainerCmdModifier(cmd -> cmd.withName(hostName.orElse("localhost")))
                 .withCreateContainerCmdModifier(cmd -> cmd.withHostName(hostName.orElse(DEFAULT_RABBIT_NODE)))
                 .withExposedPorts(DEFAULT_RABBITMQ_PORT, DEFAULT_RABBITMQ_ADMIN_PORT)
-                .waitingFor(RabbitMQWaitStrategy.withDefaultTimeout(this))
+                .waitingFor(new WaitAllStrategy()
+                    .withStrategy(RabbitMQWaitStrategy.withDefaultTimeout(this))
+                    .withStrategy(Wait.forHttp("").forPort(15672)))
                 .withLogConsumer(frame -> LOGGER.debug(frame.getUtf8String()))
                 .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig()
                     .withTmpFs(ImmutableMap.of("/var/lib/rabbitmq/mnesia", "rw,noexec,nosuid,size=100m")));
