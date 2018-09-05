@@ -75,6 +75,11 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
 
     @Override
     public MailQueue createQueue(String name) {
+        return getQueue(name)
+            .orElseGet(() -> attemptQueueCreation(name));
+    }
+
+    private MailQueue attemptQueueCreation(String name) {
         String exchange = exchangeForMailQueue(name);
         String workQueueForMailQueue = workQueueForMailQueue(name);
         try {
