@@ -23,7 +23,7 @@ import static org.apache.james.dlp.api.DLPFixture.RULE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.core.Domain;
-import org.apache.james.dlp.api.DLPConfiguration;
+import org.apache.james.dlp.api.DLPRules;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -40,7 +40,7 @@ public class StoreCommandTest {
 
     @Test
     public void constructorShouldThrowWhenNullDomain() {
-        assertThatThrownBy(() -> new StoreCommand(null, new DLPConfiguration(ImmutableList.of(RULE))))
+        assertThatThrownBy(() -> new StoreCommand(null, new DLPRules(ImmutableList.of(RULE))))
             .isInstanceOf(NullPointerException.class);
     }
 

@@ -32,11 +32,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.apache.james.core.Domain;
-import org.apache.james.dlp.api.DLPConfiguration;
-import org.apache.james.dlp.api.DLPConfiguration.DuplicateRulesIdsException;
 import org.apache.james.dlp.api.DLPConfigurationItem;
 import org.apache.james.dlp.api.DLPConfigurationItem.Id;
 import org.apache.james.dlp.api.DLPConfigurationStore;
+import org.apache.james.dlp.api.DLPRules;
+import org.apache.james.dlp.api.DLPRules.DuplicateRulesIdsException;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.webadmin.Routes;
@@ -127,7 +127,7 @@ public class DLPConfigurationRoutes implements Routes {
             Domain senderDomain = parseDomain(request);
             DLPConfigurationDTO dto = jsonExtractor.parse(request.body());
 
-            DLPConfiguration rules = constructRules(dto);
+            DLPRules rules = constructRules(dto);
 
             dlpConfigurationStore.store(senderDomain, rules);
 
@@ -136,7 +136,7 @@ public class DLPConfigurationRoutes implements Routes {
         });
     }
 
-    private DLPConfiguration constructRules(DLPConfigurationDTO dto) {
+    private DLPRules constructRules(DLPConfigurationDTO dto) {
         try {
             return dto.toDLPConfiguration();
         } catch (DuplicateRulesIdsException e) {
@@ -167,7 +167,7 @@ public class DLPConfigurationRoutes implements Routes {
     public void defineList(Service service) {
         service.get(SPECIFIC_DLP_RULE_DOMAIN, (request, response) -> {
             Domain senderDomain = parseDomain(request);
-            DLPConfiguration dlpConfigurations = dlpConfigurationStore.list(senderDomain);
+            DLPRules dlpConfigurations = dlpConfigurationStore.list(senderDomain);
 
             DLPConfigurationDTO dto = DLPConfigurationDTO.toDTO(dlpConfigurations);
             response.status(HttpStatus.OK_200);

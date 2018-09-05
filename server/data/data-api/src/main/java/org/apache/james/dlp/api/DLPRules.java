@@ -19,28 +19,25 @@
 
 package org.apache.james.dlp.api;
 
+import java.util.Iterator;
 import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-public class DLPConfiguration {
+public class DLPRules implements Iterable<DLPConfigurationItem> {
 
     public static final class DuplicateRulesIdsException extends RuntimeException {
     }
 
     private final ImmutableList<DLPConfigurationItem> items;
 
-    public DLPConfiguration(ImmutableList<DLPConfigurationItem> items) throws DuplicateRulesIdsException {
+    public DLPRules(ImmutableList<DLPConfigurationItem> items) throws DuplicateRulesIdsException {
         Preconditions.checkNotNull(items);
         checkNotContainDuplicateIds(items);
 
         this.items = items;
-    }
-
-    public ImmutableList<DLPConfigurationItem> getItems() {
-        return items;
     }
 
     private void checkNotContainDuplicateIds(ImmutableList<DLPConfigurationItem> items) throws DuplicateRulesIdsException {
@@ -54,10 +51,19 @@ public class DLPConfiguration {
         }
     }
 
+    public ImmutableList<DLPConfigurationItem> getItems() {
+        return items;
+    }
+
+    @Override
+    public Iterator<DLPConfigurationItem> iterator() {
+        return items.iterator();
+    }
+
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof DLPConfiguration) {
-            DLPConfiguration dlpConfiguration = (DLPConfiguration) o;
+        if (o instanceof DLPRules) {
+            DLPRules dlpConfiguration = (DLPRules) o;
 
             return Objects.equals(this.items, dlpConfiguration.items);
         }

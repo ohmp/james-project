@@ -22,5 +22,5 @@ package org.apache.james.dlp.api;
 import org.apache.james.core.Domain;
 
 public interface DLPConfigurationLoader {
-    DLPConfiguration list(Domain domain);
+    DLPRules list(Domain domain);
 }

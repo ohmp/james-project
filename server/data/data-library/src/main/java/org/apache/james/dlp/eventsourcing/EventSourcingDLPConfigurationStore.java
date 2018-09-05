@@ -20,14 +20,15 @@
 package org.apache.james.dlp.eventsourcing;
 
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
 import org.apache.james.core.Domain;
-import org.apache.james.dlp.api.DLPConfiguration;
 import org.apache.james.dlp.api.DLPConfigurationItem;
 import org.apache.james.dlp.api.DLPConfigurationItem.Id;
 import org.apache.james.dlp.api.DLPConfigurationStore;
+import org.apache.james.dlp.api.DLPRules;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPAggregateId;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPDomainConfiguration;
 import org.apache.james.dlp.eventsourcing.commands.ClearCommand;
@@ -59,7 +60,7 @@ public class EventSourcingDLPConfigurationStore implements DLPConfigurationStore
     }
 
     @Override
-    public DLPConfiguration list(Domain domain) {
+    public DLPRules list(Domain domain) {
 
         DLPAggregateId aggregateId = new DLPAggregateId(domain);
 
@@ -70,7 +71,7 @@ public class EventSourcingDLPConfigurationStore implements DLPConfigurationStore
     }
 
     @Override
-    public void store(Domain domain, DLPConfiguration rules) {
+    public void store(Domain domain, DLPRules rules) {
         eventSourcingSystem.dispatch(new StoreCommand(domain, rules));
     }
 
@@ -81,7 +82,7 @@ public class EventSourcingDLPConfigurationStore implements DLPConfigurationStore
 
     @Override
     public Optional<DLPConfigurationItem> fetch(Domain domain, Id ruleId) {
-        return list(domain)
+        return StreamSupport.stream(list(domain).spliterator(), false)
                 .filter((DLPConfigurationItem item) -> item.getId().equals(ruleId))
                 .findFirst();
     }

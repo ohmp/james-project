@@ -22,7 +22,7 @@ package org.apache.james.dlp.eventsourcing.commands;
 import java.util.Objects;
 
 import org.apache.james.core.Domain;
-import org.apache.james.dlp.api.DLPConfiguration;
+import org.apache.james.dlp.api.DLPRules;
 import org.apache.james.eventsourcing.Command;
 
 import com.google.common.base.MoreObjects;
@@ -30,9 +30,9 @@ import com.google.common.base.Preconditions;
 
 public class StoreCommand implements Command {
     private final Domain domain;
-    private final DLPConfiguration rules;
+    private final DLPRules rules;
 
-    public StoreCommand(Domain domain, DLPConfiguration rules) {
+    public StoreCommand(Domain domain, DLPRules rules) {
         Preconditions.checkNotNull(domain);
         Preconditions.checkNotNull(rules);
 
@@ -44,7 +44,7 @@ public class StoreCommand implements Command {
         return domain;
     }
 
-    public DLPConfiguration getRules() {
+    public DLPRules getRules() {
         return rules;
     }
 

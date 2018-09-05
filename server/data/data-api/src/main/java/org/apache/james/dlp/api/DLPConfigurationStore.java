@@ -28,10 +28,10 @@ import com.google.common.collect.ImmutableList;
 
 public interface DLPConfigurationStore extends DLPConfigurationLoader {
 
-    void store(Domain domain, DLPConfiguration rule);
+    void store(Domain domain, DLPRules rule);
 
     default void store(Domain domain, DLPConfigurationItem firstRules, DLPConfigurationItem... rules) {
-        store(domain, new DLPConfiguration(
+        store(domain, new DLPRules(
             ImmutableList.<DLPConfigurationItem>builder()
                 .add(firstRules)
                 .addAll(Arrays.asList(rules))
