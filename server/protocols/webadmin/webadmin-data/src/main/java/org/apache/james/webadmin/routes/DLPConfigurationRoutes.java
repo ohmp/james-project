@@ -141,10 +141,10 @@ public class DLPConfigurationRoutes implements Routes {
             return dto.toDLPConfiguration();
         } catch (DuplicateRulesIdsException e) {
             throw ErrorResponder.builder()
-            .statusCode(HttpStatus.BAD_REQUEST_400)
-            .type(ErrorType.INVALID_ARGUMENT)
-            .message("'id' duplicates are not allowed in DLP rules")
-            .haltError();
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .type(ErrorType.INVALID_ARGUMENT)
+                .message("'id' duplicates are not allowed in DLP rules")
+                .haltError();
         }
     }
 
