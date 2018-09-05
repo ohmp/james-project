@@ -19,37 +19,47 @@
 
 package org.apache.james.queue.rabbitmq;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.TimeoutException;
+import java.util.Collection;
 
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.james.queue.api.MailQueue;
-import org.apache.james.queue.api.MailQueueFactory;
-import org.apache.james.queue.api.MailQueueFactoryContract;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.james.core.MailAddress;
+import org.apache.mailet.Mail;
 
-@ExtendWith(DockerRabbitMQExtension.class)
-class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<MailQueue> {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
-    RabbitMQMailQueueFactory mailQueueFactory;
-
-    @BeforeEach
-    void setup(DockerRabbitMQ rabbitMQ) throws IOException, TimeoutException, URISyntaxException {
-        URI rabbitManagementUri = new URIBuilder()
-            .setScheme("http")
-            .setHost(rabbitMQ.getHostIp())
-            .setPort(rabbitMQ.getAdminPort())
-            .build();
-        mailQueueFactory = new RabbitMQMailQueueFactory(
-            rabbitMQ.connectionFactory().newConnection(),
-            rabbitManagementUri);
+public class MailDTO {
+    public static MailDTO fromMail(Mail mail) {
+        return new MailDTO(
+            mail.getRecipients().stream()
+                .map(MailAddress::asString)
+                .collect(ImmutableList.toImmutableList()),
+            mail.getName(),
+            mail.getSender().asString());
     }
 
-    @Override
-    public MailQueueFactory<MailQueue> getMailQueueFactory() {
-        return mailQueueFactory;
+    private ImmutableList<String> recipients;
+    private String name;
+    private String sender;
+
+    @JsonCreator
+    private MailDTO(@JsonProperty("recipients") ImmutableList<String> recipients,
+                    @JsonProperty("name") String name,
+                    @JsonProperty("sender") String sender) {
+        this.recipients = recipients;
+        this.name = name;
+        this.sender = sender;
+    }
+
+    public Collection<String> getRecipients() {
+        return recipients;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSender() {
+        return sender;
     }
 }

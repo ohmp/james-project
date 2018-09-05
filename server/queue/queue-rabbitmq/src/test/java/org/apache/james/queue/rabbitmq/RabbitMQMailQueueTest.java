@@ -26,18 +26,19 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.queue.api.MailQueue;
-import org.apache.james.queue.api.MailQueueFactory;
-import org.apache.james.queue.api.MailQueueFactoryContract;
+import org.apache.james.queue.api.MailQueueContract;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DockerRabbitMQExtension.class)
-class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<MailQueue> {
+public class RabbitMQMailQueueTest implements MailQueueContract {
 
     RabbitMQMailQueueFactory mailQueueFactory;
 
     @BeforeEach
     void setup(DockerRabbitMQ rabbitMQ) throws IOException, TimeoutException, URISyntaxException {
+
         URI rabbitManagementUri = new URIBuilder()
             .setScheme("http")
             .setHost(rabbitMQ.getHostIp())
@@ -49,7 +50,61 @@ class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<MailQueue
     }
 
     @Override
-    public MailQueueFactory<MailQueue> getMailQueueFactory() {
-        return mailQueueFactory;
+    public MailQueue getMailQueue() {
+        return mailQueueFactory.createQueue("spool");
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveMimeMessage() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveMailAttribute() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveErrorMessage() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveState() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveRemoteAddress() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveRemoteHost() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveLastUpdated() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreservePerRecipientHeaders() {
+
+    }
+
+    @Disabled
+    @Override
+    public void queueShouldPreserveNonStringMailAttribute() {
+
     }
 }

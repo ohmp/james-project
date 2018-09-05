@@ -23,11 +23,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
@@ -42,7 +43,6 @@ import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
-
 public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
 
     private static final String PREFIX = "JamesMailQueue";
@@ -53,41 +53,52 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
     public static final String ROUTING_KEY = "";
 
     private final Connection connection;
-    private final Channel channel;
     private final URI rabbitManagementUri;
     private final ObjectMapper objectMapper;
 
-    public RabbitMQMailQueueFactory(Connection connection, URI rabbitManagementUri) throws IOException {
+    private final Map<String, RabbitMQMailQueue> mailQueueCache;
+
+    public RabbitMQMailQueueFactory(Connection connection, URI rabbitManagementUri) {
         this.connection = connection;
-        this.channel = connection.createChannel();
         this.rabbitManagementUri = rabbitManagementUri;
-        objectMapper = new ObjectMapper();
+        this.objectMapper = new ObjectMapper();
+        this.mailQueueCache = new ConcurrentHashMap<>();
     }
 
     @Override
     public Optional<MailQueue> getQueue(String name) {
-        String exchange = exchangeForMailQueue(name);
-        String workQueueForMailQueue = workQueueForMailQueue(name);
-        return listCreatedMailQueues().stream().filter(queue -> queue.getName().equals(name)).findFirst();
+        return listCreatedMailQueues()
+            .stream()
+            .filter(queue -> queue.getName().equals(name))
+            .findFirst();
     }
 
     @Override
     public MailQueue createQueue(String name) {
         return getQueue(name)
-            .orElseGet(() -> attemptQueueCreation(name));
+            .orElseGet(() -> cacheAwareCreate(name));
     }
 
-    private MailQueue attemptQueueCreation(String name) {
-        String exchange = exchangeForMailQueue(name);
-        String workQueueForMailQueue = workQueueForMailQueue(name);
+    private MailQueue cacheAwareCreate(String queueName) {
+        return mailQueueCache.computeIfAbsent(queueName,
+            name -> new RabbitMQMailQueue(name,
+            createChannelForQueue(name),
+            exchangeForMailQueue(name),
+            workQueueForMailQueue(name)));
+    }
+
+    private Channel createChannelForQueue(String name) {
         try {
+            String exchange = exchangeForMailQueue(name);
+            String workQueueForMailQueue = workQueueForMailQueue(name);
+            Channel channel = connection.createChannel();
             channel.exchangeDeclare(exchange, "direct", DURABLE);
             channel.queueDeclare(workQueueForMailQueue, DURABLE, !EXCLUSIVE, AUTO_DELETE, ImmutableMap.of());
             channel.queueBind(workQueueForMailQueue, exchange, ROUTING_KEY);
+            return channel;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new RabbitMQMailQueue(name);
     }
 
     private String exchangeForMailQueue(String name) {
@@ -117,17 +128,14 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new RuntimeException("listing queues failed with error " + response.getStatusLine().getReasonPhrase());
         }
-        String encoding = Optional
-            .ofNullable(response.getEntity().getContentEncoding())
-            .map(NameValuePair::getValue)
-            .orElse(StandardCharsets.UTF_8.name());
+
         JsonNode jsonNode = objectMapper.readTree(response.getEntity().getContent());
         return jsonNode.findValues("name")
             .stream()
             .map(JsonNode::textValue)
             .filter(this::isMailQueueName)
             .map(this::toMailqueueName)
-            .map(RabbitMQMailQueue::new)
+            .map(this::cacheAwareCreate)
             .collect(Guavate.toImmutableSet());
     }
 
