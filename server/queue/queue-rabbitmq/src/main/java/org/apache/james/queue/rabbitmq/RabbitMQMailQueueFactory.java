@@ -33,6 +33,8 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
+import org.apache.james.blob.api.BlobId;
+import org.apache.james.blob.api.BlobStore;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
 
@@ -42,6 +44,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+
 
 public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
 
@@ -55,12 +58,16 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
     private final Connection connection;
     private final URI rabbitManagementUri;
     private final ObjectMapper objectMapper;
+    private final BlobStore blobStore;
+    private final BlobId.Factory blobIdFactory;
 
     private final Map<String, RabbitMQMailQueue> mailQueueCache;
 
-    public RabbitMQMailQueueFactory(Connection connection, URI rabbitManagementUri) {
+    public RabbitMQMailQueueFactory(Connection connection, URI rabbitManagementUri, BlobStore blobStore, BlobId.Factory blobIdFactory) {
         this.connection = connection;
         this.rabbitManagementUri = rabbitManagementUri;
+        this.blobStore = blobStore;
+        this.blobIdFactory = blobIdFactory;
         this.objectMapper = new ObjectMapper();
         this.mailQueueCache = new ConcurrentHashMap<>();
     }
@@ -84,7 +91,8 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
             name -> new RabbitMQMailQueue(name,
             createChannelForQueue(name),
             exchangeForMailQueue(name),
-            workQueueForMailQueue(name)));
+            workQueueForMailQueue(name),
+            blobStore, blobIdFactory));
     }
 
     private Channel createChannelForQueue(String name) {

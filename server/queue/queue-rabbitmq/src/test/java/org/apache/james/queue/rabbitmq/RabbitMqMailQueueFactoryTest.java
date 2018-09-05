@@ -19,12 +19,16 @@
 
 package org.apache.james.queue.rabbitmq;
 
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.james.blob.api.BlobStore;
+import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueFactoryContract;
@@ -45,7 +49,9 @@ class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<MailQueue
             .build();
         mailQueueFactory = new RabbitMQMailQueueFactory(
             rabbitMQ.connectionFactory().newConnection(),
-            rabbitManagementUri);
+            rabbitManagementUri,
+            mock(BlobStore.class),
+            new HashBlobId.Factory());
     }
 
     @Override

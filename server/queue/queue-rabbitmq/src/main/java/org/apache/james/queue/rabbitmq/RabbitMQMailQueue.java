@@ -20,14 +20,28 @@
 package org.apache.james.queue.rabbitmq;
 
 import java.io.IOException;
+import java.io.SequenceInputStream;
+import java.io.Serializable;
+import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.blob.api.BlobId;
+import org.apache.james.blob.api.BlobStore;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.server.core.MailImpl;
+import org.apache.james.util.CompletableFutureUtil;
+import org.apache.james.util.SerializationUtil;
+import org.apache.james.util.mime.MessageSplitter;
 import org.apache.mailet.Mail;
+import org.apache.mailet.PerRecipientHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,13 +98,17 @@ public class RabbitMQMailQueue implements MailQueue {
     private final Channel channel;
     private final String exchangeName;
     private final String workQueueName;
+    private final BlobStore blobStore;
+    private final BlobId.Factory blobIdFactory;
     private final ObjectMapper objectMapper;
 
-    RabbitMQMailQueue(String name, Channel channel, String exchangeName, String workQueueName) {
+    RabbitMQMailQueue(String name, Channel channel, String exchangeName, String workQueueName, BlobStore blobStore, BlobId.Factory blobIdFactory) {
         this.name = name;
         this.channel = channel;
         this.exchangeName = exchangeName;
         this.workQueueName = workQueueName;
+        this.blobStore = blobStore;
+        this.blobIdFactory = blobIdFactory;
         this.objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
@@ -110,10 +128,24 @@ public class RabbitMQMailQueue implements MailQueue {
 
     @Override
     public void enQueue(Mail mail) throws MailQueueException {
-        MailDTO mailDTO = MailDTO.fromMail(mail);
+        Pair<BlobId, BlobId> blobIds = saveBlobs(mail).join();
+        MailDTO mailDTO = MailDTO.fromMail(mail, blobIds.getLeft(), blobIds.getRight());
         byte[] message = getMessageBytes(mailDTO);
 
         publish(message);
+    }
+
+    private CompletableFuture<Pair<BlobId, BlobId>> saveBlobs(Mail mail) throws MailQueueException {
+        try {
+            Pair<byte[], byte[]> headerBody = MessageSplitter.splitHeaderBody(mail.getMessage());
+
+            return CompletableFutureUtil.combine(
+                blobStore.save(headerBody.getLeft()),
+                blobStore.save(headerBody.getRight()),
+                Pair::of);
+        } catch (IOException | MessagingException e) {
+            throw new MailQueueException("Error while saving blob", e);
+        }
     }
 
     private byte[] getMessageBytes(MailDTO mailDTO) throws MailQueueException {
@@ -164,14 +196,38 @@ public class RabbitMQMailQueue implements MailQueue {
             .orElseThrow(NoMailYetException::new);
     }
 
-    private Mail toMail(MailDTO dto) {
-        MailImpl mail = new MailImpl(
-            dto.getName(),
-            MailAddress.getMailSender(dto.getSender()),
-            dto.getRecipients()
+    private Mail toMail(MailDTO dto) throws MailQueueException {
+        try {
+            MailImpl mail = new MailImpl(
+                dto.getName(),
+                MailAddress.getMailSender(dto.getSender()),
+                dto.getRecipients()
+                    .stream()
+                    .map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())
+                    .collect(ImmutableList.toImmutableList()),
+                new SequenceInputStream(
+                    blobStore.read(blobIdFactory.from(dto.getHeaderBlobId())),
+                    blobStore.read(blobIdFactory.from(dto.getBodyBlobId()))));
+            mail.setErrorMessage(dto.getErrorMessage());
+            mail.setRemoteAddr(dto.getRemoteAddr());
+            mail.setRemoteHost(dto.getRemoteHost());
+            mail.setState(dto.getState());
+            mail.setLastUpdated(new Date(dto.getLastUpdated().toEpochMilli()));
+
+            dto.getAttributes()
+                .entrySet()
                 .stream()
-                .map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())
-                .collect(ImmutableList.toImmutableList()));
-        return mail;
+                .map(entry -> Pair.of(entry.getKey(), SerializationUtil.<Serializable>deserialize(entry.getValue())))
+                .forEach(pair -> mail.setAttribute(pair.getKey(), pair.getValue()));
+
+            Optional.ofNullable(SerializationUtil.<PerRecipientHeaders>deserialize(dto.getPerRecipientHeaders()))
+                .ifPresent(mail::addAllSpecificHeaderForRecipient);
+
+            return mail;
+        } catch (AddressException e) {
+            throw new MailQueueException("Failed to parse mail address", e);
+        } catch (MessagingException e) {
+            throw new MailQueueException("Failed to generate mime message", e);
+        }
     }
 }
