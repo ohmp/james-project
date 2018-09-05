@@ -20,7 +20,6 @@
 package org.apache.james.dlp.eventsourcing;
 
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
@@ -38,6 +37,7 @@ import org.apache.james.dlp.eventsourcing.commands.StoreCommandHandler;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.eventsourcing.eventstore.EventStore;
+import org.apache.james.util.streams.Iterables;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -82,7 +82,7 @@ public class EventSourcingDLPConfigurationStore implements DLPConfigurationStore
 
     @Override
     public Optional<DLPConfigurationItem> fetch(Domain domain, Id ruleId) {
-        return StreamSupport.stream(list(domain).spliterator(), false)
+        return Iterables.toStream(list(domain))
                 .filter((DLPConfigurationItem item) -> item.getId().equals(ruleId))
                 .findFirst();
     }

@@ -19,10 +19,9 @@
 
 package org.apache.james.webadmin.dto;
 
-import java.util.stream.StreamSupport;
-
 import org.apache.james.dlp.api.DLPRules;
 import org.apache.james.dlp.api.DLPRules.DuplicateRulesIdsException;
+import org.apache.james.util.streams.Iterables;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -37,7 +36,7 @@ public class DLPConfigurationDTO {
         Preconditions.checkNotNull(dlpConfigurations);
 
         return new DLPConfigurationDTO(
-            StreamSupport.stream(dlpConfigurations.spliterator(), false)
+            Iterables.toStream(dlpConfigurations)
                 .map(DLPConfigurationItemDTO::toDTO)
                 .collect(Guavate.toImmutableList()));
     }
