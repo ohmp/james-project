@@ -30,6 +30,8 @@ import org.apache.james.util.SerializationUtil;
 import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -52,7 +54,7 @@ public class MailDTO {
             bodyBlobId.asString());
     }
 
-    public static Map<String, String> serializedAttributes(Mail mail) {
+    public static ImmutableMap<String, String> serializedAttributes(Mail mail) {
         return Iterators.toStream(mail.getAttributeNames())
             .map(name -> Pair.of(name, SerializationUtil.serialize(mail.getAttribute(name))))
             .collect(ImmutableMap.toImmutableMap(
@@ -66,16 +68,26 @@ public class MailDTO {
     private String state;
     private String errorMessage;
     private Instant lastUpdated;
-    private Map<String, String> attributes;
+    private ImmutableMap<String, String> attributes;
     private String remoteAddr;
     private String remoteHost;
     private String perRecipientHeaders;
     private String headerBlobId;
     private String bodyBlobId;
 
-    private MailDTO(ImmutableList<String> recipients, String name, String sender, String state, String errorMessage,
-                    Instant lastUpdated, Map<String, String> attributes, String remoteAddr, String remoteHost,
-                    String perRecipientHeaders, String headerBlobId, String bodyBlobId) {
+    @JsonCreator
+    private MailDTO(@JsonProperty("recipients") ImmutableList<String> recipients,
+                    @JsonProperty("name") String name,
+                    @JsonProperty("sender") String sender,
+                    @JsonProperty("state") String state,
+                    @JsonProperty("errorMessage") String errorMessage,
+                    @JsonProperty("lastUpdated") Instant lastUpdated,
+                    @JsonProperty("attributes") ImmutableMap<String, String> attributes,
+                    @JsonProperty("remoteAddr") String remoteAddr,
+                    @JsonProperty("remoteHost") String remoteHost,
+                    @JsonProperty("perRecipientHeaders") String perRecipientHeaders,
+                    @JsonProperty("headerBlobId") String headerBlobId,
+                    @JsonProperty("bodyBlobId") String bodyBlobId) {
         this.recipients = recipients;
         this.name = name;
         this.sender = sender;

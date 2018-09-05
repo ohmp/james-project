@@ -24,11 +24,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
+import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueue;
+import org.apache.james.server.core.MailImpl;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.mime.MessageSplitter;
 import org.apache.mailet.Mail;
@@ -38,20 +41,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.fge.lambdas.Throwing;
+import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.GetResponse;
 
 public class RabbitMQMailQueue implements MailQueue {
+    public static final boolean AUTO_ACK = true;
+    public static final boolean MULTIPLE = true;
     private final String name;
     private final Channel channel;
     private final String exchangeName;
+    private final String workQueueName;
     private final BlobStore blobStore;
     private final ObjectMapper objectMapper;
 
-    public RabbitMQMailQueue(String name, Channel channel, String exchangeName, BlobStore blobStore) {
+    public RabbitMQMailQueue(String name, Channel channel, String exchangeName, String workQueueName, BlobStore blobStore) {
         this.name = name;
         this.channel = channel;
         this.exchangeName = exchangeName;
+        this.workQueueName = workQueueName;
         this.blobStore = blobStore;
         objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
@@ -74,6 +84,8 @@ public class RabbitMQMailQueue implements MailQueue {
         Pair<BlobId, BlobId> blobIds = saveBlobs(mail).join();
         MailDTO mailDTO = MailDTO.fromMail(mail, blobIds.getLeft(), blobIds.getRight());
         byte[] message = getMessageBytes(mailDTO);
+
+        System.out.println(new String(message));
 
         publish(message);
     }
@@ -101,14 +113,71 @@ public class RabbitMQMailQueue implements MailQueue {
 
     private void publish(byte[] message) throws MailQueueException {
         try {
-            channel.basicPublish(exchangeName, "defaultRoutingKey",new AMQP.BasicProperties(), message);
+            channel.basicPublish(exchangeName, RabbitMQMailQueueFactory.ROUTING_KEY, new AMQP.BasicProperties(), message);
         } catch (IOException e) {
             throw new MailQueueException("Unable to publish to RabbitMQ", e);
         }
     }
 
     @Override
-    public MailQueueItem deQueue() throws MailQueueException, InterruptedException {
-        return null;
+    public MailQueueItem deQueue() throws MailQueueException {
+        GetResponse getResponse = readChannel();
+        MailDTO mailDTO = toDTO(getResponse);
+        Mail mail = toMail(mailDTO);
+
+        return new MailQueueItem() {
+            @Override
+            public Mail getMail() {
+                return mail;
+            }
+
+            @Override
+            public void done(boolean success) throws MailQueueException {
+                try {
+                    channel.basicAck(getResponse.getEnvelope().getDeliveryTag(), !MULTIPLE);
+                } catch (IOException e) {
+                    throw new MailQueueException("Failed to ACK", e);
+                }
+            }
+        };
+    }
+
+    private MailDTO toDTO(GetResponse getResponse) throws MailQueueException {
+        try {
+            return objectMapper.readValue(getResponse.getBody(), MailDTO.class);
+        } catch (IOException e) {
+            throw new MailQueueException("Failed to parse DTO", e);
+        }
+    }
+
+    private GetResponse readChannel() throws MailQueueException {
+        try {
+            GetResponse getResponse;
+            do {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                getResponse = channel.basicGet(workQueueName, !AUTO_ACK);
+            } while (getResponse.getBody() == null);
+            return getResponse;
+        } catch (IOException e) {
+            throw new MailQueueException("Failed to read channel", e);
+        }
+    }
+
+    private Mail toMail(MailDTO dto) throws MailQueueException {
+        try {
+            return new MailImpl(
+                dto.getName(),
+                new MailAddress(dto.getSender()),
+                dto.getRecipients()
+                    .stream()
+                    .map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())
+                    .collect(ImmutableList.toImmutableList()));
+        } catch (AddressException e) {
+            throw new MailQueueException("Failed to parse mail address", e);
+        }
     }
 }

@@ -84,9 +84,11 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
     }
 
     private MailQueue cacheAwareCreate(String queueName) {
-        return mailQueueCache.computeIfAbsent(queueName, name -> new RabbitMQMailQueue(name,
+        return mailQueueCache.computeIfAbsent(queueName,
+            name -> new RabbitMQMailQueue(name,
             createChannelForQueue(name),
             exchangeForMailQueue(name),
+            workQueueForMailQueue(name),
             blobStore));
     }
 
