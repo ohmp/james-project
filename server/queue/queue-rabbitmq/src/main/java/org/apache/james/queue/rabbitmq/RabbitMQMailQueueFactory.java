@@ -25,7 +25,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -35,7 +34,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
-import org.apache.mailet.Mail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -139,33 +137,5 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<MailQueue> {
 
     private boolean isMailQueueName(String name) {
         return name.startsWith(WORKQUEUE_PREFIX);
-    }
-
-    private static class RabbitMQMailQueue implements MailQueue {
-        private final String name;
-
-        public RabbitMQMailQueue(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public void enQueue(Mail mail, long delay, TimeUnit unit) throws MailQueueException {
-
-        }
-
-        @Override
-        public void enQueue(Mail mail) throws MailQueueException {
-
-        }
-
-        @Override
-        public MailQueueItem deQueue() throws MailQueueException, InterruptedException {
-            return null;
-        }
     }
 }
