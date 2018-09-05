@@ -19,8 +19,10 @@
 package org.apache.james.queue.rabbitmq;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.apache.james.util.docker.Images;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -58,7 +60,7 @@ public class DockerRabbitMQ {
     @SuppressWarnings("resource")
     private DockerRabbitMQ(Optional<String> hostName, Optional<String> erlangCookie, Optional<String> nodeName, Optional<Network> net) {
         container = new GenericContainer<>(Images.RABBITMQ)
-                .withCreateContainerCmdModifier(cmd -> cmd.withName(hostName.orElse("localhost")))
+                .withCreateContainerCmdModifier(cmd -> cmd.withName(hostName.orElse(randomName())))
                 .withCreateContainerCmdModifier(cmd -> cmd.withHostName(hostName.orElse(DEFAULT_RABBIT_NODE)))
                 .withExposedPorts(DEFAULT_RABBITMQ_PORT, DEFAULT_RABBITMQ_ADMIN_PORT)
                 .waitingFor(new WaitAllStrategy()
@@ -71,6 +73,11 @@ public class DockerRabbitMQ {
         erlangCookie.ifPresent(cookie -> container.withEnv(RABBITMQ_ERLANG_COOKIE, cookie));
         nodeName.ifPresent(name -> container.withEnv(RABBITMQ_NODENAME, name));
         this.nodeName = nodeName;
+    }
+
+    @NotNull
+    private String randomName() {
+        return UUID.randomUUID().toString();
     }
 
     public String getHostIp() {
@@ -145,5 +152,16 @@ public class DockerRabbitMQ {
                 .execInContainer("rabbitmqctl", "start_app")
                 .getStdout();
         LOGGER.debug("start_app: {}", stdout);
+    }
+
+    public void reset() throws Exception {
+        stopApp();
+
+        String stdout = container()
+            .execInContainer("rabbitmqctl", "reset")
+            .getStdout();
+        LOGGER.debug("reset: {}", stdout);
+
+        startApp();
     }
 }
