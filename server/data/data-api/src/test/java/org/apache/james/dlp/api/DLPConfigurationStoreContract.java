@@ -37,7 +37,7 @@ public interface DLPConfigurationStoreContract {
 
     @Test
     default void listShouldReturnEmptyWhenNone(DLPConfigurationStore dlpConfigurationStore) {
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems())
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST))
             .isEmpty();
     }
 
@@ -45,7 +45,7 @@ public interface DLPConfigurationStoreContract {
     default void listShouldReturnExistingEntries(DLPConfigurationStore dlpConfigurationStore) {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE, RULE_2);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE, RULE_2);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE, RULE_2);
     }
 
     @Test
@@ -53,7 +53,7 @@ public interface DLPConfigurationStoreContract {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
         dlpConfigurationStore.store(OTHER_DOMAIN, RULE_2);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE);
     }
 
     @Test
@@ -62,7 +62,7 @@ public interface DLPConfigurationStoreContract {
 
         dlpConfigurationStore.clear(Domain.LOCALHOST);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).isEmpty();
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).isEmpty();
     }
 
     @Test
@@ -78,7 +78,7 @@ public interface DLPConfigurationStoreContract {
 
         dlpConfigurationStore.clear(Domain.LOCALHOST);
 
-        assertThat(dlpConfigurationStore.list(OTHER_DOMAIN).getItems()).containsOnly(RULE_2);
+        assertThat(dlpConfigurationStore.list(OTHER_DOMAIN)).containsOnly(RULE_2);
     }
 
     @Test
@@ -89,7 +89,7 @@ public interface DLPConfigurationStoreContract {
 
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE);
     }
 
     @Test
@@ -97,7 +97,7 @@ public interface DLPConfigurationStoreContract {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE, RULE_2);
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE);
     }
 
     @Test
@@ -105,7 +105,7 @@ public interface DLPConfigurationStoreContract {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE, RULE_2);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE, RULE_2);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE, RULE_2);
     }
 
     @Test
@@ -119,7 +119,7 @@ public interface DLPConfigurationStoreContract {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE_UPDATED);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE_UPDATED);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE_UPDATED);
     }
 
     @Test
@@ -127,7 +127,7 @@ public interface DLPConfigurationStoreContract {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).containsOnly(RULE);
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).containsOnly(RULE);
     }
 
     @Test
@@ -135,6 +135,6 @@ public interface DLPConfigurationStoreContract {
         dlpConfigurationStore.store(Domain.LOCALHOST, RULE);
         dlpConfigurationStore.store(Domain.LOCALHOST, new DLPRules(ImmutableList.of()));
 
-        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST).getItems()).isEmpty();
+        assertThat(dlpConfigurationStore.list(Domain.LOCALHOST)).isEmpty();
     }
 }
