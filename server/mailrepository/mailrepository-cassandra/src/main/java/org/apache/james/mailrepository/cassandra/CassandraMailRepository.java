@@ -89,7 +89,7 @@ public class CassandraMailRepository implements MailRepository {
     public Mail retrieve(MailKey key) {
         return CompletableFutureUtil
             .unwrap(mailDAO.read(url, key)
-            .thenApply(optional -> optional.map(this::toMail)))
+                .thenApply(optional -> optional.map(this::toMail)))
             .join()
             .orElse(null);
     }
