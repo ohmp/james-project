@@ -22,7 +22,6 @@ package org.apache.james.queue.rabbitmq;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -221,8 +220,7 @@ public class RabbitMQMailQueue implements MailQueue {
                 .map(entry -> Pair.of(entry.getKey(), SerializationUtil.<Serializable>deserialize(entry.getValue())))
                 .forEach(pair -> mail.setAttribute(pair.getKey(), pair.getValue()));
 
-            Optional.ofNullable(SerializationUtil.<PerRecipientHeaders>deserialize(dto.getPerRecipientHeaders()))
-                .ifPresent(mail::addAllSpecificHeaderForRecipient);
+            mail.addAllSpecificHeaderForRecipient(retrievePerRecipientHeaders(dto));
 
             return mail;
         } catch (AddressException e) {
@@ -230,5 +228,16 @@ public class RabbitMQMailQueue implements MailQueue {
         } catch (MessagingException e) {
             throw new MailQueueException("Failed to generate mime message", e);
         }
+    }
+
+    private PerRecipientHeaders retrievePerRecipientHeaders(MailDTO dto) {
+        PerRecipientHeaders perRecipientHeaders = new PerRecipientHeaders();
+        dto.getPerRecipientHeaders()
+            .entrySet()
+            .stream()
+            .flatMap(entry -> entry.getValue().toHeaders().stream()
+                .map(Throwing.function(header -> Pair.of(new MailAddress(entry.getKey()), header))))
+            .forEach(pair -> perRecipientHeaders.addHeaderForRecipient(pair.getValue(), pair.getKey()));
+        return perRecipientHeaders;
     }
 }

@@ -29,6 +29,7 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.util.SerializationUtil;
 import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
+import org.apache.mailet.PerRecipientHeaders;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,9 +52,19 @@ class MailDTO {
             serializedAttributes(mail),
             mail.getRemoteAddr(),
             mail.getRemoteHost(),
-            SerializationUtil.serialize(mail.getPerRecipientSpecificHeaders()),
+            fromPerRecipientHeaders(mail.getPerRecipientSpecificHeaders()),
             partsId.getHeaderBlobId().asString(),
             partsId.getBodyBlobId().asString());
+    }
+
+    private static Map<String, HeadersDto> fromPerRecipientHeaders(PerRecipientHeaders perRecipientHeaders) {
+        return perRecipientHeaders.getHeadersByRecipient()
+            .asMap()
+            .entrySet()
+            .stream()
+            .collect(ImmutableMap.toImmutableMap(
+                entry -> entry.getKey().asString(),
+                entry -> HeadersDto.from(entry.getValue())));
     }
 
     private static ImmutableMap<String, String> serializedAttributes(Mail mail) {
@@ -73,7 +84,7 @@ class MailDTO {
     private final ImmutableMap<String, String> attributes;
     private final String remoteAddr;
     private final String remoteHost;
-    private final String perRecipientHeaders;
+    private final Map<String, HeadersDto> perRecipientHeaders;
     private final String headerBlobId;
     private final String bodyBlobId;
 
@@ -87,7 +98,7 @@ class MailDTO {
                     @JsonProperty("attributes") ImmutableMap<String, String> attributes,
                     @JsonProperty("remoteAddr") String remoteAddr,
                     @JsonProperty("remoteHost") String remoteHost,
-                    @JsonProperty("perRecipientHeaders") String perRecipientHeaders,
+                    @JsonProperty("perRecipientHeaders") Map<String, HeadersDto>  perRecipientHeaders,
                     @JsonProperty("headerBlobId") String headerBlobId,
                     @JsonProperty("bodyBlobId") String bodyBlobId) {
         this.recipients = recipients;
@@ -150,7 +161,7 @@ class MailDTO {
     }
 
     @JsonProperty("perRecipientHeaders")
-    String getPerRecipientHeaders() {
+    Map<String, HeadersDto>  getPerRecipientHeaders() {
         return perRecipientHeaders;
     }
 
