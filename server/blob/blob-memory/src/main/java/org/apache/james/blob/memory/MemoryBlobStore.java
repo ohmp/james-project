@@ -64,13 +64,15 @@ public class MemoryBlobStore implements BlobStore {
 
     @Override
     public CompletableFuture<byte[]> readBytes(BlobId blobId) {
-        return CompletableFuture.completedFuture(
-            Optional.ofNullable(blobs.get(blobId))
-                .orElse(new byte[]{}));
+        return CompletableFuture.completedFuture(retrieveStoredValue(blobId));
     }
 
     @Override
     public InputStream read(BlobId blobId) {
-        return new ByteArrayInputStream(readBytes(blobId).join());
+        return new ByteArrayInputStream(retrieveStoredValue(blobId));
+    }
+
+    private byte[] retrieveStoredValue(BlobId blobId) {
+        return blobs.getOrDefault(blobId, new byte[]{});
     }
 }
