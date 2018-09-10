@@ -21,10 +21,12 @@ package org.apache.james.queue.rabbitmq;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.core.MailAddress;
 import org.apache.james.util.SerializationUtil;
@@ -42,14 +44,15 @@ class MailDTO {
 
     static MailDTO fromMail(Mail mail, MimeMessagePartsId partsId) {
         return new MailDTO(
-            mail.getRecipients().stream()
+            Optional.ofNullable(mail.getRecipients()).map(Collection::stream)
+                .orElse(Stream.empty())
                 .map(MailAddress::asString)
                 .collect(Guavate.toImmutableList()),
             mail.getName(),
-            mail.getSender().asString(),
+            Optional.ofNullable(mail.getSender()).map(MailAddress::asString),
             mail.getState(),
             mail.getErrorMessage(),
-            mail.getLastUpdated().toInstant(),
+            Optional.ofNullable(mail.getLastUpdated()).map(Date::toInstant),
             serializedAttributes(mail),
             mail.getRemoteAddr(),
             mail.getRemoteHost(),
@@ -77,10 +80,10 @@ class MailDTO {
 
     private final ImmutableList<String> recipients;
     private final String name;
-    private final String sender;
+    private final Optional<String> sender;
     private final String state;
     private final String errorMessage;
-    private final Instant lastUpdated;
+    private final Optional<Instant> lastUpdated;
     private final ImmutableMap<String, String> attributes;
     private final String remoteAddr;
     private final String remoteHost;
@@ -91,10 +94,10 @@ class MailDTO {
     @JsonCreator
     private MailDTO(@JsonProperty("recipients") ImmutableList<String> recipients,
                     @JsonProperty("name") String name,
-                    @JsonProperty("sender") String sender,
+                    @JsonProperty("sender") Optional<String> sender,
                     @JsonProperty("state") String state,
                     @JsonProperty("errorMessage") String errorMessage,
-                    @JsonProperty("lastUpdated") Instant lastUpdated,
+                    @JsonProperty("lastUpdated") Optional<Instant> lastUpdated,
                     @JsonProperty("attributes") ImmutableMap<String, String> attributes,
                     @JsonProperty("remoteAddr") String remoteAddr,
                     @JsonProperty("remoteHost") String remoteHost,
@@ -126,7 +129,7 @@ class MailDTO {
     }
 
     @JsonProperty("sender")
-    String getSender() {
+    Optional<String> getSender() {
         return sender;
     }
 
@@ -141,7 +144,7 @@ class MailDTO {
     }
 
     @JsonProperty("lastUpdated")
-    Instant getLastUpdated() {
+    Optional<Instant> getLastUpdated() {
         return lastUpdated;
     }
 

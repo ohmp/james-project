@@ -30,6 +30,7 @@ import javax.mail.MessagingException;
 
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.mail.MimeMessagePartsId;
+import org.apache.james.server.core.MailImpl;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
@@ -62,9 +63,21 @@ class MailDTOTest {
     }
 
     @Test
-    void mailDtoShouldBeDeserializeFromTheRightFormat() throws Exception {
+    void mailDtoShouldBeDeserializedFromTheRightFormat() throws Exception {
         assertThat(objectMapper.readValue(getSystemResourceAsString("json/mail1.json"), MailDTO.class))
             .isEqualTo(mailDTO1());
+    }
+
+    @Test
+    void mailDtoShouldBeSerializedWhenOnlyNameAndBlob() throws Exception {
+        assertThatJson(objectMapper.writeValueAsString(mailDTOMin()))
+            .isEqualTo(getSystemResourceAsString("json/mail_min.json"));
+    }
+
+    @Test
+    void mailDtoShouldBeDeserializedWhenOnlyNameAndBlob() throws Exception {
+        assertThat(objectMapper.readValue(getSystemResourceAsString("json/mail_min.json"), MailDTO.class))
+            .isEqualTo(mailDTOMin());
     }
 
     private MailDTO mailDTO1() throws MessagingException {
@@ -88,6 +101,19 @@ class MailDTOTest {
                 .state("state")
                 .name("mail-name-558")
                 .build(),
+            MimeMessagePartsId.builder()
+                .headerBlobId(BLOB_ID_FACTORY.from("210e7136-ede3-44eb-9495-3ed816d6e23b"))
+                .bodyBlobId(BLOB_ID_FACTORY.from("ef46c026-7819-4048-b562-3a37469191ed"))
+                .build());
+    }
+
+    private MailDTO mailDTOMin() throws MessagingException {
+        MailImpl mail = new MailImpl();
+        mail.setState(null);
+        mail.setName("mail-name-558");
+        mail.setLastUpdated(null);
+        return MailDTO.fromMail(
+            mail,
             MimeMessagePartsId.builder()
                 .headerBlobId(BLOB_ID_FACTORY.from("210e7136-ede3-44eb-9495-3ed816d6e23b"))
                 .bodyBlobId(BLOB_ID_FACTORY.from("ef46c026-7819-4048-b562-3a37469191ed"))
