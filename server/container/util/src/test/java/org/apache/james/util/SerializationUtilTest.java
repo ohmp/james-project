@@ -52,9 +52,8 @@ class SerializationUtilTest {
     void trySerializeShouldReturnString() {
         SerializableStringHolder value = new SerializableStringHolder("value");
 
-        String serializedString = "rO0ABXNyAE1vcmcuYXBhY2hlLmphbWVzLnF1ZXVlLmptcy5KTVNTZXJpYWxp" +
-                "emF0aW9uVXRpbHNUZXN0JFNlcmlhbGl6YWJsZVN0cmluZ0hvbGRlcsy4/DEA" +
-                "8nRZAgABTAAFdmFsdWV0ABJMamF2YS9sYW5nL1N0cmluZzt4cHQABXZhbHVl";
+        String serializedString = "rO0ABXNyAERvcmcuYXBhY2hlLmphbWVzLnV0aWwuU2VyaWFsaXphdGlvblV0aWxUZXN0JFNlcmlhbGl6Y" +
+            "WJsZVN0cmluZ0hvbGRlcjk393aULV9XAgABTAAFdmFsdWV0ABJMamF2YS9sYW5nL1N0cmluZzt4cHQABXZhbHVl";
 
         String actual = serialize(value);
 
