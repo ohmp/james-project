@@ -131,7 +131,9 @@ public class RabbitMQMailQueue implements MailQueue {
 
     @Override
     public void enQueue(Mail mail, long delay, TimeUnit unit) throws MailQueueException {
-        LOGGER.info("Ignored delay upon enqueue of {} : {} {}.", mail.getName(), delay, unit);
+        if (delay > 0) {
+            LOGGER.info("Ignored delay upon enqueue of {} : {} {}.", mail.getName(), delay, unit);
+        }
         enQueue(mail);
     }
 
