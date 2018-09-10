@@ -217,10 +217,7 @@ public class RabbitMQMailQueue implements MailQueue {
             mail.setLastUpdated(new Date(dto.getLastUpdated().toEpochMilli()));
 
             dto.getAttributes()
-                .entrySet()
-                .stream()
-                .map(entry -> Pair.of(entry.getKey(), SerializationUtil.<Serializable>deserialize(entry.getValue())))
-                .forEach(pair -> mail.setAttribute(pair.getKey(), pair.getValue()));
+                .forEach((name, value) -> mail.setAttribute(name, SerializationUtil.<Serializable>deserialize(value)));
 
             mail.addAllSpecificHeaderForRecipient(retrievePerRecipientHeaders(dto));
 
