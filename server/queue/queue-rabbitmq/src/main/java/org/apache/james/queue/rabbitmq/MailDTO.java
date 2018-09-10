@@ -70,10 +70,9 @@ class MailDTO {
 
     private static ImmutableMap<String, String> serializedAttributes(Mail mail) {
         return Iterators.toStream(mail.getAttributeNames())
-            .map(name -> Pair.of(name, SerializationUtil.serialize(mail.getAttribute(name))))
             .collect(Guavate.toImmutableMap(
-                Pair::getKey,
-                Pair::getValue));
+                name -> name,
+                name -> SerializationUtil.serialize(mail.getAttribute(name))));
     }
 
     private final ImmutableList<String> recipients;
