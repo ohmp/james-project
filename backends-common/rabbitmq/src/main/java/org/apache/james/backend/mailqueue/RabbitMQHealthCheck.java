@@ -36,7 +36,7 @@ import com.rabbitmq.client.ConnectionFactory;
 
 public class RabbitMQHealthCheck implements HealthCheck {
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQHealthCheck.class);
-    private static final ComponentName COMPONENT_NAME = new ComponentName("RabbiMQ backend");
+    private static final ComponentName COMPONENT_NAME = new ComponentName("RabbitMQ backend");
 
     private final ConnectionFactory connectionFactory;
 
