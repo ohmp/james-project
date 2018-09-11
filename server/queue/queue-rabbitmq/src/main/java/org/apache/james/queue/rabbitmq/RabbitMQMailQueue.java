@@ -51,7 +51,7 @@ public class RabbitMQMailQueue implements MailQueue {
         private final RabbitClient rabbitClient;
         private final Store<MimeMessage, MimeMessagePartsId> mimeMessageStore;
         private final BlobId.Factory blobIdFactory;
-        private final ObjectMapper objectMapper;
+        private final MailReferenceSerializer mailReferenceSerializer;
 
         @Inject
         @VisibleForTesting Factory(MetricFactory metricFactory, GaugeRegistry gaugeRegistry, RabbitClient rabbitClient,
@@ -61,16 +61,17 @@ public class RabbitMQMailQueue implements MailQueue {
             this.rabbitClient = rabbitClient;
             this.mimeMessageStore = mimeMessageStore;
             this.blobIdFactory = blobIdFactory;
-            this.objectMapper = new ObjectMapper()
-                .registerModule(new Jdk8Module())
-                .registerModule(new JavaTimeModule())
-                .registerModule(new GuavaModule());
+            mailReferenceSerializer = new MailReferenceSerializer(
+                new ObjectMapper()
+                    .registerModule(new Jdk8Module())
+                    .registerModule(new JavaTimeModule())
+                    .registerModule(new GuavaModule()));
         }
 
         RabbitMQMailQueue create(MailQueueName mailQueueName) {
             return new RabbitMQMailQueue(metricFactory, gaugeRegistry, mailQueueName,
-                new Enqueuer(mailQueueName, rabbitClient, mimeMessageStore, objectMapper, metricFactory),
-                new Dequeuer(mailQueueName, rabbitClient, mimeMessageStore, blobIdFactory, objectMapper, metricFactory));
+                new Enqueuer(mailQueueName, rabbitClient, mimeMessageStore, mailReferenceSerializer, metricFactory),
+                new Dequeuer(mailQueueName, rabbitClient, mimeMessageStore, blobIdFactory, mailReferenceSerializer, metricFactory));
         }
     }
 
