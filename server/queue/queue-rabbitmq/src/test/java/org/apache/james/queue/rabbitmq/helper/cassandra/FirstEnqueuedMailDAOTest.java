@@ -68,26 +68,26 @@ public class FirstEnqueuedMailDAOTest {
 
     @Test
     public void findFirstEnqueuedInstantShouldReturnEmptyWhenTableDoesntContainQueueName() throws Exception {
-        testee.updateFirstEnqueuedTime(OUT_GOING_1, NOW).join();
+        testee.updateBrowseStart(OUT_GOING_1, NOW).join();
 
-        Optional<Instant> firstEnqueuedItemFromQueue2 = testee.findFirstEnqueuedInstant(OUT_GOING_2).join();
+        Optional<Instant> firstEnqueuedItemFromQueue2 = testee.findBrowseStart(OUT_GOING_2).join();
         assertThat(firstEnqueuedItemFromQueue2)
             .isEmpty();
     }
 
     @Test
     public void findFirstEnqueuedInstantShouldReturnDateWhenTableContainsQueueName() throws Exception {
-        testee.updateFirstEnqueuedTime(OUT_GOING_1, NOW).join();
-        testee.updateFirstEnqueuedTime(OUT_GOING_2, NOW).join();
+        testee.updateBrowseStart(OUT_GOING_1, NOW).join();
+        testee.updateBrowseStart(OUT_GOING_2, NOW).join();
 
-        Optional<Instant> firstEnqueuedItemFromQueue2 = testee.findFirstEnqueuedInstant(OUT_GOING_2).join();
+        Optional<Instant> firstEnqueuedItemFromQueue2 = testee.findBrowseStart(OUT_GOING_2).join();
         assertThat(firstEnqueuedItemFromQueue2)
             .isNotEmpty();
     }
 
     @Test
     public void updateFirstEnqueuedTimeShouldWork() throws Exception {
-        testee.updateFirstEnqueuedTime(OUT_GOING_1, NOW).join();
+        testee.updateBrowseStart(OUT_GOING_1, NOW).join();
 
         assertThat(testee.selectOne(OUT_GOING_1).join())
             .isNotEmpty();

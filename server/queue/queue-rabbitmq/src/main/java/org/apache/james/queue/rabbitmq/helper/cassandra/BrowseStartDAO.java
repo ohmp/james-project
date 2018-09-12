@@ -21,12 +21,11 @@ package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.FirstEnqueuedMailTable.QUEUE_NAME;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.FirstEnqueuedMailTable.TABLE_NAME;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.FirstEnqueuedMailTable.TIME_RANGE_START;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.BROWSE_START;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.QUEUE_NAME;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.TABLE_NAME;
 
 import java.time.Instant;
 import java.util.Date;
@@ -43,14 +42,14 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.annotations.VisibleForTesting;
 
-public class BrowseStartDAO {
+class BrowseStartDAO {
 
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement selectOne;
     private final PreparedStatement updateOne;
 
     @Inject
-    public BrowseStartDAO(Session session) {
+    BrowseStartDAO(Session session) {
         this.executor = new CassandraAsyncExecutor(session);
 
         this.selectOne = prepareSelectOne(session);
@@ -64,14 +63,19 @@ public class BrowseStartDAO {
     }
 
     private PreparedStatement prepareUpdate(Session session) { // todo insert
-        return session.prepare(update(TABLE_NAME)
-                .with(set(TIME_RANGE_START, bindMarker(TIME_RANGE_START)))
-                .where(eq(QUEUE_NAME, bindMarker(QUEUE_NAME))));
+        return session.prepare(insertInto(TABLE_NAME)
+            .value(BROWSE_START, bindMarker(BROWSE_START))
+            .value(QUEUE_NAME, bindMarker(QUEUE_NAME)));
     }
 
-    CompletableFuture<Void> updateFirstEnqueuedTime(MailQueueName mailQueueName, Instant sliceStart) {
+    CompletableFuture<Optional<Instant>> findBrowseStart(MailQueueName queueName) {
+        return selectOne(queueName)
+            .thenApply(optional -> optional.map(this::getInstant));
+    }
+
+    CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName, Instant sliceStart) {
         return executor.executeVoid(updateOne.bind()
-            .setTimestamp(TIME_RANGE_START, Date.from(sliceStart))
+            .setTimestamp(BROWSE_START, Date.from(sliceStart))
             .setString(QUEUE_NAME, mailQueueName.asString()));
     }
 
@@ -82,12 +86,7 @@ public class BrowseStartDAO {
                 .setString(QUEUE_NAME, queueName.asString()));
     }
 
-    CompletableFuture<Optional<Instant>> findFirstEnqueuedInstant(MailQueueName queueName) {
-        return selectOne(queueName)
-            .thenApply(optional -> optional.map(this::getInstant));
-    }
-
     private Instant getInstant(Row row) {
-        return row.getTimestamp(TIME_RANGE_START).toInstant();
+        return row.getTimestamp(BROWSE_START).toInstant();
     }
 }

@@ -64,7 +64,7 @@ class DeleteMailHelper {
     private CompletableFuture<Void> updateEnqueuedMail(Mail mail, MailQueueName mailQueueName) {
         if (shouldUpdateFirstEnqueued()) {
             return browseStartDao
-                .findFirstEnqueuedInstant(mailQueueName)
+                .findBrowseStart(mailQueueName)
                 .thenCompose(findMailInEnqueued(mail, mailQueueName))
                 .thenCompose(setFirstEnqueued(mailQueueName));
         } else {
@@ -77,7 +77,7 @@ class DeleteMailHelper {
 
             maybeEnqueuedMail
                 .map(endQueuedMail -> browseStartDao
-                    .updateFirstEnqueuedTime(mailQueueName, endQueuedMail.getTimeRangeStart()))
+                    .updateBrowseStart(mailQueueName, endQueuedMail.getTimeRangeStart()))
             .orElse(CompletableFuture.completedFuture(null));
     }
 

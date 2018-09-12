@@ -103,7 +103,7 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
 
     private Stream<ManageableMailQueue.MailQueueItemView> enqueuedStream() {
         return browseStartDao
-            .findFirstEnqueuedInstant(mailQueueName)
+            .findBrowseStart(mailQueueName)
             .thenCompose(this::getEnqueuedFromTheStartingPoint)
             .join();
     }

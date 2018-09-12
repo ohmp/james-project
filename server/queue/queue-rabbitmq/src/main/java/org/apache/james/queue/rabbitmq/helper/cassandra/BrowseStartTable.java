@@ -19,10 +19,10 @@
 
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
-public interface FirstEnqueuedMailTable {
+public interface BrowseStartTable {
 
-    String TABLE_NAME = "firstEnqueuedMails";
+    String TABLE_NAME = "browseStart";
 
     String QUEUE_NAME = "queueName";
-    String TIME_RANGE_START = "timeRangeStart";
+    String BROWSE_START = "browseStart";
 }

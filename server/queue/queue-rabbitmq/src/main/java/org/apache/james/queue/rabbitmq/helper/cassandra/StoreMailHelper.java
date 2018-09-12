@@ -58,7 +58,7 @@ class StoreMailHelper {
         MailQueueName mailQueueName = enqueuedMail.getMailQueueName();
 
         return browseStartDao
-            .findFirstEnqueuedInstant(mailQueueName)
+            .findBrowseStart(mailQueueName)
             .thenCompose(maybeInstant -> updateFirstEnqueuedIfNotExist(enqueuedMail, mailQueueName, maybeInstant));
     }
 
@@ -67,7 +67,7 @@ class StoreMailHelper {
 
         return maybeInstant
             .map(instant -> successedFuture())
-            .orElse(browseStartDao.updateFirstEnqueuedTime(mailQueueName, enqueuedMail.getTimeRangeStart()));
+            .orElse(browseStartDao.updateBrowseStart(mailQueueName, enqueuedMail.getTimeRangeStart()));
     }
 
     private EnqueuedMail convertToEnqueuedMail(Mail mail, MailQueueName mailQueueName) {

@@ -59,13 +59,13 @@ public interface CassandraRabbitMQHelperModule {
             .addColumn(EnqueuedMailsTable.LAST_UPDATED, timestamp())
             .addUDTMapColumn(EnqueuedMailsTable.PER_RECIPIENT_SPECIFIC_HEADERS, text(), frozen(EnqueuedMailsTable.HEADER_TYPE)))
 
-        .table(FirstEnqueuedMailTable.TABLE_NAME)
+        .table(BrowseStartTable.TABLE_NAME)
         .comment("this table allows to find the starting point of iteration from the table: "
             + EnqueuedMailsTable.TABLE_NAME + " in order to make a browse operations through mail queues")
         .options(options -> options)
         .statement(statement -> statement
-            .addPartitionKey(FirstEnqueuedMailTable.QUEUE_NAME, text())
-            .addColumn(FirstEnqueuedMailTable.TIME_RANGE_START, timestamp()))
+            .addPartitionKey(BrowseStartTable.QUEUE_NAME, text())
+            .addColumn(BrowseStartTable.BROWSE_START, timestamp()))
 
         .table(DeletedMailTable.TABLE_NAME)
         .comment("this table stores the dequeued mails, while browsing mail from table: "
