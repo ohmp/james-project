@@ -25,9 +25,9 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.BROWSE_START;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.QUEUE_NAME;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.TABLE_NAME;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule.BrowseStartTable.BROWSE_START;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule.BrowseStartTable.QUEUE_NAME;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule.BrowseStartTable.TABLE_NAME;
 
 import java.time.Instant;
 import java.util.Date;

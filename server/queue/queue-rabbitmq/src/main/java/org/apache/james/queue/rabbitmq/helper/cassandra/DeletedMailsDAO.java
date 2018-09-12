@@ -23,9 +23,9 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.DeletedMailTable.MAIL_KEY;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.DeletedMailTable.QUEUE_NAME;
-import static org.apache.james.queue.rabbitmq.helper.cassandra.DeletedMailTable.TABLE_NAME;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule.DeletedMailTable.MAIL_KEY;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule.DeletedMailTable.QUEUE_NAME;
+import static org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule.DeletedMailTable.TABLE_NAME;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

@@ -18,7 +18,7 @@
  ****************************************************************/
 
 package org.apache.james.queue.rabbitmq.helper.cassandra;
-
+/*
 import java.time.Duration;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
@@ -74,4 +74,4 @@ public class DeleteMailHelperTest {
     }
 
 
-}
+}*/

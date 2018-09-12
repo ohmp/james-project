@@ -31,6 +31,45 @@ import org.apache.james.backends.cassandra.components.CassandraModule;
 
 public interface CassandraMailQueueViewModule {
 
+    interface EnqueuedMailsTable {
+        String TABLE_NAME = "enqueuedMails";
+
+        String QUEUE_NAME = "queueName";
+        String TIME_RANGE_START = "timeRangeStart";
+        String BUCKET_ID = "bucketId";
+
+        String MAIL_KEY = "mailKey";
+        String HEADER_BLOB_ID = "headerBlobId";
+        String BODY_BLOB_ID = "bodyBlobId";
+        String STATE = "state";
+        String SENDER = "sender";
+        String RECIPIENTS = "recipients";
+        String ATTRIBUTES = "attributes";
+        String ERROR_MESSAGE = "errorMessage";
+        String REMOTE_HOST = "remoteHost";
+        String REMOTE_ADDR = "remoteAddr";
+        String LAST_UPDATED = "lastUpdated";
+        String PER_RECIPIENT_SPECIFIC_HEADERS = "perRecipientSpecificHeaders";
+
+        String HEADER_TYPE = "header";
+        String HEADER_NAME = "headerName";
+        String HEADER_VALUE = "headerValue";
+    }
+
+    interface DeletedMailTable {
+        String TABLE_NAME = "deletedMails";
+
+        String QUEUE_NAME = "queueName";
+        String MAIL_KEY = "mailKey";
+    }
+
+    interface BrowseStartTable {
+        String TABLE_NAME = "browseStart";
+
+        String QUEUE_NAME = "queueName";
+        String BROWSE_START = "browseStart";
+    }
+
     CassandraModule MODULE = CassandraModule
         .type(EnqueuedMailsTable.HEADER_TYPE)
             .statement(statement -> statement

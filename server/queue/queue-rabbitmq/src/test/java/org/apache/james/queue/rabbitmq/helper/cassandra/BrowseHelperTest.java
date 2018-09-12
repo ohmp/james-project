@@ -17,6 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
+/*
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import java.time.Duration;
@@ -29,7 +30,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-
 public class BrowseHelperTest {
 
     private static final int ENQUEUED_PACE_UPDATE = 5;
@@ -72,4 +72,4 @@ public class BrowseHelperTest {
     }
 
 
-}
+}*/

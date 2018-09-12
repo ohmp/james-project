@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-
+/*
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -141,4 +141,4 @@ public class EnqueuedMailsDaoTest {
                 softly.assertThat(selectedEnqueuedMail.getMailKey()).isEqualTo(MAIL_KEY_1);
             });
     }
-}
+}*/
