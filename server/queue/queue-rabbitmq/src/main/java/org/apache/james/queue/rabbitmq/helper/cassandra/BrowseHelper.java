@@ -20,6 +20,7 @@
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -60,17 +61,20 @@ class BrowseHelper {
 
     FluentFutureStream<EnqueuedMail> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
-            .thenApply(maybeStart ->
-                BucketedSlices.builder()
-                .startAt(maybeStart.get()) //todo arg
-                .endAt(clock.instant())
-                .bucketCount(configuration.getBucketCount())
-                .sliceWindowSideInSecond(configuration.getSliceWindow().getSeconds())
-                .build()
-                .getBucketSlices()))
+            .thenApply(maybeStart -> maybeStart.map(this::toBucketedSlices).orElse(Stream.empty())))
             .thenFlatCompose(bucketAndSlice -> enqueuedMailsDao
                 .selectEnqueuedMails(queueName, bucketAndSlice))
             .thenFlatComposeOnOptional(mailReference -> filterDeleted(queueName, mailReference));
+    }
+
+    private Stream<BucketedSlices.BucketAndSlice> toBucketedSlices(Instant startingSlice) {
+        return BucketedSlices.builder()
+            .startAt(startingSlice)
+            .endAt(clock.instant())
+            .bucketCount(configuration.getBucketCount())
+            .sliceWindowSideInSecond(configuration.getSliceWindow().getSeconds())
+            .build()
+            .getBucketSlices();
     }
 
     private CompletableFuture<Optional<EnqueuedMail>> filterDeleted(MailQueueName mailQueueName, EnqueuedMail mailReference) {
