@@ -20,16 +20,17 @@
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.rabbitmq.MailQueueName;
-import org.apache.james.queue.rabbitmq.helper.api.RabbitMQMailQueueHelper;
+import org.apache.james.queue.rabbitmq.helper.api.MailQueueView;
 import org.apache.mailet.Mail;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
-public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
+public class CassandraMailQueueView implements MailQueueView {
 
     class CassandraMailQueueIterator implements ManageableMailQueue.MailQueueIterator {
 
@@ -61,10 +62,10 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
 
     private final MailQueueName mailQueueName;
 
-    public CassandraRabbitMQHelper(StoreMailHelper daoHelper,
-                                   MailQueueName mailQueueName,
-                                   BrowseHelper browseHelper,
-                                   DeleteMailHelper deleteMailHelper) {
+    public CassandraMailQueueView(StoreMailHelper daoHelper,
+                                  MailQueueName mailQueueName,
+                                  BrowseHelper browseHelper,
+                                  DeleteMailHelper deleteMailHelper) {
         this.mailQueueName = mailQueueName;
         this.daoHelper = daoHelper;
         this.browseHelper = browseHelper;
@@ -72,15 +73,13 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
     }
 
     @Override
-    public void storeMail(Mail mail) {
-        daoHelper.storeMailInEnqueueTable(mail, mailQueueName)
-            .join();
+    public CompletableFuture<Void> storeMail(Mail mail) {
+        return daoHelper.storeMailInEnqueueTable(mail, mailQueueName);
     }
 
     @Override
-    public void deleteMail(Mail mail) {
-        deleteMailHelper.updateDeleteTable(mail, mailQueueName)
-            .join();
+    public CompletableFuture<Void> deleteMail(Mail mail) {
+        return deleteMailHelper.updateDeleteTable(mail, mailQueueName);
     }
 
     @Override

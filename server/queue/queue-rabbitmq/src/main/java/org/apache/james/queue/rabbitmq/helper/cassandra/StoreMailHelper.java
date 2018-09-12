@@ -33,12 +33,12 @@ class StoreMailHelper {
 
     private final EnqueuedMailsDAO enqueuedMailsDao;
     private final BrowseStartDAO browseStartDao;
-    private final CassandraRabbitMQConfiguration configuration;
+    private final CassandraMailQueueViewConfiguration configuration;
 
     @Inject
     StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
                     BrowseStartDAO browseStartDao,
-                    CassandraRabbitMQConfiguration configuration) {
+                    CassandraMailQueueViewConfiguration configuration) {
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
         this.configuration = configuration;

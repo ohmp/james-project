@@ -49,7 +49,7 @@ public class DeletedMailsDAOTest {
 
     @BeforeClass
     public static void setUpClass() {
-        cassandra = CassandraCluster.create(CassandraRabbitMQHelperModule.MODULE, cassandraServer.getHost());
+        cassandra = CassandraCluster.create(CassandraMailQueueViewModule.MODULE, cassandraServer.getHost());
     }
 
     @Before

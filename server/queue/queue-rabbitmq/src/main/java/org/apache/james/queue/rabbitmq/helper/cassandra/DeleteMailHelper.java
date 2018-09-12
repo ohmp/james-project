@@ -37,13 +37,13 @@ class DeleteMailHelper {
     private final DeletedMailsDAO deletedMailsDao;
     private final BrowseStartDAO browseStartDao;
     private final BrowseHelper browseHelper;
-    private final CassandraRabbitMQConfiguration configuration;
+    private final CassandraMailQueueViewConfiguration configuration;
     private final Random random;
 
     @Inject
     DeleteMailHelper(DeletedMailsDAO deletedMailsDao,
                      BrowseStartDAO browseStartDao,
-                     BrowseHelper browseHelper, CassandraRabbitMQConfiguration configuration) {
+                     BrowseHelper browseHelper, CassandraMailQueueViewConfiguration configuration) {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
         this.browseHelper = browseHelper;

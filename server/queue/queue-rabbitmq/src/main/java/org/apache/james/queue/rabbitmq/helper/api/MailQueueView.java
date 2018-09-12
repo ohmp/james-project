@@ -19,17 +19,16 @@
 
 package org.apache.james.queue.rabbitmq.helper.api;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.mailet.Mail;
 
-import com.google.common.annotations.VisibleForTesting;
+public interface MailQueueView {
 
-public interface RabbitMQMailQueueHelper {
+    CompletableFuture<Void> storeMail(Mail mail);
 
-    @VisibleForTesting
-    void storeMail(Mail mail);
-
-    void deleteMail(Mail mail);
+    CompletableFuture<Void> deleteMail(Mail mail);
 
     ManageableMailQueue.MailQueueIterator browse();
 

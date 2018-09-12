@@ -29,7 +29,7 @@ import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
 
-public interface CassandraRabbitMQHelperModule {
+public interface CassandraMailQueueViewModule {
 
     CassandraModule MODULE = CassandraModule
         .type(EnqueuedMailsTable.HEADER_TYPE)

@@ -59,12 +59,12 @@ public class EnqueuedMailsDaoTest {
 
     @BeforeClass
     public static void setUpClass() {
-        cassandra = CassandraCluster.create(CassandraRabbitMQHelperModule.MODULE, cassandraServer.getHost());
+        cassandra = CassandraCluster.create(CassandraMailQueueViewModule.MODULE, cassandraServer.getHost());
     }
 
     @Before
     public void setUp() {
-        CassandraRabbitMQConfiguration configuration = new CassandraRabbitMQConfiguration(1, ENQUEUED_PACE_UPDATE, Duration.ofHours(1));
+        CassandraMailQueueViewConfiguration configuration = new CassandraMailQueueViewConfiguration(1, ENQUEUED_PACE_UPDATE, Duration.ofHours(1));
 
         testee = new EnqueuedMailsDAO(
             cassandra.getConf(),
