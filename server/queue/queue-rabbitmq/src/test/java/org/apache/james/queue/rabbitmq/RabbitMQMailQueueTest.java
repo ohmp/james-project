@@ -55,7 +55,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith({ReusableDockerRabbitMQExtension.class, DockerCassandraExtension.class})
 public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
-    public static final int BUCKET_COUNT = 10;
+    public static final int BUCKET_COUNT = 3;
     public static final int UPDATE_FIRST_ENQUEUED_PACE = 100;
     public static final Duration SLICE_WINDOW = Duration.ofHours(1);
     public static final String SPOOL = "spool";
