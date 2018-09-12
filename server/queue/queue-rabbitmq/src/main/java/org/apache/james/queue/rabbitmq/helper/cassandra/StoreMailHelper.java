@@ -34,15 +34,15 @@ import org.apache.mailet.Mail;
 class StoreMailHelper {
 
     private final EnqueuedMailsDAO enqueuedMailsDao;
-    private final FirstEnqueuedMailDAO firstEnqueuedMailDao;
+    private final BrowseStartDAO browseStartDao;
     private final CassandraRabbitMQConfiguration configuration;
 
     @Inject
     public StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
-                           FirstEnqueuedMailDAO firstEnqueuedMailDao,
+                           BrowseStartDAO browseStartDao,
                            CassandraRabbitMQConfiguration configuration) {
         this.enqueuedMailsDao = enqueuedMailsDao;
-        this.firstEnqueuedMailDao = firstEnqueuedMailDao;
+        this.browseStartDao = browseStartDao;
 
         this.configuration = configuration;
     }
@@ -57,7 +57,7 @@ class StoreMailHelper {
     private CompletableFuture<Void> updateIfNotExistInFirstEnqueued(EnqueuedMail enqueuedMail) {
         MailQueueName mailQueueName = enqueuedMail.getMailQueueName();
 
-        return firstEnqueuedMailDao
+        return browseStartDao
             .findFirstEnqueuedInstant(mailQueueName)
             .thenCompose(maybeInstant -> updateFirstEnqueuedIfNotExist(enqueuedMail, mailQueueName, maybeInstant));
     }
@@ -67,7 +67,7 @@ class StoreMailHelper {
 
         return maybeInstant
             .map(instant -> successedFuture())
-            .orElse(firstEnqueuedMailDao.updateFirstEnqueuedTime(mailQueueName, enqueuedMail.getTimeRangeStart()));
+            .orElse(browseStartDao.updateFirstEnqueuedTime(mailQueueName, enqueuedMail.getTimeRangeStart()));
     }
 
     private EnqueuedMail convertToEnqueuedMail(Mail mail, MailQueueName mailQueueName) {

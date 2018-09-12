@@ -58,19 +58,19 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
         }
     }
 
-    private final FirstEnqueuedMailDAO firstEnqueuedMailDao;
+    private final BrowseStartDAO browseStartDao;
     private final StoreMailHelper daoHelper;
     private final BrowseHelper browseHelper;
     private final DeleteMailHelper deleteMailHelper;
 
     private final MailQueueName mailQueueName;
 
-    public CassandraRabbitMQHelper(FirstEnqueuedMailDAO firstEnqueuedMailDao,
+    public CassandraRabbitMQHelper(BrowseStartDAO browseStartDao,
                                    StoreMailHelper daoHelper,
                                    MailQueueName mailQueueName,
                                    BrowseHelper browseHelper,
                                    DeleteMailHelper deleteMailHelper) {
-        this.firstEnqueuedMailDao = firstEnqueuedMailDao;
+        this.browseStartDao = browseStartDao;
         this.mailQueueName = mailQueueName;
         this.daoHelper = daoHelper;
         this.browseHelper = browseHelper;
@@ -102,7 +102,7 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
     }
 
     private Stream<ManageableMailQueue.MailQueueItemView> enqueuedStream() {
-        return firstEnqueuedMailDao
+        return browseStartDao
             .findFirstEnqueuedInstant(mailQueueName)
             .thenCompose(this::getEnqueuedFromTheStartingPoint)
             .join();

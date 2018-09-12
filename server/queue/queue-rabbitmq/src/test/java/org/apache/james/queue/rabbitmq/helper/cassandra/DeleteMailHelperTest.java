@@ -58,9 +58,9 @@ public class DeleteMailHelperTest {
             cassandra.getTypesProvider(),
             configuration);
 
-        FirstEnqueuedMailDAO firstEnqueuedMailDao = new FirstEnqueuedMailDAO(cassandra.getConf());
+        BrowseStartDAO browseStartDao = new BrowseStartDAO(cassandra.getConf());
 
-        testee = new DeleteMailHelper(deletedMailsDAO, enqueuedMailDao, firstEnqueuedMailDao, configuration);
+        testee = new DeleteMailHelper(deletedMailsDAO, enqueuedMailDao, browseStartDao, configuration);
     }
 
     @After

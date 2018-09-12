@@ -56,9 +56,9 @@ public class StoreMailHelperTest {
             cassandra.getTypesProvider(),
             configuration);
 
-        FirstEnqueuedMailDAO firstEnqueuedMailDao = new FirstEnqueuedMailDAO(cassandra.getConf());
+        BrowseStartDAO browseStartDao = new BrowseStartDAO(cassandra.getConf());
 
-        testee = new StoreMailHelper(enqueuedMailDao, firstEnqueuedMailDao, configuration);
+        testee = new StoreMailHelper(enqueuedMailDao, browseStartDao, configuration);
     }
 
     @After

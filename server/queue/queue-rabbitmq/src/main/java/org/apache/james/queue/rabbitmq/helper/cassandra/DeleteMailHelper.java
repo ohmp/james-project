@@ -38,18 +38,18 @@ class DeleteMailHelper {
 
     private final DeletedMailsDAO deletedMailsDao;
     private final EnqueuedMailsDAO enqueuedMailsDao;
-    private final FirstEnqueuedMailDAO firstEnqueuedMailDao;
+    private final BrowseStartDAO browseStartDao;
     private final CassandraRabbitMQConfiguration configuration;
     private final Random random;
 
     @Inject
     public DeleteMailHelper(DeletedMailsDAO deletedMailsDao,
                                       EnqueuedMailsDAO enqueuedMailsDao,
-                                      FirstEnqueuedMailDAO firstEnqueuedMailDao,
+                                      BrowseStartDAO browseStartDao,
                                       CassandraRabbitMQConfiguration configuration) {
         this.deletedMailsDao = deletedMailsDao;
         this.enqueuedMailsDao = enqueuedMailsDao;
-        this.firstEnqueuedMailDao = firstEnqueuedMailDao;
+        this.browseStartDao = browseStartDao;
 
         this.configuration = configuration;
         random = new Random();
@@ -63,7 +63,7 @@ class DeleteMailHelper {
 
     private CompletableFuture<Void> updateEnqueuedMail(Mail mail, MailQueueName mailQueueName) {
         if (shouldUpdateFirstEnqueued()) {
-            return firstEnqueuedMailDao
+            return browseStartDao
                 .findFirstEnqueuedInstant(mailQueueName)
                 .thenCompose(findMailInEnqueued(mail, mailQueueName))
                 .thenCompose(setFirstEnqueued(mailQueueName));
@@ -76,7 +76,7 @@ class DeleteMailHelper {
         return maybeEnqueuedMail ->
 
             maybeEnqueuedMail
-                .map(endQueuedMail -> firstEnqueuedMailDao
+                .map(endQueuedMail -> browseStartDao
                     .updateFirstEnqueuedTime(mailQueueName, endQueuedMail.getTimeRangeStart()))
             .orElse(CompletableFuture.completedFuture(null));
     }

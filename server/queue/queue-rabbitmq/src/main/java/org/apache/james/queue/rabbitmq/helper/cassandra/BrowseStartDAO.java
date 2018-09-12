@@ -43,14 +43,14 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.annotations.VisibleForTesting;
 
-public class FirstEnqueuedMailDAO {
+public class BrowseStartDAO {
 
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement selectOne;
     private final PreparedStatement updateOne;
 
     @Inject
-    public FirstEnqueuedMailDAO(Session session) {
+    public BrowseStartDAO(Session session) {
         this.executor = new CassandraAsyncExecutor(session);
 
         this.selectOne = prepareSelectOne(session);

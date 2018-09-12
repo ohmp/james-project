@@ -44,7 +44,7 @@ public class FirstEnqueuedMailDAOTest {
     public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
     private static CassandraCluster cassandra;
 
-    private FirstEnqueuedMailDAO testee;
+    private BrowseStartDAO testee;
 
     @BeforeClass
     public static void setUpClass() {
@@ -53,7 +53,7 @@ public class FirstEnqueuedMailDAOTest {
 
     @Before
     public void setUp() {
-        testee = new FirstEnqueuedMailDAO(cassandra.getConf());
+        testee = new BrowseStartDAO(cassandra.getConf());
     }
 
     @After
