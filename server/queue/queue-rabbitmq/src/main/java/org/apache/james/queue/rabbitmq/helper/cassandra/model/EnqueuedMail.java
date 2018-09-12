@@ -21,67 +21,66 @@ package org.apache.james.queue.rabbitmq.helper.cassandra.model;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.mailet.Mail;
 
+import com.google.common.base.Preconditions;
+
 public class EnqueuedMail {
 
-    public static class Builder {
-        private Optional<Mail> mail;
-        private Optional<Integer> bucketId;
-        private Optional<Instant> timeRangeStart;
-        private Optional<MailKey> mailKey;
-        private Optional<MailQueueName> mailQueueName;
-
-        private Builder() {
-            mail = Optional.empty();
-            bucketId = Optional.empty();
-            timeRangeStart = Optional.empty();
-            mailKey = Optional.empty();
-            mailQueueName = Optional.empty();
+    public interface Builder {
+        @FunctionalInterface
+        interface RequireQueueName {
+            RequireMail mailQueueName(MailQueueName mailQueueName);
         }
 
-        public Builder mail(Mail mail) {
-            this.mail = Optional.ofNullable(mail);
-            return this;
+        @FunctionalInterface
+        interface RequireMail {
+            RequireSlice forMail(Mail mail);
         }
 
-        public Builder bucketId(Integer bucketId) {
-            this.bucketId = Optional.ofNullable(bucketId);
-            return this;
+        @FunctionalInterface
+        interface RequireSlice {
+            RequireBucket timeRangeStart(Instant timeRangeStart);
         }
 
-        public Builder timeRangeStart(Instant timeRangeStart) {
-            this.timeRangeStart = Optional.ofNullable(timeRangeStart);
-            return this;
+        @FunctionalInterface
+        interface RequireBucket {
+            LastStage bucketId(Integer bucketId);
         }
 
-        public Builder mailKey(MailKey mailKey) {
-            this.mailKey = Optional.ofNullable(mailKey);
-            return this;
-        }
+        class LastStage {
+            private final Mail mail;
+            private final int bucketId;
+            private final Instant timeRangeStart;
+            private final MailQueueName mailQueueName;
 
-        public Builder mailQueueName(MailQueueName mailQueueName) {
-            this.mailQueueName = Optional.ofNullable(mailQueueName);
-            return this;
-        }
+            private LastStage(Mail mail, int bucketId, Instant timeRangeStart, MailQueueName mailQueueName) {
+                this.mail = mail;
+                this.bucketId = bucketId;
+                this.timeRangeStart = timeRangeStart;
+                this.mailQueueName = mailQueueName;
+            }
 
-        public EnqueuedMail build() {
-            // todo require this stuff
+            public EnqueuedMail build() {
+                Preconditions.checkNotNull(mail, "'mail' is mandatory");
+                Preconditions.checkNotNull(timeRangeStart, "'timeRangeStart' is mandatory");
+                Preconditions.checkNotNull(mailQueueName, "'mailQueueName' is mandatory");
+                Preconditions.checkState(bucketId >= 0, "'bucketId' needs to be positive");
 
-            return new EnqueuedMail(
-                mail.orElse(null),
-                bucketId.orElse(0),
-                timeRangeStart.orElse(null),
-                mailKey.orElse(null),
-                mailQueueName.orElse(null));
+                return new EnqueuedMail(
+                    mail,
+                    bucketId,
+                    timeRangeStart,
+                    MailKey.fromMail(mail),
+                    mailQueueName);
+            }
         }
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder.RequireQueueName builder() {
+        return queueName -> mail -> sliceStart -> bucketId -> new Builder.LastStage(mail, bucketId, sliceStart, queueName);
     }
 
     private final Mail mail;

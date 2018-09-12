@@ -71,7 +71,6 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.EnqueuedMail;
-import org.apache.james.queue.rabbitmq.helper.cassandra.model.MailKey;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
@@ -125,11 +124,10 @@ public class EnqueuedMailsDAO {
                 .build();
 
             return EnqueuedMail.builder()
-                .mail(mail)
-                .mailKey(MailKey.of(name))
+                .mailQueueName(queueName)
+                .forMail(mail)
                 .timeRangeStart(timeRangeStart)
                 .bucketId(bucketId)
-                .mailQueueName(queueName)
                 .build();
         }
 

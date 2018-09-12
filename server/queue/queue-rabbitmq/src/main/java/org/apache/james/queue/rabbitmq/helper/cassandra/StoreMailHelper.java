@@ -27,7 +27,6 @@ import javax.inject.Inject;
 
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.EnqueuedMail;
-import org.apache.james.queue.rabbitmq.helper.cassandra.model.MailKey;
 import org.apache.mailet.Mail;
 
 class StoreMailHelper {
@@ -57,11 +56,10 @@ class StoreMailHelper {
 
     private EnqueuedMail convertToEnqueuedMail(Mail mail, MailQueueName mailQueueName) {
         return EnqueuedMail.builder()
-            .mail(mail)
-            .bucketId(computedBucketId(mail))
-            .timeRangeStart(currentSliceStartInstant())
-            .mailKey(MailKey.fromMail(mail))
             .mailQueueName(mailQueueName)
+            .forMail(mail)
+            .timeRangeStart(currentSliceStartInstant())
+            .bucketId(computedBucketId(mail))
             .build();
     }
 

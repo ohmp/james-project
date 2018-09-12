@@ -45,7 +45,7 @@ public class CassandraMailQueueViewConfiguration {
             private final int updateBrowseStartPace;
             private final Duration sliceWindow;
 
-            public LastStage(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
+            private LastStage(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
                 this.bucketCount = bucketCount;
                 this.updateBrowseStartPace = updateBrowseStartPace;
                 this.sliceWindow = sliceWindow;
