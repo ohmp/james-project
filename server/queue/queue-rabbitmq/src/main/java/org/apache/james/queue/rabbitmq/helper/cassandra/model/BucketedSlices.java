@@ -36,7 +36,7 @@ public class BucketedSlices {
 
     public static class Builder {
         private Instant startAt;
-        private Optional<Instant> endAt;
+        private Optional<Instant> endAt; // todo always have it
         private long sliceWindowSideInSecond;
         private int bucketCount;
 
@@ -79,8 +79,10 @@ public class BucketedSlices {
             Stream<Instant> allInterestingSlices = allInterestingSlices();
             Stream<Integer> allBuckets = IntStream.range(0, bucketCount).boxed();
 
+            System.out.println("++++++++++++++++");
             return StreamUtils
-                .cartesianProduct(allBuckets, allInterestingSlices, BucketedSlices.BucketAndSlice::of);
+                .cartesianProduct(allBuckets, allInterestingSlices, BucketedSlices.BucketAndSlice::of)
+                .peek(bucketAndSlice -> System.out.println(bucketAndSlice.sliceStartInstant + " " + bucketAndSlice.bucketId));
         }
 
         private Stream<Instant> allInterestingSlices() {
@@ -100,7 +102,8 @@ public class BucketedSlices {
 
         private long calculateSliceCount(Instant lastSliceStart) {
             Instant firstSliceStart = sliceStart(startAt, sliceWindowSideInSecond);
-            return (lastSliceStart.getEpochSecond() - firstSliceStart.getEpochSecond()) / sliceWindowSideInSecond;
+            long additionalSlices = (lastSliceStart.getEpochSecond() - firstSliceStart.getEpochSecond()) / sliceWindowSideInSecond;
+            return additionalSlices + 1;
         }
 
         private Instant sliceStart(Instant timeRangeStartFrom, long sliceWindowSideInSecond) {
