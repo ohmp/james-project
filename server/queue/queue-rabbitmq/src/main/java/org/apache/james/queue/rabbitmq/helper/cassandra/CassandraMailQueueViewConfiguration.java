@@ -24,44 +24,45 @@ import java.time.Duration;
 import com.google.common.base.Preconditions;
 
 public class CassandraMailQueueViewConfiguration {
-
-    @FunctionalInterface
-    public interface RequireBucketCount {
-        RequireUpdateBrowseStartPace bucketCount(int bucketCount);
-    }
-
-    @FunctionalInterface
-    public interface RequireUpdateBrowseStartPace {
-        RequireSliceWindow updateBrowseStartPace(int updateBrowseStartPace);
-    }
-
-    @FunctionalInterface
-    public interface RequireSliceWindow {
-        Builder sliceWindow(Duration sliceWindow);
-    }
-
-    public static class Builder {
-        private final int bucketCount;
-        private final int updateBrowseStartPace;
-        private final Duration sliceWindow;
-
-        public Builder(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
-            this.bucketCount = bucketCount;
-            this.updateBrowseStartPace = updateBrowseStartPace;
-            this.sliceWindow = sliceWindow;
+    interface Builder {
+        @FunctionalInterface
+        interface RequireBucketCount {
+            RequireUpdateBrowseStartPace bucketCount(int bucketCount);
         }
 
-        public CassandraMailQueueViewConfiguration build() {
-            Preconditions.checkNotNull(sliceWindow, "'sliceWindow' is compulsory");
-            Preconditions.checkState(bucketCount > 0, "'bucketCount' needs to be a strictly positive integer");
-            Preconditions.checkState(updateBrowseStartPace > 0, "'updateBrowseStartPace' needs to be a strictly positive integer");
+        @FunctionalInterface
+        interface RequireUpdateBrowseStartPace {
+            RequireSliceWindow updateBrowseStartPace(int updateBrowseStartPace);
+        }
 
-            return new CassandraMailQueueViewConfiguration(bucketCount, updateBrowseStartPace, sliceWindow);
+        @FunctionalInterface
+        interface RequireSliceWindow {
+            LastStage sliceWindow(Duration sliceWindow);
+        }
+
+        class LastStage {
+            private final int bucketCount;
+            private final int updateBrowseStartPace;
+            private final Duration sliceWindow;
+
+            public LastStage(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
+                this.bucketCount = bucketCount;
+                this.updateBrowseStartPace = updateBrowseStartPace;
+                this.sliceWindow = sliceWindow;
+            }
+
+            public CassandraMailQueueViewConfiguration build() {
+                Preconditions.checkNotNull(sliceWindow, "'sliceWindow' is compulsory");
+                Preconditions.checkState(bucketCount > 0, "'bucketCount' needs to be a strictly positive integer");
+                Preconditions.checkState(updateBrowseStartPace > 0, "'updateBrowseStartPace' needs to be a strictly positive integer");
+
+                return new CassandraMailQueueViewConfiguration(bucketCount, updateBrowseStartPace, sliceWindow);
+            }
         }
     }
 
-    public static RequireBucketCount builder() {
-        return bucketCount -> updateBrowseStartPace -> sliceWindow -> new Builder(bucketCount, updateBrowseStartPace, sliceWindow);
+    public static Builder.RequireBucketCount builder() {
+        return bucketCount -> updateBrowseStartPace -> sliceWindow -> new Builder.LastStage(bucketCount, updateBrowseStartPace, sliceWindow);
     }
 
     private final int bucketCount;
