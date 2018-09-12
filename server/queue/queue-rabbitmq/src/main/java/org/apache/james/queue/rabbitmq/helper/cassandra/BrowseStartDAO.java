@@ -69,7 +69,7 @@ class BrowseStartDAO {
     private PreparedStatement prepareUpdate(Session session) {
         return session.prepare(update(TABLE_NAME)
             .with(set(BROWSE_START, bindMarker(BROWSE_START)))
-            .and(set(QUEUE_NAME, bindMarker(QUEUE_NAME))));
+            .where(eq(QUEUE_NAME, bindMarker(QUEUE_NAME))));
     }
 
     private PreparedStatement prepareInsertOne(Session session) {
