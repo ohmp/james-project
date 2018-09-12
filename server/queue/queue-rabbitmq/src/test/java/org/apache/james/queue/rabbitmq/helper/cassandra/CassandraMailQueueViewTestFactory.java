@@ -19,6 +19,8 @@
 
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
+import java.time.Clock;
+
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 
@@ -26,13 +28,13 @@ import com.datastax.driver.core.Session;
 
 public class CassandraMailQueueViewTestFactory {
 
-    public static CassandraMailQueueView.Factory factory(Session session, CassandraTypesProvider typesProvider, CassandraMailQueueViewConfiguration configuration) {
+    public static CassandraMailQueueView.Factory factory(Clock clock, Session session, CassandraTypesProvider typesProvider, CassandraMailQueueViewConfiguration configuration) {
         EnqueuedMailsDAO enqueuedMailsDao = new EnqueuedMailsDAO(session, CassandraUtils.WITH_DEFAULT_CONFIGURATION, typesProvider);
         BrowseStartDAO browseStartDao = new BrowseStartDAO(session);
         DeletedMailsDAO deletedMailsDao = new DeletedMailsDAO(session);
 
-        BrowseHelper browseHelper = new BrowseHelper(browseStartDao, deletedMailsDao, enqueuedMailsDao, configuration);
-        StoreMailHelper storeMailHelper = new StoreMailHelper(enqueuedMailsDao, browseStartDao, configuration);
+        BrowseHelper browseHelper = new BrowseHelper(browseStartDao, deletedMailsDao, enqueuedMailsDao, configuration, clock);
+        StoreMailHelper storeMailHelper = new StoreMailHelper(enqueuedMailsDao, browseStartDao, configuration, clock);
         DeleteMailHelper deleteMailHelper = new DeleteMailHelper(deletedMailsDao, browseStartDao, browseHelper, configuration);
 
         return new CassandraMailQueueView.Factory(

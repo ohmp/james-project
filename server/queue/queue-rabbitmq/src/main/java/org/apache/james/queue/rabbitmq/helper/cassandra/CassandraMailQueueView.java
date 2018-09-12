@@ -38,7 +38,7 @@ public class CassandraMailQueueView implements MailQueueView {
 
         private final Iterator<ManageableMailQueue.MailQueueItemView> iterator;
 
-        public CassandraMailQueueIterator(Iterator<ManageableMailQueue.MailQueueItemView> iterator) {
+        CassandraMailQueueIterator(Iterator<ManageableMailQueue.MailQueueItemView> iterator) {
             Preconditions.checkNotNull(iterator);
 
             this.iterator = iterator;
@@ -81,7 +81,7 @@ public class CassandraMailQueueView implements MailQueueView {
 
     private final MailQueueName mailQueueName;
 
-    public CassandraMailQueueView(StoreMailHelper storeHelper,
+    CassandraMailQueueView(StoreMailHelper storeHelper,
                                   MailQueueName mailQueueName,
                                   BrowseHelper browseHelper,
                                   DeleteMailHelper deleteMailHelper) {

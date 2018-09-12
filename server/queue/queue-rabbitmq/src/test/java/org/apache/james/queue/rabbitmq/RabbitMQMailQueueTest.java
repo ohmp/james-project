@@ -19,11 +19,19 @@
 
 package org.apache.james.queue.rabbitmq;
 
+import static org.apache.james.queue.api.Mails.defaultMail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import javax.mail.internet.MimeMessage;
 
@@ -45,24 +53,28 @@ import org.apache.james.queue.rabbitmq.helper.api.MailQueueView;
 import org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewConfiguration;
 import org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule;
 import org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewTestFactory;
+import org.apache.james.util.streams.Iterators;
+import org.apache.mailet.Mail;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith({ReusableDockerRabbitMQExtension.class, DockerCassandraExtension.class})
 public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
     public static final int BUCKET_COUNT = 3;
-    public static final int UPDATE_FIRST_ENQUEUED_PACE = 100;
+    public static final int UPDATE_FIRST_ENQUEUED_PACE = 2;
     public static final Duration SLICE_WINDOW = Duration.ofHours(1);
     public static final String SPOOL = "spool";
 
     private static CassandraCluster cassandra;
 
     private RabbitMQMailQueueFactory mailQueueFactory;
+    private Clock clock;
 
     @BeforeAll
     static void setUpClass(DockerCassandraExtension.DockerCassandra dockerCassandra) {
@@ -78,7 +90,10 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
         CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf(), CassandraConfiguration.DEFAULT_CONFIGURATION, BLOB_ID_FACTORY);
         Store<MimeMessage, MimeMessagePartsId> mimeMessageStore = MimeMessageStore.factory(blobsDAO).mimeMessageStore();
 
-        MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(cassandra.getConf(), cassandra.getTypesProvider(),
+        clock = mock(Clock.class);
+        when(clock.instant()).thenReturn(Instant.parse("2007-12-03T10:15:30.00Z"));
+
+        MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(clock, cassandra.getConf(), cassandra.getTypesProvider(),
             new CassandraMailQueueViewConfiguration(BUCKET_COUNT, UPDATE_FIRST_ENQUEUED_PACE, SLICE_WINDOW))
             .create(MailQueueName.fromString(SPOOL));
 
@@ -112,6 +127,149 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
     @Override
     public ManageableMailQueue getManageableMailQueue() {
         return mailQueueFactory.createQueue(SPOOL);
+    }
+
+    @Test
+    void browseShouldReturnCurrentlyEnqueuedMailFromAllSlices() throws Exception {
+        Instant inSlice1 = Instant.parse("2007-12-03T10:15:30.00Z");
+        Instant inSlice2 = Instant.parse("2007-12-03T11:15:30.00Z");
+        Instant inSlice3 = Instant.parse("2007-12-03T12:15:30.00Z");
+        Instant inSlice5 = Instant.parse("2007-12-03T15:15:30.00Z");
+        Instant inSlice6 = Instant.parse("2007-12-03T16:15:30.00Z");
+
+        when(clock.instant()).thenReturn(inSlice1);
+
+        ManageableMailQueue mailQueue = getManageableMailQueue();
+
+        mailQueue.enQueue(defaultMail().name("1-1").build());
+        mailQueue.enQueue(defaultMail().name("1-2").build());
+        mailQueue.enQueue(defaultMail().name("1-3").build());
+        mailQueue.enQueue(defaultMail().name("1-4").build());
+        mailQueue.enQueue(defaultMail().name("1-5").build());
+
+        when(clock.instant()).thenReturn(inSlice2);
+
+        mailQueue.enQueue(defaultMail().name("2-1").build());
+        mailQueue.enQueue(defaultMail().name("2-2").build());
+        mailQueue.enQueue(defaultMail().name("2-3").build());
+        mailQueue.enQueue(defaultMail().name("2-4").build());
+        mailQueue.enQueue(defaultMail().name("2-5").build());
+
+        when(clock.instant()).thenReturn(inSlice3);
+
+        mailQueue.enQueue(defaultMail().name("3-1").build());
+        mailQueue.enQueue(defaultMail().name("3-2").build());
+        mailQueue.enQueue(defaultMail().name("3-3").build());
+        mailQueue.enQueue(defaultMail().name("3-4").build());
+        mailQueue.enQueue(defaultMail().name("3-5").build());
+
+        when(clock.instant()).thenReturn(inSlice5);
+
+        mailQueue.enQueue(defaultMail().name("5-1").build());
+        mailQueue.enQueue(defaultMail().name("5-2").build());
+        mailQueue.enQueue(defaultMail().name("5-3").build());
+        mailQueue.enQueue(defaultMail().name("5-4").build());
+        mailQueue.enQueue(defaultMail().name("5-5").build());
+
+        when(clock.instant()).thenReturn(inSlice6);
+
+        Stream<String> names = Iterators.toStream(mailQueue.browse())
+            .map(ManageableMailQueue.MailQueueItemView::getMail)
+            .map(Mail::getName);
+
+        assertThat(names).containsExactly(
+            "1-1", "1-2", "1-3", "1-4", "1-5",
+            "2-1", "2-2", "2-3", "2-4", "2-5",
+            "3-1", "3-2", "3-3", "3-4", "3-5",
+            "5-1", "5-2", "5-3", "5-4", "5-5");
+    }
+
+    @Test
+    void browseAndDequeueShouldCombineWellWhenDifferentSlices() throws Exception {
+        Instant inSlice1 = Instant.parse("2007-12-03T10:15:30.00Z");
+        Instant inSlice2 = Instant.parse("2007-12-03T11:15:30.00Z");
+        Instant inSlice3 = Instant.parse("2007-12-03T12:15:30.00Z");
+        Instant inSlice5 = Instant.parse("2007-12-03T15:15:30.00Z");
+        Instant inSlice6 = Instant.parse("2007-12-03T16:15:30.00Z");
+
+        when(clock.instant()).thenReturn(inSlice1);
+
+        ManageableMailQueue mailQueue = getManageableMailQueue();
+
+        mailQueue.enQueue(defaultMail().name("1-1").build());
+        mailQueue.enQueue(defaultMail().name("1-2").build());
+        mailQueue.enQueue(defaultMail().name("1-3").build());
+        mailQueue.enQueue(defaultMail().name("1-4").build());
+        mailQueue.enQueue(defaultMail().name("1-5").build());
+
+        when(clock.instant()).thenReturn(inSlice2);
+
+        mailQueue.enQueue(defaultMail().name("2-1").build());
+        mailQueue.enQueue(defaultMail().name("2-2").build());
+        mailQueue.enQueue(defaultMail().name("2-3").build());
+        mailQueue.enQueue(defaultMail().name("2-4").build());
+        mailQueue.enQueue(defaultMail().name("2-5").build());
+
+        when(clock.instant()).thenReturn(inSlice3);
+
+        mailQueue.enQueue(defaultMail().name("3-1").build());
+        mailQueue.enQueue(defaultMail().name("3-2").build());
+        mailQueue.enQueue(defaultMail().name("3-3").build());
+        mailQueue.enQueue(defaultMail().name("3-4").build());
+        mailQueue.enQueue(defaultMail().name("3-5").build());
+
+        when(clock.instant()).thenReturn(inSlice5);
+
+        mailQueue.enQueue(defaultMail().name("5-1").build());
+        mailQueue.enQueue(defaultMail().name("5-2").build());
+        mailQueue.enQueue(defaultMail().name("5-3").build());
+        mailQueue.enQueue(defaultMail().name("5-4").build());
+        mailQueue.enQueue(defaultMail().name("5-5").build());
+
+        when(clock.instant()).thenReturn(inSlice6);
+
+        MailQueue.MailQueueItem item1_1 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item1_2 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item1_3 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item1_4 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item1_5 = mailQueue.deQueue();
+
+        MailQueue.MailQueueItem item2_1 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item2_2 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item2_3 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item2_4 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item2_5 = mailQueue.deQueue();
+
+        MailQueue.MailQueueItem item3_1 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item3_2 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item3_3 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item3_4 = mailQueue.deQueue();
+        MailQueue.MailQueueItem item3_5 = mailQueue.deQueue();
+
+        item1_1.done(true);
+        item1_2.done(true);
+        item1_3.done(true);
+        item1_4.done(true);
+        item1_5.done(true);
+
+        item2_1.done(true);
+        item2_2.done(true);
+        item2_3.done(true);
+        item2_4.done(false);
+        item2_5.done(true);
+
+        item3_1.done(true);
+        item3_2.done(true);
+        item3_3.done(true);
+        item3_4.done(true);
+        item3_5.done(true);
+
+        Stream<String> names = Iterators.toStream(mailQueue.browse())
+            .map(ManageableMailQueue.MailQueueItemView::getMail)
+            .map(Mail::getName);
+
+        assertThat(names)
+            .containsExactly("2-4", "5-1", "5-2", "5-3", "5-4", "5-5");
     }
 
     @Disabled

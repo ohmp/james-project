@@ -47,7 +47,6 @@ class DeleteMailHelper {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
         this.browseHelper = browseHelper;
-
         this.configuration = configuration;
         this.random = new Random();
     }

@@ -40,14 +40,14 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.annotations.VisibleForTesting;
 
-public class DeletedMailsDAO {
+class DeletedMailsDAO {
 
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement selectOne;
     private final PreparedStatement insertOne;
 
     @Inject
-    public DeletedMailsDAO(Session session) {
+    DeletedMailsDAO(Session session) {
         this.executor = new CassandraAsyncExecutor(session);
         this.selectOne = prepareSelectExist(session);
         this.insertOne = prepareInsert(session);
