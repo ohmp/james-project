@@ -23,6 +23,8 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.BROWSE_START;
 import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.QUEUE_NAME;
 import static org.apache.james.queue.rabbitmq.helper.cassandra.BrowseStartTable.TABLE_NAME;
@@ -46,6 +48,7 @@ class BrowseStartDAO {
 
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement selectOne;
+    private final PreparedStatement insertOne;
     private final PreparedStatement updateOne;
 
     @Inject
@@ -54,6 +57,7 @@ class BrowseStartDAO {
 
         this.selectOne = prepareSelectOne(session);
         this.updateOne = prepareUpdate(session);
+        this.insertOne = prepareInsertOne(session);
     }
 
     private PreparedStatement prepareSelectOne(Session session) {
@@ -62,8 +66,15 @@ class BrowseStartDAO {
                 .where(eq(QUEUE_NAME, bindMarker(QUEUE_NAME))));
     }
 
-    private PreparedStatement prepareUpdate(Session session) { // todo insert
+    private PreparedStatement prepareUpdate(Session session) {
+        return session.prepare(update(TABLE_NAME)
+            .with(set(BROWSE_START, bindMarker(BROWSE_START)))
+            .and(set(QUEUE_NAME, bindMarker(QUEUE_NAME))));
+    }
+
+    private PreparedStatement prepareInsertOne(Session session) {
         return session.prepare(insertInto(TABLE_NAME)
+            .ifNotExists()
             .value(BROWSE_START, bindMarker(BROWSE_START))
             .value(QUEUE_NAME, bindMarker(QUEUE_NAME)));
     }
@@ -75,6 +86,12 @@ class BrowseStartDAO {
 
     CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName, Instant sliceStart) {
         return executor.executeVoid(updateOne.bind()
+            .setTimestamp(BROWSE_START, Date.from(sliceStart))
+            .setString(QUEUE_NAME, mailQueueName.asString()));
+    }
+
+    CompletableFuture<Void> insertInitialBrowseStart(MailQueueName mailQueueName, Instant sliceStart) {
+        return executor.executeVoid(insertOne.bind()
             .setTimestamp(BROWSE_START, Date.from(sliceStart))
             .setString(QUEUE_NAME, mailQueueName.asString()));
     }

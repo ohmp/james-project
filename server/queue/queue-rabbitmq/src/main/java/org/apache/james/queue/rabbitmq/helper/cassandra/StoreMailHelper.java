@@ -20,9 +20,7 @@
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -38,46 +36,29 @@ class StoreMailHelper {
     private final CassandraRabbitMQConfiguration configuration;
 
     @Inject
-    public StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
-                           BrowseStartDAO browseStartDao,
-                           CassandraRabbitMQConfiguration configuration) {
+    StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
+                    BrowseStartDAO browseStartDao,
+                    CassandraRabbitMQConfiguration configuration) {
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
-
         this.configuration = configuration;
     }
 
     CompletableFuture<Void> storeMailInEnqueueTable(Mail mail, MailQueueName mailQueueName) {
         EnqueuedMail enqueuedMail = convertToEnqueuedMail(mail, mailQueueName);
-        return enqueuedMailsDao
-            .insert(enqueuedMail)
-            .thenCompose(avoid -> updateIfNotExistInFirstEnqueued(enqueuedMail));
-    }
 
-    private CompletableFuture<Void> updateIfNotExistInFirstEnqueued(EnqueuedMail enqueuedMail) {
-        MailQueueName mailQueueName = enqueuedMail.getMailQueueName();
-
-        return browseStartDao
-            .findBrowseStart(mailQueueName)
-            .thenCompose(maybeInstant -> updateFirstEnqueuedIfNotExist(enqueuedMail, mailQueueName, maybeInstant));
-    }
-
-    private CompletionStage<Void> updateFirstEnqueuedIfNotExist(
-        EnqueuedMail enqueuedMail, MailQueueName mailQueueName, Optional<Instant> maybeInstant) {
-
-        return maybeInstant
-            .map(instant -> successedFuture())
-            .orElse(browseStartDao.updateBrowseStart(mailQueueName, enqueuedMail.getTimeRangeStart()));
+        return enqueuedMailsDao.insert(enqueuedMail)
+            .thenCompose(any -> browseStartDao.insertInitialBrowseStart(mailQueueName, enqueuedMail.getTimeRangeStart()));
     }
 
     private EnqueuedMail convertToEnqueuedMail(Mail mail, MailQueueName mailQueueName) {
         return EnqueuedMail.builder()
-                    .mail(mail)
-                    .bucketId(computedBucketId(mail))
-                    .timeRangeStart(currentSliceStartInstant())
-                    .mailKey(MailKey.fromMail(mail))
-                    .mailQueueName(mailQueueName)
-                .build();
+            .mail(mail)
+            .bucketId(computedBucketId(mail))
+            .timeRangeStart(currentSliceStartInstant())
+            .mailKey(MailKey.fromMail(mail))
+            .mailQueueName(mailQueueName)
+            .build();
     }
 
     private Instant currentSliceStartInstant() {
@@ -89,9 +70,5 @@ class StoreMailHelper {
     private int computedBucketId(Mail mail) {
         int mailKeyHasCode = mail.getName().hashCode();
         return mailKeyHasCode % configuration.getBucketCount();
-    }
-
-    private CompletableFuture<Void> successedFuture() {
-        return CompletableFuture.completedFuture(null);
     }
 }
