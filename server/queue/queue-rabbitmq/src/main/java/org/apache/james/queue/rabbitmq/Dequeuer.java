@@ -90,10 +90,12 @@ class Dequeuer {
     }
 
     private ThrowingConsumer<Boolean> ack(long deliveryTag, Mail mail) {
-        return sucess -> {
+        return success -> {
             try {
-                dequeueMetric.increment();
-                rabbitClient.ack(deliveryTag);
+                if (success) {
+                    dequeueMetric.increment();
+                    rabbitClient.ack(deliveryTag);
+                }
             } catch (IOException e) {
                 throw new MailQueue.MailQueueException("Failed to ACK " + mail.getName() + " with delivery tag " + deliveryTag, e);
             }
