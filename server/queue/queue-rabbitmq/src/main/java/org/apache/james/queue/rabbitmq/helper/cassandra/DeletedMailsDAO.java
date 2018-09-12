@@ -67,7 +67,7 @@ public class DeletedMailsDAO {
     }
 
     @VisibleForTesting
-    CompletableFuture<Void> insertOne(MailQueueName mailQueueName, MailKey mailKey) {
+    CompletableFuture<Void> markAsDeleted(MailQueueName mailQueueName, MailKey mailKey) {
         return executor.executeVoid(insertOne.bind()
                    .setString(QUEUE_NAME, mailQueueName.asString())
                    .setString(MAIL_KEY, mailKey.getMailKey()));

@@ -69,11 +69,9 @@ import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.rabbitmq.MailQueueName;
-import org.apache.james.queue.rabbitmq.helper.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.MailKey;
 import org.apache.james.server.core.MailImpl;
-import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
@@ -213,16 +211,13 @@ public class EnqueuedMailsDAO {
     private final PreparedStatement insert;
     private final CassandraUtils cassandraUtils;
     private final CassandraTypesProvider cassandraTypesProvider;
-    private final CassandraRabbitMQConfiguration manageableQueueConfiguration;
 
     @Inject
     public EnqueuedMailsDAO(Session session, CassandraUtils cassandraUtils,
-                            CassandraTypesProvider cassandraTypesProvider,
-                            CassandraRabbitMQConfiguration manageableQueueConfiguration) {
+                            CassandraTypesProvider cassandraTypesProvider) {
         this.executor = new CassandraAsyncExecutor(session);
         this.cassandraUtils = cassandraUtils;
         this.cassandraTypesProvider = cassandraTypesProvider;
-        this.manageableQueueConfiguration = manageableQueueConfiguration;
 
         this.selectFrom = prepareSelectFrom(session);
         this.insert = prepareInsert(session);
@@ -285,27 +280,6 @@ public class EnqueuedMailsDAO {
                 .setInt(BUCKET_ID, bucketId))
             .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(EnqueuedMailsDaoUtil::toEnqueuedMail));
-    }
-
-    CompletableFuture<Optional<EnqueuedMail>> findEnqueuedMail(
-        MailQueueName queueName, Stream<BucketedSlices.BucketAndSlice> bucketedSlices, MailKey mailKey) {
-
-        return CompletableFutureUtil.allOf(bucketedSlices
-            .map(bucketedSlice -> findEnqueuedMail(queueName, mailKey, bucketedSlice)))
-            .thenApply(resultInStream -> resultInStream
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst());
-    }
-
-    private CompletableFuture<Optional<EnqueuedMail>> findEnqueuedMail(MailQueueName queueName, MailKey mailKey, BucketedSlices.BucketAndSlice bucketedSlice) {
-        return executor.executeSingleRow(
-            selectFrom.bind()
-                .setString(QUEUE_NAME, queueName.asString())
-                .setTimestamp(TIME_RANGE_START, Date.from(bucketedSlice.getSliceStartInstant()))
-                .setInt(BUCKET_ID, bucketedSlice.getBucketId())
-                .setString(MAIL_KEY, mailKey.getMailKey()))
-            .thenApply(maybeRow -> maybeRow.map(EnqueuedMailsDaoUtil::toEnqueuedMail));
     }
 
 }

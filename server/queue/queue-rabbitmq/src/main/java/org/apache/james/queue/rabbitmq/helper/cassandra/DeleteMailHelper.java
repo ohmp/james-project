@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -32,6 +31,7 @@ import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.MailKey;
+import org.apache.james.util.FluentFutureStream;
 import org.apache.mailet.Mail;
 
 class DeleteMailHelper {
@@ -43,67 +43,69 @@ class DeleteMailHelper {
     private final Random random;
 
     @Inject
-    public DeleteMailHelper(DeletedMailsDAO deletedMailsDao,
-                                      EnqueuedMailsDAO enqueuedMailsDao,
-                                      BrowseStartDAO browseStartDao,
-                                      CassandraRabbitMQConfiguration configuration) {
+    DeleteMailHelper(DeletedMailsDAO deletedMailsDao,
+                            EnqueuedMailsDAO enqueuedMailsDao,
+                            BrowseStartDAO browseStartDao,
+                            CassandraRabbitMQConfiguration configuration) {
         this.deletedMailsDao = deletedMailsDao;
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
 
         this.configuration = configuration;
-        random = new Random();
+        this.random = new Random();
     }
 
     CompletableFuture<Void> updateDeleteTable(Mail mail, MailQueueName mailQueueName) {
         return deletedMailsDao
-            .insertOne(mailQueueName, MailKey.fromMail(mail))
-            .thenAccept(avoid -> updateEnqueuedMail(mail, mailQueueName));
+            .markAsDeleted(mailQueueName, MailKey.fromMail(mail))
+            .thenCompose(avoid -> updateBrowseStart(mailQueueName));
     }
 
-    private CompletableFuture<Void> updateEnqueuedMail(Mail mail, MailQueueName mailQueueName) {
-        if (shouldUpdateFirstEnqueued()) {
+    private CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName) {
+        if (shouldBrowseStart()) {
             return browseStartDao
                 .findBrowseStart(mailQueueName)
-                .thenCompose(findMailInEnqueued(mail, mailQueueName))
-                .thenCompose(setFirstEnqueued(mailQueueName));
+                .thenCompose(oldBrowseStart -> findNewBrowseStart(mailQueueName, oldBrowseStart))
+                .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart));
         } else {
             return CompletableFuture.completedFuture(null);
         }
     }
 
-    private Function<Optional<EnqueuedMail>, CompletableFuture<Void>> setFirstEnqueued(MailQueueName mailQueueName) {
-        return maybeEnqueuedMail ->
-
-            maybeEnqueuedMail
-                .map(endQueuedMail -> browseStartDao
-                    .updateBrowseStart(mailQueueName, endQueuedMail.getTimeRangeStart()))
+    private CompletableFuture<Void> setNewBrowseStart(MailQueueName mailQueueName, Optional<Instant> newBrowseStart) {
+        return newBrowseStart.map(value ->
+            browseStartDao.updateBrowseStart(mailQueueName, value))
             .orElse(CompletableFuture.completedFuture(null));
     }
 
-    private Function<Optional<Instant>, CompletableFuture<Optional<EnqueuedMail>>> findMailInEnqueued(
-        Mail mail, MailQueueName mailQueueName) {
+    private CompletableFuture<Optional<Instant>> findNewBrowseStart(
+        MailQueueName mailQueueName, Optional<Instant> sliceStart) {
 
-        return startInstantOptional ->
+        Stream<BucketedSlices.BucketAndSlice> allBucketSlices = calculateBucketedSlices(sliceStart.get());
+        // todo handle not yet browseStart references
 
-            startInstantOptional
-                .map(sliceStart -> findEnqueuedWithMailKey(mailQueueName, sliceStart, mail))
-                .orElse(CompletableFuture.completedFuture(Optional.empty()));
+        return FluentFutureStream
+            .ofNestedStreams(allBucketSlices
+                .map(bucketAndSlice -> enqueuedMailsDao.selectEnqueuedMails(mailQueueName, bucketAndSlice.getBucketId(), bucketAndSlice.getSliceStartInstant())))
+            .thenFlatComposeOnOptional(mailReference -> filterDeleted(mailQueueName, mailReference))
+            .map(EnqueuedMail::getTimeRangeStart)
+            .completableFuture()
+            .thenApply(Stream::findFirst);
     }
 
-    private CompletableFuture<Optional<EnqueuedMail>> findEnqueuedWithMailKey(
-        MailQueueName mailQueueName, Instant sliceStart, Mail mail) {
-
-        Stream<BucketedSlices.BucketAndSlice> allBucketSlices = calculateBucketedSlicesNoEndPoint(sliceStart);
-        return enqueuedMailsDao.findEnqueuedMail(mailQueueName, allBucketSlices, MailKey.fromMail(mail));
+    private CompletableFuture<Optional<EnqueuedMail>> filterDeleted(MailQueueName mailQueueName, EnqueuedMail mailReference) {
+        return deletedMailsDao.checkDeleted(mailQueueName, mailReference.getMailKey())
+            .thenApply(wasDeleted ->
+                Optional.of(mailReference)
+                    .filter(any -> !wasDeleted));
     }
 
-    private boolean shouldUpdateFirstEnqueued() {
+    private boolean shouldBrowseStart() {
         int threshold = configuration.getUpdateFirstEnqueuedPace();
         return Math.abs(random.nextInt()) % threshold == 0;
     }
 
-    private Stream<BucketedSlices.BucketAndSlice> calculateBucketedSlicesNoEndPoint(Instant startingPoint) {
+    private Stream<BucketedSlices.BucketAndSlice> calculateBucketedSlices(Instant startingPoint) {
         return BucketedSlices.builder()
             .startAt(startingPoint)
             .bucketCount(configuration.getBucketCount())

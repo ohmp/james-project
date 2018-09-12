@@ -69,7 +69,7 @@ public class DeletedMailsDAOTest {
 
     @Test
     public void checkDeletedShouldReturnFalseWhenTableDoesntContainBothMailQueueAndMailKey() throws MessagingException {
-        testee.insertOne(OUT_GOING_2, MAIL_KEY_2).join();
+        testee.markAsDeleted(OUT_GOING_2, MAIL_KEY_2).join();
 
         Boolean isDeleted = testee
             .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
@@ -80,7 +80,7 @@ public class DeletedMailsDAOTest {
 
     @Test
     public void checkDeletedShouldReturnFalseWhenTableContainsMailQueueButNotMailKey() throws MessagingException {
-        testee.insertOne(OUT_GOING_1, MAIL_KEY_2).join();
+        testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_2).join();
 
         Boolean isDeleted = testee
             .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
@@ -91,7 +91,7 @@ public class DeletedMailsDAOTest {
 
     @Test
     public void checkDeletedShouldReturnFalseWhenTableContainsMailKeyButNotMailQueue() throws MessagingException {
-        testee.insertOne(OUT_GOING_2, MAIL_KEY_1).join();
+        testee.markAsDeleted(OUT_GOING_2, MAIL_KEY_1).join();
 
         Boolean isDeleted = testee
             .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
@@ -102,7 +102,7 @@ public class DeletedMailsDAOTest {
 
     @Test
     public void checkDeletedShouldReturnTrueWhenTableContainsMailItem() throws MessagingException {
-        testee.insertOne(OUT_GOING_1, MAIL_KEY_1).join();
+        testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_1).join();
 
         Boolean isDeleted = testee
             .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
