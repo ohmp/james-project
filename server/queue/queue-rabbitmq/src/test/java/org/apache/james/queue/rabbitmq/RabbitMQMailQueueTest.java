@@ -94,7 +94,11 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
         when(clock.instant()).thenReturn(Instant.parse("2007-12-03T10:15:30.00Z"));
 
         MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(clock, cassandra.getConf(), cassandra.getTypesProvider(),
-            new CassandraMailQueueViewConfiguration(BUCKET_COUNT, UPDATE_FIRST_ENQUEUED_PACE, SLICE_WINDOW))
+            CassandraMailQueueViewConfiguration.builder()
+                .bucketCount(3)
+                .updateBrowseStartPace(2)
+                .sliceWindow(Duration.ofHours(1))
+                .build())
             .create(MailQueueName.fromString(SPOOL));
 
         URI rabbitManagementUri = new URIBuilder()

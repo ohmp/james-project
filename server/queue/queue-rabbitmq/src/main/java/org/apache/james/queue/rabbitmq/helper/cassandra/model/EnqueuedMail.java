@@ -69,6 +69,8 @@ public class EnqueuedMail {
         }
 
         public EnqueuedMail build() {
+            // todo require this stuff
+
             return new EnqueuedMail(
                 mail.orElse(null),
                 bucketId.orElse(0),

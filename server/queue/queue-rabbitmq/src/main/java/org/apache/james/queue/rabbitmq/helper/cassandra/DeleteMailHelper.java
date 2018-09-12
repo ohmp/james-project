@@ -79,7 +79,7 @@ class DeleteMailHelper {
     }
 
     private boolean shouldBrowseStart() {
-        int threshold = configuration.getUpdateFirstEnqueuedPace();
+        int threshold = configuration.getUpdateBrowseStartPace();
         return Math.abs(random.nextInt()) % threshold == 0;
     }
 }

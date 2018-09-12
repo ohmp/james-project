@@ -21,22 +21,63 @@ package org.apache.james.queue.rabbitmq.helper.cassandra;
 
 import java.time.Duration;
 
+import com.google.common.base.Preconditions;
+
 public class CassandraMailQueueViewConfiguration {
 
+    @FunctionalInterface
+    public interface RequireBucketCount {
+        RequireUpdateBrowseStartPace bucketCount(int bucketCount);
+    }
+
+    @FunctionalInterface
+    public interface RequireUpdateBrowseStartPace {
+        RequireSliceWindow updateBrowseStartPace(int updateBrowseStartPace);
+    }
+
+    @FunctionalInterface
+    public interface RequireSliceWindow {
+        Builder sliceWindow(Duration sliceWindow);
+    }
+
+    public static class Builder {
+        private final int bucketCount;
+        private final int updateBrowseStartPace;
+        private final Duration sliceWindow;
+
+        public Builder(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
+            this.bucketCount = bucketCount;
+            this.updateBrowseStartPace = updateBrowseStartPace;
+            this.sliceWindow = sliceWindow;
+        }
+
+        public CassandraMailQueueViewConfiguration build() {
+            Preconditions.checkNotNull(sliceWindow, "'sliceWindow' is compulsory");
+            Preconditions.checkState(bucketCount > 0, "'bucketCount' needs to be a strictly positive integer");
+            Preconditions.checkState(updateBrowseStartPace > 0, "'updateBrowseStartPace' needs to be a strictly positive integer");
+
+            return new CassandraMailQueueViewConfiguration(bucketCount, updateBrowseStartPace, sliceWindow);
+        }
+    }
+
+    public static RequireBucketCount builder() {
+        return bucketCount -> updateBrowseStartPace -> sliceWindow -> new Builder(bucketCount, updateBrowseStartPace, sliceWindow);
+    }
+
     private final int bucketCount;
-    private final int updateFirstEnqueuedPace;
+    private final int updateBrowseStartPace;
     private final Duration sliceWindow;
 
-    public CassandraMailQueueViewConfiguration(int bucketCount,
-                                               int updateFirstEnqueuedPace,
-                                               Duration sliceWindow) {
+    private CassandraMailQueueViewConfiguration(int bucketCount,
+                                                int updateBrowseStartPace,
+                                                Duration sliceWindow) {
         this.bucketCount = bucketCount;
-        this.updateFirstEnqueuedPace = updateFirstEnqueuedPace;
+        this.updateBrowseStartPace = updateBrowseStartPace;
         this.sliceWindow = sliceWindow;
     }
 
-    public int getUpdateFirstEnqueuedPace() {
-        return updateFirstEnqueuedPace;
+    public int getUpdateBrowseStartPace() {
+        return updateBrowseStartPace;
     }
 
     public int getBucketCount() {
