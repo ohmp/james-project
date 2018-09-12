@@ -58,7 +58,7 @@ public class BrowseHelperTest {
             cassandra.getTypesProvider(),
             configuration);
 
-        testee = new BrowseHelper(deletedMailsDAO, enqueuedMailDao, configuration);
+        testee = new BrowseHelper(browseStartDao, deletedMailsDAO, enqueuedMailDao, configuration);
     }
 
     @After

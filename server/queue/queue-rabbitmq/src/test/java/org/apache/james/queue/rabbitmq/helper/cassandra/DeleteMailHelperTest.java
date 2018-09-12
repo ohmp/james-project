@@ -60,7 +60,7 @@ public class DeleteMailHelperTest {
 
         BrowseStartDAO browseStartDao = new BrowseStartDAO(cassandra.getConf());
 
-        testee = new DeleteMailHelper(deletedMailsDAO, enqueuedMailDao, browseStartDao, configuration);
+        testee = new DeleteMailHelper(deletedMailsDAO, enqueuedMailDao, browseStartDao, browseHelper, configuration);
     }
 
     @After

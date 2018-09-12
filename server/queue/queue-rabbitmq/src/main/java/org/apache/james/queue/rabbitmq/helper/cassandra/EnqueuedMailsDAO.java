@@ -69,6 +69,7 @@ import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.rabbitmq.MailQueueName;
+import org.apache.james.queue.rabbitmq.helper.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.MailKey;
 import org.apache.james.server.core.MailImpl;
@@ -271,13 +272,13 @@ public class EnqueuedMailsDAO {
     }
 
     CompletableFuture<Stream<EnqueuedMail>> selectEnqueuedMails(
-        MailQueueName queueName, Integer bucketId, Instant sliceStartInstant) { // todo use strong types
+        MailQueueName queueName, BucketedSlices.BucketAndSlice bucketAndSlice) { // todo use strong types
 
         return executor.execute(
             selectFrom.bind()
                 .setString(QUEUE_NAME, queueName.asString())
-                .setTimestamp(TIME_RANGE_START, Date.from(sliceStartInstant))
-                .setInt(BUCKET_ID, bucketId))
+                .setTimestamp(TIME_RANGE_START, Date.from(bucketAndSlice.getSliceStartInstant()))
+                .setInt(BUCKET_ID, bucketAndSlice.getBucketId()))
             .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(EnqueuedMailsDaoUtil::toEnqueuedMail));
     }

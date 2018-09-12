@@ -19,11 +19,7 @@
 
 package org.apache.james.queue.rabbitmq.helper.cassandra;
 
-import java.time.Instant;
 import java.util.Iterator;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.rabbitmq.MailQueueName;
@@ -31,6 +27,7 @@ import org.apache.james.queue.rabbitmq.helper.api.RabbitMQMailQueueHelper;
 import org.apache.mailet.Mail;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
 
 public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
 
@@ -58,19 +55,16 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
         }
     }
 
-    private final BrowseStartDAO browseStartDao;
     private final StoreMailHelper daoHelper;
     private final BrowseHelper browseHelper;
     private final DeleteMailHelper deleteMailHelper;
 
     private final MailQueueName mailQueueName;
 
-    public CassandraRabbitMQHelper(BrowseStartDAO browseStartDao,
-                                   StoreMailHelper daoHelper,
+    public CassandraRabbitMQHelper(StoreMailHelper daoHelper,
                                    MailQueueName mailQueueName,
                                    BrowseHelper browseHelper,
                                    DeleteMailHelper deleteMailHelper) {
-        this.browseStartDao = browseStartDao;
         this.mailQueueName = mailQueueName;
         this.daoHelper = daoHelper;
         this.browseHelper = browseHelper;
@@ -91,32 +85,15 @@ public class CassandraRabbitMQHelper implements RabbitMQMailQueueHelper {
 
     @Override
     public ManageableMailQueue.MailQueueIterator browse() {
-        Iterator<ManageableMailQueue.MailQueueItemView> queueItemViewIterator = enqueuedStream().iterator();
-
-        return new CassandraMailQueueIterator(queueItemViewIterator);
+        return new CassandraMailQueueIterator(
+            browseHelper.browse(mailQueueName)
+                .join()
+                .iterator());
     }
 
     @Override
     public long getSize() {
-        return enqueuedStream().count();
+        return Iterators.size(browse());
     }
 
-    private Stream<ManageableMailQueue.MailQueueItemView> enqueuedStream() {
-        return browseStartDao
-            .findBrowseStart(mailQueueName)
-            .thenCompose(this::getEnqueuedFromTheStartingPoint)
-            .join();
-    }
-
-    private CompletableFuture<Stream<ManageableMailQueue.MailQueueItemView>> getEnqueuedFromTheStartingPoint(
-        Optional<Instant> maybeFirstEnqueuedTime) {
-
-        return maybeFirstEnqueuedTime
-            .map(startingPoint -> browseHelper.browse(mailQueueName, startingPoint))
-            .orElse(emptyStreamFuture());
-    }
-
-    private CompletableFuture<Stream<ManageableMailQueue.MailQueueItemView>> emptyStreamFuture() {
-        return CompletableFuture.completedFuture(Stream.empty());
-    }
 }

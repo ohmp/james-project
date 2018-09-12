@@ -28,28 +28,25 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.queue.rabbitmq.MailQueueName;
-import org.apache.james.queue.rabbitmq.helper.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.helper.cassandra.model.MailKey;
-import org.apache.james.util.FluentFutureStream;
 import org.apache.mailet.Mail;
 
 class DeleteMailHelper {
 
     private final DeletedMailsDAO deletedMailsDao;
-    private final EnqueuedMailsDAO enqueuedMailsDao;
     private final BrowseStartDAO browseStartDao;
+    private final BrowseHelper browseHelper;
     private final CassandraRabbitMQConfiguration configuration;
     private final Random random;
 
     @Inject
     DeleteMailHelper(DeletedMailsDAO deletedMailsDao,
-                            EnqueuedMailsDAO enqueuedMailsDao,
-                            BrowseStartDAO browseStartDao,
-                            CassandraRabbitMQConfiguration configuration) {
+                     BrowseStartDAO browseStartDao,
+                     BrowseHelper browseHelper, CassandraRabbitMQConfiguration configuration) {
         this.deletedMailsDao = deletedMailsDao;
-        this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
+        this.browseHelper = browseHelper;
 
         this.configuration = configuration;
         this.random = new Random();
@@ -58,18 +55,22 @@ class DeleteMailHelper {
     CompletableFuture<Void> updateDeleteTable(Mail mail, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, MailKey.fromMail(mail))
-            .thenCompose(avoid -> updateBrowseStart(mailQueueName));
+            .thenRunAsync(() -> updateBrowseStart(mailQueueName));
     }
 
-    private CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName) {
+    private void updateBrowseStart(MailQueueName mailQueueName) {
         if (shouldBrowseStart()) {
-            return browseStartDao
-                .findBrowseStart(mailQueueName)
-                .thenCompose(oldBrowseStart -> findNewBrowseStart(mailQueueName, oldBrowseStart))
-                .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart));
-        } else {
-            return CompletableFuture.completedFuture(null);
+            findNewBrowseStart(mailQueueName)
+                .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart))
+                .join();
         }
+    }
+
+    private CompletableFuture<Optional<Instant>> findNewBrowseStart(MailQueueName mailQueueName) {
+        return browseHelper.browseReferences(mailQueueName)
+            .map(EnqueuedMail::getTimeRangeStart)
+            .completableFuture()
+            .thenApply(Stream::findFirst);
     }
 
     private CompletableFuture<Void> setNewBrowseStart(MailQueueName mailQueueName, Optional<Instant> newBrowseStart) {
@@ -78,39 +79,8 @@ class DeleteMailHelper {
             .orElse(CompletableFuture.completedFuture(null));
     }
 
-    private CompletableFuture<Optional<Instant>> findNewBrowseStart(
-        MailQueueName mailQueueName, Optional<Instant> sliceStart) {
-
-        Stream<BucketedSlices.BucketAndSlice> allBucketSlices = calculateBucketedSlices(sliceStart.get());
-        // todo handle not yet browseStart references
-
-        return FluentFutureStream
-            .ofNestedStreams(allBucketSlices
-                .map(bucketAndSlice -> enqueuedMailsDao.selectEnqueuedMails(mailQueueName, bucketAndSlice.getBucketId(), bucketAndSlice.getSliceStartInstant())))
-            .thenFlatComposeOnOptional(mailReference -> filterDeleted(mailQueueName, mailReference))
-            .map(EnqueuedMail::getTimeRangeStart)
-            .completableFuture()
-            .thenApply(Stream::findFirst);
-    }
-
-    private CompletableFuture<Optional<EnqueuedMail>> filterDeleted(MailQueueName mailQueueName, EnqueuedMail mailReference) {
-        return deletedMailsDao.checkDeleted(mailQueueName, mailReference.getMailKey())
-            .thenApply(wasDeleted ->
-                Optional.of(mailReference)
-                    .filter(any -> !wasDeleted));
-    }
-
     private boolean shouldBrowseStart() {
         int threshold = configuration.getUpdateFirstEnqueuedPace();
         return Math.abs(random.nextInt()) % threshold == 0;
-    }
-
-    private Stream<BucketedSlices.BucketAndSlice> calculateBucketedSlices(Instant startingPoint) {
-        return BucketedSlices.builder()
-            .startAt(startingPoint)
-            .bucketCount(configuration.getBucketCount())
-            .sliceWindowSideInSecond(configuration.getSliceWindow().getSeconds())
-            .build()
-            .getBucketSlices();
     }
 }
