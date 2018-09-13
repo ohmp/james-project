@@ -23,20 +23,26 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 class MailReferenceSerializer {
 
     private final ObjectMapper objectMapper;
 
-    public MailReferenceSerializer(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    MailReferenceSerializer() {
+        this.objectMapper = new ObjectMapper()
+            .registerModule(new Jdk8Module())
+            .registerModule(new JavaTimeModule())
+            .registerModule(new GuavaModule());
     }
 
-    public MailReferenceDTO read(byte[] bytes) throws IOException {
+    MailReferenceDTO read(byte[] bytes) throws IOException {
         return objectMapper.readValue(bytes, MailReferenceDTO.class);
     }
 
-    public byte[] write(MailReferenceDTO mailDTO) throws JsonProcessingException {
+    byte[] write(MailReferenceDTO mailDTO) throws JsonProcessingException {
         return objectMapper.writeValueAsBytes(mailDTO);
     }
 }

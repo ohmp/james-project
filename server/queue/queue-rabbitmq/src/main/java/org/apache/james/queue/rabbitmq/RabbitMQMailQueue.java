@@ -35,10 +35,6 @@ import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -61,12 +57,8 @@ public class RabbitMQMailQueue implements MailQueue {
             this.gaugeRegistry = gaugeRegistry;
             this.rabbitClient = rabbitClient;
             this.mimeMessageStore = mimeMessageStore;
-            mailReferenceSerializer = new MailReferenceSerializer(
-                new ObjectMapper()
-                    .registerModule(new Jdk8Module())
-                    .registerModule(new JavaTimeModule())
-                    .registerModule(new GuavaModule()));
-            mailLoader = Throwing.function(new MailLoader(mimeMessageStore, blobIdFactory)::load).sneakyThrow();
+            this.mailReferenceSerializer = new MailReferenceSerializer();
+            this.mailLoader = Throwing.function(new MailLoader(mimeMessageStore, blobIdFactory)::load).sneakyThrow();
         }
 
         RabbitMQMailQueue create(MailQueueName mailQueueName) {
