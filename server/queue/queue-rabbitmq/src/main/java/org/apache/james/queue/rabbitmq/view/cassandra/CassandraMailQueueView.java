@@ -21,11 +21,13 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.rabbitmq.MailQueueName;
+import org.apache.james.queue.rabbitmq.view.api.DeleteCondition;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.mailet.Mail;
 
@@ -81,10 +83,10 @@ public class CassandraMailQueueView implements MailQueueView {
 
     private final MailQueueName mailQueueName;
 
-    public CassandraMailQueueView(StoreMailHelper storeHelper,
-                                  MailQueueName mailQueueName,
-                                  BrowseHelper browseHelper,
-                                  DeleteMailHelper deleteMailHelper) {
+    private CassandraMailQueueView(StoreMailHelper storeHelper,
+                                   MailQueueName mailQueueName,
+                                   BrowseHelper browseHelper,
+                                   DeleteMailHelper deleteMailHelper) {
         this.mailQueueName = mailQueueName;
         this.storeHelper = storeHelper;
         this.browseHelper = browseHelper;
@@ -98,7 +100,7 @@ public class CassandraMailQueueView implements MailQueueView {
 
     @Override
     public CompletableFuture<Void> deleteMail(Mail mail) {
-        return deleteMailHelper.updateDeleteTable(mail, mailQueueName);
+        return deleteMailHelper.markAsDeletedWithPossibleBrowseStartUpdate(mail, mailQueueName);
     }
 
     @Override
@@ -114,4 +116,21 @@ public class CassandraMailQueueView implements MailQueueView {
         return Iterators.size(browse());
     }
 
+    @Override
+    public CompletableFuture<Long> delete(DeleteCondition deleteCondition) {
+        CompletableFuture<Long> result = browseHelper.browseReferences(mailQueueName)
+            .filter(mailReference -> deleteCondition.shouldBeDeleted(mailReference.getMail()))
+            .thenComposeOnAll(mailReference -> deleteMailHelper.markAsDeleted(mailReference.getMail(), mailQueueName))
+            .completableFuture()
+            .thenApply(Stream::count);
+
+        result.thenRunAsync(() -> deleteMailHelper.updateBrowseStart(mailQueueName));
+
+        return result;
+    }
+
+    @Override
+    public CompletableFuture<Boolean> isDeleted(Mail mail) {
+        return deleteMailHelper.isDeleted(mail, mailQueueName);
+    }
 }

@@ -32,13 +32,13 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.Store;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.ManageableMailQueue;
+import org.apache.james.queue.rabbitmq.view.api.DeleteCondition;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.util.SerializationUtil;
@@ -180,6 +180,14 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
         GetResponse getResponse = pollChannel();
         MailDTO mailDTO = toDTO(getResponse);
         Mail mail = toMail(mailDTO);
+        if (mailQueueView.isDeleted(mail).join()) {
+            try {
+                rabbitClient.ack(getResponse.getEnvelope().getDeliveryTag());
+            } catch (IOException e) {
+                throw new MailQueueException("Failed to ack", e);
+            }
+            return deQueue();
+        }
         return new RabbitMQMailQueueItem(rabbitClient, mailQueueView, getResponse.getEnvelope().getDeliveryTag(), mail);
     }
 
@@ -270,12 +278,12 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
 
     @Override
     public long clear() {
-        throw new NotImplementedException("Not yet implemented");
+        return mailQueueView.delete(DeleteCondition.all()).join();
     }
 
     @Override
     public long remove(Type type, String value) {
-        throw new NotImplementedException("Not yet implemented");
+        return mailQueueView.delete(DeleteCondition.from(type, value)).join();
     }
 
     @Override

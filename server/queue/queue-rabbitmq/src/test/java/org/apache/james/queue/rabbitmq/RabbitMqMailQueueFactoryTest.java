@@ -39,7 +39,7 @@ import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueFactoryContract;
-import org.apache.james.queue.rabbitmq.helper.api.MailQueueView;
+import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

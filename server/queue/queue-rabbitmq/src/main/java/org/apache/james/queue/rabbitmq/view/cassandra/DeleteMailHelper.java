@@ -52,17 +52,28 @@ class DeleteMailHelper {
         this.random = new Random();
     }
 
-    CompletableFuture<Void> updateDeleteTable(Mail mail, MailQueueName mailQueueName) {
-        return deletedMailsDao
-            .markAsDeleted(mailQueueName, MailKey.fromMail(mail))
-            .thenRunAsync(() -> updateBrowseStart(mailQueueName));
+    CompletableFuture<Void> markAsDeletedWithPossibleBrowseStartUpdate(Mail mail, MailQueueName mailQueueName) {
+        return markAsDeleted(mail, mailQueueName)
+            .thenRunAsync(() -> maybeUpdateBrowseStart(mailQueueName));
     }
 
-    private void updateBrowseStart(MailQueueName mailQueueName) {
+    CompletableFuture<Void> markAsDeleted(Mail mail, MailQueueName mailQueueName) {
+        return deletedMailsDao
+            .markAsDeleted(mailQueueName, MailKey.fromMail(mail));
+    }
+
+    CompletableFuture<Boolean> isDeleted(Mail mail, MailQueueName mailQueueName) {
+        return deletedMailsDao.checkDeleted(mailQueueName, MailKey.fromMail(mail));
+    }
+
+    CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName) {
+        return findNewBrowseStart(mailQueueName)
+            .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart));
+    }
+
+    private void maybeUpdateBrowseStart(MailQueueName mailQueueName) {
         if (shouldBrowseStart()) {
-            findNewBrowseStart(mailQueueName)
-                .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart))
-                .join();
+            updateBrowseStart(mailQueueName).join();
         }
     }
 

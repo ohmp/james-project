@@ -43,15 +43,14 @@ import org.apache.james.blob.mail.MimeMessageStore;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.ManageableMailQueueContract;
-import org.apache.james.queue.rabbitmq.helper.api.MailQueueView;
-import org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewConfiguration;
-import org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewModule;
-import org.apache.james.queue.rabbitmq.helper.cassandra.CassandraMailQueueViewTestFactory;
+import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
+import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewConfiguration;
+import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewModule;
+import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewTestFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith({ReusableDockerRabbitMQExtension.class, DockerCassandraExtension.class})
@@ -80,7 +79,9 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
         CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf(), CassandraConfiguration.DEFAULT_CONFIGURATION, BLOB_ID_FACTORY);
         Store<MimeMessage, MimeMessagePartsId> mimeMessageStore = MimeMessageStore.factory(blobsDAO).mimeMessageStore();
 
-        MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(cassandra.getConf(), cassandra.getTypesProvider(),
+        MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(
+            cassandra.getConf(),
+            cassandra.getTypesProvider(),
             new CassandraMailQueueViewConfiguration(BUCKET_COUNT, UPDATE_FIRST_ENQUEUED_PACE, SLICE_WINDOW))
             .create(MailQueueName.fromString(SPOOL));
 
@@ -116,81 +117,4 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
         return mailQueueFactory.createQueue(SPOOL);
     }
 
-    @Disabled
-    @Override
-    public void clearShouldNotFailWhenBrowsingIterating() {
-
-    }
-
-    @Disabled
-    @Override
-    public void browseShouldNotFailWhenConcurrentClearWhenIterating() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeShouldNotFailWhenBrowsingIterating() {
-
-    }
-
-    @Disabled
-    @Override
-    public void browseShouldNotFailWhenConcurrentRemoveWhenIterating() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeByNameShouldRemoveSpecificEmail() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeBySenderShouldRemoveSpecificEmail() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeByRecipientShouldRemoveSpecificEmail() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeByRecipientShouldRemoveSpecificEmailWhenMultipleRecipients() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeByNameShouldNotFailWhenQueueIsEmpty() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeBySenderShouldNotFailWhenQueueIsEmpty() {
-
-    }
-
-    @Disabled
-    @Override
-    public void removeByRecipientShouldNotFailWhenQueueIsEmpty() {
-
-    }
-
-    @Disabled
-    @Override
-    public void clearShouldNotFailWhenQueueIsEmpty() {
-
-    }
-
-    @Disabled
-    @Override
-    public void clearShouldRemoveAllElements() {
-
-    }
 }
