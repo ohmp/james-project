@@ -20,6 +20,7 @@
 package org.apache.james.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Fail.fail;
 
 import javax.mail.internet.AddressException;
@@ -242,6 +243,30 @@ public class MailAddressTest {
     public void getMailSenderShouldReturnParsedAddressWhenNotNullAddress() throws Exception {
         assertThat(MailAddress.getMailSender(GOOD_ADDRESS))
             .isEqualTo(new MailAddress(GOOD_ADDRESS));
+    }
+
+    @Test
+    public void asMailAddressShouldReturnParsedAddress() throws Exception {
+        assertThat(MailAddress.asMailAddress(GOOD_ADDRESS))
+            .isEqualTo(new MailAddress(GOOD_ADDRESS));
+    }
+
+    @Test
+    public void asMailAddressShouldThrowRuntimeUponParsingErrors() {
+        assertThatThrownBy(() -> MailAddress.asMailAddress("bad"))
+            .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    public void asMailAddressOptionalShouldReturnParsedAddress() throws Exception {
+        assertThat(MailAddress.asMailAddressOptional(GOOD_ADDRESS))
+            .contains(new MailAddress(GOOD_ADDRESS));
+    }
+
+    @Test
+    public void asMailAddressOptionalReturnEmptyUponParsingErrors() {
+        assertThat(MailAddress.asMailAddressOptional("bad"))
+            .isEmpty();
     }
 
     @Test

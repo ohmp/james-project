@@ -142,7 +142,7 @@ public class MailAddress implements java.io.Serializable {
             return Optional.of(new MailAddress(address));
         } catch (AddressException e) {
             LOGGER.debug("Can't parse address {}", address, e);
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 
