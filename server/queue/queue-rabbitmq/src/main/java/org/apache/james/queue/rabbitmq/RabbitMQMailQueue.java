@@ -39,7 +39,7 @@ import org.apache.james.blob.api.Store;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.ManageableMailQueue;
-import org.apache.james.queue.rabbitmq.helper.api.MailQueueView;
+import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.util.SerializationUtil;
 import org.apache.mailet.Mail;
