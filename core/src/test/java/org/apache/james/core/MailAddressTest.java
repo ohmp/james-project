@@ -270,6 +270,12 @@ public class MailAddressTest {
     }
 
     @Test
+    public void asMailAddressOptionalReturnEmptyWhenNull() {
+        assertThat(MailAddress.asMailAddressOptional(null))
+            .isEmpty();
+    }
+
+    @Test
     public void shouldMatchBeanContract() {
         EqualsVerifier.forClass(MailAddress.class)
             .verify();

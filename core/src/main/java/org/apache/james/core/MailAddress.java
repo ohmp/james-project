@@ -29,6 +29,8 @@ import javax.mail.internet.InternetAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
+
 /**
  * A representation of an email address.
  * <p/>
@@ -139,11 +141,16 @@ public class MailAddress implements java.io.Serializable {
 
     public static Optional<MailAddress> asMailAddressOptional(String address) {
         try {
-            return Optional.of(new MailAddress(address));
+            return throwing(address);
         } catch (AddressException e) {
             LOGGER.debug("Can't parse address {}", address, e);
             return Optional.empty();
         }
+    }
+
+    private static Optional<MailAddress> throwing(String address) throws AddressException {
+        return Optional.ofNullable(address)
+            .map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow());
     }
 
     private final String localPart;
