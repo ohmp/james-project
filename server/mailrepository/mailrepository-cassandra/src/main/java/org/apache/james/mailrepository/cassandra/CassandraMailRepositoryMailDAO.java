@@ -79,7 +79,6 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UDTValue;
-import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -174,11 +173,11 @@ public class CassandraMailRepositoryMailDAO {
 
     private MailDTO toMail(Row row) {
         MailAddress sender = Optional.ofNullable(row.getString(SENDER))
-            .map(Throwing.function(MailAddress::new))
+            .map(MailAddress::asMailAddress)
             .orElse(null);
         List<MailAddress> recipients = row.getList(RECIPIENTS, String.class)
             .stream()
-            .map(Throwing.function(MailAddress::new))
+            .map(MailAddress::asMailAddress)
             .collect(Guavate.toImmutableList());
         String state = row.getString(STATE);
         String remoteAddr = row.getString(REMOTE_ADDR);

@@ -19,8 +19,6 @@
 
 package org.apache.mailet.base;
 
-import javax.mail.internet.AddressException;
-
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 
@@ -33,24 +31,16 @@ public class MailAddressFixture {
     public static final Domain JAMES_APACHE_ORG_DOMAIN = Domain.of(JAMES_APACHE_ORG);
     public static final Domain JAMES2_APACHE_ORG_DOMAIN = Domain.of(JAMES2_APACHE_ORG);
 
-    public static final MailAddress SENDER = createMailAddress("sender@" + JAMES_LOCAL);
-    public static final MailAddress RECIPIENT1 = createMailAddress("recipient1@" + JAMES_LOCAL);
-    public static final MailAddress RECIPIENT2 = createMailAddress("recipient2@" + JAMES_LOCAL);
-    public static final MailAddress RECIPIENT3 = createMailAddress("recipient3@" + JAMES_LOCAL);
+    public static final MailAddress SENDER = MailAddress.asMailAddress("sender@" + JAMES_LOCAL);
+    public static final MailAddress RECIPIENT1 = MailAddress.asMailAddress("recipient1@" + JAMES_LOCAL);
+    public static final MailAddress RECIPIENT2 = MailAddress.asMailAddress("recipient2@" + JAMES_LOCAL);
+    public static final MailAddress RECIPIENT3 = MailAddress.asMailAddress("recipient3@" + JAMES_LOCAL);
 
-    public static final MailAddress ANY_AT_LOCAL = createMailAddress("any@" + JAMES_LOCAL);
-    public static final MailAddress OTHER_AT_LOCAL = createMailAddress("other@" + JAMES_LOCAL);
-    public static final MailAddress ANY_AT_JAMES = createMailAddress("any@" + JAMES_APACHE_ORG);
-    public static final MailAddress POSTMASTER_AT_JAMES = createMailAddress("postmaster@" + JAMES_APACHE_ORG);
-    public static final MailAddress OTHER_AT_JAMES = createMailAddress("other@" + JAMES_APACHE_ORG);
-    public static final MailAddress ANY_AT_JAMES2 = createMailAddress("any@" + JAMES2_APACHE_ORG);
-    public static final MailAddress OTHER_AT_JAMES2 = createMailAddress("other@" + JAMES2_APACHE_ORG);
-
-    private static MailAddress createMailAddress(String mailAddress) {
-        try {
-            return new MailAddress(mailAddress);
-        } catch (AddressException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static final MailAddress ANY_AT_LOCAL = MailAddress.asMailAddress("any@" + JAMES_LOCAL);
+    public static final MailAddress OTHER_AT_LOCAL = MailAddress.asMailAddress("other@" + JAMES_LOCAL);
+    public static final MailAddress ANY_AT_JAMES = MailAddress.asMailAddress("any@" + JAMES_APACHE_ORG);
+    public static final MailAddress POSTMASTER_AT_JAMES = MailAddress.asMailAddress("postmaster@" + JAMES_APACHE_ORG);
+    public static final MailAddress OTHER_AT_JAMES = MailAddress.asMailAddress("other@" + JAMES_APACHE_ORG);
+    public static final MailAddress ANY_AT_JAMES2 = MailAddress.asMailAddress("any@" + JAMES2_APACHE_ORG);
+    public static final MailAddress OTHER_AT_JAMES2 = MailAddress.asMailAddress("other@" + JAMES2_APACHE_ORG);
 }

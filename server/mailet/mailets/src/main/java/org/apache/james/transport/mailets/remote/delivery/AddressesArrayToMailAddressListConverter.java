@@ -21,40 +21,24 @@ package org.apache.james.transport.mailets.remote.delivery;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import javax.mail.Address;
-import javax.mail.internet.AddressException;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.util.OptionalUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
 public class AddressesArrayToMailAddressListConverter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AddressesArrayToMailAddressListConverter.class);
-
     public static List<MailAddress> getAddressesAsMailAddress(Address[] addresses) {
         if (addresses == null) {
             return ImmutableList.of();
         }
-        return Arrays.asList(addresses)
-            .stream()
-            .map(address -> toMailAddress(address))
+        return Arrays.stream(addresses)
+            .map(Address::toString)
+            .map(MailAddress::asMailAddressOptional)
             .flatMap(OptionalUtils::toStream)
             .collect(Guavate.toImmutableList());
     }
-
-    private static Optional<MailAddress> toMailAddress(Address address) {
-        try {
-            return Optional.of(new MailAddress(address.toString()));
-        } catch (AddressException e) {
-            LOGGER.debug("Can't parse unsent address {}", address, e);
-            return Optional.empty();
-        }
-    }
-
 }

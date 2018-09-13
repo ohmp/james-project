@@ -50,7 +50,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
@@ -207,7 +206,7 @@ public class RabbitMQMailQueue implements MailQueue {
                 dto.getSender().map(MailAddress::getMailSender).orElse(null),
                 dto.getRecipients()
                     .stream()
-                    .map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())
+                    .map(MailAddress::asMailAddress)
                     .collect(Guavate.toImmutableList()),
                 mimeMessage);
 
@@ -239,7 +238,7 @@ public class RabbitMQMailQueue implements MailQueue {
             .entrySet()
             .stream()
             .flatMap(entry -> entry.getValue().toHeaders().stream()
-                .map(Throwing.function(header -> Pair.of(new MailAddress(entry.getKey()), header))))
+                .map(header -> Pair.of(MailAddress.asMailAddress(entry.getKey()), header)))
             .forEach(pair -> perRecipientHeaders.addHeaderForRecipient(pair.getValue(), pair.getKey()));
         return perRecipientHeaders;
     }

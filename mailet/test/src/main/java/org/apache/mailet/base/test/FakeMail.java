@@ -43,7 +43,6 @@ import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.PerRecipientHeaders.Header;
 
-import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -168,7 +167,7 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder recipients(String... recipients) {
             return recipients(Arrays.stream(recipients)
-                .map(Throwing.function(MailAddress::new))
+                .map(MailAddress::asMailAddress)
                 .collect(Guavate.toImmutableList()));
         }
 
@@ -176,7 +175,7 @@ public class FakeMail implements Mail, Serializable {
             return recipients(recipient);
         }
 
-        public Builder recipient(String recipient) throws AddressException {
+        public Builder recipient(String recipient) {
             return recipients(recipient);
         }
 

@@ -31,7 +31,6 @@ import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.address.MailboxList;
 import org.apache.james.util.StreamUtils;
 
-import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 
@@ -56,7 +55,7 @@ public class Envelope {
             .stream()
             .findAny()
             .map(Mailbox::getAddress)
-            .map(Throwing.function(MailAddress::new))
+            .map(MailAddress::asMailAddress)
             .orElseThrow(() -> new RuntimeException("Sender is mandatory"));
 
         Stream<MailAddress> to = emailersToMailAddresses(mime4JMessage.getTo());
@@ -79,7 +78,7 @@ public class Envelope {
             .map(MailboxList::stream)
             .orElse(Stream.of())
             .map(Mailbox::getAddress)
-            .map(Throwing.function(MailAddress::new));
+            .map(MailAddress::asMailAddress);
     }
 
 

@@ -90,11 +90,7 @@ public interface Mapping {
         ToMailAddress {
             @Override
             Optional<MailAddress> convert(String mapping) {
-                try {
-                    return Optional.of(new MailAddress(mapping));
-                } catch (AddressException e) {
-                    return Optional.empty();
-                }
+                return MailAddress.asMailAddressOptional(mapping);
             }
         };
 

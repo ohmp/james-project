@@ -158,7 +158,7 @@ public class MailImpl implements Disposable, Mail {
 
         public Builder recipients(String... recipients) {
             return recipients(Arrays.stream(recipients)
-                .map(Throwing.function(MailAddress::new))
+                .map(MailAddress::asMailAddress)
                 .collect(Guavate.toImmutableList()));
         }
 
@@ -166,7 +166,7 @@ public class MailImpl implements Disposable, Mail {
             return recipients(recipient);
         }
 
-        public Builder recipient(String recipient) throws AddressException {
+        public Builder recipient(String recipient) {
             return recipients(recipient);
         }
 

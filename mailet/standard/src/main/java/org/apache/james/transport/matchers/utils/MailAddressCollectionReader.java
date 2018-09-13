@@ -21,8 +21,6 @@ package org.apache.james.transport.matchers.utils;
 
 import java.util.Set;
 
-import javax.mail.internet.AddressException;
-
 import org.apache.james.core.MailAddress;
 
 import com.github.steveash.guavate.Guavate;
@@ -38,16 +36,8 @@ public class MailAddressCollectionReader {
         return Splitter.onPattern("(,| |\t)").splitToList(condition)
             .stream()
             .filter(s -> !Strings.isNullOrEmpty(s))
-            .map(s -> getMailAddress(s))
+            .map(MailAddress::asMailAddress)
             .collect(Guavate.toImmutableSet());
-    }
-
-    private static MailAddress getMailAddress(String s) {
-        try {
-            return new MailAddress(s);
-        } catch (AddressException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

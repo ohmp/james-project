@@ -129,6 +129,23 @@ public class MailAddress implements java.io.Serializable {
         }
     }
 
+    public static MailAddress asMailAddress(String address) {
+        try {
+            return new MailAddress(address);
+        } catch (AddressException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Optional<MailAddress> asMailAddressOptional(String address) {
+        try {
+            return Optional.of(new MailAddress(address));
+        } catch (AddressException e) {
+            LOGGER.debug("Can't parse address {}", address, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private final String localPart;
     private final Domain domain;
 

@@ -22,8 +22,6 @@ package org.apache.james.jmap.model;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.mail.internet.AddressException;
-
 import org.apache.james.core.MailAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,12 +126,7 @@ public class Emailer {
     @JsonIgnore
     public MailAddress toMailAddress() {
         Preconditions.checkArgument(email.isPresent(), "eMailer mail address should be present when sending a mail using JMAP");
-        try {
-            return new MailAddress(email.get());
-        } catch (AddressException e) {
-            LOGGER.error("Invalid mail address", email);
-            throw new RuntimeException(e);
-        }
+        return MailAddress.asMailAddress(email.get());
     }
 
     @Override

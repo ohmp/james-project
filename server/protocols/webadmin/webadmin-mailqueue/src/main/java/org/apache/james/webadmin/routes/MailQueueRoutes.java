@@ -322,7 +322,7 @@ public class MailQueueRoutes implements Routes {
     private Optional<MailAddress> sender(String senderAsString) throws HaltException {
         try {
             return Optional.ofNullable(senderAsString)
-                    .map(Throwing.function((String sender) -> new MailAddress(sender)).sneakyThrow());
+                    .map(MailAddress::asMailAddress);
         } catch (Exception e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
@@ -340,7 +340,7 @@ public class MailQueueRoutes implements Routes {
     private Optional<MailAddress> recipient(String recipientAsString) throws HaltException {
         try {
             return Optional.ofNullable(recipientAsString)
-                    .map(Throwing.function((String recipient) -> new MailAddress(recipient)).sneakyThrow());
+                    .map(MailAddress::asMailAddress);
         } catch (Exception e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)

@@ -24,21 +24,17 @@ import java.util.Enumeration;
 import java.util.Set;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 
 import org.apache.james.core.MailAddress;
 import org.apache.jsieve.mail.Action;
 import org.apache.jsieve.mail.optional.ActionVacation;
 import org.apache.mailet.Mail;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class VacationAction implements MailAction {
-    private static final Logger LOGGER = LoggerFactory.getLogger(VacationAction.class);
 
     @Override
     public void execute(Action action, Mail mail, ActionContext context) throws MessagingException {
@@ -74,19 +70,13 @@ public class VacationAction implements MailAction {
     private boolean isValidForReply(final Mail mail, ActionVacation actionVacation, final ActionContext context) {
         Set<MailAddress> currentMailAddresses = ImmutableSet.copyOf(mail.getRecipients());
         Set<MailAddress> allowedMailAddresses = ImmutableSet.<MailAddress>builder().addAll(
-            Lists.transform(actionVacation.getAddresses(), s -> retrieveAddressFromString(s, context)))
+            actionVacation.getAddresses()
+                .stream()
+                .map(MailAddress::asMailAddress)
+                .collect(ImmutableList.toImmutableList()))
             .add(context.getRecipient())
             .build();
         return !Sets.intersection(currentMailAddresses, allowedMailAddresses).isEmpty();
-    }
-
-    private MailAddress retrieveAddressFromString(String address, ActionContext context) {
-        try {
-            return new MailAddress(address);
-        } catch (AddressException e) {
-            LOGGER.warn("Mail address {} was not well formatted : {}", address, e.getLocalizedMessage());
-            return null;
-        }
     }
 
     private boolean isMailingList(Mail mail) throws MessagingException {

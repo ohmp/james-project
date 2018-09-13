@@ -26,7 +26,6 @@ import java.util.Optional;
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
@@ -34,14 +33,11 @@ import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Mail;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class VacationReply {
-    private static final Logger LOGGER = LoggerFactory.getLogger(VacationReply.class);
 
     public static class Builder {
 
@@ -126,20 +122,12 @@ public class VacationReply {
             return multipart;
         }
 
-        private MailAddress retrieveOriginalSender() throws AddressException {
+        private MailAddress retrieveOriginalSender() {
             return Optional.ofNullable(from)
-                .map(address -> retrieveAddressFromString(address, context))
+                .map(MailAddress::asMailAddress)
                 .orElse(context.getRecipient());
         }
 
-        private MailAddress retrieveAddressFromString(String address, ActionContext context) {
-            try {
-                return new MailAddress(address);
-            } catch (AddressException e) {
-                LOGGER.warn("Mail address {} was not well formatted : {}", address, e.getLocalizedMessage());
-                return null;
-            }
-        }
     }
 
     public static Builder builder(Mail originalMail, ActionContext context) {

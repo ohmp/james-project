@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
@@ -157,7 +156,7 @@ public class UseHeaderRecipients extends GenericMailet {
         return getMailAddressesFromHeadersParts(headerParts);
     }
 
-    private ImmutableList<MailAddress> getMailAddressesFromHeadersParts(Iterable<String> headerParts) throws AddressException {
+    private ImmutableList<MailAddress> getMailAddressesFromHeadersParts(Iterable<String> headerParts) {
         ImmutableList.Builder<MailAddress> result = ImmutableList.builder();
         for (String headerPart : headerParts) {
             if (isDebug) {
@@ -168,22 +167,15 @@ public class UseHeaderRecipients extends GenericMailet {
         return result.build();
     }
 
-    private Collection<MailAddress> readMailAddresses(String headerPart) throws AddressException {
+    private Collection<MailAddress> readMailAddresses(String headerPart) {
         AddressList addressList = LenientAddressParser.DEFAULT
             .parseAddressList(MimeUtil.unfold(headerPart));
 
         return addressList.stream()
-            .flatMap(address -> convertAddressToMailboxCollection(address))
-            .map(this::toMailAddress)
+            .flatMap(this::convertAddressToMailboxCollection)
+            .map(Mailbox::getAddress)
+            .map(MailAddress::asMailAddress)
             .collect(Guavate.toImmutableList());
-    }
-
-    private MailAddress toMailAddress(Mailbox mailbox) {
-        try {
-            return new MailAddress(mailbox.getAddress());
-        } catch (AddressException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Stream<Mailbox> convertAddressToMailboxCollection(Address address) {
