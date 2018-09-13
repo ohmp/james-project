@@ -31,18 +31,12 @@ import javax.mail.internet.MimeMessage;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.backend.rabbitmq.DockerRabbitMQ;
 import org.apache.james.backend.rabbitmq.ReusableDockerRabbitMQExtension;
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraExtension;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.Store;
-import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueFactoryContract;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -50,14 +44,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<RabbitMQMailQueue> {
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
 
-    private static CassandraCluster cassandra;
-
     private RabbitMQMailQueueFactory mailQueueFactory;
-
-    @BeforeAll
-    static void setUpClass(DockerCassandraExtension.DockerCassandra dockerCassandra) {
-        cassandra = CassandraCluster.create(CassandraBlobModule.MODULE, dockerCassandra.getHost());
-    }
 
     @BeforeEach
     void setup(DockerRabbitMQ rabbitMQ) throws IOException, TimeoutException, URISyntaxException {
@@ -74,16 +61,6 @@ class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<RabbitMQM
         RabbitMQMailQueue.Factory factory = new RabbitMQMailQueue.Factory(rabbitClient, mimeMessageStore, BLOB_ID_FACTORY, mailQueueView);
         RabbitMQManagementApi mqManagementApi = new RabbitMQManagementApi(rabbitManagementUri, new RabbitMQManagementCredentials("guest", "guest".toCharArray()));
         mailQueueFactory = new RabbitMQMailQueueFactory(rabbitClient, mqManagementApi, factory);
-    }
-
-    @AfterEach
-    void tearDown() {
-        cassandra.clearTables();
-    }
-
-    @AfterAll
-    static void tearDownClass() {
-        cassandra.closeCluster();
     }
 
     @Override
