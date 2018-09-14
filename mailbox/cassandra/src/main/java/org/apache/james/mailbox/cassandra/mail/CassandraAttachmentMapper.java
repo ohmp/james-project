@@ -103,7 +103,7 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
                 .map(id -> getAttachmentInternal(id)
                     .thenApply(finalValue -> logNotFound(id, finalValue)));
 
-        return FluentFutureStream.of(attachments, FluentFutureStream::unboxOpional)
+        return FluentFutureStream.of(attachments, FluentFutureStream::unboxOptional)
             .collect(Guavate.toImmutableList());
     }
 

@@ -92,7 +92,7 @@ public class FluentFutureStreamTest {
                     CompletableFuture.completedFuture(Optional.of(2)),
                     CompletableFuture.completedFuture(Optional.empty()),
                     CompletableFuture.completedFuture(Optional.of(3))),
-                    FluentFutureStream::unboxOpional)
+                    FluentFutureStream::unboxOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3);
@@ -142,7 +142,7 @@ public class FluentFutureStreamTest {
                     Stream.of(1, 2, 3)))
                 .map(i -> Optional.of(i + 1)
                     .filter(j -> j % 2 == 0),
-                    FluentFutureStream::unboxOpional)
+                    FluentFutureStream::unboxOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 4);

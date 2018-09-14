@@ -36,7 +36,7 @@ public class FluentFutureStream<T> {
                 .thenApply(StreamUtils::flatten));
     }
 
-    public static <T> FluentFutureStream<T> unboxOpional(FluentFutureStream<Optional<T>> optionals) {
+    public static <T> FluentFutureStream<T> unboxOptional(FluentFutureStream<Optional<T>> optionals) {
         return unboxStream(optionals.map(OptionalUtils::toStream));
     }
 
@@ -52,7 +52,7 @@ public class FluentFutureStream<T> {
     }
 
     public static <T> FluentFutureStream<T> unboxFutureOptional(FluentFutureStream<CompletableFuture<Optional<T>>> futures) {
-        return unboxOpional(unboxFuture(futures));
+        return unboxOptional(unboxFuture(futures));
     }
 
     private final CompletableFuture<Stream<T>> completableFuture;

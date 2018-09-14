@@ -114,7 +114,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     private CompletableFuture<Stream<SimpleMailboxMessage>> filterMessagesWithExistingMailbox(Stream<SimpleMailboxMessage> stream) {
-        return FluentFutureStream.of(stream.map(this::keepMessageIfMailboxExists), FluentFutureStream::unboxOpional)
+        return FluentFutureStream.of(stream.map(this::keepMessageIfMailboxExists), FluentFutureStream::unboxOptional)
             .completableFuture();
     }
 
