@@ -75,7 +75,7 @@ public class JDBCMailRepositoryTest implements MailRepositoryContract {
     }
 
     @Override
-    @Disabled("JAMES-2546 This mail repository do not support null sender")
+    @Disabled("JAMES-2546 This mail repository does not support null sender")
     public void storeRegularMailShouldNotFailWhenNullSender() {
 
     }
