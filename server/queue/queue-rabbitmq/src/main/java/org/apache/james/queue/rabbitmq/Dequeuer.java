@@ -95,6 +95,8 @@ class Dequeuer {
                 if (success) {
                     dequeueMetric.increment();
                     rabbitClient.ack(deliveryTag);
+                } else {
+                    rabbitClient.nack(deliveryTag);
                 }
             } catch (IOException e) {
                 throw new MailQueue.MailQueueException("Failed to ACK " + mail.getName() + " with delivery tag " + deliveryTag, e);
