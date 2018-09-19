@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Clock;
 import java.time.Duration;
@@ -39,7 +38,6 @@ import java.util.stream.Stream;
 
 import javax.mail.internet.MimeMessage;
 
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.backend.rabbitmq.DockerRabbitMQ;
 import org.apache.james.backend.rabbitmq.RabbitChannelPool;
 import org.apache.james.backend.rabbitmq.RabbitMQConfiguration;
@@ -67,7 +65,6 @@ import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewTest
 import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -124,6 +121,7 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         RabbitClient rabbitClient = new RabbitClient(new RabbitChannelPool(rabbitMQConnectionFactory));
         RabbitMQMailQueue.Factory factory = new RabbitMQMailQueue.Factory(
             metricTestSystem.getSpyMetricFactory(),
+            metricTestSystem.getSpyGaugeRegistry(),
             rabbitClient,
             mimeMessageStore,
             BLOB_ID_FACTORY,
@@ -212,11 +210,6 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         assertThat(initialized).isTrue();
     }
 
-    @Disabled("RabbitMQ Mail Queue do not yet implement getSize()")
-    @Override
-    public void constructorShouldRegisterGetQueueSizeGauge(MailQueueMetricExtension.MailQueueMetricTestSystem testSystem) {
-    }
-    
     private void enqueueMailsInSlice(int slice, int emailCount) {
         ManageableMailQueue mailQueue = getManageableMailQueue();
 
