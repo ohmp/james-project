@@ -26,6 +26,7 @@ import static org.apache.james.mailets.configuration.Constants.awaitAtMostOneMin
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
@@ -51,6 +52,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
+import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 
 public class AmqpForwardAttachmentTest {
     private static final String FROM = "fromUser@" + DEFAULT_DOMAIN;
@@ -63,7 +66,12 @@ public class AmqpForwardAttachmentTest {
     private static final byte[] TEST_ATTACHMENT_CONTENT = "Test attachment content".getBytes(StandardCharsets.UTF_8);
 
     public SwarmGenericContainer rabbitMqContainer = new SwarmGenericContainer(Images.RABBITMQ)
-            .withAffinityToContainer();
+        .withAffinityToContainer()
+        .waitingFor(new HostPortWaitStrategy()
+            .withRateLimiter(RateLimiterBuilder.newBuilder()
+                .withRate(20, TimeUnit.SECONDS)
+                .withConstantThroughput()
+                .build()));
 
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     public AmqpRule amqpRule = new AmqpRule(rabbitMqContainer, EXCHANGE_NAME, ROUTING_KEY);
