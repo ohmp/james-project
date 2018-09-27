@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueue;
@@ -36,6 +37,7 @@ import org.apache.mailet.Mail;
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.consumers.ThrowingConsumer;
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
 
 class Dequeuer {
@@ -88,21 +90,21 @@ class Dequeuer {
             .join();
     }
 
-    private RabbitMQMailQueueItem loadItem(GetResponse response) throws MailQueue.MailQueueException {
-        Mail mail = loadMail(response);
-        ThrowingConsumer<Boolean> ack = ack(response.getEnvelope().getDeliveryTag(), mail);
+    private RabbitMQMailQueueItem loadItem(Pair<Channel, GetResponse> response) throws MailQueue.MailQueueException {
+        Mail mail = loadMail(response.getRight());
+        ThrowingConsumer<Boolean> ack = ack(response.getLeft(), response.getRight().getEnvelope().getDeliveryTag(), mail);
         return new RabbitMQMailQueueItem(ack, mail);
     }
 
-    private ThrowingConsumer<Boolean> ack(long deliveryTag, Mail mail) {
+    private ThrowingConsumer<Boolean> ack(Channel channel, long deliveryTag, Mail mail) {
         return success -> {
             try {
                 if (success) {
                     dequeueMetric.increment();
-                    rabbitClient.ack(deliveryTag);
+                    channel.basicAck(deliveryTag, false);
                     mailQueueView.deleteMail(mail).join();
                 } else {
-                    rabbitClient.nack(deliveryTag);
+                    channel.basicNack(deliveryTag, false, true);
                 }
             } catch (IOException e) {
                 throw new MailQueue.MailQueueException("Failed to ACK " + mail.getName() + " with delivery tag " + deliveryTag, e);
@@ -123,7 +125,7 @@ class Dequeuer {
         }
     }
 
-    private CompletableFuture<GetResponse> pollChannel() {
+    private CompletableFuture<Pair<Channel, GetResponse>> pollChannel() {
         return new AsyncRetryExecutor(Executors.newSingleThreadScheduledExecutor())
             .withFixedRate()
             .withMinDelay(TEN_MS)
@@ -131,9 +133,9 @@ class Dequeuer {
             .getWithRetry(this::singleChannelRead);
     }
 
-    private GetResponse singleChannelRead() throws IOException {
+    private Pair<Channel, GetResponse> singleChannelRead() throws IOException {
         return rabbitClient.poll(name)
-            .filter(getResponse -> getResponse.getBody() != null)
+            .filter(getResponse -> getResponse.getValue().getBody() != null)
             .orElseThrow(NoMailYetException::new);
     }
 

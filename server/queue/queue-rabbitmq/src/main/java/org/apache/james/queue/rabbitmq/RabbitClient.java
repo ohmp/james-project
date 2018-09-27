@@ -22,11 +22,13 @@ package org.apache.james.queue.rabbitmq;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backend.rabbitmq.RabbitChannelPool;
 import org.apache.james.queue.api.MailQueue;
 
 import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
 
 class RabbitClient {
@@ -78,9 +80,10 @@ class RabbitClient {
         channelPool.execute(consumer);
     }
 
-    Optional<GetResponse> poll(MailQueueName name) throws IOException {
-        RabbitChannelPool.RabbitFunction<Optional<GetResponse>, IOException> f = channel ->
-            Optional.ofNullable(channel.basicGet(name.toWorkQueueName().asString(), !AUTO_ACK));
+    Optional<Pair<Channel, GetResponse>> poll(MailQueueName name) throws IOException {
+        RabbitChannelPool.RabbitFunction<Optional<Pair<Channel, GetResponse>>, IOException> f = channel ->
+            Optional.ofNullable(channel.basicGet(name.toWorkQueueName().asString(), !AUTO_ACK))
+                .map(res -> Pair.of(channel, res));
         return channelPool.execute(f);
     }
 }
