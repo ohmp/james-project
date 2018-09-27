@@ -37,7 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
 
 import javax.mail.internet.MimeMessage;
 
@@ -358,6 +357,43 @@ public interface MailQueueContract {
                         .name("name" + threadNumber + "-" + step)
                         .build());
                 } else {
+                    MailQueue.MailQueueItem mailQueueItem = testee.deQueue();
+                    dequeuedMails.add(mailQueueItem.getMail());
+                    mailQueueItem.done(true);
+                }
+            })
+            .threadCount(threadCount)
+            .operationCount(operationCount)
+            .runSuccessfullyWithin(Duration.ofMinutes(1));
+
+        assertThat(
+            dequeuedMails.stream()
+                .map(Mail::getName)
+                .distinct())
+            .hasSize(totalDequeuedMessages);
+    }
+
+    @Test
+    default void concurrentEnqueueDequeueWithAckNackShouldNotFail() throws Exception {
+        MailQueue testee = getMailQueue();
+
+        ConcurrentLinkedDeque<Mail> dequeuedMails = new ConcurrentLinkedDeque<>();
+
+        int threadCount = 10;
+        int operationCount = 150;
+        int totalDequeuedMessages = 500;
+        ConcurrentTestRunner.builder()
+            .operation((threadNumber, step) -> {
+                if (step % 3 == 0) {
+                    testee.enQueue(defaultMail()
+                        .name("name" + threadNumber + "-" + step)
+                        .build());
+                }
+                if (step % 3 == 1) {
+                    MailQueue.MailQueueItem mailQueueItem = testee.deQueue();
+                    mailQueueItem.done(false);
+                }
+                if (step % 3 == 2) {
                     MailQueue.MailQueueItem mailQueueItem = testee.deQueue();
                     dequeuedMails.add(mailQueueItem.getMail());
                     mailQueueItem.done(true);
