@@ -56,6 +56,7 @@ import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.blob.mail.MimeMessageStore;
+import org.apache.james.eventsourcing.eventstore.cassandra.CassandraEventStoreModule;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueMetricContract;
 import org.apache.james.queue.api.MailQueueMetricExtension;
@@ -92,7 +93,8 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraModule.aggregateModules(
         CassandraBlobModule.MODULE,
-        CassandraMailQueueViewModule.MODULE));
+        CassandraMailQueueViewModule.MODULE,
+        CassandraEventStoreModule.MODULE));
 
     private RabbitMQMailQueueFactory mailQueueFactory;
     private Clock clock;
