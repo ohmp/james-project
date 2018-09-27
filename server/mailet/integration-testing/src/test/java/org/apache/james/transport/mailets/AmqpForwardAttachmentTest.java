@@ -41,6 +41,7 @@ import org.apache.james.probe.DataProbe;
 import org.apache.james.transport.mailets.amqp.AmqpRule;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.util.docker.Images;
+import org.apache.james.util.docker.RateLimiters;
 import org.apache.james.util.docker.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
@@ -68,10 +69,7 @@ public class AmqpForwardAttachmentTest {
     public SwarmGenericContainer rabbitMqContainer = new SwarmGenericContainer(Images.RABBITMQ)
         .withAffinityToContainer()
         .waitingFor(new HostPortWaitStrategy()
-            .withRateLimiter(RateLimiterBuilder.newBuilder()
-                .withRate(20, TimeUnit.SECONDS)
-                .withConstantThroughput()
-                .build()));
+            .withRateLimiter(RateLimiters.DEFAULT));
 
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     public AmqpRule amqpRule = new AmqpRule(rabbitMqContainer, EXCHANGE_NAME, ROUTING_KEY);

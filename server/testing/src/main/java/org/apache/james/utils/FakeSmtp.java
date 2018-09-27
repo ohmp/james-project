@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.apache.james.util.docker.Images;
+import org.apache.james.util.docker.RateLimiters;
 import org.apache.james.util.docker.SwarmGenericContainer;
 import org.awaitility.core.ConditionFactory;
 import org.junit.rules.TestRule;
@@ -56,10 +57,7 @@ public class FakeSmtp implements TestRule {
         return new SwarmGenericContainer(Images.FAKE_SMTP)
             .withAffinityToContainer()
             .waitingFor(new HostPortWaitStrategy()
-            .withRateLimiter(RateLimiterBuilder.newBuilder()
-                .withRate(20, TimeUnit.SECONDS)
-                .withConstantThroughput()
-                .build()));
+            .withRateLimiter(RateLimiters.DEFAULT));
     }
 
     private static final int SMTP_PORT = 25;
