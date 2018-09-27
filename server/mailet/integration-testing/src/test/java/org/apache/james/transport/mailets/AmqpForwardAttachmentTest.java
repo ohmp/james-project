@@ -26,7 +26,6 @@ import static org.apache.james.mailets.configuration.Constants.awaitAtMostOneMin
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
@@ -53,7 +52,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 
 public class AmqpForwardAttachmentTest {

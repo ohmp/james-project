@@ -24,7 +24,6 @@ import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.apache.james.util.docker.Images;
@@ -34,7 +33,6 @@ import org.awaitility.core.ConditionFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 
 import io.restassured.builder.RequestSpecBuilder;
