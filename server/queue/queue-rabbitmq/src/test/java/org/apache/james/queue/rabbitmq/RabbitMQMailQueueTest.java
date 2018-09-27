@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -58,6 +59,7 @@ import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewModu
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewTestFactory;
 import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -78,7 +80,7 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     private static final Instant IN_SLICE_2 = IN_SLICE_1.plus(1, HOURS);
     private static final Instant IN_SLICE_3 = IN_SLICE_1.plus(2, HOURS);
     private static final Instant IN_SLICE_5 = IN_SLICE_1.plus(4, HOURS);
-    private static final Instant IN_SLICE_6 = IN_SLICE_1.plus(6, HOURS);
+    private static final Instant IN_SLICE_7 = IN_SLICE_1.plus(6, HOURS);
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraModule.aggregateModules(
@@ -139,18 +141,18 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         int emailCount = 5;
 
         clock.setInstant(IN_SLICE_1);
-        enqueueMailsInSlice(1, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(1), emailCount);
 
         clock.setInstant(IN_SLICE_2);
-        enqueueMailsInSlice(2, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(2), emailCount);
 
         clock.setInstant(IN_SLICE_3);
-        enqueueMailsInSlice(3, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(3), emailCount);
 
         clock.setInstant(IN_SLICE_5);
-        enqueueMailsInSlice(5, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(5), emailCount);
 
-        clock.setInstant(IN_SLICE_6);
+        clock.setInstant(IN_SLICE_7);
         Stream<String> names = Iterators.toStream(mailQueue.browse())
             .map(ManageableMailQueue.MailQueueItemView::getMail)
             .map(Mail::getName);
@@ -168,18 +170,18 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         int emailCount = 5;
 
         clock.setInstant(IN_SLICE_1);
-        enqueueMailsInSlice(1, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(1), emailCount);
 
         clock.setInstant(IN_SLICE_2);
-        enqueueMailsInSlice(2, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(2), emailCount);
 
         clock.setInstant(IN_SLICE_3);
-        enqueueMailsInSlice(3, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(3), emailCount);
 
         clock.setInstant(IN_SLICE_5);
-        enqueueMailsInSlice(5, emailCount);
+        enqueueMailsInSlice(namePatternForSlice(5), emailCount);
 
-        clock.setInstant(IN_SLICE_6);
+        clock.setInstant(IN_SLICE_7);
         dequeueMails(5);
         dequeueMails(5);
         dequeueMails(3);
@@ -190,6 +192,11 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
 
         assertThat(names)
             .containsExactly("3-4", "3-5", "5-1", "5-2", "5-3", "5-4", "5-5");
+    }
+
+    @NotNull
+    private Function<Integer, String> namePatternForSlice(int sliceId) {
+        return i -> sliceId + "-" + i;
     }
 
     @Test
@@ -205,13 +212,13 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     @Override
     public void constructorShouldRegisterGetQueueSizeGauge(MailQueueMetricExtension.MailQueueMetricTestSystem testSystem) {
     }
-    
-    private void enqueueMailsInSlice(int slice, int emailCount) {
+
+    private void enqueueMailsInSlice(Function<Integer, String> namePattern, int emailCount) {
         ManageableMailQueue mailQueue = getManageableMailQueue();
 
         IntStream.rangeClosed(1, emailCount)
-            .forEach(Throwing.intConsumer(bucketId -> mailQueue.enQueue(defaultMail()
-                .name(slice + "-" + bucketId)
+            .forEach(Throwing.intConsumer(i -> mailQueue.enQueue(defaultMail()
+                .name(namePattern.apply(i))
                 .build())));
     }
 
