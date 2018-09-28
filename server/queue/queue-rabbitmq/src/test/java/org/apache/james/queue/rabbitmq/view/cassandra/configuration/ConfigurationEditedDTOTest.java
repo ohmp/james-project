@@ -20,8 +20,7 @@
 package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
 import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfigurationModule.TYPE_NAME;
-import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.ConfigurationAggregate.CONFIGURATION_AGGREGATE_ID;
-import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.ConfigurationAggregate.CONFIGURATION_AGGREGATE_KEY;
+import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.EventsourcingConfigurationManagement.CONFIGURATION_AGGREGATE_KEY;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
@@ -55,7 +54,7 @@ class ConfigurationEditedDTOTest {
     @Test
     void fromShouldReturnCorrespondingDTO() {
         ConfigurationEdited configurationEdited = new ConfigurationEdited(
-            CONFIGURATION_AGGREGATE_ID,
+            EventsourcingConfigurationManagement.CONFIGURATION_AGGREGATE_ID,
             EVENT_ID,
             CassandraMailQueueViewConfiguration.builder()
                 .bucketCount(BUCKET_COUNT)

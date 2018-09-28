@@ -50,18 +50,18 @@ class ConfigurationAggregate {
 
     }
 
-    static ConfigurationAggregate load(History history) {
-        return new ConfigurationAggregate(history);
+    static ConfigurationAggregate load(AggregateId aggregateId, History history) {
+        return new ConfigurationAggregate(aggregateId, history);
     }
 
-    static final String CONFIGURATION_AGGREGATE_KEY = "CassandraMailQueueViewConfiguration";
-    static final AggregateId CONFIGURATION_AGGREGATE_ID = () -> CONFIGURATION_AGGREGATE_KEY;
     private static final List<? extends Event> EMPTY_EVENTS = ImmutableList.of();
 
+    private final AggregateId aggregateId;
     private final History history;
     private State state;
 
-    ConfigurationAggregate(History history) {
+    ConfigurationAggregate(AggregateId aggregateId, History history) {
+        this.aggregateId = aggregateId;
         this.history = history;
         this.state = State.initial();
 
@@ -69,15 +69,15 @@ class ConfigurationAggregate {
     }
 
     List<? extends Event> applyConfiguration(CassandraMailQueueViewConfiguration configuration) {
-        state.maybeConfiguration.ifPresent(oldConfiguration -> oldConfiguration.assertValidSuccessor(configuration));
-
-        Boolean isSame = state.maybeConfiguration.map(configuration::equals).orElse(false);
+        boolean isSame = state.maybeConfiguration.map(configuration::equals).orElse(false);
         if (isSame) {
             return EMPTY_EVENTS;
         }
 
+        state.maybeConfiguration.ifPresent(oldConfiguration -> oldConfiguration.assertValidSuccessor(configuration));
+
         return ImmutableList.of(new ConfigurationEdited(
-            CONFIGURATION_AGGREGATE_ID,
+            aggregateId,
             history.getNextEventId(),
             configuration));
     }

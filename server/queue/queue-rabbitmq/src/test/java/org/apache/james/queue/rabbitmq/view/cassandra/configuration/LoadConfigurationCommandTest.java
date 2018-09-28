@@ -21,6 +21,8 @@ package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -35,7 +37,19 @@ class LoadConfigurationCommandTest {
 
     @Test
     void constructorShouldThrowWhenNullConfiguration() {
-        assertThatThrownBy(() -> new LoadConfigurationCommand(null))
+        assertThatThrownBy(() -> new LoadConfigurationCommand(null, () -> "agg"))
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void constructorShouldThrowWhenNullAggregateId() {
+        CassandraMailQueueViewConfiguration configuration = CassandraMailQueueViewConfiguration.builder()
+            .bucketCount(2)
+            .updateBrowseStartPace(1000)
+            .sliceWindow(Duration.ofHours(1))
+            .build();
+
+        assertThatThrownBy(() -> new LoadConfigurationCommand(configuration, null))
             .isInstanceOf(NullPointerException.class);
     }
 }

@@ -19,8 +19,6 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
-import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.ConfigurationAggregate.CONFIGURATION_AGGREGATE_ID;
-
 import java.util.List;
 
 import org.apache.james.eventsourcing.CommandHandler;
@@ -43,7 +41,7 @@ class LoadConfigurationCommandHandler implements CommandHandler<LoadConfiguratio
     @Override
     public List<? extends Event> handle(LoadConfigurationCommand command) {
         return ConfigurationAggregate
-            .load(eventStore.getEventsOfAggregate(CONFIGURATION_AGGREGATE_ID))
+            .load(command.getAggregateId(), eventStore.getEventsOfAggregate(command.getAggregateId()))
             .applyConfiguration(command.getConfiguration());
     }
 }

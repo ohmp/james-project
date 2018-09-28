@@ -21,6 +21,7 @@ package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
 import java.util.Objects;
 
+import org.apache.james.eventsourcing.AggregateId;
 import org.apache.james.eventsourcing.Command;
 
 import com.google.common.base.Preconditions;
@@ -28,10 +29,12 @@ import com.google.common.base.Preconditions;
 class LoadConfigurationCommand implements Command {
 
     private final CassandraMailQueueViewConfiguration configuration;
+    private final AggregateId aggregateId;
 
-    LoadConfigurationCommand(CassandraMailQueueViewConfiguration configuration) {
+    LoadConfigurationCommand(CassandraMailQueueViewConfiguration configuration, AggregateId aggregateId) {
         Preconditions.checkNotNull(configuration);
-
+        Preconditions.checkNotNull(aggregateId);
+        this.aggregateId = aggregateId;
         this.configuration = configuration;
     }
 
@@ -44,13 +47,18 @@ class LoadConfigurationCommand implements Command {
         if (o instanceof LoadConfigurationCommand) {
             LoadConfigurationCommand that = (LoadConfigurationCommand) o;
 
-            return Objects.equals(this.configuration, that.configuration);
+            return Objects.equals(this.configuration, that.configuration)
+                && Objects.equals(this.aggregateId, that.aggregateId);
         }
         return false;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(configuration);
+        return Objects.hash(configuration, aggregateId);
+    }
+
+    public AggregateId getAggregateId() {
+        return aggregateId;
     }
 }

@@ -19,12 +19,11 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
-import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.ConfigurationAggregate.CONFIGURATION_AGGREGATE_ID;
-
 import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.apache.james.eventsourcing.AggregateId;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.eventsourcing.eventstore.EventStore;
@@ -34,6 +33,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 public class EventsourcingConfigurationManagement {
+    static final String CONFIGURATION_AGGREGATE_KEY = "CassandraMailQueueViewConfiguration";
+    static final AggregateId CONFIGURATION_AGGREGATE_ID = () -> CONFIGURATION_AGGREGATE_KEY;
 
     private static final ImmutableSet<Subscriber> NO_SUBSCRIBER = ImmutableSet.of();
 
@@ -52,13 +53,13 @@ public class EventsourcingConfigurationManagement {
     @VisibleForTesting
     Optional<CassandraMailQueueViewConfiguration> load() {
         return ConfigurationAggregate
-            .load(eventStore.getEventsOfAggregate(CONFIGURATION_AGGREGATE_ID))
+            .load(CONFIGURATION_AGGREGATE_ID, eventStore.getEventsOfAggregate(CONFIGURATION_AGGREGATE_ID))
             .getCurrentConfiguration();
     }
 
     public void loadConfiguration(CassandraMailQueueViewConfiguration newConfiguration) {
         Preconditions.checkNotNull(newConfiguration);
 
-        eventSourcingSystem.dispatch(new LoadConfigurationCommand(newConfiguration));
+        eventSourcingSystem.dispatch(new LoadConfigurationCommand(newConfiguration, CONFIGURATION_AGGREGATE_ID));
     }
 }

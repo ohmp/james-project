@@ -21,7 +21,7 @@ package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfigurationModule.TYPE_NAME;
-import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.ConfigurationAggregate.CONFIGURATION_AGGREGATE_KEY;
+import static org.apache.james.queue.rabbitmq.view.cassandra.configuration.EventsourcingConfigurationManagement.CONFIGURATION_AGGREGATE_KEY;
 import static org.apache.james.util.ClassLoaderUtils.getSystemResourceAsString;
 import static org.assertj.core.api.Assertions.assertThat;
 
