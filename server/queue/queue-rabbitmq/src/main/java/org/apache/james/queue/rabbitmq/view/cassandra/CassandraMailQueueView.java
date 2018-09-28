@@ -53,7 +53,7 @@ public class CassandraMailQueueView implements MailQueueView {
             this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
             this.cassandraMailQueueMailDelete = cassandraMailQueueMailDelete;
 
-            eventsourcingConfigurationManagement.loadConfiguration(configuration);
+            eventsourcingConfigurationManagement.registerConfiguration(configuration);
         }
 
         public MailQueueView create(MailQueueName mailQueueName) {
