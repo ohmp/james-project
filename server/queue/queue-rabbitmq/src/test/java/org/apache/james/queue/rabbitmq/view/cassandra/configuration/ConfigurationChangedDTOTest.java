@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-class ConfigurationEditedDTOTest {
+class ConfigurationChangedDTOTest {
 
     private static final int EVENT_ID_SERIALIZED = 10;
     private static final EventId EVENT_ID = EventId.fromSerialized(EVENT_ID_SERIALIZED);
@@ -41,19 +41,19 @@ class ConfigurationEditedDTOTest {
 
     @Test
     void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(ConfigurationEditedDTO.class)
+        EqualsVerifier.forClass(ConfigurationChangedDTO.class)
             .verify();
     }
 
     @Test
     void fromShouldThrowWhenConfigurationAddedIsNull() {
-        assertThatThrownBy(() -> ConfigurationEditedDTO.from(null))
+        assertThatThrownBy(() -> ConfigurationChangedDTO.from(null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void fromShouldReturnCorrespondingDTO() {
-        ConfigurationEdited configurationEdited = new ConfigurationEdited(
+        ConfigurationChanged configurationChanged = new ConfigurationChanged(
             EventsourcingConfigurationManagement.CONFIGURATION_AGGREGATE_ID,
             EVENT_ID,
             CassandraMailQueueViewConfiguration.builder()
@@ -63,7 +63,7 @@ class ConfigurationEditedDTOTest {
                 .build());
 
 
-        ConfigurationEditedDTO dto = ConfigurationEditedDTO.from(configurationEdited);
+        ConfigurationChangedDTO dto = ConfigurationChangedDTO.from(configurationChanged);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(dto.getEventId()).isEqualTo(EVENT_ID_SERIALIZED);
             softly.assertThat(dto.getType()).isEqualTo(TYPE_NAME);
@@ -75,14 +75,14 @@ class ConfigurationEditedDTOTest {
 
     @Test
     void toEventShouldReturnCorrespondingConfigurationEditedEvent() {
-        ConfigurationEditedDTO dto = new ConfigurationEditedDTO(
+        ConfigurationChangedDTO dto = new ConfigurationChangedDTO(
             EVENT_ID_SERIALIZED,
             CONFIGURATION_AGGREGATE_KEY,
             TYPE_NAME,
             BUCKET_COUNT,
             UPDATE_PACE,
             ONE_HOUR);
-        ConfigurationEdited event = (ConfigurationEdited) dto.toEvent();
+        ConfigurationChanged event = (ConfigurationChanged) dto.toEvent();
         CassandraMailQueueViewConfiguration mailQueueViewConfiguration = event.getConfiguration();
 
         SoftAssertions.assertSoftly(softly -> {

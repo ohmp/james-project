@@ -42,7 +42,7 @@ class DTOTest {
     private static final int UPDATE_PACE = 1000;
     private static final Duration SLICE_WINDOW = Duration.ofHours(1);
 
-    private final ConfigurationEditedDTO CONFIGURATION_EDITED_DTO = new ConfigurationEditedDTO(
+    private final ConfigurationChangedDTO CONFIGURATION_EDITED_DTO = new ConfigurationChangedDTO(
         EVENT_ID, CONFIGURATION_AGGREGATE_KEY, TYPE_NAME, BUCKET_COUNT, UPDATE_PACE, SLICE_WINDOW);
 
     private static final String CONFIGURATION_EDITED_DTO_JSON = getSystemResourceAsString(
@@ -68,7 +68,7 @@ class DTOTest {
     @Test
     void shouldDeserializeConfigurationEditedDTO() throws Exception {
         assertThat(
-            objectMapper.readValue(CONFIGURATION_EDITED_DTO_JSON, ConfigurationEditedDTO.class))
+            objectMapper.readValue(CONFIGURATION_EDITED_DTO_JSON, ConfigurationChangedDTO.class))
             .isEqualTo(CONFIGURATION_EDITED_DTO);
     }
 }

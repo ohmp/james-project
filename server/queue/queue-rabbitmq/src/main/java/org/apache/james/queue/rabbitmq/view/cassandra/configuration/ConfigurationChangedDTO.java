@@ -31,23 +31,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
-class ConfigurationEditedDTO implements EventDTO {
+class ConfigurationChangedDTO implements EventDTO {
 
-    static ConfigurationEditedDTO from(ConfigurationEdited configurationEdited, String type) {
-        Preconditions.checkNotNull(configurationEdited);
+    static ConfigurationChangedDTO from(ConfigurationChanged configurationChanged, String type) {
+        Preconditions.checkNotNull(configurationChanged);
 
-        CassandraMailQueueViewConfiguration configuration = configurationEdited.getConfiguration();
-        return new ConfigurationEditedDTO(
-            configurationEdited.eventId().serialize(),
-            configurationEdited.getAggregateId().asAggregateKey(),
+        CassandraMailQueueViewConfiguration configuration = configurationChanged.getConfiguration();
+        return new ConfigurationChangedDTO(
+            configurationChanged.eventId().serialize(),
+            configurationChanged.getAggregateId().asAggregateKey(),
             type,
             configuration.getBucketCount(),
             configuration.getUpdateBrowseStartPace(),
             configuration.getSliceWindow());
     }
 
-    static ConfigurationEditedDTO from(ConfigurationEdited configurationEdited) {
-        return from(configurationEdited, CassandraMailQueueViewConfigurationModule.TYPE_NAME);
+    static ConfigurationChangedDTO from(ConfigurationChanged configurationChanged) {
+        return from(configurationChanged, CassandraMailQueueViewConfigurationModule.TYPE_NAME);
     }
 
     private final int eventId;
@@ -58,7 +58,7 @@ class ConfigurationEditedDTO implements EventDTO {
     private final Duration sliceWindow;
 
     @JsonCreator
-    ConfigurationEditedDTO(
+    ConfigurationChangedDTO(
         @JsonProperty("eventId") int eventId,
         @JsonProperty("aggregateKey") String aggregateKey,
         @JsonProperty("type") String type,
@@ -77,7 +77,7 @@ class ConfigurationEditedDTO implements EventDTO {
     @JsonIgnore
     @Override
     public Event toEvent() {
-        return new ConfigurationEdited(
+        return new ConfigurationChanged(
             () -> aggregateKey,
             EventId.fromSerialized(eventId),
             CassandraMailQueueViewConfiguration.builder()
@@ -113,8 +113,8 @@ class ConfigurationEditedDTO implements EventDTO {
 
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof ConfigurationEditedDTO) {
-            ConfigurationEditedDTO that = (ConfigurationEditedDTO) o;
+        if (o instanceof ConfigurationChangedDTO) {
+            ConfigurationChangedDTO that = (ConfigurationChangedDTO) o;
 
             return Objects.equals(this.eventId, that.eventId)
                 && Objects.equals(this.aggregateKey, that.aggregateKey)
