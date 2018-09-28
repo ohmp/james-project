@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,12 +36,11 @@ import java.util.stream.Stream;
 
 import javax.mail.internet.MimeMessage;
 
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.backend.rabbitmq.DockerRabbitMQ;
 import org.apache.james.backend.rabbitmq.RabbitChannelPool;
 import org.apache.james.backend.rabbitmq.RabbitMQConfiguration;
 import org.apache.james.backend.rabbitmq.RabbitMQConnectionFactory;
-import org.apache.james.backend.rabbitmq.ReusableDockerRabbitMQExtension;
+import org.apache.james.backend.rabbitmq.RabbitMQExtension;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
@@ -71,7 +69,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.fge.lambdas.Throwing;
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
-@ExtendWith(ReusableDockerRabbitMQExtension.class)
+@ExtendWith(RabbitMQExtension.class)
 class RabbitMQMailQueueConfigurationChangeTest {
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
     private static final int THREE_BUCKET_COUNT = 3;
@@ -103,19 +101,9 @@ class RabbitMQMailQueueConfigurationChangeTest {
 
         CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf(), CassandraConfiguration.DEFAULT_CONFIGURATION, BLOB_ID_FACTORY);
         mimeMessageStore = MimeMessageStore.factory(blobsDAO).mimeMessageStore();
-        URI amqpUri = new URIBuilder()
-            .setScheme("amqp")
-            .setHost(rabbitMQ.getHostIp())
-            .setPort(rabbitMQ.getPort())
-            .build();
-        URI rabbitManagementUri = new URIBuilder()
-            .setScheme("http")
-            .setHost(rabbitMQ.getHostIp())
-            .setPort(rabbitMQ.getAdminPort())
-            .build();
         RabbitMQConfiguration rabbitMQConfiguration = RabbitMQConfiguration.builder()
-            .amqpUri(amqpUri)
-            .managementUri(rabbitManagementUri)
+            .amqpUri(rabbitMQ.amqpUri())
+            .managementUri(rabbitMQ.managementUri())
             .build();
         clock = mock(Clock.class);
         when(clock.instant()).thenReturn(IN_SLICE_1);
@@ -125,7 +113,7 @@ class RabbitMQMailQueueConfigurationChangeTest {
             new AsyncRetryExecutor(Executors.newSingleThreadScheduledExecutor()));
 
         rabbitClient = new RabbitClient(new RabbitChannelPool(rabbitMQConnectionFactory));
-        mqManagementApi = new RabbitMQManagementApi(rabbitManagementUri, new RabbitMQManagementCredentials("guest", "guest".toCharArray()));
+        mqManagementApi = new RabbitMQManagementApi(rabbitMQ.managementUri(), new RabbitMQManagementCredentials("guest", "guest".toCharArray()));
     }
 
     private RabbitMQMailQueue getRabbitMQMailQueue(CassandraCluster cassandra, CassandraMailQueueViewConfiguration mailQueueViewConfiguration) throws Exception {

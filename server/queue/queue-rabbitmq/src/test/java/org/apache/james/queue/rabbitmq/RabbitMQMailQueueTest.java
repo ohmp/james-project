@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -149,16 +150,16 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         int emailCount = 5;
 
         when(clock.instant()).thenReturn(IN_SLICE_1);
-        enqueueMailsInSlice(1, emailCount);
+        enqueueSomeMails(namePatternForSlice(1), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_2);
-        enqueueMailsInSlice(2, emailCount);
+        enqueueSomeMails(namePatternForSlice(2), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_3);
-        enqueueMailsInSlice(3, emailCount);
+        enqueueSomeMails(namePatternForSlice(3), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_5);
-        enqueueMailsInSlice(5, emailCount);
+        enqueueSomeMails(namePatternForSlice(5), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_6);
         Stream<String> names = Iterators.toStream(mailQueue.browse())
@@ -178,16 +179,16 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         int emailCount = 5;
 
         when(clock.instant()).thenReturn(IN_SLICE_1);
-        enqueueMailsInSlice(1, emailCount);
+        enqueueSomeMails(namePatternForSlice(1), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_2);
-        enqueueMailsInSlice(2, emailCount);
+        enqueueSomeMails(namePatternForSlice(2), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_3);
-        enqueueMailsInSlice(3, emailCount);
+        enqueueSomeMails(namePatternForSlice(3), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_5);
-        enqueueMailsInSlice(5, emailCount);
+        enqueueSomeMails(namePatternForSlice(5), emailCount);
 
         when(clock.instant()).thenReturn(IN_SLICE_6);
 
@@ -216,13 +217,17 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     @Override
     public void constructorShouldRegisterGetQueueSizeGauge(MailQueueMetricExtension.MailQueueMetricTestSystem testSystem) {
     }
+
+    private Function<Integer, String> namePatternForSlice(int sliceId) {
+        return i -> sliceId + "-" + i;
+    }
     
-    private void enqueueMailsInSlice(int slice, int emailCount) {
+    private void enqueueSomeMails(Function<Integer, String> namePattern, int emailCount) {
         ManageableMailQueue mailQueue = getManageableMailQueue();
 
         IntStream.rangeClosed(1, emailCount)
-            .forEach(Throwing.intConsumer(bucketId -> mailQueue.enQueue(defaultMail()
-                .name(slice + "-" + bucketId)
+            .forEach(Throwing.intConsumer(i -> mailQueue.enQueue(defaultMail()
+                .name(namePattern.apply(i))
                 .build())));
     }
 
