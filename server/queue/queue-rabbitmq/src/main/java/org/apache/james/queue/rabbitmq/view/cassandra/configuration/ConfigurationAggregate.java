@@ -74,7 +74,7 @@ class ConfigurationAggregate {
             return EMPTY_EVENTS;
         }
 
-        state.maybeConfiguration.ifPresent(oldConfiguration -> oldConfiguration.assertValidSuccessor(configuration));
+        state.maybeConfiguration.ifPresent(oldConfiguration -> oldConfiguration.validateConfigurationChange(configuration));
 
         return ImmutableList.of(new ConfigurationChanged(
             aggregateId,
