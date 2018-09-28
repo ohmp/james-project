@@ -35,26 +35,26 @@ class CassandraMailQueueViewConfigurationTest {
     }
 
     @Test
-    void assertValidSuccessorShouldAcceptIdentity() {
+    void validateConfigurationChangeShouldAcceptIdentity() {
         CassandraMailQueueViewConfiguration configuration = CassandraMailQueueViewConfiguration.builder()
             .bucketCount(2)
             .updateBrowseStartPace(1000)
             .sliceWindow(Duration.ofHours(1))
             .build();
 
-        assertThatCode(() -> configuration.assertValidSuccessor(configuration))
+        assertThatCode(() -> configuration.validateConfigurationChange(configuration))
             .doesNotThrowAnyException();
     }
 
     @Test
-    void assertValidSuccessorShouldAcceptBucketCountIncrease() {
+    void validateConfigurationChangeShouldAcceptBucketCountIncrease() {
         CassandraMailQueueViewConfiguration configuration = CassandraMailQueueViewConfiguration.builder()
             .bucketCount(2)
             .updateBrowseStartPace(1000)
             .sliceWindow(Duration.ofHours(1))
             .build();
 
-        assertThatCode(() -> configuration.assertValidSuccessor(
+        assertThatCode(() -> configuration.validateConfigurationChange(
             CassandraMailQueueViewConfiguration.builder()
                 .bucketCount(3)
                 .updateBrowseStartPace(1000)
@@ -64,14 +64,14 @@ class CassandraMailQueueViewConfigurationTest {
     }
 
     @Test
-    void assertValidSuccessorShouldAcceptDividingSliceWindow() {
+    void validateConfigurationChangeShouldAcceptDividingSliceWindow() {
         CassandraMailQueueViewConfiguration configuration = CassandraMailQueueViewConfiguration.builder()
             .bucketCount(2)
             .updateBrowseStartPace(1000)
             .sliceWindow(Duration.ofHours(1))
             .build();
 
-        assertThatCode(() -> configuration.assertValidSuccessor(
+        assertThatCode(() -> configuration.validateConfigurationChange(
             CassandraMailQueueViewConfiguration.builder()
                 .bucketCount(2)
                 .updateBrowseStartPace(1000)
@@ -81,14 +81,14 @@ class CassandraMailQueueViewConfigurationTest {
     }
 
     @Test
-    void assertValidSuccessorShouldRejectArbitraryDecreaseSliceWindow() {
+    void validateConfigurationChangeShouldRejectArbitraryDecreaseSliceWindow() {
         CassandraMailQueueViewConfiguration configuration = CassandraMailQueueViewConfiguration.builder()
             .bucketCount(2)
             .updateBrowseStartPace(1000)
             .sliceWindow(Duration.ofHours(1))
             .build();
 
-        assertThatThrownBy(() -> configuration.assertValidSuccessor(
+        assertThatThrownBy(() -> configuration.validateConfigurationChange(
             CassandraMailQueueViewConfiguration.builder()
                 .bucketCount(2)
                 .updateBrowseStartPace(1000)
@@ -98,14 +98,14 @@ class CassandraMailQueueViewConfigurationTest {
     }
 
     @Test
-    void assertValidSuccessorShouldRejectDecreaseBucketCount() {
+    void validateConfigurationChangeShouldRejectDecreaseBucketCount() {
         CassandraMailQueueViewConfiguration configuration = CassandraMailQueueViewConfiguration.builder()
             .bucketCount(2)
             .updateBrowseStartPace(1000)
             .sliceWindow(Duration.ofHours(1))
             .build();
 
-        assertThatThrownBy(() -> configuration.assertValidSuccessor(
+        assertThatThrownBy(() -> configuration.validateConfigurationChange(
             CassandraMailQueueViewConfiguration.builder()
                 .bucketCount(1)
                 .updateBrowseStartPace(1000)

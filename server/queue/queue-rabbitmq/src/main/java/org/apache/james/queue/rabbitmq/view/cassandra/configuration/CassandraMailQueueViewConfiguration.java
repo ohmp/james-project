@@ -91,22 +91,22 @@ public class CassandraMailQueueViewConfiguration {
         return sliceWindow;
     }
 
-    void assertValidSuccessor(CassandraMailQueueViewConfiguration configurationUpdate) {
-        assertValidSuccessorForBuckets(configurationUpdate);
-        assertValidSuccessorForSlice(configurationUpdate);
+    void validateConfigurationChange(CassandraMailQueueViewConfiguration configurationUpdate) {
+        validateConfigurationChangeForSlice(configurationUpdate);
+        validateConfigurationChangeForBuckets(configurationUpdate);
     }
 
-    private void assertValidSuccessorForSlice(CassandraMailQueueViewConfiguration configurationUpdate) {
+    private void validateConfigurationChangeForSlice(CassandraMailQueueViewConfiguration configurationUpdate) {
         long updateSliceWindowInSecond = configurationUpdate.getSliceWindow().getSeconds();
         long currentSliceWindowInSecond = getSliceWindow().getSeconds();
         Preconditions.checkArgument(
-            updateSliceWindowInSecond <= currentSliceWindowInSecond
+            configurationUpdate.getSliceWindow().compareTo(getSliceWindow()) <= 0
                 && currentSliceWindowInSecond % updateSliceWindowInSecond == 0,
             "update 'sliceWindow'(" + configurationUpdate.getSliceWindow() + ") have to be less than and divide the previous sliceWindow: "
                 + getSliceWindow());
     }
 
-    private void assertValidSuccessorForBuckets(CassandraMailQueueViewConfiguration configurationUpdate) {
+    private void validateConfigurationChangeForBuckets(CassandraMailQueueViewConfiguration configurationUpdate) {
         Preconditions.checkArgument(configurationUpdate.getBucketCount() >= getBucketCount(),
             "can not set 'bucketCount'(" + configurationUpdate.getBucketCount() + ") to be less than the current one: " + getBucketCount());
     }
