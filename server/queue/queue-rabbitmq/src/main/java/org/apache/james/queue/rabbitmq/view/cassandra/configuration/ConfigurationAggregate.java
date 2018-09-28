@@ -68,7 +68,7 @@ class ConfigurationAggregate {
         history.getEvents().forEach(this::apply);
     }
 
-    List<? extends Event> applyConfiguration(CassandraMailQueueViewConfiguration configuration) {
+    List<? extends Event> registerConfiguration(CassandraMailQueueViewConfiguration configuration) {
         boolean isSame = state.maybeConfiguration.map(configuration::equals).orElse(false);
         if (isSame) {
             return EMPTY_EVENTS;
@@ -76,7 +76,7 @@ class ConfigurationAggregate {
 
         state.maybeConfiguration.ifPresent(oldConfiguration -> oldConfiguration.assertValidSuccessor(configuration));
 
-        return ImmutableList.of(new ConfigurationEdited(
+        return ImmutableList.of(new ConfigurationChanged(
             aggregateId,
             history.getNextEventId(),
             configuration));
@@ -87,10 +87,10 @@ class ConfigurationAggregate {
     }
 
     private void apply(Event event) {
-        if (event instanceof ConfigurationEdited) {
-            ConfigurationEdited configurationEdited = (ConfigurationEdited) event;
+        if (event instanceof ConfigurationChanged) {
+            ConfigurationChanged configurationChanged = (ConfigurationChanged) event;
 
-            state = state.set(configurationEdited.getConfiguration());
+            state = state.set(configurationChanged.getConfiguration());
         }
     }
 }

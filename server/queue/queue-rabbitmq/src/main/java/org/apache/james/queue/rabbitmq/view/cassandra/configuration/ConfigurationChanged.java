@@ -25,15 +25,15 @@ import org.apache.james.eventsourcing.EventId;
 
 import com.google.common.base.Preconditions;
 
-class ConfigurationEdited implements Event {
+class ConfigurationChanged implements Event {
 
     private final EventId eventId;
     private final AggregateId aggregateId;
     private final CassandraMailQueueViewConfiguration configuration;
 
-    ConfigurationEdited(AggregateId aggregateId,
-                        EventId eventId,
-                        CassandraMailQueueViewConfiguration configuration) {
+    ConfigurationChanged(AggregateId aggregateId,
+                         EventId eventId,
+                         CassandraMailQueueViewConfiguration configuration) {
         Preconditions.checkNotNull(aggregateId);
         Preconditions.checkNotNull(eventId);
         Preconditions.checkNotNull(configuration);

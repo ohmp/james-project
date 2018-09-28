@@ -44,7 +44,7 @@ public class EventsourcingConfigurationManagement {
     @Inject
     public EventsourcingConfigurationManagement(EventStore eventStore) {
         this.eventSourcingSystem = new EventSourcingSystem(
-            ImmutableSet.of(new LoadConfigurationCommandHandler(eventStore)),
+            ImmutableSet.of(new RegisterConfigurationCommandHandler(eventStore)),
             NO_SUBSCRIBER,
             eventStore);
         this.eventStore = eventStore;
@@ -57,9 +57,9 @@ public class EventsourcingConfigurationManagement {
             .getCurrentConfiguration();
     }
 
-    public void loadConfiguration(CassandraMailQueueViewConfiguration newConfiguration) {
+    public void registerConfiguration(CassandraMailQueueViewConfiguration newConfiguration) {
         Preconditions.checkNotNull(newConfiguration);
 
-        eventSourcingSystem.dispatch(new LoadConfigurationCommand(newConfiguration, CONFIGURATION_AGGREGATE_ID));
+        eventSourcingSystem.dispatch(new RegisterConfigurationCommand(newConfiguration, CONFIGURATION_AGGREGATE_ID));
     }
 }

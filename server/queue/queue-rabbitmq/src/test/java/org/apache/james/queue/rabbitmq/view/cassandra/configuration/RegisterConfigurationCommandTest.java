@@ -27,17 +27,17 @@ import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-class LoadConfigurationCommandTest {
+class RegisterConfigurationCommandTest {
 
     @Test
     void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(LoadConfigurationCommand.class)
+        EqualsVerifier.forClass(RegisterConfigurationCommand.class)
             .verify();
     }
 
     @Test
     void constructorShouldThrowWhenNullConfiguration() {
-        assertThatThrownBy(() -> new LoadConfigurationCommand(null, () -> "agg"))
+        assertThatThrownBy(() -> new RegisterConfigurationCommand(null, () -> "agg"))
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -49,7 +49,7 @@ class LoadConfigurationCommandTest {
             .sliceWindow(Duration.ofHours(1))
             .build();
 
-        assertThatThrownBy(() -> new LoadConfigurationCommand(configuration, null))
+        assertThatThrownBy(() -> new RegisterConfigurationCommand(configuration, null))
             .isInstanceOf(NullPointerException.class);
     }
 }

@@ -19,46 +19,29 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
-import java.util.Objects;
+import java.util.List;
 
-import org.apache.james.eventsourcing.AggregateId;
-import org.apache.james.eventsourcing.Command;
+import org.apache.james.eventsourcing.CommandHandler;
+import org.apache.james.eventsourcing.Event;
+import org.apache.james.eventsourcing.eventstore.EventStore;
 
-import com.google.common.base.Preconditions;
+class RegisterConfigurationCommandHandler implements CommandHandler<RegisterConfigurationCommand> {
 
-class LoadConfigurationCommand implements Command {
+    private final EventStore eventStore;
 
-    private final CassandraMailQueueViewConfiguration configuration;
-    private final AggregateId aggregateId;
-
-    LoadConfigurationCommand(CassandraMailQueueViewConfiguration configuration, AggregateId aggregateId) {
-        Preconditions.checkNotNull(configuration);
-        Preconditions.checkNotNull(aggregateId);
-        this.aggregateId = aggregateId;
-        this.configuration = configuration;
-    }
-
-    CassandraMailQueueViewConfiguration getConfiguration() {
-        return configuration;
+    RegisterConfigurationCommandHandler(EventStore eventStore) {
+        this.eventStore = eventStore;
     }
 
     @Override
-    public final boolean equals(Object o) {
-        if (o instanceof LoadConfigurationCommand) {
-            LoadConfigurationCommand that = (LoadConfigurationCommand) o;
-
-            return Objects.equals(this.configuration, that.configuration)
-                && Objects.equals(this.aggregateId, that.aggregateId);
-        }
-        return false;
+    public Class<RegisterConfigurationCommand> handledClass() {
+        return RegisterConfigurationCommand.class;
     }
 
     @Override
-    public final int hashCode() {
-        return Objects.hash(configuration, aggregateId);
-    }
-
-    public AggregateId getAggregateId() {
-        return aggregateId;
+    public List<? extends Event> handle(RegisterConfigurationCommand command) {
+        return ConfigurationAggregate
+            .load(command.getAggregateId(), eventStore.getEventsOfAggregate(command.getAggregateId()))
+            .registerConfiguration(command.getConfiguration());
     }
 }
