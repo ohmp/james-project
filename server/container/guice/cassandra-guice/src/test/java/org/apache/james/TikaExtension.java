@@ -17,29 +17,33 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.util;
+package org.apache.james;
 
-import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import org.apache.james.mailbox.tika.TikaContainer;
+import org.apache.james.modules.TestTikaModule;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class Runnables {
-    public static void runParallel(Runnable... runnables) {
-        Stream<Runnable> stream = Arrays.stream(runnables);
-        runParrallelStream(stream);
+import com.google.inject.Module;
+
+class TikaExtension implements GuiceModuleTestExtension {
+    private final TikaContainer tika;
+
+    TikaExtension() {
+        this.tika = new TikaContainer();
     }
 
-    public static void runParrallelStream(Stream<Runnable> stream) {
-        FluentFutureStream.of(stream
-                .map(runnable -> CompletableFuture.supplyAsync(toVoidSupplier(runnable))))
-            .join();
+    @Override
+    public void beforeAll(ExtensionContext extensionContext) {
+        tika.start();
     }
 
-    private static Supplier<Void> toVoidSupplier(Runnable runnable) {
-        return () -> {
-            runnable.run();
-            return null;
-        };
+    @Override
+    public void afterAll(ExtensionContext extensionContext) {
+        tika.stop();
+    }
+
+    @Override
+    public Module getModule() {
+        return new TestTikaModule(tika);
     }
 }
