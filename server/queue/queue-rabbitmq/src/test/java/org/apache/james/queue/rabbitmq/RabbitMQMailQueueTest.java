@@ -258,11 +258,11 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
         }
 
         @Override
-        public synchronized Instant instant() {
+        public Instant instant() {
             return currentInstant;
         }
 
-        void tick() {
+        synchronized void tick() {
             currentInstant = currentInstant.plusMillis(1);
         }
     }
