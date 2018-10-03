@@ -20,33 +20,34 @@
 package org.apache.james.webadmin.integration;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtension;
 import org.apache.james.jwt.JwtConfiguration;
+import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.WebAdminGuiceProbe;
+import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.JwtFilter;
 import org.apache.james.webadmin.routes.DomainsRoutes;
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.restassured.RestAssured;
 
-public class JwtFilterIntegrationTest {
-
+class JwtFilterIntegrationTest {
     private static final String DOMAIN = "domain";
     private static final String SPECIFIC_DOMAIN = DomainsRoutes.DOMAINS + SEPARATOR + DOMAIN;
     private static final String VALID_TOKEN_ADMIN_TRUE = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkBvcGVuL" +
@@ -59,40 +60,33 @@ public class JwtFilterIntegrationTest {
         "-yDYktd4WT8MYhqY7MgS-wR0vO9jZFv8ZCgd_MkKCvCO0HmMjP5iQPZ0kqGkgWUH7X123tfR38MfbCVAdPDba-K3MfkogV1xvDhlkPScFr_6MxE" +
         "xtedOK2JnQZn7t9sUzSrcyjWverm7gZkPptkIVoS8TsEeMMME5vFXe_nqkEG69q3kuBUm_33tbR5oNS0ZGZKlG9r41lHBjyf9J1xN4UYV8n866d" +
         "a7RPPCzshIWUtO0q9T2umWTnp-6OnOdBCkndrZmRR6pPxsD5YL0_77Wq8KT_5__fGA";
+    private static final JwtConfiguration JWT_CONFIGURATION = new JwtConfiguration(
+        Optional.of(ClassLoaderUtils.getSystemResourceAsString("jwt_publickey")));
 
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-    
-    @Rule
-    public CassandraJmapTestRule cassandraJmapTestRule = CassandraJmapTestRule.defaultTestRule();
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+            .overrideWith(TestJMAPServerModule.DEFAULT)
+            .overrideWith(binder -> binder.bind(AuthenticationFilter.class).to(JwtFilter.class))
+            .overrideWith(binder -> binder.bind(JwtConfiguration.class).toInstance(JWT_CONFIGURATION))
+            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+        .build();
 
-    private GuiceJamesServer guiceJamesServer;
     private DataProbeImpl dataProbe;
-    private WebAdminGuiceProbe webAdminGuiceProbe;
 
-    @Before
-    public void setUp() throws Exception {
-        JwtConfiguration jwtConfiguration = new JwtConfiguration(
-            Optional.of(ClassLoaderUtils.getSystemResourceAsString("jwt_publickey")));
-
-        guiceJamesServer = cassandraJmapTestRule.jmapServer(cassandra.getModule())
-            .overrideWith(new WebAdminConfigurationModule(),
-                binder -> binder.bind(AuthenticationFilter.class).to(JwtFilter.class),
-                binder -> binder.bind(JwtConfiguration.class).toInstance(jwtConfiguration));
-        guiceJamesServer.start();
-        dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
-        webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
+    @BeforeEach
+    void setUp(GuiceJamesServer server) {
+        dataProbe = server.getProbe(DataProbeImpl.class);
+        WebAdminGuiceProbe webAdminGuiceProbe = server.getProbe(WebAdminGuiceProbe.class);
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminGuiceProbe.getWebAdminPort()).build();
     }
 
-    @After
-    public void tearDown() {
-        guiceJamesServer.stop();
-    }
-
     @Test
-    public void jwtAuthenticationShouldWork() throws Exception {
+    void jwtAuthenticationShouldWork() throws Exception {
         given()
             .header("Authorization", "Bearer " + VALID_TOKEN_ADMIN_TRUE)
         .when()
@@ -105,7 +99,7 @@ public class JwtFilterIntegrationTest {
     }
 
     @Test
-    public void jwtShouldRejectNonAdminRequests() throws Exception {
+    void jwtShouldRejectNonAdminRequests() throws Exception {
         given()
             .header("Authorization", "Bearer " + VALID_TOKEN_ADMIN_FALSE)
         .when()
@@ -118,7 +112,7 @@ public class JwtFilterIntegrationTest {
     }
 
     @Test
-    public void jwtShouldRejectInvalidRequests() throws Exception {
+    void jwtShouldRejectInvalidRequests() throws Exception {
         given()
             .header("Authorization", "Bearer invalid")
         .when()
