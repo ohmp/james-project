@@ -25,7 +25,6 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.JmapURIBuilder.baseUri;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,24 +45,21 @@ import org.apache.james.mailbox.MessageManager.AppendCommand;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTask;
 import org.apache.james.mailbox.cassandra.table.CassandraMailboxPathV2Table;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.probe.ACLProbe;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.modules.ACLProbeImpl;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.server.CassandraProbe;
 import org.apache.james.task.TaskManager;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
 import org.apache.james.utils.WebAdminGuiceProbe;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.routes.CassandraMailboxMergingRoutes;
 import org.apache.james.webadmin.routes.TasksRoutes;
@@ -80,7 +76,6 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 public class FixingGhostMailboxTest {
-    private static final int LIMIT_TO_10_MESSAGES = 10;
     private static final String NAME = "[0][0]";
     private static final String ARGUMENTS = "[0][1]";
     private static final String FIRST_MAILBOX = ARGUMENTS + ".list[0]";
@@ -99,11 +94,8 @@ public class FixingGhostMailboxTest {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension(cassandra))
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class)
-                .toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN))
         .build();
 
     private AccessToken accessToken;

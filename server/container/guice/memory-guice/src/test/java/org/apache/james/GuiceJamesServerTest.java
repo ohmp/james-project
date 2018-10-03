@@ -6,9 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 
 import org.apache.james.lifecycle.api.Configurable;
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.utils.ConfigurationPerformer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,16 +19,12 @@ import com.google.inject.multibindings.Multibinder;
 class GuiceJamesServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(GuiceJamesServerTest.class);
 
-    private static final int LIMIT_TO_10_MESSAGES = 10;
-
     @Nested
     class NormalBehaviour {
         @RegisterExtension
         JamesServerExtension jamesServerExtension = new JamesServerExtensionBuilder()
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class)))
+                .combineWith(MemoryJMAPModules.DEFAULT))
             .disableAutoStart()
             .build();
 
@@ -74,9 +67,7 @@ class GuiceJamesServerTest {
         @RegisterExtension
         JamesServerExtension jamesServerExtension = new JamesServerExtensionBuilder()
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
+                .combineWith(MemoryJMAPModules.DEFAULT)
                 .overrideWith(binder -> Multibinder.newSetBinder(binder, ConfigurationPerformer.class)
                     .addBinding()
                     .toInstance(THROWING_CONFIGURATION_PERFORMER)))

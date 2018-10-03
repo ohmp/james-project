@@ -19,24 +19,16 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class CassandraJmapJamesServerTest implements JmapJamesServerContract {
-    private static final int LIMIT_TO_10_MESSAGES = 10;
-
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
         .build();
 }

@@ -21,7 +21,6 @@ package org.apache.james;
 import static io.restassured.RestAssured.given;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.JmapURIBuilder.baseUri;
 import static org.awaitility.Awaitility.await;
@@ -35,10 +34,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.net.imap.IMAPClient;
 import org.apache.james.jmap.api.access.AccessToken;
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.TestESMetricReporterModule;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
@@ -58,8 +55,6 @@ import io.restassured.http.ContentType;
 
 class ESReporterTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ESReporterTest.class);
-    private static final int LIMIT_TO_10_MESSAGES = 10;
-
 
     static final EmbeddedElasticSearchExtension embeddedElasticSearchExtension = new EmbeddedElasticSearchExtension();
 
@@ -68,10 +63,7 @@ class ESReporterTest {
         .extension(embeddedElasticSearchExtension)
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-            .overrideWith(new TestESMetricReporterModule()))
+            .combineWith(CassandraJMAPTestModule.DEFAULT))
         .build();
 
     private static final int DELAY_IN_MS = 100;

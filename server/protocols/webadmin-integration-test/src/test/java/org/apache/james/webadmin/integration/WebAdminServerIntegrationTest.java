@@ -22,7 +22,6 @@ package org.apache.james.webadmin.integration;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.webadmin.Constants.JSON_CONTENT_TYPE;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,12 +36,11 @@ import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.WebAdminGuiceProbe;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.routes.DomainsRoutes;
 import org.apache.james.webadmin.routes.HealthCheckRoutes;
@@ -75,9 +73,8 @@ class WebAdminServerIntegrationTest {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT)
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN))
         .build();
 
     private DataProbe dataProbe;

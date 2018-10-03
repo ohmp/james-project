@@ -33,6 +33,8 @@ import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
 public class TestJMAPServerModule extends AbstractModule {
+    public static final int MAXIMUM_MESSAGE_COUNT = 10;
+    public static final TestJMAPServerModule DEFAULT = new TestJMAPServerModule(MAXIMUM_MESSAGE_COUNT);
 
     private static final String PUBLIC_PEM_KEY = 
         "-----BEGIN PUBLIC KEY-----\n" 

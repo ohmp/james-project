@@ -23,11 +23,10 @@ import java.util.Random;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.MemoryJMAPModules;
 import org.apache.james.jmap.methods.integration.SendMDNMethodContract;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemorySendMDNMethodTest extends SendMDNMethodContract {
@@ -37,8 +36,7 @@ public class MemorySendMDNMethodTest extends SendMDNMethodContract {
     @RegisterExtension
     static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT))
+            .combineWith(MemoryJMAPModules.DEFAULT))
         .build();
     
     @Override

@@ -17,18 +17,20 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory;
+package org.apache.james;
 
-import org.apache.james.GuiceJamesServer;
-import org.apache.james.JamesServerExtension;
-import org.apache.james.MemoryJMAPModules;
-import org.apache.james.jmap.methods.integration.SetVacationResponseContract;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.apache.james.mailbox.extractor.TextExtractor;
+import org.apache.james.mailbox.store.search.PDFTextExtractor;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.webadmin.WebAdminConfiguration;
 
-class MemorySetVacationResponseMethodTest implements SetVacationResponseContract {
-    @RegisterExtension
-    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(MemoryJMAPModules.DEFAULT))
-        .build();
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
+
+public interface MemoryJMAPModules {
+    Module DEFAULT = Modules.override(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+        .with(TestJMAPServerModule.DEFAULT,
+            binder -> binder.bind(TextExtractor .class).to(PDFTextExtractor .class));
+
+    Module ENABLE_WEBADMIN = binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION);
 }

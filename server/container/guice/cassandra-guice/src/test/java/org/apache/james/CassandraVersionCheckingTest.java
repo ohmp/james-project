@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -35,9 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class CassandraVersionCheckingTest {
-    private static final int LIMIT_TO_10_MESSAGES = 10;
     private static final String LOCAL_HOST = "127.0.0.1";
     private static final SchemaVersion MIN_VERSION = new SchemaVersion(2);
     private static final SchemaVersion MAX_VERSION = new SchemaVersion(4);
@@ -57,9 +53,7 @@ class CassandraVersionCheckingTest {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(binder -> binder.bind(CassandraSchemaVersionDAO.class)
                 .toInstance(versionDAO))
             .overrideWith(binder -> binder.bind(CassandraSchemaVersionManager.class)

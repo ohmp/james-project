@@ -20,15 +20,13 @@
 package org.apache.james.webadmin.integration;
 
 import static io.restassured.RestAssured.when;
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
 import org.apache.james.CassandraExtension;
 import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.utils.WebAdminGuiceProbe;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.routes.CassandraMigrationRoutes;
 import org.apache.james.webadmin.routes.DLPConfigurationRoutes;
@@ -59,10 +57,9 @@ class UnauthorizedEndpointsTest {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT)
-            .overrideWith(new UnauthorizedModule())
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN)
+            .overrideWith(new UnauthorizedModule()))
         .build();
 
     @BeforeEach

@@ -19,8 +19,6 @@
 
 package org.apache.james.jmap.cassandra;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-
 import org.apache.james.CassandraExtension;
 import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
@@ -28,7 +26,7 @@ import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.methods.integration.FilterContract;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CassandraFilterTest extends FilterContract {
@@ -37,8 +35,7 @@ public class CassandraFilterTest extends FilterContract {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT))
+            .combineWith(CassandraJMAPTestModule.DEFAULT))
         .build();
 
     @Override

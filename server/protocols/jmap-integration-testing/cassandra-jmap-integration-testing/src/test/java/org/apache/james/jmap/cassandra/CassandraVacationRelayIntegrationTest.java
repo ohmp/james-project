@@ -19,15 +19,13 @@
 
 package org.apache.james.jmap.cassandra;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-
 import org.apache.james.CassandraExtension;
 import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.jmap.VacationRelayIntegrationContract;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CassandraVacationRelayIntegrationTest implements VacationRelayIntegrationContract {
@@ -36,9 +34,8 @@ public class CassandraVacationRelayIntegrationTest implements VacationRelayInteg
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(DNSService.class).toInstance(VacationRelayIntegrationContract.createDNS()))
-            .overrideWith(TestJMAPServerModule.DEFAULT))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(binder -> binder.bind(DNSService.class).toInstance(VacationRelayIntegrationContract.createDNS())))
         .build();
 
     @Override

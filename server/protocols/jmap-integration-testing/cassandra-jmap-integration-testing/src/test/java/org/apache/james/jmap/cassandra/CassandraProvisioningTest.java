@@ -19,14 +19,12 @@
 
 package org.apache.james.jmap.cassandra;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-
 import org.apache.james.CassandraExtension;
 import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.ProvisioningContract;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class CassandraProvisioningTest implements ProvisioningContract {
@@ -35,7 +33,6 @@ class CassandraProvisioningTest implements ProvisioningContract {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT))
+            .combineWith(CassandraJMAPTestModule.DEFAULT))
         .build();
 }

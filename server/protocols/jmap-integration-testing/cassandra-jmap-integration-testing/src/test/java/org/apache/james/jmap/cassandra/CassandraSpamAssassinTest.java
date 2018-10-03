@@ -18,15 +18,13 @@
  ****************************************************************/
 package org.apache.james.jmap.cassandra;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-
 import org.apache.james.CassandraExtension;
 import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.SpamAssassinGuiceExtension;
 import org.apache.james.jmap.methods.integration.SpamAssassinContract;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class CassandraSpamAssassinTest implements SpamAssassinContract {
@@ -38,8 +36,7 @@ class CassandraSpamAssassinTest implements SpamAssassinContract {
         .extension(new CassandraExtension())
         .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT))
+            .combineWith(CassandraJMAPTestModule.DEFAULT))
         .build();
 
     @Override

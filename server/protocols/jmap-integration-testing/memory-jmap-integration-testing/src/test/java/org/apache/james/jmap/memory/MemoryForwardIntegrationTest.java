@@ -21,18 +21,15 @@ package org.apache.james.jmap.memory;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.MemoryJMAPModules;
 import org.apache.james.jmap.methods.integration.ForwardIntegrationContract;
-import org.apache.james.modules.TestJMAPServerModule;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class MemoryForwardIntegrationTest extends ForwardIntegrationContract {
     @RegisterExtension
     static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT)
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+            .combineWith(MemoryJMAPModules.DEFAULT)
+            .overrideWith(MemoryJMAPModules.ENABLE_WEBADMIN))
         .build();
 }

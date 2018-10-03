@@ -20,7 +20,6 @@
 package org.apache.james.jmap.cassandra;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.jmap.JmapURIBuilder.baseUri;
 import static org.apache.james.jmap.TestingConstants.ARGUMENTS;
 import static org.apache.james.jmap.TestingConstants.DOMAIN;
@@ -48,8 +47,8 @@ import org.apache.james.mailbox.MessageManager.AppendCommand;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mime4j.dom.Message;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,8 +130,7 @@ class CassandraBulkOperationTest {
             .extension(new EmbeddedElasticSearchExtension())
             .extension(new CassandraExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-                .overrideWith(TestJMAPServerModule.DEFAULT)
+                .combineWith(CassandraJMAPTestModule.DEFAULT)
                 .overrideWith(binder -> binder.bind(CassandraConfiguration.class)
                     .toInstance(
                         CassandraConfiguration.builder()

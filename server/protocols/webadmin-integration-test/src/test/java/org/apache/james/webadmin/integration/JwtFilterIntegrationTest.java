@@ -20,7 +20,6 @@
 package org.apache.james.webadmin.integration;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,11 +30,10 @@ import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jwt.JwtConfiguration;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.WebAdminGuiceProbe;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.JwtFilter;
@@ -68,11 +66,10 @@ class JwtFilterIntegrationTest {
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT)
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN)
             .overrideWith(binder -> binder.bind(AuthenticationFilter.class).to(JwtFilter.class))
-            .overrideWith(binder -> binder.bind(JwtConfiguration.class).toInstance(JWT_CONFIGURATION))
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+            .overrideWith(binder -> binder.bind(JwtConfiguration.class).toInstance(JWT_CONFIGURATION)))
         .build();
 
     private DataProbeImpl dataProbe;

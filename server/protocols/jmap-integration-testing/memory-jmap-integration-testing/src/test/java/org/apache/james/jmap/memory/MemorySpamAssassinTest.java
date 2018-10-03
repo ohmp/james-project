@@ -20,10 +20,9 @@ package org.apache.james.jmap.memory;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.MemoryJMAPModules;
 import org.apache.james.jmap.SpamAssassinGuiceExtension;
 import org.apache.james.jmap.methods.integration.SpamAssassinContract;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemorySpamAssassinTest implements SpamAssassinContract {
@@ -33,8 +32,7 @@ public class MemorySpamAssassinTest implements SpamAssassinContract {
     static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
         .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-            .overrideWith(TestJMAPServerModule.DEFAULT))
+            .combineWith(MemoryJMAPModules.DEFAULT))
         .build();
 
     @Override
