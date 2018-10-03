@@ -19,24 +19,23 @@
 
 package org.apache.james.jmap.cassandra;
 
-import java.io.IOException;
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.methods.integration.QuotaMailingTest;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.jmap.methods.integration.QuotaMailingContract;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CassandraQuotaMailingTest extends QuotaMailingTest {
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @Rule
-    public CassandraJmapTestRule rule = CassandraJmapTestRule.defaultTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return rule.jmapServer(cassandra.getModule());
-    }
+class CassandraQuotaMailingTest extends QuotaMailingContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+            .overrideWith(TestJMAPServerModule.DEFAULT))
+        .build();
 }

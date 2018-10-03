@@ -32,7 +32,6 @@ import static org.apache.james.jmap.TestingConstants.jmapRequestSpecBuilder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,36 +48,30 @@ import org.apache.james.modules.QuotaProbesImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Strings;
 
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 
-public abstract class QuotaMailingTest {
+public abstract class QuotaMailingContract {
     private static final String HOMER = "homer@" + DOMAIN;
     private static final String BART = "bart@" + DOMAIN;
     private static final String PASSWORD = "password";
     private static final String BOB_PASSWORD = "bobPassword";
 
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
-
     private AccessToken homerAccessToken;
     private AccessToken bartAccessToken;
-    private GuiceJamesServer jmapServer;
 
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
+    @BeforeEach
+    void setup(GuiceJamesServer server) throws Exception {
+        MailboxProbe mailboxProbe = server.getProbe(MailboxProbeImpl.class);
+        DataProbe dataProbe = server.getProbe(DataProbeImpl.class);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
-            .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
+            .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
             .build();
         RestAssured.defaultParser = Parser.JSON;
 
@@ -86,18 +79,13 @@ public abstract class QuotaMailingTest {
         dataProbe.addUser(HOMER, PASSWORD);
         dataProbe.addUser(BART, BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", HOMER, DefaultMailboxes.INBOX);
-        homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
-        bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);
-    }
-
-    @After
-    public void tearDown() {
-        jmapServer.stop();
+        homerAccessToken = authenticateJamesUser(baseUri(server), HOMER, PASSWORD);
+        bartAccessToken = authenticateJamesUser(baseUri(server), BART, BOB_PASSWORD);
     }
 
     @Test
-    public void shouldSendANoticeWhenThresholdExceeded() throws Exception {
-        jmapServer.getProbe(QuotaProbesImpl.class)
+    void shouldSendANoticeWhenThresholdExceeded(GuiceJamesServer server) throws Exception {
+        server.getProbe(QuotaProbesImpl.class)
             .setMaxStorage(MailboxConstants.USER_NAMESPACE + "&" + HOMER,
                 new SerializableQuotaValue<>(QuotaSize.size(100 * 1000)));
 
@@ -125,8 +113,8 @@ public abstract class QuotaMailingTest {
     }
 
     @Test
-    public void configurationShouldBeWellLoaded() throws Exception {
-        jmapServer.getProbe(QuotaProbesImpl.class)
+    void configurationShouldBeWellLoaded(GuiceJamesServer server) throws Exception {
+        server.getProbe(QuotaProbesImpl.class)
             .setMaxStorage(MailboxConstants.USER_NAMESPACE + "&" + HOMER,
                 new SerializableQuotaValue<>(QuotaSize.size(100 * 1000)));
 
