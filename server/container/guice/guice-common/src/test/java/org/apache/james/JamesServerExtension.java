@@ -42,6 +42,10 @@ public class JamesServerExtension implements BeforeAllCallback, BeforeEachCallba
         void await();
     }
 
+    public static JamesServerExtensionBuilder builder() {
+        return new JamesServerExtensionBuilder();
+    }
+
     private final TemporaryFolderRegistrableExtension folderRegistrableExtension;
     private final ThrowingFunction<File, GuiceJamesServer> serverSupplier;
     private final RegistrableExtension registrableExtension;

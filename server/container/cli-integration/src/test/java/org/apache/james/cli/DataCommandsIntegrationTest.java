@@ -23,54 +23,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.cli.util.OutputCapture;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
+import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingsImpl;
 import org.apache.james.utils.DataProbeImpl;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class DataCommandsIntegrationTest {
+class DataCommandsIntegrationTest {
+    private static final String DOMAIN = "domain.com";
+    private static final String USER = "chibenwa";
+    private static final String MAIL_ADDRESS = USER + "@" + DOMAIN;
+    private static final String PASSWORD = "12345";
 
-    public static final String DOMAIN = "domain.com";
-    public static final String USER = "chibenwa";
-    public static final String MAIL_ADDRESS = USER + "@" + DOMAIN;
-    public static final String PASSWORD = "12345";
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE, new JMXServerModule())
+            .overrideWith(TestJMAPServerModule.DEFAULT)
+            .overrideWith(binder -> binder.bind(ListeningMessageSearchIndex.class).toInstance(mock(ListeningMessageSearchIndex.class))))
+        .build();
+
+    private DataProbeImpl dataProbe;
     private OutputCapture outputCapture;
 
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-    private GuiceJamesServer guiceJamesServer;
-    private DataProbeImpl dataProbe;
-
-    @Before
-    public void setUp() throws Exception {
-        guiceJamesServer = memoryJmap.jmapServer(new JMXServerModule(),
-            binder -> binder.bind(ListeningMessageSearchIndex.class).toInstance(mock(ListeningMessageSearchIndex.class)));
-        guiceJamesServer.start();
-        dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
+    @BeforeEach
+    void setUp(GuiceJamesServer server) {
+        dataProbe = server.getProbe(DataProbeImpl.class);
         outputCapture = new OutputCapture();
     }
 
-    @After
-    public void tearDown() {
-        guiceJamesServer.stop();
-    }
-
     @Test
-    public void addDomainShouldWork() throws Exception {
+    void addDomainShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "ADDDOMAIN", DOMAIN});
 
         assertThat(dataProbe.containsDomain(DOMAIN)).isTrue();
     }
 
     @Test
-    public void removeDomainShouldWork() throws Exception {
+    void removeDomainShouldWork() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "REMOVEDOMAIN", DOMAIN});
@@ -79,7 +76,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void listDomainsShouldWork() throws Exception {
+    void listDomainsShouldWork() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "listdomains"}, outputCapture.getPrintStream());
@@ -88,7 +85,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void containsDomainShouldWork() throws Exception {
+    void containsDomainShouldWork() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "containsdomain", DOMAIN},
@@ -99,7 +96,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void addUserShouldWork() throws Exception {
+    void addUserShouldWork() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "ADDUSER", MAIL_ADDRESS, PASSWORD});
@@ -108,7 +105,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void removeUserShouldWork() throws Exception {
+    void removeUserShouldWork() throws Exception {
         dataProbe.fluent()
             .addDomain(DOMAIN)
             .addUser(MAIL_ADDRESS, PASSWORD);
@@ -119,7 +116,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void listUsersShouldWork() throws Exception {
+    void listUsersShouldWork() throws Exception {
         dataProbe.fluent()
             .addDomain(DOMAIN)
             .addUser(MAIL_ADDRESS, PASSWORD);
@@ -131,7 +128,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void addAddressMappingShouldWork() throws Exception {
+    void addAddressMappingShouldWork() throws Exception {
         String redirectionAddress = "redirect@apache.org";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
 
@@ -145,7 +142,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void listMappingsShouldWork() throws Exception {
+    void listMappingsShouldWork() throws Exception {
         String redirectionAddress = "redirect@apache.org";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
 
@@ -157,7 +154,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void listUsersDomainMappingShouldWork() throws Exception {
+    void listUsersDomainMappingShouldWork() throws Exception {
         String redirectionAddress = "redirect@apache.org";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
 
@@ -169,7 +166,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void removeAddressMappingShouldWork() throws Exception {
+    void removeAddressMappingShouldWork() throws Exception {
         String redirectionAddress = "redirect@apache.org";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
 
@@ -180,7 +177,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void addRegexMappingShouldWork() throws Exception {
+    void addRegexMappingShouldWork() throws Exception {
         String regex = "regex";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addregexmapping", USER, DOMAIN, regex});
 
@@ -194,7 +191,7 @@ public class DataCommandsIntegrationTest {
     }
 
     @Test
-    public void removeRegexMappingShouldWork() throws Exception {
+    void removeRegexMappingShouldWork() throws Exception {
         String regex = "regex";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addregexmapping", USER, DOMAIN, regex});
 
