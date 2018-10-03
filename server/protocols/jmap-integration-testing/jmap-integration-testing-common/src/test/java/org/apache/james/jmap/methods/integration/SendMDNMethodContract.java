@@ -40,7 +40,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,38 +59,32 @@ import org.apache.james.modules.QuotaProbesImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 
-public abstract class SendMDNMethodTest {
+public abstract class SendMDNMethodContract {
     private static final String HOMER = "homer@" + DOMAIN;
     private static final String BART = "bart@" + DOMAIN;
     private static final String PASSWORD = "password";
     private static final String BOB_PASSWORD = "bobPassword";
 
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
-
     protected abstract MessageId randomMessageId();
 
     private AccessToken homerAccessToken;
     private AccessToken bartAccessToken;
-    private GuiceJamesServer jmapServer;
 
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
+    @BeforeEach
+    void setup(GuiceJamesServer server) throws Throwable {
+        MailboxProbe mailboxProbe = server.getProbe(MailboxProbeImpl.class);
+        DataProbe dataProbe = server.getProbe(DataProbeImpl.class);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
-                .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
+                .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
         RestAssured.defaultParser = Parser.JSON;
 
@@ -99,8 +92,8 @@ public abstract class SendMDNMethodTest {
         dataProbe.addUser(HOMER, PASSWORD);
         dataProbe.addUser(BART, BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", HOMER, DefaultMailboxes.INBOX);
-        homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
-        bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);
+        homerAccessToken = authenticateJamesUser(baseUri(server), HOMER, PASSWORD);
+        bartAccessToken = authenticateJamesUser(baseUri(server), BART, BOB_PASSWORD);
     }
 
     private String bartSendMessageToHomer() {
@@ -169,13 +162,8 @@ public abstract class SendMDNMethodTest {
         calmlyAwait.until(() -> !listMessageIdsForAccount(homerAccessToken).isEmpty());
     }
 
-    @After
-    public void teardown() {
-        jmapServer.stop();
-    }
-
     @Test
-    public void sendMDNShouldReturnCreatedMessageId() {
+    void sendMDNShouldReturnCreatedMessageId() {
         bartSendMessageToHomer();
 
         List<String> messageIds = listMessageIdsForAccount(homerAccessToken);
@@ -206,7 +194,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldFailOnUnknownMessageId() {
+    void sendMDNShouldFailOnUnknownMessageId() {
         bartSendMessageToHomer();
 
         String creationId = "creation-1";
@@ -241,7 +229,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldFailOnInvalidMessages() {
+    void sendMDNShouldFailOnInvalidMessages() {
         sendAWrongInitialMessage();
         List<String> messageIds = listMessageIdsForAccount(homerAccessToken);
 
@@ -279,7 +267,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldSendAMDNBackToTheOriginalMessageAuthor() {
+    void sendMDNShouldSendAMDNBackToTheOriginalMessageAuthor() {
         String bartSentJmapMessageId = bartSendMessageToHomer();
 
         String homerReceivedMessageId = Iterables.getOnlyElement(listMessageIdsForAccount(homerAccessToken));
@@ -326,7 +314,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldPositionTheReportAsAnAttachment() {
+    void sendMDNShouldPositionTheReportAsAnAttachment() {
         bartSendMessageToHomer();
 
         List<String> messageIds = listMessageIdsForAccount(homerAccessToken);
@@ -376,7 +364,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldIndicateMissingFields() {
+    void sendMDNShouldIndicateMissingFields() {
         String creationId = "creation-1";
         // Missing subject
         given()
@@ -404,16 +392,16 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldReturnMaxQuotaReachedWhenUserReachedHisQuota() throws MailboxException {
+    void sendMDNShouldReturnMaxQuotaReachedWhenUserReachedHisQuota(GuiceJamesServer server) throws MailboxException {
         bartSendMessageToHomer();
 
         List<String> messageIds = listMessageIdsForAccount(homerAccessToken);
 
-        QuotaProbe quotaProbe = jmapServer.getProbe(QuotaProbesImpl.class);
+        QuotaProbe quotaProbe = server.getProbe(QuotaProbesImpl.class);
         String inboxQuotaRoot = quotaProbe.getQuotaRoot("#private", HOMER, DefaultMailboxes.INBOX);
         quotaProbe.setMaxStorage(inboxQuotaRoot, SerializableQuotaValue.valueOf(Optional.of(QuotaSize.size(100))));
 
-        MessageAppender.fillMailbox(jmapServer.getProbe(MailboxProbeImpl.class), HOMER, MailboxConstants.INBOX);
+        MessageAppender.fillMailbox(server.getProbe(MailboxProbeImpl.class), HOMER, MailboxConstants.INBOX);
 
         String creationId = "creation-1";
         given()
@@ -443,7 +431,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void sendMDNShouldIndicateMissingFieldsInDisposition() {
+    void sendMDNShouldIndicateMissingFieldsInDisposition() {
         String creationId = "creation-1";
         // Missing actionMode
         given()
@@ -471,7 +459,7 @@ public abstract class SendMDNMethodTest {
     }
 
     @Test
-    public void invalidEnumValuesInMDNShouldBeReported() {
+    void invalidEnumValuesInMDNShouldBeReported() {
         String creationId = "creation-1";
         given()
             .header("Authorization", homerAccessToken.serialize())
