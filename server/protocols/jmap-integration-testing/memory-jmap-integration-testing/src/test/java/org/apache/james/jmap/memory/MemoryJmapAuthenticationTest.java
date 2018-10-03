@@ -19,23 +19,20 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.FixedDateZonedDateTimeProvider;
-import org.apache.james.jmap.JMAPAuthenticationTest;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.jmap.JMAPAuthenticationContract;
+import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.util.date.ZonedDateTimeProvider;
-import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryJmapAuthenticationTest extends JMAPAuthenticationTest {
-    
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer(FixedDateZonedDateTimeProvider zonedDateTimeProvider) throws IOException {
-        return memoryJmap.jmapServer()
-                .overrideWith((binder) -> binder.bind(ZonedDateTimeProvider.class).toInstance(zonedDateTimeProvider));
-    }
+class MemoryJmapAuthenticationTest implements JMAPAuthenticationContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+            .overrideWith(TestJMAPServerModule.DEFAULT)
+            .overrideWith((binder) -> binder.bind(ZonedDateTimeProvider.class).toInstance(ZONED_DATE_TIME_PROVIDER)))
+        .build();
 }

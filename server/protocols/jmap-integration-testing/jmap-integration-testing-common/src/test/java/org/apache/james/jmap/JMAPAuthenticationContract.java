@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -36,56 +35,41 @@ import org.apache.james.GuiceJamesServer;
 import org.apache.james.jmap.model.ContinuationToken;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
-public abstract class JMAPAuthenticationTest {
+public interface JMAPAuthenticationContract {
+    ZonedDateTime oldDate = ZonedDateTime.parse("2011-12-03T10:15:30+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    ZonedDateTime newDate = ZonedDateTime.parse("2011-12-03T10:16:30+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    ZonedDateTime afterExpirationDate = ZonedDateTime.parse("2011-12-03T10:30:31+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-    private static final ZonedDateTime oldDate = ZonedDateTime.parse("2011-12-03T10:15:30+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    private static final ZonedDateTime newDate = ZonedDateTime.parse("2011-12-03T10:16:30+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    private static final ZonedDateTime afterExpirationDate = ZonedDateTime.parse("2011-12-03T10:30:31+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    FixedDateZonedDateTimeProvider ZONED_DATE_TIME_PROVIDER = new FixedDateZonedDateTimeProvider();
 
-    protected abstract GuiceJamesServer createJmapServer(FixedDateZonedDateTimeProvider zonedDateTimeProvider) throws IOException;
+    UserCredentials userCredentials = UserCredentials.builder()
+        .username("user@domain.tld")
+        .password("password")
+        .build();
 
-    private UserCredentials userCredentials;
-    private FixedDateZonedDateTimeProvider zonedDateTimeProvider;
-    private GuiceJamesServer jmapServer;
+    @BeforeEach
+    default void setup(GuiceJamesServer server) throws Exception {
+        ZONED_DATE_TIME_PROVIDER.setFixedDateTime(oldDate);
 
-    @Before
-    public void setup() throws Throwable {
-        zonedDateTimeProvider = new FixedDateZonedDateTimeProvider();
-        zonedDateTimeProvider.setFixedDateTime(oldDate);
-        jmapServer = createJmapServer(zonedDateTimeProvider);
-        jmapServer.start();
         RestAssured.requestSpecification = jmapRequestSpecBuilder
-                .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
+                .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
-        
-        userCredentials = UserCredentials.builder()
-                .username("user@domain.tld")
-                .password("password")
-                .build();
-
         
         String domain = "domain.tld";
-        jmapServer.getProbe(DataProbeImpl.class)
+        server.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(domain)
             .addUser(userCredentials.getUsername(), userCredentials.getPassword());
-        
-    }
-    
-    @After
-    public void teardown() {
-        jmapServer.stop();
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenContentTypeIsMissing() {
+    default void mustReturnMalformedRequestWhenContentTypeIsMissing() {
         given()
             .accept(ContentType.JSON)
         .when()
@@ -95,7 +79,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenContentTypeIsNotJson() {
+    default void mustReturnMalformedRequestWhenContentTypeIsNotJson() {
         given()
             .contentType(ContentType.XML)
             .accept(ContentType.JSON)
@@ -106,7 +90,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenAcceptIsMissing() {
+    default void mustReturnMalformedRequestWhenAcceptIsMissing() {
         given()
             .contentType(ContentType.JSON)
         .when()
@@ -116,7 +100,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenAcceptIsNotJson() {
+    default void mustReturnMalformedRequestWhenAcceptIsNotJson() {
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.XML)
@@ -127,7 +111,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenCharsetIsNotUTF8() {
+    default void mustReturnMalformedRequestWhenCharsetIsNotUTF8() {
         given()
             .contentType("application/json; charset=ISO-8859-1")
             .accept(ContentType.JSON)
@@ -138,7 +122,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenBodyIsEmpty() {
+    default void mustReturnMalformedRequestWhenBodyIsEmpty() {
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -149,7 +133,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnMalformedRequestWhenBodyIsNotAcceptable() {
+    default void mustReturnMalformedRequestWhenBodyIsNotAcceptable() {
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -161,7 +145,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnJsonResponse() throws Exception {
+    default void mustReturnJsonResponse() {
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -174,7 +158,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void methodShouldContainPasswordWhenValidResquest() throws Exception {
+    default void methodShouldContainPasswordWhenValidResquest() {
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -187,7 +171,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnContinuationTokenWhenValidResquest() throws Exception {
+    default void mustReturnContinuationTokenWhenValidResquest() {
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -200,7 +184,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnAuthenticationFailedWhenBadPassword() throws Exception {
+    default void mustReturnAuthenticationFailedWhenBadPassword() {
         String continuationToken = fromGoodContinuationTokenRequest();
 
         given()
@@ -214,7 +198,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnAuthenticationFailedWhenContinuationTokenIsRejectedByTheContinuationTokenManager() throws Exception {
+    default void mustReturnAuthenticationFailedWhenContinuationTokenIsRejectedByTheContinuationTokenManager() {
         ContinuationToken badContinuationToken = new ContinuationToken(userCredentials.getUsername(), newDate, "badSignature");
 
         given()
@@ -228,9 +212,9 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnRestartAuthenticationWhenContinuationTokenIsExpired() throws Exception {
+    default void mustReturnRestartAuthenticationWhenContinuationTokenIsExpired() {
         String continuationToken = fromGoodContinuationTokenRequest();
-        zonedDateTimeProvider.setFixedDateTime(afterExpirationDate);
+        ZONED_DATE_TIME_PROVIDER.setFixedDateTime(afterExpirationDate);
 
         given()
             .contentType(ContentType.JSON)
@@ -243,7 +227,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnAuthenticationFailedWhenUsersRepositoryException() throws Exception {
+    default void mustReturnAuthenticationFailedWhenUsersRepositoryException() {
         String continuationToken = fromGoodContinuationTokenRequest();
 
         given()
@@ -257,9 +241,9 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustReturnCreatedWhenGoodPassword() throws Exception {
+    default void mustReturnCreatedWhenGoodPassword() {
         String continuationToken = fromGoodContinuationTokenRequest();
-        zonedDateTimeProvider.setFixedDateTime(newDate);
+        ZONED_DATE_TIME_PROVIDER.setFixedDateTime(newDate);
 
         given()
             .contentType(ContentType.JSON)
@@ -272,9 +256,9 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void mustSendJsonContainingAccessTokenAndEndpointsWhenGoodPassword() throws Exception {
+    default void mustSendJsonContainingAccessTokenAndEndpointsWhenGoodPassword() {
         String continuationToken = fromGoodContinuationTokenRequest();
-        zonedDateTimeProvider.setFixedDateTime(newDate);
+        ZONED_DATE_TIME_PROVIDER.setFixedDateTime(newDate);
 
         given()
             .contentType(ContentType.JSON)
@@ -291,7 +275,7 @@ public abstract class JMAPAuthenticationTest {
     }
     
     @Test
-    public void getMustReturnUnauthorizedWithoutAuthroizationHeader() throws Exception {
+    default void getMustReturnUnauthorizedWithoutAuthroizationHeader() {
         given()
         .when()
             .get("/authentication")
@@ -300,7 +284,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void getMustReturnUnauthorizedWithoutAValidAuthroizationHeader() throws Exception {
+    default void getMustReturnUnauthorizedWithoutAValidAuthroizationHeader() {
         given()
             .header("Authorization", UUID.randomUUID())
         .when()
@@ -310,7 +294,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void getMustReturnEndpointsWhenValidAuthorizationHeader() throws Exception {
+    default void getMustReturnEndpointsWhenValidAuthorizationHeader() {
         String continuationToken = fromGoodContinuationTokenRequest();
         String token = fromGoodAccessTokenRequest(continuationToken);
 
@@ -327,7 +311,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void getMustReturnEndpointsWhenValidJwtAuthorizationHeader() throws Exception {
+    default void getMustReturnEndpointsWhenValidJwtAuthorizationHeader() {
         String token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.T04BTk" +
                 "LXkJj24coSZkK13RfG25lpvmSl2MJ7N10KpBk9_-95EGYZdog-BDAn3PJzqVw52z-Bwjh4VOj1-j7cURu0cT4jXehhUrlCxS4n7QHZ" +
                 "DN_bsEYGu7KzjWTpTsUiHe-rN7izXVFxDGG1TGwlmBCBnPW-EFCf9ylUsJi0r2BKNdaaPRfMIrHptH1zJBkkUziWpBN1RNLjmvlAUf" +
@@ -343,7 +327,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void getMustReturnEndpointsWhenValidUnkwnonUserJwtAuthorizationHeader() throws Exception {
+    default void getMustReturnEndpointsWhenValidUnkwnonUserJwtAuthorizationHeader() {
         String token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMzM3IiwibmFtZSI6Ik5ldyBVc2VyIn0.ci8U04EOWKpi_y"
                 + "faKs8fnCBcu1mWs8fvf-t9SDP2kkvDDfD-ya4sEGn4ueCp2dA2ndefZfVu_IfvdlVtxqzSf0tQ-dFKrIe-OtSKhI2otjWctLtk9A"
                 + "G7jpWkXoDgr5IOVmsqg37Zxc2bgkLkC5FJqV6oCp51TNQTH6zZbXIUeuGFbHj2-iJeX8sACKTQB0llwc6TFm7GYUF03rv4DfJjqp"
@@ -359,7 +343,7 @@ public abstract class JMAPAuthenticationTest {
     }
     
     @Test
-    public void getMustReturnBadCredentialsWhenInvalidJwtAuthorizationHeader() throws Exception {
+    default void getMustReturnBadCredentialsWhenInvalidJwtAuthorizationHeader() {
         String token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.T04BTk" +
                 "LXkJj24coSZkK13RfG25lpvmSl2MJ7N10KpBk9_-95EGYZdog-BDAn3PJzqVw52z-Bwjh4VOj1-j7cURu0cT4jXehhUrlCxS4n7QHZ" +
                 "EN_bsEYGu7KzjWTpTsUiHe-rN7izXVFxDGG1TGwlmBCBnPW-EFCf9ylUsJi0r2BKNdaaPRfMIrHptH1zJBkkUziWpBN1RNLjmvlAUf" +
@@ -375,7 +359,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void optionsRequestsShouldNeverRequireAuthentication() {
+    default void optionsRequestsShouldNeverRequireAuthentication() {
         given()
                 .when()
                 .options("/authentication")
@@ -384,9 +368,9 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void getMustReturnEndpointsWhenCorrectAuthentication() throws Exception {
+    default void getMustReturnEndpointsWhenCorrectAuthentication() {
         String continuationToken = fromGoodContinuationTokenRequest();
-        zonedDateTimeProvider.setFixedDateTime(newDate);
+        ZONED_DATE_TIME_PROVIDER.setFixedDateTime(newDate);
     
         String accessToken = fromGoodAccessTokenRequest(continuationToken);
     
@@ -400,7 +384,7 @@ public abstract class JMAPAuthenticationTest {
     }
     
     @Test
-    public void deleteMustReturnUnauthenticatedWithoutAuthorizationHeader() throws Exception {
+    default void deleteMustReturnUnauthenticatedWithoutAuthorizationHeader() {
         given()
         .when()
             .delete("/authentication")
@@ -409,7 +393,7 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void deleteMustReturnUnauthenticatedWithoutAValidAuthroizationHeader() throws Exception {
+    default void deleteMustReturnUnauthenticatedWithoutAValidAuthroizationHeader() {
         given()
             .header("Authorization", UUID.randomUUID())
         .when()
@@ -419,7 +403,7 @@ public abstract class JMAPAuthenticationTest {
     }
     
     @Test
-    public void deleteMustReturnOKNoContentOnValidAuthorizationToken() throws Exception {
+    default void deleteMustReturnOKNoContentOnValidAuthorizationToken() {
         String continuationToken = fromGoodContinuationTokenRequest();
         String token = fromGoodAccessTokenRequest(continuationToken);
         given()
@@ -431,9 +415,9 @@ public abstract class JMAPAuthenticationTest {
     }
 
     @Test
-    public void deleteMustInvalidAuthorizationOnCorrectAuthorization() throws Exception {
+    default void deleteMustInvalidAuthorizationOnCorrectAuthorization() {
         String continuationToken = fromGoodContinuationTokenRequest();
-        zonedDateTimeProvider.setFixedDateTime(newDate);
+        ZONED_DATE_TIME_PROVIDER.setFixedDateTime(newDate);
     
         String accessToken = fromGoodAccessTokenRequest(continuationToken);
         
@@ -447,7 +431,7 @@ public abstract class JMAPAuthenticationTest {
             .statusCode(401);
     }
 
-    private String fromGoodContinuationTokenRequest() {
+    default String fromGoodContinuationTokenRequest() {
         return with()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -458,7 +442,7 @@ public abstract class JMAPAuthenticationTest {
             .toString();
     }
 
-    private String fromGoodAccessTokenRequest(String continuationToken) {
+    default String fromGoodAccessTokenRequest(String continuationToken) {
         return with()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -468,7 +452,7 @@ public abstract class JMAPAuthenticationTest {
             .toString();
     }
 
-    private void goodDeleteAccessTokenRequest(String accessToken) {
+    default void goodDeleteAccessTokenRequest(String accessToken) {
         with()
             .header("Authorization", accessToken)
             .delete("/authentication");
