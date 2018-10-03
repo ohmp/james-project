@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
-import java.io.IOException;
 import java.time.Duration;
 
 import org.apache.james.GuiceJamesServer;
@@ -38,45 +37,33 @@ import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 
-public abstract class ProvisioningTest {
-    private static final String NAME = "[0][0]";
-    private static final String ARGUMENTS = "[0][1]";
-    private static final String DOMAIN = "mydomain.tld";
-    private static final String USER = "myuser@" + DOMAIN;
-    private static final String PASSWORD = "secret";
-    
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
+public interface ProvisioningContract {
+    String NAME = "[0][0]";
+    String ARGUMENTS = "[0][1]";
+    String DOMAIN = "mydomain.tld";
+    String USER = "myuser@" + DOMAIN;
+    String PASSWORD = "secret";
 
-    private GuiceJamesServer jmapServer;
-
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
+    @BeforeEach
+    default void setup(GuiceJamesServer server) throws Throwable {
         RestAssured.requestSpecification = jmapRequestSpecBuilder
-            .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
+            .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
             .build();
 
-        jmapServer.getProbe(DataProbeImpl.class)
+        server.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
             .addUser(USER, PASSWORD);
     }
 
-    @After
-    public void teardown() {
-        jmapServer.stop();
-    }
-
     @Test
-    public void provisionMailboxesShouldNotDuplicateMailboxByName() throws Exception {
-        String token = authenticateJamesUser(baseUri(jmapServer), USER, PASSWORD).serialize();
+    default void provisionMailboxesShouldNotDuplicateMailboxByName(GuiceJamesServer server) throws Exception {
+        String token = authenticateJamesUser(baseUri(server), USER, PASSWORD).serialize();
 
         ConcurrentTestRunner.builder()
             .operation((a, b) -> with()
@@ -99,15 +86,15 @@ public abstract class ProvisioningTest {
     }
 
     @Test
-    public void provisionMailboxesShouldSubscribeToThem() throws Exception {
-        String token = authenticateJamesUser(baseUri(jmapServer), USER, PASSWORD).serialize();
+    default void provisionMailboxesShouldSubscribeToThem(GuiceJamesServer server) throws Exception {
+        String token = authenticateJamesUser(baseUri(server), USER, PASSWORD).serialize();
 
         with()
             .header("Authorization", token)
             .body("[[\"getMailboxes\", {}, \"#0\"]]")
             .post("/jmap");
 
-        assertThat(jmapServer.getProbe(MailboxProbeImpl.class)
+        assertThat(server.getProbe(MailboxProbeImpl.class)
             .listSubscriptions(USER))
             .containsAll(DefaultMailboxes.DEFAULT_MAILBOXES);
     }
