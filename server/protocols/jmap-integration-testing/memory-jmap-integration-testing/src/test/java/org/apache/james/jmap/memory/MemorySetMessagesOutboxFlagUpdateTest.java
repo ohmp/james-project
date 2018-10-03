@@ -19,39 +19,35 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
 import org.apache.james.jmap.methods.integration.SetMessagesOutboxFlagUpdateTest;
 import org.apache.james.queue.api.MailQueueFactory;
-import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
-public class MemorySetMessagesOutboxFlagUpdateTest extends SetMessagesOutboxFlagUpdateTest {
+class MemorySetMessagesOutboxFlagUpdateTest extends SetMessagesOutboxFlagUpdateTest {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJMAPModules.DEFAULT)
+            .overrideWith(
+                new AbstractModule() {
+                    @Override
+                    protected void configure() {
 
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
+                    }
 
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return memoryJmap.jmapServer(
-            new AbstractModule() {
-                @Override
-                protected void configure() {
-
+                    @Provides
+                    @Singleton
+                    public MailQueueFactory<?> createActiveMailQueueFactory() {
+                        return noopMailQueueFactory();
+                    }
                 }
-
-                @Provides
-                @Singleton
-                public MailQueueFactory<?> createActiveMailQueueFactory() {
-                    return noopMailQueueFactory;
-                }
-            }
-        );
-    }
-
+            ))
+        .build();
 }
