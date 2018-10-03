@@ -25,7 +25,7 @@ import static org.apache.james.jmap.TestingConstants.calmlyAwait;
 import static org.awaitility.Duration.ONE_MINUTE;
 import static org.hamcrest.Matchers.equalTo;
 
-import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.net.smtp.SMTPClient;
@@ -42,64 +42,54 @@ import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.FakeSmtp;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public abstract class VacationRelayIntegrationTest {
+public interface VacationRelayIntegrationContract {
+    String USER = "benwa";
+    String USER_WITH_DOMAIN = USER + '@' + DOMAIN;
+    String PASSWORD = "secret";
+    String REASON = "Message explaining my wonderful vacations";
 
-    private static final String USER = "benwa";
-    private static final String USER_WITH_DOMAIN = USER + '@' + DOMAIN;
-    private static final String PASSWORD = "secret";
-    private static final String REASON = "Message explaining my wonderful vacations";
+    @RegisterExtension
+    FakeSmtp fakeSmtp = new FakeSmtp();
 
-    @ClassRule
-    public static FakeSmtp fakeSmtp = new FakeSmtp();
+    default void await() {
 
-    private GuiceJamesServer guiceJamesServer;
-    private JmapGuiceProbe jmapGuiceProbe;
+    }
 
-    protected abstract void await();
+    static InMemoryDNSService createDNS() {
+        try {
+            return new InMemoryDNSService()
+                .registerMxRecord("yopmail.com", fakeSmtp.getContainer().getContainerIp());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-    protected abstract GuiceJamesServer getJmapServer() throws IOException;
-
-    protected abstract InMemoryDNSService getInMemoryDns();
-
-    @BeforeClass
-    public static void classSetUp() {
+    @BeforeAll
+    static void classSetUp() {
         fakeSmtp.awaitStarted(calmlyAwait.atMost(ONE_MINUTE));
     }
 
-    @Before
-    public void setUp() throws Exception {
-        getInMemoryDns()
-            .registerMxRecord("yopmail.com", fakeSmtp.getContainer().getContainerIp());
+    @BeforeEach
+    default void setUp(GuiceJamesServer server) throws Exception {
+        createDNS();
 
-        guiceJamesServer = getJmapServer();
-        guiceJamesServer.start();
-
-        DataProbe dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
+        DataProbe dataProbe = server.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USER_WITH_DOMAIN, PASSWORD);
-        MailboxProbe mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
+        MailboxProbe mailboxProbe = server.getProbe(MailboxProbeImpl.class);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_WITH_DOMAIN, DefaultMailboxes.SENT);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_WITH_DOMAIN, DefaultMailboxes.INBOX);
         await();
-
-        jmapGuiceProbe = guiceJamesServer.getProbe(JmapGuiceProbe.class);
-    }
-
-    @After
-    public void teardown() {
-        fakeSmtp.clean();
-        guiceJamesServer.stop();
     }
 
     @Test
-    public void forwardingAnEmailShouldWork() throws Exception {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(USER_WITH_DOMAIN), VacationPatch
+    default void forwardingAnEmailShouldWork(GuiceJamesServer server) throws Exception {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(USER_WITH_DOMAIN), VacationPatch
             .builder()
             .isEnabled(true)
             .textBody(REASON)
@@ -108,7 +98,7 @@ public abstract class VacationRelayIntegrationTest {
         String externalMail = "ray@yopmail.com";
 
         SMTPClient smtpClient = new SMTPClient();
-        smtpClient.connect(LOCALHOST_IP, guiceJamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort());
+        smtpClient.connect(LOCALHOST_IP, server.getProbe(SmtpGuiceProbe.class).getSmtpPort());
         smtpClient.helo(DOMAIN);
         smtpClient.setSender(externalMail);
         smtpClient.rcpt("<" + USER_WITH_DOMAIN + ">");

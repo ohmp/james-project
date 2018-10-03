@@ -19,32 +19,20 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.InMemoryDNSService;
-import org.apache.james.jmap.VacationRelayIntegrationTest;
-import org.junit.Rule;
+import org.apache.james.jmap.VacationRelayIntegrationContract;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryVacationRelayIntegrationTest extends VacationRelayIntegrationTest {
-
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    private final InMemoryDNSService inMemoryDNSService = new InMemoryDNSService();
-
-    @Override
-    protected void await() {}
-
-    @Override
-    protected GuiceJamesServer getJmapServer() throws IOException {
-        return memoryJmap.jmapServer((binder) -> binder.bind(DNSService.class).toInstance(inMemoryDNSService));
-    }
-
-    @Override
-    protected InMemoryDNSService getInMemoryDns() {
-        return inMemoryDNSService;
-    }
+public class MemoryVacationRelayIntegrationTest implements VacationRelayIntegrationContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+            .overrideWith(binder -> binder.bind(DNSService.class).toInstance(VacationRelayIntegrationContract.createDNS()))
+            .overrideWith(TestJMAPServerModule.DEFAULT))
+        .build();
 }

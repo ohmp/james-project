@@ -19,42 +19,30 @@
 
 package org.apache.james.jmap.cassandra;
 
-import java.io.IOException;
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtension;
 import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.InMemoryDNSService;
-import org.apache.james.jmap.VacationRelayIntegrationTest;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.apache.james.jmap.VacationRelayIntegrationContract;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CassandraVacationRelayIntegrationTest extends VacationRelayIntegrationTest {
-
-    private final InMemoryDNSService inMemoryDNSService = new InMemoryDNSService();
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @Rule
-    public CassandraJmapTestRule rule = CassandraJmapTestRule.defaultTestRule();
-
-    @Override
-    protected GuiceJamesServer getJmapServer() throws IOException {
-        return rule.jmapServer(
-                cassandra.getModule(),
-                (binder) -> binder.bind(DNSService.class).toInstance(inMemoryDNSService));
-    }
+public class CassandraVacationRelayIntegrationTest implements VacationRelayIntegrationContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+            .overrideWith(binder -> binder.bind(DNSService.class).toInstance(VacationRelayIntegrationContract.createDNS()))
+            .overrideWith(TestJMAPServerModule.DEFAULT))
+        .build();
 
     @Override
-    protected void await() {
-        rule.await();
+    public void await() {
+        testExtension.await();
     }
-
-    @Override
-    protected InMemoryDNSService getInMemoryDns() {
-        return inMemoryDNSService;
-    }
-
 }
