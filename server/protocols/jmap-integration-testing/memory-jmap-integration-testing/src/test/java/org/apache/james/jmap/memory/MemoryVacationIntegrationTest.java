@@ -19,23 +19,18 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.VacationIntegrationTest;
-import org.junit.Rule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.jmap.VacationIntegrationContract;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryVacationIntegrationTest extends VacationIntegrationTest {
-
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return memoryJmap.jmapServer();
-    }
-
-    @Override
-    protected void await() {}
+class MemoryVacationIntegrationTest implements VacationIntegrationContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+            .overrideWith(TestJMAPServerModule.DEFAULT))
+        .build();
 }

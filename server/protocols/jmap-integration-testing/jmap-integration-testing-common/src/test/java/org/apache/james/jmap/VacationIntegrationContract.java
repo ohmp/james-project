@@ -33,7 +33,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -49,38 +48,31 @@ import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 
-public abstract class VacationIntegrationTest {
+public interface VacationIntegrationContract {
 
-    private static final String USER_1 = "benwa@" + DOMAIN;
-    private static final String USER_2 = "matthieu@" + DOMAIN;
-    private static final String PASSWORD = "secret";
-    private static final String REASON = "Message explaining my wonderful vacations";
-    private static final String HTML_REASON = "<b>" + REASON + "</b>";
-    public static final String ORIGINAL_MESSAGE_TEXT_BODY = "Hello someone, and thank you for joining example.com!";
+    String USER_1 = "benwa@" + DOMAIN;
+    String USER_2 = "matthieu@" + DOMAIN;
+    String PASSWORD = "secret";
+    String REASON = "Message explaining my wonderful vacations";
+    String HTML_REASON = "<b>" + REASON + "</b>";
+    String ORIGINAL_MESSAGE_TEXT_BODY = "Hello someone, and thank you for joining example.com!";
 
-    private GuiceJamesServer guiceJamesServer;
-    private JmapGuiceProbe jmapGuiceProbe;
+    default void await() {
 
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
+    }
 
-    protected abstract void await();
-
-    @Before
-    public void setUp() throws Exception {
-        guiceJamesServer = createJmapServer();
-        guiceJamesServer.start();
-
-        DataProbe dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
+    @BeforeEach
+    default void setUp(GuiceJamesServer server) throws Exception {
+        DataProbe dataProbe = server.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USER_1, PASSWORD);
         dataProbe.addUser(USER_2, PASSWORD);
-        MailboxProbe mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
+        MailboxProbe mailboxProbe = server.getProbe(MailboxProbeImpl.class);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_2, DefaultMailboxes.OUTBOX);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_1, DefaultMailboxes.SENT);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_2, DefaultMailboxes.SENT);
@@ -88,19 +80,14 @@ public abstract class VacationIntegrationTest {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_2, DefaultMailboxes.INBOX);
         await();
 
-        jmapGuiceProbe = guiceJamesServer.getProbe(JmapGuiceProbe.class);
+        JmapGuiceProbe jmapGuiceProbe = server.getProbe(JmapGuiceProbe.class);
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jmapGuiceProbe.getJmapPort())
             .build();
     }
 
-    @After
-    public void teardown() {
-        guiceJamesServer.stop();
-    }
-
     @Test
-    public void jmapVacationShouldGenerateAReplyWhenActive() throws Exception {
+    default void jmapVacationShouldGenerateAReplyWhenActive(GuiceJamesServer server) {
         /* Test scenario :
             - User 1 benw@mydomain.tld sets a Vacation on its account
             - User 2 matthieu@mydomain.tld sends User 1 a mail
@@ -109,8 +96,8 @@ public abstract class VacationIntegrationTest {
         */
 
         // Given
-        AccessToken user1AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_1, PASSWORD);
-        AccessToken user2AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_2, PASSWORD);
+        AccessToken user1AccessToken = authenticateJamesUser(baseUri(server), USER_1, PASSWORD);
+        AccessToken user2AccessToken = authenticateJamesUser(baseUri(server), USER_2, PASSWORD);
         // User 1 benw@mydomain.tld sets a Vacation on its account
         setVacationResponse(user1AccessToken);
 
@@ -129,11 +116,11 @@ public abstract class VacationIntegrationTest {
     }
 
     @Test
-    public void jmapVacationShouldGenerateAReplyEvenWhenNoText() throws Exception {
+    default void jmapVacationShouldGenerateAReplyEvenWhenNoText(GuiceJamesServer server) {
         // Given
-        AccessToken user1AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_1, PASSWORD);
-        AccessToken user2AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_2, PASSWORD);
-        jmapGuiceProbe.modifyVacation(
+        AccessToken user1AccessToken = authenticateJamesUser(baseUri(server), USER_1, PASSWORD);
+        AccessToken user2AccessToken = authenticateJamesUser(baseUri(server), USER_2, PASSWORD);
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(
             AccountId.fromString(USER_1),
             VacationPatch.builder()
                 .isEnabled(true)
@@ -153,10 +140,10 @@ public abstract class VacationIntegrationTest {
     }
 
     @Test
-    public void jmapVacationShouldHaveSupportForHtmlMail() throws Exception {
+    default void jmapVacationShouldHaveSupportForHtmlMail(GuiceJamesServer server) {
         // Given
-        AccessToken user1AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_1, PASSWORD);
-        AccessToken user2AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_2, PASSWORD);
+        AccessToken user1AccessToken = authenticateJamesUser(baseUri(server), USER_1, PASSWORD);
+        AccessToken user2AccessToken = authenticateJamesUser(baseUri(server), USER_2, PASSWORD);
         setHtmlVacationResponse(user1AccessToken);
 
         // When
@@ -171,7 +158,7 @@ public abstract class VacationIntegrationTest {
     }
 
     @Test
-    public void jmapVacationShouldNotGenerateAReplyWhenInactive() throws Exception {
+    default void jmapVacationShouldNotGenerateAReplyWhenInactive(GuiceJamesServer server) throws Exception {
         /* Test scenario :
             - User 2 matthieu@mydomain.tld sends User 1 a mail
             - User 1 should well receive this mail
@@ -179,8 +166,8 @@ public abstract class VacationIntegrationTest {
         */
 
         // Given
-        AccessToken user1AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_1, PASSWORD);
-        AccessToken user2AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_2, PASSWORD);
+        AccessToken user1AccessToken = authenticateJamesUser(baseUri(server), USER_1, PASSWORD);
+        AccessToken user2AccessToken = authenticateJamesUser(baseUri(server), USER_2, PASSWORD);
 
         // When
         // User 2 matthieu@mydomain.tld sends User 1 a mail
@@ -210,7 +197,7 @@ public abstract class VacationIntegrationTest {
     }
 
     @Test
-    public void jmapVacationShouldNotSendNotificationTwice() throws Exception {
+    default void jmapVacationShouldNotSendNotificationTwice(GuiceJamesServer server) throws Exception {
         /* Test scenario :
             - User 1 benw@mydomain.tld sets a Vacation on its account
             - User 2 matthieu@mydomain.tld sends User 1 a mail
@@ -220,8 +207,8 @@ public abstract class VacationIntegrationTest {
         */
 
         // Given
-        AccessToken user1AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_1, PASSWORD);
-        AccessToken user2AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_2, PASSWORD);
+        AccessToken user1AccessToken = authenticateJamesUser(baseUri(server), USER_1, PASSWORD);
+        AccessToken user2AccessToken = authenticateJamesUser(baseUri(server), USER_2, PASSWORD);
         // User 1 benw@mydomain.tld sets a Vacation on its account
         setVacationResponse(user1AccessToken);
 
@@ -241,7 +228,7 @@ public abstract class VacationIntegrationTest {
     }
 
     @Test
-    public void jmapVacationShouldSendNotificationTwiceWhenVacationReset() throws Exception {
+    default void jmapVacationShouldSendNotificationTwiceWhenVacationReset(GuiceJamesServer server) {
         /* Test scenario :
             - User 1 benw@mydomain.tld sets a Vacation on its account
             - User 2 matthieu@mydomain.tld sends User 1 a mail
@@ -251,8 +238,8 @@ public abstract class VacationIntegrationTest {
         */
 
         // Given
-        AccessToken user1AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_1, PASSWORD);
-        AccessToken user2AccessToken = authenticateJamesUser(baseUri(guiceJamesServer), USER_2, PASSWORD);
+        AccessToken user1AccessToken = authenticateJamesUser(baseUri(server), USER_1, PASSWORD);
+        AccessToken user2AccessToken = authenticateJamesUser(baseUri(server), USER_2, PASSWORD);
         // User 1 benw@mydomain.tld sets a Vacation on its account
         setVacationResponse(user1AccessToken);
         // User 2 matthieu@mydomain.tld sends User 1 a mail
@@ -274,7 +261,7 @@ public abstract class VacationIntegrationTest {
             .until(() -> areTwoTextMessageReceived(user2AccessToken, getInboxId(user2AccessToken)));
     }
 
-    private void setVacationResponse(AccessToken user1AccessToken) {
+    default void setVacationResponse(AccessToken user1AccessToken) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -296,7 +283,7 @@ public abstract class VacationIntegrationTest {
             .statusCode(200);
     }
 
-    private void setHtmlVacationResponse(AccessToken user1AccessToken) {
+    default void setHtmlVacationResponse(AccessToken user1AccessToken) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -318,7 +305,7 @@ public abstract class VacationIntegrationTest {
             .statusCode(200);
     }
 
-    private void sendMail(AccessToken user2AccessToken, String outboxId, String mailId) {
+    default void sendMail(AccessToken user2AccessToken, String outboxId, String mailId) {
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -341,7 +328,7 @@ public abstract class VacationIntegrationTest {
             .post("/jmap");
     }
 
-    private boolean areTwoTextMessageReceived(AccessToken recipientToken, String mailboxId) {
+    default boolean areTwoTextMessageReceived(AccessToken recipientToken, String mailboxId) {
         try {
             with()
                 .header("Authorization", recipientToken.serialize())
@@ -363,7 +350,7 @@ public abstract class VacationIntegrationTest {
         }
     }
 
-    private boolean isTextMessageReceived(AccessToken recipientToken, String mailboxId, String expectedTextBody, String expectedFrom, String expectedTo) {
+    default boolean isTextMessageReceived(AccessToken recipientToken, String mailboxId, String expectedTextBody, String expectedFrom, String expectedTo) {
         try {
             assertOneMessageReceived(recipientToken, mailboxId, expectedTextBody, expectedFrom, expectedTo);
             return true;
@@ -372,7 +359,7 @@ public abstract class VacationIntegrationTest {
         }
     }
 
-    private void assertOneMessageReceived(AccessToken recipientToken, String mailboxId, String expectedTextBody, String expectedFrom, String expectedTo) {
+    default void assertOneMessageReceived(AccessToken recipientToken, String mailboxId, String expectedTextBody, String expectedFrom, String expectedTo) {
         with()
             .header("Authorization", recipientToken.serialize())
             .body("[[\"getMessageList\", " +
@@ -394,7 +381,7 @@ public abstract class VacationIntegrationTest {
             .body(SECOND_ARGUMENTS + ".list[0].to.email[0]", equalTo(expectedTo));
     }
 
-    private boolean assertOneMessageWithHtmlBodyReceived(AccessToken recipientToken, String mailboxId, String expectedHtmlBody, String expectedFrom, String expectedTo) {
+    default boolean assertOneMessageWithHtmlBodyReceived(AccessToken recipientToken, String mailboxId, String expectedHtmlBody, String expectedFrom, String expectedTo) {
         try {
             with()
                 .header("Authorization", recipientToken.serialize())
@@ -421,15 +408,15 @@ public abstract class VacationIntegrationTest {
         }
     }
 
-    private String getOutboxId(AccessToken accessToken) {
+    default String getOutboxId(AccessToken accessToken) {
         return getMailboxIdByRole(accessToken, DefaultMailboxes.OUTBOX);
     }
 
-    private String getInboxId(AccessToken accessToken) {
+    default String getInboxId(AccessToken accessToken) {
         return getMailboxIdByRole(accessToken, DefaultMailboxes.INBOX);
     }
 
-    private String getMailboxIdByRole(AccessToken accessToken, String role) {
+    default String getMailboxIdByRole(AccessToken accessToken, String role) {
         return getAllMailboxesIds(accessToken).stream()
             .filter(x -> x.get("role").equalsIgnoreCase(role))
             .map(x -> x.get("id"))
@@ -437,7 +424,7 @@ public abstract class VacationIntegrationTest {
             .get();
     }
 
-    private List<Map<String, String>> getAllMailboxesIds(AccessToken accessToken) {
+    default List<Map<String, String>> getAllMailboxesIds(AccessToken accessToken) {
         return with()
             .header("Authorization", accessToken.serialize())
             .body("[[\"getMailboxes\", {\"properties\": [\"role\", \"id\"]}, \"#0\"]]")
