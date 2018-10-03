@@ -23,8 +23,7 @@ class GuiceJamesServerTest {
     class NormalBehaviour {
         @RegisterExtension
         JamesServerExtension jamesServerExtension = new JamesServerExtensionBuilder()
-            .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(MemoryJMAPModules.DEFAULT))
+            .server(MemoryJMAPModules.DEFAULT_MEMORY_JMAP_SERVER)
             .disableAutoStart()
             .build();
 

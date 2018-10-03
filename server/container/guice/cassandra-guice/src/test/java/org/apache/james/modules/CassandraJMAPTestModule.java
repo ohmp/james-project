@@ -21,6 +21,8 @@ package org.apache.james.modules;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
+import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtensionBuilder;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.webadmin.WebAdminConfiguration;
@@ -29,6 +31,9 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public interface CassandraJMAPTestModule {
+    JamesServerExtensionBuilder.ServerProvider DEFAULT_CASSANDRA_JMAP_SERVER = configuration -> GuiceJamesServer.forConfiguration(configuration)
+        .combineWith(CassandraJMAPTestModule.DEFAULT);
+
     Module DEFAULT = Modules.override(ALL_BUT_JMX_CASSANDRA_MODULE)
         .with(TestJMAPServerModule.DEFAULT,
             binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class));

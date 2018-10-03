@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.jmap.memory;
 
-import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.MemoryJMAPModules;
 import org.apache.james.jmap.SpamAssassinGuiceExtension;
@@ -31,8 +30,7 @@ public class MemorySpamAssassinTest implements SpamAssassinContract {
     @RegisterExtension
     static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
         .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(MemoryJMAPModules.DEFAULT))
+        .server(MemoryJMAPModules.DEFAULT_MEMORY_JMAP_SERVER)
         .build();
 
     @Override

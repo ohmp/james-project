@@ -28,6 +28,9 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public interface MemoryJMAPModules {
+    JamesServerExtensionBuilder.ServerProvider DEFAULT_MEMORY_JMAP_SERVER = configuration -> GuiceJamesServer.forConfiguration(configuration)
+        .combineWith(MemoryJMAPModules.DEFAULT);
+
     Module DEFAULT = Modules.override(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
         .with(TestJMAPServerModule.DEFAULT,
             binder -> binder.bind(TextExtractor .class).to(PDFTextExtractor .class));

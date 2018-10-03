@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.memory;
 
-import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.MemoryJMAPModules;
 import org.apache.james.jmap.methods.integration.SetVacationResponseContract;
@@ -28,7 +27,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class MemorySetVacationResponseMethodTest implements SetVacationResponseContract {
     @RegisterExtension
     static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(MemoryJMAPModules.DEFAULT))
+        .server(MemoryJMAPModules.DEFAULT_MEMORY_JMAP_SERVER)
         .build();
 }

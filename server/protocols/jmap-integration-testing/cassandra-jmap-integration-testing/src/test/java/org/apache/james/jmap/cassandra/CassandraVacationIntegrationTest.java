@@ -21,7 +21,6 @@ package org.apache.james.jmap.cassandra;
 
 import org.apache.james.CassandraExtension;
 import org.apache.james.EmbeddedElasticSearchExtension;
-import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.VacationIntegrationContract;
 import org.apache.james.modules.CassandraJMAPTestModule;
@@ -32,8 +31,7 @@ public class CassandraVacationIntegrationTest implements VacationIntegrationCont
     static JamesServerExtension testExtension = JamesServerExtension.builder()
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraJMAPTestModule.DEFAULT))
+        .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .build();
 
     @Override

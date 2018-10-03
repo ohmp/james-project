@@ -90,8 +90,7 @@ class JamesServerWithRetryConnectionTest {
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
         .extension(new DockerElasticSearchRegistrableExtension(elasticSearchContainer))
         .extension(new CassandraExtension(cassandraRule))
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraJMAPTestModule.DEFAULT))
+        .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .disableAutoStart()
         .build();
 
