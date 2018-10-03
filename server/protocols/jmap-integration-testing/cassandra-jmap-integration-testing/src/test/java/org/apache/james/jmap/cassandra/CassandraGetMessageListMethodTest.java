@@ -19,32 +19,27 @@
 
 package org.apache.james.jmap.cassandra;
 
-import java.io.IOException;
-
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.methods.integration.GetMessageListMethodTest;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.jmap.methods.integration.GetMessageListMethodContract;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CassandraGetMessageListMethodTest extends GetMessageListMethodTest {
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @Rule 
-    public CassandraJmapTestRule rule = CassandraJmapTestRule.defaultTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return rule.jmapServer(cassandra.getModule(),
-            new TestJMAPServerModule(LIMIT_TO_3_MESSAGES));
-    }
+public class CassandraGetMessageListMethodTest extends GetMessageListMethodContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES)))
+        .build();
 
     @Override
     protected void await() {
-        rule.await();
+        testExtension.await();
     }
 }

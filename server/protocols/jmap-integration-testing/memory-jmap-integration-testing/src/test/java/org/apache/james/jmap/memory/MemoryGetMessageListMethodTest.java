@@ -19,23 +19,20 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.methods.integration.GetMessageListMethodTest;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
+import org.apache.james.jmap.methods.integration.GetMessageListMethodContract;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryGetMessageListMethodTest extends GetMessageListMethodTest {
-
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return memoryJmap.jmapServer(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES));
-    }
+public class MemoryGetMessageListMethodTest extends GetMessageListMethodContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJMAPModules.DEFAULT)
+            .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES)))
+        .build();
     
     @Override
     protected void await() {
