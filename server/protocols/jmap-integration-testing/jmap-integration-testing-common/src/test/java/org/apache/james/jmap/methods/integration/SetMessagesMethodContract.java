@@ -115,10 +115,9 @@ import org.apache.mailet.base.test.FakeMail;
 import org.awaitility.Duration;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -131,7 +130,7 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 
-public abstract class SetMessagesMethodTest {
+public abstract class SetMessagesMethodContract {
     private static final String FORWARDED = "$Forwarded";
     private static final int _1MB = 1024 * 1024;
     private static final String USERNAME = "username@" + DOMAIN;
@@ -142,23 +141,18 @@ public abstract class SetMessagesMethodTest {
 
     private AccessToken bobAccessToken;
 
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
-
     protected abstract MessageId randomMessageId();
 
     protected abstract void await();
 
     private AccessToken accessToken;
-    private GuiceJamesServer jmapServer;
     private MailboxProbe mailboxProbe;
     private DataProbe dataProbe;
     private MessageIdProbe messageProbe;
     private ACLProbe aclProbe;
 
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
+    @BeforeEach
+    void setup(GuiceJamesServer jmapServer) throws Exception {
         mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
         dataProbe = jmapServer.getProbe(DataProbeImpl.class);
         messageProbe = jmapServer.getProbe(MessageIdProbe.class);
@@ -181,13 +175,8 @@ public abstract class SetMessagesMethodTest {
         bobAccessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD);
     }
 
-    @After
-    public void teardown() {
-        jmapServer.stop();
-    }
-
     @Test
-    public void setMessagesShouldReturnAnErrorNotSupportedWhenRequestContainsNonNullAccountId() {
+    void setMessagesShouldReturnAnErrorNotSupportedWhenRequestContainsNonNullAccountId() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[\"setMessages\", {\"accountId\": \"1\"}, \"#0\"]]")
@@ -202,7 +191,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAnErrorNotSupportedWhenRequestContainsNonNullIfInState() {
+    void setMessagesShouldReturnAnErrorNotSupportedWhenRequestContainsNonNullIfInState() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[\"setMessages\", {\"ifInState\": \"1\"}, \"#0\"]]")
@@ -217,7 +206,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnNotDestroyedWhenUnknownMailbox() {
+    void setMessagesShouldReturnNotDestroyedWhenUnknownMailbox() {
 
         String unknownMailboxMessageId = randomMessageId().serialize();
         given()
@@ -238,7 +227,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnNotDestroyedWhenNoMatchingMessage() {
+    void setMessagesShouldReturnNotDestroyedWhenNoMatchingMessage() {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         String messageId = randomMessageId().serialize();
@@ -260,7 +249,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnDestroyedWhenMatchingMessage() throws Exception {
+    void setMessagesShouldReturnDestroyedWhenMatchingMessage() throws Exception {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -283,7 +272,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldDeleteMessageWhenMatchingMessage() throws Exception {
+    void setMessagesShouldDeleteMessageWhenMatchingMessage() throws Exception {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -315,7 +304,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnDestroyedNotDestroyWhenMixed() throws Exception {
+    void setMessagesShouldReturnDestroyedNotDestroyWhenMixed() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message1 = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -351,7 +340,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldDeleteMatchingMessagesWhenMixed() throws Exception {
+    void setMessagesShouldDeleteMatchingMessagesWhenMixed() throws Exception {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -391,7 +380,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsUnreadPassedToFalse() throws MailboxException {
+    void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsUnreadPassedToFalse() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -414,7 +403,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesWithUpdateShouldReturnAnErrorWhenBothIsFlagAndKeywordsArePassed() throws MailboxException {
+    void setMessagesWithUpdateShouldReturnAnErrorWhenBothIsFlagAndKeywordsArePassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -437,7 +426,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldUpdateKeywordsWhenKeywordsArePassed() throws MailboxException {
+    void setMessagesShouldUpdateKeywordsWhenKeywordsArePassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -469,7 +458,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAddForwardedFlagWhenKeywordsWithForwardedIsPassed() throws MailboxException {
+    void setMessagesShouldAddForwardedFlagWhenKeywordsWithForwardedIsPassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -501,7 +490,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRemoveForwardedFlagWhenKeywordsWithoutForwardedIsPassed() throws MailboxException {
+    void setMessagesShouldRemoveForwardedFlagWhenKeywordsWithoutForwardedIsPassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
@@ -536,7 +525,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAnErrorWhenKeywordsWithDeletedArePassed() throws MailboxException {
+    void setMessagesShouldReturnAnErrorWhenKeywordsWithDeletedArePassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -559,7 +548,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAnErrorWhenKeywordsWithRecentArePassed() throws MailboxException {
+    void setMessagesShouldReturnAnErrorWhenKeywordsWithRecentArePassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -582,7 +571,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotChangeOriginDeletedFlag() throws MailboxException {
+    void setMessagesShouldNotChangeOriginDeletedFlag() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -613,7 +602,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotChangeOriginRecentFlag() throws MailboxException {
+    void setMessagesShouldNotChangeOriginRecentFlag() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
         Flags flags = FlagsBuilder.builder()
             .add(Flag.DELETED, Flag.RECENT)
@@ -647,7 +636,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnNewKeywordsWhenKeywordsArePassedToRemoveAndAddFlag() throws MailboxException {
+    void setMessagesShouldReturnNewKeywordsWhenKeywordsArePassedToRemoveAndAddFlag() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         Flags currentFlags = FlagsBuilder.builder()
@@ -682,7 +671,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkAsReadWhenIsUnreadPassedToFalse() throws MailboxException {
+    void setMessagesShouldMarkAsReadWhenIsUnreadPassedToFalse() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -711,7 +700,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsUnreadPassed() throws MailboxException {
+    void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsUnreadPassed() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -733,7 +722,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkAsUnreadWhenIsUnreadPassed() throws MailboxException {
+    void setMessagesShouldMarkAsUnreadWhenIsUnreadPassed() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -762,7 +751,7 @@ public abstract class SetMessagesMethodTest {
 
 
     @Test
-    public void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsFlaggedPassed() throws MailboxException {
+    void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsFlaggedPassed() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -784,7 +773,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkAsFlaggedWhenIsFlaggedPassed() throws MailboxException {
+    void setMessagesShouldMarkAsFlaggedWhenIsFlaggedPassed() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -812,7 +801,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectUpdateWhenPropertyHasWrongType() throws MailboxException {
+    void setMessagesShouldRejectUpdateWhenPropertyHasWrongType() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
         mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -839,8 +828,8 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    @Ignore("Jackson json deserializer stops after first error found")
-    public void setMessagesShouldRejectUpdateWhenPropertiesHaveWrongTypes() throws MailboxException {
+    @Disabled("Jackson json deserializer stops after first error found")
+    void setMessagesShouldRejectUpdateWhenPropertiesHaveWrongTypes() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
         mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -867,7 +856,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkMessageAsAnsweredWhenIsAnsweredPassed() throws MailboxException {
+    void setMessagesShouldMarkMessageAsAnsweredWhenIsAnsweredPassed() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -889,7 +878,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkAsAnsweredWhenIsAnsweredPassed() throws MailboxException {
+    void setMessagesShouldMarkAsAnsweredWhenIsAnsweredPassed() throws MailboxException {
         // Given
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
@@ -918,7 +907,7 @@ public abstract class SetMessagesMethodTest {
 
 
     @Test
-    public void setMessagesShouldMarkMessageAsForwardWhenIsForwardedPassed() throws MailboxException {
+    void setMessagesShouldMarkMessageAsForwardWhenIsForwardedPassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -938,7 +927,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkAsForwardedWhenIsForwardedPassed() throws MailboxException {
+    void setMessagesShouldMarkAsForwardedWhenIsForwardedPassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -964,7 +953,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnNotFoundWhenUpdateUnknownMessage() {
+    void setMessagesShouldReturnNotFoundWhenUpdateUnknownMessage() {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         String nonExistingMessageId = randomMessageId().serialize();
@@ -985,7 +974,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnCreatedMessageWhenSendingMessage() {
+    void setMessagesShouldReturnCreatedMessageWhenSendingMessage() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1036,7 +1025,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsNull() {
+    void setMessagesShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsNull() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1070,7 +1059,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsEmpty() {
+    void setMessagesShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsEmpty() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1104,7 +1093,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnValidErrorWhenMailboxNotFound() {
+    void setMessagesShouldReturnValidErrorWhenMailboxNotFound() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1138,7 +1127,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnCreatedMessageWithNonASCIICharactersInSubjectWhenPresent() {
+    void setMessagesShouldReturnCreatedMessageWithNonASCIICharactersInSubjectWhenPresent() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1172,7 +1161,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnErrorWhenUserIsNotTheOwnerOfOneOfTheMailboxes() throws Exception {
+    void setMessagesShouldReturnErrorWhenUserIsNotTheOwnerOfOneOfTheMailboxes() throws Exception {
         dataProbe.addUser(ALICE, ALICE_PASSWORD);
         MailboxId aliceOutbox = mailboxProbe.createMailbox("#private", ALICE, DefaultMailboxes.OUTBOX);
 
@@ -1212,7 +1201,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageWithCreatedMessageShouldReturnAnErrorWhenBothIsFlagAndKeywordsPresent() {
+    void setMessageWithCreatedMessageShouldReturnAnErrorWhenBothIsFlagAndKeywordsPresent() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1246,7 +1235,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageWithCreatedMessageShouldSupportKeywordsForFlags() {
+    void setMessageWithCreatedMessageShouldSupportKeywordsForFlags() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1282,7 +1271,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAllowDraftCreation() {
+    void setMessagesShouldAllowDraftCreation() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1316,7 +1305,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotAllowDraftCreationWhenOverQuota() throws MailboxException {
+    void setMessagesShouldNotAllowDraftCreationWhenOverQuota(GuiceJamesServer jmapServer) throws MailboxException {
         QuotaProbe quotaProbe = jmapServer.getProbe(QuotaProbesImpl.class);
         String inboxQuotaRoot = quotaProbe.getQuotaRoot("#private", USERNAME, DefaultMailboxes.INBOX);
         quotaProbe.setMaxStorage(inboxQuotaRoot, SerializableQuotaValue.valueOf(Optional.of(QuotaSize.size(100))));
@@ -1431,7 +1420,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotAllowCopyWhenOverQuota() throws MailboxException {
+    void setMessagesShouldNotAllowCopyWhenOverQuota(GuiceJamesServer jmapServer) throws MailboxException {
         QuotaProbe quotaProbe = jmapServer.getProbe(QuotaProbesImpl.class);
         String inboxQuotaRoot = quotaProbe.getQuotaRoot("#private", USERNAME, DefaultMailboxes.INBOX);
         quotaProbe.setMaxStorage(inboxQuotaRoot, SerializableQuotaValue.valueOf(Optional.of(QuotaSize.size(100))));
@@ -1466,7 +1455,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldCreateDraftInSeveralMailboxes() {
+    void setMessagesShouldCreateDraftInSeveralMailboxes() {
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
@@ -1509,7 +1498,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAllowDraftCreationOutsideOfDraftMailbox() {
+    void setMessagesShouldAllowDraftCreationOutsideOfDraftMailbox() {
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
@@ -1544,7 +1533,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectMessageCreationWithNoMailbox() {
+    void setMessagesShouldRejectMessageCreationWithNoMailbox() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1581,7 +1570,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotFailWhenSavingADraftInSeveralMailboxes() {
+    void setMessagesShouldNotFailWhenSavingADraftInSeveralMailboxes() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
@@ -1617,7 +1606,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAllowDraftCreationWhenUsingIsDraftProperty() {
+    void setMessagesShouldAllowDraftCreationWhenUsingIsDraftProperty() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1651,7 +1640,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMarkAsDraftWhenIsDraftPassed() {
+    void setMessagesShouldMarkAsDraftWhenIsDraftPassed() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1692,7 +1681,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectCreateInDraftAndOutboxForASingleMessage() {
+    void setMessagesShouldRejectCreateInDraftAndOutboxForASingleMessage() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
 
@@ -1730,7 +1719,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldStoreDraft() {
+    void setMessagesShouldStoreDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1772,7 +1761,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotCheckFromWhenDraft() {
+    void setMessagesShouldNotCheckFromWhenDraft() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1805,7 +1794,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotCheckFromWhenInvalidEmailWhenDraft() {
+    void setMessagesShouldNotCheckFromWhenInvalidEmailWhenDraft() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1838,7 +1827,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAllowDraftCreationWithoutFrom() {
+    void setMessagesShouldAllowDraftCreationWithoutFrom() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1870,7 +1859,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAllowDraftCreationWithoutRecipients() {
+    void setMessagesShouldAllowDraftCreationWithoutRecipients() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -1902,7 +1891,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRequireDraftFlagWhenSavingDraft() {
+    void setMessagesShouldRequireDraftFlagWhenSavingDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1939,7 +1928,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldCheckAttachmentsWhenDraft() {
+    void setMessagesShouldCheckAttachmentsWhenDraft() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1979,7 +1968,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldAcceptAttachmentsWhenDraft() throws Exception {
+    void setMessagesShouldAcceptAttachmentsWhenDraft() throws Exception {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         Attachment attachment = Attachment.builder()
@@ -2023,7 +2012,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotAllowDraftCreationInSomeoneElseMailbox() throws Exception {
+    void setMessagesShouldNotAllowDraftCreationInSomeoneElseMailbox() throws Exception {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -2056,7 +2045,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotAllowDraftCreationInADelegatedMailbox() throws Exception {
+    void setMessagesShouldNotAllowDraftCreationInADelegatedMailbox() throws Exception {
         String messageCreationId = "creationId1337";
 
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, DefaultMailboxes.DRAFTS);
@@ -2097,7 +2086,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSendMessageByMovingDraftToOutbox() {
+    void setMessagesShouldSendMessageByMovingDraftToOutbox() {
         String draftCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String createDraft = "[" +
@@ -2149,7 +2138,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectDraftCopyToOutbox() {
+    void setMessagesShouldRejectDraftCopyToOutbox() {
         String draftCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String createDraft = "[" +
@@ -2207,7 +2196,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectMovingMessageToOutboxWhenNotInDraft() throws MailboxException {
+    void setMessagesShouldRejectMovingMessageToOutboxWhenNotInDraft() throws MailboxException {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
@@ -2242,7 +2231,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSupportArbitraryMessageId() {
+    void setMessagesShouldSupportArbitraryMessageId() {
         String messageCreationId = "1717fcd1-603e-44a5-b2a6-1234dbcd5723";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -2275,7 +2264,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldCreateMessageInOutboxWhenSendingMessage() throws MailboxException {
+    void setMessagesShouldCreateMessageInOutboxWhenSendingMessage(GuiceJamesServer jmapServer) throws MailboxException {
         // Given
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
@@ -2338,7 +2327,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMoveMessageInSentWhenMessageIsSent() {
+    void setMessagesShouldMoveMessageInSentWhenMessageIsSent() {
         // Given
         String sentMailboxId = getMailboxId(accessToken, Role.SENT);
 
@@ -2390,7 +2379,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectWhenSendingMessageHasNoValidAddress() {
+    void setMessagesShouldRejectWhenSendingMessageHasNoValidAddress() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -2427,7 +2416,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRejectWhenSendingMessageHasMissingFrom() {
+    void setMessagesShouldRejectWhenSendingMessageHasMissingFrom() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -2463,7 +2452,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnNotCreatedWhenSendingMessageWithAnotherFromAddressThanTheConnectedUser() {
+    void setMessagesShouldReturnNotCreatedWhenSendingMessageWithAnotherFromAddressThanTheConnectedUser() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -2498,7 +2487,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotCreateMessageInOutboxWhenSendingMessageWithAnotherFromAddressThanTheConnectedUser() {
+    void setMessagesShouldNotCreateMessageInOutboxWhenSendingMessageWithAnotherFromAddressThanTheConnectedUser() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -2548,7 +2537,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSucceedWhenSendingMessageWithOnlyFromAddress() {
+    void setMessagesShouldSucceedWhenSendingMessageWithOnlyFromAddress() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -2585,7 +2574,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSucceedWithHtmlBody() {
+    void setMessagesShouldSucceedWithHtmlBody() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -2622,7 +2611,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldMoveToSentWhenSendingMessageWithOnlyFromAddress() {
+    void setMessagesShouldMoveToSentWhenSendingMessageWithOnlyFromAddress() {
         String sentMailboxId = getMailboxId(accessToken, Role.SENT);
 
         String messageCreationId = "creationId1337";
@@ -2656,7 +2645,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotRejectWhenSendingMessageHasMissingSubject() {
+    void setMessagesShouldNotRejectWhenSendingMessageHasMissingSubject() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -2689,7 +2678,7 @@ public abstract class SetMessagesMethodTest {
 }
 
     @Test
-    public void setMessagesShouldRejectWhenSendingMessageUseSomeoneElseFromAddress() {
+    void setMessagesShouldRejectWhenSendingMessageUseSomeoneElseFromAddress() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -2725,7 +2714,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldDeliverMessageToRecipient() throws Exception {
+    void setMessagesShouldDeliverMessageToRecipient(GuiceJamesServer jmapServer) throws Exception {
         // Sender
         // Recipient
         String recipientAddress = "recipient" + "@" + DOMAIN;
@@ -2767,7 +2756,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldTriggerMaxQuotaReachedWhenTryingToSendMessageAndQuotaReached() throws Exception {
+    void setMessagesShouldTriggerMaxQuotaReachedWhenTryingToSendMessageAndQuotaReached(GuiceJamesServer jmapServer) throws Exception {
         QuotaProbe quotaProbe = jmapServer.getProbe(QuotaProbesImpl.class);
         String inboxQuotaRoot = quotaProbe.getQuotaRoot("#private", USERNAME, DefaultMailboxes.INBOX);
         quotaProbe.setMaxStorage(inboxQuotaRoot, SerializableQuotaValue.valueOf(Optional.of(QuotaSize.size(100))));
@@ -2817,7 +2806,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldStripBccFromDeliveredEmail() throws Exception {
+    void setMessagesShouldStripBccFromDeliveredEmail(GuiceJamesServer jmapServer) throws Exception {
         // Recipient
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String bccRecipient = BOB;
@@ -2871,7 +2860,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldKeepBccInSentMailbox() throws Exception {
+    void setMessagesShouldKeepBccInSentMailbox() throws Exception {
         // Sender
         String sentMailboxId = getMailboxId(accessToken, Role.SENT);
 
@@ -2926,7 +2915,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSendMessageToBcc() throws Exception {
+    void setMessagesShouldSendMessageToBcc() throws Exception {
         // Sender
 
         // Recipient
@@ -3002,7 +2991,7 @@ public abstract class SetMessagesMethodTest {
 
 
     @Test
-    public void setMessagesShouldSendAReadableHtmlMessage() throws Exception {
+    void setMessagesShouldSendAReadableHtmlMessage(GuiceJamesServer jmapServer) throws Exception {
         // Recipient
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
@@ -3043,7 +3032,7 @@ public abstract class SetMessagesMethodTest {
 
 
     @Test
-    public void setMessagesWhenSavingToDraftsShouldNotSendMessage() throws Exception {
+    void setMessagesWhenSavingToDraftsShouldNotSendMessage(GuiceJamesServer jmapServer) throws Exception {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String recipientPassword = "password";
         dataProbe.addUser(recipientAddress, recipientPassword);
@@ -3088,7 +3077,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesWhenSavingToRegularMailboxShouldNotSendMessage() throws Exception {
+    void setMessagesWhenSavingToRegularMailboxShouldNotSendMessage() throws Exception {
         String sender = USERNAME;
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, sender, "regular");
         String recipientAddress = "recipient" + "@" + DOMAIN;
@@ -3149,7 +3138,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSendAReadableTextPlusHtmlMessage() throws Exception {
+    void setMessagesShouldSendAReadableTextPlusHtmlMessage(GuiceJamesServer jmapServer) throws Exception {
         // Recipient
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
@@ -3209,7 +3198,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldReturnUpdatedWhenNoChange() throws Exception {
+    void mailboxIdsShouldReturnUpdatedWhenNoChange() throws Exception {
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
@@ -3239,7 +3228,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldBeInDestinationWhenUsingForMove() throws Exception {
+    void mailboxIdsShouldBeInDestinationWhenUsingForMove() throws Exception {
         String newMailboxName = "heartFolder";
         String heartFolderId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, newMailboxName).serialize();
 
@@ -3281,7 +3270,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldNotBeAnymoreInSourceWhenUsingForMove() throws Exception {
+    void mailboxIdsShouldNotBeAnymoreInSourceWhenUsingForMove() throws Exception {
         String newMailboxName = "heartFolder";
         String heartFolderId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, newMailboxName).serialize();
 
@@ -3324,7 +3313,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldBeInBothMailboxWhenUsingForCopy() throws Exception {
+    void mailboxIdsShouldBeInBothMailboxWhenUsingForCopy() throws Exception {
         String newMailboxName = "heartFolder";
         String heartFolderId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, newMailboxName).serialize();
 
@@ -3367,7 +3356,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldBeInOriginalMailboxWhenNoChange() throws Exception {
+    void mailboxIdsShouldBeInOriginalMailboxWhenNoChange() throws Exception {
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
@@ -3407,7 +3396,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldReturnErrorWhenMovingToADeletedMailbox() throws Exception {
+    void mailboxIdsShouldReturnErrorWhenMovingToADeletedMailbox() throws Exception {
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
@@ -3445,7 +3434,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mailboxIdsShouldReturnErrorWhenSetToEmpty() throws Exception {
+    void mailboxIdsShouldReturnErrorWhenSetToEmpty() throws Exception {
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
@@ -3480,7 +3469,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void updateShouldNotReturnErrorWithFlagsAndMailboxUpdate() throws Exception {
+    void updateShouldNotReturnErrorWithFlagsAndMailboxUpdate() throws Exception {
         String newMailboxName = "heartFolder";
         String heartFolderId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, newMailboxName).serialize();
 
@@ -3513,7 +3502,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void updateShouldWorkWithFlagsAndMailboxUpdate() throws Exception {
+    void updateShouldWorkWithFlagsAndMailboxUpdate() throws Exception {
         String newMailboxName = "heartFolder";
         String heartFolderId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, newMailboxName).serialize();
 
@@ -3557,7 +3546,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldWorkForMoveToTrash() throws Exception {
+    void setMessagesShouldWorkForMoveToTrash() throws Exception {
         String trashId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, DefaultMailboxes.TRASH).serialize();
 
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
@@ -3591,7 +3580,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void copyToTrashShouldWork() throws Exception {
+    void copyToTrashShouldWork() throws Exception {
         String newMailboxName = "heartFolder";
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, newMailboxName);
         String trashId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, DefaultMailboxes.TRASH).serialize();
@@ -3635,7 +3624,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAttachmentsNotFoundWhenBlobIdDoesntExist() {
+    void setMessagesShouldReturnAttachmentsNotFoundWhenBlobIdDoesntExist() {
         String messageCreationId = "creationId";
         String fromAddress = USERNAME;
         String outboxId = getOutboxId(accessToken);
@@ -3677,7 +3666,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAttachmentsWhenMessageHasAttachment() throws Exception {
+    void setMessagesShouldReturnAttachmentsWhenMessageHasAttachment() throws Exception {
         Attachment attachment = Attachment.builder()
             .bytes("attachment".getBytes(StandardCharsets.UTF_8))
             .type("application/octet-stream")
@@ -3746,7 +3735,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAttachmentsWithNonASCIINames() throws Exception {
+    void setMessagesShouldReturnAttachmentsWithNonASCIINames() throws Exception {
         Attachment attachment = Attachment.builder()
             .bytes("attachment".getBytes(StandardCharsets.UTF_8))
             .type("application/octet-stream")
@@ -3832,7 +3821,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void filenamesAttachmentsWithNonASCIICharactersShouldBeRetrievedWhenChainingSetMessagesAndGetMessages() throws Exception {
+    void filenamesAttachmentsWithNonASCIICharactersShouldBeRetrievedWhenChainingSetMessagesAndGetMessages() throws Exception {
         Attachment attachment = Attachment.builder()
             .bytes("attachment".getBytes(StandardCharsets.UTF_8))
             .type("application/octet-stream")
@@ -3964,7 +3953,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesBinaryAttachment() throws Exception {
+    void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesBinaryAttachment() throws Exception {
         byte[] rawBytes = new byte[]{-128,-127,-126,-125,-124,-123,-122,-121,-120,-119,-118,-117,-116,-115,-114,-113,-112,-111,-110,-109,-108,-107,-106,-105,-104,-103,-102,-101,-100,
             -99,-98,-97,-96,-95,-94,-93,-92,-91,-90,-89,-88,-87,-86,-85,-84,-83,-82,-81,-80,-79,-78,-77,-76,-75,-74,-73,-72,-71,-70,-69,-68,-67,-66,-65,-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,
             -50,-49,-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -4140,7 +4129,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void attachmentsAndBodysShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesWithMixedTextAndHtmlBodyAndHtmlAttachment() throws Exception {
+    void attachmentsAndBodysShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesWithMixedTextAndHtmlBodyAndHtmlAttachment() throws Exception {
         byte[] rawBytes = ("<html>\n" +
             "  <body>attachment</body>\n" + // needed indentation, else restassured is adding some
             "</html>").getBytes(StandardCharsets.UTF_8);
@@ -4219,7 +4208,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void attachmentsAndBodyShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesWithTextBodyAndHtmlAttachment() throws Exception {
+    void attachmentsAndBodyShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesWithTextBodyAndHtmlAttachment() throws Exception {
         byte[] rawBytes = ("<html>\n" +
             "  <body>attachment</body>\n" + // needed indentation, else restassured is adding some
             "</html>").getBytes(StandardCharsets.UTF_8);
@@ -4309,7 +4298,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void attachmentAndEmptyBodyShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesWithTextAttachmentWithoutMailBody() throws Exception {
+    void attachmentAndEmptyBodyShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesWithTextAttachmentWithoutMailBody() throws Exception {
         byte[] rawBytes = ("some text").getBytes(StandardCharsets.UTF_8);
         Attachment attachment = Attachment.builder()
             .bytes(rawBytes)
@@ -4384,7 +4373,7 @@ public abstract class SetMessagesMethodTest {
     }
     
     @Test
-    public void setMessagesShouldVerifyHeaderOfMessageInInbox() throws Exception {
+    void setMessagesShouldVerifyHeaderOfMessageInInbox(GuiceJamesServer jmapServer) throws Exception {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
@@ -4421,7 +4410,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldVerifyHeaderOfMessageInSent() throws Exception {
+    void setMessagesShouldVerifyHeaderOfMessageInSent() throws Exception {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
@@ -4502,7 +4491,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSetUserAddedHeaders() {
+    void setMessagesShouldSetUserAddedHeaders() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -4551,7 +4540,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSetUserAddedHeadersForReplyAndForwardWhenAskedTo() throws Exception {
+    void setMessagesShouldSetUserAddedHeadersForReplyAndForwardWhenAskedTo() throws Exception {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -4600,7 +4589,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldUpdateIsAnsweredWhenInReplyToHeaderSentViaOutbox() throws Exception {
+    void setMessagesShouldUpdateIsAnsweredWhenInReplyToHeaderSentViaOutbox() throws Exception {
         OriginalMessage firstMessage = receiveFirstMessage();
 
         String messageCreationId = "creationId1337";
@@ -4646,7 +4635,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldUpdateIsForwardedWhenXForwardedHeaderSentViaOutbox() throws Exception {
+    void setMessagesShouldUpdateIsForwardedWhenXForwardedHeaderSentViaOutbox() throws Exception {
         OriginalMessage firstMessage = receiveFirstMessage();
 
         String messageCreationId = "creationId1337";
@@ -4692,7 +4681,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldUpdateIsAnsweredWhenInReplyToHeaderSentViaDraft() throws Exception {
+    void setMessagesShouldUpdateIsAnsweredWhenInReplyToHeaderSentViaDraft() throws Exception {
         OriginalMessage firstMessage = receiveFirstMessage();
         
         String draftCreationId = "creationId1337";
@@ -4760,7 +4749,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldUpdateIsForwardedWhenXForwardedHeaderSentViaDraft() throws Exception {
+    void setMessagesShouldUpdateIsForwardedWhenXForwardedHeaderSentViaDraft() throws Exception {
         OriginalMessage firstMessage = receiveFirstMessage();
         
         String draftCreationId = "creationId1337";
@@ -4884,7 +4873,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSetUserAddedHeadersInSent() throws Exception {
+    void setMessagesShouldSetUserAddedHeadersInSent() throws Exception {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
@@ -4935,7 +4924,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSetMultivaluedUserAddedHeaders() {
+    void setMessagesShouldSetMultivaluedUserAddedHeaders() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -4982,7 +4971,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRenderCorrectlyInIMAPMultivaluedUserAddedHeaders() throws Exception {
+    void setMessagesShouldRenderCorrectlyInIMAPMultivaluedUserAddedHeaders(GuiceJamesServer jmapServer) throws Exception {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -5019,7 +5008,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldFilterComputedHeadersFromUserAddedHeaders() {
+    void setMessagesShouldFilterComputedHeadersFromUserAddedHeaders() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +
@@ -5070,7 +5059,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldCreateMessageWhenSendingMessageWithNonIndexableAttachment() throws Exception {
+    void setMessagesShouldCreateMessageWhenSendingMessageWithNonIndexableAttachment() throws Exception {
         Attachment nonIndexableAttachment = Attachment.builder()
                 .bytes(ClassLoaderUtils.getSystemResourceAsByteArray("attachment/nonIndexableAttachment.html"))
                 .type("text/html")
@@ -5122,7 +5111,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void messageWithNonIndexableAttachmentShouldBeRetrievedWhenChainingSetMessagesAndGetMessages() throws Exception {
+    void messageWithNonIndexableAttachmentShouldBeRetrievedWhenChainingSetMessagesAndGetMessages() throws Exception {
         Attachment nonIndexableAttachment = Attachment.builder()
                 .bytes(ClassLoaderUtils.getSystemResourceAsByteArray("attachment/nonIndexableAttachment.html"))
                 .type("text/html")
@@ -5182,7 +5171,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void messageWithNonIndexableAttachmentShouldHaveItsEmailBodyIndexed() throws Exception {
+    void messageWithNonIndexableAttachmentShouldHaveItsEmailBodyIndexed() throws Exception {
         Attachment nonIndexableAttachment = Attachment.builder()
                 .bytes(ClassLoaderUtils.getSystemResourceAsByteArray("attachment/nonIndexableAttachment.html"))
                 .type("text/html")
@@ -5238,7 +5227,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldReturnAttachmentsWhenMessageHasInlinedAttachmentButNoCid() throws Exception {
+    void setMessagesShouldReturnAttachmentsWhenMessageHasInlinedAttachmentButNoCid() throws Exception {
         Attachment attachment = Attachment.builder()
             .bytes("attachment".getBytes(StandardCharsets.UTF_8))
             .type("application/octet-stream")
@@ -5306,7 +5295,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageWithUpdateShouldBeOKWhenKeywordsWithCustomFlagArePassed() throws MailboxException {
+    void setMessageWithUpdateShouldBeOKWhenKeywordsWithCustomFlagArePassed() throws MailboxException {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
@@ -5327,7 +5316,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageWithCreationShouldBeOKWhenKeywordsWithCustomFlagArePassed() {
+    void setMessageWithCreationShouldBeOKWhenKeywordsWithCustomFlagArePassed() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5360,7 +5349,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageWithCreationShouldThrowWhenKeywordsWithUnsupportedArePassed() {
+    void setMessageWithCreationShouldThrowWhenKeywordsWithUnsupportedArePassed() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5393,7 +5382,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void textBodyOfMessageWithTextCalendarShouldBeConvertedToAttachment() throws Exception {
+    void textBodyOfMessageWithTextCalendarShouldBeConvertedToAttachment(GuiceJamesServer jmapServer) throws Exception {
         MimeMessage calendarMessage = MimeMessageUtil.mimeMessageFromStream(ClassLoader.getSystemResourceAsStream("eml/calendar.eml"));
         String fromAddress = USERNAME;
 
@@ -5437,7 +5426,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldSetTheSeenKeywordOnMessageInSentMailbox() throws Exception {
+    void setMessagesShouldSetTheSeenKeywordOnMessageInSentMailbox() throws Exception {
         // Sender
         String sentMailboxId = getMailboxId(accessToken, Role.SENT);
 
@@ -5490,7 +5479,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldCreateMessageWithFlagsWhenFlagsAttributesAreGiven() {
+    void setMessagesShouldCreateMessageWithFlagsWhenFlagsAttributesAreGiven() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5539,7 +5528,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldUpdateFlagsWhenSomeAreAlreadySet() {
+    void setMessagesShouldUpdateFlagsWhenSomeAreAlreadySet() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5606,7 +5595,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldRemoveFlagsWhenAskedFor() {
+    void setMessagesShouldRemoveFlagsWhenAskedFor() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5676,7 +5665,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldNotReturnAnErrorWhenTryingToChangeDraftFlagAmongOthers() {
+    void setMessagesShouldNotReturnAnErrorWhenTryingToChangeDraftFlagAmongOthers() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5738,7 +5727,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldModifyTheMessageWhenTryingToChangeDraftFlagAmongOthers() {
+    void setMessagesShouldModifyTheMessageWhenTryingToChangeDraftFlagAmongOthers() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -5809,7 +5798,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void mimeMessageIdShouldBePreservedWhenSending() {
+    void mimeMessageIdShouldBePreservedWhenSending() {
         String messageCreationId = "creationId1337";
         String requestBody = "[" +
             "  [" +

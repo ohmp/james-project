@@ -19,35 +19,30 @@
 
 package org.apache.james.jmap.cassandra;
 
-import java.io.IOException;
-
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.methods.integration.SetMessagesMethodTest;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.jmap.methods.integration.SetMessagesMethodContract;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.model.MessageId;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.apache.james.modules.CassandraJMAPTestModule;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CassandraSetMessagesMethodTest extends SetMessagesMethodTest {
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @Rule
-    public CassandraJmapTestRule rule = CassandraJmapTestRule.defaultTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return rule.jmapServer(cassandra.getModule());
-    }
+public class CassandraSetMessagesMethodTest extends SetMessagesMethodContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraJMAPTestModule.DEFAULT))
+        .build();
 
     @Override
     protected void await() {
-        rule.await();
+        testExtension.await();
     }
     
     @Override
@@ -55,15 +50,14 @@ public class CassandraSetMessagesMethodTest extends SetMessagesMethodTest {
         return new CassandraMessageId.Factory().generate();
     }
 
-    @Ignore("JAMES-2221 Temporally ignored failed test")
+    @Disabled("JAMES-2221 Temporally ignored failed test")
     @Override
     @Test
-    public void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesTextAttachment() throws Exception {
+    public void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesTextAttachment() {
 
     }
 
-
-    @Ignore("Temporally ignored CI failing test")
+    @Disabled("Temporally ignored CI failing test")
     @Override
     @Test
     public void setMessagesWithABigBodyShouldReturnCreatedMessageWhenSendingMessage() {
