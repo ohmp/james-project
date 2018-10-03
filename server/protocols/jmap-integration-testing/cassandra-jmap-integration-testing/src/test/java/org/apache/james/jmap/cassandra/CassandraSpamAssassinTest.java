@@ -18,10 +18,32 @@
  ****************************************************************/
 package org.apache.james.jmap.cassandra;
 
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
+import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.jmap.SpamAssassinGuiceExtension;
 import org.apache.james.jmap.methods.integration.SpamAssassinContract;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@ExtendWith(CassandraJmapExtension.class)
-public class CassandraSpamAssassinContractTest implements SpamAssassinContract {
+class CassandraSpamAssassinTest implements SpamAssassinContract {
+    private static final SpamAssassinGuiceExtension SPAM_ASSASSIN_GUICE_EXTENSION = new SpamAssassinGuiceExtension();
 
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+            .overrideWith(TestJMAPServerModule.DEFAULT))
+        .build();
+
+    @Override
+    public void train(String username) throws Exception {
+        SPAM_ASSASSIN_GUICE_EXTENSION.getBaseExtension().getSpamAssassin().train(username);
+    }
 }

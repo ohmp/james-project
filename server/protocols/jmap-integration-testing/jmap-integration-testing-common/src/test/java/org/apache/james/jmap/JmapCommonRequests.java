@@ -108,6 +108,14 @@ public class JmapCommonRequests {
         return getMailboxId(accessToken, Role.INBOX);
     }
 
+    public static String getSpamId(AccessToken accessToken) {
+        return getMailboxId(accessToken, Role.SPAM);
+    }
+
+    public static String getTrashId(AccessToken accessToken) {
+        return getMailboxId(accessToken, Role.TRASH);
+    }
+
     public static List<String> listMessageIdsForAccount(AccessToken accessToken) {
         return with()
                 .header("Authorization", accessToken.serialize())

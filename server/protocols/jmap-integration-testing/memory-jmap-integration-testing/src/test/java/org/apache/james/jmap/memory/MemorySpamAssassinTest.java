@@ -16,26 +16,29 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.methods.integration;
+package org.apache.james.jmap.memory;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.spamassassin.SpamAssassinExtension;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.jmap.SpamAssassinGuiceExtension;
+import org.apache.james.jmap.methods.integration.SpamAssassinContract;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class JamesWithSpamAssassin {
+public class MemorySpamAssassinTest implements SpamAssassinContract {
+    private static final SpamAssassinGuiceExtension SPAM_ASSASSIN_GUICE_EXTENSION = new SpamAssassinGuiceExtension();
 
-    private final GuiceJamesServer jmapServer;
-    private final SpamAssassinExtension spamAssassinExtension;
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+            .overrideWith(TestJMAPServerModule.DEFAULT))
+        .build();
 
-    public JamesWithSpamAssassin(GuiceJamesServer jmapServer, SpamAssassinExtension spamAssassinExtension) {
-        this.jmapServer = jmapServer;
-        this.spamAssassinExtension = spamAssassinExtension;
-    }
-
-    public GuiceJamesServer getJmapServer() {
-        return jmapServer;
-    }
-
-    public SpamAssassinExtension getSpamAssassinExtension() {
-        return spamAssassinExtension;
+    @Override
+    public void train(String username) throws Exception {
+        SPAM_ASSASSIN_GUICE_EXTENSION.getBaseExtension().getSpamAssassin().train(username);
     }
 }
