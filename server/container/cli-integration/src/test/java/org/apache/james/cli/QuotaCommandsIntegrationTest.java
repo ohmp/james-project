@@ -25,50 +25,48 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.cli.util.OutputCapture;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.modules.QuotaProbesImpl;
+import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.server.JMXServerModule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class QuotaCommandsIntegrationTest {
-    public static final String USER = "user";
-    public static final QuotaRoot QUOTA_ROOT = QuotaRoot.quotaRoot("#private&" + USER, Optional.empty());
+class QuotaCommandsIntegrationTest {
+    private static final String USER = "user";
+    private static final QuotaRoot QUOTA_ROOT = QuotaRoot.quotaRoot("#private&" + USER, Optional.empty());
+
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE, new JMXServerModule())
+            .overrideWith(TestJMAPServerModule.DEFAULT)
+            .overrideWith(binder -> binder.bind(ListeningMessageSearchIndex.class).toInstance(mock(ListeningMessageSearchIndex.class))))
+        .build();
+
     private OutputCapture outputCapture;
-
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-    private GuiceJamesServer guiceJamesServer;
     private QuotaProbesImpl quotaProbe;
 
-    @Before
-    public void setUp() throws Exception {
-        guiceJamesServer = memoryJmap.jmapServer(new JMXServerModule(),
-            binder -> binder.bind(ListeningMessageSearchIndex.class).toInstance(mock(ListeningMessageSearchIndex.class)));
-        guiceJamesServer.start();
-        quotaProbe = guiceJamesServer.getProbe(QuotaProbesImpl.class);
+    @BeforeEach
+    void setUp(GuiceJamesServer server) {
+        quotaProbe = server.getProbe(QuotaProbesImpl.class);
         outputCapture = new OutputCapture();
     }
 
-    @After
-    public void tearDown() {
-        guiceJamesServer.stop();
-    }
-
     @Test
-    public void setGlobalMaxStorageShouldWork() throws Exception {
+    void setGlobalMaxStorageShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setglobalmaxstoragequota", "36"});
 
         assertThat(quotaProbe.getGlobalMaxStorage().encodeAsLong()).isEqualTo(36);
     }
 
     @Test
-    public void getGlobalMaxStorageShouldWork() throws Exception {
+    void getGlobalMaxStorageShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setglobalmaxstoragequota", "36M"});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "getglobalmaxstoragequota"},
@@ -79,14 +77,14 @@ public class QuotaCommandsIntegrationTest {
     }
 
     @Test
-    public void setGlobalMaxMessageCountShouldWork() throws Exception {
+    void setGlobalMaxMessageCountShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setglobalmaxmessagecountquota", "36"});
 
         assertThat(quotaProbe.getGlobalMaxMessageCount().encodeAsLong()).isEqualTo(36);
     }
 
     @Test
-    public void getGlobalMaxMessageCountShouldWork() throws Exception {
+    void getGlobalMaxMessageCountShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setglobalmaxmessagecountquota", "36"});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "getglobalmaxmessagecountquota"},
@@ -97,14 +95,14 @@ public class QuotaCommandsIntegrationTest {
     }
 
     @Test
-    public void setMaxStorageShouldWork() throws Exception {
+    void setMaxStorageShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setmaxstoragequota", QUOTA_ROOT.getValue(), "36"});
 
         assertThat(quotaProbe.getMaxStorage(QUOTA_ROOT.getValue()).encodeAsLong()).isEqualTo(36);
     }
 
     @Test
-    public void getMaxStorageShouldWork() throws Exception {
+    void getMaxStorageShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setmaxstoragequota", QUOTA_ROOT.getValue(), "1g"});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "getmaxstoragequota", QUOTA_ROOT.getValue()},
@@ -115,14 +113,14 @@ public class QuotaCommandsIntegrationTest {
     }
 
     @Test
-    public void setMaxMessageCountShouldWork() throws Exception {
+    void setMaxMessageCountShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setmaxmessagecountquota", QUOTA_ROOT.getValue(), "36"});
 
         assertThat(quotaProbe.getMaxMessageCount(QUOTA_ROOT.getValue()).encodeAsLong()).isEqualTo(36);
     }
 
     @Test
-    public void getMaxMessageCountShouldWork() throws Exception {
+    void getMaxMessageCountShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setmaxmessagecountquota", QUOTA_ROOT.getValue(), "36"});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "getmaxmessagecountquota", QUOTA_ROOT.getValue()},
@@ -133,7 +131,7 @@ public class QuotaCommandsIntegrationTest {
     }
 
     @Test
-    public void getStorageQuotaShouldWork() throws Exception {
+    void getStorageQuotaShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setmaxstoragequota", QUOTA_ROOT.getValue(), "36"});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "getstoragequota", QUOTA_ROOT.getValue()},
@@ -144,7 +142,7 @@ public class QuotaCommandsIntegrationTest {
     }
 
     @Test
-    public void getMessageCountQuotaShouldWork() throws Exception {
+    void getMessageCountQuotaShouldWork() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "setmaxmessagecountquota", QUOTA_ROOT.getValue(), "36"});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "getmessagecountquota", QUOTA_ROOT.getValue()},

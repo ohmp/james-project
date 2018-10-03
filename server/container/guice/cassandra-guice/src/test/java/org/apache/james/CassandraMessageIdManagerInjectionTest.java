@@ -19,7 +19,6 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
@@ -28,9 +27,7 @@ import javax.inject.Inject;
 
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailbox.MessageIdManager;
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.utils.ConfigurationPerformer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -39,16 +36,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.multibindings.Multibinder;
 
 class CassandraMessageIdManagerInjectionTest {
-    private static final int LIMIT_TO_10_MESSAGES = 10;
-
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
         .extension(new EmbeddedElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(binder -> Multibinder.newSetBinder(binder, ConfigurationPerformer.class)
                 .addBinding()
                 .to(CallMe.class)))

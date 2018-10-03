@@ -16,26 +16,27 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.methods.integration;
+
+package org.apache.james.modules;
+
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.spamassassin.SpamAssassinExtension;
+import org.apache.james.JamesServerExtensionBuilder;
+import org.apache.james.mailbox.extractor.TextExtractor;
+import org.apache.james.mailbox.store.search.PDFTextExtractor;
+import org.apache.james.webadmin.WebAdminConfiguration;
 
-public class JamesWithSpamAssassin {
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
-    private final GuiceJamesServer jmapServer;
-    private final SpamAssassinExtension spamAssassinExtension;
+public interface CassandraJMAPTestModule {
+    JamesServerExtensionBuilder.ServerProvider DEFAULT_CASSANDRA_JMAP_SERVER = configuration -> GuiceJamesServer.forConfiguration(configuration)
+        .combineWith(CassandraJMAPTestModule.DEFAULT);
 
-    public JamesWithSpamAssassin(GuiceJamesServer jmapServer, SpamAssassinExtension spamAssassinExtension) {
-        this.jmapServer = jmapServer;
-        this.spamAssassinExtension = spamAssassinExtension;
-    }
+    Module DEFAULT = Modules.override(ALL_BUT_JMX_CASSANDRA_MODULE)
+        .with(TestJMAPServerModule.DEFAULT,
+            binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class));
 
-    public GuiceJamesServer getJmapServer() {
-        return jmapServer;
-    }
-
-    public SpamAssassinExtension getSpamAssassinExtension() {
-        return spamAssassinExtension;
-    }
+    Module ENABLE_WEBADMIN = binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION);
 }

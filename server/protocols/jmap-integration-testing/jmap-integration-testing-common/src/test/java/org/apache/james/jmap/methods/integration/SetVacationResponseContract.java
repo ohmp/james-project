@@ -29,7 +29,6 @@ import static org.apache.james.jmap.TestingConstants.jmapRequestSpecBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -41,50 +40,35 @@ import org.apache.james.jmap.api.vacation.VacationPatch;
 import org.apache.james.util.ValuePatch;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
-public abstract class SetVacationResponseTest {
+public interface SetVacationResponseContract {
+    String USER = "username@" + DOMAIN;
+    String PASSWORD = "password";
+    String SUBJECT = "subject";
 
-    public static final String USER = "username@" + DOMAIN;
-    public static final String PASSWORD = "password";
-    public static final String SUBJECT = "subject";
-    private JmapGuiceProbe jmapGuiceProbe;
-
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
-
-    protected abstract void await();
-
-    private AccessToken accessToken;
-    private GuiceJamesServer jmapServer;
-
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
-        jmapGuiceProbe = jmapServer.getProbe(JmapGuiceProbe.class);
+    @BeforeEach
+    default void setup(GuiceJamesServer server) throws Exception {
         RestAssured.requestSpecification = jmapRequestSpecBuilder
-                .setPort(jmapGuiceProbe.getJmapPort())
+                .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
 
-        jmapServer.getProbe(DataProbeImpl.class)
+        server.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
             .addUser(USER, PASSWORD);
-        accessToken = authenticateJamesUser(baseUri(jmapServer), USER, PASSWORD);
     }
 
-    @After
-    public void teardown() {
-        jmapServer.stop();
+    default AccessToken accessToken(GuiceJamesServer server) {
+        return authenticateJamesUser(baseUri(server), USER, PASSWORD);
     }
 
     @Test
-    public void setVacationResponseShouldReturnErrorOnMalformedRequestStructure() {
+    default void setVacationResponseShouldReturnErrorOnMalformedRequestStructure(GuiceJamesServer server) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -100,7 +84,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")
@@ -112,7 +96,7 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void setVacationResponseShouldBeAbleToContainIsActivated() {
+    default void setVacationResponseShouldBeAbleToContainIsActivated(GuiceJamesServer server) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
                 "{" +
@@ -131,7 +115,7 @@ public abstract class SetVacationResponseTest {
         given()
             .accept(ContentType.JSON)
             .contentType(ContentType.JSON)
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")
@@ -141,7 +125,7 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void setVacationResponseShouldContainAnErrorWhenInvalidId() {
+    default void setVacationResponseShouldContainAnErrorWhenInvalidId(GuiceJamesServer server) {
         int id = 1;
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
@@ -158,7 +142,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")
@@ -170,7 +154,7 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void setVacationResponseShouldReturnCorrectAnswerUponValidVacationResponse() {
+    default void setVacationResponseShouldReturnCorrectAnswerUponValidVacationResponse(GuiceJamesServer server) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -190,7 +174,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")
@@ -199,7 +183,7 @@ public abstract class SetVacationResponseTest {
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".updated[0]", equalTo("singleton"));
 
-        Vacation vacation = jmapGuiceProbe.retrieveVacation(AccountId.fromString(USER));
+        Vacation vacation = server.getProbe(JmapGuiceProbe.class).retrieveVacation(AccountId.fromString(USER));
         assertThat(vacation.getTextBody()).contains("Message explaining my wonderful vacations");
         assertThat(vacation.getHtmlBody()).contains("<p>Here is the HTML version</p>");
         assertThat(vacation.isEnabled()).isTrue();
@@ -209,8 +193,8 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void setVacationResponseShouldAllowResets() {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(USER),
+    default void setVacationResponseShouldAllowResets(GuiceJamesServer server) {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(USER),
             VacationPatch.builder()
                 .textBody(ValuePatch.modifyTo("any value"))
                 .build());
@@ -229,7 +213,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")
@@ -238,17 +222,17 @@ public abstract class SetVacationResponseTest {
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".updated[0]", equalTo("singleton"));
 
-        assertThat(jmapGuiceProbe.retrieveVacation(AccountId.fromString(USER)))
+        assertThat(server.getProbe(JmapGuiceProbe.class).retrieveVacation(AccountId.fromString(USER)))
             .isEqualTo(Vacation.builder()
                 .enabled(false)
                 .build());
     }
 
     @Test
-    public void setVacationResponseShouldNotAlterAbsentProperties() {
+    default void setVacationResponseShouldNotAlterAbsentProperties(GuiceJamesServer server) {
         String textBody = "any value";
         String subject = "any subject";
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(USER),
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(USER),
             VacationPatch.builder()
                 .textBody(ValuePatch.modifyTo(textBody))
                 .build());
@@ -269,7 +253,7 @@ public abstract class SetVacationResponseTest {
         given()
             .accept(ContentType.JSON)
             .contentType(ContentType.JSON)
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
             .when()
             .post("/jmap")
@@ -278,7 +262,7 @@ public abstract class SetVacationResponseTest {
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".updated[0]", equalTo("singleton"));
 
-        assertThat(jmapGuiceProbe.retrieveVacation(AccountId.fromString(USER)))
+        assertThat(server.getProbe(JmapGuiceProbe.class).retrieveVacation(AccountId.fromString(USER)))
             .isEqualTo(Vacation.builder()
                 .enabled(false)
                 .subject(Optional.of(subject))
@@ -287,8 +271,8 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void setVacationResponseShouldAllowPartialUpdates() {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(USER),
+    default void setVacationResponseShouldAllowPartialUpdates(GuiceJamesServer server) {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(USER),
             VacationPatch.builder()
                 .textBody(ValuePatch.modifyTo("any value"))
                 .build());
@@ -308,7 +292,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
             .when()
             .post("/jmap")
@@ -317,7 +301,7 @@ public abstract class SetVacationResponseTest {
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".updated[0]", equalTo("singleton"));
 
-        assertThat(jmapGuiceProbe.retrieveVacation(AccountId.fromString(USER)))
+        assertThat(server.getProbe(JmapGuiceProbe.class).retrieveVacation(AccountId.fromString(USER)))
             .isEqualTo(Vacation.builder()
                 .enabled(false)
                 .textBody(newTextBody)
@@ -325,7 +309,7 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void setVacationResponseShouldHandleNamedTimeZone() {
+    default void setVacationResponseShouldHandleNamedTimeZone(GuiceJamesServer server) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -343,7 +327,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
             .when()
             .post("/jmap")
@@ -352,7 +336,7 @@ public abstract class SetVacationResponseTest {
             .body(NAME, equalTo("vacationResponseSet"))
             .body(ARGUMENTS + ".updated[0]", equalTo("singleton"));
 
-        Vacation vacation = jmapGuiceProbe.retrieveVacation(AccountId.fromString(USER));
+        Vacation vacation = server.getProbe(JmapGuiceProbe.class).retrieveVacation(AccountId.fromString(USER));
         assertThat(vacation.getTextBody()).contains("Message explaining my wonderful vacations");
         assertThat(vacation.isEnabled()).isTrue();
         assertThat(vacation.getFromDate()).contains(ZonedDateTime.parse("2016-04-03T02:01+07:00[Asia/Vientiane]"));
@@ -360,7 +344,7 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void accountIdIsNotSupported() {
+    default void accountIdIsNotSupported(GuiceJamesServer server) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -379,7 +363,7 @@ public abstract class SetVacationResponseTest {
             "]]";
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")
@@ -391,7 +375,7 @@ public abstract class SetVacationResponseTest {
     }
 
     @Test
-    public void accountIdNullIsSupported() {
+    default void accountIdNullIsSupported(GuiceJamesServer server) {
         String bodyRequest = "[[" +
             "\"setVacationResponse\", " +
             "{" +
@@ -412,7 +396,7 @@ public abstract class SetVacationResponseTest {
         given()
             .accept(ContentType.JSON)
             .contentType(ContentType.JSON)
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body(bodyRequest)
         .when()
             .post("/jmap")

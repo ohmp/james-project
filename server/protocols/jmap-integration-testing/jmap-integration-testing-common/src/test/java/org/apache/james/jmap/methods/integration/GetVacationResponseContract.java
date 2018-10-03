@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 
 import org.apache.james.GuiceJamesServer;
@@ -40,60 +39,47 @@ import org.apache.james.jmap.FixedDateZonedDateTimeProvider;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.vacation.AccountId;
 import org.apache.james.jmap.api.vacation.VacationPatch;
-import org.apache.james.probe.DataProbe;
-import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
-public abstract class GetVacationResponseTest {
-    public static final String SUBJECT = "subject";
-    public static final ZonedDateTime DATE_2015 = ZonedDateTime.parse("2015-10-15T14:10:00Z");
-    public static final ZonedDateTime DATE_2014 = ZonedDateTime.parse("2014-09-30T14:10:00+02:00");
-    public static final ZonedDateTime DATE_2016 = ZonedDateTime.parse("2016-04-15T11:56:32.224+07:00[Asia/Vientiane]");
-    private JmapGuiceProbe jmapGuiceProbe;
+public interface GetVacationResponseContract {
+    String SUBJECT = "subject";
+    ZonedDateTime DATE_2015 = ZonedDateTime.parse("2015-10-15T14:10:00Z");
+    ZonedDateTime DATE_2014 = ZonedDateTime.parse("2014-09-30T14:10:00+02:00");
+    ZonedDateTime DATE_2016 = ZonedDateTime.parse("2016-04-15T11:56:32.224+07:00[Asia/Vientiane]");
+    FixedDateZonedDateTimeProvider FIXED_DATE_ZONED_DATE_TIME_PROVIDER = new FixedDateZonedDateTimeProvider();
 
-    protected abstract GuiceJamesServer createJmapServer(ZonedDateTimeProvider zonedDateTimeProvider) throws IOException;
+    default void await() {
 
-    protected abstract void await();
-
-    private AccessToken accessToken;
-    private GuiceJamesServer jmapServer;
-    private FixedDateZonedDateTimeProvider fixedDateZonedDateTimeProvider;
-
-    @Before
-    public void setup() throws Throwable {
-        fixedDateZonedDateTimeProvider = new FixedDateZonedDateTimeProvider();
-        fixedDateZonedDateTimeProvider.setFixedDateTime(DATE_2015);
-
-        jmapServer = createJmapServer(fixedDateZonedDateTimeProvider);
-        jmapServer.start();
-
-        jmapGuiceProbe = jmapServer.getProbe(JmapGuiceProbe.class);
-        RestAssured.requestSpecification = jmapRequestSpecBuilder
-                .setPort(jmapGuiceProbe.getJmapPort())
-                .build();
-
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(ALICE, ALICE_PASSWORD);
-        accessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
     }
 
-    @After
-    public void teardown() {
-        jmapServer.stop();
+    @BeforeEach
+    default void setup(GuiceJamesServer server) throws Throwable {
+        FIXED_DATE_ZONED_DATE_TIME_PROVIDER.setFixedDateTime(DATE_2015);
+
+        RestAssured.requestSpecification = jmapRequestSpecBuilder
+                .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
+                .build();
+
+        server.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(ALICE, ALICE_PASSWORD);
+    }
+
+    default AccessToken accessToken(GuiceJamesServer server) {
+        return authenticateJamesUser(baseUri(server), ALICE, ALICE_PASSWORD);
     }
 
     @Test
-    public void getVacationResponseShouldReturnDefaultValue() {
+    default void getVacationResponseShouldReturnDefaultValue(GuiceJamesServer server) {
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body("[[" +
                 "\"getVacationResponse\", " +
                 "{}, " +
@@ -116,8 +102,8 @@ public abstract class GetVacationResponseTest {
     }
 
     @Test
-    public void getVacationResponseShouldReturnStoredValue() {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(ALICE),
+    default void getVacationResponseShouldReturnStoredValue(GuiceJamesServer server) {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(ALICE),
             VacationPatch.builder()
                 .isEnabled(true)
                 .fromDate(ZonedDateTime.parse("2014-09-30T14:10:00Z"))
@@ -128,7 +114,7 @@ public abstract class GetVacationResponseTest {
                 .build());
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body("[[" +
                 "\"getVacationResponse\", " +
                 "{}, " +
@@ -151,8 +137,8 @@ public abstract class GetVacationResponseTest {
     }
 
     @Test
-    public void getVacationResponseShouldReturnStoredValueWithNonDefaultTimezone() {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(ALICE),
+    default void getVacationResponseShouldReturnStoredValueWithNonDefaultTimezone(GuiceJamesServer server) {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(ALICE),
             VacationPatch.builder()
                 .isEnabled(true)
                 .fromDate(ZonedDateTime.parse("2014-09-30T14:10:00+02:00"))
@@ -161,7 +147,7 @@ public abstract class GetVacationResponseTest {
                 .build());
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body("[[" +
                 "\"getVacationResponse\", " +
                 "{}, " +
@@ -182,8 +168,8 @@ public abstract class GetVacationResponseTest {
     }
 
     @Test
-    public void getVacationResponseShouldReturnIsActivatedWhenInRange() {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(ALICE),
+    default void getVacationResponseShouldReturnIsActivatedWhenInRange(GuiceJamesServer server) {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(ALICE),
             VacationPatch.builder()
                 .isEnabled(true)
                 .fromDate(DATE_2014)
@@ -194,7 +180,7 @@ public abstract class GetVacationResponseTest {
         given()
             .accept(ContentType.JSON)
             .contentType(ContentType.JSON)
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body("[[" +
                     "\"getVacationResponse\", " +
                     "{}, " +
@@ -209,10 +195,10 @@ public abstract class GetVacationResponseTest {
     }
 
     @Test
-    public void getVacationResponseShouldNotReturnIsActivatedWhenOutOfRange() {
-        fixedDateZonedDateTimeProvider.setFixedDateTime(DATE_2014);
+    default void getVacationResponseShouldNotReturnIsActivatedWhenOutOfRange(GuiceJamesServer server) {
+        FIXED_DATE_ZONED_DATE_TIME_PROVIDER.setFixedDateTime(DATE_2014);
 
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(ALICE),
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(ALICE),
             VacationPatch.builder()
                 .isEnabled(true)
                 .fromDate(DATE_2015)
@@ -223,7 +209,7 @@ public abstract class GetVacationResponseTest {
         given()
             .accept(ContentType.JSON)
             .contentType(ContentType.JSON)
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body("[[" +
                     "\"getVacationResponse\", " +
                     "{}, " +
@@ -238,8 +224,8 @@ public abstract class GetVacationResponseTest {
     }
 
     @Test
-    public void accountIdIsNotSupported() {
-        jmapGuiceProbe.modifyVacation(AccountId.fromString(ALICE),
+    default void accountIdIsNotSupported(GuiceJamesServer server) {
+        server.getProbe(JmapGuiceProbe.class).modifyVacation(AccountId.fromString(ALICE),
             VacationPatch.builder()
                 .isEnabled(true)
                 .fromDate(ZonedDateTime.parse("2014-09-30T14:10:00+02:00"))
@@ -248,7 +234,7 @@ public abstract class GetVacationResponseTest {
                 .build());
 
         given()
-            .header("Authorization", accessToken.serialize())
+            .header("Authorization", accessToken(server).serialize())
             .body("[[" +
                 "\"getVacationResponse\", " +
                 "{\"accountId\":\"1\"}, " +
@@ -262,5 +248,4 @@ public abstract class GetVacationResponseTest {
             .body(ARGUMENTS + ".type", equalTo("invalidArguments"))
             .body(ARGUMENTS + ".description", equalTo("The field 'accountId' of 'GetVacationRequest' is not supported"));
     }
-
 }

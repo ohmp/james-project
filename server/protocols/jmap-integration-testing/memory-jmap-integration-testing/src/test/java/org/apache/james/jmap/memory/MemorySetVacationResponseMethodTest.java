@@ -19,24 +19,14 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
+import org.apache.james.jmap.methods.integration.SetVacationResponseContract;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.methods.integration.SetVacationResponseTest;
-import org.junit.Rule;
-
-public class MemorySetVacationResponseMethodTest extends SetVacationResponseTest {
-    
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return memoryJmap.jmapServer();
-    }
-    
-    @Override
-    protected void await() {
-    }
+class MemorySetVacationResponseMethodTest implements SetVacationResponseContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(MemoryJMAPModules.DEFAULT_MEMORY_JMAP_SERVER)
+        .build();
 }

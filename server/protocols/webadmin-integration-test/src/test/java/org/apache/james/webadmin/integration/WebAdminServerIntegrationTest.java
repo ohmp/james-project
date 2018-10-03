@@ -31,10 +31,12 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.List;
 
-import org.apache.james.CassandraJmapTestRule;
-import org.apache.james.DockerCassandraRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtension;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
@@ -48,55 +50,46 @@ import org.apache.james.webadmin.routes.UserMailboxesRoutes;
 import org.apache.james.webadmin.routes.UserRoutes;
 import org.apache.james.webadmin.swagger.routes.SwaggerRoutes;
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.restassured.RestAssured;
 
-public class WebAdminServerIntegrationTest {
+class WebAdminServerIntegrationTest {
+    private static final String DOMAIN = "domain";
+    private static final String USERNAME = "username@" + DOMAIN;
+    private static final String SPECIFIC_DOMAIN = DomainsRoutes.DOMAINS + SEPARATOR + DOMAIN;
+    private static final String SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
+    private static final String MAILBOX = "mailbox";
+    private static final String SPECIFIC_MAILBOX = SPECIFIC_USER + SEPARATOR + UserMailboxesRoutes.MAILBOXES + SEPARATOR + MAILBOX;
+    private static final String VERSION = "/cassandra/version";
+    private static final String VERSION_LATEST = VERSION + "/latest";
+    private static final String UPGRADE_VERSION = VERSION + "/upgrade";
+    private static final String UPGRADE_TO_LATEST_VERSION = UPGRADE_VERSION + "/latest";
 
-    public static final String DOMAIN = "domain";
-    public static final String USERNAME = "username@" + DOMAIN;
-    public static final String SPECIFIC_DOMAIN = DomainsRoutes.DOMAINS + SEPARATOR + DOMAIN;
-    public static final String SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
-    public static final String MAILBOX = "mailbox";
-    public static final String SPECIFIC_MAILBOX = SPECIFIC_USER + SEPARATOR + UserMailboxesRoutes.MAILBOXES + SEPARATOR + MAILBOX;
-    public static final String VERSION = "/cassandra/version";
-    public static final String VERSION_LATEST = VERSION + "/latest";
-    public static final String UPGRADE_VERSION = VERSION + "/upgrade";
-    public static final String UPGRADE_TO_LATEST_VERSION = UPGRADE_VERSION + "/latest";
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN))
+        .build();
 
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-    
-    @Rule
-    public CassandraJmapTestRule cassandraJmapTestRule = CassandraJmapTestRule.defaultTestRule();
-
-    private GuiceJamesServer guiceJamesServer;
     private DataProbe dataProbe;
 
-    @Before
-    public void setUp() throws Exception {
-        guiceJamesServer = cassandraJmapTestRule.jmapServer(cassandra.getModule())
-                .overrideWith(new WebAdminConfigurationModule());
-        guiceJamesServer.start();
-        dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
-        WebAdminGuiceProbe webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
+    @BeforeEach
+    void setUp(GuiceJamesServer server) {
+        dataProbe = server.getProbe(DataProbeImpl.class);
+        WebAdminGuiceProbe webAdminGuiceProbe = server.getProbe(WebAdminGuiceProbe.class);
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminGuiceProbe.getWebAdminPort())
             .build();
     }
 
-    @After
-    public void tearDown() {
-        guiceJamesServer.stop();
-    }
-
     @Test
-    public void postShouldAddTheGivenDomain() throws Exception {
+    void postShouldAddTheGivenDomain() throws Exception {
         when()
             .put(SPECIFIC_DOMAIN)
         .then()
@@ -106,7 +99,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void mailQueueRoutesShouldBeExposed() {
+    void mailQueueRoutesShouldBeExposed() {
         when()
             .get(MailQueueRoutes.BASE_URL)
         .then()
@@ -114,7 +107,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void mailRepositoriesRoutesShouldBeExposed() {
+    void mailRepositoriesRoutesShouldBeExposed() {
         when()
             .get(MailRepositoriesRoutes.MAIL_REPOSITORIES)
         .then()
@@ -126,7 +119,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void gettingANonExistingMailRepositoryShouldNotCreateIt() {
+    void gettingANonExistingMailRepositoryShouldNotCreateIt() {
         given()
             .get(MailRepositoriesRoutes.MAIL_REPOSITORIES + "file%3A%2F%2Fvar%2Fmail%2Fcustom%2F");
 
@@ -141,7 +134,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void deleteShouldRemoveTheGivenDomain() throws Exception {
+    void deleteShouldRemoveTheGivenDomain() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
         when()
@@ -153,7 +146,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void postShouldAddTheUser() throws Exception {
+    void postShouldAddTheUser() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
         given()
@@ -167,7 +160,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void deleteShouldRemoveTheUser() throws Exception {
+    void deleteShouldRemoveTheUser() throws Exception {
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USERNAME, "anyPassword");
 
@@ -182,7 +175,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void getUsersShouldDisplayUsers() throws Exception {
+    void getUsersShouldDisplayUsers() throws Exception {
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USERNAME, "anyPassword");
 
@@ -195,7 +188,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void putMailboxShouldAddAMailbox() throws Exception {
+    void putMailboxShouldAddAMailbox(GuiceJamesServer server) throws Exception {
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USERNAME, "anyPassword");
 
@@ -204,25 +197,25 @@ public class WebAdminServerIntegrationTest {
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThat(guiceJamesServer.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).containsExactly(MAILBOX);
+        assertThat(server.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).containsExactly(MAILBOX);
     }
 
     @Test
-    public void deleteMailboxShouldRemoveAMailbox() throws Exception {
+    void deleteMailboxShouldRemoveAMailbox(GuiceJamesServer server) throws Exception {
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(USERNAME, "anyPassword");
-        guiceJamesServer.getProbe(MailboxProbeImpl.class).createMailbox("#private", USERNAME, MAILBOX);
+        server.getProbe(MailboxProbeImpl.class).createMailbox("#private", USERNAME, MAILBOX);
 
         when()
             .delete(SPECIFIC_MAILBOX)
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThat(guiceJamesServer.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).isEmpty();
+        assertThat(server.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).isEmpty();
     }
 
     @Test
-    public void getCurrentVersionShouldReturnNullForCurrentVersionAsBeginning() {
+    void getCurrentVersionShouldReturnNullForCurrentVersionAsBeginning() {
         when()
             .get(VERSION)
         .then()
@@ -232,7 +225,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void getLatestVersionShouldReturnTheConfiguredLatestVersion() {
+    void getLatestVersionShouldReturnTheConfiguredLatestVersion() {
         when()
             .get(VERSION_LATEST)
         .then()
@@ -242,7 +235,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void postShouldDoMigrationAndUpdateCurrentVersion() {
+    void postShouldDoMigrationAndUpdateCurrentVersion() {
         String taskId = with()
             .body(String.valueOf(CassandraSchemaVersionManager.MAX_VERSION.getValue()))
         .post(UPGRADE_VERSION)
@@ -261,7 +254,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void postShouldDoMigrationAndUpdateToTheLatestVersion() {
+    void postShouldDoMigrationAndUpdateToTheLatestVersion() {
         String taskId = with().post(UPGRADE_TO_LATEST_VERSION)
             .jsonPath()
             .get("taskId");
@@ -278,7 +271,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void addressGroupsEndpointShouldHandleRequests() throws Exception {
+    void addressGroupsEndpointShouldHandleRequests() throws Exception {
         dataProbe.addGroupMapping("group", "domain.com", "user1@domain.com");
         dataProbe.addGroupMapping("group", "domain.com", "user2@domain.com");
 
@@ -294,7 +287,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void addressForwardsEndpointShouldListForwardAddresses() throws Exception {
+    void addressForwardsEndpointShouldListForwardAddresses() throws Exception {
         dataProbe.addForwardMapping("from1", "domain.com", "user1@domain.com");
         dataProbe.addForwardMapping("from2", "domain.com", "user2@domain.com");
 
@@ -310,7 +303,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void getSwaggerShouldReturnJsonDataForSwagger() {
+    void getSwaggerShouldReturnJsonDataForSwagger() {
         when()
             .get(SwaggerRoutes.SWAGGER_ENDPOINT)
         .then()
@@ -330,7 +323,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void validateHealthChecksShouldReturnOk() throws Exception {
+    void validateHealthChecksShouldReturnOk() {
         when()
             .get(HealthCheckRoutes.HEALTHCHECK)
         .then()

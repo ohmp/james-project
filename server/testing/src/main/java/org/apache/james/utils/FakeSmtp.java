@@ -30,6 +30,10 @@ import org.apache.james.util.docker.Images;
 import org.apache.james.util.docker.RateLimiters;
 import org.apache.james.util.docker.SwarmGenericContainer;
 import org.awaitility.core.ConditionFactory;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -42,7 +46,7 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 
-public class FakeSmtp implements TestRule {
+public class FakeSmtp implements TestRule, BeforeAllCallback, AfterAllCallback, AfterEachCallback {
 
     public static FakeSmtp withSmtpPort(Integer smtpPort) {
         SwarmGenericContainer container = fakeSmtpContainer()
@@ -113,5 +117,20 @@ public class FakeSmtp implements TestRule {
             .max()
             .ifPresent(id -> given(requestSpecification(), RESPONSE_SPECIFICATION)
                 .get("/api/email/purge/" + id));
+    }
+
+    @Override
+    public void beforeAll(ExtensionContext extensionContext) {
+        container.start();
+    }
+
+    @Override
+    public void afterEach(ExtensionContext extensionContext) {
+        clean();
+    }
+
+    @Override
+    public void afterAll(ExtensionContext extensionContext) {
+        container.stop();
     }
 }

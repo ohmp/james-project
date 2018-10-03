@@ -16,46 +16,29 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+package org.apache.james.jmap.cassandra;
 
-package org.apache.james;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.jmap.SpamAssassinGuiceExtension;
+import org.apache.james.jmap.methods.integration.SpamAssassinContract;
+import org.apache.james.modules.CassandraJMAPTestModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.james.backends.es.EmbeddedElasticSearch;
-import org.apache.james.modules.TestElasticSearchModule;
-import org.elasticsearch.node.Node;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+class CassandraSpamAssassinTest implements SpamAssassinContract {
+    private static final SpamAssassinGuiceExtension SPAM_ASSASSIN_GUICE_EXTENSION = new SpamAssassinGuiceExtension();
 
-import com.google.inject.Module;
-
-
-public class EmbeddedElasticSearchRule implements GuiceModuleTestRule {
-
-    private final TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private final EmbeddedElasticSearch embeddedElasticSearch = new EmbeddedElasticSearch(temporaryFolder);
-
-    private final RuleChain chain = RuleChain
-        .outerRule(temporaryFolder)
-        .around(embeddedElasticSearch);
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
+        .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
+        .build();
 
     @Override
-    public Statement apply(Statement base, Description description) {
-        return chain.apply(base, description);
-    }
-
-    @Override
-    public void await() {
-        embeddedElasticSearch.awaitForElasticSearch();
-    }
-
-
-    @Override
-    public Module getModule() {
-        return new TestElasticSearchModule(embeddedElasticSearch);
-    }
-
-    public Node getNode() {
-        return embeddedElasticSearch.getNode();
+    public void train(String username) throws Exception {
+        SPAM_ASSASSIN_GUICE_EXTENSION.getBaseExtension().getSpamAssassin().train(username);
     }
 }

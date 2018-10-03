@@ -19,26 +19,18 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.methods.integration.GetVacationResponseTest;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
+import org.apache.james.jmap.methods.integration.GetVacationResponseContract;
 import org.apache.james.util.date.ZonedDateTimeProvider;
-import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryGetVacationResponseMethodTest extends GetVacationResponseTest {
-    
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer(ZonedDateTimeProvider zonedDateTimeProvider) throws IOException {
-        return memoryJmap.jmapServer()
-                    .overrideWith(binder -> binder.bind(ZonedDateTimeProvider.class).toInstance(zonedDateTimeProvider));
-    }
-    
-    @Override
-    protected void await() {
-    }
+class MemoryGetVacationResponseMethodTest implements GetVacationResponseContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJMAPModules.DEFAULT)
+            .overrideWith((binder) -> binder.bind(ZonedDateTimeProvider.class).toInstance(FIXED_DATE_ZONED_DATE_TIME_PROVIDER)))
+        .build();
 }

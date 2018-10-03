@@ -27,12 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.task.Task;
 import org.apache.james.utils.WebAdminGuiceProbe;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -45,8 +41,6 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 
 class GuiceLifecycleHeathCheckTest {
-    private static final int LIMIT_TO_10_MESSAGES = 10;
-
     private static void configureRequestSpecification(GuiceJamesServer server) {
         WebAdminGuiceProbe webAdminGuiceProbe = server.getProbe(WebAdminGuiceProbe.class);
 
@@ -63,10 +57,8 @@ class GuiceLifecycleHeathCheckTest {
         @RegisterExtension
         JamesServerExtension jamesServerExtension = new JamesServerExtensionBuilder()
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-                .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+                .combineWith(MemoryJMAPModules.DEFAULT)
+                .overrideWith(MemoryJMAPModules.ENABLE_WEBADMIN))
             .build();
 
         @Test
@@ -95,10 +87,8 @@ class GuiceLifecycleHeathCheckTest {
         @RegisterExtension
         JamesServerExtension jamesServerExtension = new JamesServerExtensionBuilder()
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
-                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-                .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION))
+                .combineWith(MemoryJMAPModules.DEFAULT)
+                .overrideWith(MemoryJMAPModules.ENABLE_WEBADMIN)
                 .overrideWith(binder -> Multibinder.newSetBinder(binder, CleanupTasksPerformer.CleanupTask.class)
                     .addBinding()
                     .toInstance(awaitCleanupTask)))

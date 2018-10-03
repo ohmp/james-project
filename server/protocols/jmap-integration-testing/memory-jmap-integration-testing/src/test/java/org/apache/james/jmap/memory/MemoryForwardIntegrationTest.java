@@ -19,24 +19,17 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.methods.integration.ForwardIntegrationTest;
-import org.apache.james.webadmin.WebAdminConfiguration;
-import org.junit.Rule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
+import org.apache.james.jmap.methods.integration.ForwardIntegrationContract;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryForwardIntegrationTest extends ForwardIntegrationTest {
-
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return memoryJmap
-            .jmapServer(binder -> binder.bind(WebAdminConfiguration.class)
-                .toInstance(WebAdminConfiguration.TEST_CONFIGURATION));
-    }
-    
+class MemoryForwardIntegrationTest extends ForwardIntegrationContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJMAPModules.DEFAULT)
+            .overrideWith(MemoryJMAPModules.ENABLE_WEBADMIN))
+        .build();
 }

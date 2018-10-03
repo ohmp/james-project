@@ -38,7 +38,6 @@ public class UnauthorizedModule extends AbstractModule {
     }
 
     private static class UnauthorizedFilter implements AuthenticationFilter {
-
         @Override
         public void handle(Request request, Response response) throws Exception {
             halt(HttpStatus.UNAUTHORIZED_401, "Unauthorize every endpoints.");

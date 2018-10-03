@@ -23,17 +23,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OutputCaptureTest {
+class OutputCaptureTest {
 
     @Test
-    public void contentShouldBeEmptyByDefault() {
+    void contentShouldBeEmptyByDefault() {
         assertThat(new OutputCapture().getContent()).isEmpty();
     }
 
     @Test
-    public void contentShouldReturnOutputStreamInput() throws Exception {
+    void contentShouldReturnOutputStreamInput() throws Exception {
         OutputCapture outputCapture = new OutputCapture();
 
         String message = "Hello world!\n";
@@ -44,7 +44,7 @@ public class OutputCaptureTest {
 
 
     @Test
-    public void mixingReadsAndWritesShouldWork() throws Exception {
+    void mixingReadsAndWritesShouldWork() throws Exception {
         OutputCapture outputCapture = new OutputCapture();
         String message = "Hello world!\n";
         outputCapture.getPrintStream().write(message.getBytes(StandardCharsets.UTF_8));

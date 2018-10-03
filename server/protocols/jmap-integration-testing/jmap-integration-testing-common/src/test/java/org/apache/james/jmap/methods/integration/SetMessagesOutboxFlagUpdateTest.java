@@ -31,7 +31,6 @@ import static org.apache.james.jmap.TestingConstants.BOB;
 import static org.apache.james.jmap.TestingConstants.BOB_PASSWORD;
 import static org.apache.james.jmap.TestingConstants.DOMAIN;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Set;
@@ -51,9 +50,8 @@ import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
 import org.apache.mailet.Mail;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -64,58 +62,55 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
     private static final String USERNAME = "username@" + DOMAIN;
     private static final String PASSWORD = "password";
 
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
-
     private AccessToken accessToken;
-    private GuiceJamesServer jmapServer;
 
-    protected MailQueueFactory<MailQueue> noopMailQueueFactory = new MailQueueFactory<MailQueue>() {
-        @Override
-        public Optional<MailQueue> getQueue(String name) {
-            return Optional.of(createQueue(name));
-        }
+    protected static MailQueueFactory<MailQueue> noopMailQueueFactory() {
+        return new MailQueueFactory<MailQueue>() {
+            @Override
+            public Optional<MailQueue> getQueue(String name) {
+                return Optional.of(createQueue(name));
+            }
 
-        @Override
-        public MailQueue createQueue(String name) {
-            return new MailQueue() {
-                @Override
-                public String getName() {
-                    return name;
-                }
-
-                @Override
-                public void enQueue(Mail mail, long delay, TimeUnit unit) {
-
-                }
-
-                @Override
-                public void enQueue(Mail mail) {
-
-                }
-
-                @Override
-                public MailQueueItem deQueue() {
-                    CountDownLatch blockingLatch = new CountDownLatch(1);
-                    try {
-                        blockingLatch.await();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+            @Override
+            public MailQueue createQueue(String name) {
+                return new MailQueue() {
+                    @Override
+                    public String getName() {
+                        return name;
                     }
-                    return null;
-                }
-            };
-        }
 
-        @Override
-        public Set<MailQueue> listCreatedMailQueues() {
-            throw new NotImplementedException("Minimalistic implementation. Please do not list queues");
-        }
-    };
+                    @Override
+                    public void enQueue(Mail mail, long delay, TimeUnit unit) {
 
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
+                    }
+
+                    @Override
+                    public void enQueue(Mail mail) {
+
+                    }
+
+                    @Override
+                    public MailQueueItem deQueue() {
+                        CountDownLatch blockingLatch = new CountDownLatch(1);
+                        try {
+                            blockingLatch.await();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    }
+                };
+            }
+
+            @Override
+            public Set<MailQueue> listCreatedMailQueues() {
+                throw new NotImplementedException("Minimalistic implementation. Please do not list queues");
+            }
+        };
+    }
+
+    @BeforeEach
+    public void setup(GuiceJamesServer jmapServer) throws Exception {
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
         DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
 
@@ -133,11 +128,6 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
         dataProbe.addUser(BOB, BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", USERNAME, DefaultMailboxes.INBOX);
         accessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), USERNAME, PASSWORD);
-    }
-
-    @After
-    public void teardown() {
-        jmapServer.stop();
     }
 
     @Test

@@ -19,36 +19,21 @@
 
 package org.apache.james;
 
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import org.apache.james.mailbox.extractor.TextExtractor;
+import org.apache.james.mailbox.store.search.PDFTextExtractor;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.webadmin.WebAdminConfiguration;
 
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
-public class TempFilesystemTestRule implements GuiceModuleTestRule {
+public interface MemoryJMAPModules {
+    JamesServerExtensionBuilder.ServerProvider DEFAULT_MEMORY_JMAP_SERVER = configuration -> GuiceJamesServer.forConfiguration(configuration)
+        .combineWith(MemoryJMAPModules.DEFAULT);
 
-    private final TemporaryFolder temporaryFolder;
+    Module DEFAULT = Modules.override(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
+        .with(TestJMAPServerModule.DEFAULT,
+            binder -> binder.bind(TextExtractor .class).to(PDFTextExtractor .class));
 
-    public TempFilesystemTestRule() {
-        this.temporaryFolder = new TemporaryFolder();
-    }
-
-    public TemporaryFolder getTemporaryFolder() {
-        return temporaryFolder;
-    }
-
-    @Override
-    public Statement apply(Statement base, Description description) {
-        return temporaryFolder.apply(base, description);
-    }
-
-    @Override
-    public Module getModule() {
-        return binder -> { };
-    }
-
-    @Override
-    public void await() {
-    }
-
+    Module ENABLE_WEBADMIN = binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION);
 }

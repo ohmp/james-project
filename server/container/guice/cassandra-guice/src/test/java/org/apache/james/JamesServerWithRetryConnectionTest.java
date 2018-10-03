@@ -19,7 +19,6 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -32,9 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.modules.mailbox.ElasticSearchConfiguration;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.util.Host;
@@ -80,7 +77,6 @@ class JamesServerWithRetryConnectionTest {
         }
     }
 
-    private static final int LIMIT_TO_10_MESSAGES = 10;
     private static final long WAITING_TIME = TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS);
 
     private static final int ELASTIC_SEARCH_PORT = 9300;
@@ -94,10 +90,7 @@ class JamesServerWithRetryConnectionTest {
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
         .extension(new DockerElasticSearchRegistrableExtension(elasticSearchContainer))
         .extension(new CassandraExtension(cassandraRule))
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES)))
+        .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .disableAutoStart()
         .build();
 

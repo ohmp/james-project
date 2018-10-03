@@ -16,12 +16,39 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.cassandra;
 
-import org.apache.james.jmap.methods.integration.SpamAssassinContract;
-import org.junit.jupiter.api.extension.ExtendWith;
+package org.apache.james.jmap;
 
-@ExtendWith(CassandraJmapExtension.class)
-public class CassandraSpamAssassinContractTest implements SpamAssassinContract {
+import org.apache.james.GuiceModuleTestExtension;
+import org.apache.james.jmap.methods.integration.SpamAssassinModule;
+import org.apache.james.spamassassin.SpamAssassinExtension;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
+import com.google.inject.Module;
+
+public class SpamAssassinGuiceExtension implements GuiceModuleTestExtension {
+    private final SpamAssassinExtension baseExtension;
+
+    public SpamAssassinGuiceExtension() {
+        baseExtension = new SpamAssassinExtension();
+    }
+
+    @Override
+    public Module getModule() {
+        return new SpamAssassinModule(baseExtension);
+    }
+
+    @Override
+    public void beforeEach(ExtensionContext extensionContext) {
+        baseExtension.beforeEach(extensionContext);
+    }
+
+    @Override
+    public void afterEach(ExtensionContext extensionContext) {
+        baseExtension.afterEach(extensionContext);
+    }
+
+    public SpamAssassinExtension getBaseExtension() {
+        return baseExtension;
+    }
 }

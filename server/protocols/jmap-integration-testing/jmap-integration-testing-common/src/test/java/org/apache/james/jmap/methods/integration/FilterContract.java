@@ -40,7 +40,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 
-import java.io.IOException;
 import java.util.Locale;
 
 import org.apache.james.GuiceJamesServer;
@@ -49,56 +48,43 @@ import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 
-public abstract class FilterTest {
-
-    protected abstract GuiceJamesServer createJmapServer() throws IOException;
-
+public abstract class FilterContract {
     protected abstract MailboxId randomMailboxId();
 
     private AccessToken accessToken;
     private AccessToken bobAccessToken;
-    private GuiceJamesServer jmapServer;
 
     private MailboxId matchedMailbox;
     private MailboxId inbox;
 
-    @Before
-    public void setup() throws Throwable {
-        jmapServer = createJmapServer();
-        jmapServer.start();
-
+    @BeforeEach
+    void setup(GuiceJamesServer server) throws Exception {
         RestAssured.requestSpecification = jmapRequestSpecBuilder
-            .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
+            .setPort(server.getProbe(JmapGuiceProbe.class).getJmapPort())
             .build();
 
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(ALICE, ALICE_PASSWORD);
-        dataProbe.addUser(BOB, BOB_PASSWORD);
-        accessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
-        bobAccessToken = authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD);
+        server.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(ALICE, ALICE_PASSWORD)
+            .addUser(BOB, BOB_PASSWORD);
+        accessToken = authenticateJamesUser(baseUri(server), ALICE, ALICE_PASSWORD);
+        bobAccessToken = authenticateJamesUser(baseUri(server), BOB, BOB_PASSWORD);
 
-        MailboxProbeImpl mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
+        MailboxProbeImpl mailboxProbe = server.getProbe(MailboxProbeImpl.class);
         matchedMailbox = mailboxProbe.createMailbox(MailboxPath.forUser(ALICE, "matched"));
         inbox = mailboxProbe.createMailbox(MailboxPath.forUser(ALICE, INBOX));
     }
 
-    @After
-    public void teardown() {
-        jmapServer.stop();
-    }
-
     @Test
-    public void getFilterShouldReturnEmptyByDefault() {
+    void getFilterShouldReturnEmptyByDefault() {
         String body = "[[" +
                 "  \"getFilter\", " +
                 "  {}, " +
@@ -117,7 +103,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void getFilterShouldReturnEmptyWhenExplicitNullAccountId() {
+    void getFilterShouldReturnEmptyWhenExplicitNullAccountId() {
         String body = "[[" +
                 "  \"getFilter\", " +
                 "  {\"accountId\": null}, " +
@@ -136,7 +122,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void getFilterShouldReturnErrorWhenUnsupportedAccountId() {
+    void getFilterShouldReturnErrorWhenUnsupportedAccountId() {
         String body = "[[" +
                 "  \"getFilter\", " +
                 "  {\"accountId\": \"any\"}, " +
@@ -156,7 +142,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldOverwritePreviouslyStoredRules() {
+    void setFilterShouldOverwritePreviouslyStoredRules() {
         MailboxId mailbox1 = randomMailboxId();
         MailboxId mailbox2 = randomMailboxId();
 
@@ -238,7 +224,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldReturnUpdatedSingleton() {
+    void setFilterShouldReturnUpdatedSingleton() {
         MailboxId mailbox = randomMailboxId();
 
         given()
@@ -272,7 +258,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldRejectDuplicatedRules() {
+    void setFilterShouldRejectDuplicatedRules() {
         MailboxId mailbox = randomMailboxId();
 
         given()
@@ -322,7 +308,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldRejectRulesTargetingSeveralMailboxes() {
+    void setFilterShouldRejectRulesTargetingSeveralMailboxes() {
         MailboxId mailbox1 = randomMailboxId();
         MailboxId mailbox2 = randomMailboxId();
 
@@ -359,7 +345,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldRejectAccountId() {
+    void setFilterShouldRejectAccountId() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -379,7 +365,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldAcceptNullAccountId() {
+    void setFilterShouldAcceptNullAccountId() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -398,7 +384,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldRejectIfInState() {
+    void setFilterShouldRejectIfInState() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -418,7 +404,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldAcceptNullIfInState() {
+    void setFilterShouldAcceptNullIfInState() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -437,7 +423,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void getFilterShouldRetrievePreviouslyStoredRules() {
+    void getFilterShouldRetrievePreviouslyStoredRules() {
         MailboxId mailbox1 = randomMailboxId();
         MailboxId mailbox2 = randomMailboxId();
 
@@ -511,7 +497,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void setFilterShouldClearPreviouslyStoredRulesWhenEmptyBody() {
+    void setFilterShouldClearPreviouslyStoredRulesWhenEmptyBody() {
         MailboxId mailbox = randomMailboxId();
 
         given()
@@ -572,7 +558,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void allFieldsAndComparatorsShouldBeSupported() {
+    void allFieldsAndComparatorsShouldBeSupported() {
         MailboxId mailbox = randomMailboxId();
 
         given()
@@ -690,7 +676,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenFromRuleMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenFromRuleMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -743,7 +729,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenToRuleMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenToRuleMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -798,7 +784,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenCcRuleMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenCcRuleMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -854,7 +840,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenRecipientRuleMatchesCc() {
+    void messageShouldBeAppendedInSpecificMailboxWhenRecipientRuleMatchesCc() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -910,7 +896,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenRecipientRuleMatchesTo() {
+    void messageShouldBeAppendedInSpecificMailboxWhenRecipientRuleMatchesTo() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -966,7 +952,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenSubjectRuleMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenSubjectRuleMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1021,7 +1007,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenFromDoesNotMatchRule() {
+    void messageShouldBeAppendedInInboxWhenFromDoesNotMatchRule() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1076,7 +1062,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenToDoesNotMatchRule() {
+    void messageShouldBeAppendedInInboxWhenToDoesNotMatchRule() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1131,7 +1117,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenCcDoesNotMatchRule() {
+    void messageShouldBeAppendedInInboxWhenCcDoesNotMatchRule() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1187,7 +1173,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenRecipientDoesNotMatchRule() {
+    void messageShouldBeAppendedInInboxWhenRecipientDoesNotMatchRule() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1243,7 +1229,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenSubjectRuleDoesNotMatchRule() {
+    void messageShouldBeAppendedInInboxWhenSubjectRuleDoesNotMatchRule() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1299,7 +1285,7 @@ public abstract class FilterTest {
 
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenSubjectRuleDoesNotMatchRuleBecaseOfCase() {
+    void messageShouldBeAppendedInInboxWhenSubjectRuleDoesNotMatchRuleBecaseOfCase() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1354,7 +1340,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenContainsComparatorMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenContainsComparatorMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1409,7 +1395,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenContainsComparatorDoesNotMatch() {
+    void messageShouldBeAppendedInInboxWhenContainsComparatorDoesNotMatch() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1464,7 +1450,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesName() {
+    void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesName() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1519,7 +1505,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesAddress() {
+    void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesAddress() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1574,7 +1560,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesFullHeader() {
+    void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesFullHeader() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1630,7 +1616,7 @@ public abstract class FilterTest {
 
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesCaseInsensitivelyFullHeader() {
+    void messageShouldBeAppendedInSpecificMailboxWhenExactlyEqualsMatchesCaseInsensitivelyFullHeader() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1685,7 +1671,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenExactlyEqualsComparatorDoesNotMatch() {
+    void messageShouldBeAppendedInInboxWhenExactlyEqualsComparatorDoesNotMatch() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1740,7 +1726,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenNotContainsComparatorMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenNotContainsComparatorMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1795,7 +1781,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenNotContainsComparatorDoesNotMatch() {
+    void messageShouldBeAppendedInInboxWhenNotContainsComparatorDoesNotMatch() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1850,7 +1836,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenContainsNotExactlyEqualsMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenContainsNotExactlyEqualsMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1905,7 +1891,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenNotExactlyEqualsMatchesAddress() {
+    void messageShouldBeAppendedInInboxWhenNotExactlyEqualsMatchesAddress() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -1960,7 +1946,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenNotExactlyEqualsMatchesFullHeader() {
+    void messageShouldBeAppendedInInboxWhenNotExactlyEqualsMatchesFullHeader() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -2015,7 +2001,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInInboxWhenNotExactlyEqualsComparatorMatchesName() {
+    void messageShouldBeAppendedInInboxWhenNotExactlyEqualsComparatorMatchesName() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -2070,7 +2056,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenFirstRuleMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenFirstRuleMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -2137,7 +2123,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void messageShouldBeAppendedInSpecificMailboxWhenSecondRuleMatches() {
+    void messageShouldBeAppendedInSpecificMailboxWhenSecondRuleMatches() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -2204,7 +2190,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void inboxShouldBeEmptyWhenFromRuleMatchesInSpecificMailbox() {
+    void inboxShouldBeEmptyWhenFromRuleMatchesInSpecificMailbox() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +
@@ -2258,7 +2244,7 @@ public abstract class FilterTest {
     }
 
     @Test
-    public void matchedMailboxShouldBeEmptyWhenFromRuleDoesntMatch() {
+    void matchedMailboxShouldBeEmptyWhenFromRuleDoesntMatch() {
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[" +

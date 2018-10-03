@@ -21,7 +21,11 @@ package org.apache.james.webadmin.integration;
 
 import static io.restassured.RestAssured.when;
 
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.modules.CassandraJMAPTestModule;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.routes.CassandraMigrationRoutes;
@@ -41,14 +45,22 @@ import org.apache.james.webadmin.routes.UserQuotaRoutes;
 import org.apache.james.webadmin.routes.UserRoutes;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import io.restassured.RestAssured;
 
-@ExtendWith(CassandraJmapExtension.class)
 class UnauthorizedEndpointsTest {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN)
+            .overrideWith(new UnauthorizedModule()))
+        .build();
 
     @BeforeEach
     void setup(GuiceJamesServer james) {

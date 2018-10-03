@@ -16,41 +16,25 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+package org.apache.james.jmap.memory;
 
-package org.apache.james.modules;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
+import org.apache.james.jmap.SpamAssassinGuiceExtension;
+import org.apache.james.jmap.methods.integration.SpamAssassinContract;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.net.URISyntaxException;
+public class MemorySpamAssassinTest implements SpamAssassinContract {
+    private static final SpamAssassinGuiceExtension SPAM_ASSASSIN_GUICE_EXTENSION = new SpamAssassinGuiceExtension();
 
-import javax.inject.Singleton;
-
-import org.apache.james.mailbox.tika.TikaConfiguration;
-import org.apache.james.mailbox.tika.TikaContainer;
-import org.apache.james.mailbox.tika.TikaHttpClient;
-import org.apache.james.mailbox.tika.TikaHttpClientImpl;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-
-public class TestTikaModule extends AbstractModule {
-
-    private final TikaContainer tika;
-
-    public TestTikaModule(TikaContainer tika) {
-        this.tika = tika;
-    }
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
+        .server(MemoryJMAPModules.DEFAULT_MEMORY_JMAP_SERVER)
+        .build();
 
     @Override
-    protected void configure() {
-
-    }
-
-    @Provides
-    @Singleton
-    protected TikaHttpClient provideTikaHttpClient() throws URISyntaxException {
-        return new TikaHttpClientImpl(TikaConfiguration.builder()
-                .host(tika.getIp())
-                .port(tika.getPort())
-                .timeoutInMillis(tika.getTimeoutInMillis())
-                .build());
+    public void train(String username) throws Exception {
+        SPAM_ASSASSIN_GUICE_EXTENSION.getBaseExtension().getSpamAssassin().train(username);
     }
 }
