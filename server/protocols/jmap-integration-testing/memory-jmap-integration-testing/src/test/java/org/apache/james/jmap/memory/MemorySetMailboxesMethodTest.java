@@ -19,24 +19,16 @@
 
 package org.apache.james.jmap.memory;
 
-import java.io.IOException;
-
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.methods.integration.SetMailboxesMethodTest;
-import org.junit.Rule;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.MemoryJMAPModules;
+import org.apache.james.jmap.methods.integration.SetMailboxesMethodContract;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemorySetMailboxesMethodTest extends SetMailboxesMethodTest {
-
-    @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
-
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return memoryJmap.jmapServer();
-    }
-    
-    @Override
-    protected void await() {
-    }
+class MemorySetMailboxesMethodTest extends SetMailboxesMethodContract {
+    @RegisterExtension
+    static JamesServerExtension jamesServerExtension = JamesServerExtension.builder()
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MemoryJMAPModules.DEFAULT))
+        .build();
 }
