@@ -19,8 +19,12 @@
 
 package org.apache.james;
 
+import java.net.URISyntaxException;
+
+import org.apache.james.mailbox.tika.TikaConfiguration;
 import org.apache.james.mailbox.tika.TikaContainer;
-import org.apache.james.modules.TestTikaModule;
+import org.apache.james.mailbox.tika.TikaHttpClient;
+import org.apache.james.mailbox.tika.TikaHttpClientImpl;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import com.google.inject.Module;
@@ -44,6 +48,17 @@ class TikaExtension implements GuiceModuleTestExtension {
 
     @Override
     public Module getModule() {
-        return new TestTikaModule(tika);
+        return binder -> binder.bind(TikaHttpClient.class)
+            .toProvider(() -> {
+                try {
+                    return new TikaHttpClientImpl(TikaConfiguration.builder()
+                        .host(tika.getIp())
+                        .port(tika.getPort())
+                        .timeoutInMillis(tika.getTimeoutInMillis())
+                        .build());
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            });
     }
 }
