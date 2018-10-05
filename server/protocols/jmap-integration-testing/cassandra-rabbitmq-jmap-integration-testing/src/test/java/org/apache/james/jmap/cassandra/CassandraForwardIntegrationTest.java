@@ -19,6 +19,7 @@
 
 package org.apache.james.jmap.cassandra;
 
+import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.methods.integration.ForwardIntegrationContract;
 import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
@@ -28,6 +29,8 @@ class CassandraForwardIntegrationTest extends ForwardIntegrationContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
         .extensions(CassandraRabbitMQJMAPTestModule.DEFAULT_EXTENSIONS)
-        .server(CassandraRabbitMQJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT)
+            .overrideWith(CassandraRabbitMQJMAPTestModule.ENABLE_WEBADMIN))
         .build();
 }
