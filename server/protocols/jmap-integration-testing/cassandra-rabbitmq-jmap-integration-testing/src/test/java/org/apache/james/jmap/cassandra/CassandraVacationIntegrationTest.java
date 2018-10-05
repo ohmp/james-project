@@ -19,35 +19,25 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraRabbitMQJmapTestRule;
-import org.apache.james.DockerCassandraRule;
-import org.apache.james.DockerRabbitMQRule;
-import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.VacationIntegrationTest;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.RabbitMQExtension;
+import org.apache.james.jmap.VacationIntegrationContract;
+import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.IOException;
-
-public class CassandraVacationIntegrationTest extends VacationIntegrationTest {
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @ClassRule
-    public static DockerRabbitMQRule rabbitMQTestRule = new DockerRabbitMQRule();
-
-    @Rule
-    public CassandraRabbitMQJmapTestRule rule = CassandraRabbitMQJmapTestRule.defaultTestRule();
-    
-    @Override
-    protected GuiceJamesServer createJmapServer() throws IOException {
-        return rule.jmapServer(rabbitMQTestRule.getModule(), cassandra.getModule());
-    }
+public class CassandraVacationIntegrationTest implements VacationIntegrationContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .extension(new RabbitMQExtension())
+        .server(CassandraRabbitMQJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
+        .build();
 
     @Override
-    protected void await() {
-        rule.await();
+    public void await() {
+        testExtension.await();
     }
-    
 }

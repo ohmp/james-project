@@ -18,34 +18,24 @@
  ****************************************************************/
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraRabbitMQJmapTestRule;
-import org.apache.james.DockerCassandraRule;
-import org.apache.james.DockerRabbitMQRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.jmap.FixedDateZonedDateTimeProvider;
-import org.apache.james.jmap.JMAPAuthenticationTest;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.RabbitMQExtension;
+import org.apache.james.jmap.JMAPAuthenticationContract;
+import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
 import org.apache.james.util.date.ZonedDateTimeProvider;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.IOException;
-
-public class CassandraJmapAuthenticationTest extends JMAPAuthenticationTest {
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @ClassRule
-    public static DockerRabbitMQRule rabbitMQTestRule = new DockerRabbitMQRule();
-
-    @Rule
-    public CassandraRabbitMQJmapTestRule rule = CassandraRabbitMQJmapTestRule.defaultTestRule();
-    
-    @Override
-    protected GuiceJamesServer createJmapServer(FixedDateZonedDateTimeProvider zonedDateTimeProvider) throws IOException {
-        return rule.jmapServer(rabbitMQTestRule.getModule(),
-                cassandra.getModule())
-            .overrideWith(binder -> binder.bind(ZonedDateTimeProvider.class).toInstance(zonedDateTimeProvider));
-    }
-
+class CassandraJmapAuthenticationTest implements JMAPAuthenticationContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .extension(new RabbitMQExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT)
+            .overrideWith(binder -> binder.bind(ZonedDateTimeProvider.class).toInstance(ZONED_DATE_TIME_PROVIDER)))
+        .build();
 }

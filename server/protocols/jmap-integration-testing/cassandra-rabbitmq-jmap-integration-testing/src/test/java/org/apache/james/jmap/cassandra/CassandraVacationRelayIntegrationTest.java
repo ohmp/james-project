@@ -19,47 +19,29 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraRabbitMQJmapTestRule;
-import org.apache.james.DockerCassandraRule;
-import org.apache.james.DockerRabbitMQRule;
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.JamesServerExtension;
+import org.apache.james.RabbitMQExtension;
 import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.InMemoryDNSService;
-import org.apache.james.jmap.VacationRelayIntegrationTest;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.apache.james.jmap.VacationRelayIntegrationContract;
+import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.IOException;
-
-public class CassandraVacationRelayIntegrationTest extends VacationRelayIntegrationTest {
-
-    private final InMemoryDNSService inMemoryDNSService = new InMemoryDNSService();
-
-    @ClassRule
-    public static DockerCassandraRule cassandra = new DockerCassandraRule();
-
-    @ClassRule
-    public static DockerRabbitMQRule rabbitMQTestRule = new DockerRabbitMQRule();
-
-    @Rule
-    public CassandraRabbitMQJmapTestRule rule = CassandraRabbitMQJmapTestRule.defaultTestRule();
+public class CassandraVacationRelayIntegrationTest implements VacationRelayIntegrationContract {
+    @RegisterExtension
+    static JamesServerExtension testExtension = JamesServerExtension.builder()
+        .extension(new EmbeddedElasticSearchExtension())
+        .extension(new CassandraExtension())
+        .extension(new RabbitMQExtension())
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT)
+            .overrideWith(binder -> binder.bind(DNSService.class).toInstance(VacationRelayIntegrationContract.createDNS())))
+        .build();
 
     @Override
-    protected GuiceJamesServer getJmapServer() throws IOException {
-        return rule.jmapServer(
-                rabbitMQTestRule.getModule(),
-                cassandra.getModule(),
-                (binder) -> binder.bind(DNSService.class).toInstance(inMemoryDNSService));
+    public void await() {
+        testExtension.await();
     }
-
-    @Override
-    protected void await() {
-        rule.await();
-    }
-
-    @Override
-    protected InMemoryDNSService getInMemoryDns() {
-        return inMemoryDNSService;
-    }
-
 }
