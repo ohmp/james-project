@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.JMAPAuthenticationContract;
@@ -30,8 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraJmapAuthenticationTest implements JMAPAuthenticationContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(binder -> binder.bind(ZonedDateTimeProvider.class).toInstance(ZONED_DATE_TIME_PROVIDER)))

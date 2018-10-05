@@ -19,11 +19,8 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.RabbitMQExtension;
 import org.apache.james.jmap.methods.integration.GetVacationResponseContract;
 import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
 import org.apache.james.util.date.ZonedDateTimeProvider;
@@ -32,9 +29,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CassandraGetVacationResponseTest implements GetVacationResponseContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
-        .extension(new RabbitMQExtension())
+        .extensions(CassandraRabbitMQJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT)
             .overrideWith(binder -> binder.bind(ZonedDateTimeProvider.class).toInstance(FIXED_DATE_ZONED_DATE_TIME_PROVIDER)))

@@ -31,8 +31,6 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.List;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
@@ -70,8 +68,7 @@ class WebAdminServerIntegrationTest {
 
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN))

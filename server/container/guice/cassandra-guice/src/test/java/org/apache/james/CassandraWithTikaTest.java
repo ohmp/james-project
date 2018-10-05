@@ -26,9 +26,8 @@ class CassandraWithTikaTest implements JamesServerContract {
     @RegisterExtension
     static JamesServerExtension testExtension =
         new JamesServerExtensionBuilder()
-            .extension(new CassandraExtension())
-            .extension(new  TikaExtension())
-            .extension(new EmbeddedElasticSearchExtension())
+            .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
+            .extension(new TikaExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
                 .combineWith(CassandraJMAPTestModule.DEFAULT)
                 .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))

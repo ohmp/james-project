@@ -19,10 +19,7 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.RabbitMQExtension;
 import org.apache.james.jmap.methods.integration.ForwardIntegrationContract;
 import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -30,9 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraForwardIntegrationTest extends ForwardIntegrationContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
-        .extension(new RabbitMQExtension())
+        .extensions(CassandraRabbitMQJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(CassandraRabbitMQJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .build();
 }

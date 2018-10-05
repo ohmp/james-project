@@ -21,6 +21,8 @@ package org.apache.james;
 
 import java.io.File;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.apache.james.server.core.configuration.Configuration;
@@ -56,9 +58,13 @@ public class JamesServerExtensionBuilder {
         autoStart = Optional.empty();
     }
 
-    public JamesServerExtensionBuilder extensions(GuiceModuleTestExtension... extensions) {
-        this.extensions.add(extensions);
+    public JamesServerExtensionBuilder extensions(Collection<GuiceModuleTestExtension> extensions) {
+        this.extensions.addAll(extensions);
         return this;
+    }
+
+    public JamesServerExtensionBuilder extensions(GuiceModuleTestExtension... extensions) {
+        return extensions(Arrays.asList(extensions));
     }
 
     public JamesServerExtensionBuilder extension(GuiceModuleTestExtension extension) {

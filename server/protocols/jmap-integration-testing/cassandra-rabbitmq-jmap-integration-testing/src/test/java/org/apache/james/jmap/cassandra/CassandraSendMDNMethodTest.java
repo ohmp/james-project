@@ -19,10 +19,7 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.RabbitMQExtension;
 import org.apache.james.jmap.methods.integration.SendMDNMethodContract;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.model.MessageId;
@@ -32,9 +29,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CassandraSendMDNMethodTest extends SendMDNMethodContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
-        .extension(new RabbitMQExtension())
+        .extensions(CassandraRabbitMQJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(CassandraRabbitMQJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .build();
 

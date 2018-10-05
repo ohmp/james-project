@@ -19,8 +19,6 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.VacationIntegrationContract;
 import org.apache.james.modules.CassandraJMAPTestModule;
@@ -29,8 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CassandraVacationIntegrationTest implements VacationIntegrationContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .build();
 

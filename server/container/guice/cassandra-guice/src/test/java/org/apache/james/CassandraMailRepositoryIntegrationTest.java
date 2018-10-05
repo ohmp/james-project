@@ -49,8 +49,7 @@ class CassandraMailRepositoryIntegrationTest {
 
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .build();
 

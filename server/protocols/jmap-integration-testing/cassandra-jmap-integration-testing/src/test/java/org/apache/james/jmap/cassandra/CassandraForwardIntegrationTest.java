@@ -19,8 +19,6 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.methods.integration.ForwardIntegrationContract;
@@ -30,8 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraForwardIntegrationTest extends ForwardIntegrationContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN))

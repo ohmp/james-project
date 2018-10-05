@@ -38,8 +38,7 @@ import com.google.inject.multibindings.Multibinder;
 class CassandraMessageIdManagerInjectionTest {
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(binder -> Multibinder.newSetBinder(binder, ConfigurationPerformer.class)

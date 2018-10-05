@@ -25,8 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraJmapJamesServerTest implements JmapJamesServerContract {
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))

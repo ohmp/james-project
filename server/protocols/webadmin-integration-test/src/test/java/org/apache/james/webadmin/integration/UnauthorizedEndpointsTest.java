@@ -21,8 +21,6 @@ package org.apache.james.webadmin.integration;
 
 import static io.restassured.RestAssured.when;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.modules.CassandraJMAPTestModule;
@@ -54,8 +52,7 @@ import io.restassured.RestAssured;
 class UnauthorizedEndpointsTest {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(CassandraJMAPTestModule.ENABLE_WEBADMIN)

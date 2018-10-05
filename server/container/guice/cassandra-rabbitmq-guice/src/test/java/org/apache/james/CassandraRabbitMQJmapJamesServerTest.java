@@ -25,9 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraRabbitMQJmapJamesServerTest implements JmapJamesServerContract  {
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
-            .extension(new EmbeddedElasticSearchExtension())
-            .extension(new CassandraExtension())
-            .extension(new RabbitMQExtension())
+        .extensions(CassandraRabbitMQJMAPTestModule.DEFAULT_EXTENSIONS)
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
                 .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT)
                     .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))

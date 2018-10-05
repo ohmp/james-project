@@ -35,8 +35,6 @@ import java.util.Date;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
@@ -127,8 +125,7 @@ class CassandraBulkOperationTest {
 
     private JamesServerExtension serverExtensionWithChunkSize(int chunkSize) {
         return JamesServerExtension.builder()
-            .extension(new EmbeddedElasticSearchExtension())
-            .extension(new CassandraExtension())
+            .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
                 .combineWith(CassandraJMAPTestModule.DEFAULT)
                 .overrideWith(binder -> binder.bind(CassandraConfiguration.class)

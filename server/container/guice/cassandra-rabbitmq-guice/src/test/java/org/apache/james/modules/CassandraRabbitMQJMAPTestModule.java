@@ -21,16 +21,29 @@ package org.apache.james.modules;
 
 import static org.apache.james.CassandraRabbitMQJamesServerMain.ALL_BUT_JMX_CASSANDRA_RABBITMQ_MODULE;
 
+import java.util.List;
+
+import org.apache.james.CassandraExtension;
+import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.GuiceModuleTestExtension;
 import org.apache.james.JamesServerExtensionBuilder;
+import org.apache.james.RabbitMQExtension;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.webadmin.WebAdminConfiguration;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public interface CassandraRabbitMQJMAPTestModule {
+
+    List<GuiceModuleTestExtension> DEFAULT_EXTENSIONS = ImmutableList.of(
+        new CassandraExtension(),
+        new EmbeddedElasticSearchExtension(),
+        new RabbitMQExtension());
+
     JamesServerExtensionBuilder.ServerProvider DEFAULT_CASSANDRA_JMAP_SERVER = configuration -> GuiceJamesServer.forConfiguration(configuration)
         .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT);
 

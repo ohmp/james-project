@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.SpamAssassinGuiceExtension;
 import org.apache.james.jmap.methods.integration.SpamAssassinContract;
@@ -31,8 +29,7 @@ class CassandraSpamAssassinTest implements SpamAssassinContract {
 
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .extension(SPAM_ASSASSIN_GUICE_EXTENSION)
         .server(CassandraJMAPTestModule.DEFAULT_CASSANDRA_JMAP_SERVER)
         .build();

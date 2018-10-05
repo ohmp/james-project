@@ -19,8 +19,6 @@
 
 package org.apache.james.jmap.cassandra;
 
-import org.apache.james.CassandraExtension;
-import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.methods.integration.GetMessageListMethodContract;
@@ -31,8 +29,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CassandraGetMessageListMethodTest extends GetMessageListMethodContract {
     @RegisterExtension
     static JamesServerExtension testExtension = JamesServerExtension.builder()
-        .extension(new EmbeddedElasticSearchExtension())
-        .extension(new CassandraExtension())
+        .extensions(CassandraJMAPTestModule.DEFAULT_EXTENSIONS)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraJMAPTestModule.DEFAULT)
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES)))
