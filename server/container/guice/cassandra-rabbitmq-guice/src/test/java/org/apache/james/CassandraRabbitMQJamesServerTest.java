@@ -19,13 +19,10 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraRabbitMQJamesServerMain.ALL_BUT_JMX_CASSANDRA_RABBITMQ_MODULE;
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 
 import org.apache.james.core.Domain;
-import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.search.PDFTextExtractor;
-import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.CassandraRabbitMQJMAPTestModule;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.utils.DataProbeImpl;
@@ -49,7 +46,6 @@ class CassandraRabbitMQJamesServerTest implements JamesServerContract {
         .with()
         .pollDelay(slowPacedPollInterval)
         .await();
-    private static final int LIMIT_TO_10_MESSAGES = 10;
 
     private IMAPMessageReader imapMessageReader = new IMAPMessageReader();
     private SMTPMessageSender messageSender = new SMTPMessageSender(Domain.LOCALHOST.asString());
@@ -60,9 +56,7 @@ class CassandraRabbitMQJamesServerTest implements JamesServerContract {
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_RABBITMQ_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+            .combineWith(CassandraRabbitMQJMAPTestModule.DEFAULT)
             .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
         .build();
 
