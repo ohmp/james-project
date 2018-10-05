@@ -63,7 +63,8 @@ class ESReporterTest {
         .extension(embeddedElasticSearchExtension)
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraJMAPTestModule.DEFAULT))
+            .combineWith(CassandraJMAPTestModule.DEFAULT)
+            .overrideWith(new TestESMetricReporterModule()))
         .build();
 
     private static final int DELAY_IN_MS = 100;
