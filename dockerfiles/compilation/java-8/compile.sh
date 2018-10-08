@@ -14,6 +14,7 @@ printUsage() {
 
 ORIGIN=/origin
 CASSANDRA_DESTINATION=/cassandra/destination
+CASSANDRA_RABBIT_DESTINATION=/cassandra-rabbit/destination
 JPA_DESTINATION=/jpa/destination
 SPRING_DESTINATION=/spring/destination
 SWAGGER_DESTINATION=/swagger
@@ -75,6 +76,14 @@ if [ $? -eq 0 ]; then
       cp -r server/container/guice/jpa-guice/target/james-server-jpa-guice.lib $JPA_DESTINATION || true
       cp server/container/cli/target/james-server-cli.jar $JPA_DESTINATION || true
       cp -r server/container/cli/target/james-server-cli.lib $JPA_DESTINATION || true
+   fi
+
+   if [ -d "$CASSANDRA_RABBIT_DESTINATION" ]; then
+      echo "Copying JPA jars"
+      cp server/container/guice/cassandra-rabbitmq-guice/target/james-server-cassandra-rabbitmq-guice.jar $CASSANDRA_RABBIT_DESTINATION || true
+      cp -r server/container/guice/cassandra-rabbitmq-guice/target/james-server-cassandra-rabbitmq-guice.lib $CASSANDRA_RABBIT_DESTINATION || true
+      cp server/container/cli/target/james-server-cli.jar $CASSANDRA_RABBIT_DESTINATION || true
+      cp -r server/container/cli/target/james-server-cli.lib $CASSANDRA_RABBIT_DESTINATION || true
    fi
 
    if [ -d "$SPRING_DESTINATION" ]; then
