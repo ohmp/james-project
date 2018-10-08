@@ -265,12 +265,12 @@ Add a link for the tika container in the above command line:
 
 
 ==== Requirements
-Built artifacts should be in ./dockerfiles/run/guice/cassandra/destination folder for cassandra.
+Built artifacts should be in ./dockerfiles/run/guice/cassandra-rabbitmq/destination folder for cassandra.
 If you haven't already:
 
     $ docker build -t james/project dockerfiles/compilation/java-8
     $ docker run -v $HOME/.m2:/root/.m2 -v $PWD:/origin \
-  -v $PWD/dockerfiles/run/guice/cassandra-rabbitmq/destination:/cassandra-rabbit/destination \
+  -v $PWD/dockerfiles/run/guice/cassandra-rabbitmq/destination:/cassandra-rabbitmq/destination \
   -t james/project -s HEAD
 
 
