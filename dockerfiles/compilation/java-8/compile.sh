@@ -14,7 +14,7 @@ printUsage() {
 
 ORIGIN=/origin
 CASSANDRA_DESTINATION=/cassandra/destination
-CASSANDRA_RABBIT_DESTINATION=/cassandra-rabbit/destination
+CASSANDRA_RABBIT_DESTINATION=/cassandra-rabbitmq/destination
 JPA_DESTINATION=/jpa/destination
 SPRING_DESTINATION=/spring/destination
 SWAGGER_DESTINATION=/swagger
