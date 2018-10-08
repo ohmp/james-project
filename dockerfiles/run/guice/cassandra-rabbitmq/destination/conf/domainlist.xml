@@ -20,7 +20,7 @@
 
 <domainlist>
     <domainnames>
-        <domainname>james.linagora.com</domainname>
+        <domainname>apache.org</domainname>
     </domainnames>
     <autodetect>true</autodetect>
     <autodetectIP>true</autodetectIP>
