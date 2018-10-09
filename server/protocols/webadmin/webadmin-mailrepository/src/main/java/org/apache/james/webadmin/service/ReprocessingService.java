@@ -68,10 +68,14 @@ public class ReprocessingService {
     }
 
     private void reprocess(MailRepository repository, MailQueue mailQueue, MailKey key, Optional<String> targetProcessor) throws MessagingException {
-        Mail mail = repository.retrieve(key);
-        targetProcessor.ifPresent(mail::setState);
-        mailQueue.enQueue(mail);
-        repository.remove(key);
+        Optional.ofNullable(repository.retrieve(key))
+            .ifPresent(Throwing.<Mail>consumer(
+                mail -> {
+                    targetProcessor.ifPresent(mail::setState);
+                    mailQueue.enQueue(mail);
+                    repository.remove(key);
+                })
+                .sneakyThrow());
     }
 
     private MailQueue getMailQueue(String targetQueue) {
