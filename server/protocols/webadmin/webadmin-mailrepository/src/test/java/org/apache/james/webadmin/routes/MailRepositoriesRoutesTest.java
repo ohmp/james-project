@@ -1152,7 +1152,7 @@ public class MailRepositoriesRoutesTest {
     }
 
     @Test
-    public void reprocessingAllTaskShouldNotFailWhenSeveralRepositoryWithSamePath() throws Exception {
+    public void reprocessingAllTaskShouldNotFailWhenSeveralRepositoriesWithSamePath() throws Exception {
         MailRepository mailRepository = mailRepositoryStore.create(URL_MY_REPO);
         mailRepositoryStore.create(URL_MY_REPO_OTHER);
         String name1 = "name1";
@@ -1210,7 +1210,7 @@ public class MailRepositoriesRoutesTest {
     }
 
     @Test
-    public void reprocessingAllTaskShouldClearBothMailRepositoryWhenSamePath() throws Exception {
+    public void reprocessingAllTaskShouldClearBothMailRepositoriesWhenSamePath() throws Exception {
         MailRepository mailRepository1 = mailRepositoryStore.create(URL_MY_REPO);
         MailRepository mailRepository2 = mailRepositoryStore.create(URL_MY_REPO_OTHER);
         String name1 = "name1";
@@ -1266,7 +1266,7 @@ public class MailRepositoriesRoutesTest {
     }
 
     @Test
-    public void reprocessingAllTaskShouldEnqueueMailsOfBothRepositoryOnDefaultQueueWhenSamePath() throws Exception {
+    public void reprocessingAllTaskShouldEnqueueMailsOfBothRepositoriesOnDefaultQueueWhenSamePath() throws Exception {
         MailRepository mailRepository1 = mailRepositoryStore.create(URL_MY_REPO);
         MailRepository mailRepository2 = mailRepositoryStore.create(URL_MY_REPO_OTHER);
         mailRepository1.store(FakeMail.builder()
