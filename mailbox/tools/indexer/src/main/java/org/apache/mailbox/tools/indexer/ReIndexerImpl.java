@@ -138,7 +138,7 @@ public class ReIndexerImpl implements ReIndexer {
             Optional<ImpactingMessageEvent> impactingMessageEvent = findMostRelevant(mailboxRegistration.getImpactingEvents(uid));
 
             Optional.of(uid)
-                .filter(x -> wasNotDeleted(impactingMessageEvent))
+                .filter(x -> !wasDeleted(impactingMessageEvent))
                 .flatMap(Throwing.function(mUid -> fullyReadMessage(mailboxSession, mailbox, mUid)))
                 .map(message -> messageUpdateRegardingEvents(message, impactingMessageEvent))
                 .ifPresent(Throwing.consumer(message -> messageSearchIndex.add(mailboxSession, mailbox, message)));
@@ -156,8 +156,8 @@ public class ReIndexerImpl implements ReIndexer {
         return Lists.reverse(messageEvents).stream().findFirst();
     }
 
-    private boolean wasNotDeleted(Optional<ImpactingMessageEvent> impactingMessageEvent) {
-        return impactingMessageEvent.map(event -> !event.wasDeleted()).orElse(true);
+    private boolean wasDeleted(Optional<ImpactingMessageEvent> impactingMessageEvent) {
+        return impactingMessageEvent.map(ImpactingMessageEvent::wasDeleted).orElse(false);
     }
 
     private MailboxMessage messageUpdateRegardingEvents(MailboxMessage message, Optional<ImpactingMessageEvent> impactingMessageEvent) {
