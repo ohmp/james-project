@@ -28,11 +28,18 @@ import javax.inject.Named;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.task.TaskId;
+import org.apache.james.task.TaskManager;
 import org.apache.james.util.MDCBuilder;
 
 public class ReIndexerManagement implements ReIndexerManagementMBean {
 
+    private final TaskManager taskManager;
     private ReIndexer reIndexer;
+
+    public ReIndexerManagement(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
 
     @Inject
     public void setReIndexer(@Named("reindexer") ReIndexer reIndexer) {
@@ -46,7 +53,8 @@ public class ReIndexerManagement implements ReIndexerManagementMBean {
                      .addContext(MDCBuilder.PROTOCOL, "CLI")
                      .addContext(MDCBuilder.ACTION, "reIndex")
                      .build()) {
-            reIndexer.reIndex(new MailboxPath(namespace, user, name));
+            TaskId taskId = taskManager.submit(reIndexer.reIndex(new MailboxPath(namespace, user, name)));
+            taskManager.await(taskId);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
