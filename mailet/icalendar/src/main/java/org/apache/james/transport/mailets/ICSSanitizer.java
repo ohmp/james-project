@@ -52,6 +52,7 @@ import com.github.fge.lambdas.Throwing;
 public class ICSSanitizer extends GenericMailet {
     private static final Logger LOGGER = LoggerFactory.getLogger(ICSSanitizer.class);
     private static final int TEXT_PREFIX_SIZE = 5;
+    public static final String DEFAULT_FILENAME = "event.ics";
 
     @Override
     public void service(Mail mail) {
@@ -104,7 +105,7 @@ public class ICSSanitizer extends GenericMailet {
 
     private void setFileNameIfNeeded(MimeBodyPart mimeBodyPart) throws MessagingException {
         if (mimeBodyPart.getFileName() == null) {
-            mimeBodyPart.setFileName("calendar.txt");
+            mimeBodyPart.setFileName(DEFAULT_FILENAME);
         }
     }
 
