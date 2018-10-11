@@ -87,9 +87,16 @@ public class ICSSanitizer extends GenericMailet {
                     computeBodyFromOriginalCalendar(bodyPart),
                     StandardCharsets.UTF_8.name(),
                     bodyPart.getContentType().substring(TEXT_PREFIX_SIZE));
+                setFileNameIfNeeded(mimeBodyPart);
             }
         }
         return bodyPart;
+    }
+
+    private void setFileNameIfNeeded(MimeBodyPart mimeBodyPart) throws MessagingException {
+        if (mimeBodyPart.getFileName() == null) {
+            mimeBodyPart.setFileName("calendar.txt");
+        }
     }
 
     private String computeBodyFromOriginalCalendar(BodyPart bodyPart) throws MessagingException {
