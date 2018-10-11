@@ -100,7 +100,7 @@ class ICSSanitizerTest {
                         MimeMessageBuilder.bodyPartBuilder()
                             .type("text/calendar")
                             .data("Not empty")
-                            .addHeader("X-CUSTOM", "Because it is a valuid ICS it should not be pushed in body")))
+                            .addHeader("X-CUSTOM", "Because it is a valid ICS it should not be pushed in body")))
             .build();
 
         testee.service(mail);

@@ -90,7 +90,7 @@ public class ICSSanitizer extends GenericMailet {
 
     private BodyPart sanitize(BodyPart bodyPart) throws MessagingException {
         if (needsSanitizing(bodyPart)) {
-            if (bodyPart instanceof  MimeBodyPart) {
+            if (bodyPart instanceof MimeBodyPart) {
                 MimeBodyPart mimeBodyPart = (MimeBodyPart) bodyPart;
                 mimeBodyPart.setText(
                     computeBodyFromOriginalCalendar(bodyPart),
