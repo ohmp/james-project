@@ -432,5 +432,5 @@ Feature: GetMessages method
     |key      | value                        |
     |type     |"text/calendar"               |
     |size     |1056                          |
-    |name     |"calendar.txt"                |
+    |name     |"event.ics"                |
     |isInline |false                         |
