@@ -29,7 +29,7 @@ import org.apache.james.task.TaskExecutionDetails;
 
 public class MultiMailboxReindexingTask implements Task {
 
-    public static final String MAILBOX_RE_INDEXING = "mailboxReIndexing";
+    public static final String MAILBOX_RE_INDEXING = "FullReIndexing";
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
         private final ReprocessingContext reprocessingContext;
