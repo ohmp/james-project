@@ -96,7 +96,7 @@ public class ReIndexerPerformer {
                 try {
                     return reIndex(path, reprocessingContext);
                 } catch (Throwable e) {
-                    LOGGER.error("Error while proceeding to full reindexing on {}", path, e);
+                    LOGGER.error("Error while proceeding to full reindexing on {}", path.asString(), e);
                     return Task.Result.PARTIAL;
                 }
             })
@@ -106,7 +106,7 @@ public class ReIndexerPerformer {
 
     private Task.Result reIndex(MailboxPath path, MailboxSession mailboxSession, ReprocessingContext reprocessingContext) throws MailboxException {
         MailboxRegistration mailboxRegistration = new MailboxRegistration(path);
-        LOGGER.info("Intend to reindex {}",path);
+        LOGGER.info("Intend to reindex {}", path.asString());
         Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).findMailboxByPath(path);
         messageSearchIndex.deleteAll(mailboxSession, mailbox);
         mailboxManager.addListener(path, mailboxRegistration, mailboxSession);
@@ -120,7 +120,7 @@ public class ReIndexerPerformer {
                 .reduce(Task::combine)
                 .orElse(Task.Result.COMPLETED);
         } finally {
-            LOGGER.info("Finish to reindex {}", path);
+            LOGGER.info("Finish to reindex {}", path.asString());
             mailboxManager.removeListener(path, mailboxRegistration, mailboxSession);
         }
     }
