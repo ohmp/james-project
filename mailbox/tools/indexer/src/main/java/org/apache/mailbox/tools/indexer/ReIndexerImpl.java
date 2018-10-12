@@ -53,7 +53,7 @@ public class ReIndexerImpl implements ReIndexer {
 
     @Override
     public Task reIndex() {
-        return new MultiMailboxReindexingTask(reIndexerPerformer);
+        return new FullReindexingTask(reIndexerPerformer);
     }
 
 }

@@ -27,9 +27,9 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 
-public class MultiMailboxReindexingTask implements Task {
+public class FullReindexingTask implements Task {
 
-    public static final String MAILBOX_RE_INDEXING = "FullReIndexing";
+    public static final String FULL_RE_INDEXING = "FullReIndexing";
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
         private final ReprocessingContext reprocessingContext;
@@ -52,7 +52,7 @@ public class MultiMailboxReindexingTask implements Task {
     private final ReprocessingContext reprocessingContext;
 
     @Inject
-    public MultiMailboxReindexingTask(ReIndexerPerformer reIndexerPerformer) {
+    public FullReindexingTask(ReIndexerPerformer reIndexerPerformer) {
         this.reIndexerPerformer = reIndexerPerformer;
         this.reprocessingContext = new ReprocessingContext();
         this.additionalInformation = new AdditionalInformation(reprocessingContext);
@@ -69,7 +69,7 @@ public class MultiMailboxReindexingTask implements Task {
 
     @Override
     public String type() {
-        return MAILBOX_RE_INDEXING;
+        return FULL_RE_INDEXING;
     }
 
     @Override
