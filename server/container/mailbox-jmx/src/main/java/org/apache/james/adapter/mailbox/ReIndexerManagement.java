@@ -35,14 +35,11 @@ import org.apache.james.util.MDCBuilder;
 public class ReIndexerManagement implements ReIndexerManagementMBean {
 
     private final TaskManager taskManager;
-    private ReIndexer reIndexer;
-
-    public ReIndexerManagement(TaskManager taskManager) {
-        this.taskManager = taskManager;
-    }
+    private final ReIndexer reIndexer;
 
     @Inject
-    public void setReIndexer(@Named("reindexer") ReIndexer reIndexer) {
+    public ReIndexerManagement(TaskManager taskManager, @Named("reindexer") ReIndexer reIndexer) {
+        this.taskManager = taskManager;
         this.reIndexer = reIndexer;
     }
 
