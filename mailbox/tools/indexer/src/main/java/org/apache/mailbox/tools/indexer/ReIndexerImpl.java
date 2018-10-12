@@ -29,7 +29,7 @@ import org.apache.james.task.Task;
  * Note about live re-indexation handling :
  *
  *  - Data races may arise... If you modify the stored value between the received event check and the index operation,
- *  you have an inconsistent behavior (for maiolbox renames).
+ *  you have an inconsistent behavior (for mailbox renames).
  *
  *  A mechanism for tracking mailbox renames had been implemented, and is taken into account when starting re-indexing a mailbox.
  *  Note that if a mailbox is renamed during its re-indexation process, it will not be taken into account. (We just reduce the inconsistency window).
