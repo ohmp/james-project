@@ -41,6 +41,7 @@ import org.apache.james.modules.server.MailRepositoriesRoutesModule;
 import org.apache.james.modules.server.MailboxRoutesModule;
 import org.apache.james.modules.server.NoJwtModule;
 import org.apache.james.modules.server.RawPostDequeueDecoratorModule;
+import org.apache.james.modules.server.ReIndexingModule;
 import org.apache.james.modules.server.SieveQuotaRoutesModule;
 import org.apache.james.modules.server.SwaggerRoutesModule;
 import org.apache.james.modules.server.WebAdminServerModule;
@@ -59,7 +60,8 @@ public class JPAJamesServerMain {
         new MailQueueRoutesModule(),
         new MailRepositoriesRoutesModule(),
         new SwaggerRoutesModule(),
-        new SieveQuotaRoutesModule());
+        new SieveQuotaRoutesModule(),
+        new ReIndexingModule());
 
     public static final Module PROTOCOLS = Modules.combine(
         new IMAPServerModule(),
@@ -77,11 +79,14 @@ public class JPAJamesServerMain {
         new JPADataModule(),
         new JPAMailboxModule(),
         new MailboxModule(),
+        new LuceneSearchMailboxModule(),
         new NoJwtModule(),
         new RawPostDequeueDecoratorModule(),
         new SieveJPARepositoryModules(),
         new DefaultEventModule(),
         new SpamAssassinListenerModule());
+
+    public static final Module JPA_MODULE_AGGREGATE = Modules.combine(JPA_SERVER_MODULE, PROTOCOLS);
 
     public static void main(String[] args) throws Exception {
         Configuration configuration = Configuration.builder()
@@ -89,9 +94,8 @@ public class JPAJamesServerMain {
             .build();
 
         GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
-                    .combineWith(JPA_SERVER_MODULE, PROTOCOLS,
-                            new JMXServerModule(),
-                            new LuceneSearchMailboxModule());
+                    .combineWith(JPA_MODULE_AGGREGATE,
+                            new JMXServerModule());
         server.start();
     }
 
