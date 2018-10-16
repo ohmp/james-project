@@ -23,6 +23,8 @@ import static org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearche
 
 import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
@@ -32,7 +34,9 @@ import javax.inject.Singleton;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.backends.es.ClientProviderImpl;
+import org.apache.james.backends.es.ElasticSearchHealthCheck;
 import org.apache.james.backends.es.ElasticSearchIndexer;
+import org.apache.james.backends.es.IndexName;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
 import org.apache.james.mailbox.elasticsearch.MailboxIndexCreationUtil;
@@ -74,8 +78,8 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Singleton
     @Named(MailboxElasticSearchConstants.InjectionNames.MAILBOX)
     private ElasticSearchIndexer createMailboxElasticSearchIndexer(Client client,
-                                               @Named("AsyncExecutor") ExecutorService executor,
-                                               ElasticSearchConfiguration configuration) {
+                                                                   @Named("AsyncExecutor") ExecutorService executor,
+                                                                   ElasticSearchConfiguration configuration) {
         return new ElasticSearchIndexer(
             client,
             executor,
@@ -98,6 +102,16 @@ public class ElasticSearchMailboxModule extends AbstractModule {
             messageIdFactory,
             configuration.getReadAliasMailboxName(),
             MailboxElasticSearchConstants.MESSAGE_TYPE);
+    }
+
+    @Provides
+    @Singleton
+    private ElasticSearchHealthCheck createElasticSearchHealthCheck(Client client, ElasticSearchConfiguration configuration) {
+        Set<IndexName> indices = new HashSet<>();
+        indices.add(configuration.getIndexMailboxName());
+        indices.add(configuration.getIndexQuotaRatioName());
+        return new ElasticSearchHealthCheck(
+            client, indices, 1000);
     }
 
     @Provides
