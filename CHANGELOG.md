@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 - Mail filtering configured via the JMAP protocol
 - WebAdmin exposed mail re-indexing tasks
+- JPA support for Sieve script storage
 
 ### Changed
 - Multiple libraries updates
@@ -14,6 +15,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Removed
 - Drop partially implemented Kafka distributed events
+
+### Third party softwares
+ - SpamAssassin prior 3.4.2 is subject to multiple CVEs. We recommend the upgrade
+ - Tika prior 1.19.1 is subject to multiple CVEs. We recommend the upgrade
 
 ## [3.1.0] - 2018-07-31
 ### Added
