@@ -21,6 +21,7 @@ package org.apache.james.modules.server;
 
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.routes.DLPConfigurationRoutes;
+import org.apache.james.webadmin.routes.DLPExpressionRoutes;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -28,8 +29,9 @@ import com.google.inject.multibindings.Multibinder;
 public class DLPRoutesModule extends AbstractModule {
     @Override
     protected void configure() {
-        Multibinder.newSetBinder(binder(), Routes.class)
-            .addBinding()
-            .to(DLPConfigurationRoutes.class);
+        Multibinder<Routes> dlpRoutesBinder = Multibinder.newSetBinder(binder(), Routes.class);
+
+        dlpRoutesBinder.addBinding().to(DLPConfigurationRoutes.class);
+        dlpRoutesBinder.addBinding().to(DLPExpressionRoutes.class);
     }
 }
