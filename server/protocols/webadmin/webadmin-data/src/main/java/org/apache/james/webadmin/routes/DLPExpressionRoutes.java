@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.inject.Inject;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
@@ -36,9 +37,15 @@ import org.apache.james.webadmin.dto.DLPExpressionValidationResponseDTO;
 import org.apache.james.webadmin.utils.JsonExtractException;
 import org.apache.james.webadmin.utils.JsonExtractor;
 import org.apache.james.webadmin.utils.JsonTransformer;
+import org.eclipse.jetty.http.HttpStatus;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -77,6 +84,17 @@ public class DLPExpressionRoutes implements Routes {
         service.post(MATCH_PATH, this::sampleMatch, jsonTransformer);
     }
 
+    @POST
+    @Path(VALIDATE_PATH)
+    @ApiOperation(value = "Validate of a Java regular expression used as part of DLP rules")
+    @ApiImplicitParams({
+        @ApiImplicitParam(required = true, dataType = "org.apache.james.webadmin.dto.DLPExpressionValidationRequestDTO", paramType = "body")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(code = HttpStatus.OK_200, message = "OK", response = DLPExpressionValidationResponseDTO.class),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Error decoding the body payload"),
+        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side.")
+    })
     private DLPExpressionValidationResponseDTO validateExpression(Request request, Response response) throws JsonExtractException {
         DLPExpressionValidationRequestDTO requestDTO = validationJsonExtractor.parse(request.body());
         try {
@@ -87,6 +105,17 @@ public class DLPExpressionRoutes implements Routes {
         }
     }
 
+    @POST
+    @Path(MATCH_PATH)
+    @ApiOperation(value = "Test a Java regular expression used as part of DLP rules against some supplied values")
+    @ApiImplicitParams({
+        @ApiImplicitParam(required = true, dataType = "org.apache.james.webadmin.dto.DLPExpressionSampleMatchRequestDTO", paramType = "body")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(code = HttpStatus.OK_200, message = "OK", response = DLPExpressionSampleMatchResponseDTO.class),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Error decoding the body payload"),
+        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side.")
+    })
     private DLPExpressionSampleMatchResponseDTO sampleMatch(Request request, Response response) throws JsonExtractException {
         DLPExpressionSampleMatchRequestDTO requestDTO = sampleMatchJsonExtractor.parse(request.body());
         try {
