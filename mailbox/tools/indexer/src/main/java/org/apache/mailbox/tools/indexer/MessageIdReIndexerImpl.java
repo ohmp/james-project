@@ -41,22 +41,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 public class MessageIdReIndexerImpl implements MessageIdReIndexer {
-    private final MailboxManager mailboxManager;
-    private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
-    private final ListeningMessageSearchIndex index;
-
-    @Inject
-    public MessageIdReIndexerImpl(MailboxManager mailboxManager, MailboxSessionMapperFactory mailboxSessionMapperFactory, ListeningMessageSearchIndex index) {
-        this.mailboxManager = mailboxManager;
-        this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
-        this.index = index;
-    }
-
-    @Override
-    public Task reIndex(MessageId messageId) {
-        return new MessageIdReIndexingTask(mailboxManager, mailboxSessionMapperFactory, index, messageId);
-    }
-
     public static class MessageIdReIndexingTask implements Task {
         private static final Logger LOGGER = LoggerFactory.getLogger(MessageIdReIndexingTask.class);
 
@@ -126,5 +110,21 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
         public Optional<TaskExecutionDetails.AdditionalInformation> details() {
             return Optional.of(additionalInformation);
         }
+    }
+
+    private final MailboxManager mailboxManager;
+    private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
+    private final ListeningMessageSearchIndex index;
+
+    @Inject
+    public MessageIdReIndexerImpl(MailboxManager mailboxManager, MailboxSessionMapperFactory mailboxSessionMapperFactory, ListeningMessageSearchIndex index) {
+        this.mailboxManager = mailboxManager;
+        this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
+        this.index = index;
+    }
+
+    @Override
+    public Task reIndex(MessageId messageId) {
+        return new MessageIdReIndexingTask(mailboxManager, mailboxSessionMapperFactory, index, messageId);
     }
 }
