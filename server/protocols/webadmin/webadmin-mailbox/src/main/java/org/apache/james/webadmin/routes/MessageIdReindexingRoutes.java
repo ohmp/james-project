@@ -50,7 +50,7 @@ import spark.Response;
 import spark.Service;
 
 @Api(tags = "MessageIdReIndexing")
-@Path("/index")
+@Path("/mailboxIndex")
 @Produces("application/json")
 public class MessageIdReindexingRoutes implements Routes {
     private static final String MESSAGE_ID_PARAM = ":messageId";
