@@ -54,7 +54,7 @@ import spark.Service;
 @Produces("application/json")
 public class MessageIdReindexingRoutes implements Routes {
     private static final String MESSAGE_ID_PARAM = ":messageId";
-    private static final String MESSAGE_PATH = BASE_PATH + "/message/" + MESSAGE_ID_PARAM;
+    private static final String MESSAGE_PATH = BASE_PATH + "/messages/" + MESSAGE_ID_PARAM;
 
     private final TaskManager taskManager;
     private final MessageId.Factory messageIdFactory;
