@@ -385,6 +385,9 @@ public class MailAddress implements java.io.Serializable {
             if (isNullSender() && addr.isNullSender()) {
                 return true;
             }
+            if (isNullSender() || addr.isNullSender()) {
+                return false;
+            }
             return equalsIgnoreCase(getLocalPart(), addr.getLocalPart())
                 && Objects.equals(getDomain(), addr.getDomain());
         }
