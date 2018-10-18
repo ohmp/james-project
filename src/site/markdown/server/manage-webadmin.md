@@ -2238,7 +2238,7 @@ Warning: Canceling this task should be considered unsafe as it will leave the cu
 ### ReIndexing a single mail by messageId
 
 ```
-curl -XPOST http://ip:port/mailboxIndex/message/{messageId}?task=reIndex
+curl -XPOST http://ip:port/mailboxIndex/messages/{messageId}?task=reIndex
 ```
 
 Will schedule a task for reIndexing a single email in all the mailboxes containing it.
