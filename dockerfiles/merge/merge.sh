@@ -31,7 +31,7 @@ git checkout apache/$ORIGINAL_BRANCH -B $ORIGINAL_BRANCH
 
 # Getting the branch to be merged from /origin
 git fetch origin
-git checkout $SHA1
+git checkout origin/$SHA1
 git checkout -b SHA1_BRANCH
 
 # Merging the branch to be merged in the original branch
