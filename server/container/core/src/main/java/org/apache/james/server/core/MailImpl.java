@@ -790,4 +790,9 @@ public class MailImpl implements Disposable, Mail {
     public void addAllSpecificHeaderForRecipient(PerRecipientHeaders perRecipientHeaders) {
         perRecipientSpecificHeaders.addAll(perRecipientHeaders);
     }
+
+    @Override
+    public Mail duplicate() throws MessagingException {
+        return MailImpl.duplicate(this);
+    }
 }

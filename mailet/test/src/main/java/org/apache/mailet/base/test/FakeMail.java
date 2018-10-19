@@ -166,12 +166,20 @@ public class FakeMail implements Mail, Serializable {
         }
 
         public Builder name(String name) {
-            this.name = Optional.of(name);
+            return this.name(Optional.of(name));
+        }
+
+        public Builder name(Optional<String> name) {
+            this.name = name;
             return this;
         }
 
         public Builder sender(MailAddress sender) {
-            this.sender = Optional.of(sender);
+            return this.sender(Optional.of(sender));
+        }
+
+        public Builder sender(Optional<MailAddress> sender) {
+            this.sender = sender;
             return this;
         }
 
@@ -180,17 +188,29 @@ public class FakeMail implements Mail, Serializable {
         }
 
         public Builder state(String state) {
-            this.state = Optional.of(state);
+            return this.state(Optional.of(state));
+        }
+
+        public Builder state(Optional<String> state) {
+            this.state = state;
             return this;
         }
 
         public Builder errorMessage(String errorMessage) {
-            this.errorMessage = Optional.of(errorMessage);
+            return this.errorMessage(Optional.of(errorMessage));
+        }
+
+        public Builder errorMessage(Optional<String> errorMessage) {
+            this.errorMessage = errorMessage;
             return this;
         }
 
         public Builder lastUpdated(Date lastUpdated) {
-            this.lastUpdated = Optional.of(lastUpdated);
+            return this.lastUpdated(Optional.of(lastUpdated));
+        }
+
+        public Builder lastUpdated(Optional<Date> lastUpdated) {
+            this.lastUpdated = lastUpdated;
             return this;
         }
 
@@ -272,6 +292,23 @@ public class FakeMail implements Mail, Serializable {
         this.remoteAddr = remoteAddr;
         this.perRecipientHeaders = perRecipientHeaders;
         this.remoteHost = remoteHost;
+    }
+
+    @Override
+    public Mail duplicate() throws MessagingException {
+        return builder()
+            .mimeMessage(msg)
+            .recipients(ImmutableList.copyOf(recipients))
+            .name(Optional.ofNullable(name))
+            .sender(Optional.ofNullable(sender))
+            .state(Optional.ofNullable(state))
+            .errorMessage(Optional.ofNullable(errorMessage))
+            .lastUpdated(Optional.ofNullable(lastUpdated))
+            .attributes(attributes)
+            .size(size)
+            .remoteAddr(remoteAddr)
+            .remoteHost(remoteHost)
+            .build();
     }
 
     @Override
