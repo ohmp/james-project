@@ -375,8 +375,8 @@ public class SieveMailAdapter implements MailAdapter, EnvelopeAccessors, ActionC
     }
     
     @Override
-    public void post(MailAddress sender, Collection<MailAddress> recipients, MimeMessage mail) throws MessagingException {
-        getMailetContext().sendMail(sender, recipients, mail);
+    public void post(Mail mail) throws MessagingException {
+        getMailetContext().sendMail(mail);
     }
 
     @Override
