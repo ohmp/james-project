@@ -115,13 +115,12 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
      */
     private Response doMAIL(SMTPSession session, String argument) {
         StringBuilder responseBuffer = new StringBuilder();
-        MailAddress sender = (MailAddress) session.getAttachment(
-                SMTPSession.SENDER, State.Transaction);
+        Optional<MailAddress> sender = (Optional<MailAddress>) session.getAttachment(SMTPSession.SENDER, State.Transaction);
         responseBuffer.append(
                 DSNStatus.getStatus(DSNStatus.SUCCESS, DSNStatus.ADDRESS_OTHER))
                 .append(" Sender <");
         if (sender != null) {
-            responseBuffer.append(sender);
+            responseBuffer.append(sender.map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING));
         }
         responseBuffer.append("> OK");
         return new SMTPResponse(SMTPRetCode.MAIL_OK, responseBuffer);
@@ -214,7 +213,7 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
                 LOGGER.info("Error parsing sender address: {}: did not start and end with < >", sender);
                 return SYNTAX_ERROR;
             }
-            MailAddress senderAddress = null;
+            Optional<MailAddress> senderAddress = Optional.empty();
 
             if (session.getConfiguration().useAddressBracketsEnforcement()
                     || (sender.startsWith("<") && sender.endsWith(">"))) {
@@ -223,7 +222,7 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
             }
 
             if (sender.length() == 0) {
-                // This is the <> case. Let senderAddress == null
+                // This is the <> case. Let senderAddress == Optional.empty()
             } else {
 
                 if (!sender.contains("@")) {
@@ -233,37 +232,40 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
                 }
 
                 try {
-                    senderAddress = new MailAddress(sender);
+                    senderAddress = Optional.of(new MailAddress(sender));
                 } catch (Exception pe) {
                     LOGGER.info("Error parsing sender address: {}", sender, pe);
                     return SYNTAX_ERROR_ADDRESS;
                 }
             }
-            if ((senderAddress == null) || 
-                    ((senderAddress.getLocalPart().length() == 0) && (senderAddress.getDomain().name().length() == 0))) {
-                senderAddress = MailAddress.nullSender();
+            if (isNullSender(senderAddress)) {
+                senderAddress = Optional.empty();
             }
             // Store the senderAddress in session map
             session.setAttachment(SMTPSession.SENDER, senderAddress, State.Transaction);
         }
         return null;
     }
-    
+
+    private boolean isNullSender(Optional<MailAddress> senderAddress) {
+        if (!senderAddress.isPresent()) {
+            return true;
+        }
+        boolean hasEmptyLocalPart = senderAddress.get().getLocalPart().length() == 0;
+        boolean hasEmptyDomainPart = senderAddress.get().getDomain().name().length() == 0;
+        return hasEmptyLocalPart && hasEmptyDomainPart;
+    }
+
     @Override
     protected Class<MailHook> getHookInterface() {
         return MailHook.class;
     }
 
-
     @Override
     protected HookResult callHook(MailHook rawHook, SMTPSession session, String parameters) {
-        MailAddress sender = (MailAddress) session.getAttachment(SMTPSession.SENDER, State.Transaction);
-        if (sender.isNullSender()) {
-            sender = null;
-        }
-        return rawHook.doMail(session, Optional.ofNullable(sender));
+        Optional<MailAddress> sender = (Optional<MailAddress>) session.getAttachment(SMTPSession.SENDER, State.Transaction);
+        return rawHook.doMail(session, sender);
     }
-
     
     @Override
     public List<Class<?>> getMarkerInterfaces() {

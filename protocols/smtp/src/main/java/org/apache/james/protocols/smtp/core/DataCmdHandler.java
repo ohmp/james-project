@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -171,17 +172,20 @@ public class DataCmdHandler implements CommandHandler<SMTPSession>, ExtensibleHa
      */
     @SuppressWarnings("unchecked")
     protected Response doDATA(SMTPSession session, String argument) {
-        MailEnvelope env = createEnvelope(session, (MailAddress) session.getAttachment(SMTPSession.SENDER,ProtocolSession.State.Transaction), new ArrayList<>((Collection<MailAddress>) session.getAttachment(SMTPSession.RCPT_LIST, ProtocolSession.State.Transaction)));
+        Optional<MailAddress> sender = (Optional<MailAddress>) session.getAttachment(SMTPSession.SENDER, ProtocolSession.State.Transaction);
+        ArrayList<MailAddress> recipients = new ArrayList<>((Collection<MailAddress>) session.getAttachment(SMTPSession.RCPT_LIST, ProtocolSession.State.Transaction));
+
+        MailEnvelope env = createEnvelope(session, sender, recipients);
         session.setAttachment(MAILENV, env,ProtocolSession.State.Transaction);
         session.pushLineHandler(lineHandler);
         
         return DATA_READY;
     }
     
-    protected MailEnvelope createEnvelope(SMTPSession session, MailAddress sender, List<MailAddress> recipients) {
+    protected MailEnvelope createEnvelope(SMTPSession session, Optional<MailAddress> sender, List<MailAddress> recipients) {
         MailEnvelopeImpl env = new MailEnvelopeImpl();
         env.setRecipients(recipients);
-        env.setSender(sender);
+        sender.ifPresent(env::setSender);
         return env;
     }
     

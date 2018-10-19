@@ -47,27 +47,27 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
                              MailAddress rcpt) {
         if (session.getUser() != null) {
             String authUser = (session.getUser()).toLowerCase(Locale.US);
-            MailAddress senderAddress = (MailAddress) session.getAttachment(
+            Optional<MailAddress> senderAddress = (Optional<MailAddress>) session.getAttachment(
                     SMTPSession.SENDER, ProtocolSession.State.Transaction);
-            String username = retrieveSender(sender, senderAddress);
+            Optional<String> username = retrieveSender(sender, senderAddress);
             
             // Check if the sender address is the same as the user which was used to authenticate.
             // Its important to ignore case here to fix JAMES-837. This is save todo because if the handler is called
             // the user was already authenticated
-            if ((senderAddress == null)
-                || (!authUser.equalsIgnoreCase(username))
-                || (!isLocalDomain(senderAddress.getDomain()))) {
+            if ((!senderAddress.isPresent())
+                || (!username.map(authUser::equalsIgnoreCase).orElse(false))
+                || (!isLocalDomain(senderAddress.get().getDomain()))) {
                 return INVALID_AUTH;
             }
         }
         return HookResult.DECLINED;
     }
 
-    public String retrieveSender(Optional<MailAddress> sender, MailAddress senderAddress) {
-        if (senderAddress != null && !sender.isPresent()) {
-            return getUser(senderAddress);
+    private Optional<String> retrieveSender(Optional<MailAddress> sender, Optional<MailAddress> senderAddress) {
+        if (senderAddress.isPresent() && sender.isPresent()) {
+            return senderAddress.map(this::getUser);
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

@@ -66,7 +66,7 @@ public class ValidSenderDomainHandlerTest {
             @Override
             public Map<String,Object> getState() {
 
-                map.put(SMTPSession.SENDER, sender);
+                map.put(SMTPSession.SENDER, Optional.of(sender));
 
                 return map;
             }
@@ -116,7 +116,7 @@ public class ValidSenderDomainHandlerTest {
     public void testInvalidSenderDomainReject() throws Exception {
         ValidSenderDomainHandler handler = createHandler();
         SMTPSession session = setupMockedSession(new MailAddress("invalid@invalid"));
-        Optional<MailAddress> sender = Optional.of((MailAddress) session.getAttachment(SMTPSession.SENDER, State.Transaction));
+        Optional<MailAddress> sender = (Optional<MailAddress>) session.getAttachment(SMTPSession.SENDER, State.Transaction);
         HookReturnCode response = handler.doMail(session, sender).getResult();
         
         assertThat(HookReturnCode.deny()).describedAs("Blocked cause we use reject action").isEqualTo(response);

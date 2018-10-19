@@ -22,10 +22,13 @@ import static org.apache.james.spamassassin.SpamAssassinResult.STATUS_MAIL_ATTRI
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.protocols.smtp.SMTPSession;
@@ -72,7 +75,11 @@ public class SpamAssassinHandlerTest {
 
             @Override
             public Object getAttachment(String key, State state) {
-                sstate.put(SMTPSession.SENDER, "sender@james.apache.org");
+                try {
+                    sstate.put(SMTPSession.SENDER, Optional.of(new MailAddress("sender@james.apache.org")));
+                } catch (AddressException e) {
+                    throw new RuntimeException(e);
+                }
                 if (state == State.Connection) {
                     return connectionState.get(key);
                 } else {
