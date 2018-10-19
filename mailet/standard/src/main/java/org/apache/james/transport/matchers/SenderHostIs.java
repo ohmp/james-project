@@ -78,7 +78,7 @@ public class SenderHostIs extends GenericMatcher {
     @Override
     public Collection<MailAddress> match(Mail mail) {
         try {
-            if (!senderIsNull(mail) && senderHosts.contains(mail.getSender().getDomain())) {
+            if (hasSender(mail) && senderHosts.contains(mail.getSender().getDomain())) {
                 return mail.getRecipients();
             }
         } catch (Exception e) {
@@ -88,8 +88,8 @@ public class SenderHostIs extends GenericMatcher {
         return null;    //No match.
     }
 
-    private boolean senderIsNull(Mail mail) {
-        return mail.getSender() == null
-            || mail.getSender().isNullSender();
+    private boolean hasSender(Mail mail) {
+        return mail.getSender() != null
+            && !mail.getSender().isNullSender();
     }
 }
