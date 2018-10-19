@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.protocols.smtp.hook;
 
+import java.util.Optional;
+
 import org.apache.james.core.MailAddress;
 import org.apache.james.protocols.smtp.SMTPSession;
 
@@ -34,6 +36,14 @@ public interface RcptHook extends Hook {
      * @param rcpt the recipient MailAddress
      * @return HookResult
      */
-    HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt);
+    @SuppressWarnings("deprecated")
+    default HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
+        return doRcpt(session, sender.orElse(null), rcpt);
+    }
+
+    @Deprecated
+    default HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+        return doRcpt(session, Optional.ofNullable(sender).filter(address -> !address.isNullSender()), rcpt);
+    }
 
 }
