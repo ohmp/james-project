@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -121,9 +122,30 @@ public interface Mail extends Serializable, Cloneable {
      * Returns the sender of the message, as specified by the SMTP "MAIL FROM" command,
      * or internally defined.
      *
+     * @deprecated @see {@link #getSenderAsOptional()}
+     *
+     * Note that SMTP null sender ( "&lt;&gt;" ) needs to be implicitly handled by the caller under the form of 'null' or
+     * {@link MailAddress#nullSender()}. Replacement method adds type safety on this operation.
+     *
      * @return the sender of this message
      */
+    @Deprecated
     MailAddress getSender();
+
+    /**
+     * Returns the sender of the message, as specified by the SMTP "MAIL FROM" command,
+     * or internally defined.
+     *
+     * 'null' or {@link MailAddress#nullSender()} are handled with an empty optional.
+     *
+     * @since Mailet API v3.2.0
+     * @return the sender of this message wrapped in an optional
+     */
+    @SuppressWarnings("deprecated")
+    default Optional<MailAddress> getSenderAsOptional() {
+        return Optional.ofNullable(getSender())
+            .filter(mailAddress -> !mailAddress.isNullSender());
+    }
     
     /**
      * Returns the current state of the message, such as GHOST, ERROR or DEFAULT.
