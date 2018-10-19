@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 
@@ -260,8 +261,14 @@ public class DataLineJamesMessageHookHandler implements DataLineFilter, Extensib
         }
 
         @Override
+        @Deprecated
         public MailAddress getSender() {
             return mail.getSender();
+        }
+
+        @Override
+        public Optional<MailAddress> getSenderAsOptional() {
+            return mail.getSenderAsOptional();
         }
 
         @Override

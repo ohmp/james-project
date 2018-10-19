@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 
@@ -37,7 +38,7 @@ public class MailEnvelopeImpl implements MailEnvelope {
 
     private List<MailAddress> recipients;
 
-    private MailAddress sender;
+    private Optional<MailAddress> sender;
 
     private ByteArrayOutputStream outputStream;
 
@@ -56,6 +57,11 @@ public class MailEnvelopeImpl implements MailEnvelope {
 
     @Override
     public MailAddress getSender() {
+        return sender.orElse(null);
+    }
+
+    @Override
+    public Optional<MailAddress> getSenderAsOptional() {
         return sender;
     }
 
@@ -74,7 +80,7 @@ public class MailEnvelopeImpl implements MailEnvelope {
      * @param sender
      */
     public void setSender(MailAddress sender) {
-        this.sender = sender;
+        this.sender = Optional.of(sender);
     }
 
     @Override

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 
@@ -51,10 +52,31 @@ public interface MailEnvelope {
     /**
      * Return the sender of the mail which was supplied int the MAIL FROM:
      * command. If its a "null" sender, null will get returned
-     * 
+     *
+     * @deprecated @see {@link #getSenderAsOptional()}
+     *
+     * Note that SMTP null sender ( "&lt;&gt;" ) needs to be implicitly handled by the caller under the form of 'null' or
+     * {@link MailAddress#nullSender()}. Replacement method adds type safety on this operation.
+     *
      * @return sender
      */
+    @Deprecated
     MailAddress getSender();
+
+    /**
+     * Returns the sender of the message, as specified by the SMTP "MAIL FROM" command,
+     * or internally defined.
+     *
+     * 'null' or {@link MailAddress#nullSender()} are handled with an empty optional.
+     *
+     * @since Mailet API v3.2.0
+     * @return the sender of this message wrapped in an optional
+     */
+    @SuppressWarnings("deprecated")
+    default Optional<MailAddress> getSenderAsOptional() {
+        return Optional.ofNullable(getSender())
+            .filter(mailAddress -> !mailAddress.isNullSender());
+    }
 
     /**
      * Return the OutputStream of the message
