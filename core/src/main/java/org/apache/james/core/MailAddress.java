@@ -80,6 +80,9 @@ public class MailAddress implements java.io.Serializable {
 
     public static final String NULL_SENDER_AS_STRING = "<>";
 
+    /**
+     * @deprecated Prefer using Optional&lt;MailAddress&gt; for representing missing values
+     */
     @Deprecated
     private static final MailAddress NULL_SENDER = new MailAddress() {
 
@@ -110,7 +113,10 @@ public class MailAddress implements java.io.Serializable {
 
     };
 
-
+    /**
+     * @deprecated Prefer using Optional&lt;MailAddress&gt; for representing missing values
+     */
+    @Deprecated
     public static MailAddress nullSender() {
         return NULL_SENDER;
     }
