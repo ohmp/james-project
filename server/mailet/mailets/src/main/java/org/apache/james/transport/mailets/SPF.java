@@ -71,17 +71,13 @@ public class SPF extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        String sender;
-        MailAddress senderAddr = mail.getSender();
         String remoteAddr = mail.getRemoteAddr();
         String helo = mail.getRemoteHost();
 
         if (!remoteAddr.equals("127.0.0.1")) {
-            if (senderAddr != null) {
-                sender = senderAddr.toString();
-            } else {
-                sender = "";
-            }
+            String sender = mail.getSenderAsOptional()
+                .map(MailAddress::asString)
+                .orElse("");
             SPFResult result = spf.checkSPF(remoteAddr, sender, helo);
             mail.setAttribute(EXPLANATION_ATTRIBUTE, result.getExplanation());
             mail.setAttribute(RESULT_ATTRIBUTE, result.getResult());

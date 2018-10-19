@@ -55,6 +55,7 @@ import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.LookupException;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
@@ -62,6 +63,7 @@ import org.apache.mailet.base.RFC2822Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableSet;
 
 public class JamesMailetContext implements MailetContext, Configurable {
@@ -173,13 +175,13 @@ public class JamesMailetContext implements MailetContext, Configurable {
      */
     @Override
     public void bounce(Mail mail, String message, MailAddress bouncer) throws MessagingException {
-        if (mail.getSender() == null) {
+        if (!mail.hasSender()) {
             LOGGER.info("Mail to be bounced contains a null (<>) reverse path.  No bounce will be sent.");
             return;
         } else {
             // Bounce message goes to the reverse path, not to the Reply-To
             // address
-            LOGGER.info("Processing a bounce request for a message with a reverse path of {}", mail.getSender());
+            LOGGER.info("Processing a bounce request for a message with a reverse path of {}", mail.getSenderAsOptional());
         }
 
         MailImpl reply = rawBounce(mail, message);
@@ -216,9 +218,13 @@ public class JamesMailetContext implements MailetContext, Configurable {
         MimeMessage reply = (MimeMessage) original.reply(false);
         reply.setSubject("Re: " + original.getSubject());
         reply.setSentDate(new Date());
-        Collection<MailAddress> recipients = new HashSet<>();
-        recipients.add(mail.getSender());
-        InternetAddress[] addr = {new InternetAddress(mail.getSender().toString())};
+        Collection<MailAddress> recipients = OptionalUtils.toList(mail.getSenderAsOptional());
+        InternetAddress[] addr = mail.getSenderAsOptional()
+            .map(MailAddress::asString)
+            .map(Throwing.function((String s) -> new InternetAddress(s)).sneakyThrow())
+            .map(address -> new InternetAddress[]{address})
+            .orElse(new InternetAddress[0]);
+
         reply.setRecipients(Message.RecipientType.TO, addr);
         reply.setFrom(new InternetAddress(mail.getRecipients().iterator().next().toString()));
         reply.setText(bounceText);

@@ -176,7 +176,11 @@ public class MailImpl implements Disposable, Mail {
         }
 
         public Builder sender(MailAddress sender) {
-            this.sender = Optional.ofNullable(sender);
+            return sender(Optional.ofNullable(sender));
+        }
+
+        public Builder sender(Optional<MailAddress> sender) {
+            this.sender = sender;
             return this;
         }
 
@@ -387,7 +391,7 @@ public class MailImpl implements Disposable, Mail {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecated"})
     private MailImpl(Mail mail, String newName) throws MessagingException {
         this(newName, mail.getSender(), mail.getRecipients(), mail.getMessage());
         setRemoteHost(mail.getRemoteHost());

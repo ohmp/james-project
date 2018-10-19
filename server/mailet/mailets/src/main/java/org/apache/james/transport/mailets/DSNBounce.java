@@ -54,6 +54,7 @@ import org.apache.james.transport.util.ReplyToUtils;
 import org.apache.james.transport.util.SenderUtils;
 import org.apache.james.transport.util.SpecialAddressesUtils;
 import org.apache.james.transport.util.TosUtils;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.DateFormats;
 import org.apache.mailet.base.GenericMailet;
@@ -250,7 +251,7 @@ public class DSNBounce extends GenericMailet implements RedirectNotify {
        
             if (getInitParameters().isDebug()) {
                 LOGGER.debug("New mail - sender: {}, recipients: {}, name: {}, remoteHost: {}, remoteAddr: {}, state: {}, lastUpdated: {}, errorMessage: {}",
-                        newMail.getSender(), newMail.getRecipients(), newMail.getName(), newMail.getRemoteHost(), newMail.getRemoteAddr(), newMail.getState(), newMail.getLastUpdated(), newMail.getErrorMessage());
+                        newMail.getSenderAsOptional(), newMail.getRecipients(), newMail.getName(), newMail.getRemoteHost(), newMail.getRemoteAddr(), newMail.getState(), newMail.getLastUpdated(), newMail.getErrorMessage());
             }
        
             newMail.setMessage(createBounceMessage(originalMail));
@@ -279,7 +280,7 @@ public class DSNBounce extends GenericMailet implements RedirectNotify {
     }
 
     private boolean hasSender(Mail originalMail) {
-        if (originalMail.getSender() == null) {
+        if (!originalMail.hasSender()) {
             if (getInitParameters().isDebug()) {
                 LOGGER.info("Processing a bounce request for a message with an empty reverse-path.  No bounce will be sent.");
             }
@@ -313,12 +314,12 @@ public class DSNBounce extends GenericMailet implements RedirectNotify {
     }
 
     private List<MailAddress> getSenderAsList(Mail originalMail) {
-        MailAddress reversePath = originalMail.getSender();
-        if (getInitParameters().isDebug()) {
-            LOGGER.debug("Processing a bounce request for a message with a reverse path.  The bounce will be sent to {}", reversePath);
-        }
+        List<MailAddress> reversePaths = OptionalUtils.toList(originalMail.getSenderAsOptional());
 
-        return ImmutableList.of(reversePath);
+        if (getInitParameters().isDebug()) {
+            LOGGER.debug("Processing a bounce request for a message with a reverse path.  The bounce will be sent to {}", reversePaths);
+        }
+        return reversePaths;
     }
 
     private MimeMessage createBounceMessage(Mail originalMail) throws MessagingException {

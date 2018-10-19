@@ -21,14 +21,28 @@ package org.apache.james.transport.mailets.delivery;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
+import org.apache.james.core.MailAddress;
 import org.apache.mailet.base.MailAddressFixture;
 import org.junit.Test;
 
 public class DeliveryUtilsTest {
 
     @Test
+    public void prettyPrintShouldDisplayNullAddressesOptional() {
+        assertThat(DeliveryUtils.prettyPrint(Optional.empty())).isEqualTo("<>");
+    }
+
+    @Test
     public void prettyPrintShouldDisplayNullAddresses() {
-        assertThat(DeliveryUtils.prettyPrint(null)).isEqualTo("<>");
+        MailAddress mailAddress = null;
+        assertThat(DeliveryUtils.prettyPrint(mailAddress)).isEqualTo("<>");
+    }
+
+    @Test
+    public void prettyPrintShouldDisplayNullSender() {
+        assertThat(DeliveryUtils.prettyPrint(MailAddress.nullSender())).isEqualTo("<>");
     }
 
     @Test

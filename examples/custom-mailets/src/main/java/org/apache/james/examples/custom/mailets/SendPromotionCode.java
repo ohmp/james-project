@@ -23,6 +23,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
@@ -45,7 +46,7 @@ public class SendPromotionCode extends GenericMailet {
             "Here is the following promotion code that you can use on your next order: " + promotionCode);
 
         MailAddress sender = getMailetContext().getPostmaster();
-        ImmutableList<MailAddress> recipients = ImmutableList.of(mail.getSender());
+        ImmutableList<MailAddress> recipients = OptionalUtils.toList(mail.getSenderAsOptional());
 
         getMailetContext()
             .sendMail(sender, recipients, response);

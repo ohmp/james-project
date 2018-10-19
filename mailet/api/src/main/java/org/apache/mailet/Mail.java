@@ -146,6 +146,17 @@ public interface Mail extends Serializable, Cloneable {
         return Optional.ofNullable(getSender())
             .filter(mailAddress -> !mailAddress.isNullSender());
     }
+
+    /**
+     * Returns if this message has a sender.
+     *
+     * 'null' or {@link MailAddress#nullSender()} will be considered as no sender.
+     *
+     * @since Mailet API v3.2.0
+     */
+    default boolean hasSender() {
+        return getSenderAsOptional().isPresent();
+    }
     
     /**
      * Returns the current state of the message, such as GHOST, ERROR or DEFAULT.

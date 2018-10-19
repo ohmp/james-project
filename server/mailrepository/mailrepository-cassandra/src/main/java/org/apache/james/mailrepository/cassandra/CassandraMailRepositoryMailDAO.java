@@ -145,7 +145,7 @@ public class CassandraMailRepositoryMailDAO {
             .setString(HEADER_BLOB_ID, headerId.asString())
             .setString(BODY_BLOB_ID, bodyId.asString())
             .setString(STATE, mail.getState())
-            .setString(SENDER, Optional.ofNullable(mail.getSender())
+            .setString(SENDER, mail.getSenderAsOptional()
                 .map(MailAddress::asString)
                 .orElse(null))
             .setList(RECIPIENTS, asStringList(mail.getRecipients()))

@@ -116,7 +116,7 @@ public class MailFactoryTest {
         Mail actual = testee.build(message, envelope);
         
         assertThat(actual.getName()).isEqualTo(expectedName);
-        assertThat(actual.getSender()).isEqualTo(expectedSender);
+        assertThat(actual.getSenderAsOptional()).contains(expectedSender);
         assertThat(actual.getRecipients()).containsAll(expectedRecipients);
     }
 }

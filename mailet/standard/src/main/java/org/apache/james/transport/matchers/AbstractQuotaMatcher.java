@@ -17,12 +17,11 @@
  * under the License.                                           *
  ****************************************************************/
 
-
-
 package org.apache.james.transport.matchers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 
@@ -57,7 +56,7 @@ public abstract class AbstractQuotaMatcher extends GenericMatcher {
     @Override
     public final Collection<MailAddress> match(Mail mail) throws MessagingException {
         Collection<MailAddress> matching = null;
-        if (isSenderChecked(mail.getSender())) {
+        if (isSenderChecked(mail.getSenderAsOptional())) {
             matching = new ArrayList<>();
             for (MailAddress recipient : mail.getRecipients()) {
                 if (isRecipientChecked(recipient) && isOverQuota(recipient, mail)) {
@@ -97,9 +96,11 @@ public abstract class AbstractQuotaMatcher extends GenericMatcher {
      * to its check.
      *
      * @param sender the sender to check
-     */    
-    protected boolean isSenderChecked(MailAddress sender) throws MessagingException {
-        return !(sender == null || getMailetContext().getPostmaster().equals(sender));
+     */
+    private boolean isSenderChecked(Optional<MailAddress> sender) {
+        return sender.filter(mailAddress -> getMailetContext().getPostmaster().equals(mailAddress))
+            .map(any -> true)
+            .orElse(false);
     }
 
     /** 

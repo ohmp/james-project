@@ -294,7 +294,7 @@ public class BayesianAnalysis extends GenericMailet {
 
             if (ignoreLocalSender) {
                 // ignore the message if the sender is local
-                if (mail.getSender() != null && getMailetContext().isLocalServer(mail.getSender().getDomain())) {
+                if (mail.hasSender() && getMailetContext().isLocalServer(mail.getSenderAsOptional().get().getDomain())) {
                     return;
                 }
             }
@@ -323,12 +323,10 @@ public class BayesianAnalysis extends GenericMailet {
             probabilityForm.applyPattern("##0.##%");
             String probabilityString = probabilityForm.format(probability);
 
-            String senderString;
-            if (mail.getSender() == null) {
-                senderString = "null";
-            } else {
-                senderString = mail.getSender().toString();
-            }
+            String senderString = mail.getSenderAsOptional()
+                .map(MailAddress::asString)
+                .orElse("null");
+
             if (probability > 0.1) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(headerName + ": " + probabilityString + "; From: " + senderString + "; Recipient(s): " + getAddressesString(mail.getRecipients()));

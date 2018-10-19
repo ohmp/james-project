@@ -56,7 +56,7 @@ class MailReferenceDTO {
                 .map(MailAddress::asString)
                 .collect(Guavate.toImmutableList()),
             mail.getName(),
-            Optional.ofNullable(mail.getSender()).map(MailAddress::asString),
+            mail.getSenderAsOptional().map(MailAddress::asString),
             mail.getState(),
             mail.getErrorMessage(),
             Optional.ofNullable(mail.getLastUpdated()).map(Date::toInstant),

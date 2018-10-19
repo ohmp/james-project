@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
@@ -210,7 +211,7 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
         setError(node, mail.getErrorMessage());
         setRemoteHost(node, mail.getRemoteHost());
         setRemoteAddr(node, mail.getRemoteAddr());
-        setSender(node, mail.getSender());
+        setSender(node, mail.getSenderAsOptional());
         setRecipients(node, mail.getRecipients());
         setMessage(node, mail.getMessage());
         setAttributes(node, mail);
@@ -417,8 +418,8 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
      * @throws RepositoryException
      *             if a repository error occurs
      */
-    private void setSender(Node node, MailAddress sender) throws RepositoryException {
-        node.setProperty("james:sender", sender.toString());
+    private void setSender(Node node, Optional<MailAddress> sender) throws RepositoryException {
+        node.setProperty("james:sender", sender.map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING));
     }
 
     /**

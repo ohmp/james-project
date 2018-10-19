@@ -28,6 +28,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.james.core.MailAddress;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,7 +203,7 @@ public class SMIMESign extends Sign {
             signatureReason.setText(getReplacedExplanationText(getExplanationText(),
                                                                getSignerName(),
                                                                getKeyHolder().getSignerAddress(),
-                                                               mail.getSender().toString(),
+                                                               mail.getSenderAsOptional().map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING),
                                                                headers));
             
             signatureReason.setFileName("SignatureExplanation.txt");

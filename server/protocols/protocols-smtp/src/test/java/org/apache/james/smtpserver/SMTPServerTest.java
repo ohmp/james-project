@@ -344,7 +344,7 @@ public class SMTPServerTest {
         }
 
         if (sender != null) {
-            assertThat(mailData.getSender().toString())
+            assertThat(mailData.getSenderAsOptional().map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING))
                 .as("sender verfication")
                 .isEqualTo(sender);
         }

@@ -192,8 +192,9 @@ public class MemoryMailQueueFactory implements MailQueueFactory<ManageableMailQu
                         .map(MailAddress::asString)
                         .anyMatch(value::equals);
                 case Sender:
-                    return item.getMail().getSender()
-                        .asString()
+                    return item.getMail().getSenderAsOptional()
+                        .map(MailAddress::asString)
+                        .orElse(MailAddress.NULL_SENDER_AS_STRING)
                         .equals(value);
                 default:
                     throw new NotImplementedException("Unknown type " + type);

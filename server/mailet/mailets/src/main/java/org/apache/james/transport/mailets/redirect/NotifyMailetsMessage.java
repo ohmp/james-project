@@ -69,7 +69,7 @@ public class NotifyMailetsMessage {
             builder.append("  Sent date: " + message.getSentDate())
                 .append(LINE_BREAK);
         }
-        builder.append("  MAIL FROM: " + originalMail.getSender())
+        builder.append("  MAIL FROM: " + originalMail.getSenderAsOptional().map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING))
             .append(LINE_BREAK);
 
         boolean firstRecipient = true;

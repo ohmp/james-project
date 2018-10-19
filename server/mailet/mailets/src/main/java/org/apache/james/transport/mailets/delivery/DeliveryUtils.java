@@ -19,16 +19,20 @@
 
 package org.apache.james.transport.mailets.delivery;
 
+import java.util.Optional;
+
 import org.apache.james.core.MailAddress;
 
 public class DeliveryUtils {
 
     public static String prettyPrint(MailAddress mailAddress) {
-        if (mailAddress != null) {
-            return mailAddress.asPrettyString();
-        } else {
-            return "<>";
-        }
+        return prettyPrint(Optional.ofNullable(mailAddress)
+            .filter(address -> ! address.isNullSender()));
+    }
+
+    public static String prettyPrint(Optional<MailAddress> mailAddress) {
+        return mailAddress.map(MailAddress::asPrettyString)
+            .orElse(MailAddress.NULL_SENDER_AS_STRING);
     }
 
 }

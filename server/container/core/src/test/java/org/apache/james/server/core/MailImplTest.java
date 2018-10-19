@@ -63,7 +63,7 @@ public class MailImplTest {
         assertThat(mail.getRemoteHost()).describedAs("initial remote host is localhost").isEqualTo("localhost");
         assertThat(mail.getState()).describedAs("default initial state").isEqualTo(Mail.DEFAULT);
         assertThat(mail.getMessage()).isNull();
-        assertThat(mail.getSender()).isNull();
+        assertThat(mail.getSenderAsOptional()).isEmpty();
         assertThat(mail.getName()).isNull();
     }
 
@@ -96,7 +96,7 @@ public class MailImplTest {
         MailAddress senderMailAddress = new MailAddress(sender);
         MailImpl mail = new MailImpl(name, senderMailAddress, recipients);
 
-        assertThat(mail.getSender().asString()).isEqualTo(sender);
+        assertThat(mail.getSenderAsOptional().get().asString()).isEqualTo(sender);
         assertThat(mail.getName()).isEqualTo(name);
 
      }

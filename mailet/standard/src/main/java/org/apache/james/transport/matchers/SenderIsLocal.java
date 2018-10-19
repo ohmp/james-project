@@ -32,17 +32,16 @@ public class SenderIsLocal extends GenericMatcher {
 
     @Override
     public final Collection<MailAddress> match(Mail mail) {
-        if (isLocal(mail.getSender())) {
+        if (mail.getSenderAsOptional()
+                .map(this::isLocal)
+                .orElse(false)) {
             return mail.getRecipients();
         }
         return null;
     }
 
     private boolean isLocal(MailAddress mailAddress) {
-        return Optional.ofNullable(mailAddress)
-            .filter(address -> !address.isNullSender())
-            .map(address -> getMailetContext().isLocalEmail(address))
-            .orElse(false);
+        return getMailetContext().isLocalEmail(mailAddress);
     }
 
 }

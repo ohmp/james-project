@@ -38,6 +38,7 @@ import org.apache.james.managesieve.util.SettableSession;
 import org.apache.james.sieverepository.api.SieveRepository;
 import org.apache.james.transport.mailets.managesieve.transcode.MessageToCoreToMessage;
 import org.apache.james.user.api.UsersRepository;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -45,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 
 /**
  * <code>ManageSieveMailet</code> interprets mail from a local sender as
@@ -122,11 +122,11 @@ public class ManageSieveMailet extends GenericMailet implements MessageToCoreToM
     @Override
     public void service(Mail mail) throws MessagingException {
         // Sanity checks
-        if (mail.getSender() == null || mail.getSender().isNullSender()) {
+        if (!mail.hasSender()) {
             LOGGER.error("Sender is null");
             return;
         }
-        if (!getMailetContext().isLocalServer(mail.getSender().getDomain())) {
+        if (!getMailetContext().isLocalServer(mail.getSenderAsOptional().get().getDomain())) {
             LOGGER.error("Sender not local");
             return;
         }
@@ -138,8 +138,11 @@ public class ManageSieveMailet extends GenericMailet implements MessageToCoreToM
         } else {
             session.setState(Session.State.UNAUTHENTICATED);
         }
-        session.setUser(mail.getSender().asString());
-        getMailetContext().sendMail(mail.getRecipients().iterator().next(), Lists.newArrayList(mail.getSender()),transcoder.execute(session, mail.getMessage()));
+        session.setUser(mail.getSenderAsOptional().get().asString());
+        getMailetContext().sendMail(
+            mail.getRecipients().iterator().next(),
+            OptionalUtils.toList(mail.getSenderAsOptional()),
+            transcoder.execute(session, mail.getMessage()));
         mail.setState(Mail.GHOST);
         
         // And tidy up

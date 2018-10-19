@@ -47,7 +47,6 @@ import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlice
 import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.Slice;
 
 import java.util.Date;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -131,7 +130,7 @@ class EnqueuedMailsDAO {
             .setString(HEADER_BLOB_ID, mimeMessagePartsId.getHeaderBlobId().asString())
             .setString(BODY_BLOB_ID, mimeMessagePartsId.getBodyBlobId().asString())
             .setString(STATE, mail.getState())
-            .setString(SENDER, Optional.ofNullable(mail.getSender())
+            .setString(SENDER, mail.getSenderAsOptional()
                 .map(MailAddress::asString)
                 .orElse(null))
             .setList(RECIPIENTS, asStringList(mail.getRecipients()))

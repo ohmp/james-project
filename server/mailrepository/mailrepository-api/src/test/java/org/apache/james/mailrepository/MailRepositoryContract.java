@@ -150,7 +150,7 @@ public interface MailRepositoryContract {
 
         testee.store(mail);
 
-        assertThat(testee.retrieve(MAIL_1).getSender()).isEqualTo(MailAddress.nullSender());
+        assertThat(testee.retrieve(MAIL_1).getSenderAsOptional()).isEmpty();
     }
 
     @Test

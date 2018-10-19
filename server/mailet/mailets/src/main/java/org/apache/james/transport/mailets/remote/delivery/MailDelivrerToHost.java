@@ -27,6 +27,7 @@ import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.core.MailAddress;
 import org.apache.mailet.HostAddress;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
@@ -77,12 +78,9 @@ public class MailDelivrerToHost {
 
     private Properties getPropertiesForMail(Mail mail) {
         Properties props = session.getProperties();
-        if (mail.getSender() == null) {
-            props.put("mail.smtp.from", "<>");
-        } else {
-            String sender = mail.getSender().toString();
-            props.put("mail.smtp.from", sender);
-        }
+        props.put("mail.smtp.from", mail.getSenderAsOptional()
+            .map(MailAddress::asString)
+            .orElse(MailAddress.NULL_SENDER_AS_STRING));
         return props;
     }
 

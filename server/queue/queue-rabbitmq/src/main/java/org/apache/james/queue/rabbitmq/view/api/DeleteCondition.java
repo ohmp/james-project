@@ -22,6 +22,7 @@ package org.apache.james.queue.rabbitmq.view.api;
 import java.util.Objects;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.mailet.Mail;
 
@@ -58,7 +59,10 @@ public interface DeleteCondition {
         @Override
         public boolean shouldBeDeleted(Mail mail) {
             Preconditions.checkNotNull(mail);
-            return mail.getSender().asString().equals(senderAsString);
+            return mail.getSenderAsOptional()
+                .map(MailAddress::asString)
+                .orElse(MailAddress.NULL_SENDER_AS_STRING)
+                .equals(senderAsString);
         }
 
         @Override
