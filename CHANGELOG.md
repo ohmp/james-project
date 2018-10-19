@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 - Mail filtering configured via the JMAP protocol
 - WebAdmin exposed mail re-indexing tasks
-- JPA support for Sieve script storage
+- JPA support for Sieve script storage thanks to [Sebast26](https://github.com/sebast26)
 
 ### Changed
 - Multiple libraries updates
