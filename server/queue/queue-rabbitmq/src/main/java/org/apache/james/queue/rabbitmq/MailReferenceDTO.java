@@ -187,7 +187,7 @@ class MailReferenceDTO {
 
     MailImpl toMailWithMimeMessage(MimeMessage mimeMessage) throws MessagingException {
         MailImpl mail = new MailImpl(name,
-            sender.map(MailAddress::getMailSender).orElse(null),
+            sender.flatMap(MailAddress::getMailSenderAsOptional).orElse(null),
             recipients.stream()
                 .map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())
                 .collect(Guavate.toImmutableList()),

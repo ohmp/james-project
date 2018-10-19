@@ -80,6 +80,7 @@ public class MailAddress implements java.io.Serializable {
 
     public static final String NULL_SENDER_AS_STRING = "<>";
 
+    @Deprecated
     private static final MailAddress NULL_SENDER = new MailAddress() {
 
         @Override
@@ -109,23 +110,33 @@ public class MailAddress implements java.io.Serializable {
 
     };
 
+
     public static MailAddress nullSender() {
         return NULL_SENDER;
     }
 
-    public static  MailAddress getMailSender(String sender) {
+    /**
+     * @deprecated Use {@link MailAddress#getMailSenderAsOptional(String)} instead
+     */
+    @Deprecated
+    public static MailAddress getMailSender(String sender) {
+        return getMailSenderAsOptional(sender)
+            .orElse(nullSender());
+    }
+
+    public static Optional<MailAddress> getMailSenderAsOptional(String sender) {
         if (sender == null || sender.trim().length() <= 0) {
-            return null;
+            return Optional.empty();
         }
         if (sender.equals(MailAddress.NULL_SENDER_AS_STRING)) {
-            return MailAddress.nullSender();
+            return Optional.empty();
         }
         try {
-            return new MailAddress(sender);
+            return Optional.of(new MailAddress(sender));
         } catch (AddressException e) {
             // Should never happen as long as the user does not modify the header by himself
             LOGGER.error("Unable to parse the sender address {}, so we fallback to a null sender", sender, e);
-            return MailAddress.nullSender();
+            return Optional.empty();
         }
     }
 

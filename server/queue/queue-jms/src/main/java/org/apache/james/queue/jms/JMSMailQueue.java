@@ -419,7 +419,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
         splitter.split(attributeNames)
                 .forEach(name -> setMailAttribute(message, mail, name));
 
-        mail.setSender(MailAddress.getMailSender(message.getStringProperty(JAMES_MAIL_SENDER)));
+        MailAddress.getMailSenderAsOptional(message.getStringProperty(JAMES_MAIL_SENDER)).ifPresent(mail::setSender);
         mail.setState(message.getStringProperty(JAMES_MAIL_STATE));
     }
 
