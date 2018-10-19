@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.protocols.smtp.SMTPSession;
@@ -60,7 +61,7 @@ public class MaxRcptHandlerTest {
         MaxRcptHandler handler = new MaxRcptHandler();
         
         handler.setMaxRcpt(2);
-        HookReturnCode resp = handler.doRcpt(session,null,new MailAddress("test@test")).getResult();
+        HookReturnCode resp = handler.doRcpt(session, Optional.empty(), new MailAddress("test@test")).getResult();
     
         assertThat(HookReturnCode.deny()).describedAs("Rejected.. To many recipients").isEqualTo(resp);
     }
@@ -72,7 +73,7 @@ public class MaxRcptHandlerTest {
         MaxRcptHandler handler = new MaxRcptHandler();    
 
         handler.setMaxRcpt(4);
-        HookReturnCode resp = handler.doRcpt(session,null,new MailAddress("test@test")).getResult();
+        HookReturnCode resp = handler.doRcpt(session, Optional.empty(), new MailAddress("test@test")).getResult();
         
         assertThat(HookReturnCode.declined()).describedAs("Not Rejected..").isEqualTo(resp);
     }

@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.protocols.smtp.core;
 
+import java.util.Optional;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.core.MailAddress;
@@ -34,7 +36,7 @@ public class PostmasterAbuseRcptHook implements RcptHook {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostmasterAbuseRcptHook.class);
     
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         if (rcpt.getLocalPart().equalsIgnoreCase("postmaster") || rcpt.getLocalPart().equalsIgnoreCase("abuse")) {
             LOGGER.debug("Sender allowed");
             return HookResult.OK;

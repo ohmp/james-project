@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.commons.configuration.Configuration;
@@ -178,7 +179,7 @@ public class DNSRBLHandler implements RcptHook {
     }
     
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         checkDNSRBL(session, session.getRemoteAddress().getAddress().getHostAddress());
     
         if (!session.isRelayingAllowed()) {

@@ -19,6 +19,8 @@
 
 package org.apache.james.protocols.smtp.hook;
 
+import java.util.Optional;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.core.MailAddress;
@@ -56,7 +58,7 @@ public class SimpleHook implements HeloHook, MailHook, RcptHook, MessageHook {
      * Return {@link HookResult} with {@link HookReturnCode#DECLINED}
      */
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         return HookResult.DECLINED;
 
     }

@@ -22,6 +22,7 @@ package org.apache.james.protocols.smtp.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import javax.inject.Inject;
@@ -230,8 +231,9 @@ public class RcptCmdHandler extends AbstractHookableCmdHandler<RcptHook> impleme
     @Override
     protected HookResult callHook(RcptHook rawHook, SMTPSession session,
                                   String parameters) {
+        MailAddress sender = (MailAddress) session.getAttachment(SMTPSession.SENDER, State.Transaction);
         return rawHook.doRcpt(session,
-                (MailAddress) session.getAttachment(SMTPSession.SENDER, State.Transaction),
+                Optional.ofNullable(sender).filter(address -> !address.isNullSender()),
                 (MailAddress) session.getAttachment(CURRENT_RECIPIENT, State.Transaction));
     }
 

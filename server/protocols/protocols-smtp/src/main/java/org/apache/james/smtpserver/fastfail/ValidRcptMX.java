@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -87,7 +88,7 @@ public class ValidRcptMX implements RcptHook, ProtocolHandler {
     }
 
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
 
         Domain domain = rcpt.getDomain();
 

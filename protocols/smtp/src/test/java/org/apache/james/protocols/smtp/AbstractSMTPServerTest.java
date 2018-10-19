@@ -30,6 +30,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.configuration.Configuration;
@@ -694,7 +695,7 @@ public abstract class AbstractSMTPServerTest {
             }
 
             @Override
-            public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+            public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
                 if (RCPT1.equals(rcpt.toString())) {
                     return HookResult.DENY;
                 } else {
@@ -758,7 +759,7 @@ public abstract class AbstractSMTPServerTest {
             }
 
             @Override
-            public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+            public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
                 if (RCPT1.equals(rcpt.toString())) {
                     return HookResult.DENYSOFT;
                 } else {

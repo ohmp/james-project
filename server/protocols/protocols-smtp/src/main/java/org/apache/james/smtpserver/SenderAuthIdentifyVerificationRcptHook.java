@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.smtpserver;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import org.apache.commons.configuration.Configuration;
@@ -61,7 +63,7 @@ public class SenderAuthIdentifyVerificationRcptHook extends AbstractSenderAuthId
     }
 
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         ExtendedSMTPSession nSession = (ExtendedSMTPSession) session;
         if (nSession.verifyIdentity()) {
             return super.doRcpt(session, sender, rcpt);

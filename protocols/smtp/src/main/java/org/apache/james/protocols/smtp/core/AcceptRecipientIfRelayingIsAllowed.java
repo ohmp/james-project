@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.protocols.smtp.core;
 
+import java.util.Optional;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.core.MailAddress;
@@ -31,7 +33,7 @@ import org.apache.james.protocols.smtp.hook.RcptHook;
 public class AcceptRecipientIfRelayingIsAllowed implements RcptHook {
 
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender,
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender,
                              MailAddress rcpt) {
         if (session.isRelayingAllowed()) {
             return HookResult.OK;

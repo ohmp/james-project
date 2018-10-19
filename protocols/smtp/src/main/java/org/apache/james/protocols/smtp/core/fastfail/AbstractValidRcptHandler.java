@@ -19,6 +19,8 @@
 
 package org.apache.james.protocols.smtp.core.fastfail;
 
+import java.util.Optional;
+
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.protocols.smtp.SMTPRetCode;
@@ -37,7 +39,7 @@ public abstract class AbstractValidRcptHandler implements RcptHook {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractValidRcptHandler.class);
 
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         if (!isLocalDomain(session, rcpt.getDomain())) {
             return HookResult.DECLINED;
         }

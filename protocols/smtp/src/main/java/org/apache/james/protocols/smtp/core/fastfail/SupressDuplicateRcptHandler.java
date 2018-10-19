@@ -20,6 +20,7 @@
 package org.apache.james.protocols.smtp.core.fastfail;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -52,7 +53,7 @@ public class SupressDuplicateRcptHandler implements RcptHook {
 
     @Override
     @SuppressWarnings("unchecked")
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         Collection<MailAddress> rcptList = (Collection<MailAddress>) session.getAttachment(SMTPSession.RCPT_LIST, State.Transaction);
     
         // Check if the recipient is already in the rcpt list

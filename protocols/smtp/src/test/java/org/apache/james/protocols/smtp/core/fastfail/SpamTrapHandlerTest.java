@@ -24,6 +24,7 @@ import static org.assertj.core.api.Fail.fail;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.protocols.smtp.SMTPSession;
@@ -63,17 +64,17 @@ public class SpamTrapHandlerTest {
         handler.setBlockTime(blockTime);
         handler.setSpamTrapRecipients(rcpts);
 
-        HookReturnCode result = handler.doRcpt(setUpSMTPSession(ip),null,new MailAddress(SPAM_TRAP_RECIP1)).getResult();
+        HookReturnCode result = handler.doRcpt(setUpSMTPSession(ip), Optional.empty(), new MailAddress(SPAM_TRAP_RECIP1)).getResult();
     
         assertThat(result).describedAs("Blocked on first connect").isEqualTo(HookReturnCode.deny());
     
 
-        result = handler.doRcpt(setUpSMTPSession(ip),null,new MailAddress(RECIP1)).getResult();
+        result = handler.doRcpt(setUpSMTPSession(ip), Optional.empty(), new MailAddress(RECIP1)).getResult();
     
         assertThat(result).describedAs("Blocked on second connect").isEqualTo(HookReturnCode.deny());
     
         
-        result = handler.doRcpt(setUpSMTPSession(ip2),null,new MailAddress(RECIP1)).getResult();
+        result = handler.doRcpt(setUpSMTPSession(ip2), Optional.empty(), new MailAddress(RECIP1)).getResult();
     
         assertThat(result).describedAs("Not Blocked").isEqualTo(HookReturnCode.declined());
     
@@ -84,7 +85,7 @@ public class SpamTrapHandlerTest {
             fail("Failed to sleep for " + blockTime + " ms");
         }
     
-        result = handler.doRcpt(setUpSMTPSession(ip),null,new MailAddress(RECIP1)).getResult();
+        result = handler.doRcpt(setUpSMTPSession(ip), Optional.empty(), new MailAddress(RECIP1)).getResult();
     
         assertThat(result).describedAs("Not blocked. BlockTime exceeded").isEqualTo(HookReturnCode.declined());
     }

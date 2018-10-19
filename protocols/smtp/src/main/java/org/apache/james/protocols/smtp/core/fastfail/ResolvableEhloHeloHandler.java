@@ -21,6 +21,7 @@ package org.apache.james.protocols.smtp.core.fastfail;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -93,7 +94,7 @@ public class ResolvableEhloHeloHandler implements RcptHook, HeloHook {
     }
 
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender, MailAddress rcpt) {
         if (check(session,rcpt)) {
             return HookResult.builder()
                 .hookReturnCode(HookReturnCode.deny())

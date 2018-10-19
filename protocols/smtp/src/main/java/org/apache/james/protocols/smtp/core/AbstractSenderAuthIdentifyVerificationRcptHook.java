@@ -19,6 +19,7 @@
 package org.apache.james.protocols.smtp.core;
 
 import java.util.Locale;
+import java.util.Optional;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
@@ -42,7 +43,7 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
         .build();
     
     @Override
-    public HookResult doRcpt(SMTPSession session, MailAddress sender,
+    public HookResult doRcpt(SMTPSession session, Optional<MailAddress> sender,
                              MailAddress rcpt) {
         if (session.getUser() != null) {
             String authUser = (session.getUser()).toLowerCase(Locale.US);
@@ -62,8 +63,8 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
         return HookResult.DECLINED;
     }
 
-    public String retrieveSender(MailAddress sender, MailAddress senderAddress) {
-        if (senderAddress != null && !sender.isNullSender()) {
+    public String retrieveSender(Optional<MailAddress> sender, MailAddress senderAddress) {
+        if (senderAddress != null && !sender.isPresent()) {
             return getUser(senderAddress);
         }
         return null;
