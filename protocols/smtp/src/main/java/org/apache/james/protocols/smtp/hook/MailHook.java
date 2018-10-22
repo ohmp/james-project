@@ -19,6 +19,8 @@
 
 package org.apache.james.protocols.smtp.hook;
 
+import java.util.Optional;
+
 import org.apache.james.core.MailAddress;
 import org.apache.james.protocols.smtp.SMTPSession;
 
@@ -33,7 +35,25 @@ public interface MailHook extends Hook {
      * 
      * @param session the SMTPSession
      * @param sender the sender MailAddress
+     * @deprecated See {@link MailHook#doMail(SMTPSession, Optional)}
      * @return HockResult
      */
-    HookResult doMail(SMTPSession session, MailAddress sender);
+    @Deprecated
+    default HookResult doMail(SMTPSession session, MailAddress sender) {
+        return doMail(session, Optional.ofNullable(sender).filter(address -> !address.isNullSender()));
+    }
+
+    /**
+     * Return the HookResult after run the hook
+     *
+     * This strongly typed version of do mail is safer to use.
+     *
+     * @param session the SMTPSession
+     * @param sender the sender MailAddress
+     * @since James 3.2.0
+     * @return HockResult
+     */
+    default HookResult doMail(SMTPSession session, Optional<MailAddress> sender) {
+        return doMail(session, sender.orElse(null));
+    }
 }
