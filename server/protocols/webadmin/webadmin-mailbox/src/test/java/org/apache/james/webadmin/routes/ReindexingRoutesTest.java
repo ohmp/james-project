@@ -598,7 +598,7 @@ class ReindexingRoutesTest {
             }
 
             @Test
-            void messageReprocessingShouldFailWithNonExistantMailboxId() {
+            void messageReprocessingShouldFailWithNonExistentMailboxId() {
                 when()
                     .post("/mailboxIndex/users/" + USERNAME + "/mailboxes/36/mails/7?task=reIndex")
                 .then()
