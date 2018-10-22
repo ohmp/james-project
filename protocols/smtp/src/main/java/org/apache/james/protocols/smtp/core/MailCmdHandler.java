@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import javax.inject.Inject;
@@ -260,7 +261,7 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
         if (sender.isNullSender()) {
             sender = null;
         }
-        return rawHook.doMail(session, sender);
+        return rawHook.doMail(session, Optional.ofNullable(sender));
     }
 
     

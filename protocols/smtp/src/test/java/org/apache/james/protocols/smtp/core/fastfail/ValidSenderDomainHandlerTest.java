@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -106,7 +107,7 @@ public class ValidSenderDomainHandlerTest {
     @Test
     public void testNullSenderNotReject() {
         ValidSenderDomainHandler handler = createHandler();
-        HookReturnCode response = handler.doMail(setupMockedSession(null),null).getResult();
+        HookReturnCode response = handler.doMail(setupMockedSession(null), Optional.empty()).getResult();
         
         assertThat(HookReturnCode.declined()).describedAs("Not blocked cause its a nullsender").isEqualTo(response);
     }
@@ -115,7 +116,8 @@ public class ValidSenderDomainHandlerTest {
     public void testInvalidSenderDomainReject() throws Exception {
         ValidSenderDomainHandler handler = createHandler();
         SMTPSession session = setupMockedSession(new MailAddress("invalid@invalid"));
-        HookReturnCode response = handler.doMail(session,(MailAddress) session.getAttachment(SMTPSession.SENDER, State.Transaction)).getResult();
+        Optional<MailAddress> sender = Optional.of((MailAddress) session.getAttachment(SMTPSession.SENDER, State.Transaction));
+        HookReturnCode response = handler.doMail(session, sender).getResult();
         
         assertThat(HookReturnCode.deny()).describedAs("Blocked cause we use reject action").isEqualTo(response);
     }

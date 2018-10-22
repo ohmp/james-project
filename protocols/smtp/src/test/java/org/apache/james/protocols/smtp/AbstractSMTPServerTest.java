@@ -594,7 +594,7 @@ public abstract class AbstractSMTPServerTest {
             }
 
             @Override
-            public HookResult doMail(SMTPSession session, MailAddress sender) {
+            public HookResult doMail(SMTPSession session, Optional<MailAddress> sender) {
                 return HookResult.DENY;
             }
         };
@@ -644,7 +644,7 @@ public abstract class AbstractSMTPServerTest {
             }
 
             @Override
-            public HookResult doMail(SMTPSession session, MailAddress sender) {
+            public HookResult doMail(SMTPSession session, Optional<MailAddress> sender) {
                 return HookResult.DENYSOFT;
             }
         };

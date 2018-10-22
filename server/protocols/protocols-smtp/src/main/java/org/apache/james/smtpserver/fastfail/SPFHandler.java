@@ -111,17 +111,17 @@ public class SPFHandler implements JamesMessageHook, MailHook, RcptHook, Protoco
      * @param session
      *            SMTP session object
      */
-    private void doSPFCheck(SMTPSession session, MailAddress sender) {
+    private void doSPFCheck(SMTPSession session, Optional<MailAddress> sender) {
         String heloEhlo = (String) session.getAttachment(SMTPSession.CURRENT_HELO_NAME, State.Transaction);
 
         // We have no Sender or HELO/EHLO yet return false
-        if (sender == null || heloEhlo == null) {
+        if (!sender.isPresent() || heloEhlo == null) {
             LOGGER.info("No Sender or HELO/EHLO present");
         } else {
 
             String ip = session.getRemoteAddress().getAddress().getHostAddress();
 
-            SPFResult result = spf.checkSPF(ip, sender.toString(), heloEhlo);
+            SPFResult result = spf.checkSPF(ip, sender.get().asString(), heloEhlo);
 
             String spfResult = result.getResult();
 
@@ -130,7 +130,7 @@ public class SPFHandler implements JamesMessageHook, MailHook, RcptHook, Protoco
             // Store the header
             session.setAttachment(SPF_HEADER, result.getHeaderText(), State.Transaction);
 
-            LOGGER.info("Result for {} - {} - {} = {}", ip, sender, heloEhlo, spfResult);
+            LOGGER.info("Result for {} - {} - {} = {}", ip, sender.get(), heloEhlo, spfResult);
 
             // Check if we should block!
             if ((spfResult.equals(SPFErrorConstants.FAIL_CONV)) || (spfResult.equals(SPFErrorConstants.SOFTFAIL_CONV) && blockSoftFail) || (spfResult.equals(SPFErrorConstants.PERM_ERROR_CONV) && blockPermError)) {
@@ -171,7 +171,7 @@ public class SPFHandler implements JamesMessageHook, MailHook, RcptHook, Protoco
     }
 
     @Override
-    public HookResult doMail(SMTPSession session, MailAddress sender) {
+    public HookResult doMail(SMTPSession session, Optional<MailAddress> sender) {
         doSPFCheck(session, sender);
         return HookResult.DECLINED;
     }

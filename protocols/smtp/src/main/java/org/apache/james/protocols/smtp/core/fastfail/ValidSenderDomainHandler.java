@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.protocols.smtp.core.fastfail;
 
+import java.util.Optional;
+
 import org.apache.james.core.MailAddress;
 import org.apache.james.protocols.smtp.SMTPRetCode;
 import org.apache.james.protocols.smtp.SMTPSession;
@@ -34,8 +36,8 @@ public abstract class ValidSenderDomainHandler implements MailHook {
 
 
     @Override
-    public HookResult doMail(SMTPSession session, MailAddress sender) {
-        if (sender != null  && !hasMXRecord(session,sender.getDomain().name())) {
+    public HookResult doMail(SMTPSession session, Optional<MailAddress> sender) {
+        if (sender.isPresent()  && !hasMXRecord(session,sender.get().getDomain().name())) {
             return HookResult.builder()
                 .hookReturnCode(HookReturnCode.deny())
                 .smtpReturnCode(SMTPRetCode.SYNTAX_ERROR_ARGUMENTS)

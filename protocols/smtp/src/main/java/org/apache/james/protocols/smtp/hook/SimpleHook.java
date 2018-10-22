@@ -67,7 +67,7 @@ public class SimpleHook implements HeloHook, MailHook, RcptHook, MessageHook {
      * Return {@link HookResult} with {@link HookReturnCode#DECLINED}
      */
     @Override
-    public HookResult doMail(SMTPSession session, MailAddress sender) {
+    public HookResult doMail(SMTPSession session, Optional<MailAddress> sender) {
         return HookResult.DECLINED;
 
     }
