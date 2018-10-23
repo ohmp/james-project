@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.queue.api.MailQueue.MailQueueException;
 import org.apache.james.queue.api.ManageableMailQueue;
 
 import com.github.steveash.guavate.Guavate;
