@@ -33,7 +33,6 @@ import org.apache.mailet.base.AutomaticallySentMailDetector;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 public class VacationReply {
 
