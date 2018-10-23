@@ -20,9 +20,7 @@ package org.apache.james.transport.mailets.jsieve;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
