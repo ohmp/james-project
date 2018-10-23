@@ -75,6 +75,20 @@ class SenderIsTest {
     }
 
     @Test
+    void shouldMatchNotMatchWhenNoSender() throws Exception {
+        matcher.init(FakeMatcherConfig.builder()
+                .matcherName("SenderIs")
+                .condition(SENDER_NAME)
+                .build());
+
+        FakeMail fakeMail = FakeMail.builder()
+            .recipient(recipient)
+            .build();
+
+        assertThat(matcher.match(fakeMail)).isNull();
+    }
+
+    @Test
     void shouldMatchMatchWhenNullSenderWhenConfigured() throws Exception {
         matcher.init(FakeMatcherConfig.builder()
                 .matcherName("SenderIs")
@@ -84,6 +98,20 @@ class SenderIsTest {
         FakeMail fakeMail = FakeMail.builder()
             .recipient(recipient)
             .sender(MailAddress.nullSender())
+            .build();
+
+        assertThat(matcher.match(fakeMail)).containsExactly(recipient);
+    }
+
+    @Test
+    void shouldMatchMatchWhenNoSenderWhenConfigured() throws Exception {
+        matcher.init(FakeMatcherConfig.builder()
+                .matcherName("SenderIs")
+                .condition(MailAddress.NULL_SENDER_AS_STRING)
+                .build());
+
+        FakeMail fakeMail = FakeMail.builder()
+            .recipient(recipient)
             .build();
 
         assertThat(matcher.match(fakeMail)).containsExactly(recipient);

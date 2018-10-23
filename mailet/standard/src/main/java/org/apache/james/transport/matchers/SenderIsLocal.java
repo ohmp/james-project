@@ -19,6 +19,7 @@
 package org.apache.james.transport.matchers;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Mail;
@@ -38,10 +39,10 @@ public class SenderIsLocal extends GenericMatcher {
     }
 
     private boolean isLocal(MailAddress mailAddress) {
-        if (mailAddress.isNullSender()) {
-            return false;
-        }
-        return getMailetContext().isLocalEmail(mailAddress);
+        return Optional.ofNullable(mailAddress)
+            .filter(address -> !address.isNullSender())
+            .map(address -> getMailetContext().isLocalEmail(address))
+            .orElse(false);
     }
 
 }
