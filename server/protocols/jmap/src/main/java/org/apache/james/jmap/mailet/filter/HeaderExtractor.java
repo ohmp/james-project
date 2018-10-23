@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.functions.ThrowingFunction;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
 public interface HeaderExtractor extends ThrowingFunction<Mail, Stream<String>> {
@@ -75,7 +76,8 @@ public interface HeaderExtractor extends ThrowingFunction<Mail, Stream<String>> 
             } catch (Exception e) {
                 LOGGER.info("Failed parsing header. Falling back to unparsed header value matching", e);
                 return Stream.of(mail.getMessage().getHeader(fallbackHeaderName))
-                    .map(MimeUtil::unscrambleHeaderValue);
+                    .map(MimeUtil::unscrambleHeaderValue)
+                    .flatMap(s -> Splitter.on(',').trimResults().splitToList(s).stream());
             }
         };
     }
