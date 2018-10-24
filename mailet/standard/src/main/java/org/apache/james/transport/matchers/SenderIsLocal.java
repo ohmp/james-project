@@ -19,7 +19,6 @@
 package org.apache.james.transport.matchers;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Mail;
