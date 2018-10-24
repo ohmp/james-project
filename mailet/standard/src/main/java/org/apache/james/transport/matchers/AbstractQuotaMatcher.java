@@ -98,9 +98,7 @@ public abstract class AbstractQuotaMatcher extends GenericMatcher {
      * @param sender the sender to check
      */
     private boolean isSenderChecked(Optional<MailAddress> sender) {
-        return sender.filter(mailAddress -> getMailetContext().getPostmaster().equals(mailAddress))
-            .map(any -> true)
-            .orElse(false);
+        return sender.filter(mailAddress -> !getMailetContext().getPostmaster().equals(mailAddress)).isPresent();
     }
 
     /** 
