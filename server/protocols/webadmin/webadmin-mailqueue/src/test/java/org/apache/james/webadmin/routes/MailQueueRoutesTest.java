@@ -263,7 +263,7 @@ public class MailQueueRoutesTest {
                     .contentType(ContentType.JSON)
                     .body(".", hasSize(1))
                     .body(firstMail + ".name", equalTo(mail.getName()))
-                    .body(firstMail + ".sender", equalTo(SENDER))
+                    .body(firstMail + ".sender", equalTo(SENDER.asString()))
                     .body(firstMail + ".recipients", equalTo(expectedRecipients));
             }
 
