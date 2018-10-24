@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Mail filtering configured via the JMAP protocol
 - WebAdmin exposed mail re-indexing tasks
 - JPA support for Sieve script storage thanks to [Sebast26](https://github.com/sebast26)
+- Mailet DOC: Exclude from documentation annotation thanks to [mschnitzler](https://github.com/mschnitzler)
+- `cassandra.pooling.max.queue.size` configuration option Thanks to [matzepan](https://github.com/matzepan)
 
 ### Changed
 - Multiple libraries updates
