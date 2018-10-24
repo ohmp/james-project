@@ -24,7 +24,7 @@ import java.util.Optional;
 import org.apache.james.core.MailAddress;
 
 public class DeliveryUtils {
-
+    @SuppressWarnings("deprecated")
     public static String prettyPrint(MailAddress mailAddress) {
         return prettyPrint(Optional.ofNullable(mailAddress)
             .filter(address -> ! address.isNullSender()));
