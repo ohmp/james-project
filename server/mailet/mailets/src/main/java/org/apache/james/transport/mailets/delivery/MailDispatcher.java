@@ -115,7 +115,7 @@ public class MailDispatcher {
         MimeMessage message = mail.getMessage();
         // Set Return-Path and remove all other Return-Path headers from the message
         // This only works because there is a placeholder inserted by MimeMessageWrapper
-        message.setHeader(RFC2822Headers.RETURN_PATH, mail.getMaybeSender().asString());
+        message.setHeader(RFC2822Headers.RETURN_PATH, mail.getMaybeSender().asPrettyString());
 
         List<MailAddress> errors = deliver(mail, message);
 

@@ -25,7 +25,7 @@ import org.apache.james.core.MaybeSender;
 public class DeliveryUtils {
 
     public static String prettyPrint(MailAddress mailAddress) {
-        return MaybeSender.of(mailAddress).asString();
+        return MaybeSender.of(mailAddress).asPrettyString();
     }
 
 }
