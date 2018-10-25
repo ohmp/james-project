@@ -61,6 +61,10 @@ public class MaybeSender {
         return asString(MailAddress.NULL_SENDER_AS_STRING);
     }
 
+    public String asPrettyString() {
+        return mailAddress.map(MailAddress::asPrettyString).orElse(MailAddress.NULL_SENDER_AS_STRING);
+    }
+
     public boolean isNullSender() {
         return !mailAddress.isPresent();
     }

@@ -138,6 +138,18 @@ class MaybeSenderTest {
     }
 
     @Test
+    void asPrettyStringShouldReturnDefaultWhenNullSender() {
+        assertThat(MaybeSender.nullSender().asPrettyString())
+            .isEqualTo(MailAddress.NULL_SENDER_AS_STRING);
+    }
+
+    @Test
+    void asPrettyStringShouldReturnWrappedValue() {
+        assertThat(MaybeSender.of(mailAddress).asPrettyString())
+            .isEqualTo("<" + MAIL_ADDRESS_STRING + ">");
+    }
+
+    @Test
     void asStringWithDefaultShouldReturnDefaultWhenNullSender() {
         assertThat(MaybeSender.nullSender().asString("default"))
             .isEqualTo("default");
