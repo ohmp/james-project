@@ -20,15 +20,12 @@
 package org.apache.james.transport.mailets.delivery;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 
 public class DeliveryUtils {
 
     public static String prettyPrint(MailAddress mailAddress) {
-        if (mailAddress != null) {
-            return mailAddress.asPrettyString();
-        } else {
-            return "<>";
-        }
+        return MaybeSender.of(mailAddress).asString();
     }
 
 }

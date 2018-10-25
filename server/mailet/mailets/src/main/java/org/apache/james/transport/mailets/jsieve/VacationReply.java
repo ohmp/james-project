@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 public class VacationReply {
     private static final Logger LOGGER = LoggerFactory.getLogger(VacationReply.class);
@@ -53,6 +53,8 @@ public class VacationReply {
         private String subject;
 
         public Builder(Mail originalMail, ActionContext context) {
+            Preconditions.checkArgument(originalMail.hasSender());
+
             this.originalMail = originalMail;
             this.context = context;
         }
@@ -85,7 +87,7 @@ public class VacationReply {
             reply.setSubject(generateNotificationSubject());
             reply.setContent(generateNotificationContent());
 
-            return new VacationReply(retrieveOriginalSender(), Lists.newArrayList(originalMail.getSender()), reply);
+            return new VacationReply(retrieveOriginalSender(), ImmutableList.of(originalMail.getMaybeSender().get()), reply);
         }
 
         private boolean eitherReasonOrMime() {
@@ -126,13 +128,13 @@ public class VacationReply {
             return multipart;
         }
 
-        private MailAddress retrieveOriginalSender() throws AddressException {
+        private MailAddress retrieveOriginalSender() {
             return Optional.ofNullable(from)
-                .map(address -> retrieveAddressFromString(address, context))
+                .map(this::retrieveAddressFromString)
                 .orElse(context.getRecipient());
         }
 
-        private MailAddress retrieveAddressFromString(String address, ActionContext context) {
+        private MailAddress retrieveAddressFromString(String address) {
             try {
                 return new MailAddress(address);
             } catch (AddressException e) {

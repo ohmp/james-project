@@ -41,6 +41,7 @@ import java.util.concurrent.TimeoutException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.junit.ExecutorExtension;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
@@ -92,7 +93,7 @@ public interface MailQueueContract {
     }
 
     @Test
-    default void queueShouldPreserveNullSender() throws Exception {
+    default void queueShouldPreserveHandleSender() throws Exception {
         enQueue(FakeMail.builder()
             .name("name")
             .mimeMessage(createMimeMessage())
@@ -102,8 +103,8 @@ public interface MailQueueContract {
             .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
-        assertThat(mailQueueItem.getMail().getSender())
-            .isEqualTo(MailAddress.nullSender());
+        assertThat(mailQueueItem.getMail().getMaybeSender())
+            .isEqualTo(MaybeSender.nullSender());
     }
 
     @Test
@@ -113,8 +114,8 @@ public interface MailQueueContract {
             .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
-        assertThat(mailQueueItem.getMail().getSender())
-            .isEqualTo(SENDER);
+        assertThat(mailQueueItem.getMail().getMaybeSender())
+            .isEqualTo(MaybeSender.of(SENDER));
     }
 
     @Test
