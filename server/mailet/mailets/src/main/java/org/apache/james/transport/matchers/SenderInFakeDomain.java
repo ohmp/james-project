@@ -38,7 +38,7 @@ public class SenderInFakeDomain extends AbstractNetworkMatcher {
 
     @Override
     public Collection<MailAddress> match(Mail mail) {
-        if (mail.hasSender()) {
+        if (!mail.hasSender()) {
             return null;
         }
         Domain domain = mail.getMaybeSender().get().getDomain();
