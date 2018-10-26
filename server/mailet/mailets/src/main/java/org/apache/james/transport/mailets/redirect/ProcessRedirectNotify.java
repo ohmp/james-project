@@ -92,7 +92,7 @@ public class ProcessRedirectNotify {
                 }
             } else {
                 throw new MessagingException(mailet.getMailetName() + " mailet cannot forward " + originalMail.getName() + ". " +
-                        "Invalid sender domain for " + newMail.getMaybeSender() + ". " +
+                        "Invalid sender domain for " + newMail.getMaybeSender().asString() + ". " +
                         "Consider using the Resend mailet " + "using a different sender.");
             }
 
