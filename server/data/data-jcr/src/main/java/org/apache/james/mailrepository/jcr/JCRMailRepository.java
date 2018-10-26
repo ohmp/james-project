@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
@@ -59,6 +58,7 @@ import org.apache.jackrabbit.commons.cnd.CndImporter;
 import org.apache.jackrabbit.util.ISO9075;
 import org.apache.jackrabbit.util.Text;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.lib.AbstractMailRepository;
@@ -211,7 +211,7 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
         setError(node, mail.getErrorMessage());
         setRemoteHost(node, mail.getRemoteHost());
         setRemoteAddr(node, mail.getRemoteAddr());
-        setSender(node, mail.getMaybeSender().asOptional());
+        setSender(node, mail.getMaybeSender());
         setRecipients(node, mail.getRecipients());
         setMessage(node, mail.getMessage());
         setAttributes(node, mail);
@@ -418,8 +418,8 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
      * @throws RepositoryException
      *             if a repository error occurs
      */
-    private void setSender(Node node, Optional<MailAddress> sender) throws RepositoryException {
-        node.setProperty("james:sender", sender.map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING));
+    private void setSender(Node node, MaybeSender sender) throws RepositoryException {
+        node.setProperty("james:sender", sender.asString());
     }
 
     /**
