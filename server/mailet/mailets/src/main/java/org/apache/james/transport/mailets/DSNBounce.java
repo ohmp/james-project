@@ -35,6 +35,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.javax.MimeMultipartReport;
 import org.apache.james.server.core.MailImpl;
@@ -313,12 +314,12 @@ public class DSNBounce extends GenericMailet implements RedirectNotify {
     }
 
     private List<MailAddress> getSenderAsList(Mail originalMail) {
-        List<MailAddress> reversePaths = originalMail.getMaybeSender().asList();
+        MaybeSender reversePath = originalMail.getMaybeSender();
 
         if (getInitParameters().isDebug()) {
-            LOGGER.debug("Processing a bounce request for a message with a reverse path.  The bounce will be sent to {}", reversePaths);
+            LOGGER.debug("Processing a bounce request for a message with a reverse path.  The bounce will be sent to {}", reversePath.asString());
         }
-        return reversePaths;
+        return reversePath.asList();
     }
 
     private MimeMessage createBounceMessage(Mail originalMail) throws MessagingException {
