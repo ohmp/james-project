@@ -130,16 +130,16 @@ public class VacationReply {
 
         private MailAddress retrieveOriginalSender() {
             return Optional.ofNullable(from)
-                .map(this::retrieveAddressFromString)
+                .flatMap(this::retrieveAddressFromString)
                 .orElse(context.getRecipient());
         }
 
-        private MailAddress retrieveAddressFromString(String address) {
+        private Optional<MailAddress> retrieveAddressFromString(String address) {
             try {
-                return new MailAddress(address);
+                return Optional.of(new MailAddress(address));
             } catch (AddressException e) {
                 LOGGER.warn("Mail address {} was not well formatted : {}", address, e.getLocalizedMessage());
-                return null;
+                return Optional.empty();
             }
         }
     }
