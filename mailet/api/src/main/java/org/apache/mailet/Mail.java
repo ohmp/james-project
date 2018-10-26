@@ -137,7 +137,7 @@ public interface Mail extends Serializable, Cloneable {
      * Returns the sender of the message, as specified by the SMTP "MAIL FROM" command,
      * or internally defined.
      *
-     * 'null' or {@link MailAddress#nullSender()} are handled with an empty optional.
+     * 'null' or {@link MailAddress#nullSender()} are handled with {@link MaybeSender#nullSender()}.
      *
      * @since Mailet API v3.2.0
      * @return the sender of this message wrapped in an optional
@@ -150,7 +150,7 @@ public interface Mail extends Serializable, Cloneable {
     /**
      * Returns if this message has a sender.
      *
-     * 'null' or {@link MailAddress#nullSender()} will be considered as no sender.
+     * {@link MaybeSender#nullSender()} will be considered as no sender.
      *
      * @since Mailet API v3.2.0
      */
