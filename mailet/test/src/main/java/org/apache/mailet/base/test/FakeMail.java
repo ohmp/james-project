@@ -172,7 +172,7 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder name(String name) {
             Preconditions.checkNotNull(name, "'name' can not be null");
-            this.name = Optional.of(name);
+            name(Optional.of(name));
             return this;
         }
 
@@ -183,7 +183,7 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder sender(MailAddress sender) {
             Preconditions.checkNotNull(sender, "'sender' can not be null");
-            this.sender = Optional.of(sender);
+            sender(MaybeSender.of(sender));
             return this;
         }
 
@@ -198,7 +198,7 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder state(String state) {
             Preconditions.checkNotNull(state, "'state' can not be null");
-            this.state = Optional.of(state);
+            state(Optional.of(state));
             return this;
         }
 
@@ -209,7 +209,7 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder errorMessage(String errorMessage) {
             Preconditions.checkNotNull(errorMessage, "'errorMessage' can not be null");
-            this.errorMessage = Optional.of(errorMessage);
+            errorMessage(Optional.of(errorMessage));
             return this;
         }
 
@@ -220,7 +220,7 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder lastUpdated(Date lastUpdated) {
             Preconditions.checkNotNull(lastUpdated, "'lastUpdated' can not be null");
-            this.lastUpdated = Optional.of(lastUpdated);
+            lastUpdated(Optional.of(lastUpdated));
             return this;
         }
 
