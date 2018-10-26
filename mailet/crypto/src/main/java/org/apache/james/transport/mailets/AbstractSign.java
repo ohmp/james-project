@@ -522,7 +522,7 @@ public abstract class AbstractSign extends GenericMailet {
             mail.setAttribute(SMIMEAttributeNames.SMIME_SIGNER_ADDRESS, getKeyHolder().getSignerAddress());
             
             if (isDebug()) {
-                LOGGER.debug("Message signed, reverse-path: {}, Id: {}", mail.getMaybeSender(), messageId);
+                LOGGER.debug("Message signed, reverse-path: {}, Id: {}", mail.getMaybeSender().asString(), messageId);
             }
             
         } catch (MessagingException me) {
