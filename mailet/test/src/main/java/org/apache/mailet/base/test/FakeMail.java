@@ -37,6 +37,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.Mail;
@@ -172,7 +173,7 @@ public class FakeMail implements Mail, Serializable {
         public Builder name(String name) {
             Preconditions.checkNotNull(name, "'name' can not be null");
             this.name = Optional.of(name);
-            return this.name(Optional.of(name));
+            return this;
         }
 
         public Builder name(Optional<String> name) {
@@ -183,11 +184,11 @@ public class FakeMail implements Mail, Serializable {
         public Builder sender(MailAddress sender) {
             Preconditions.checkNotNull(sender, "'sender' can not be null");
             this.sender = Optional.of(sender);
-            return this.sender(Optional.of(sender));
+            return this;
         }
 
-        public Builder sender(Optional<MailAddress> sender) {
-            this.sender = sender;
+        public Builder sender(MaybeSender sender) {
+            this.sender = sender.asOptional();
             return this;
         }
 
@@ -198,7 +199,7 @@ public class FakeMail implements Mail, Serializable {
         public Builder state(String state) {
             Preconditions.checkNotNull(state, "'state' can not be null");
             this.state = Optional.of(state);
-            return this.state(Optional.of(state));
+            return this;
         }
 
         public Builder state(Optional<String> state) {
@@ -209,7 +210,7 @@ public class FakeMail implements Mail, Serializable {
         public Builder errorMessage(String errorMessage) {
             Preconditions.checkNotNull(errorMessage, "'errorMessage' can not be null");
             this.errorMessage = Optional.of(errorMessage);
-            return this.errorMessage(Optional.of(errorMessage));
+            return this;
         }
 
         public Builder errorMessage(Optional<String> errorMessage) {
@@ -220,7 +221,7 @@ public class FakeMail implements Mail, Serializable {
         public Builder lastUpdated(Date lastUpdated) {
             Preconditions.checkNotNull(lastUpdated, "'lastUpdated' can not be null");
             this.lastUpdated = Optional.of(lastUpdated);
-            return this.lastUpdated(Optional.of(lastUpdated));
+            return this;
         }
 
         public Builder lastUpdated(Optional<Date> lastUpdated) {
@@ -314,7 +315,7 @@ public class FakeMail implements Mail, Serializable {
             .mimeMessage(msg)
             .recipients(ImmutableList.copyOf(recipients))
             .name(Optional.ofNullable(name))
-            .sender(Optional.ofNullable(sender))
+            .sender(MaybeSender.of(sender))
             .state(Optional.ofNullable(state))
             .errorMessage(Optional.ofNullable(errorMessage))
             .lastUpdated(Optional.ofNullable(lastUpdated))
