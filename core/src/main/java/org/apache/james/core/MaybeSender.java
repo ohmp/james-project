@@ -19,10 +19,12 @@
 
 package org.apache.james.core;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 public class MaybeSender {
@@ -53,7 +55,7 @@ public class MaybeSender {
         return mailAddress.map(ImmutableList::of).orElse(ImmutableList.of());
     }
 
-    public MailAddress get() {
+    public MailAddress get() throws NoSuchElementException {
         return mailAddress.get();
     }
 
@@ -90,6 +92,8 @@ public class MaybeSender {
 
     @Override
     public String toString() {
-        return asString();
+        return MoreObjects.toStringHelper(this)
+            .add("mailAddress", mailAddress)
+            .toString();
     }
 }
