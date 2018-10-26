@@ -24,7 +24,6 @@ package org.apache.james.transport.mailets;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.mail.MessagingException;
@@ -566,7 +565,7 @@ public abstract class AbstractSign extends GenericMailet {
         String authUser = (String) mail.getAttribute(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME);
         // was the sender user SMTP authorized?
         if (authUser == null) {
-            LOGGER.info("Can not sign mail for sender <{}> as he is not a SMTP authenticated user", mail.getMaybeSender());
+            LOGGER.info("Can not sign mail for sender <{}> as he is not a SMTP authenticated user", mail.getMaybeSender().asString());
             return false;
         }
         
@@ -627,11 +626,10 @@ public abstract class AbstractSign extends GenericMailet {
      */    
     protected final boolean fromAddressSameAsReverse(Mail mail) {
         
-        Optional<MailAddress> reversePath = mail.getMaybeSender().asOptional();
-        
-        if (!reversePath.isPresent()) {
+        if (!mail.hasSender()) {
             return false;
         }
+        MailAddress reversePath = mail.getMaybeSender().get();
         
         try {
             InternetAddress[] fromArray = (InternetAddress[]) mail.getMessage().getFrom();
@@ -644,7 +642,7 @@ public abstract class AbstractSign extends GenericMailet {
                         LOGGER.info("Unable to parse a \"FROM\" header address: {}; ignoring.", aFromArray);
                         continue;
                     }
-                    if (mailAddress.equals(reversePath.get())) {
+                    if (mailAddress.equals(reversePath)) {
                         return true;
                     }
                 }
