@@ -93,12 +93,26 @@ public interface MailQueueContract {
     }
 
     @Test
-    default void queueShouldPreserveHandleSender() throws Exception {
+    default void queueShouldHandleSender() throws Exception {
         enQueue(FakeMail.builder()
             .name("name")
             .mimeMessage(createMimeMessage())
             .recipients(RECIPIENT1, RECIPIENT2)
             .sender(MailAddress.nullSender())
+            .lastUpdated(new Date())
+            .build());
+
+        MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
+        assertThat(mailQueueItem.getMail().getMaybeSender())
+            .isEqualTo(MaybeSender.nullSender());
+    }
+
+    @Test
+    default void queueShouldHandleNoSender() throws Exception {
+        enQueue(FakeMail.builder()
+            .name("name")
+            .mimeMessage(createMimeMessage())
+            .recipients(RECIPIENT1, RECIPIENT2)
             .lastUpdated(new Date())
             .build());
 
