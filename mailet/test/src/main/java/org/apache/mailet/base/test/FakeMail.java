@@ -124,19 +124,19 @@ public class FakeMail implements Mail, Serializable {
         }
 
         public Builder fileName(String fileName) {
-            Preconditions.checkNotNull("'fileName' can not be null");
+            Preconditions.checkNotNull(fileName,"'fileName' can not be null");
             this.fileName = Optional.of(fileName);
             return this;
         }
 
         public Builder mimeMessage(MimeMessage mimeMessage) {
-            Preconditions.checkNotNull("'mimeMessage' can not be null");
+            Preconditions.checkNotNull(mimeMessage, "'mimeMessage' can not be null");
             this.mimeMessage = Optional.of(mimeMessage);
             return this;
         }
 
         public Builder mimeMessage(MimeMessageBuilder mimeMessage) throws MessagingException {
-            Preconditions.checkNotNull("'mimeMessage' can not be null");
+            Preconditions.checkNotNull(mimeMessage, "'mimeMessage' can not be null");
             this.mimeMessage = Optional.of(mimeMessage.build());
             return this;
         }
@@ -155,7 +155,7 @@ public class FakeMail implements Mail, Serializable {
         }
 
         public Builder recipients(String... recipients) {
-            Preconditions.checkNotNull("'recipients' can not be null");
+            Preconditions.checkNotNull(recipients, "'recipients' can not be null");
             return recipients(Arrays.stream(recipients)
                 .map(Throwing.function(MailAddress::new))
                 .collect(Guavate.toImmutableList()));
@@ -170,13 +170,13 @@ public class FakeMail implements Mail, Serializable {
         }
 
         public Builder name(String name) {
-            Preconditions.checkNotNull("'name' can not be null");
+            Preconditions.checkNotNull(name, "'name' can not be null");
             this.name = Optional.of(name);
             return this;
         }
 
         public Builder sender(MailAddress sender) {
-            Preconditions.checkNotNull("'sender' can not be null");
+            Preconditions.checkNotNull(sender, "'sender' can not be null");
             this.sender = Optional.of(sender);
             return this;
         }
@@ -186,19 +186,19 @@ public class FakeMail implements Mail, Serializable {
         }
 
         public Builder state(String state) {
-            Preconditions.checkNotNull("'state' can not be null");
+            Preconditions.checkNotNull(state, "'state' can not be null");
             this.state = Optional.of(state);
             return this;
         }
 
         public Builder errorMessage(String errorMessage) {
-            Preconditions.checkNotNull("'errorMessage' can not be null");
+            Preconditions.checkNotNull(errorMessage, "'errorMessage' can not be null");
             this.errorMessage = Optional.of(errorMessage);
             return this;
         }
 
         public Builder lastUpdated(Date lastUpdated) {
-            Preconditions.checkNotNull("'lastUpdated' can not be null");
+            Preconditions.checkNotNull(lastUpdated, "'lastUpdated' can not be null");
             this.lastUpdated = Optional.of(lastUpdated);
             return this;
         }
