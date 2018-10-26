@@ -244,7 +244,7 @@ public class WhiteListManager extends GenericMailet {
     public void service(Mail mail) throws MessagingException {
 
         // check if it's a local sender
-        if (mail.hasSender()) {
+        if (!mail.hasSender()) {
             return;
         }
         MailAddress senderMailAddress = mail.getMaybeSender().get();
