@@ -160,7 +160,7 @@ public interface Mail extends Serializable, Cloneable {
 
     /**
      * @since Mailet API v3.2.0
-     * @return A copy of this email. Name might differ.
+     * @return A copy of this email. Implementation can affect a variation of the initial mail name property.
      */
     Mail duplicate() throws MessagingException;
     
