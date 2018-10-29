@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - `cassandra.pooling.max.queue.size` configuration option Thanks to [matzepan](https://github.com/matzepan)
 - `RecipentDomainIs` and `SenderDomainIs` matchers by [athulyaraj](https://github.com/athulyaraj)
 - IMAP MOVE commend (RFC-6851) On top of JPA. Thanks to [mschnitzler](https://github.com/mschnitzler)
+- Cassandra health checks thanks to [matzepan](https://github.com/matzepan)
+- Sieve script upload via the CLI thanks to [matzepan](https://github.com/matzepan)
 
 ### Changed
 - Multiple libraries updates
