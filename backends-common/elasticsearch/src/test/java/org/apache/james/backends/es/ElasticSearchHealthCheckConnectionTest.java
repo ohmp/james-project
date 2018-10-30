@@ -38,7 +38,7 @@ public class ElasticSearchHealthCheckConnectionTest {
     private static final int ES_APPLICATIVE_PORT = 9300;
     private static final Set<IndexName> indices = new HashSet<>();
 
-    private static final WaitStrategy WAIT_STRATEGY = Wait.forHttp("/").forPort(ES_APPLICATIVE_PORT).withRateLimiter(RateLimiters.DEFAULT);
+    private static final WaitStrategy WAIT_STRATEGY = Wait.forHttp("/").forPort(ES_APPLICATIVE_PORT).withRateLimiter(RateLimiters.TWENTIES_PER_SECOND);
 
     @Rule
     public SwarmGenericContainer elasticSearchContainer = new SwarmGenericContainer(Images.ELASTICSEARCH)
