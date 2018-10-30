@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 - Multiple libraries updates
 - Migration from Cassandra 2 to Cassandra 3
+- Mail::getSender was deprecated. Mail::getMaybeSender offers better Null Sender support. Java 8 default API method was used to not break compatibility.
 
 ### Removed
 - Drop partially implemented Kafka distributed events
