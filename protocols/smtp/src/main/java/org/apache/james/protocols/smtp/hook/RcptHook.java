@@ -45,7 +45,7 @@ public interface RcptHook extends Hook {
     /**
      * Return the HookResult after run the hook
      *
-     * this strongly typed version smoothly handled null sender and should be prefered.
+     * this strongly typed version smoothly handle null sender and should be prefered.
      */
     @SuppressWarnings("deprecated")
     default HookResult doRcpt(SMTPSession session, MaybeSender sender, MailAddress rcpt) {
