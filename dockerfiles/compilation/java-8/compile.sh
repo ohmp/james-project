@@ -15,7 +15,7 @@ printUsage() {
 ORIGIN=/origin
 CASSANDRA_DESTINATION=/cassandra/destination
 JPA_DESTINATION=/jpa/destination
-JPA_SMPT_DESTINATION=/jpa-smpt/destination
+JPA_SMTP_DESTINATION=/jpa-smpt/destination
 SPRING_DESTINATION=/spring/destination
 SWAGGER_DESTINATION=/swagger
 
@@ -78,12 +78,12 @@ if [ $? -eq 0 ]; then
       cp -r server/container/cli/target/james-server-cli.lib $JPA_DESTINATION || true
    fi
 
-   if [ -d "$JPA_SMPT_DESTINATION" ]; then
+   if [ -d "$JPA_SMTP_DESTINATION" ]; then
       echo "Copying JPA-SMPT jars"
-      cp server/container/guice/jpa-smpt/target/james-server-jpa-smtp-guice.jar $JPA_SMPT_DESTINATION || true
-      cp -r server/container/guice/jpa-smpt/target/james-server-jpa-smtp-guice.lib $JPA_SMPT_DESTINATION || true
-      cp server/container/cli/target/james-server-cli.jar $JPA_SMPT_DESTINATION || true
-      cp -r server/container/cli/target/james-server-cli.lib $JPA_SMPT_DESTINATION || true
+      cp server/container/guice/jpa-smpt/target/james-server-jpa-smtp-guice.jar $JPA_SMTP_DESTINATION || true
+      cp -r server/container/guice/jpa-smpt/target/james-server-jpa-smtp-guice.lib $JPA_SMTP_DESTINATION || true
+      cp server/container/cli/target/james-server-cli.jar $JPA_SMTP_DESTINATION || true
+      cp -r server/container/cli/target/james-server-cli.lib $JPA_SMTP_DESTINATION || true
    fi
 
    if [ -d "$SPRING_DESTINATION" ]; then
