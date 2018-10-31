@@ -107,7 +107,7 @@ public class ValidSenderDomainHandlerTest {
     @Test
     public void testNullSenderNotReject() {
         ValidSenderDomainHandler handler = createHandler();
-        HookReturnCode response = handler.doMail(setupMockedSession(null), MailAddress.nullSender()).getResult();
+        HookReturnCode response = handler.doMail(setupMockedSession(null), MaybeSender.nullSender()).getResult();
         
         assertThat(HookReturnCode.declined()).describedAs("Not blocked cause its a nullsender").isEqualTo(response);
     }
