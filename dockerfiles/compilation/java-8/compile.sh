@@ -79,7 +79,7 @@ if [ $? -eq 0 ]; then
    fi
 
    if [ -d "$JPA_SMTP_DESTINATION" ]; then
-      echo "Copying JPA-SMPT jars"
+      echo "Copying JPA-SMTP jars"
       cp server/container/guice/jpa-smpt/target/james-server-jpa-smtp-guice.jar $JPA_SMTP_DESTINATION || true
       cp -r server/container/guice/jpa-smpt/target/james-server-jpa-smtp-guice.lib $JPA_SMTP_DESTINATION || true
       cp server/container/cli/target/james-server-cli.jar $JPA_SMTP_DESTINATION || true
