@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Mailet DOC: Exclude from documentation annotation thanks to [mschnitzler](https://github.com/mschnitzler)
 - `cassandra.pooling.max.queue.size` configuration option Thanks to [matzepan](https://github.com/matzepan)
 - `RecipentDomainIs` and `SenderDomainIs` matchers by [athulyaraj](https://github.com/athulyaraj)
+- DockerFile for JPA SMTP product thanks to [matzepan](https://github.com/matzepan)
 
 ### Changed
 - Multiple libraries updates
