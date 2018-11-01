@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - WebAdmin exposed mail re-indexing tasks
 - WebAdmin exposed health checks. This includes:
    - Possibility to perform a single healthcheck, thanks to [mschnitzler](https://github.com/mschnitzler)
+   - Possibility to list healthchecks, thanks to [Madhu Bhat](https://github.com/kratostaine)
    - Cassandra health checks thanks to [matzepan](https://github.com/matzepan)
 - IMAP MOVE commend (RFC-6851) On top of JPA. Thanks to [mschnitzler](https://github.com/mschnitzler)
 - JPA support for Sieve script storage thanks to [Sebast26](https://github.com/sebast26)
