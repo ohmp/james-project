@@ -244,6 +244,41 @@ public interface Mail extends Serializable, Cloneable {
     Optional<Attribute> getAttribute(AttributeName name);
 
     /**
+     * Returns the raw attribute value corresponding to an attribute name.
+     *
+     * A cast will be attempted to match the type expected by the user.
+     *
+     * Returns empty optionals upon missing attribute or type mismatch.
+     *
+     * @since Mailet API v3.2
+     */
+    default <T> Optional<T> getRawAttributeValue(AttributeName name, Class<T> type) {
+        return getRawAttributeValue(name)
+            .flatMap(value -> tryToCast(type, value));
+    }
+
+    /**
+     * Returns the raw attribute value corresponding to an attribute name.
+     *
+     * Returns empty optionals upon missing attribute
+     *
+     * @since Mailet API v3.2
+     */
+    default Optional<?> getRawAttributeValue(AttributeName name) {
+        return getAttribute(name)
+            .map(Attribute::getValue)
+            .map(AttributeValue::getValue);
+    }
+
+    static <T> Optional<T> tryToCast(Class<T> type, Object value) {
+        if (type.isInstance(value)) {
+            return Optional.of(type.cast(value));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Returns an Iterator over the names of all attributes which are set
      * in this Mail instance.
      * <p>

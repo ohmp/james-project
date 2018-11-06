@@ -23,6 +23,7 @@ package org.apache.mailet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +57,17 @@ public abstract class ContractMailTest {
         void newMailShouldHaveNoAttribute() {
             assertThat(mail.attributes()).isEmpty();
         }
-        
+
+        @Test
+        void getRawAttributeValueShouldReturnEmptyWhenNone() {
+            assertThat(mail.getRawAttributeValue(ATTRIBUTE_NAME_1)).isEmpty();
+        }
+
+        @Test
+        void getRawAttributeValueWithCastShouldReturnEmptyWhenNone() {
+            assertThat(mail.getRawAttributeValue(ATTRIBUTE_NAME_1, String.class)).isEmpty();
+        }
+
         @Test
         void newMailShouldHaveNoAttributeName() {
             assertThat(mail.attributeNames()).isEmpty();
@@ -101,6 +112,21 @@ public abstract class ContractMailTest {
         @Test
         void shouldBeRetrievable() {
             assertThat(mail.getAttribute(ATTRIBUTE_NAME_1)).contains(ATTRIBUTE_1);
+        }
+
+        @Test
+        void getRawAttributeValueShouldReturnContainedValue() {
+            assertThat(mail.getRawAttributeValue(ATTRIBUTE_NAME_1)).isEqualTo(Optional.of(true));
+        }
+
+        @Test
+        void getRawAttributeValueWithCastShouldReturnContainedValue() {
+            assertThat(mail.getRawAttributeValue(ATTRIBUTE_NAME_1, Boolean.class)).contains(true);
+        }
+
+        @Test
+        void getRawAttributeValueWithCastShouldReturnEmptyWhenWrongType() {
+            assertThat(mail.getRawAttributeValue(ATTRIBUTE_NAME_1, String.class)).isEmpty();
         }
         
         @Test
