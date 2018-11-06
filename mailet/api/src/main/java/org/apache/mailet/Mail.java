@@ -248,7 +248,7 @@ public interface Mail extends Serializable, Cloneable {
      *
      * A cast will be attempted to match the type expected by the user.
      *
-     * Returns empty optionals upon missing attribute or type mismatch.
+     * Returns an empty optional upon missing attribute or type mismatch.
      *
      * @since Mailet API v3.2
      */
@@ -260,7 +260,7 @@ public interface Mail extends Serializable, Cloneable {
     /**
      * Returns the raw attribute value corresponding to an attribute name.
      *
-     * Returns empty optionals upon missing attribute
+     * Returns an empty optional upon missing attribute
      *
      * @since Mailet API v3.2
      */
