@@ -217,7 +217,7 @@ public class MailImpl implements Disposable, Mail {
 
         @Deprecated
         public Builder attribute(String name, Serializable object) {
-            attribute(Attribute.convertToAttribute(name, object));
+            attribute(Attribute.of(name, object));
             return this;
         }
 
@@ -280,7 +280,7 @@ public class MailImpl implements Disposable, Mail {
     private static Map<AttributeName, Attribute> toAttributeMap(Map<String, ?> attributes) {
         return attributes.entrySet()
             .stream()
-            .map(entry -> Attribute.convertToAttribute(entry.getKey(), entry.getValue()))
+            .map(entry -> Attribute.of(entry.getKey(), entry.getValue()))
             .collect(Collectors.toMap(
                 Attribute::getName,
                 Function.identity()));
@@ -778,7 +778,7 @@ public class MailImpl implements Disposable, Mail {
     @Override
     public Serializable setAttribute(String key, Serializable object) {
         Preconditions.checkNotNull(key, "Key of an attribute should not be null");
-        Attribute attribute = Attribute.convertToAttribute(key, object);
+        Attribute attribute = Attribute.of(key, object);
         Attribute previous = attributes.put(attribute.getName(), attribute);
 
         return toSerializable(previous);

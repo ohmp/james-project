@@ -46,7 +46,7 @@ class AttributeTest {
 
     @Test
     void convertToAttributeShouldReturnCorrespondingAttribute() {
-        assertThat(Attribute.convertToAttribute("name", "value"))
+        assertThat(Attribute.of("name", "value"))
             .isEqualTo(new Attribute(
                 AttributeName.of("name"),
                 AttributeValue.of("value")));

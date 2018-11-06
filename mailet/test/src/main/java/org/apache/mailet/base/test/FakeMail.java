@@ -245,7 +245,7 @@ public class FakeMail implements Mail {
 
         @Deprecated
         public Builder attribute(String name, Serializable object) {
-            Attribute attribute = Attribute.convertToAttribute(name, object);
+            Attribute attribute = Attribute.of(name, object);
             this.attributes.put(attribute.getName(), attribute);
             return this;
         }
@@ -254,7 +254,7 @@ public class FakeMail implements Mail {
         public Builder attributes(Map<String, Serializable> attributes) {
             this.attributes.putAll(attributes.entrySet()
                 .stream()
-                .map(entry -> Attribute.convertToAttribute(entry.getKey(), entry.getValue()))
+                .map(entry -> Attribute.of(entry.getKey(), entry.getValue()))
                 .collect(ImmutableMap.toImmutableMap(
                     Attribute::getName,
                     Function.identity())));
@@ -305,7 +305,7 @@ public class FakeMail implements Mail {
     private static ImmutableMap<AttributeName, Attribute> toAttributeMap(Map<String, ?> attributes) {
         return attributes.entrySet()
             .stream()
-            .map(entry -> Attribute.convertToAttribute(entry.getKey(), entry.getValue()))
+            .map(entry -> Attribute.of(entry.getKey(), entry.getValue()))
             .collect(ImmutableMap.toImmutableMap(
                 Attribute::getName,
                 Function.identity()));
@@ -479,7 +479,7 @@ public class FakeMail implements Mail {
 
     @Override
     public Serializable setAttribute(String name, Serializable object) {
-        Attribute attribute = Attribute.convertToAttribute(name, object);
+        Attribute attribute = Attribute.of(name, object);
         Attribute previous = attributes.put(attribute.getName(), attribute);
 
         return toSerializable(previous);
