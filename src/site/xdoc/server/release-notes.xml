@@ -35,6 +35,64 @@
             </div>
         </div>
 
+        <section name="Version 3.2.0">
+
+            <p>Released November 2018</p>
+
+            <p>The Apache James community is proud to announce you the 3.2.0 release of the Apache James server. </p>
+
+            <ul>Changes from 3.2.0 includes:
+                <li>Mail filtering on top of the JMAP protocol</li>
+                <li>Webadmin APIs for reIndexing and healthChecks</li>
+                <li>IMAP MOVE (RFC-6851) support on top of JPA</li>
+                <li>JPA support for SIEVE script storage</li>
+                <li>CLI commands for uploading SIEVE scripts</li>
+                <li>Additional RecipentDomainIs and SenderDomainIs matchers</li>
+                <li>Multiple libraries updates</li>
+                <li>Migration from Cassandra 2 to Cassandra 3</li>
+                <li>Mail::getSender was deprecated. Mail::getMaybeSender offers better Null Sender support. Java 8 default API method was used to not break compatibility.</li>
+                <li>HBase and JCR component deprecation</li>
+                <li>Drop partially implemented Kafka distributed events</li></ul>
+
+            <p>Full changelog is available <a href="https://issues.apache.org/jira/issues/?jql=project%20%3D%20JAMES%20AND%20fixVersion%20%3D%203.2.0">here</a>.</p>
+
+            <p>We would like to thank all of contributors who made the release possible and
+                to invite others interested in helping out to engage the community on the dev
+                and users lists!</p>
+        </section>
+
+        <section name="Version 3.1.0">
+            
+            <p>Released November 2018</p>
+
+            <p>The Apache James community is proud to announce you the 3.1.0 release of the Apache James server. </p>
+
+            <ul>Changes from 3.1.0 includes:
+                <li>Move to Java 8</li>
+                <li>Improve Mail Repositories handling, including a nice web API</li>
+                <li>Improve Mail Queues handling, including a nice web API</li>
+                <li>Improve RRT (Recipient Rewrite Table) implementation</li>
+                <li>Quota handling improvements, and in particular users can receive an email when they are near the limit of their quota</li>
+                <li>Many performances enhancement, in particular on Cassandra backend</li>
+                <li>Documentation updates</li>
+                <li>Delegating folders (full JMAP support, partial IMAP support)</li>
+                <li>Introduce an object store</li>
+                <li>Configurable mailbox listeners</li>
+                <li>MDN (Message Disposition notification) parsing and handling</li>
+                <li>SpamAssassin support with per user reports</li>
+                <li>Search in attachments</li>
+                <li>Data Leak Prevention</li>
+                <li>JPA SMTP Guice product</li>
+                <li>Cassandra migration process</li>
+                <li>Structured logging</li>
+                <li>RPM packaging (in addition to deb packaging)</li></ul>
+
+            <p>We would like to thank all of contributors who made the release possible and
+                to invite others interested in helping out to engage the community on the dev
+                and users lists!</p>
+
+        </section>
+
         <section name="Version 3.0.1">
 
             <p>Released October 2017</p>
