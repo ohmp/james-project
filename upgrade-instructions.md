@@ -45,6 +45,22 @@ Hence we propose an alternative API returning a `MaybeSender` object, requiring 
 
 Note: thanks to java-8 default API methods, this is not a breaking change.
 
+### JCR and HBase backend are now deprecated
+
+Date: 30/10/2018
+
+SHA-1: 83406692eeb654a71fe3344a677b9e1cfa954f30
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-2571
+
+Required: Yes
+
+Concerned products: Spring based deployments using Hbase or JCR backends
+
+These backends did not receive enough attention in the last years, and were not maintained. There are still experimental and some features are not implemented on them.
+We don't have enough time to upgrade them to be state of the art backends, so we are deprecating them.
+These backends will be removed in the next James version (3.3.0), so if you are still using them please plan to migrate to another supported backend soon.
+
 ### JMAPFiltering mailet is required for JMAP capable servers
 
 Date: 30/08/2018
