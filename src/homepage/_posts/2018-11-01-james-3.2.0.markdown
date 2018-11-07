@@ -21,7 +21,7 @@ Here are some points we worked on:
 - Sieve script upload via the CLI thanks to [matzepan](https://github.com/matzepan)
 - Mailet DOC: Exclude from documentation annotation thanks to [mschnitzler](https://github.com/mschnitzler)
 - **cassandra.pooling.max.queue.size** configuration option Thanks to [matzepan](https://github.com/matzepan)
-- **RecipentDomainI** and **SenderDomainIs** matchers by [athulyaraj](https://github.com/athulyaraj)
+- **RecipentDomainIs** and **SenderDomainIs** matchers by [athulyaraj](https://github.com/athulyaraj)
 
 ### Changed
 
