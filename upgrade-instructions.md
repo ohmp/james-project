@@ -60,6 +60,8 @@ Concerned products: Spring based deployments using Hbase or JCR backends
 These backends did not receive enough attention in the last years, and were not maintained. There are still experimental and some features are not implemented on them.
 We don't have enough time to upgrade them to be state of the art backends, so we are deprecating them.
 These backends will be removed in the next James version (3.3.0), so if you are still using them please plan to migrate to another supported backend soon.
+For HBase we recommend to use Cassandra instead.
+For JCR we recommend to use JPA instead.
 
 ### JMAPFiltering mailet is required for JMAP capable servers
 
