@@ -33,7 +33,9 @@ import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.spamassassin.SpamAssassinExtension;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -41,7 +43,7 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.rules.TemporaryFolder;
 
-public class MemoryJmapExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class MemoryJmapExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
 
     private static final int LIMIT_TO_20_MESSAGES = 20;
 
@@ -74,8 +76,12 @@ public class MemoryJmapExtension implements BeforeEachCallback, AfterEachCallbac
     }
 
     @Override
+    public void beforeAll(ExtensionContext context) {
+        spamAssassinExtension.beforeAll(context);
+    }
+
+    @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        spamAssassinExtension.beforeEach(context);
         temporaryFolder.create();
         james.getJmapServer().start();
     }
@@ -85,6 +91,11 @@ public class MemoryJmapExtension implements BeforeEachCallback, AfterEachCallbac
         james.getJmapServer().stop();
         spamAssassinExtension.afterEach(context);
         temporaryFolder.delete();
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        spamAssassinExtension.afterAll(context);
     }
 
     @Override
