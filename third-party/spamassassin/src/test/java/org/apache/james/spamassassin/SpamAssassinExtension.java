@@ -53,7 +53,7 @@ public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallb
                 .withFileFromClasspath("spamd.sh", "docker/spamassassin/spamd.sh")
                 .withFileFromClasspath("rule-update.sh", "docker/spamassassin/rule-update.sh")
                 .withFileFromClasspath("bayes_pg.sql", "docker/spamassassin/bayes_pg.sql"))
-            .withStartupTimeout(Duration.ofMinutes(10));
+            .withStartupTimeout(Duration.ofMinutes(30));
         spamAssassinContainer.waitingFor(new SpamAssassinWaitStrategy(spamAssassinContainer));
     }
 
