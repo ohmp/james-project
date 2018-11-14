@@ -40,6 +40,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import com.github.fge.lambdas.Throwing;
 
 public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+    private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(30);
 
     private final GenericContainer<?> spamAssassinContainer;
     private SpamAssassin spamAssassin;
@@ -53,8 +54,8 @@ public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallb
                 .withFileFromClasspath("spamd.sh", "docker/spamassassin/spamd.sh")
                 .withFileFromClasspath("rule-update.sh", "docker/spamassassin/rule-update.sh")
                 .withFileFromClasspath("bayes_pg.sql", "docker/spamassassin/bayes_pg.sql"))
-            .withStartupTimeout(Duration.ofMinutes(30));
-        spamAssassinContainer.waitingFor(new SpamAssassinWaitStrategy(spamAssassinContainer));
+            .withStartupTimeout(STARTUP_TIMEOUT);
+        spamAssassinContainer.waitingFor(new SpamAssassinWaitStrategy(spamAssassinContainer, Duration.ofMinutes(30)));
     }
 
     @Override
