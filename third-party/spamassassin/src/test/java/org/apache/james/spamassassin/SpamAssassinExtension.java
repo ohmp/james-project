@@ -28,8 +28,9 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
@@ -39,7 +40,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import com.github.fge.lambdas.Throwing;
 
-public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(30);
 
     private final GenericContainer<?> spamAssassinContainer;
@@ -59,13 +60,22 @@ public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallb
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeAll(ExtensionContext context) {
         spamAssassinContainer.start();
         spamAssassin = new SpamAssassin(spamAssassinContainer);
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
+        try {
+            spamAssassin.dumpAll();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
         spamAssassinContainer.close();
     }
 
@@ -119,6 +129,7 @@ public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallb
                 paths
                     .filter(Files::isRegularFile)
                     .map(Path::toFile)
+                    .parallel()
                     .forEach(Throwing.consumer(file -> spamAssassinContainer.execInContainer("sa-learn",
                         trainingKind.saLearnExtensionName(), "-u", user,
                         "/root/" + trainingKind.name().toLowerCase(Locale.US) + "/" +  file.getName())));
@@ -145,6 +156,10 @@ public class SpamAssassinExtension implements BeforeEachCallback, AfterEachCallb
 
         public void dump(String user) throws UnsupportedOperationException, IOException, InterruptedException {
             spamAssassinContainer.execInContainer("sa-learn", "--dump", "magic", "-u", user);
+        }
+
+        public void dumpAll() throws UnsupportedOperationException, IOException, InterruptedException {
+            spamAssassinContainer.execInContainer("sa-learn", "--dump", "magic");
         }
     }
 
