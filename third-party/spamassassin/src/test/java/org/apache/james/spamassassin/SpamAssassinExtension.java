@@ -68,7 +68,7 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
     @Override
     public void afterEach(ExtensionContext context) {
         try {
-            spamAssassin.dumpAll();
+            spamAssassin.clearSpamAssassinDatabase();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -129,7 +129,6 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
                 paths
                     .filter(Files::isRegularFile)
                     .map(Path::toFile)
-                    .parallel()
                     .forEach(Throwing.consumer(file -> spamAssassinContainer.execInContainer("sa-learn",
                         trainingKind.saLearnExtensionName(), "-u", user,
                         "/root/" + trainingKind.name().toLowerCase(Locale.US) + "/" +  file.getName())));
@@ -158,7 +157,7 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
             spamAssassinContainer.execInContainer("sa-learn", "--dump", "magic", "-u", user);
         }
 
-        public void dumpAll() throws UnsupportedOperationException, IOException, InterruptedException {
+        public void clearSpamAssassinDatabase() throws UnsupportedOperationException, IOException, InterruptedException {
             spamAssassinContainer.execInContainer("sa-learn", "--dump", "magic");
         }
     }
