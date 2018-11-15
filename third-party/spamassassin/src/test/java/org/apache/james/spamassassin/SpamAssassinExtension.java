@@ -61,12 +61,25 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        spamAssassinContainer.start();
-        spamAssassin = new SpamAssassin(spamAssassinContainer);
+        start();
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
+        clearSpamAssassinDatabase();
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        stop();
+    }
+
+    public void start() {
+        spamAssassinContainer.start();
+        spamAssassin = new SpamAssassin(spamAssassinContainer);
+    }
+
+    public void clearSpamAssassinDatabase() {
         try {
             spamAssassin.clearSpamAssassinDatabase();
         } catch (IOException | InterruptedException e) {
@@ -74,8 +87,7 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
         }
     }
 
-    @Override
-    public void afterAll(ExtensionContext context) {
+    public void stop() {
         spamAssassinContainer.close();
     }
 

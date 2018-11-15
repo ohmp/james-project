@@ -85,7 +85,6 @@ public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallba
         temporaryFolder.create();
 
         Runnables.runParallel(
-            () -> spamAssassinExtension.beforeAll(context),
             cassandra::start,
             elasticSearch::before);
     }
@@ -103,13 +102,14 @@ public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallba
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         james = james();
+        spamAssassinExtension.start();
         james.getJmapServer().start();
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
         james.getJmapServer().stop();
-        spamAssassinExtension.afterEach(context);
+        spamAssassinExtension.stop();
     }
 
     @Override
