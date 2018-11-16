@@ -46,6 +46,9 @@ import com.google.inject.multibindings.Multibinder;
 public class BlobStoreChoosingModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreChoosingModule.class);
 
+    @VisibleForTesting
+    static final String BLOB_STORE_CONFIGURATION_FILE = "blobstore";
+
     @Override
     protected void configure() {
         install(new ObjectStorageDependenciesModule());
@@ -59,10 +62,10 @@ public class BlobStoreChoosingModule extends AbstractModule {
     @Singleton
     BlobStoreChoosingConfiguration provideChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
-            Configuration configuration = propertiesProvider.getConfiguration(OBJECTSTORAGE_CONFIGURATION_NAME);
+            Configuration configuration = propertiesProvider.getConfiguration(BLOB_STORE_CONFIGURATION_FILE);
             return BlobStoreChoosingConfiguration.from(configuration);
         } catch (FileNotFoundException e) {
-            LOGGER.warn("Could not find " + OBJECTSTORAGE_CONFIGURATION_NAME + " configuration file, using cassandra blobstore as the default");
+            LOGGER.warn("Could not find " + BLOB_STORE_CONFIGURATION_FILE + " configuration file, using cassandra blobstore as the default");
             return BlobStoreChoosingConfiguration.cassandra();
         }
     }

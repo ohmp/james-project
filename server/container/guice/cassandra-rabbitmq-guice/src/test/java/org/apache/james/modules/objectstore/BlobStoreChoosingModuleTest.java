@@ -19,7 +19,7 @@
 
 package org.apache.james.modules.objectstore;
 
-import static org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule.OBJECTSTORAGE_CONFIGURATION_NAME;
+import static org.apache.james.modules.objectstore.BlobStoreChoosingModule.BLOB_STORE_CONFIGURATION_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -46,7 +46,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
+            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
             .build();
 
         assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
@@ -59,7 +59,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
+            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
             .build();
 
         assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
@@ -72,7 +72,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "gabouzomeuh");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
+            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
             .build();
 
         assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
@@ -96,7 +96,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", BlobStoreImplName.SWIFT.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
+            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
             .build();
 
         assertThat(module.provideChoosingConfiguration(propertyProvider))
@@ -109,7 +109,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", BlobStoreImplName.CASSANDRA.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
+            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
             .build();
 
         assertThat(module.provideChoosingConfiguration(propertyProvider))
