@@ -19,8 +19,6 @@
 
 package org.apache.james.modules.objectstore;
 
-import static org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule.OBJECTSTORAGE_CONFIGURATION_NAME;
-
 import java.io.FileNotFoundException;
 
 import javax.inject.Provider;
