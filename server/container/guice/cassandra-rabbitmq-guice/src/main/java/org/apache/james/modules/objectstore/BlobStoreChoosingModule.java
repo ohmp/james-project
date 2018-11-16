@@ -19,6 +19,8 @@
 
 package org.apache.james.modules.objectstore;
 
+import static org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule.OBJECTSTORAGE_CONFIGURATION_NAME;
+
 import java.io.FileNotFoundException;
 
 import javax.inject.Provider;
@@ -42,10 +44,7 @@ import com.google.inject.Provides;
 import com.google.inject.multibindings.Multibinder;
 
 public class BlobStoreChoosingModule extends AbstractModule {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreChoosingModule.class);
-
-    static final String BLOBSTORE_CONFIGURATION_NAME = "objectstore";
 
     @Override
     protected void configure() {
@@ -58,24 +57,31 @@ public class BlobStoreChoosingModule extends AbstractModule {
     @VisibleForTesting
     @Provides
     @Singleton
-    BlobStore provideBlobStore(PropertiesProvider propertiesProvider,
-                               Provider<CassandraBlobsDAO> cassandraBlobStoreProvider,
-                               Provider<ObjectStorageBlobsDAO> swiftBlobStoreProvider) throws ConfigurationException {
+    BlobStoreChoosingConfiguration provideChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
-            Configuration configuration = propertiesProvider.getConfiguration(BLOBSTORE_CONFIGURATION_NAME);
-            BlobStoreChoosingConfiguration choosingConfiguration = BlobStoreChoosingConfiguration.from(configuration);
-            switch (choosingConfiguration.getImplementation()) {
-                case SWIFT:
-                    return swiftBlobStoreProvider.get();
-                case CASSANDRA:
-                    return cassandraBlobStoreProvider.get();
-                default:
-                    throw new RuntimeException(String.format("can not get the right blobstore provider with configuration %s",
-                        choosingConfiguration.toString()));
-            }
+            Configuration configuration = propertiesProvider.getConfiguration(OBJECTSTORAGE_CONFIGURATION_NAME);
+            return BlobStoreChoosingConfiguration.from(configuration);
         } catch (FileNotFoundException e) {
-            LOGGER.warn("Could not find " + BLOBSTORE_CONFIGURATION_NAME + " configuration file, using cassandra blobstore as the default");
-            return cassandraBlobStoreProvider.get();
+            LOGGER.warn("Could not find " + OBJECTSTORAGE_CONFIGURATION_NAME + " configuration file, using cassandra blobstore as the default");
+            return BlobStoreChoosingConfiguration.cassandra();
+        }
+    }
+
+    @VisibleForTesting
+    @Provides
+    @Singleton
+    BlobStore provideBlobStore(BlobStoreChoosingConfiguration choosingConfiguration,
+                               Provider<CassandraBlobsDAO> cassandraBlobStoreProvider,
+                               Provider<ObjectStorageBlobsDAO> swiftBlobStoreProvider) {
+
+        switch (choosingConfiguration.getImplementation()) {
+            case SWIFT:
+                return swiftBlobStoreProvider.get();
+            case CASSANDRA:
+                return cassandraBlobStoreProvider.get();
+            default:
+                throw new RuntimeException(String.format("can not get the right blobstore provider with configuration %s",
+                    choosingConfiguration.toString()));
         }
     }
 

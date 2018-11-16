@@ -19,7 +19,7 @@
 
 package org.apache.james.modules.objectstore;
 
-import static org.apache.james.modules.objectstore.BlobStoreChoosingModule.BLOBSTORE_CONFIGURATION_NAME;
+import static org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule.OBJECTSTORAGE_CONFIGURATION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -41,78 +41,96 @@ class BlobStoreChoosingModuleTest {
     private static Provider<ObjectStorageBlobsDAO> SWIFT_BLOBSTORE_PROVIDER = () -> SWIFT_BLOBSTORE;
 
     @Test
-    void provideBlobStoreFactoryShouldThrowWhenMissingPropertyField() throws Exception {
+    void provideChoosingConfigurationShouldThrowWhenMissingPropertyField() {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOBSTORE_CONFIGURATION_NAME, configuration)
+            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
             .build();
 
-        assertThatThrownBy(() -> module.provideBlobStore(propertyProvider, CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
+        assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void provideBlobStoreFactoryShouldThrowWhenEmptyPropertyField() throws Exception {
+    void provideChoosingConfigurationShouldThrowWhenEmptyPropertyField() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOBSTORE_CONFIGURATION_NAME, configuration)
+            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
             .build();
 
-        assertThatThrownBy(() -> module.provideBlobStore(propertyProvider, CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
+        assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void provideBlobStoreFactoryShouldThrowWhenPropertyFieldIsNotInSupportedList() throws Exception {
+    void provideChoosingConfigurationShouldThrowWhenPropertyFieldIsNotInSupportedList() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "gabouzomeuh");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOBSTORE_CONFIGURATION_NAME, configuration)
+            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
             .build();
 
-        assertThatThrownBy(() -> module.provideBlobStore(propertyProvider, CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
+        assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void provideBlobStoreFactoryShouldReturnCassandraWhenNoFile() throws Exception {
+    void provideChoosingConfigurationShouldReturnCassandraWhenNoFile() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
             .register("other_configuration_file", new PropertiesConfiguration())
             .build();
 
-        assertThat(module.provideBlobStore(propertyProvider, CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
-            .isEqualTo(CASSANDRA_BLOBSTORE);
+        assertThat(module.provideChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.cassandra());
     }
 
     @Test
-    void provideBlobStoreFactoryShouldReturnSwiftFactoryWhenConfigurationImplIsSwift() throws Exception {
+    void provideChoosingConfigurationShouldReturnSwiftFactoryWhenConfigurationImplIsSwift() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", BlobStoreImplName.SWIFT.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOBSTORE_CONFIGURATION_NAME, configuration)
+            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
             .build();
 
-        assertThat(module.provideBlobStore(propertyProvider, CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
-            .isEqualTo(SWIFT_BLOBSTORE);
+        assertThat(module.provideChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.swift());
     }
 
     @Test
-    void provideBlobStoreFactoryShouldReturnCassandraFactoryWhenConfigurationImplIsCassandra() throws Exception {
+    void provideChoosingConfigurationShouldReturnCassandraFactoryWhenConfigurationImplIsCassandra() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", BlobStoreImplName.CASSANDRA.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOBSTORE_CONFIGURATION_NAME, configuration)
+            .register(OBJECTSTORAGE_CONFIGURATION_NAME, configuration)
             .build();
 
-        assertThat(module.provideBlobStore(propertyProvider, CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
+        assertThat(module.provideChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.cassandra());
+    }
+
+    @Test
+    void provideBlobStoreShouldReturnCassandraBlobStoreWhenCassandraConfigured() {
+        BlobStoreChoosingModule module = new BlobStoreChoosingModule();
+
+        assertThat(module.provideBlobStore(BlobStoreChoosingConfiguration.cassandra(),
+            CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
+            .isEqualTo(CASSANDRA_BLOBSTORE);
+    }
+
+    @Test
+    void provideBlobStoreShouldReturnSwiftBlobStoreWhenSwiftConfigured() {
+        BlobStoreChoosingModule module = new BlobStoreChoosingModule();
+
+        assertThat(module.provideBlobStore(BlobStoreChoosingConfiguration.cassandra(),
+            CASSANDRA_BLOBSTORE_PROVIDER, SWIFT_BLOBSTORE_PROVIDER))
             .isEqualTo(CASSANDRA_BLOBSTORE);
     }
 }

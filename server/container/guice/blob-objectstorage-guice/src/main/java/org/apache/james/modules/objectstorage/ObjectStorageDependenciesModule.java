@@ -44,7 +44,7 @@ import com.google.inject.Scopes;
 
 public class ObjectStorageDependenciesModule extends AbstractModule {
 
-    private static final String OBJECTSTORAGE_CONFIGURATION_NAME = "objectstorage";
+    public static final String OBJECTSTORAGE_CONFIGURATION_NAME = "objectstorage";
     private static final String OBJECTSTORAGE_PROVIDER_SWIFT = "swift";
 
     @Override
