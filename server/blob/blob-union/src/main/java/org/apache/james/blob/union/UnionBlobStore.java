@@ -74,8 +74,7 @@ public class UnionBlobStore implements BlobStore {
     private final BlobStore currentBlobStore;
     private final BlobStore legacyBlobStore;
 
-    @VisibleForTesting
-    UnionBlobStore(BlobStore currentBlobStore, BlobStore legacyBlobStore) {
+    private UnionBlobStore(BlobStore currentBlobStore, BlobStore legacyBlobStore) {
         this.currentBlobStore = currentBlobStore;
         this.legacyBlobStore = legacyBlobStore;
     }
