@@ -19,7 +19,6 @@
 
 package org.apache.james.modules.objectstore;
 
-import static org.apache.james.modules.objectstore.BlobStoreChoosingModule.BLOB_STORE_CONFIGURATION_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -27,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobsDAO;
+import org.apache.james.modules.mailbox.ConfigurationComponent;
 import org.apache.james.modules.objectstorage.FakePropertiesProvider;
 import org.apache.james.modules.objectstore.BlobStoreChoosingConfiguration.BlobStoreImplName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
+            .register(ConfigurationComponent.NAME, configuration)
             .build();
 
         assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
@@ -59,7 +59,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
+            .register(ConfigurationComponent.NAME, configuration)
             .build();
 
         assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
@@ -72,7 +72,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", "gabouzomeuh");
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
+            .register(ConfigurationComponent.NAME, configuration)
             .build();
 
         assertThatThrownBy(() -> module.provideChoosingConfiguration(propertyProvider))
@@ -96,7 +96,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", BlobStoreImplName.SWIFT.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
+            .register(ConfigurationComponent.NAME, configuration)
             .build();
 
         assertThat(module.provideChoosingConfiguration(propertyProvider))
@@ -109,7 +109,7 @@ class BlobStoreChoosingModuleTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("objectstore.implementation", BlobStoreImplName.CASSANDRA.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
-            .register(BLOB_STORE_CONFIGURATION_FILE, configuration)
+            .register(ConfigurationComponent.NAME, configuration)
             .build();
 
         assertThat(module.provideChoosingConfiguration(propertyProvider))

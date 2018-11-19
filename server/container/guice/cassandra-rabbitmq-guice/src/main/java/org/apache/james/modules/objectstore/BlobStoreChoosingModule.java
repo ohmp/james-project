@@ -31,6 +31,7 @@ import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobsDAO;
+import org.apache.james.modules.mailbox.ConfigurationComponent;
 import org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule;
 import org.apache.james.utils.PropertiesProvider;
 import org.slf4j.Logger;
@@ -60,10 +61,10 @@ public class BlobStoreChoosingModule extends AbstractModule {
     @Singleton
     BlobStoreChoosingConfiguration provideChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
-            Configuration configuration = propertiesProvider.getConfiguration(BLOB_STORE_CONFIGURATION_FILE);
+            Configuration configuration = propertiesProvider.getConfiguration(ConfigurationComponent.NAME);
             return BlobStoreChoosingConfiguration.from(configuration);
         } catch (FileNotFoundException e) {
-            LOGGER.warn("Could not find " + BLOB_STORE_CONFIGURATION_FILE + " configuration file, using cassandra blobstore as the default");
+            LOGGER.warn("Could not find " + ConfigurationComponent.NAME + " configuration file, using cassandra blobstore as the default");
             return BlobStoreChoosingConfiguration.cassandra();
         }
     }
