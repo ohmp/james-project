@@ -477,6 +477,7 @@ public abstract class MailboxManagerTest {
 
         @Test
         void moveShouldFireAddedEventInTargetMailbox() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Move));
             mailboxManager.createMailbox(newPath, session);
             inboxManager.appendMessage(AppendCommand.builder().build(message), session);
             listener.clear();
@@ -493,6 +494,7 @@ public abstract class MailboxManagerTest {
 
         @Test
         void moveShouldFireExpungedEventInOriginMailbox() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Move));
             mailboxManager.createMailbox(newPath, session);
             inboxManager.appendMessage(AppendCommand.builder().build(message), session);
             listener.clear();
