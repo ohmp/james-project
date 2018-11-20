@@ -94,7 +94,7 @@ class BlobStoreChoosingModuleTest {
     void provideChoosingConfigurationShouldReturnSwiftFactoryWhenConfigurationImplIsSwift() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("implementation", BlobStoreImplName.OBJECT_STORAGE.getName());
+        configuration.addProperty("implementation", BlobStoreImplName.OBJECTSTORAGE.getName());
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
             .register(ConfigurationComponent.NAME, configuration)
             .build();

@@ -29,7 +29,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 class BlobStoreChoosingConfigurationTest {
 
-    private static final String OBJECT_STORAGE = "object-storage";
+    private static final String OBJECT_STORAGE = "objectstorage";
     private static final String CASSANDRA = "cassandra";
 
     @Test
@@ -44,7 +44,7 @@ class BlobStoreChoosingConfigurationTest {
 
         assertThatThrownBy(() -> BlobStoreChoosingConfiguration.from(configuration))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("implementation property is missing please use one of supported values in: cassandra, object-storage");
+            .hasMessage("implementation property is missing please use one of supported values in: cassandra, objectstorage");
     }
 
     @Test
@@ -54,7 +54,7 @@ class BlobStoreChoosingConfigurationTest {
 
         assertThatThrownBy(() -> BlobStoreChoosingConfiguration.from(configuration))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("implementation property is missing please use one of supported values in: cassandra, object-storage");
+            .hasMessage("implementation property is missing please use one of supported values in: cassandra, objectstorage");
     }
 
     @Test
@@ -64,7 +64,7 @@ class BlobStoreChoosingConfigurationTest {
 
         assertThatThrownBy(() -> BlobStoreChoosingConfiguration.from(configuration))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("implementation property is missing please use one of supported values in: cassandra, object-storage");
+            .hasMessage("implementation property is missing please use one of supported values in: cassandra, objectstorage");
     }
 
     @Test
@@ -74,7 +74,7 @@ class BlobStoreChoosingConfigurationTest {
 
         assertThatThrownBy(() -> BlobStoreChoosingConfiguration.from(configuration))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("un_supported is not a valid name of BlobStores, please use one of supported values in: cassandra, object-storage");
+            .hasMessage("un_supported is not a valid name of BlobStores, please use one of supported values in: cassandra, objectstorage");
     }
 
     @Test
@@ -104,7 +104,7 @@ class BlobStoreChoosingConfigurationTest {
     @Test
     void fromShouldReturnConfigurationWhenBlobStoreImplIsSupportedAndCaseInsensitive() {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("implementation", "OBjecT-StorAGE");
+        configuration.addProperty("implementation", "OBjecTStorAGE");
 
         assertThat(
             BlobStoreChoosingConfiguration.from(configuration)

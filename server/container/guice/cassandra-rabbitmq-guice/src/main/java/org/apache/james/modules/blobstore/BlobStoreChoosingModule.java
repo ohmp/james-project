@@ -77,7 +77,7 @@ public class BlobStoreChoosingModule extends AbstractModule {
                                Provider<ObjectStorageBlobsDAO> swiftBlobStoreProvider) {
 
         switch (choosingConfiguration.getImplementation()) {
-            case OBJECT_STORAGE:
+            case OBJECTSTORAGE:
                 return swiftBlobStoreProvider.get();
             case CASSANDRA:
                 return cassandraBlobStoreProvider.get();
