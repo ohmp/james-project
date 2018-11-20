@@ -63,4 +63,8 @@ public class EventCollector implements MailboxListener {
         return false;
     }
 
+    public void clear() {
+        events.clear();
+    }
+
 }
