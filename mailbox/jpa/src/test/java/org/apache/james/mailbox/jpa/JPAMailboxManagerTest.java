@@ -23,23 +23,15 @@ import java.util.Optional;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManagerTest;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 
 public class JPAMailboxManagerTest extends MailboxManagerTest {
 
     private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES);
     private Optional<OpenJPAMailboxManager> openJPAMailboxManager = Optional.empty();
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
     
     @Override
     protected MailboxManager provideMailboxManager() {
@@ -49,9 +41,8 @@ public class JPAMailboxManagerTest extends MailboxManagerTest {
         return openJPAMailboxManager.get();
     }
 
-    @Override
-    @After
-    public void tearDown() throws MailboxException {
+    @AfterEach
+    void tearDownJpa() {
         JPA_TEST_CLUSTER.clear(JPAMailboxFixture.MAILBOX_TABLE_NAMES);
     }
 
