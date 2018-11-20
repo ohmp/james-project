@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules.objectstore;
+package org.apache.james.modules.blobstore;
 
 import java.io.FileNotFoundException;
 
@@ -77,7 +77,7 @@ public class BlobStoreChoosingModule extends AbstractModule {
                                Provider<ObjectStorageBlobsDAO> swiftBlobStoreProvider) {
 
         switch (choosingConfiguration.getImplementation()) {
-            case SWIFT:
+            case OBJECT_STORAGE:
                 return swiftBlobStoreProvider.get();
             case CASSANDRA:
                 return cassandraBlobStoreProvider.get();

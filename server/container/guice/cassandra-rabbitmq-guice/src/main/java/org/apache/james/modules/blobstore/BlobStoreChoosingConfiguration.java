@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules.objectstore;
+package org.apache.james.modules.blobstore;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class BlobStoreChoosingConfiguration {
 
     public enum BlobStoreImplName {
         CASSANDRA("cassandra"),
-        SWIFT("swift");
+        OBJECT_STORAGE("object-storage");
 
         static String supportedImplNames() {
             return Stream.of(BlobStoreImplName.values())
@@ -60,7 +60,7 @@ public class BlobStoreChoosingConfiguration {
         }
     }
 
-    static final String BLOBSTORE_IMPLEMENTATION_PROPERTY = "objectstore.implementation";
+    static final String BLOBSTORE_IMPLEMENTATION_PROPERTY = "implementation";
 
     static BlobStoreChoosingConfiguration from(Configuration configuration) {
         BlobStoreImplName blobStoreImplName = Optional.ofNullable(configuration.getString(BLOBSTORE_IMPLEMENTATION_PROPERTY))
@@ -77,8 +77,8 @@ public class BlobStoreChoosingConfiguration {
         return new BlobStoreChoosingConfiguration(BlobStoreImplName.CASSANDRA);
     }
 
-    public static BlobStoreChoosingConfiguration swift() {
-        return new BlobStoreChoosingConfiguration(BlobStoreImplName.SWIFT);
+    public static BlobStoreChoosingConfiguration objectStorage() {
+        return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECT_STORAGE);
     }
 
     private final BlobStoreImplName implementation;
