@@ -25,13 +25,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.junit.Before;
 
 public class MemoryMailboxManagerTest extends MailboxManagerTest {
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-    
     @Override
     protected MailboxManager provideMailboxManager() throws MailboxException {
         return MemoryMailboxManagerProvider.provideMailboxManager();
