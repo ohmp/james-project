@@ -37,7 +37,6 @@ import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
-import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TemporaryFolder;
 
 public class MaildirMailboxManagerProvider {
