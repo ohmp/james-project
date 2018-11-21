@@ -371,14 +371,13 @@ public abstract class MailboxManagerTest {
             inbox = MailboxPath.inbox(session);
 
             listener = new EventCollector();
-            mailboxManager.addGlobalListener(listener, session);
             mailboxManager.createMailbox(inbox, session);
-            listener.clear();
         }
 
         @Test
         void deleteMailboxShouldFireMailboxDeletionEvent() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Quota));
+            mailboxManager.addGlobalListener(listener, session);
 
             mailboxManager.deleteMailbox(inbox, session);
 
@@ -386,15 +385,16 @@ public abstract class MailboxManagerTest {
                 .filteredOn(event -> event instanceof MailboxListener.MailboxDeletion)
                 .hasSize(1)
                 .extracting(event -> (MailboxListener.MailboxDeletion) event)
-                .allMatch(event -> event.getMailboxPath().equals(inbox))
-                .allMatch(event -> event.getQuotaRoot().equals(quotaRoot))
-                .allMatch(event -> event.getDeletedMessageCount().equals(QuotaCount.count(0)))
-                .allMatch(event -> event.getTotalDeletedSize().equals(QuotaSize.size(0)));
+                .satisfies(events -> assertThat(events.get(0).getMailboxPath()).isEqualTo(inbox))
+                .satisfies(events -> assertThat(events.get(0).getQuotaRoot()).isEqualTo(quotaRoot))
+                .satisfies(events -> assertThat(events.get(0).getDeletedMessageCount()).isEqualTo(QuotaCount.count(0)))
+                .satisfies(events -> assertThat(events.get(0).getTotalDeletedSize()).isEqualTo(QuotaSize.size(0)));
         }
 
         @Test
         void addingMessageShouldFireQuotaUpdateEvent() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Quota));
+            mailboxManager.addGlobalListener(listener, session);
 
             mailboxManager.getMailbox(inbox, session)
                 .appendMessage(MessageManager.AppendCommand.builder()
@@ -404,12 +404,12 @@ public abstract class MailboxManagerTest {
                 .filteredOn(event -> event instanceof MailboxListener.QuotaUsageUpdatedEvent)
                 .hasSize(1)
                 .extracting(event -> (MailboxListener.QuotaUsageUpdatedEvent) event)
-                .allMatch(event -> event.getQuotaRoot().equals(quotaRoot))
-                .allMatch(event -> event.getSizeQuota().equals(Quota.<QuotaSize>builder()
+                .satisfies(events -> assertThat(events.get(0).getQuotaRoot()).isEqualTo(quotaRoot))
+                .satisfies(events -> assertThat(events.get(0).getSizeQuota()).isEqualTo(Quota.<QuotaSize>builder()
                     .used(QuotaSize.size(85))
                     .computedLimit(QuotaSize.unlimited())
                     .build()))
-                .allMatch(event -> event.getCountQuota().equals(Quota.<QuotaCount>builder()
+                .satisfies(events -> assertThat(events.get(0).getCountQuota()).isEqualTo(Quota.<QuotaCount>builder()
                     .used(QuotaCount.count(1))
                     .computedLimit(QuotaCount.unlimited())
                     .build()));
