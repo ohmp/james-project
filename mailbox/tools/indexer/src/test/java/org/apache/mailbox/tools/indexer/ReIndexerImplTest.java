@@ -58,7 +58,9 @@ public class ReIndexerImplTest {
         mailboxManager = new InMemoryIntegrationResources().createMailboxManager(new SimpleGroupMembershipResolver());
         MailboxSessionMapperFactory mailboxSessionMapperFactory = mailboxManager.getMapperFactory();
         messageSearchIndex = mock(ListeningMessageSearchIndex.class);
-        reIndexer = new ReIndexerImpl(new ReIndexerPerformer(mailboxManager, messageSearchIndex, mailboxSessionMapperFactory));
+        reIndexer = new ReIndexerImpl(new ReIndexerPerformer(mailboxManager, messageSearchIndex, mailboxSessionMapperFactory),
+            mailboxManager,
+            mailboxSessionMapperFactory);
     }
 
     @Test
@@ -147,6 +149,28 @@ public class ReIndexerImplTest {
         ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
         ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
+        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
+        verifyNoMoreInteractions(messageSearchIndex);
+
+        assertThat(mailboxCaptor.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
+        assertThat(messageCaptor.getValue()).matches(message -> message.getMailboxId().equals(mailboxId)
+            && message.getUid().equals(createdMessage.getUid()));
+    }
+
+    @Test
+    void mailboxIdReIndexShouldBeWellPerformed() throws Exception {
+        MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
+        ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
+            .appendMessage(
+                MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
+                systemSession);
+
+        reIndexer.reIndex(mailboxId).run();
+        ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
+        ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
+
+        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor.capture());
         verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
