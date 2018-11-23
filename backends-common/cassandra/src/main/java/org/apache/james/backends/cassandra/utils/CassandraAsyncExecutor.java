@@ -21,7 +21,11 @@ package org.apache.james.backends.cassandra.utils;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import com.datastax.driver.core.ResultSet;
@@ -34,6 +38,7 @@ import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 public class CassandraAsyncExecutor {
 
     private final Session session;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(8);
 
     @Inject
     public CassandraAsyncExecutor(Session session) {
@@ -41,18 +46,23 @@ public class CassandraAsyncExecutor {
     }
 
     public CompletableFuture<ResultSet> execute(Statement statement) {
-        return FutureConverter.toCompletableFuture(session.executeAsync(statement));
+        return FutureConverter.toCompletableFuture(session.executeAsync(statement))
+            .thenApplyAsync(Function.identity(), executorService);
     }
 
+    @PreDestroy
+    public void cleanUp() {
+        executorService.shutdownNow();
+    }
 
     public CompletableFuture<Boolean> executeReturnApplied(Statement statement) {
-        return FutureConverter.toCompletableFuture(session.executeAsync(statement))
+        return execute(statement)
             .thenApply(ResultSet::one)
             .thenApply(row -> row.getBool(CassandraConstants.LIGHTWEIGHT_TRANSACTION_APPLIED));
     }
 
     public CompletableFuture<Void> executeVoid(Statement statement) {
-        return FutureConverter.toCompletableFuture(session.executeAsync(statement))
+        return execute(statement)
             .thenAccept(result -> { });
     }
 
