@@ -21,7 +21,6 @@ package org.apache.mailbox.tools.indexer;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -40,7 +39,6 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.task.Task;
 import org.apache.james.util.streams.Iterators;
-import org.apache.mailbox.tools.indexer.registrations.GlobalRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +76,7 @@ public class ReIndexerPerformer {
         List<Mailbox> mailboxes = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).list();
 
         try {
-            return reIndex(mailboxes, mailboxSession, reprocessingContext);
+            return reIndex(mailboxes, reprocessingContext);
         } finally {
             LOGGER.info("Full reindex finished");
         }
@@ -92,7 +90,7 @@ public class ReIndexerPerformer {
             .findMailboxWithPathLike(MailboxPath.forUser(user.asString(), "%"));
 
         try {
-            return reIndex(mailboxes, mailboxSession, reprocessingContext);
+            return reIndex(mailboxes, reprocessingContext);
         } finally {
             LOGGER.info("User {} reindex finished", user.asString());
         }
@@ -106,13 +104,7 @@ public class ReIndexerPerformer {
         return handleMessageReIndexing(mailboxSession, mailbox, uid);
     }
 
-    private Task.Result reIndex(List<Mailbox> mailboxes, MailboxSession mailboxSession, ReprocessingContext reprocessingContext) throws MailboxException {
-        return wrapInGlobalRegistration(mailboxSession,
-            globalRegistration -> handleMultiMailboxesReindexingIterations(mailboxes, globalRegistration, reprocessingContext));
-    }
-
-    private Task.Result handleMultiMailboxesReindexingIterations(List<Mailbox> mailboxes, GlobalRegistration globalRegistration,
-                                                                 ReprocessingContext reprocessingContext) {
+    private Task.Result reIndex(List<Mailbox> mailboxes, ReprocessingContext reprocessingContext) {
         return mailboxes.stream()
             .map(Mailbox::getMailboxId)
             .map(mailboxId -> {
@@ -162,15 +154,5 @@ public class ReIndexerPerformer {
         return Iterators.toStream(mailboxSessionMapperFactory.getMessageMapper(mailboxSession)
             .findInMailbox(mailbox, MessageRange.one(mUid), MessageMapper.FetchType.Full, SINGLE_MESSAGE))
             .findFirst();
-    }
-
-    private <T> T wrapInGlobalRegistration(MailboxSession session, Function<GlobalRegistration, T> function) throws MailboxException {
-        GlobalRegistration globalRegistration = new GlobalRegistration();
-        mailboxManager.addGlobalListener(globalRegistration, session);
-        try {
-            return function.apply(globalRegistration);
-        } finally {
-            mailboxManager.removeGlobalListener(globalRegistration, session);
-        }
     }
 }
