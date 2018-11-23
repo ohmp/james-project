@@ -99,10 +99,8 @@ public class ReIndexerPerformer {
         }
     }
 
-    Task.Result handleMessageReIndexing(MailboxPath path, MessageUid uid) throws MailboxException {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(path.getUser());
-        Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession)
-            .findMailboxByPath(path);
+    Task.Result handleMessageReIndexing(Mailbox mailbox, MessageUid uid) throws MailboxException {
+        MailboxSession mailboxSession = mailboxManager.createSystemSession(mailbox.getUser());
 
         return handleMessageReIndexing(mailboxSession, mailbox, uid);
     }
