@@ -158,6 +158,8 @@ public class Keywords {
     /**
      * This Keywords factory will throw upon invalid keywords (containing inavlid character, being too long or being non
      * exposed IMAP flags)
+     *
+     * @throws IllegalArgumentException
      */
     public static KeywordsFactory lenientFactory() {
         return LENIENT_KEYWORDS_FACTORY;
