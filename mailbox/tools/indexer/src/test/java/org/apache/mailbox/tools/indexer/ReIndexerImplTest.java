@@ -20,6 +20,7 @@
 package org.apache.mailbox.tools.indexer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -30,7 +31,9 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.indexer.ReIndexer;
+import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.ComposedMessageId;
@@ -198,5 +201,27 @@ public class ReIndexerImplTest {
         assertThat(mailboxCaptor.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
         assertThat(messageCaptor.getValue()).matches(message -> message.getMailboxId().equals(mailboxId)
             && message.getUid().equals(createdMessage.getUid()));
+    }
+
+    @Test
+    void mailboxIdReIndexShouldBeWellPerformedWhenEmptyMailbox() throws Exception {
+        MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
+
+        reIndexer.reIndex(mailboxId).run();
+        ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
+
+        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor.capture());
+        verifyNoMoreInteractions(messageSearchIndex);
+
+        assertThat(mailboxCaptor.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
+    }
+
+    @Test
+    void mailboxIdReIndexShouldFailWhenMailboxNotFound() {
+        MailboxId mailboxId = InMemoryId.of(42);
+
+        assertThatThrownBy(() -> reIndexer.reIndex(mailboxId))
+            .isInstanceOf(MailboxNotFoundException.class);
     }
 }
