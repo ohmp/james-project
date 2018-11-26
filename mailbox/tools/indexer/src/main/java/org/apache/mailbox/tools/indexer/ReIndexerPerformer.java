@@ -19,8 +19,8 @@
 
 package org.apache.mailbox.tools.indexer;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -30,8 +30,10 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -73,10 +75,12 @@ public class ReIndexerPerformer {
     Task.Result reIndex(ReprocessingContext reprocessingContext) throws MailboxException {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(RE_INDEXING);
         LOGGER.info("Starting a full reindex");
-        List<Mailbox> mailboxes = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).list();
+        Stream<MailboxId> mailboxIds = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).list()
+            .stream()
+            .map(Mailbox::getMailboxId);
 
         try {
-            return reIndex(mailboxes, reprocessingContext);
+            return reIndex(mailboxIds, reprocessingContext);
         } finally {
             LOGGER.info("Full reindex finished");
         }
@@ -86,11 +90,12 @@ public class ReIndexerPerformer {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(user.asString());
         LOGGER.info("Starting a reindex for user {}", user.asString());
 
-        List<Mailbox> mailboxes = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession)
-            .findMailboxWithPathLike(MailboxPath.forUser(user.asString(), "%"));
+        Stream<MailboxId> mailboxIds = mailboxManager.search(MailboxQuery.privateMailboxesBuilder(mailboxSession).build(), mailboxSession)
+            .stream()
+            .map(MailboxMetaData::getId);
 
         try {
-            return reIndex(mailboxes, reprocessingContext);
+            return reIndex(mailboxIds, reprocessingContext);
         } finally {
             LOGGER.info("User {} reindex finished", user.asString());
         }
@@ -104,9 +109,8 @@ public class ReIndexerPerformer {
         return handleMessageReIndexing(mailboxSession, mailbox, uid);
     }
 
-    private Task.Result reIndex(List<Mailbox> mailboxes, ReprocessingContext reprocessingContext) {
-        return mailboxes.stream()
-            .map(Mailbox::getMailboxId)
+    private Task.Result reIndex(Stream<MailboxId> mailboxIds, ReprocessingContext reprocessingContext) {
+        return mailboxIds
             .map(mailboxId -> {
                 try {
                     return reIndexSingleMailbox(mailboxId, reprocessingContext);
