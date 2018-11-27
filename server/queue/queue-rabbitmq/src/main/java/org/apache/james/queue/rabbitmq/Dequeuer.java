@@ -30,7 +30,6 @@ import java.util.function.Function;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueue;
-import org.apache.james.queue.rabbitmq.view.api.DeleteCondition;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.mailet.Mail;
 
@@ -101,7 +100,7 @@ class Dequeuer {
                 if (success) {
                     dequeueMetric.increment();
                     rabbitClient.ack(deliveryTag);
-                    mailQueueView.delete(DeleteCondition.withName(mail.getName())).join();
+                    mailQueueView.delete(mail).join();
                 } else {
                     rabbitClient.nack(deliveryTag);
                 }

@@ -119,6 +119,12 @@ public class CassandraMailQueueView implements MailQueueView {
     }
 
     @Override
+    public CompletableFuture<Void> delete(Mail mail) {
+        return cassandraMailQueueMailDelete.considerDeleted(mail, mailQueueName)
+            .thenRunAsync(() -> cassandraMailQueueMailDelete.updateBrowseStart(mailQueueName));
+    }
+
+    @Override
     public CompletableFuture<Boolean> isPresent(Mail mail) {
         return cassandraMailQueueMailDelete.isDeleted(mail, mailQueueName)
                 .thenApply(bool -> !bool);
