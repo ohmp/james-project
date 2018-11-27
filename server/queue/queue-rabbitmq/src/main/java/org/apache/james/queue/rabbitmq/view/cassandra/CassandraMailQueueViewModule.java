@@ -21,6 +21,7 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import static com.datastax.driver.core.DataType.blob;
 import static com.datastax.driver.core.DataType.cint;
+import static com.datastax.driver.core.DataType.counter;
 import static com.datastax.driver.core.DataType.list;
 import static com.datastax.driver.core.DataType.map;
 import static com.datastax.driver.core.DataType.text;
@@ -71,6 +72,13 @@ public interface CassandraMailQueueViewModule {
         String MAIL_KEY = "mailKey";
     }
 
+    interface SizeTable {
+        String TABLE_NAME = "mailQueueSize";
+
+        String QUEUE_NAME = "queueName";
+        String SIZE = "size";
+    }
+
     CassandraModule MODULE = CassandraModule
         .type(EnqueuedMailsTable.HEADER_TYPE)
             .statement(statement -> statement
@@ -99,6 +107,13 @@ public interface CassandraMailQueueViewModule {
             .addColumn(EnqueuedMailsTable.REMOTE_ADDR, text())
             .addColumn(EnqueuedMailsTable.LAST_UPDATED, timestamp())
             .addUDTMapColumn(EnqueuedMailsTable.PER_RECIPIENT_SPECIFIC_HEADERS, text(), frozen(EnqueuedMailsTable.HEADER_TYPE)))
+
+        .table(SizeTable.TABLE_NAME)
+        .comment("Stores the size for each Mail Queue")
+        .options(options -> options)
+        .statement(statement -> statement
+            .addPartitionKey(SizeTable.QUEUE_NAME, text())
+            .addColumn(SizeTable.SIZE, counter()))
 
         .table(BrowseStartTable.TABLE_NAME)
         .comment("this table allows to find the starting point of iteration from the table: "

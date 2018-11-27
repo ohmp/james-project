@@ -36,6 +36,7 @@ public class CassandraMailQueueMailDelete {
 
     private final DeletedMailsDAO deletedMailsDao;
     private final BrowseStartDAO browseStartDao;
+    private final SizeDao sizeDao;
     private final CassandraMailQueueBrowser cassandraMailQueueBrowser;
     private final CassandraMailQueueViewConfiguration configuration;
     private final ThreadLocalRandom random;
@@ -43,24 +44,31 @@ public class CassandraMailQueueMailDelete {
     @Inject
     CassandraMailQueueMailDelete(DeletedMailsDAO deletedMailsDao,
                                  BrowseStartDAO browseStartDao,
+                                 SizeDao sizeDao,
                                  CassandraMailQueueBrowser cassandraMailQueueBrowser,
                                  CassandraMailQueueViewConfiguration configuration,
                                  ThreadLocalRandom random) {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
+        this.sizeDao = sizeDao;
         this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
         this.configuration = configuration;
         this.random = random;
     }
 
-    CompletableFuture<Void> considerDeleted(Mail mail, MailQueueName mailQueueName) {
+    CompletableFuture<Boolean> considerDeleted(Mail mail, MailQueueName mailQueueName) {
         return considerDeleted(MailKey.fromMail(mail), mailQueueName);
     }
 
-    CompletableFuture<Void> considerDeleted(MailKey mailKey, MailQueueName mailQueueName) {
-        return deletedMailsDao
-            .markAsDeleted(mailQueueName, mailKey)
-            .thenRunAsync(() -> maybeUpdateBrowseStart(mailQueueName));
+    CompletableFuture<Boolean> considerDeleted(MailKey mailKey, MailQueueName mailQueueName) {
+        CompletableFuture<Boolean> result = deletedMailsDao.markAsDeleted(mailQueueName, mailKey)
+            .thenCompose(wasDeleted -> updateSizeIfDeleted(mailQueueName, wasDeleted));
+
+        try {
+            return result;
+        } finally {
+            result.thenRunAsync(() -> maybeUpdateBrowseStart(mailQueueName));
+        }
     }
 
     CompletableFuture<Boolean> isDeleted(Mail mail, MailQueueName mailQueueName) {
@@ -70,6 +78,13 @@ public class CassandraMailQueueMailDelete {
     CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName) {
         return findNewBrowseStart(mailQueueName)
             .thenCompose(newBrowseStart -> updateNewBrowseStart(mailQueueName, newBrowseStart));
+    }
+
+    private CompletableFuture<Boolean> updateSizeIfDeleted(MailQueueName mailQueueName, boolean wasDeleted) {
+        if (wasDeleted) {
+            return sizeDao.decrement(mailQueueName).thenApply(any -> wasDeleted);
+        }
+        return CompletableFuture.completedFuture(wasDeleted);
     }
 
     private void maybeUpdateBrowseStart(MailQueueName mailQueueName) {

@@ -36,16 +36,19 @@ public class CassandraMailQueueMailStore {
 
     private final EnqueuedMailsDAO enqueuedMailsDao;
     private final BrowseStartDAO browseStartDao;
+    private final SizeDao sizeDao;
     private final CassandraMailQueueViewConfiguration configuration;
     private final Clock clock;
 
     @Inject
     CassandraMailQueueMailStore(EnqueuedMailsDAO enqueuedMailsDao,
                                 BrowseStartDAO browseStartDao,
+                                SizeDao sizeDao,
                                 CassandraMailQueueViewConfiguration configuration,
                                 Clock clock) {
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
+        this.sizeDao = sizeDao;
         this.configuration = configuration;
         this.clock = clock;
     }
@@ -53,7 +56,8 @@ public class CassandraMailQueueMailStore {
     CompletableFuture<Void> storeMail(EnqueuedItem enqueuedItem) {
         EnqueuedItemWithSlicingContext enqueuedItemAndSlicing = addSliceContext(enqueuedItem);
 
-        return enqueuedMailsDao.insert(enqueuedItemAndSlicing);
+        return enqueuedMailsDao.insert(enqueuedItemAndSlicing)
+            .thenCompose(any -> sizeDao.increment(enqueuedItem.getMailQueueName()));
     }
 
     CompletableFuture<Void> initializeBrowseStart(MailQueueName mailQueueName) {

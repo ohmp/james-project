@@ -53,6 +53,7 @@ public class DeletedMailsDAO {
 
     private PreparedStatement prepareInsert(Session session) {
         return session.prepare(insertInto(TABLE_NAME)
+            .ifNotExists()
             .value(QUEUE_NAME, bindMarker(QUEUE_NAME))
             .value(MAIL_KEY, bindMarker(MAIL_KEY)));
     }
@@ -64,8 +65,8 @@ public class DeletedMailsDAO {
             .and(eq(MAIL_KEY, bindMarker(MAIL_KEY))));
     }
 
-    CompletableFuture<Void> markAsDeleted(MailQueueName mailQueueName, MailKey mailKey) {
-        return executor.executeVoid(insertOne.bind()
+    CompletableFuture<Boolean> markAsDeleted(MailQueueName mailQueueName, MailKey mailKey) {
+        return executor.executeReturnApplied(insertOne.bind()
             .setString(QUEUE_NAME, mailQueueName.asString())
             .setString(MAIL_KEY, mailKey.getMailKey()));
     }
