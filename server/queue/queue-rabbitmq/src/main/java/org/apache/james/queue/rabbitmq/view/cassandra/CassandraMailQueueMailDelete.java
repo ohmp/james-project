@@ -54,10 +54,10 @@ public class CassandraMailQueueMailDelete {
     }
 
     CompletableFuture<Void> considerDeleted(Mail mail, MailQueueName mailQueueName) {
-        return considerDeleted(mailQueueName, MailKey.fromMail(mail));
+        return considerDeleted(MailKey.fromMail(mail), mailQueueName);
     }
 
-    CompletableFuture<Void> considerDeleted(MailQueueName mailQueueName, MailKey mailKey) {
+    CompletableFuture<Void> considerDeleted(MailKey mailKey, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, mailKey)
             .thenRunAsync(() -> maybeUpdateBrowseStart(mailQueueName));
