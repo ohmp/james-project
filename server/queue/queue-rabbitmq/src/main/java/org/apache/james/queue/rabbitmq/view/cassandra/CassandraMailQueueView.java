@@ -109,7 +109,7 @@ public class CassandraMailQueueView implements MailQueueView {
         if (deleteCondition instanceof DeleteCondition.WithName) {
             DeleteCondition.WithName nameDeleteCondition = (DeleteCondition.WithName) deleteCondition;
 
-            delete(MailKey.of(nameDeleteCondition.getName()));
+            return delete(MailKey.of(nameDeleteCondition.getName())).thenApply(any -> 1L);
         }
 
         return browseThenDelete(deleteCondition);
@@ -130,8 +130,7 @@ public class CassandraMailQueueView implements MailQueueView {
     }
 
     private CompletableFuture<Void> delete(MailKey mailKey) {
-        return cassandraMailQueueMailDelete.considerDeleted(mailQueueName, mailKey)
-            .thenRunAsync(() -> cassandraMailQueueMailDelete.updateBrowseStart(mailQueueName));
+        return cassandraMailQueueMailDelete.considerDeleted(mailQueueName, mailKey);
     }
 
     @Override
