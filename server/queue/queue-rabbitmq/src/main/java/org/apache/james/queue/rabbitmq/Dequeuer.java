@@ -128,7 +128,7 @@ class Dequeuer {
         return new AsyncRetryExecutor(Executors.newSingleThreadScheduledExecutor())
             .withFixedRate()
             .withMinDelay(TEN_MS)
-            .retryOn(NoMailYetException.class)
+            .retryOn(NoMailYetException.class, IOException.class)
             .getWithRetry(this::singleChannelRead);
     }
 
