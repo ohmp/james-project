@@ -133,6 +133,8 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     @AfterEach
     void tearDown() {
         mqManagementApi.deleteAllQueues();
+
+        assertThat(mqManagementApi.listCreatedMailQueueNames()).isEmpty();
     }
 
     @Override
