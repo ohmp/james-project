@@ -154,7 +154,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     public MailboxId save(Mailbox mailbox) throws MailboxException {
         MaildirId maildirId = Optional.ofNullable(mailbox.getMailboxId())
             .map(mailboxId -> (MaildirId) mailboxId)
-            .orElseGet(() -> MaildirId.of(Math.abs(new Random().nextInt())));
+            .orElseGet(MaildirId::random);
         try {
             Mailbox originalMailbox = findMailboxById(mailbox.getMailboxId());
             MaildirFolder folder = maildirStore.createMaildirFolder(mailbox);

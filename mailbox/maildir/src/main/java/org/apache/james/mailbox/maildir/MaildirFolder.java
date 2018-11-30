@@ -320,7 +320,9 @@ public class MaildirFolder {
      */
     public MaildirId readMailboxId() throws IOException {
         if (!mailboxIdFile.exists()) {
-            throw new RuntimeException("Missing " + mailboxIdFile);
+            MaildirId maildirId = MaildirId.random();
+            saveMailboxId(maildirId);
+            return maildirId;
         }
         try (FileInputStream fis = new FileInputStream(mailboxIdFile);
              InputStreamReader isr = new InputStreamReader(fis)) {
