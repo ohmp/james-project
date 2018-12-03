@@ -312,7 +312,7 @@ public class MaildirFolder {
     }
 
     /**
-     * Read the uidValidity of the given mailbox from the file system.
+     * Read the mailboxId of the given mailbox from the file system.
      * If the respective file is not yet there, it gets created and
      * filled with a brand new uidValidity.
      * @return The uidValidity
@@ -326,10 +326,10 @@ public class MaildirFolder {
         }
         try (FileInputStream fis = new FileInputStream(mailboxIdFile);
              InputStreamReader isr = new InputStreamReader(fis)) {
-            char[] uidValidity = new char[20];
-            int len = isr.read(uidValidity);
-            int idAsLong = Integer.parseInt(String.valueOf(uidValidity, 0, len).trim());
-            return MaildirId.of(idAsLong);
+            char[] mailboxId = new char[20];
+            int len = isr.read(mailboxId);
+            int idAsInt = Integer.parseInt(String.valueOf(mailboxId, 0, len).trim());
+            return MaildirId.of(idAsInt);
         }
     }
 
