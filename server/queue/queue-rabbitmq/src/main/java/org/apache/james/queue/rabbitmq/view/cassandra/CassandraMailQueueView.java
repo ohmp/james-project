@@ -119,8 +119,8 @@ public class CassandraMailQueueView implements MailQueueView {
         CompletableFuture<Long> result = cassandraMailQueueBrowser.browseReferences(mailQueueName)
             .map(EnqueuedItemWithSlicingContext::getEnqueuedItem)
             .filter(mailReference -> deleteCondition.shouldBeDeleted(mailReference.getMail()))
-            .map(mailReference -> cassandraMailQueueMailDelete.considerDeleted(mailReference.getMail(), mailQueueName),
-                FluentFutureStream::unboxFuture)
+            .map(mailReference -> cassandraMailQueueMailDelete.considerDeleted(mailReference.getMail(), mailQueueName))
+            .unbox(FluentFutureStream::unboxFuture)
             .completableFuture()
             .thenApply(Stream::count);
 

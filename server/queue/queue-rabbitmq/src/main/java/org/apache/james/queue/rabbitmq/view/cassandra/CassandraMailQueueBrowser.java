@@ -101,17 +101,18 @@ public class CassandraMailQueueBrowser {
         this.clock = clock;
     }
 
-    CompletableFuture<Stream<ManageableMailQueue.MailQueueItemView>> browse(MailQueueName queueName) {
+    FluentFutureStream<ManageableMailQueue.MailQueueItemView> browse(MailQueueName queueName) {
         return browseReferences(queueName)
-            .map(this::toMailFuture, FluentFutureStream::unboxFuture)
-            .map(ManageableMailQueue.MailQueueItemView::new)
-            .completableFuture();
+            .map(this::toMailFuture)
+            .unbox(FluentFutureStream::unboxFuture)
+            .map(ManageableMailQueue.MailQueueItemView::new);
     }
 
     FluentFutureStream<EnqueuedItemWithSlicingContext> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
             .thenApply(this::allSlicesStartingAt))
-            .map(slice -> browseSlice(queueName, slice), FluentFutureStream::unboxFluentFuture);
+            .map(slice -> browseSlice(queueName, slice))
+            .unbox(FluentFutureStream::unboxFluentFuture);
     }
 
     private CompletableFuture<Mail> toMailFuture(EnqueuedItemWithSlicingContext enqueuedItemWithSlicingContext) {
@@ -136,8 +137,8 @@ public class CassandraMailQueueBrowser {
         return FluentFutureStream.of(
             allBucketIds()
                 .map(bucketId ->
-                    browseBucket(queueName, slice, bucketId).completableFuture()),
-            FluentFutureStream::unboxStream)
+                    browseBucket(queueName, slice, bucketId).completableFuture()))
+            .unbox(FluentFutureStream::unboxStream)
             .sorted(Comparator.comparing(enqueuedMail -> enqueuedMail.getEnqueuedItem().getEnqueuedTime()));
     }
 

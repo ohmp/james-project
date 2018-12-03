@@ -65,11 +65,6 @@ public class FluentFutureStream<T> {
         return new FluentFutureStream<>(completableFuture);
     }
 
-    public static <T, U> FluentFutureStream<U> of(Stream<CompletableFuture<T>> completableFuture,
-                                               Function<FluentFutureStream<T>, FluentFutureStream<U>> unboxer) {
-        return unboxer.apply(of(completableFuture));
-    }
-
     /**
      * Constructs a FluentFutureStream from a Stream of Future
      */
@@ -90,8 +85,8 @@ public class FluentFutureStream<T> {
      * For all values of the underlying stream, an action will be performed.
      */
     public FluentFutureStream<T> performOnAll(Function<T, CompletableFuture<Void>> action) {
-        return map(t -> action.apply(t).thenApply(any -> t),
-            FluentFutureStream::unboxFuture);
+        return map(t -> action.apply(t).thenApply(any -> t))
+            .unbox(FluentFutureStream::unboxFuture);
     }
 
     /**
@@ -102,8 +97,8 @@ public class FluentFutureStream<T> {
             CompletableFutureUtil.map(completableFuture(), function));
     }
 
-    public <U, V> FluentFutureStream<V> map(Function<T, U> function, Function<FluentFutureStream<U>, FluentFutureStream<V>> unboxer) {
-        return unboxer.apply(map(function));
+    public <U> FluentFutureStream<U> unbox(Function<FluentFutureStream<T>, FluentFutureStream<U>> unboxer) {
+        return unboxer.apply(map(Function.identity()));
     }
 
     /**
@@ -116,8 +111,8 @@ public class FluentFutureStream<T> {
 
     public FluentFutureStream<T> thenFilter(Function<T, CompletableFuture<Boolean>> futurePredicate) {
         return map(t -> futurePredicate.apply(t)
-            .thenApply(isKept -> Optional.of(t).filter(any -> isKept)),
-            FluentFutureStream::unboxFutureOptional);
+            .thenApply(isKept -> Optional.of(t).filter(any -> isKept)))
+            .unbox(FluentFutureStream::unboxFutureOptional);
     }
 
     /**

@@ -71,12 +71,12 @@ public class FluentFutureStreamTest {
     @Test
     public void ofNestedStreamsShouldConstructAFluentFutureStreamWhenProvidedAStreamOfFutureOfStream() {
         assertThat(
-            FluentFutureStream.<Stream<Integer>, Integer>of(
+            FluentFutureStream.<Stream<Integer>>of(
                 Stream.of(
                     CompletableFuture.completedFuture(Stream.of(1, 2)),
                     CompletableFuture.completedFuture(Stream.of()),
-                    CompletableFuture.completedFuture(Stream.of(3))),
-                    FluentFutureStream::unboxStream)
+                    CompletableFuture.completedFuture(Stream.of(3))))
+            .unbox(FluentFutureStream::unboxStream)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3);
@@ -86,13 +86,13 @@ public class FluentFutureStreamTest {
     @Test
     public void ofOptionalsShouldConstructAFluentFutureStreamWhenProvidedAStreamOfFutureOfOptionals() {
         assertThat(
-            FluentFutureStream.<Optional<Integer>, Integer>of(
+            FluentFutureStream.<Optional<Integer>>of(
                 Stream.of(
                     CompletableFuture.completedFuture(Optional.of(1)),
                     CompletableFuture.completedFuture(Optional.of(2)),
                     CompletableFuture.completedFuture(Optional.empty()),
-                    CompletableFuture.completedFuture(Optional.of(3))),
-                    FluentFutureStream::unboxOptional)
+                    CompletableFuture.completedFuture(Optional.of(3))))
+                .unbox(FluentFutureStream::unboxOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3);
@@ -123,26 +123,27 @@ public class FluentFutureStreamTest {
     }
 
     @Test
-    public void flatMapShouldTransformUnderlyingValuesAndFlatMapResult() {
+    public void unboxShouldTransformUnderlyingValuesAndFlatMapResult() {
         assertThat(
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .map(i -> Stream.of(i, i + 1), FluentFutureStream::unboxStream)
+                .map(i -> Stream.of(i, i + 1))
+                .unbox(FluentFutureStream::unboxStream)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 2, 3, 3, 4);
     }
 
     @Test
-    public void flatMapOptionalShouldTransformUnderlyingValuesAndUnboxResult() {
+    public void unboxShouldTransformUnderlyingValuesAndUnboxResult() {
         assertThat(
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
                 .map(i -> Optional.of(i + 1)
-                    .filter(j -> j % 2 == 0),
-                    FluentFutureStream::unboxOptional)
+                    .filter(j -> j % 2 == 0))
+                .unbox(FluentFutureStream::unboxOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 4);
@@ -195,38 +196,40 @@ public class FluentFutureStreamTest {
     }
 
     @Test
-    public void thenComposeOnAllShouldTransformUnderlyingValuesAndComposeFutures() {
+    public void unboxShouldTransformUnderlyingValuesAndComposeFutures() {
         assertThat(
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .map(i -> CompletableFuture.completedFuture(i + 1), FluentFutureStream::unboxFuture)
+                .map(i -> CompletableFuture.completedFuture(i + 1))
+                .unbox(FluentFutureStream::unboxFuture)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 3, 4);
     }
 
     @Test
-    public void thenFlatComposeShouldTransformUnderlyingValuesAndComposeFuturesWithStreamUnboxing() {
+    public void unboxShouldTransformUnderlyingValuesAndComposeFuturesWithStreamUnboxing() {
         assertThat(
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .map(i -> FluentFutureStream.of(CompletableFuture.completedFuture(Stream.of(i, i + 1))), FluentFutureStream::unboxFluentFuture)
+                .map(i -> FluentFutureStream.of(CompletableFuture.completedFuture(Stream.of(i, i + 1))))
+                .unbox(FluentFutureStream::unboxFluentFuture)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 2, 3, 3, 4);
     }
 
     @Test
-    public void thenFlatComposeOnOptionalShouldTransformUnderlyingValuesAndComposeFuturesWithOptionalUnboxing() {
+    public void unboxShouldTransformUnderlyingValuesAndComposeFuturesWithOptionalUnboxing() {
         assertThat(
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
                 .map(i -> CompletableFuture.completedFuture(
-                    Optional.of(i + 1).filter(j -> j % 2 == 0)),
-                    FluentFutureStream::unboxFutureOptional)
+                    Optional.of(i + 1).filter(j -> j % 2 == 0)))
+                .unbox(FluentFutureStream::unboxFutureOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 4);

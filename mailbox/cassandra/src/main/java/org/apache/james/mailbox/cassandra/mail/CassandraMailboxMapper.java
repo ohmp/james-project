@@ -82,7 +82,8 @@ public class CassandraMailboxMapper implements MailboxMapper {
         FluentFutureStream.ofFutures(
                 mailboxPathDAO.delete(mailbox.generateAssociatedPath()),
                 mailboxPathV2DAO.delete(mailbox.generateAssociatedPath()))
-            .map(any -> mailboxDAO.delete(mailboxId), FluentFutureStream::unboxFuture)
+            .map(any -> mailboxDAO.delete(mailboxId))
+            .unbox(FluentFutureStream::unboxFuture)
             .join();
     }
 
@@ -168,7 +169,8 @@ public class CassandraMailboxMapper implements MailboxMapper {
 
         return FluentFutureStream.of(listUserMailboxes)
                 .filter(idAndPath -> regex.matcher(idAndPath.getMailboxPath().getName()).matches())
-                .map(this::retrieveMailbox, FluentFutureStream::unboxFutureOptional)
+                .map(this::retrieveMailbox)
+                .unbox(FluentFutureStream::unboxFutureOptional)
                 .join()
                 .collect(Guavate.toImmutableList());
     }
@@ -226,7 +228,8 @@ public class CassandraMailboxMapper implements MailboxMapper {
     @Override
     public List<Mailbox> list() {
         return mailboxDAO.retrieveAllMailboxes()
-            .map(this::toMailboxWithAclFuture, FluentFutureStream::unboxFuture)
+            .map(this::toMailboxWithAclFuture)
+            .unbox(FluentFutureStream::unboxFuture)
             .join()
             .collect(Guavate.toImmutableList());
     }
@@ -282,7 +285,8 @@ public class CassandraMailboxMapper implements MailboxMapper {
     public List<Mailbox> findNonPersonalMailboxes(String userName, Right right) {
         return FluentFutureStream.of(userMailboxRightsDAO.listRightsForUser(userName)
             .thenApply(map -> toAuthorizedMailboxIds(map, right)))
-            .map(this::retrieveMailbox, FluentFutureStream::unboxFutureOptional)
+            .map(this::retrieveMailbox)
+            .unbox(FluentFutureStream::unboxFutureOptional)
             .join()
             .collect(Guavate.toImmutableList());
     }

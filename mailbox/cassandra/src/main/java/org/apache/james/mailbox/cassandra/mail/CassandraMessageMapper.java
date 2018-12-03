@@ -214,13 +214,13 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     private CompletableFuture<Stream<SimpleMailboxMessage>> expungeUidChunk(CassandraId mailboxId, Collection<MessageUid> uidChunk) {
-        return FluentFutureStream.of(
-                uidChunk.stream().map(uid -> retrieveComposedId(mailboxId, uid)),
-                FluentFutureStream::unboxOptional)
+        return FluentFutureStream.of(uidChunk.stream()
+                .map(uid -> retrieveComposedId(mailboxId, uid)))
+            .unbox(FluentFutureStream::unboxOptional)
             .performOnAll(this::deleteUsingMailboxId)
             .map(idWithMetadata -> FluentFutureStream.of(
-                messageDAO.retrieveMessages(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited())),
-                FluentFutureStream::unboxFluentFuture)
+                messageDAO.retrieveMessages(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited())))
+            .unbox(FluentFutureStream::unboxFluentFuture)
             .filter(CassandraMessageDAO.MessageResult::isFound)
             .map(CassandraMessageDAO.MessageResult::message)
             .map(pair -> pair.getKey().toMailboxMessage(ImmutableList.of()))
@@ -303,8 +303,8 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private FlagsUpdateStageResult retryUpdatesStage(CassandraId mailboxId, FlagsUpdateCalculator flagsUpdateCalculator, List<MessageUid> failed) {
         Stream<ComposedMessageIdWithMetaData> idsFailed = FluentFutureStream.of(
-                failed.stream().map(uid -> messageIdDAO.retrieve(mailboxId, uid)),
-                FluentFutureStream::unboxOptional)
+                failed.stream().map(uid -> messageIdDAO.retrieve(mailboxId, uid)))
+            .unbox(FluentFutureStream::unboxOptional)
             .join();
 
         return runUpdateStage(mailboxId, idsFailed, flagsUpdateCalculator);
