@@ -43,6 +43,7 @@ import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfiguration;
+import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedItemWithSlicingContext;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.mailet.Mail;
@@ -79,6 +80,10 @@ public class CassandraMailQueueBrowser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMailQueueBrowser.class);
 
+    private static final int MAX_CONNCURENT_MAIL_BODY_READ = 10;
+    private static final int MAX_CONCURRENT_SLICE_READ = 10;
+    private static final int MAX_CONCURRENT_DELETED_RESOLUTION = 100;
+
     private final BrowseStartDAO browseStartDao;
     private final DeletedMailsDAO deletedMailsDao;
     private final EnqueuedMailsDAO enqueuedMailsDao;
@@ -103,16 +108,19 @@ public class CassandraMailQueueBrowser {
 
     FluentFutureStream<ManageableMailQueue.MailQueueItemView> browse(MailQueueName queueName) {
         return browseReferences(queueName)
-            .map(this::toMailFuture)
-            .unbox(FluentFutureStream::unboxFuture)
+            .mapByChunk(MAX_CONNCURENT_MAIL_BODY_READ, this::toMailFuture)
             .map(ManageableMailQueue.MailQueueItemView::new);
     }
 
     FluentFutureStream<EnqueuedItemWithSlicingContext> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
             .thenApply(this::allSlicesStartingAt))
-            .map(slice -> browseSlice(queueName, slice))
-            .unbox(FluentFutureStream::unboxFluentFuture);
+            .mapByChunk(MAX_CONCURRENT_SLICE_READ,
+                bucketedSlices -> browseBucket(queueName, bucketedSlices.getSlice(), bucketedSlices.getBucketId()).completableFuture())
+            .unbox(FluentFutureStream::unboxStream)
+            .thenFilterByChunk(MAX_CONCURRENT_DELETED_RESOLUTION,
+                mailReference -> deletedMailsDao.isStillEnqueued(queueName, mailReference.getEnqueuedItem().getMailKey()))
+            .sorted(Comparator.comparing(enqueuedMail -> enqueuedMail.getEnqueuedItem().getEnqueuedTime()));
     }
 
     private CompletableFuture<Mail> toMailFuture(EnqueuedItemWithSlicingContext enqueuedItemWithSlicingContext) {
@@ -133,26 +141,17 @@ public class CassandraMailQueueBrowser {
         return mail;
     }
 
-    private FluentFutureStream<EnqueuedItemWithSlicingContext> browseSlice(MailQueueName queueName, Slice slice) {
-        return FluentFutureStream.of(
-            allBucketIds()
-                .map(bucketId ->
-                    browseBucket(queueName, slice, bucketId).completableFuture()))
-            .unbox(FluentFutureStream::unboxStream)
-            .sorted(Comparator.comparing(enqueuedMail -> enqueuedMail.getEnqueuedItem().getEnqueuedTime()));
-    }
-
     private FluentFutureStream<EnqueuedItemWithSlicingContext> browseBucket(MailQueueName queueName, Slice slice, BucketId bucketId) {
-        return FluentFutureStream.of(
-            enqueuedMailsDao.selectEnqueuedMails(queueName, slice, bucketId))
-                .thenFilter(mailReference -> deletedMailsDao.isStillEnqueued(queueName, mailReference.getEnqueuedItem().getMailKey()));
+        return FluentFutureStream.of(enqueuedMailsDao.selectEnqueuedMails(queueName, slice, bucketId));
     }
 
-    private Stream<Slice> allSlicesStartingAt(Optional<Instant> maybeBrowseStart) {
+    private Stream<BucketedSlices> allSlicesStartingAt(Optional<Instant> maybeBrowseStart) {
         return maybeBrowseStart
             .map(Slice::of)
             .map(startSlice -> allSlicesTill(startSlice, clock.instant(), configuration.getSliceWindow()))
-            .orElse(Stream.empty());
+            .orElse(Stream.empty())
+            .flatMap(slice -> allBucketIds()
+                .map(bucketId -> new BucketedSlices(slice, bucketId)));
     }
 
     private Stream<BucketId> allBucketIds() {

@@ -129,6 +129,12 @@ public class FluentFutureStream<T> {
             .unbox(FluentFutureStream::unboxFutureOptional);
     }
 
+    public FluentFutureStream<T> thenFilterByChunk(int chunckSize, Function<T, CompletableFuture<Boolean>> futurePredicate) {
+        return mapByChunk(chunckSize, t -> futurePredicate.apply(t)
+            .thenApply(isKept -> Optional.of(t).filter(any -> isKept)))
+            .unbox(FluentFutureStream::unboxOptional);
+    }
+
     /**
      * Reduces the underlying stream. Reduced value is supplied as a Future of optional, as no empty value is supplied.
      */

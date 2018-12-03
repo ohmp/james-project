@@ -120,4 +120,20 @@ public class BucketedSlices {
             return Objects.hash(startSliceInstant);
         }
     }
+
+    private final Slice slice;
+    private final BucketId bucketId;
+
+    public BucketedSlices(Slice slice, BucketId bucketId) {
+        this.slice = slice;
+        this.bucketId = bucketId;
+    }
+
+    public Slice getSlice() {
+        return slice;
+    }
+
+    public BucketId getBucketId() {
+        return bucketId;
+    }
 }
