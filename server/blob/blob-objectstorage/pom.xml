@@ -87,7 +87,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.jclouds.driver</groupId>
-            <artifactId>jclouds-apachehc</artifactId>
+            <artifactId>jclouds-okhttp</artifactId>
             <version>${jclouds.version}</version>
         </dependency>
         <dependency>
