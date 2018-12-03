@@ -79,7 +79,7 @@ public class MessageIdReindexingRoutes implements Routes {
     }
 
     @POST
-    @Path("/messages/{messageId}")
+    @Path("/{messageId}")
     @ApiOperation(value = "Re-indexes one email in the different mailboxes containing it")
     @ApiImplicitParams({
         @ApiImplicitParam(
