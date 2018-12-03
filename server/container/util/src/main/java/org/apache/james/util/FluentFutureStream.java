@@ -29,6 +29,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import org.apache.james.util.streams.JamesCollectors;
+
 public class FluentFutureStream<T> {
 
     public static <T> FluentFutureStream<T> unboxStream(FluentFutureStream<Stream<T>> streams) {
@@ -65,6 +67,10 @@ public class FluentFutureStream<T> {
         return new FluentFutureStream<>(completableFuture);
     }
 
+    public static <T> FluentFutureStream<T> ofCompletedStream(Stream<T> stream) {
+        return of(CompletableFuture.completedFuture(stream));
+    }
+
     /**
      * Constructs a FluentFutureStream from a Stream of Future
      */
@@ -99,6 +105,14 @@ public class FluentFutureStream<T> {
 
     public <U> FluentFutureStream<U> unbox(Function<FluentFutureStream<T>, FluentFutureStream<U>> unboxer) {
         return unboxer.apply(map(Function.identity()));
+    }
+
+    public <U> FluentFutureStream<U> mapByChunk(int chunkSize, Function<T, CompletableFuture<U>> function) {
+        return FluentFutureStream.of(completableFuture.thenCompose(
+            stream -> CompletableFutureUtil.chainAll(
+                stream.collect(JamesCollectors.chunker(chunkSize)),
+                chunk -> CompletableFutureUtil.allOf(chunk.stream().map(function)))))
+            .unbox(FluentFutureStream::unboxStream);
     }
 
     /**

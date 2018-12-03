@@ -49,7 +49,7 @@ public class CompletableFutureUtil {
                 .map(CompletableFuture::join));
     }
 
-    public static <R, T> CompletableFuture<Stream<R>> chainAll(Stream<T> futureStream, Function<T, CompletableFuture<R>> transformationToChain) {
+    static <R, T> CompletableFuture<Stream<R>> chainAll(Stream<T> futureStream, Function<T, CompletableFuture<R>> transformationToChain) {
         ImmutableList<T> elements = futureStream.collect(ImmutableList.toImmutableList());
         ArrayList<R> results = new ArrayList<>(elements.size());
 

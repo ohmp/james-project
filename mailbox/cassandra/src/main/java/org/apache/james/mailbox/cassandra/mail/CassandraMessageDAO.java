@@ -40,7 +40,6 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.T
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TEXTUAL_LINE_COUNT;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,9 +75,7 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
-import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
-import org.apache.james.util.streams.JamesCollectors;
 import org.apache.james.util.streams.Limit;
 
 import com.datastax.driver.core.BoundStatement;
@@ -235,19 +232,15 @@ public class CassandraMessageDAO {
     }
 
     public CompletableFuture<Stream<MessageResult>> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
-        return CompletableFutureUtil.chainAll(
-                limit.applyOnStream(messageIds.stream().distinct())
-                    .collect(JamesCollectors.chunker(configuration.getMessageReadChunkSize())),
-            ids -> rowToMessages(fetchType, ids))
-            .thenApply(stream -> stream.flatMap(Function.identity()));
+        return FluentFutureStream.ofCompletedStream(limit.applyOnStream(messageIds.stream().distinct()))
+            .mapByChunk(configuration.getMessageReadChunkSize(),
+                id -> rowToMessage(fetchType, id))
+            .completableFuture();
     }
 
-    private CompletableFuture<Stream<MessageResult>> rowToMessages(FetchType fetchType, Collection<ComposedMessageIdWithMetaData> ids) {
-        return FluentFutureStream.of(
-            ids.stream()
-                .map(id -> retrieveRow(id, fetchType)
-                    .thenCompose((ResultSet resultSet) -> message(resultSet, id, fetchType))))
-            .completableFuture();
+    private CompletableFuture<MessageResult> rowToMessage(FetchType fetchType, ComposedMessageIdWithMetaData id) {
+        return retrieveRow(id, fetchType)
+            .thenCompose((ResultSet resultSet) -> message(resultSet, id, fetchType));
     }
 
     private CompletableFuture<ResultSet> retrieveRow(ComposedMessageIdWithMetaData messageId, FetchType fetchType) {
