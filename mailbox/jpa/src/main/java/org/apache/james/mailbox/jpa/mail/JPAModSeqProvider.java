@@ -25,7 +25,6 @@ import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.mailbox.MailboxPathLocker;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.JPAId;
 import org.apache.james.mailbox.jpa.mail.model.JPAMailbox;
@@ -44,7 +43,7 @@ public class JPAModSeqProvider extends AbstractLockingModSeqProvider {
     }
 
     @Override
-    public long highestModSeq(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public long highestModSeq(Mailbox mailbox) throws MailboxException {
         EntityManager manager = null;
         try {
             manager = factory.createEntityManager();
@@ -66,7 +65,7 @@ public class JPAModSeqProvider extends AbstractLockingModSeqProvider {
     }
 
     @Override
-    protected long lockedNextModSeq(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    protected long lockedNextModSeq(Mailbox mailbox) throws MailboxException {
         EntityManager manager = null;
         try {
             manager = factory.createEntityManager();
@@ -90,7 +89,7 @@ public class JPAModSeqProvider extends AbstractLockingModSeqProvider {
     }
 
     @Override
-    public long highestModSeq(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+    public long highestModSeq(MailboxId mailboxId) {
         throw new NotImplementedException("not implemented");
     }
 }

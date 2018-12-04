@@ -37,13 +37,17 @@ public interface ModSeqProvider {
      * one. 
      * 
      * The first mod-seq must be >= 1
-     * 
-     * @param session
+     *
      * @param mailbox
      * @return modSeq
      * @throws MailboxException
      */
-    long nextModSeq(MailboxSession session, Mailbox mailbox) throws MailboxException;
+    long nextModSeq(Mailbox mailbox) throws MailboxException;
+
+    @Deprecated
+    default long nextModSeq(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        return nextModSeq(mailbox);
+    }
 
     /**
      * Return the next mod-sequence which can be used for the {@link Mailbox}.
@@ -51,31 +55,43 @@ public interface ModSeqProvider {
      * one. 
      * 
      * The first mod-seq must be >= 1
-     * 
-     * @param session
+     *
      * @param mailboxId
      * @return modSeq
      * @throws MailboxException
      */
-    long nextModSeq(MailboxSession session, MailboxId mailboxId) throws MailboxException;
-    
+    long nextModSeq(MailboxId mailboxId) throws MailboxException;
+
+    @Deprecated
+    default long nextModSeq(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+        return nextModSeq(mailboxId);
+    }
+
     /**
      * Return the highest mod-sequence which were used for the {@link Mailbox}
-     * 
-     * @param session
+     *
      * @param mailbox
      * @return highest
      * @throws MailboxException
      */
-    long highestModSeq(MailboxSession session, Mailbox mailbox) throws MailboxException;
-    
+    long highestModSeq(Mailbox mailbox) throws MailboxException;
+
+    @Deprecated
+    default long highestModSeq(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        return highestModSeq(mailbox);
+    }
+
     /**
      * Return the highest mod-sequence which were used for the {@link Mailbox}
-     * 
-     * @param session
+     *
      * @param mailboxId
      * @return highest
      * @throws MailboxException
      */
-    long highestModSeq(MailboxSession session, MailboxId mailboxId) throws MailboxException;
+    long highestModSeq(MailboxId mailboxId) throws MailboxException;
+
+    @Deprecated
+    default long highestModSeq(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+        return highestModSeq(mailboxId);
+    }
 }

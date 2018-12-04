@@ -39,7 +39,6 @@ import javax.inject.Inject;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
@@ -123,26 +122,26 @@ public class CassandraModSeqProvider implements ModSeqProvider {
 
 
     @Override
-    public long nextModSeq(MailboxSession mailboxSession, Mailbox mailbox) throws MailboxException {
+    public long nextModSeq(Mailbox mailbox) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
         return nextModSeq(mailboxId).join()
             .orElseThrow(() -> new MailboxException("Can not retrieve modseq for " + mailboxId));
     }
 
     @Override
-    public long nextModSeq(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+    public long nextModSeq(MailboxId mailboxId) throws MailboxException {
         return nextModSeq((CassandraId) mailboxId)
             .join()
             .orElseThrow(() -> new MailboxException("Can not retrieve modseq for " + mailboxId));
     }
 
     @Override
-    public long highestModSeq(MailboxSession mailboxSession, Mailbox mailbox) throws MailboxException {
+    public long highestModSeq(Mailbox mailbox) throws MailboxException {
         return unbox(() -> findHighestModSeq((CassandraId) mailbox.getMailboxId()).join().getValue());
     }
 
     @Override
-    public long highestModSeq(MailboxSession mailboxSession, MailboxId mailboxId) throws MailboxException {
+    public long highestModSeq(MailboxId mailboxId) throws MailboxException {
         return unbox(() -> findHighestModSeq((CassandraId) mailboxId).join().getValue());
     }
 

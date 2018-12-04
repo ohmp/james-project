@@ -55,12 +55,12 @@ class CassandraModSeqProviderTest {
     @Test
     void highestModSeqShouldRetrieveValueStoredNextModSeq() throws Exception {
         int nbEntries = 100;
-        long result = modSeqProvider.highestModSeq(null, mailbox);
+        long result = modSeqProvider.highestModSeq(mailbox);
         assertThat(result).isEqualTo(0);
         LongStream.range(0, nbEntries)
             .forEach(Throwing.longConsumer(value -> {
-                        long uid = modSeqProvider.nextModSeq(null, mailbox);
-                        assertThat(uid).isEqualTo(modSeqProvider.highestModSeq(null, mailbox));
+                        long uid = modSeqProvider.nextModSeq(mailbox);
+                        assertThat(uid).isEqualTo(modSeqProvider.highestModSeq(mailbox));
                 })
             );
     }
@@ -68,10 +68,10 @@ class CassandraModSeqProviderTest {
     @Test
     void nextModSeqShouldIncrementValueByOne() throws Exception {
         int nbEntries = 100;
-        long lastUid = modSeqProvider.highestModSeq(null, mailbox);
+        long lastUid = modSeqProvider.highestModSeq(mailbox);
         LongStream.range(lastUid + 1, lastUid + nbEntries)
             .forEach(Throwing.longConsumer(value -> {
-                long result = modSeqProvider.nextModSeq(null, mailbox);
+                long result = modSeqProvider.nextModSeq(mailbox);
                 assertThat(value).isEqualTo(result);
             }));
     }
@@ -81,7 +81,7 @@ class CassandraModSeqProviderTest {
         int nbEntries = 100;
         long nbValues = LongStream.range(0, nbEntries)
             .parallel()
-            .map(Throwing.longUnaryOperator(x -> modSeqProvider.nextModSeq(null, mailbox)))
+            .map(Throwing.longUnaryOperator(x -> modSeqProvider.nextModSeq(mailbox)))
             .distinct()
             .count();
         assertThat(nbValues).isEqualTo(nbEntries);

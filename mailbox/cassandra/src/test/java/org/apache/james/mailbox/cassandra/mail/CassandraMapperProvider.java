@@ -21,7 +21,6 @@ package org.apache.james.mailbox.cassandra.mail;
 import java.util.List;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraMailboxSessionMapperFactory;
 import org.apache.james.mailbox.cassandra.TestCassandraMailboxSessionMapperFactory;
@@ -117,14 +116,12 @@ public class CassandraMapperProvider implements MapperProvider {
 
     @Override
     public long generateModSeq(Mailbox mailbox) throws MailboxException {
-        MailboxSession mailboxSession = null;
-        return cassandraModSeqProvider.nextModSeq(mailboxSession, mailbox);
+        return cassandraModSeqProvider.nextModSeq(mailbox);
     }
 
     @Override
     public long highestModSeq(Mailbox mailbox) throws MailboxException {
-        MailboxSession mailboxSession = null;
-        return cassandraModSeqProvider.highestModSeq(mailboxSession, mailbox);
+        return cassandraModSeqProvider.highestModSeq(mailbox);
     }
 
 }

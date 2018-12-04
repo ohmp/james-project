@@ -85,13 +85,13 @@ public class MessageUtilsTest {
     @Test
     public void getHighestModSeqShouldCallModSeqProvider() throws Exception {
         messageUtils.getHighestModSeq(mailbox);
-        verify(modSeqProvider).highestModSeq(eq(mailboxSession), eq(mailbox));
+        verify(modSeqProvider).highestModSeq(eq(mailbox));
     }
     
     @Test
     public void nextModSeqShouldCallModSeqProvider() throws Exception {
         messageUtils.nextModSeq(mailbox);
-        verify(modSeqProvider).nextModSeq(eq(mailboxSession), eq(mailbox));
+        verify(modSeqProvider).nextModSeq(eq(mailbox));
     }
     
     @Test
@@ -109,7 +109,7 @@ public class MessageUtilsTest {
     @Test
     public void enrichMesageShouldEnrichUidAndModSeq() throws Exception {
         when(uidProvider.nextUid(eq(mailboxSession), eq(mailbox))).thenReturn(MESSAGE_UID);
-        when(modSeqProvider.nextModSeq(eq(mailboxSession), eq(mailbox))).thenReturn(11L);
+        when(modSeqProvider.nextModSeq(eq(mailbox))).thenReturn(11L);
 
         messageUtils.enrichMessage(mailbox, message);
         

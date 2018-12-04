@@ -250,7 +250,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
     @Override
     public long getHighestModSeq(Mailbox mailbox) throws MailboxException {
-        return modSeqProvider.highestModSeq(mailboxSession, mailbox);
+        return modSeqProvider.highestModSeq(mailbox);
     }
 
     @Override

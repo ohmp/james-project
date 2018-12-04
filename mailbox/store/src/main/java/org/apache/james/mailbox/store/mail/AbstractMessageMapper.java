@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MailboxSession;
@@ -59,7 +60,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
     
     @Override
     public long getHighestModSeq(Mailbox mailbox) throws MailboxException {
-        return modSeqProvider.highestModSeq(mailboxSession, mailbox);
+        return modSeqProvider.highestModSeq(mailbox);
     }
 
     @Override
@@ -84,7 +85,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
         if (messages.hasNext()) {
             // if a mailbox does not support mod-sequences the provider may be null
             if (modSeqProvider != null) {
-                modSeq = modSeqProvider.nextModSeq(mailboxSession, mailbox);
+                modSeq = modSeqProvider.nextModSeq(mailbox);
             }
         }
         while (messages.hasNext()) {
@@ -117,7 +118,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
         
         // if a mailbox does not support mod-sequences the provider may be null
         if (modSeqProvider != null) {
-            message.setModSeq(modSeqProvider.nextModSeq(mailboxSession, mailbox));
+            message.setModSeq(modSeqProvider.nextModSeq(mailbox));
         }
         MessageMetaData data = save(mailbox, message);
        
@@ -131,7 +132,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
         MessageUid uid = uidProvider.nextUid(mailboxSession, mailbox);
         long modSeq = -1;
         if (modSeqProvider != null) {
-            modSeq = modSeqProvider.nextModSeq(mailboxSession, mailbox);
+            modSeq = modSeqProvider.nextModSeq(mailbox);
         }
         final MessageMetaData metaData = copy(mailbox, uid, modSeq, original);  
         

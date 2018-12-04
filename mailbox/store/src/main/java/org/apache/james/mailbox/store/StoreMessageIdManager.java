@@ -368,7 +368,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private void save(MailboxSession mailboxSession, MessageIdMapper messageIdMapper, MailboxMessage mailboxMessage) throws MailboxException {
-        long modSeq = mailboxSessionMapperFactory.getModSeqProvider().nextModSeq(mailboxSession, mailboxMessage.getMailboxId());
+        long modSeq = mailboxSessionMapperFactory.getModSeqProvider().nextModSeq(mailboxMessage.getMailboxId());
         MessageUid uid = mailboxSessionMapperFactory.getUidProvider().nextUid(mailboxSession, mailboxMessage.getMailboxId());
         mailboxMessage.setModSeq(modSeq);
         mailboxMessage.setUid(uid);
