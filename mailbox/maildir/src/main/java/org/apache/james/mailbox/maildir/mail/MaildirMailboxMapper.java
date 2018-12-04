@@ -27,7 +27,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.acl.ACLDiff;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
@@ -56,12 +55,9 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
      * The {@link MaildirStore} the mailboxes reside in
      */
     private final MaildirStore maildirStore;
-
-    private final MailboxSession session;
     
-    public MaildirMailboxMapper(MaildirStore maildirStore, MailboxSession session) {
+    public MaildirMailboxMapper(MaildirStore maildirStore) {
         this.maildirStore = maildirStore;
-        this.session = session;
     }
 
     @Override
@@ -104,7 +100,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     @Override
     public Mailbox findMailboxByPath(MailboxPath mailboxPath)
             throws MailboxException, MailboxNotFoundException {      
-        return maildirStore.loadMailbox(session, mailboxPath);
+        return maildirStore.loadMailbox(mailboxPath);
     }
     
     @Override
@@ -129,13 +125,13 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         ArrayList<Mailbox> mailboxList = new ArrayList<>();
         for (File folder : folders) {
             if (folder.isDirectory()) {
-                Mailbox mailbox = maildirStore.loadMailbox(session, root, mailboxPath.getNamespace(), mailboxPath.getUser(), folder.getName());
+                Mailbox mailbox = maildirStore.loadMailbox(root, mailboxPath.getNamespace(), mailboxPath.getUser(), folder.getName());
                 mailboxList.add(mailbox);
             }
         }
         // INBOX is in the root of the folder
         if (Pattern.matches(mailboxPath.getName().replace(MaildirStore.WILDCARD, ".*"), MailboxConstants.INBOX)) {
-            Mailbox mailbox = maildirStore.loadMailbox(session, root, mailboxPath.getNamespace(), mailboxPath.getUser(), "");
+            Mailbox mailbox = maildirStore.loadMailbox( root, mailboxPath.getNamespace(), mailboxPath.getUser(), "");
             mailboxList.add(0, mailbox);
         }
         return mailboxList;
@@ -208,7 +204,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
                     }
                 }
             }
-            folder.setACL(session, mailbox.getACL());
+            folder.setACL(mailbox.getACL());
         } catch (MailboxNotFoundException e) {
             // it cannot be found and is thus new
             MaildirFolder folder = maildirStore.createMaildirFolder(mailbox);
@@ -235,7 +231,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
                 throw new MailboxException("Failed to save Mailbox " + mailbox, ioe);
 
             }
-            folder.setACL(session, mailbox.getACL());
+            folder.setACL(mailbox.getACL());
         }
         return maildirId;
     }
@@ -283,7 +279,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
             
             // Special case for INBOX: Let's use the user's folder.
             MailboxPath inboxMailboxPath = MailboxPath.forUser(userName, MailboxConstants.INBOX);
-            mailboxList.add(maildirStore.loadMailbox(session, inboxMailboxPath));
+            mailboxList.add(maildirStore.loadMailbox(inboxMailboxPath));
             
             // List all INBOX sub folders.
             
@@ -295,7 +291,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
                 MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, 
                         userName, 
                         mailbox.getName().substring(1));
-                mailboxList.add(maildirStore.loadMailbox(session, mailboxPath));
+                mailboxList.add(maildirStore.loadMailbox(mailboxPath));
 
             }
 
@@ -308,7 +304,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         MaildirFolder folder = maildirStore.createMaildirFolder(mailbox);
         MailboxACL oldACL = mailbox.getACL();
         MailboxACL newACL = mailbox.getACL().apply(mailboxACLCommand);
-        folder.setACL(session, newACL);
+        folder.setACL(newACL);
         mailbox.setACL(newACL);
         return ACLDiff.computeDiff(oldACL, newACL);
     }
@@ -317,7 +313,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     public ACLDiff setACL(Mailbox mailbox, MailboxACL mailboxACL) throws MailboxException {
         MailboxACL oldAcl = mailbox.getACL();
         MaildirFolder folder = maildirStore.createMaildirFolder(mailbox);
-        folder.setACL(session, mailboxACL);
+        folder.setACL(mailboxACL);
         mailbox.setACL(mailboxACL);
         return ACLDiff.computeDiff(oldAcl, mailboxACL);
     }

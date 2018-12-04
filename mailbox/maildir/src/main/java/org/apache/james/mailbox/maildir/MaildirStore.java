@@ -98,9 +98,9 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
      * @return The Mailbox object populated with data from the file system
      * @throws MailboxException If the mailbox folder doesn't exist or can't be read
      */
-    public Mailbox loadMailbox(MailboxSession session, File root, String namespace, String user, String folderName) throws MailboxException {
+    public Mailbox loadMailbox(File root, String namespace, String user, String folderName) throws MailboxException {
         String mailboxName = getMailboxNameFromFolderName(folderName);
-        return loadMailbox(session, new File(root, folderName), new MailboxPath(namespace, user, mailboxName));
+        return loadMailbox(new File(root, folderName), new MailboxPath(namespace, user, mailboxName));
     }
 
     /**
@@ -110,14 +110,14 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
      * @throws MailboxNotFoundException If the mailbox folder doesn't exist
      * @throws MailboxException If the mailbox folder can't be read
      */
-    public Mailbox loadMailbox(MailboxSession session, MailboxPath mailboxPath)
+    public Mailbox loadMailbox(MailboxPath mailboxPath)
     throws MailboxNotFoundException, MailboxException {
         MaildirFolder folder = new MaildirFolder(getFolderName(mailboxPath), mailboxPath, locker);
         folder.setMessageNameStrictParse(isMessageNameStrictParse());
         if (!folder.exists()) {
             throw new MailboxNotFoundException(mailboxPath);
         }
-        return loadMailbox(session, folder.getRootFile(), mailboxPath);
+        return loadMailbox(folder.getRootFile(), mailboxPath);
     }
 
     /**
@@ -127,13 +127,13 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
      * @return The Mailbox object populated with data from the file system
      * @throws MailboxException If the mailbox folder doesn't exist or can't be read
      */
-    private Mailbox loadMailbox(MailboxSession session, File mailboxFile, MailboxPath mailboxPath) throws MailboxException {
+    private Mailbox loadMailbox(File mailboxFile, MailboxPath mailboxPath) throws MailboxException {
         MaildirFolder folder = new MaildirFolder(mailboxFile.getAbsolutePath(), mailboxPath, locker);
         folder.setMessageNameStrictParse(isMessageNameStrictParse());
         try {
             Mailbox loadedMailbox = new SimpleMailbox(mailboxPath, folder.getUidValidity());
             loadedMailbox.setMailboxId(folder.readMailboxId());
-            loadedMailbox.setACL(folder.getACL(session));
+            loadedMailbox.setACL(folder.getACL());
             return loadedMailbox;
         } catch (IOException e) {
             throw new MailboxException("Unable to load Mailbox " + mailboxPath, e);

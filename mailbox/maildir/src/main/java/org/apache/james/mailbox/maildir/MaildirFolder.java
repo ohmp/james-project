@@ -931,75 +931,59 @@ public class MaildirFolder {
         return getRootFile().getAbsolutePath();
     }
     
-    public MailboxACL getACL(MailboxSession session) throws MailboxException {
+    public MailboxACL getACL() throws MailboxException {
         if (acl == null) {
-            acl = readACL(session);
+            acl = readACL();
         }
         return acl;
     }
 
     /**
      * Read the ACL of the given mailbox from the file system.
-     * 
-     * @param session
+     *
      * @throws MailboxException if there are problems with the aclFile file
      */
-    private MailboxACL readACL(MailboxSession session) throws MailboxException {
-        // FIXME Do we need this locking?
-        return locker.executeWithLock(session, path, (LockAwareExecution<MailboxACL>) () -> {
-            File f = aclFile;
-            Properties props = new Properties();
-            if (f.exists()) {
-                try (FileInputStream in = new FileInputStream(f)) {
-                    props.load(in);
-                } catch (IOException e) {
-                    throw new MailboxException("Unable to read last ACL from " + f.getAbsolutePath(), e);
-                }
+    private MailboxACL readACL() throws MailboxException {
+        File f = aclFile;
+        Properties props = new Properties();
+        if (f.exists()) {
+            try (FileInputStream in = new FileInputStream(f)) {
+                props.load(in);
+            } catch (IOException e) {
+                throw new MailboxException("Unable to read last ACL from " + f.getAbsolutePath(), e);
             }
+        }
 
-            return new MailboxACL(props);
-
-        }, true);
-        
+        return new MailboxACL(props);
     }
     
-    public void setACL(MailboxSession session, MailboxACL acl) throws MailboxException {
+    public void setACL(MailboxACL acl) throws MailboxException {
         MailboxACL old = this.acl;
         if (old != acl && (old == null || !old.equals(acl))) {
             /* change only if different */
-            saveACL(acl, session);
+            saveACL(acl);
             this.acl = acl;
         }
         
     }
 
-    private void saveACL(final MailboxACL acl, MailboxSession session) throws MailboxException {
-        // FIXME Do we need this locking?
-        locker.executeWithLock(session, path, new LockAwareExecution<Void>() {
-            
-            @Override
-            public Void execute() throws MailboxException {
-                File f = aclFile;
+    private void saveACL(final MailboxACL acl) throws MailboxException {
+        File f = aclFile;
 
-                Properties props = new Properties();
-                Map<EntryKey, Rfc4314Rights> entries = acl.getEntries();
-                if (entries != null) {
-                    for (Entry<EntryKey, Rfc4314Rights> en : entries.entrySet()) {
-                        props.put(en.getKey().serialize(), en.getValue().serialize());
-                    }
-                }
-                if (f.exists()) {
-                    try (FileOutputStream out = new FileOutputStream(f)) {
-                        props.store(out, "written by " + getClass().getName());
-                    } catch (IOException e) {
-                        throw new MailboxException("Unable to read last ACL from " + f.getAbsolutePath(), e);
-                    }
-                }
-                
-                return null;
-
+        Properties props = new Properties();
+        Map<EntryKey, Rfc4314Rights> entries = acl.getEntries();
+        if (entries != null) {
+            for (Entry<EntryKey, Rfc4314Rights> en : entries.entrySet()) {
+                props.put(en.getKey().serialize(), en.getValue().serialize());
             }
-        }, true);
+        }
+        if (f.exists()) {
+            try (FileOutputStream out = new FileOutputStream(f)) {
+                props.store(out, "written by " + getClass().getName());
+            } catch (IOException e) {
+                throw new MailboxException("Unable to read last ACL from " + f.getAbsolutePath(), e);
+            }
+        }
     }
 
     
