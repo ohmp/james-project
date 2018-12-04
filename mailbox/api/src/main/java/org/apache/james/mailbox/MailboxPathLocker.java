@@ -33,25 +33,34 @@ import org.apache.james.mailbox.model.MailboxPath;
 public interface MailboxPathLocker {
 
     /**
-     * @deprecated use {@link #executeWithLock(MailboxSession, MailboxPath, LockAwareExecution, boolean)} with argument <code>true</code>
+     * @deprecated use {@link #executeWithLock(MailboxPath, LockAwareExecution, boolean)} with argument <code>true</code>
      */
     @Deprecated
-    <T> T executeWithLock(MailboxSession session, MailboxPath path, LockAwareExecution<T> execution) throws MailboxException;
+    <T> T executeWithLock(MailboxPath path, LockAwareExecution<T> execution) throws MailboxException;
+
+    @Deprecated
+    default <T> T executeWithLock(MailboxSession s, MailboxPath path, LockAwareExecution<T> execution) throws MailboxException {
+        return executeWithLock(path, execution);
+    }
 
     
     /**
      * Execute the {@link LockAwareExecution} while holding a lock on the
      * {@link MailboxPath}. If writeLock is true the implementation need to make sure that no other threads can read and write while the lock
      * is hold. The contract is the same as documented in {@link ReadWriteLock}. 
-     * 
-     * @param session
+     *
      * @param path
      * @param execution
      * @param writeLock
      * 
      * @throws MailboxException
      */
-    <T> T executeWithLock(MailboxSession session, MailboxPath path, LockAwareExecution<T> execution, boolean writeLock) throws MailboxException;
+    <T> T executeWithLock(MailboxPath path, LockAwareExecution<T> execution, boolean writeLock) throws MailboxException;
+
+    @Deprecated
+    default <T> T executeWithLock(MailboxSession s, MailboxPath path, LockAwareExecution<T> execution, boolean writeLock) throws MailboxException {
+        return executeWithLock(path, execution, writeLock);
+    }
 
     /**
      * Execute code while holding a lock

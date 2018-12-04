@@ -43,7 +43,7 @@ public abstract class AbstractLockingModSeqProvider implements ModSeqProvider {
     @Override
     public long nextModSeq(final MailboxSession session, final Mailbox mailbox) throws MailboxException {
         boolean writeLock = true;
-        return locker.executeWithLock(session, new StoreMailboxPath(mailbox),
+        return locker.executeWithLock(new StoreMailboxPath(mailbox),
             () -> lockedNextModSeq(session, mailbox),
             writeLock);
     }

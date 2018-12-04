@@ -519,7 +519,7 @@ public class StoreMailboxManager implements MailboxManager {
             // TODO: transaction
             List<MailboxId> mailboxIds = new ArrayList<>();
             for (MailboxPath mailbox : sanitizedMailboxPath.getHierarchyLevels(getDelimiter())) {
-                locker.executeWithLock(mailboxSession, mailbox, (LockAwareExecution<Void>) () -> {
+                locker.executeWithLock(mailbox, (LockAwareExecution<Void>) () -> {
                     if (!mailboxExists(mailbox, mailboxSession)) {
                         Mailbox m = doCreateMailbox(mailbox, mailboxSession);
                         MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
@@ -613,7 +613,7 @@ public class StoreMailboxManager implements MailboxManager {
 
         // rename submailboxes
         MailboxPath children = new MailboxPath(from.getNamespace(), from.getUser(), from.getName() + getDelimiter() + "%");
-        locker.executeWithLock(session, children, (LockAwareExecution<Void>) () -> {
+        locker.executeWithLock(children, (LockAwareExecution<Void>) () -> {
             List<Mailbox> subMailboxes = mapper.findMailboxWithPathLike(children);
             for (Mailbox sub : subMailboxes) {
                 String subOriginalName = sub.getName();

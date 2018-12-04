@@ -25,8 +25,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.james.mailbox.MailboxPathLocker;
-import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
 
 /**
@@ -40,7 +38,7 @@ public final class JVMMailboxPathLocker extends AbstractMailboxPathLocker {
 
 
     @Override
-    protected void lock(MailboxSession session, MailboxPath path, boolean writeLock) throws MailboxException {
+    protected void lock(MailboxPath path, boolean writeLock) {
         ReadWriteLock lock = paths.get(path);
         if (lock == null) {
             lock = new ReentrantReadWriteLock();
@@ -54,7 +52,7 @@ public final class JVMMailboxPathLocker extends AbstractMailboxPathLocker {
 
 
     @Override
-    protected void unlock(MailboxSession session, MailboxPath path, boolean writeLock) throws MailboxException {
+    protected void unlock(MailboxPath path, boolean writeLock) {
         ReadWriteLock lock = paths.get(path);
 
         if (lock != null) {

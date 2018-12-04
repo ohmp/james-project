@@ -19,7 +19,6 @@
 package org.apache.james.mailbox.store;
 
 import org.apache.james.mailbox.MailboxPathLocker;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
 
@@ -27,37 +26,35 @@ import org.apache.james.mailbox.model.MailboxPath;
 public abstract class AbstractMailboxPathLocker implements MailboxPathLocker {
 
     @Override
-    public <T> T executeWithLock(MailboxSession session, MailboxPath path, LockAwareExecution<T> execution) throws MailboxException {
-        return executeWithLock(session, path, execution, true);
+    public <T> T executeWithLock(MailboxPath path, LockAwareExecution<T> execution) throws MailboxException {
+        return executeWithLock(path, execution, true);
     }
     
     @Override
-    public <T> T executeWithLock(MailboxSession session, MailboxPath path, LockAwareExecution<T> execution, boolean writeLock) throws MailboxException {
+    public <T> T executeWithLock(MailboxPath path, LockAwareExecution<T> execution, boolean writeLock) throws MailboxException {
         try {
-            lock(session, path, writeLock);
+            lock(path, writeLock);
             return execution.execute();
         } finally {
-            unlock(session, path, writeLock);
+            unlock(path, writeLock);
         }
     }
 
     
     /**
      * Perform lock
-     * 
-     * @param session
+     *
      * @param path
      * @throws MailboxException
      */
-    protected abstract void lock(MailboxSession session, MailboxPath path, boolean writeLock) throws MailboxException;
+    protected abstract void lock(MailboxPath path, boolean writeLock) throws MailboxException;
 
     /**
      * Release lock
-     * 
-     * @param session
+     *
      * @param path
      * @throws MailboxException
      */
-    protected abstract void unlock(MailboxSession session, MailboxPath path, boolean writeLock) throws MailboxException;
+    protected abstract void unlock(MailboxPath path, boolean writeLock) throws MailboxException;
 
 }

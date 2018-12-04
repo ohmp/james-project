@@ -413,7 +413,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
                     new QuotaChecker(quotaManager, quotaRootResolver, mailbox).tryAddition(1, size);
 
-                    return locker.executeWithLock(mailboxSession, getMailboxPath(), () -> {
+                    return locker.executeWithLock(getMailboxPath(), () -> {
                         MessageMetaData data = appendMessageToStore(message, attachments, mailboxSession);
 
                         Mailbox mailbox = getMailboxEntity();
@@ -601,7 +601,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
             throw new ReadOnlyException(new StoreMailboxPath(toMailbox.getMailboxEntity()), session.getPathDelimiter());
         }
 
-        return locker.executeWithLock(session, new StoreMailboxPath(toMailbox.getMailboxEntity()), () -> {
+        return locker.executeWithLock(new StoreMailboxPath(toMailbox.getMailboxEntity()), () -> {
             SortedMap<MessageUid, MessageMetaData> copiedUids = copy(set, toMailbox, session);
             return MessageRange.toRanges(new ArrayList<>(copiedUids.keySet()));
         }, true);
@@ -624,7 +624,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         }
 
         //TODO lock the from mailbox too, in a non-deadlocking manner - how?
-        return locker.executeWithLock(session, new StoreMailboxPath(toMailbox.getMailboxEntity()), () -> {
+        return locker.executeWithLock(new StoreMailboxPath(toMailbox.getMailboxEntity()), () -> {
             SortedMap<MessageUid, MessageMetaData> movedUids = move(set, toMailbox, session);
             return MessageRange.toRanges(new ArrayList<>(movedUids.keySet()));
         }, true);

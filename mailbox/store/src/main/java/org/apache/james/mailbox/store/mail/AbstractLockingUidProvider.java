@@ -45,7 +45,7 @@ public abstract class AbstractLockingUidProvider implements UidProvider {
     @Override
     public MessageUid nextUid(final MailboxSession session, final Mailbox mailbox) throws MailboxException {
         boolean writeLock = true;
-        return locker.executeWithLock(session, new StoreMailboxPath(mailbox),
+        return locker.executeWithLock(new StoreMailboxPath(mailbox),
             () -> lockedNextUid(session, mailbox),
             writeLock);
     }
