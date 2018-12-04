@@ -43,9 +43,8 @@ public class CachingMailboxSessionMapperFactory extends
     }
 
     @Override
-    public SubscriptionMapper createSubscriptionMapper(MailboxSession session)
-            throws SubscriptionException {
-        return underlying.createSubscriptionMapper(session);
+    public SubscriptionMapper getSubscriptionMapper() throws SubscriptionException {
+        return underlying.getSubscriptionMapper();
     }
 
     @Override

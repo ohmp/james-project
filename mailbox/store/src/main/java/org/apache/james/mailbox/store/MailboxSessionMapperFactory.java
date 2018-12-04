@@ -21,7 +21,6 @@ package org.apache.james.mailbox.store;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.RequestAware;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
@@ -67,30 +66,6 @@ public abstract class MailboxSessionMapperFactory implements RequestAware, Mailb
     public abstract AnnotationMapper createAnnotationMapper(MailboxSession session) throws MailboxException;
 
     public abstract MessageIdMapper createMessageIdMapper(MailboxSession session) throws MailboxException;
-
-    /**
-     * Create a {@link SubscriptionMapper} instance or return the one which exists for the {@link MailboxSession} already
-     * 
-     * @param session
-     * @return mapper
-     */
-    @Override
-    public SubscriptionMapper getSubscriptionMapper(MailboxSession session) throws SubscriptionException {
-        SubscriptionMapper mapper = (SubscriptionMapper) session.getAttributes().get(SUBSCRIPTIONMAPPER);
-        if (mapper == null) {
-            mapper = createSubscriptionMapper(session);
-            session.getAttributes().put(SUBSCRIPTIONMAPPER, mapper);
-        }
-        return mapper;
-    }
-    
-    /**
-     * Create a {@link SubscriptionMapper} instance which will get reused during the whole {@link MailboxSession}
-     * @param session
-     * @return subscriptionMapper
-     * @throws SubscriptionException
-     */
-    public abstract SubscriptionMapper createSubscriptionMapper(MailboxSession session) throws SubscriptionException;
 
     public abstract UidProvider getUidProvider();
 

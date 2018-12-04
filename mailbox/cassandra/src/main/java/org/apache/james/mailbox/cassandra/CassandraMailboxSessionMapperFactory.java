@@ -97,6 +97,7 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
     private final CassandraConfiguration cassandraConfiguration;
     private final CassandraMessageMapper cassandraMessageMapper;
     private final CassandraMailboxMapper cassandraMailboxMapper;
+    private final CassandraSubscriptionMapper cassandraSubscriptionMapper;
 
     @Inject
     public CassandraMailboxSessionMapperFactory(CassandraUidProvider uidProvider, CassandraModSeqProvider modSeqProvider, Session session,
@@ -155,6 +156,8 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
             firstUnseenDAO,
             deletedMessageDAO,
             cassandraConfiguration);
+
+        cassandraSubscriptionMapper = new CassandraSubscriptionMapper(session, cassandraUtils);
     }
 
 
@@ -182,8 +185,8 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
     }
 
     @Override
-    public SubscriptionMapper createSubscriptionMapper(MailboxSession mailboxSession) {
-        return new CassandraSubscriptionMapper(session, cassandraUtils);
+    public SubscriptionMapper getSubscriptionMapper() {
+        return cassandraSubscriptionMapper;
     }
 
     @Override

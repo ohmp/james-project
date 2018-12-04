@@ -51,7 +51,7 @@ public class StoreSubscriptionManager implements SubscriptionManager {
 
     @Override
     public void subscribe(final MailboxSession session, final String mailbox) throws SubscriptionException {
-        final SubscriptionMapper mapper = mapperFactory.getSubscriptionMapper(session);
+        final SubscriptionMapper mapper = mapperFactory.getSubscriptionMapper();
         try {
             mapper.execute(Mapper.toTransaction(() -> {
                 Subscription subscription = mapper.findMailboxSubscriptionForUser(session.getUser().getUserName(), mailbox);
@@ -80,7 +80,7 @@ public class StoreSubscriptionManager implements SubscriptionManager {
 
     @Override
     public Collection<String> subscriptions(MailboxSession session) throws SubscriptionException {
-        return mapperFactory.getSubscriptionMapper(session)
+        return mapperFactory.getSubscriptionMapper()
             .findSubscriptionsForUser(session.getUser().getUserName())
             .stream()
             .map(Subscription::getMailbox)
@@ -89,7 +89,7 @@ public class StoreSubscriptionManager implements SubscriptionManager {
 
     @Override
     public void unsubscribe(final MailboxSession session, final String mailbox) throws SubscriptionException {
-        final SubscriptionMapper mapper = mapperFactory.getSubscriptionMapper(session);
+        final SubscriptionMapper mapper = mapperFactory.getSubscriptionMapper();
         try {
             mapper.execute(Mapper.toTransaction(() -> {
                 Subscription subscription = mapper.findMailboxSubscriptionForUser(session.getUser().getUserName(), mailbox);

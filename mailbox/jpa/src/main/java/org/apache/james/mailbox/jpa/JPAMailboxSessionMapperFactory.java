@@ -25,6 +25,7 @@ import javax.persistence.EntityManagerFactory;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.jpa.mail.JPAAnnotationMapper;
 import org.apache.james.mailbox.jpa.mail.JPAMailboxMapper;
 import org.apache.james.mailbox.jpa.mail.JPAMessageMapper;
@@ -72,7 +73,7 @@ public class JPAMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
     }
 
     @Override
-    public SubscriptionMapper createSubscriptionMapper(MailboxSession session) {
+    public SubscriptionMapper getSubscriptionMapper() throws SubscriptionException {
         return new JPASubscriptionMapper(entityManagerFactory);
     }
 

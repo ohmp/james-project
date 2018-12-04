@@ -76,10 +76,10 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     @Override
-    public SubscriptionMapper createSubscriptionMapper(MailboxSession session) {
+    public SubscriptionMapper getSubscriptionMapper() {
         return subscriptionMapper;
     }
-    
+
     @Override
     public AttachmentMapper createAttachmentMapper(MailboxSession session) {
         return attachmentMapper;
