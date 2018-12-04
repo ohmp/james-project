@@ -50,16 +50,12 @@ public abstract class MailboxSessionMapperFactory implements RequestAware, Mailb
         return getMessageIdMapper();
     }
 
+    @Deprecated
     public AnnotationMapper getAnnotationMapper(MailboxSession session) throws MailboxException {
-        AnnotationMapper mapper = (AnnotationMapper)session.getAttributes().get(ANNOTATIONMAPPER);
-        if (mapper == null) {
-            mapper = createAnnotationMapper(session);
-            session.getAttributes().put(ANNOTATIONMAPPER, mapper);
-        }
-        return mapper;
+        return getAnnotationMapper();
     }
 
-    public abstract AnnotationMapper createAnnotationMapper(MailboxSession session) throws MailboxException;
+    public abstract AnnotationMapper getAnnotationMapper();
 
     public abstract MessageIdMapper getMessageIdMapper() throws MailboxException;
 

@@ -50,7 +50,7 @@ public class MailboxAnnotationListener implements MailboxListener {
     public void event(Event event) {
         if (event instanceof EventFactory.MailboxDeletionImpl) {
             try {
-                AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper(event.getSession());
+                AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
                 MailboxId mailboxId = ((EventFactory.MailboxDeletionImpl) event).getMailbox().getMailboxId();
 
                 deleteRelatedAnnotations(mailboxId, annotationMapper);

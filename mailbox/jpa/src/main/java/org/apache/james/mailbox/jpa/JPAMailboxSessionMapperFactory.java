@@ -23,8 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.jpa.mail.JPAAnnotationMapper;
 import org.apache.james.mailbox.jpa.mail.JPAMailboxMapper;
@@ -87,8 +85,7 @@ public class JPAMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
     }
 
     @Override
-    public AnnotationMapper createAnnotationMapper(MailboxSession session)
-            throws MailboxException {
+    public AnnotationMapper getAnnotationMapper() {
         return new JPAAnnotationMapper(entityManagerFactory);
     }
 

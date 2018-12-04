@@ -96,7 +96,7 @@ public class InMemoryMapperProvider implements MapperProvider {
 
     @Override
     public AnnotationMapper createAnnotationMapper() {
-        return inMemoryMailboxSessionMapperFactory.createAnnotationMapper(MAILBOX_SESSION);
+        return inMemoryMailboxSessionMapperFactory.getAnnotationMapper();
     }
     
     @Override

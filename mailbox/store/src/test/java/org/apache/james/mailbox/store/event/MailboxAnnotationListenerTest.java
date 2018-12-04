@@ -86,7 +86,7 @@ public class MailboxAnnotationListenerTest {
         QuotaSize quotaSize = QuotaSize.size(456);
         deleteEvent = eventFactory.mailboxDeleted(mailboxSession, mailbox, quotaRoot, quotaCount, quotaSize);
 
-        when(mailboxSessionMapperFactory.getAnnotationMapper(eq(deleteEvent.getSession()))).thenReturn(annotationMapper);
+        when(mailboxSessionMapperFactory.getAnnotationMapper()).thenReturn(annotationMapper);
     }
 
     @Test
@@ -100,11 +100,11 @@ public class MailboxAnnotationListenerTest {
 
     @Test
     public void eventShoudlDoNothingIfMailboxDoesNotHaveAnyAnnotation() throws Exception {
-        when(annotationMapper.getAllAnnotations(any(MailboxId.class))).thenReturn(ImmutableList.<MailboxAnnotation>of());
+        when(annotationMapper.getAllAnnotations(any(MailboxId.class))).thenReturn(ImmutableList.of());
 
         listener.event(deleteEvent);
 
-        verify(mailboxSessionMapperFactory).getAnnotationMapper(eq(deleteEvent.getSession()));
+        verify(mailboxSessionMapperFactory).getAnnotationMapper();
         verify(annotationMapper).getAllAnnotations(eq(mailboxId));
 
         verifyNoMoreInteractions(mailboxSessionMapperFactory);
@@ -118,7 +118,7 @@ public class MailboxAnnotationListenerTest {
 
         listener.event(deleteEvent);
 
-        verify(mailboxSessionMapperFactory).getAnnotationMapper(eq(deleteEvent.getSession()));
+        verify(mailboxSessionMapperFactory).getAnnotationMapper();
         verify(annotationMapper).getAllAnnotations(eq(mailboxId));
         verify(annotationMapper).deleteAnnotation(eq(mailboxId), eq(PRIVATE_KEY));
         verify(annotationMapper).deleteAnnotation(eq(mailboxId), eq(SHARED_KEY));
@@ -135,7 +135,7 @@ public class MailboxAnnotationListenerTest {
 
         listener.event(deleteEvent);
 
-        verify(mailboxSessionMapperFactory).getAnnotationMapper(eq(deleteEvent.getSession()));
+        verify(mailboxSessionMapperFactory).getAnnotationMapper();
         verify(annotationMapper).getAllAnnotations(eq(mailboxId));
         verify(annotationMapper).deleteAnnotation(eq(mailboxId), eq(PRIVATE_KEY));
         verify(annotationMapper).deleteAnnotation(eq(mailboxId), eq(SHARED_KEY));

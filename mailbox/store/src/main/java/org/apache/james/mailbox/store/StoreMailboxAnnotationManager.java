@@ -78,7 +78,7 @@ public class StoreMailboxAnnotationManager implements MailboxAnnotationManager {
 
     @Override
     public List<MailboxAnnotation> getAllAnnotations(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
-        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper(session);
+        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
 
         MailboxId mailboxId = checkThenGetMailboxId(mailboxPath, session);
 
@@ -89,7 +89,7 @@ public class StoreMailboxAnnotationManager implements MailboxAnnotationManager {
     @Override
     public List<MailboxAnnotation> getAnnotationsByKeys(MailboxPath mailboxPath, MailboxSession session, final Set<MailboxAnnotationKey> keys)
             throws MailboxException {
-        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper(session);
+        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
         MailboxId mailboxId = checkThenGetMailboxId(mailboxPath, session);
 
         return annotationMapper.execute(
@@ -99,7 +99,7 @@ public class StoreMailboxAnnotationManager implements MailboxAnnotationManager {
     @Override
     public void updateAnnotations(MailboxPath mailboxPath, MailboxSession session, List<MailboxAnnotation> mailboxAnnotations)
             throws MailboxException {
-        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper(session);
+        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
         MailboxId mailboxId = checkThenGetMailboxId(mailboxPath, session);
 
         annotationMapper.execute(Mapper.toTransaction(() -> {
@@ -127,7 +127,7 @@ public class StoreMailboxAnnotationManager implements MailboxAnnotationManager {
     @Override
     public List<MailboxAnnotation> getAnnotationsByKeysWithOneDepth(MailboxPath mailboxPath, MailboxSession session,
             Set<MailboxAnnotationKey> keys) throws MailboxException {
-        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper(session);
+        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
         final MailboxId mailboxId = checkThenGetMailboxId(mailboxPath, session);
 
         return annotationMapper.execute(
@@ -137,7 +137,7 @@ public class StoreMailboxAnnotationManager implements MailboxAnnotationManager {
     @Override
     public List<MailboxAnnotation> getAnnotationsByKeysWithAllDepth(MailboxPath mailboxPath, MailboxSession session,
             Set<MailboxAnnotationKey> keys) throws MailboxException {
-        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper(session);
+        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
         MailboxId mailboxId = checkThenGetMailboxId(mailboxPath, session);
 
         return annotationMapper.execute(

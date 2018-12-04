@@ -81,6 +81,11 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     @Override
+    public AnnotationMapper getAnnotationMapper() {
+        return annotationMapper;
+    }
+
+    @Override
     public AttachmentMapper createAttachmentMapper(MailboxSession session) {
         return attachmentMapper;
     }
@@ -89,11 +94,6 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
         ((InMemoryMailboxMapper) mailboxMapper).deleteAll();
         messageMapper.deleteAll();
         ((InMemorySubscriptionMapper) subscriptionMapper).deleteAll();
-    }
-
-    @Override
-    public AnnotationMapper createAnnotationMapper(MailboxSession session) {
-        return annotationMapper;
     }
 
     @Override

@@ -101,7 +101,7 @@ public class CassandraMapperProvider implements MapperProvider {
 
     @Override
     public AnnotationMapper createAnnotationMapper() throws MailboxException {
-        return mapperFactory.getAnnotationMapper(mailboxSession);
+        return mapperFactory.getAnnotationMapper();
     }
 
     @Override

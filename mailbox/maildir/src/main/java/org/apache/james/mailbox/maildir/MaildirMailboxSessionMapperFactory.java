@@ -19,8 +19,6 @@
 package org.apache.james.mailbox.maildir;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.maildir.mail.MaildirMailboxMapper;
 import org.apache.james.mailbox.maildir.mail.MaildirMessageMapper;
 import org.apache.james.mailbox.maildir.user.MaildirSubscriptionMapper;
@@ -58,12 +56,12 @@ public class MaildirMailboxSessionMapperFactory extends MailboxSessionMapperFact
     }
 
     @Override
-    public SubscriptionMapper getSubscriptionMapper() throws SubscriptionException {
+    public SubscriptionMapper getSubscriptionMapper() {
         return new MaildirSubscriptionMapper(store);
     }
 
     @Override
-    public AnnotationMapper createAnnotationMapper(MailboxSession session) {
+    public AnnotationMapper getAnnotationMapper() {
         throw new NotImplementedException("Not implemented");
     }
 

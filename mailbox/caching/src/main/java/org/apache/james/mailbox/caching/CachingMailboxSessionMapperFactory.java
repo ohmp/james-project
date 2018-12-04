@@ -1,8 +1,6 @@
 package org.apache.james.mailbox.caching;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
@@ -32,7 +30,7 @@ public class CachingMailboxSessionMapperFactory extends MailboxSessionMapperFact
     }
 
     @Override
-    public MailboxMapper getMailboxMapper() throws MailboxException {
+    public MailboxMapper getMailboxMapper() {
         return new CachingMailboxMapper(underlying.getMailboxMapper(), mailboxByPathCache);
     }
 
@@ -47,8 +45,7 @@ public class CachingMailboxSessionMapperFactory extends MailboxSessionMapperFact
     }
 
     @Override
-    public AnnotationMapper createAnnotationMapper(MailboxSession session)
-            throws MailboxException {
+    public AnnotationMapper getAnnotationMapper() {
         throw new NotImplementedException("Not implemented");
     }
 
