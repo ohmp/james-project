@@ -64,14 +64,14 @@ public class InMemoryMapperProvider implements MapperProvider {
 
     @Override
     public MessageMapper createMessageMapper() {
-        return inMemoryMailboxSessionMapperFactory.createMessageMapper(new MockMailboxSession("user"));
+        return inMemoryMailboxSessionMapperFactory.getMessageMapper();
     }
 
     @Override
     public MessageIdMapper createMessageIdMapper() {
         return new InMemoryMessageIdMapper(
             inMemoryMailboxSessionMapperFactory.getMailboxMapper(),
-            inMemoryMailboxSessionMapperFactory.createMessageMapper(MAILBOX_SESSION));
+            inMemoryMailboxSessionMapperFactory.getMessageMapper());
     }
 
     @Override

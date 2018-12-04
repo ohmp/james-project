@@ -52,7 +52,7 @@ public class CurrentQuotaCalculator {
 
     public CurrentQuotas recalculateCurrentQuotas(QuotaRoot quotaRoot, MailboxSession session) throws MailboxException {
         List<Mailbox> mailboxes = retrieveMailboxes(quotaRoot, session);
-        MessageMapper mapper = factory.getMessageMapper(session);
+        MessageMapper mapper = factory.getMessageMapper();
         long messagesSizes = 0;
         long messageCount = 0;
         for (Mailbox mailbox : mailboxes) {

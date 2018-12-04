@@ -76,8 +76,8 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
                     EventFactory.AddedImpl added = (EventFactory.AddedImpl) event;
                     final Mailbox mailbox = added.getMailbox();
 
-                    for (final MessageUid next : (Iterable<MessageUid>) added.getUids()) {
-                        Optional<MailboxMessage> mailboxMessage = retrieveMailboxMessage(session, added, mailbox, next);
+                    for (final MessageUid next : added.getUids()) {
+                        Optional<MailboxMessage> mailboxMessage = retrieveMailboxMessage(added, mailbox, next);
                         if (mailboxMessage.isPresent()) {
                             addMessage(session, mailbox, mailboxMessage.get());
                         }
@@ -107,13 +107,13 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
         }
     }
 
-    private Optional<MailboxMessage> retrieveMailboxMessage(MailboxSession session, EventFactory.AddedImpl added, Mailbox mailbox, MessageUid next) {
+    private Optional<MailboxMessage> retrieveMailboxMessage(EventFactory.AddedImpl added, Mailbox mailbox, MessageUid next) {
         Optional<MailboxMessage> firstChoice = Optional.ofNullable(added.getAvailableMessages().get(next));
         if (firstChoice.isPresent()) {
             return firstChoice;
         } else {
             try {
-                return Optional.of(factory.getMessageMapper(session)
+                return Optional.of(factory.getMessageMapper()
                     .findInMailbox(mailbox, MessageRange.one(next), FetchType.Full, UNLIMITED)
                     .next());
             } catch (Exception e) {

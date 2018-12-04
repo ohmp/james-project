@@ -33,14 +33,13 @@ public class CachingMailboxSessionMapperFactory extends
     }
 
     @Override
-    public MessageMapper createMessageMapper(MailboxSession session)
-            throws MailboxException {
-        return new CachingMessageMapper(underlying.createMessageMapper(session), mailboxMetadataCache);
+    public MailboxMapper getMailboxMapper() throws MailboxException {
+        return new CachingMailboxMapper(underlying.getMailboxMapper(), mailboxByPathCache);
     }
 
     @Override
-    public MailboxMapper getMailboxMapper() throws MailboxException {
-        return new CachingMailboxMapper(underlying.getMailboxMapper(), mailboxByPathCache);
+    public MessageMapper getMessageMapper() {
+        return new CachingMessageMapper(underlying.getMessageMapper(), mailboxMetadataCache);
     }
 
     @Override

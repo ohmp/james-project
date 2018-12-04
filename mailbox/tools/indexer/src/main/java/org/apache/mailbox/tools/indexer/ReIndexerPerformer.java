@@ -72,7 +72,7 @@ public class ReIndexerPerformer {
         messageSearchIndex.deleteAll(mailboxSession, mailbox);
         try {
             return Iterators.toStream(
-                mailboxSessionMapperFactory.getMessageMapper(mailboxSession)
+                mailboxSessionMapperFactory.getMessageMapper()
                     .findInMailbox(mailbox, MessageRange.all(), MessageMapper.FetchType.Metadata, NO_LIMIT))
                 .map(MailboxMessage::getUid)
                 .map(uid -> handleMessageReIndexing(mailboxSession, mailbox, uid))
@@ -136,7 +136,7 @@ public class ReIndexerPerformer {
     private Task.Result handleMessageReIndexing(MailboxSession mailboxSession, Mailbox mailbox, MessageUid uid) {
         try {
             Optional.of(uid)
-                .flatMap(Throwing.function(mUid -> fullyReadMessage(mailboxSession, mailbox, mUid)))
+                .flatMap(Throwing.function(mUid -> fullyReadMessage(mailbox, mUid)))
                 .ifPresent(Throwing.consumer(message -> messageSearchIndex.add(mailboxSession, mailbox, message)));
             return Task.Result.COMPLETED;
         } catch (Exception e) {
@@ -145,8 +145,8 @@ public class ReIndexerPerformer {
         }
     }
 
-    private Optional<MailboxMessage> fullyReadMessage(MailboxSession mailboxSession, Mailbox mailbox, MessageUid mUid) throws MailboxException {
-        return Iterators.toStream(mailboxSessionMapperFactory.getMessageMapper(mailboxSession)
+    private Optional<MailboxMessage> fullyReadMessage(Mailbox mailbox, MessageUid mUid) throws MailboxException {
+        return Iterators.toStream(mailboxSessionMapperFactory.getMessageMapper()
             .findInMailbox(mailbox, MessageRange.one(mUid), MessageMapper.FetchType.Full, SINGLE_MESSAGE))
             .findFirst();
     }

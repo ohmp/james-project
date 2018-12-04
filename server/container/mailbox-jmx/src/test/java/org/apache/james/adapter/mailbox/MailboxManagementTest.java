@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
@@ -52,7 +51,6 @@ public class MailboxManagementTest {
 
     private MailboxManagerManagement mailboxManagerManagement;
     private MailboxSessionMapperFactory mapperFactory;
-    private MailboxSession session;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -62,7 +60,6 @@ public class MailboxManagementTest {
 
         mailboxManagerManagement = new MailboxManagerManagement();
         mailboxManagerManagement.setMailboxManager(mailboxManager);
-        session = mailboxManager.createSystemSession("TEST");
     }
 
     @Test
@@ -261,8 +258,8 @@ public class MailboxManagementTest {
         String emlpath = ClassLoader.getSystemResource("eml/frnog.eml").getFile();
         mailboxManagerManagement.importEmlFileToMailbox(MailboxConstants.USER_NAMESPACE, USER, "name", emlpath);
 
-        assertThat(mapperFactory.getMessageMapper(session).countMessagesInMailbox(mailbox)).isEqualTo(1);
-        Iterator<MailboxMessage> iterator = mapperFactory.getMessageMapper(session).findInMailbox(mailbox,
+        assertThat(mapperFactory.getMessageMapper().countMessagesInMailbox(mailbox)).isEqualTo(1);
+        Iterator<MailboxMessage> iterator = mapperFactory.getMessageMapper().findInMailbox(mailbox,
                 MessageRange.all(), MessageMapper.FetchType.Full, LIMIT);
         MailboxMessage mailboxMessage = iterator.next();
 
@@ -278,8 +275,8 @@ public class MailboxManagementTest {
         String emlpath = ClassLoader.getSystemResource("eml/frnog.eml").getFile();
         mailboxManagerManagement.importEmlFileToMailbox(MailboxConstants.USER_NAMESPACE, USER, "name", "wrong_path" + emlpath);
 
-        assertThat(mapperFactory.getMessageMapper(session).countMessagesInMailbox(mailbox)).isEqualTo(0);
-        Iterator<MailboxMessage> iterator = mapperFactory.getMessageMapper(session).findInMailbox(mailbox,
+        assertThat(mapperFactory.getMessageMapper().countMessagesInMailbox(mailbox)).isEqualTo(0);
+        Iterator<MailboxMessage> iterator = mapperFactory.getMessageMapper().findInMailbox(mailbox,
                 MessageRange.all(), MessageMapper.FetchType.Full, LIMIT);
         assertThat(iterator.hasNext()).isFalse();
     }

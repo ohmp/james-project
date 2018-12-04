@@ -236,7 +236,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     @Override
     public MailboxCounters getMailboxCounters(MailboxSession mailboxSession) throws MailboxException {
         if (storeRightManager.hasRight(mailbox, MailboxACL.Right.Read, mailboxSession)) {
-            return mapperFactory.createMessageMapper(mailboxSession).getMailboxCounters(mailbox);
+            return mapperFactory.getMessageMapper().getMailboxCounters(mailbox);
         }
         return ZERO_MAILBOX_COUNTERS;
     }
@@ -274,7 +274,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         if (!isWriteable(mailboxSession)) {
             throw new ReadOnlyException(getMailboxPath(), mailboxSession.getPathDelimiter());
         }
-        Map<MessageUid, MessageMetaData> uids = deleteMarkedInMailbox(set, mailboxSession);
+        Map<MessageUid, MessageMetaData> uids = deleteMarkedInMailbox(set);
 
         dispatcher.expunged(mailboxSession, uids, getMailboxEntity());
         return uids.keySet().iterator();
@@ -483,23 +483,23 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         List<MessageUid> recent;
         Flags permanentFlags = getPermanentFlags(mailboxSession);
         long uidValidity = getMailboxEntity().getUidValidity();
-        MessageUid uidNext = mapperFactory.getMessageMapper(mailboxSession).getLastUid(mailbox)
+        MessageUid uidNext = mapperFactory.getMessageMapper().getLastUid(mailbox)
                 .map(MessageUid::next)
                 .orElse(MessageUid.MIN_VALUE);
-        long highestModSeq = mapperFactory.getMessageMapper(mailboxSession).getHighestModSeq(mailbox);
+        long highestModSeq = mapperFactory.getMessageMapper().getHighestModSeq(mailbox);
         long messageCount;
         long unseenCount;
         MessageUid firstUnseen;
         switch (fetchGroup) {
         case UNSEEN_COUNT:
-            unseenCount = countUnseenMessagesInMailbox(mailboxSession);
+            unseenCount = countUnseenMessagesInMailbox();
             messageCount = getMessageCount(mailboxSession);
             firstUnseen = null;
             recent = recent(resetRecent, mailboxSession);
 
             break;
         case FIRST_UNSEEN:
-            firstUnseen = findFirstUnseenMessageUid(mailboxSession);
+            firstUnseen = findFirstUnseenMessageUid();
             messageCount = getMessageCount(mailboxSession);
             unseenCount = 0;
             recent = recent(resetRecent, mailboxSession);
@@ -571,7 +571,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
         trimFlags(flags, mailboxSession);
 
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(mailboxSession);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
         Iterator<UpdatedFlags> it = messageMapper.execute(() -> messageMapper.updateFlags(getMailboxEntity(), new FlagsUpdateCalculator(flags, flagsUpdateMode), set));
 
@@ -631,9 +631,9 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     }
 
     protected MessageMetaData appendMessageToStore(final MailboxMessage message, final List<MessageAttachment> messageAttachments, MailboxSession session) throws MailboxException {
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
-        return mapperFactory.getMessageMapper(session).execute(() -> {
+        return mapperFactory.getMessageMapper().execute(() -> {
             storeAttachment(message, messageAttachments, session);
             return messageMapper.add(getMailboxEntity(), message);
         });
@@ -645,12 +645,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
     @Override
     public long getMessageCount(MailboxSession mailboxSession) throws MailboxException {
-        return mapperFactory.getMessageMapper(mailboxSession).countMessagesInMailbox(getMailboxEntity());
+        return mapperFactory.getMessageMapper().countMessagesInMailbox(getMailboxEntity());
     }
 
     @Override
     public MessageResultIterator getMessages(MessageRange set, FetchGroup fetchGroup, MailboxSession mailboxSession) throws MailboxException {
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(mailboxSession);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
         return new StoreMessageResultIterator(messageMapper, mailbox, set, batchSizes, fetchGroup);
     }
 
@@ -664,7 +664,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
                 throw new ReadOnlyException(getMailboxPath(), mailboxSession.getPathDelimiter());
             }
         }
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(mailboxSession);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
         return messageMapper.execute(() -> {
             final List<MessageUid> members = messageMapper.findRecentMessageUidsInMailbox(getMailboxEntity());
@@ -683,9 +683,9 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
     }
 
-    protected Map<MessageUid, MessageMetaData> deleteMarkedInMailbox(final MessageRange range, MailboxSession session) throws MailboxException {
+    protected Map<MessageUid, MessageMetaData> deleteMarkedInMailbox(final MessageRange range) throws MailboxException {
 
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
         return messageMapper.execute(
             () -> messageMapper.expungeMarkedForDeletionInMailbox(getMailboxEntity(), range));
@@ -694,14 +694,14 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     @Override
     public Iterator<MessageUid> search(SearchQuery query, MailboxSession mailboxSession) throws MailboxException {
         if (query.equals(new SearchQuery(SearchQuery.all()))) {
-            return listAllMessageUids(mailboxSession);
+            return listAllMessageUids();
         }
         return index.search(mailboxSession, getMailboxEntity(), query);
     }
 
-    private Iterator<MessageMetaData> copy(Iterator<MailboxMessage> originalRows, MailboxSession session) throws MailboxException {
+    private Iterator<MessageMetaData> copy(Iterator<MailboxMessage> originalRows) throws MailboxException {
         final List<MessageMetaData> copiedRows = new ArrayList<>();
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
         while (originalRows.hasNext()) {
             final MailboxMessage originalMessage = originalRows.next();
@@ -714,10 +714,10 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         return copiedRows.iterator();
     }
 
-    private MoveResult move(Iterator<MailboxMessage> originalRows, MailboxSession session) throws MailboxException {
+    private MoveResult move(Iterator<MailboxMessage> originalRows) throws MailboxException {
         final List<MessageMetaData> movedRows = new ArrayList<>();
         final List<MessageMetaData> originalRowsCopy = new ArrayList<>();
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
         while (originalRows.hasNext()) {
             final MailboxMessage originalMessage = originalRows.next();
@@ -731,9 +731,9 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
 
     private SortedMap<MessageUid, MessageMetaData> copy(MessageRange set, StoreMessageManager to, MailboxSession session) throws MailboxException {
-        IteratorWrapper<MailboxMessage> originalRows = new IteratorWrapper<>(retrieveOriginalRows(set, session));
+        IteratorWrapper<MailboxMessage> originalRows = new IteratorWrapper<>(retrieveOriginalRows(set));
 
-        SortedMap<MessageUid, MessageMetaData> copiedUids = collectMetadata(to.copy(originalRows, session));
+        SortedMap<MessageUid, MessageMetaData> copiedUids = collectMetadata(to.copy(originalRows));
 
         ImmutableMap.Builder<MessageUid, MailboxMessage> messagesMap = ImmutableMap.builder();
         for (MailboxMessage message : originalRows.getEntriesSeen()) {
@@ -750,9 +750,9 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     }
 
     private SortedMap<MessageUid, MessageMetaData> move(MessageRange set, StoreMessageManager to, MailboxSession session) throws MailboxException {
-        IteratorWrapper<MailboxMessage> originalRows = new IteratorWrapper<>(retrieveOriginalRows(set, session));
+        IteratorWrapper<MailboxMessage> originalRows = new IteratorWrapper<>(retrieveOriginalRows(set));
 
-        MoveResult moveResult = to.move(originalRows, session);
+        MoveResult moveResult = to.move(originalRows);
         SortedMap<MessageUid, MessageMetaData> moveUids = collectMetadata(moveResult.getMovedMessages());
 
         ImmutableMap.Builder<MessageUid, MailboxMessage> messagesMap = ImmutableMap.builder();
@@ -770,8 +770,8 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         return moveUids;
     }
 
-    private Iterator<MailboxMessage> retrieveOriginalRows(MessageRange set, MailboxSession session) throws MailboxException {
-        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+    private Iterator<MailboxMessage> retrieveOriginalRows(MessageRange set) throws MailboxException {
+        MessageMapper messageMapper = mapperFactory.getMessageMapper();
         return messageMapper.findInMailbox(mailbox, set, FetchType.Full, -1);
     }
 
@@ -784,16 +784,16 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         return copiedMessages;
     }
 
-    protected long countUnseenMessagesInMailbox(MailboxSession session) throws MailboxException {
-        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+    protected long countUnseenMessagesInMailbox() throws MailboxException {
+        MessageMapper messageMapper = mapperFactory.getMessageMapper();
         return messageMapper.countUnseenMessagesInMailbox(getMailboxEntity());
     }
 
     /**
      * Return the uid of the first unseen message or null of none is found
      */
-    protected MessageUid findFirstUnseenMessageUid(MailboxSession session) throws MailboxException {
-        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+    protected MessageUid findFirstUnseenMessageUid() throws MailboxException {
+        MessageMapper messageMapper = mapperFactory.getMessageMapper();
         return messageMapper.findFirstUnseenMessageUid(getMailboxEntity());
     }
 
@@ -809,12 +809,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
 
     @Override
     public Flags getApplicableFlags(MailboxSession session) throws MailboxException {
-        return mapperFactory.getMessageMapper(session)
+        return mapperFactory.getMessageMapper()
             .getApplicableFlag(mailbox);
     }
 
-    private Iterator<MessageUid> listAllMessageUids(MailboxSession session) throws MailboxException {
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+    private Iterator<MessageUid> listAllMessageUids() throws MailboxException {
+        final MessageMapper messageMapper = mapperFactory.getMessageMapper();
 
         return messageMapper.execute(
             () -> messageMapper.listAllMessageUids(mailbox));

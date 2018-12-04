@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import javax.mail.Flags;
 
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxCounters;
@@ -48,12 +47,10 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
 
     public static final int UNLIMITED = -1;
 
-    protected final MailboxSession mailboxSession;
     private final UidProvider uidProvider;
     private final ModSeqProvider modSeqProvider;
 
-    public AbstractMessageMapper(MailboxSession mailboxSession, UidProvider uidProvider, ModSeqProvider modSeqProvider) {
-        this.mailboxSession = mailboxSession;
+    public AbstractMessageMapper(UidProvider uidProvider, ModSeqProvider modSeqProvider) {
         this.uidProvider = uidProvider;
         this.modSeqProvider = modSeqProvider;
     }

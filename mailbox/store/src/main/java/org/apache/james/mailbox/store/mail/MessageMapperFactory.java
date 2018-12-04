@@ -25,10 +25,14 @@ public interface MessageMapperFactory {
 
     /**
      * Create a {@link MessageMapper} instance of return the one which exists for the {@link MailboxSession} already
-     * 
-     * @param session
+     *
      * @return mapper
      */
-    MessageMapper getMessageMapper(MailboxSession session) throws MailboxException;
-        
+    MessageMapper getMessageMapper();
+
+    @Deprecated
+    default MessageMapper getMessageMapper(MailboxSession session) throws MailboxException {
+        return getMessageMapper();
+    }
+
 }

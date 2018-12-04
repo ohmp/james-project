@@ -51,9 +51,9 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     private final Map<InMemoryId, Map<MessageUid, MailboxMessage>> mailboxByUid;
     private static final int INITIAL_SIZE = 256;
 
-    public InMemoryMessageMapper(MailboxSession session, UidProvider uidProvider,
-            ModSeqProvider modSeqProvider) {
-        super(session, uidProvider, modSeqProvider);
+    public InMemoryMessageMapper(UidProvider uidProvider,
+                                 ModSeqProvider modSeqProvider) {
+        super(uidProvider, modSeqProvider);
         this.mailboxByUid = new ConcurrentHashMap<>(INITIAL_SIZE);
     }
 

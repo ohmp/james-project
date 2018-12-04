@@ -62,7 +62,7 @@ public class JPAMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
     }
 
     @Override
-    public MessageMapper createMessageMapper(MailboxSession session) {
+    public MessageMapper getMessageMapper() {
         return new JPAMessageMapper(uidProvider, modSeqProvider, entityManagerFactory);
     }
 

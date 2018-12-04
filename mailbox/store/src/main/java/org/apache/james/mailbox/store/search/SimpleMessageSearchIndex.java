@@ -104,17 +104,17 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
     }
     
     @Override
-    public Iterator<MessageUid> search(MailboxSession session, final Mailbox mailbox, SearchQuery query) throws MailboxException {
+    public Iterator<MessageUid> search(MailboxSession session, final Mailbox mailbox, SearchQuery query) {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
-        return searchResults(session, ImmutableList.of(mailbox).stream(), query)
+        return searchResults(ImmutableList.of(mailbox).stream(), query)
             .stream()
             .filter(searchResult -> searchResult.getMailboxId().equals(mailbox.getMailboxId()))
             .map(SearchResult::getMessageUid)
             .iterator();
     }
 
-    private List<SearchResult> searchResults(MailboxSession session, Mailbox mailbox, SearchQuery query) throws MailboxException {
-        MessageMapper mapper = messageMapperFactory.getMessageMapper(session);
+    private List<SearchResult> searchResults(Mailbox mailbox, SearchQuery query) throws MailboxException {
+        MessageMapper mapper = messageMapperFactory.getMessageMapper();
 
         final SortedSet<MailboxMessage> hitSet = new TreeSet<>();
 
@@ -148,17 +148,17 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
             .stream()
             .map(Throwing.function(mailboxManager::findMailboxById).sneakyThrow());
 
-        return getAsMessageIds(searchResults(session, filteredMailboxes, searchQuery), limit);
+        return getAsMessageIds(searchResults(filteredMailboxes, searchQuery), limit);
     }
 
-    private List<SearchResult> searchResults(MailboxSession session, Stream<Mailbox> mailboxes, SearchQuery query) throws MailboxException {
-        return mailboxes.flatMap(mailbox -> getSearchResultStream(session, query, mailbox))
+    private List<SearchResult> searchResults(Stream<Mailbox> mailboxes, SearchQuery query) {
+        return mailboxes.flatMap(mailbox -> getSearchResultStream(query, mailbox))
             .collect(Guavate.toImmutableList());
     }
 
-    private Stream<? extends SearchResult> getSearchResultStream(MailboxSession session, SearchQuery query, Mailbox mailbox) {
+    private Stream<? extends SearchResult> getSearchResultStream(SearchQuery query, Mailbox mailbox) {
         try {
-            return searchResults(session, mailbox, query).stream();
+            return searchResults(mailbox, query).stream();
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         }

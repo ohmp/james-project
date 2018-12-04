@@ -20,7 +20,6 @@ package org.apache.james.mailbox.inmemory;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.inmemory.mail.InMemoryAnnotationMapper;
 import org.apache.james.mailbox.inmemory.mail.InMemoryAttachmentMapper;
 import org.apache.james.mailbox.inmemory.mail.InMemoryMailboxMapper;
@@ -33,7 +32,6 @@ import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
 import org.apache.james.mailbox.store.mail.AttachmentMapperFactory;
-import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.UidProvider;
@@ -41,7 +39,7 @@ import org.apache.james.mailbox.store.user.SubscriptionMapper;
 
 public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFactory implements AttachmentMapperFactory {
 
-    private final MailboxMapper mailboxMapper;
+    private final InMemoryMailboxMapper mailboxMapper;
     private final InMemoryMessageMapper messageMapper;
     private final InMemoryMessageIdMapper messageIdMapper;
     private final SubscriptionMapper subscriptionMapper;
@@ -54,7 +52,7 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
         mailboxMapper = new InMemoryMailboxMapper();
         uidProvider = new InMemoryUidProvider();
         modSeqProvider = new InMemoryModSeqProvider();
-        messageMapper = new InMemoryMessageMapper(null, uidProvider, modSeqProvider);
+        messageMapper = new InMemoryMessageMapper(uidProvider, modSeqProvider);
         messageIdMapper = new InMemoryMessageIdMapper(mailboxMapper, messageMapper);
 
         subscriptionMapper = new InMemorySubscriptionMapper();
@@ -63,12 +61,12 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     @Override
-    public MailboxMapper getMailboxMapper() {
+    public InMemoryMailboxMapper getMailboxMapper() {
         return mailboxMapper;
     }
 
     @Override
-    public InMemoryMessageMapper createMessageMapper(MailboxSession session) {
+    public InMemoryMessageMapper getMessageMapper() {
         return messageMapper;
     }
 

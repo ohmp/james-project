@@ -552,7 +552,7 @@ public class StoreMailboxManager implements MailboxManager {
         LOGGER.info("deleteMailbox {}", mailboxPath);
         assertIsOwner(session, mailboxPath);
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
-        MessageMapper messageMapper = mailboxSessionMapperFactory.getMessageMapper(session);
+        MessageMapper messageMapper = mailboxSessionMapperFactory.getMessageMapper();
 
         mailboxMapper.execute((Mapper.Transaction<Mailbox>) () -> {
             Mailbox mailbox = mailboxMapper.findMailboxByPath(mailboxPath);

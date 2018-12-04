@@ -44,7 +44,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxPathLocker.LockAwareExecution;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxACL;
@@ -360,12 +359,11 @@ public class MaildirFolder {
     /**
      * Searches the uid list for a certain uid and returns the according {@link MaildirMessageName}
      * 
-     * @param session
      * @param uid The uid to search for
      * @return The {@link MaildirMessageName} that belongs to the uid
      * @throws IOException If the uidlist file cannot be found or read
      */
-    public MaildirMessageName getMessageNameByUid(final MailboxSession session, final MessageUid uid) throws MailboxException {
+    public MaildirMessageName getMessageNameByUid(final MessageUid uid) throws MailboxException {
        
         return locker.executeWithLock(path, () -> {
             File uidList = uidFile;
@@ -403,13 +401,12 @@ public class MaildirFolder {
      * Reads all uids between the two boundaries from the folder and returns them as
      * a sorted map together with their corresponding {@link MaildirMessageName}s.
      *
-     * @param session
      * @param from The lower uid limit
      * @param to The upper uid limit. <code>-1</code> disables the upper limit
      * @return a {@link Map} whith all uids in the given range and associated {@link MaildirMessageName}s
      * @throws MailboxException if there is a problem with the uid list file
      */
-    public SortedMap<MessageUid, MaildirMessageName> getUidMap(final MailboxSession session, final MessageUid from, final MessageUid to)
+    public SortedMap<MessageUid, MaildirMessageName> getUidMap(final MessageUid from, final MessageUid to)
     throws MailboxException {
         return locker.executeWithLock(path, () -> {
             final SortedMap<MessageUid, MaildirMessageName> uidMap = new TreeMap<>();
@@ -428,7 +425,7 @@ public class MaildirFolder {
                     }
                 } else {
                     // the uidList is up to date
-                    uidMap.putAll(readUidFile(session, from, to));
+                    uidMap.putAll(readUidFile(from, to));
                 }
             } else {
                 // the uidList does not exist
@@ -438,9 +435,9 @@ public class MaildirFolder {
         }, true);
     }
     
-    public SortedMap<MessageUid, MaildirMessageName> getUidMap(MailboxSession session, FilenameFilter filter, MessageUid from, MessageUid to)
+    public SortedMap<MessageUid, MaildirMessageName> getUidMap(FilenameFilter filter, MessageUid from, MessageUid to)
     throws MailboxException {
-        SortedMap<MessageUid, MaildirMessageName> allUids = getUidMap(session, from, to);
+        SortedMap<MessageUid, MaildirMessageName> allUids = getUidMap(from, to);
         SortedMap<MessageUid, MaildirMessageName> filteredUids = new TreeMap<>();
         for (Entry<MessageUid, MaildirMessageName> entry : allUids.entrySet()) {
             if (filter.accept(null, entry.getValue().getFullName())) {
@@ -455,16 +452,14 @@ public class MaildirFolder {
      * and returns as many of them as a sorted map as the limit specifies.
      * 
      * 
-     * @param session
-     * @param filter The file names of all returned items match the filter. 
+     * @param filter The file names of all returned items match the filter.
      * The dir argument to {@link FilenameFilter}.accept(dir, name) will always be null.
      * @param limit The number of items; a limit smaller then 1 disables the limit
      * @return A {@link Map} with all uids and associated {@link MaildirMessageName}s
-     * @throws MailboxException if there is a problem with the uid list file
      */
-    public SortedMap<MessageUid, MaildirMessageName> getUidMap(MailboxSession session, FilenameFilter filter, int limit) throws MailboxException {
+    public SortedMap<MessageUid, MaildirMessageName> getUidMap(FilenameFilter filter, int limit) throws MailboxException {
         MessageUid to = null;
-        SortedMap<MessageUid, MaildirMessageName> allUids = getUidMap(session, MessageUid.MIN_VALUE, to);
+        SortedMap<MessageUid, MaildirMessageName> allUids = getUidMap(MessageUid.MIN_VALUE, to);
         SortedMap<MessageUid, MaildirMessageName> filteredUids = new TreeMap<>();
         int theLimit = limit;
         if (limit < 1) {
@@ -486,11 +481,10 @@ public class MaildirFolder {
     /**
      * Creates a map of recent messages.
      * 
-     * @param session
      * @return A {@link Map} with all uids and associated {@link MaildirMessageName}s of recent messages
      * @throws MailboxException If there is a problem with the uid list file
      */
-    public SortedMap<MessageUid, MaildirMessageName> getRecentMessages(final MailboxSession session) throws MailboxException {
+    public SortedMap<MessageUid, MaildirMessageName> getRecentMessages() throws MailboxException {
         final String[] recentFiles = getNewFolder().list();
         final LinkedList<String> lines = new LinkedList<>();
         final int theLimit = recentFiles.length;
@@ -648,7 +642,7 @@ public class MaildirFolder {
         return uidMap;
     }
 
-    private Map<MessageUid, MaildirMessageName> readUidFile(MailboxSession session, MessageUid from, MessageUid to) throws MailboxException {
+    private Map<MessageUid, MaildirMessageName> readUidFile(MessageUid from, MessageUid to) throws MailboxException {
         final Map<MessageUid, MaildirMessageName> uidMap = new HashMap<>();
 
         File uidList = uidFile;
@@ -763,11 +757,10 @@ public class MaildirFolder {
 
     /**
      * Appends a message to the uidlist and returns its uid.
-     * @param session
      * @param name The name of the message's file
      * @return The uid of the message
      */
-    public MessageUid appendMessage(MailboxSession session, final String name) throws MailboxException {
+    public MessageUid appendMessage(final String name) throws MailboxException {
         return locker.executeWithLock(path, () -> {
             File uidList = uidFile;
             MessageUid uid = null;
@@ -833,12 +826,11 @@ public class MaildirFolder {
 
     /**
      * Updates an entry in the uid list.
-     * @param session
      * @param uid
      * @param messageName
      * @throws MailboxException
      */
-    public void update(MailboxSession session, final MessageUid uid, final String messageName) throws MailboxException {
+    public void update(final MessageUid uid, final String messageName) throws MailboxException {
         locker.executeWithLock(path, (LockAwareExecution<Void>) () -> {
             File uidList = uidFile;
             try (FileReader fileReader = new FileReader(uidList);
@@ -874,7 +866,7 @@ public class MaildirFolder {
      * @return The {@link MaildirMessageName} of the deleted message
      * @throws MailboxException If the file cannot be deleted of there is a problem with the uid list
      */
-    public MaildirMessageName delete(final MailboxSession session, final MessageUid uid) throws MailboxException {        
+    public MaildirMessageName delete(final MessageUid uid) throws MailboxException {
         return locker.executeWithLock(path, () -> {
             File uidList = uidFile;
             MaildirMessageName deletedMessage = null;

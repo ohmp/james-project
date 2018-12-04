@@ -49,8 +49,8 @@ public class MaildirMailboxSessionMapperFactory extends
     }
 
     @Override
-    public MessageMapper createMessageMapper(MailboxSession session) {
-        return new MaildirMessageMapper(session, store);
+    public MessageMapper getMessageMapper() {
+        return new MaildirMessageMapper(store);
     }
 
     @Override
