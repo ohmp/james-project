@@ -30,7 +30,6 @@ import org.apache.james.mailbox.cassandra.CassandraMailboxSessionMapperFactory;
 import org.apache.james.mailbox.cassandra.TestCassandraMailboxSessionMapperFactory;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.MessageIdMapperTest;
@@ -45,7 +44,6 @@ import com.google.common.collect.ImmutableList;
 
 public class CassandraMessageIdMapperTest extends MessageIdMapperTest {
 
-    public static final MockMailboxSession MAILBOX_SESSION = new MockMailboxSession("benwa");
     @ClassRule public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
 
     private static CassandraCluster cassandra;
@@ -87,7 +85,7 @@ public class CassandraMessageIdMapperTest extends MessageIdMapperTest {
 
         saveMessages();
 
-        List<MailboxMessage> messages = mapperFactory.getMessageIdMapper(MAILBOX_SESSION)
+        List<MailboxMessage> messages = mapperFactory.getMessageIdMapper()
             .find(
                 ImmutableList.of(message1.getMessageId(),
                     message2.getMessageId(),

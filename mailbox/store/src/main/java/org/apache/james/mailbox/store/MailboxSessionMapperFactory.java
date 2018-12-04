@@ -45,13 +45,9 @@ public abstract class MailboxSessionMapperFactory implements RequestAware, Mailb
     protected static final String SUBSCRIPTIONMAPPER = "SUBSCRIPTIONMAPPER";
     protected static final String ANNOTATIONMAPPER = "ANNOTATIONMAPPER";
 
+    @Deprecated
     public MessageIdMapper getMessageIdMapper(MailboxSession session) throws MailboxException {
-        MessageIdMapper mapper = (MessageIdMapper) session.getAttributes().get(MESSAGEIDMAPPER);
-        if (mapper == null) {
-            mapper = createMessageIdMapper(session);
-            session.getAttributes().put(MESSAGEIDMAPPER, mapper);
-        }
-        return mapper;
+        return getMessageIdMapper();
     }
 
     public AnnotationMapper getAnnotationMapper(MailboxSession session) throws MailboxException {
@@ -65,7 +61,7 @@ public abstract class MailboxSessionMapperFactory implements RequestAware, Mailb
 
     public abstract AnnotationMapper createAnnotationMapper(MailboxSession session) throws MailboxException;
 
-    public abstract MessageIdMapper createMessageIdMapper(MailboxSession session) throws MailboxException;
+    public abstract MessageIdMapper getMessageIdMapper() throws MailboxException;
 
     public abstract UidProvider getUidProvider();
 

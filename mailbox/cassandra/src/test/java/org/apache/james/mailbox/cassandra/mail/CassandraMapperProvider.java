@@ -69,13 +69,13 @@ public class CassandraMapperProvider implements MapperProvider {
     }
 
     @Override
-    public MessageMapper createMessageMapper() throws MailboxException {
+    public MessageMapper createMessageMapper() {
         return mapperFactory.getMessageMapper();
     }
 
     @Override
     public MessageIdMapper createMessageIdMapper() throws MailboxException {
-        return mapperFactory.getMessageIdMapper(mailboxSession);
+        return mapperFactory.getMessageIdMapper();
     }
 
     private CassandraMailboxSessionMapperFactory createMapperFactory() {

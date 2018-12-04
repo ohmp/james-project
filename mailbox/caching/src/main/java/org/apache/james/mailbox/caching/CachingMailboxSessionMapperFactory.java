@@ -19,8 +19,7 @@ import org.apache.james.mailbox.store.user.SubscriptionMapper;
  * provided by it
  * 
  */
-public class CachingMailboxSessionMapperFactory extends
-        MailboxSessionMapperFactory {
+public class CachingMailboxSessionMapperFactory extends MailboxSessionMapperFactory {
 
     private final MailboxSessionMapperFactory underlying;
     private final MailboxByPathCache mailboxByPathCache;
@@ -64,7 +63,7 @@ public class CachingMailboxSessionMapperFactory extends
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper(MailboxSession session) throws MailboxException {
+    public MessageIdMapper getMessageIdMapper() {
         throw new NotImplementedException("Not implemented");
     }
 }

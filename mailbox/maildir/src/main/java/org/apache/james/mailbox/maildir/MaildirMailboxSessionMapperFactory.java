@@ -33,8 +33,7 @@ import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.user.SubscriptionMapper;
 
-public class MaildirMailboxSessionMapperFactory extends
-        MailboxSessionMapperFactory {
+public class MaildirMailboxSessionMapperFactory extends MailboxSessionMapperFactory {
 
     private final MaildirStore store;
 
@@ -54,7 +53,7 @@ public class MaildirMailboxSessionMapperFactory extends
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper(MailboxSession session) {
+    public MessageIdMapper getMessageIdMapper() {
         throw new NotImplementedException("Not implemented");
     }
 

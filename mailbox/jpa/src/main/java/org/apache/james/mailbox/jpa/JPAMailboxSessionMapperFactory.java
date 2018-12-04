@@ -68,7 +68,7 @@ public class JPAMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper(MailboxSession session) throws MailboxException {
+    public MessageIdMapper getMessageIdMapper() {
         throw new NotImplementedException("not implemented");
     }
 

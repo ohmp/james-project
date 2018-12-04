@@ -98,6 +98,7 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
     private final CassandraMessageMapper cassandraMessageMapper;
     private final CassandraMailboxMapper cassandraMailboxMapper;
     private final CassandraSubscriptionMapper cassandraSubscriptionMapper;
+    private final CassandraMessageIdMapper cassandraMessageIdMapper;
 
     @Inject
     public CassandraMailboxSessionMapperFactory(CassandraUidProvider uidProvider, CassandraModSeqProvider modSeqProvider, Session session,
@@ -158,6 +159,12 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
             cassandraConfiguration);
 
         cassandraSubscriptionMapper = new CassandraSubscriptionMapper(session, cassandraUtils);
+
+
+        cassandraMessageIdMapper = new CassandraMessageIdMapper(getMailboxMapper(), mailboxDAO,
+            createAttachmentMapper(null),
+            imapUidDAO, messageIdDAO, messageDAO, indexTableHandler, modSeqProvider,
+            cassandraConfiguration);
     }
 
 
@@ -167,11 +174,8 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper(MailboxSession mailboxSession) {
-        return new CassandraMessageIdMapper(getMailboxMapper(), mailboxDAO,
-                createAttachmentMapper(mailboxSession),
-                imapUidDAO, messageIdDAO, messageDAO, indexTableHandler, modSeqProvider,
-            cassandraConfiguration);
+    public MessageIdMapper getMessageIdMapper() {
+        return cassandraMessageIdMapper;
     }
 
     @Override

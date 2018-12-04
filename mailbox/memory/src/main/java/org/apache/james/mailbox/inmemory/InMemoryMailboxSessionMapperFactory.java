@@ -71,7 +71,7 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper(MailboxSession session) {
+    public MessageIdMapper getMessageIdMapper() {
         return messageIdMapper;
     }
 

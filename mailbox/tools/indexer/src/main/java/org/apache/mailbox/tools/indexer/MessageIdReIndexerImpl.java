@@ -77,7 +77,7 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
             try {
                 MailboxSession session = mailboxManager.createSystemSession("MessageIdReIndexerImpl");
 
-                return mailboxSessionMapperFactory.getMessageIdMapper(session)
+                return mailboxSessionMapperFactory.getMessageIdMapper()
                     .find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
                     .stream()
                     .map(mailboxMessage -> reIndex(mailboxMessage, session))

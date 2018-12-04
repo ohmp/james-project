@@ -120,7 +120,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     @Override
     public void setFlags(Flags newState, MessageManager.FlagsUpdateMode replace, MessageId messageId, List<MailboxId> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
 
         assertRightsOnMailboxes(mailboxIds, mailboxSession, Right.Write);
 
@@ -132,7 +132,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     @Override
     public Set<MessageId> accessibleMessages(Collection<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
         List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Metadata);
 
         ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.Read);
@@ -145,7 +145,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     @Override
     public List<MessageResult> getMessages(List<MessageId> messageIds, MessageResult.FetchGroup fetchGroup, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
         List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Full);
 
         ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.Read);
@@ -166,7 +166,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     @Override
     public DeleteResult delete(MessageId messageId, List<MailboxId> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
 
         assertRightsOnMailboxes(mailboxIds, mailboxSession, Right.DeleteMessages);
 
@@ -185,7 +185,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     @Override
     public DeleteResult delete(List<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
 
         List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Metadata);
         ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.DeleteMessages);
@@ -245,7 +245,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     public void setInMailboxesNoCheck(MessageId messageId, MailboxId targetMailboxId, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
         List<MailboxMessage> currentMailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full);
 
         MessageMoves messageMoves = MessageMoves.builder()
@@ -259,7 +259,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private List<MailboxMessage> findRelatedMailboxMessages(MessageId messageId, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
 
         return messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
             .stream()
@@ -277,7 +277,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     private void applyMessageMoveNoMailboxChecks(MailboxSession mailboxSession, List<MailboxMessage> currentMailboxMessages, MessageMoves messageMoves) throws MailboxException {
         MailboxMessage mailboxMessage = currentMailboxMessages.stream().findAny().orElseThrow(() -> new MailboxNotFoundException("can't load message"));
 
-        validateQuota(messageMoves, mailboxSession, mailboxMessage);
+        validateQuota(messageMoves, mailboxMessage);
 
         addMessageToMailboxes(mailboxMessage, messageMoves.addedMailboxIds(), mailboxSession);
         removeMessageFromMailboxes(mailboxMessage, messageMoves.removedMailboxIds(), mailboxSession);
@@ -285,7 +285,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private void removeMessageFromMailboxes(MailboxMessage message, Set<MailboxId> mailboxesToRemove, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
         SimpleMessageMetaData eventPayload = new SimpleMessageMetaData(message);
 
@@ -295,7 +295,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         }
     }
 
-    protected MailboxMessage createMessage(Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, List<MessageAttachment> attachments, MailboxId mailboxId) throws MailboxException {
+    protected MailboxMessage createMessage(Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, List<MessageAttachment> attachments, MailboxId mailboxId) {
         return new SimpleMailboxMessage(messageIdFactory.generate(), internalDate, size, bodyStartOctet, content, flags, propertyBuilder, mailboxId, attachments);
     }
     
@@ -306,7 +306,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         }
     }
 
-    private void validateQuota(MessageMoves messageMoves, MailboxSession mailboxSession, MailboxMessage mailboxMessage) throws MailboxException {
+    private void validateQuota(MessageMoves messageMoves, MailboxMessage mailboxMessage) throws MailboxException {
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
 
         Map<QuotaRoot, Integer> messageCountByQuotaRoot = buildMapQuotaRoot(messageMoves, mailboxMapper);
@@ -343,7 +343,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private void addMessageToMailboxes(MailboxMessage mailboxMessage, Set<MailboxId> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
+        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper();
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
 
         for (MailboxId mailboxId : mailboxIds) {
