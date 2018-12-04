@@ -76,18 +76,18 @@ public class LazyMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
-        index.add(session, mailbox, message);
+    public void add(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+        index.add(mailbox, message);
     }
 
     @Override
-    public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
-        index.delete(session, mailbox, expungedUids);
+    public void delete(Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
+        index.delete(mailbox, expungedUids);
     }
 
     @Override
-    public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
-        index.deleteAll(session, mailbox);
+    public void deleteAll(Mailbox mailbox) throws MailboxException {
+        index.deleteAll(mailbox);
     }
 
     /**
@@ -113,7 +113,7 @@ public class LazyMessageSearchIndex extends ListeningMessageSearchIndex {
                 while (messages.hasNext()) {
                     final MailboxMessage message = messages.next();
                     try {
-                        add(session, mailbox, message);
+                        add(mailbox, message);
                     } catch (MailboxException e) {
                         LOGGER.error("Unable to index message {} in mailbox {}", message.getUid(), mailbox.getName(), e);
                     }
@@ -125,8 +125,8 @@ public class LazyMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
-        index.update(session, mailbox, updatedFlagsList);
+    public void update(Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
+        index.update(mailbox, updatedFlagsList);
     }
     
 

@@ -26,7 +26,6 @@ import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -222,8 +221,8 @@ class ReindexingRoutesTest {
                 ArgumentCaptor<Mailbox> mailboxCaptor1 = ArgumentCaptor.forClass(Mailbox.class);
                 ArgumentCaptor<Mailbox> mailboxCaptor2 = ArgumentCaptor.forClass(Mailbox.class);
 
-                verify(searchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor1.capture());
-                verify(searchIndex).add(any(MailboxSession.class), mailboxCaptor2.capture(), messageCaptor.capture());
+                verify(searchIndex).deleteAll(mailboxCaptor1.capture());
+                verify(searchIndex).add(mailboxCaptor2.capture(), messageCaptor.capture());
                 verifyNoMoreInteractions(searchIndex);
 
                 assertThat(mailboxCaptor1.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
@@ -356,8 +355,8 @@ class ReindexingRoutesTest {
                 ArgumentCaptor<Mailbox> mailboxCaptor1 = ArgumentCaptor.forClass(Mailbox.class);
                 ArgumentCaptor<Mailbox> mailboxCaptor2 = ArgumentCaptor.forClass(Mailbox.class);
 
-                verify(searchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor1.capture());
-                verify(searchIndex).add(any(MailboxSession.class), mailboxCaptor2.capture(), messageCaptor.capture());
+                verify(searchIndex).deleteAll(mailboxCaptor1.capture());
+                verify(searchIndex).add(mailboxCaptor2.capture(), messageCaptor.capture());
                 verifyNoMoreInteractions(searchIndex);
 
                 assertThat(mailboxCaptor1.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
@@ -510,8 +509,8 @@ class ReindexingRoutesTest {
                 ArgumentCaptor<Mailbox> mailboxCaptor1 = ArgumentCaptor.forClass(Mailbox.class);
                 ArgumentCaptor<Mailbox> mailboxCaptor2 = ArgumentCaptor.forClass(Mailbox.class);
 
-                verify(searchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor1.capture());
-                verify(searchIndex).add(any(MailboxSession.class), mailboxCaptor2.capture(), messageCaptor.capture());
+                verify(searchIndex).deleteAll(mailboxCaptor1.capture());
+                verify(searchIndex).add(mailboxCaptor2.capture(), messageCaptor.capture());
                 verifyNoMoreInteractions(searchIndex);
 
                 assertThat(mailboxCaptor1.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
@@ -674,7 +673,7 @@ class ReindexingRoutesTest {
                 ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
                 ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
-                verify(searchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
+                verify(searchIndex).add(mailboxCaptor.capture(), messageCaptor.capture());
                 verifyNoMoreInteractions(searchIndex);
 
                 assertThat(mailboxCaptor.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(mailboxId));
@@ -801,7 +800,7 @@ class ReindexingRoutesTest {
                 ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
                 ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
-                verify(searchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
+                verify(searchIndex).add(mailboxCaptor.capture(), messageCaptor.capture());
                 verifyNoMoreInteractions(searchIndex);
 
                 assertThat(mailboxCaptor.getValue()).matches(mailbox -> mailbox.getMailboxId().equals(composedMessageId.getMailboxId()));

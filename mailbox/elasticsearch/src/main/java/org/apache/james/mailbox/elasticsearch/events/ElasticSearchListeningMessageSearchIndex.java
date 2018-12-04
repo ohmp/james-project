@@ -32,6 +32,7 @@ import javax.inject.Named;
 
 import org.apache.james.backends.es.ElasticSearchIndexer;
 import org.apache.james.backends.es.UpdatedRepresentation;
+import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxManager.MessageCapabilities;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.MailboxSession;
@@ -45,7 +46,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.UpdatedFlags;
-import org.apache.james.mailbox.store.mail.MessageMapperFactory;
+import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
@@ -67,9 +68,9 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     private final MessageToElasticSearchJson messageToElasticSearchJson;
 
     @Inject
-    public ElasticSearchListeningMessageSearchIndex(MessageMapperFactory factory,
-            @Named(MailboxElasticSearchConstants.InjectionNames.MAILBOX) ElasticSearchIndexer indexer,
-            ElasticSearchSearcher searcher, MessageToElasticSearchJson messageToElasticSearchJson) {
+    public ElasticSearchListeningMessageSearchIndex(MailboxSessionMapperFactory factory,
+                                                    @Named(MailboxElasticSearchConstants.InjectionNames.MAILBOX) ElasticSearchIndexer indexer,
+                                                    ElasticSearchSearcher searcher, MessageToElasticSearchJson messageToElasticSearchJson) {
         super(factory);
         this.elasticSearchIndexer = indexer;
         this.messageToElasticSearchJson = messageToElasticSearchJson;
@@ -121,28 +122,31 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     }
 
     @Override
-    public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
+    public void add(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+        User user = User.fromUsername(
+            getFactory().getMailboxMapper().findMailboxById(message.getMailboxId()).generateAssociatedPath().getUser());
         try {
+
             LOGGER.info("Indexing mailbox {}-{} of user {} on message {}",
                     mailbox.getName(),
                     mailbox.getMailboxId(),
-                    session.getUser().getUserName(),
+                    user,
                     message.getUid());
-            elasticSearchIndexer.index(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJson(message, ImmutableList.of(session.getUser())));
+            elasticSearchIndexer.index(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJson(message, ImmutableList.of(user)));
         } catch (Exception e) {
             try {
                 LOGGER.warn("Indexing mailbox {}-{} of user {} on message {} without attachments ",
                         mailbox.getName(),
                         mailbox.getMailboxId().serialize(),
-                        session.getUser().getUserName(),
+                        user,
                         message.getUid(),
                         e);
-                elasticSearchIndexer.index(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJsonWithoutAttachment(message, ImmutableList.of(session.getUser())));
+                elasticSearchIndexer.index(indexIdFor(mailbox, message.getUid()), messageToElasticSearchJson.convertToJsonWithoutAttachment(message, ImmutableList.of(user)));
             } catch (JsonProcessingException e1) {
                 LOGGER.error("Error when indexing mailbox {}-{} of user {} on message {} without its attachment",
                         mailbox.getName(),
                         mailbox.getMailboxId().serialize(),
-                        session.getUser().getUserName(),
+                        user,
                         message.getUid(),
                         e1);
             }
@@ -150,7 +154,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     }
     
     @Override
-    public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
+    public void delete(Mailbox mailbox, List<MessageUid> expungedUids) {
         try {
             elasticSearchIndexer.delete(expungedUids.stream()
                 .map(uid ->  indexIdFor(mailbox, uid))
@@ -163,7 +167,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     }
 
     @Override
-    public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public void deleteAll(Mailbox mailbox) {
         try {
             elasticSearchIndexer.deleteAllMatchingQuery(
                 termQuery(
@@ -175,7 +179,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     }
 
     @Override
-    public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
+    public void update(Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) {
         try {
             elasticSearchIndexer.update(updatedFlagsList.stream()
                 .map(updatedFlags -> createUpdatedDocumentPartFromUpdatedFlags(mailbox, updatedFlags))

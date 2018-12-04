@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,17 +33,17 @@ import javax.mail.Flags;
 
 import org.apache.james.backends.es.ElasticSearchIndexer;
 import org.apache.james.backends.es.UpdatedRepresentation;
-import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.MailboxSession.User;
+import org.apache.james.core.User;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
-import org.apache.james.mailbox.mock.MockMailboxSession;
-import org.apache.james.mailbox.model.TestId;
+import org.apache.james.mailbox.inmemory.InMemoryId;
+import org.apache.james.mailbox.inmemory.InMemoryMailboxSessionMapperFactory;
+import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.UpdatedFlags;
-import org.apache.james.mailbox.store.mail.MessageMapperFactory;
-import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -59,48 +58,45 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class ElasticSearchListeningMessageSearchIndexTest {
-    
-
-    public static final long MODSEQ = 18L;
-    public static final MessageUid MESSAGE_UID = MessageUid.of(1);
-    public static final TestId MAILBOX_ID = TestId.of(12);
-    public static final String ELASTIC_SEARCH_ID = "12:1";
-    public static final String EXPECTED_JSON_CONTENT = "json content";
-    public static final String USERNAME = "username";
+    private static final long MODSEQ = 18L;
+    private static final MessageUid MESSAGE_UID = MessageUid.of(1);
+    private static final InMemoryId MAILBOX_ID = InMemoryId.of(12);
+    private static final String ELASTIC_SEARCH_ID = "12:1";
+    private static final String EXPECTED_JSON_CONTENT = "json content";
+    private static final String USERNAME = "username";
+    public static final int UID_VALIDITY = 42;
 
     private ElasticSearchIndexer elasticSearchIndexer;
     private MessageToElasticSearchJson messageToElasticSearchJson;
     private ElasticSearchListeningMessageSearchIndex testee;
-    private MailboxSession session;
     private List<User> users;
-    
-    @Before
-    public void setup() throws JsonProcessingException {
+    private SimpleMailbox mailbox;
 
-        MessageMapperFactory mapperFactory = mock(MessageMapperFactory.class);
+    @Before
+    public void setup() throws Exception {
+        mailbox = new SimpleMailbox(MailboxPath.forUser(USERNAME, "name"), UID_VALIDITY, MAILBOX_ID);
+        MailboxSessionMapperFactory mapperFactory = new InMemoryMailboxSessionMapperFactory();
+        mapperFactory.getMailboxMapper().save(mailbox);
+
         messageToElasticSearchJson = mock(MessageToElasticSearchJson.class);
         ElasticSearchSearcher elasticSearchSearcher = mock(ElasticSearchSearcher.class);
 
         elasticSearchIndexer = mock(ElasticSearchIndexer.class);
         
         testee = new ElasticSearchListeningMessageSearchIndex(mapperFactory, elasticSearchIndexer, elasticSearchSearcher, messageToElasticSearchJson);
-        session = new MockMailboxSession(USERNAME);
-        users = ImmutableList.of(session.getUser());
+        users = ImmutableList.of(User.fromUsername(USERNAME));
     }
     
     @Test
     public void addShouldIndex() throws Exception {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
         MailboxMessage message = mockedMessage(MESSAGE_UID);
         
         when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
             .thenReturn(EXPECTED_JSON_CONTENT);
         
         //When
-        testee.add(session, mailbox, message);
+        testee.add(mailbox, message);
         
         //Then
         verify(elasticSearchIndexer).index(eq(ELASTIC_SEARCH_ID), eq(EXPECTED_JSON_CONTENT));
@@ -109,10 +105,6 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     @Test
     public void addShouldIndexEmailBodyWhenNotIndexableAttachment() throws Exception {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
-        
         MailboxMessage message = mockedMessage(MESSAGE_UID);
         
         when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
@@ -122,25 +114,23 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .thenReturn(EXPECTED_JSON_CONTENT);
         
         //When
-        testee.add(session, mailbox, message);
+        testee.add(mailbox, message);
         
         //Then
         verify(elasticSearchIndexer).index(eq(ELASTIC_SEARCH_ID), eq(EXPECTED_JSON_CONTENT));
     }
 
-    private MailboxMessage mockedMessage(MessageUid messageId) throws IOException {
+    private MailboxMessage mockedMessage(MessageUid messageId) {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.getUid())
             .thenReturn(messageId);
+        when(message.getMailboxId()).thenReturn(MAILBOX_ID);
         return message;
     }
 
     @Test
     public void addShouldNotPropagateExceptionWhenExceptionOccurs() throws Exception {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
         MailboxMessage message = mockedMessage(MESSAGE_UID);
         
         when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
@@ -151,7 +141,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .thenThrow(new JsonGenerationException("expected error", jsonGenerator));
         
         //When
-        testee.add(session, mailbox, message);
+        testee.add(mailbox, message);
         
         //Then
         //No exception
@@ -159,18 +149,14 @@ public class ElasticSearchListeningMessageSearchIndexTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void deleteShouldWork() throws Exception {
+    public void deleteShouldWork() {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
-
         BulkResponse expectedBulkResponse = mock(BulkResponse.class);
         when(elasticSearchIndexer.delete(any(List.class)))
             .thenReturn(Optional.of(expectedBulkResponse));
 
         //When
-        testee.delete(session, mailbox, Lists.newArrayList(MESSAGE_UID));
+        testee.delete(mailbox, Lists.newArrayList(MESSAGE_UID));
 
         //Then
         verify(elasticSearchIndexer).delete(eq(Lists.newArrayList(ELASTIC_SEARCH_ID)));
@@ -178,22 +164,19 @@ public class ElasticSearchListeningMessageSearchIndexTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void deleteShouldWorkWhenMultipleMessageIds() throws Exception {
+    public void deleteShouldWorkWhenMultipleMessageIds() {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
         MessageUid messageId2 = MessageUid.of(2);
         MessageUid messageId3 = MessageUid.of(3);
         MessageUid messageId4 = MessageUid.of(4);
         MessageUid messageId5 = MessageUid.of(5);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
 
         BulkResponse expectedBulkResponse = mock(BulkResponse.class);
         when(elasticSearchIndexer.delete(any(List.class)))
             .thenReturn(Optional.of(expectedBulkResponse));
         
         //When
-        testee.delete(session, mailbox, Lists.newArrayList(MESSAGE_UID, messageId2, messageId3, messageId4, messageId5));
+        testee.delete(mailbox, Lists.newArrayList(MESSAGE_UID, messageId2, messageId3, messageId4, messageId5));
         
         //Then
         verify(elasticSearchIndexer).delete(eq(Lists.newArrayList(ELASTIC_SEARCH_ID, "12:2", "12:3", "12:4", "12:5")));
@@ -201,17 +184,13 @@ public class ElasticSearchListeningMessageSearchIndexTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void deleteShouldNotPropagateExceptionWhenExceptionOccurs() throws Exception {
+    public void deleteShouldNotPropagateExceptionWhenExceptionOccurs() {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
-        
         when(elasticSearchIndexer.delete(any(List.class)))
             .thenThrow(new ElasticsearchException(""));
         
         //When
-        testee.delete(session, mailbox, Lists.newArrayList(MESSAGE_UID));
+        testee.delete(mailbox, Lists.newArrayList(MESSAGE_UID));
         
         //Then
         //No exception
@@ -220,7 +199,6 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     @Test
     public void updateShouldWork() throws Exception {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
         Flags flags = new Flags();
 
         UpdatedFlags updatedFlags = UpdatedFlags.builder()
@@ -230,14 +208,11 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .newFlags(flags)
             .build();
 
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
-
         when(messageToElasticSearchJson.getUpdatedJsonMessagePart(any(Flags.class), any(Long.class)))
             .thenReturn("json updated content");
         
         //When
-        testee.update(session, mailbox, Lists.newArrayList(updatedFlags));
+        testee.update(mailbox, Lists.newArrayList(updatedFlags));
         
         //Then
         ImmutableList<UpdatedRepresentation> expectedUpdatedRepresentations = ImmutableList.of(new UpdatedRepresentation(ELASTIC_SEARCH_ID, "json updated content"));
@@ -245,9 +220,8 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     }
 
     @Test
-    public void updateShouldNotPropagateExceptionWhenExceptionOccurs() throws Exception {
+    public void updateShouldNotPropagateExceptionWhenExceptionOccurs() {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
         Flags flags = new Flags();
         UpdatedFlags updatedFlags = UpdatedFlags.builder()
             .uid(MESSAGE_UID)
@@ -255,29 +229,22 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .oldFlags(flags)
             .newFlags(flags)
             .build();
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
 
         ImmutableList<UpdatedRepresentation> expectedUpdatedRepresentations = ImmutableList.of(new UpdatedRepresentation(ELASTIC_SEARCH_ID, "json updated content"));
         when(elasticSearchIndexer.update(expectedUpdatedRepresentations))
             .thenThrow(new ElasticsearchException(""));
         
         //When
-        testee.update(session, mailbox, Lists.newArrayList(updatedFlags));
+        testee.update(mailbox, Lists.newArrayList(updatedFlags));
         
         //Then
         //No exception
     }
 
     @Test
-    public void deleteAllShouldWork() throws Exception {
-        //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
-
+    public void deleteAllShouldWork() {
         //When
-        testee.deleteAll(session, mailbox);
+        testee.deleteAll(mailbox);
         
         //Then
         QueryBuilder expectedQueryBuilder = QueryBuilders.termQuery("mailboxId", "12");
@@ -285,17 +252,13 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     }
 
     @Test
-    public void deleteAllShouldNotPropagateExceptionWhenExceptionOccurs() throws Exception {
+    public void deleteAllShouldNotPropagateExceptionWhenExceptionOccurs() {
         //Given
-        Mailbox mailbox = mock(Mailbox.class);
-        when(mailbox.getMailboxId())
-            .thenReturn(MAILBOX_ID);
-   
         doThrow(RuntimeException.class)
             .when(elasticSearchIndexer).deleteAllMatchingQuery(QueryBuilders.termQuery("mailboxId", "12"));
 
         //When
-        testee.deleteAll(session, mailbox);
+        testee.deleteAll(mailbox);
         
         //Then
         //No Exception

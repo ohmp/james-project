@@ -28,6 +28,7 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
+import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
@@ -46,9 +47,9 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
     private static final Logger LOGGER = LoggerFactory.getLogger(ListeningMessageSearchIndex.class);
 
     public static final int UNLIMITED = -1;
-    private final MessageMapperFactory factory;
+    private final MailboxSessionMapperFactory factory;
 
-    public ListeningMessageSearchIndex(MessageMapperFactory factory) {
+    public ListeningMessageSearchIndex(MailboxSessionMapperFactory factory) {
         this.factory = factory;
     }
 
@@ -57,10 +58,9 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
      * 
      * @return factory
      */
-    protected MessageMapperFactory getFactory() {
+    protected MailboxSessionMapperFactory getFactory() {
         return factory;
     }
-    
     
     /**
      * Process the {@link org.apache.james.mailbox.Event} and update the index if
@@ -79,13 +79,13 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
                     for (final MessageUid next : added.getUids()) {
                         Optional<MailboxMessage> mailboxMessage = retrieveMailboxMessage(added, mailbox, next);
                         if (mailboxMessage.isPresent()) {
-                            addMessage(session, mailbox, mailboxMessage.get());
+                            addMessage(mailbox, mailboxMessage.get());
                         }
                     }
                 } else if (event instanceof EventFactory.ExpungedImpl) {
                     EventFactory.ExpungedImpl expunged = (EventFactory.ExpungedImpl) event;
                     try {
-                        delete(session, expunged.getMailbox(), expunged.getUids());
+                        delete(expunged.getMailbox(), expunged.getUids());
                     } catch (MailboxException e) {
                         LOGGER.error("Unable to deleted messages {} from index for mailbox {}", expunged.getUids(), expunged.getMailbox(), e);
                     }
@@ -94,13 +94,13 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
                     final Mailbox mailbox = flagsUpdated.getMailbox();
 
                     try {
-                        update(session, mailbox, flagsUpdated.getUpdatedFlags());
+                        update(mailbox, flagsUpdated.getUpdatedFlags());
                     } catch (MailboxException e) {
                         LOGGER.error("Unable to update flags in index for mailbox {}", mailbox, e);
                     }
                 }
             } else if (event instanceof EventFactory.MailboxDeletionImpl) {
-                deleteAll(session, ((EventFactory.MailboxDeletionImpl) event).getMailbox());
+                deleteAll(((EventFactory.MailboxDeletionImpl) event).getMailbox());
             }
         } catch (MailboxException e) {
             LOGGER.error("Unable to update index", e);
@@ -123,9 +123,9 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
         }
     }
 
-    private void addMessage(final MailboxSession session, final Mailbox mailbox, MailboxMessage message) {
+    private void addMessage(Mailbox mailbox, MailboxMessage message) {
         try {
-            add(session, mailbox, message);
+            add(mailbox, message);
         } catch (MailboxException e) {
             LOGGER.error("Unable to index message {} for mailbox {}", message.getUid(), mailbox, e);
         }
@@ -139,7 +139,12 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
      * @param message The added message
      * @throws MailboxException
      */
-    public abstract void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException;
+    @Deprecated
+    public void add(MailboxSession session, Mailbox mailbox, MailboxMessage message) throws MailboxException {
+        add(mailbox, message);
+    }
+
+    public abstract void add(Mailbox mailbox, MailboxMessage message) throws MailboxException;
 
     /**
      * Delete the concerned UIDs for the given {@link Mailbox} from the index
@@ -149,24 +154,37 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
      * @param expungedUids UIDS to be deleted
      * @throws MailboxException
      */
-    public abstract void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException;
+    @Deprecated
+    public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
+        delete(mailbox, expungedUids);
+    }
+
+    public abstract void delete(Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException;
 
     /**
      * Delete the messages contained in the given {@link Mailbox} from the index
      *
-     * @param session The mailbox session performing the expunge
      * @param mailbox mailbox on which the expunge was performed
      * @throws MailboxException
      */
-    public abstract void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException;
-    
+    public abstract void deleteAll(Mailbox mailbox) throws MailboxException;
+
+    @Deprecated
+    public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        deleteAll(mailbox);
+    }
+
     /**
      * Update the messages concerned by the updated flags list for the given {@link Mailbox}
      *
-     * @param session session that performed the update
      * @param mailbox mailbox containing the updated messages
      * @param updatedFlagsList list of flags that were updated
      * @throws MailboxException
      */
-    public abstract void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException;
+    public abstract void update(Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException;
+
+    @Deprecated
+    public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
+        update(mailbox, updatedFlagsList);
+    }
 }

@@ -25,8 +25,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.mail.Flags;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;

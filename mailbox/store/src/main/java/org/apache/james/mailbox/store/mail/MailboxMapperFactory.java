@@ -28,7 +28,7 @@ public interface MailboxMapperFactory {
      *
      * @return mapper
      */
-    MailboxMapper getMailboxMapper() throws MailboxException;
+    MailboxMapper getMailboxMapper();
 
     @Deprecated
     default MailboxMapper getMailboxMapper(MailboxSession session) throws MailboxException {

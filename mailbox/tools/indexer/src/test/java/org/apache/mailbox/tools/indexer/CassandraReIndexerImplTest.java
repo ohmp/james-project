@@ -92,9 +92,9 @@ public class CassandraReIndexerImplTest {
         reIndexer.reIndex(INBOX).run();
 
         // The indexer is called for each message
-        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), any(Mailbox.class));
+        verify(messageSearchIndex).deleteAll(any(Mailbox.class));
         verify(messageSearchIndex, times(threadCount * operationCount))
-            .add(any(MailboxSession.class), any(Mailbox.class),any(MailboxMessage.class));
+            .add(any(Mailbox.class),any(MailboxMessage.class));
         verifyNoMoreInteractions(messageSearchIndex);
     }
 }

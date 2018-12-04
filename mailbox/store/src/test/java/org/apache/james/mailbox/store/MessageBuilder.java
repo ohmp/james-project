@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
@@ -32,7 +33,7 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
 public class MessageBuilder {
     
-    public TestId mailboxId = TestId.of(113);
+    public MailboxId mailboxId = TestId.of(113);
     public MessageUid uid = MessageUid.of(776);
     public Date internalDate = new Date();
     public int size = 8867;

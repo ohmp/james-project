@@ -24,7 +24,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.indexer.MessageIdReIndexer;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -58,14 +57,12 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
             }
         }
 
-        private final MailboxManager mailboxManager;
         private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
         private final ListeningMessageSearchIndex index;
         private final MessageId messageId;
         private final AdditionalInformation additionalInformation;
 
-        MessageIdReIndexingTask(MailboxManager mailboxManager, MailboxSessionMapperFactory mailboxSessionMapperFactory, ListeningMessageSearchIndex index, MessageId messageId) {
-            this.mailboxManager = mailboxManager;
+        MessageIdReIndexingTask(MailboxSessionMapperFactory mailboxSessionMapperFactory, ListeningMessageSearchIndex index, MessageId messageId) {
             this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
             this.index = index;
             this.messageId = messageId;
@@ -75,12 +72,10 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
         @Override
         public Result run() {
             try {
-                MailboxSession session = mailboxManager.createSystemSession("MessageIdReIndexerImpl");
-
                 return mailboxSessionMapperFactory.getMessageIdMapper()
                     .find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
                     .stream()
-                    .map(mailboxMessage -> reIndex(mailboxMessage, session))
+                    .map(this::reIndex)
                     .reduce(Task::combine)
                     .orElse(Result.COMPLETED);
             } catch (Exception e) {
@@ -89,11 +84,11 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
             }
         }
 
-        public Result reIndex(MailboxMessage mailboxMessage, MailboxSession session) {
+        public Result reIndex(MailboxMessage mailboxMessage) {
             try {
                 MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
                 Mailbox mailbox = mailboxMapper.findMailboxById(mailboxMessage.getMailboxId());
-                index.add(session, mailbox, mailboxMessage);
+                index.add(mailbox, mailboxMessage);
                 return Result.COMPLETED;
             } catch (Exception e) {
                 LOGGER.warn("Failed to re-index {} in {}", messageId, mailboxMessage.getMailboxId(), e);
@@ -125,6 +120,6 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
 
     @Override
     public Task reIndex(MessageId messageId) {
-        return new MessageIdReIndexingTask(mailboxManager, mailboxSessionMapperFactory, index, messageId);
+        return new MessageIdReIndexingTask(mailboxSessionMapperFactory, index, messageId);
     }
 }

@@ -66,7 +66,7 @@ import org.apache.james.mailbox.model.SearchQuery.NumericOperator;
 import org.apache.james.mailbox.model.SearchQuery.UidCriterion;
 import org.apache.james.mailbox.model.SearchQuery.UidRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
-import org.apache.james.mailbox.store.mail.MessageMapperFactory;
+import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
@@ -363,7 +363,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
 
     @Inject
     public LuceneMessageSearchIndex(
-        MessageMapperFactory factory,
+        MailboxSessionMapperFactory factory,
         MailboxId.Factory mailboxIdFactory,
         Directory directory,
         MessageId.Factory messageIdFactory
@@ -372,7 +372,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     public LuceneMessageSearchIndex(
-            MessageMapperFactory factory,
+            MailboxSessionMapperFactory factory,
             MailboxId.Factory mailboxIdFactory,
             Directory directory,
             boolean dropIndexOnStart,
@@ -540,10 +540,13 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
      * @param membership
      * @return document
      */
-    private Document createMessageDocument(final MailboxSession session, final MailboxMessage membership) throws MailboxException {
+    private Document createMessageDocument(MailboxMessage membership) throws MailboxException {
         final Document doc = new Document();
+
+        String user = getFactory().getMailboxMapper().findMailboxById(membership.getMailboxId()).generateAssociatedPath().getUser();
+
         // TODO: Better handling
-        doc.add(new Field(USERS, session.getUser().getUserName().toUpperCase(Locale.US), Store.YES, Index.NOT_ANALYZED));
+        doc.add(new Field(USERS, user.toUpperCase(Locale.US), Store.YES, Index.NOT_ANALYZED));
         doc.add(new Field(MAILBOX_ID_FIELD, membership.getMailboxId().serialize().toUpperCase(Locale.US), Store.YES, Index.NOT_ANALYZED));
         doc.add(new NumericField(UID_FIELD,Store.YES, true).setLongValue(membership.getUid().asLong()));
         doc.add(new Field(HAS_ATTACHMENT_FIELD, Boolean.toString(hasAttachment(membership)), Store.YES, Index.NOT_ANALYZED));
@@ -1231,8 +1234,8 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public void add(MailboxSession session, Mailbox mailbox, MailboxMessage membership) throws MailboxException {
-        Document doc = createMessageDocument(session, membership);
+    public void add(Mailbox mailbox, MailboxMessage membership) throws MailboxException {
+        Document doc = createMessageDocument(membership);
         Document flagsDoc = createFlagsDocument(membership);
 
         try {
@@ -1244,7 +1247,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
+    public void update(Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws MailboxException {
         for (UpdatedFlags updatedFlags : updatedFlagsList) {
             update(mailbox, updatedFlags.getUid(), updatedFlags.getNewFlags());
         }
@@ -1330,7 +1333,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public void delete(MailboxSession session, Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
+    public void delete(Mailbox mailbox, List<MessageUid> expungedUids) throws MailboxException {
         Collection<MessageRange> messageRanges = MessageRange.toRanges(expungedUids);
         for (MessageRange messageRange : messageRanges) {
             delete(mailbox, messageRange);
@@ -1338,7 +1341,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public void deleteAll(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public void deleteAll(Mailbox mailbox) throws MailboxException {
         delete(mailbox, MessageRange.all());
     }
 

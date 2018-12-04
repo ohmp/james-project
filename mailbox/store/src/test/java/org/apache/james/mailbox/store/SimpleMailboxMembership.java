@@ -38,9 +38,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
 
@@ -51,7 +51,7 @@ public class SimpleMailboxMembership implements MailboxMessage {
     
     private static final String TOSTRING_SEPARATOR = " ";
     
-    public TestId mailboxId;
+    public MailboxId mailboxId;
     public MessageUid uid;
     public Date internalDate;
     public boolean recent = false;
@@ -63,8 +63,8 @@ public class SimpleMailboxMembership implements MailboxMessage {
 
     private MessageId messageId;
 
-    public SimpleMailboxMembership(MessageId messageId, TestId mailboxId, MessageUid uid, long modSeq, Date internalDate, int size, 
-            Flags flags, byte[] body, Map<String, String> headers) throws Exception {
+    public SimpleMailboxMembership(MessageId messageId, MailboxId mailboxId, MessageUid uid, long modSeq, Date internalDate, int size,
+                                   Flags flags, byte[] body, Map<String, String> headers) throws Exception {
         super();
         this.messageId = messageId;
         this.mailboxId = mailboxId;
@@ -97,7 +97,7 @@ public class SimpleMailboxMembership implements MailboxMessage {
     }
 
     @Override
-    public TestId getMailboxId() {
+    public MailboxId getMailboxId() {
         return mailboxId;
     }
     
@@ -182,14 +182,14 @@ public class SimpleMailboxMembership implements MailboxMessage {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(mailboxId.id, uid);
+        return Objects.hashCode(mailboxId, uid);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof SimpleMailboxMembership) {
             SimpleMailboxMembership other = (SimpleMailboxMembership) obj;
-            return Objects.equal(this.mailboxId.id, other.mailboxId.id)
+            return Objects.equal(this.mailboxId, other.mailboxId)
                     && Objects.equal(this.uid, other.uid);
         }
         return false;

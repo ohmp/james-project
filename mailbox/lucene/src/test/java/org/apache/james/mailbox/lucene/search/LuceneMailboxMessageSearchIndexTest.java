@@ -34,9 +34,11 @@ import javax.mail.Flags.Flag;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
+import org.apache.james.mailbox.inmemory.InMemoryId;
+import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
+import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.mock.MockMailboxSession;
-import org.apache.james.mailbox.model.MailboxACL;
-import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SearchQuery;
@@ -49,7 +51,7 @@ import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.mailbox.store.MessageBuilder;
 import org.apache.james.mailbox.store.SimpleMailboxMembership;
-import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,13 +59,13 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 public class LuceneMailboxMessageSearchIndexTest {
-
-    public static final long LIMIT = 100L;
+    private static final long LIMIT = 100L;
+    private static final int UID_VALIDITY = 42;
     private LuceneMessageSearchIndex index;
     
-    private SimpleMailbox mailbox = new SimpleMailbox(0);
-    private SimpleMailbox mailbox2 = new SimpleMailbox(1);
-    private SimpleMailbox mailbox3 = new SimpleMailbox(2);
+    private SimpleMailbox mailbox = new SimpleMailbox(MailboxPath.forUser("user", "0"), UID_VALIDITY, InMemoryId.of(0));
+    private SimpleMailbox mailbox2 = new SimpleMailbox(MailboxPath.forUser("user", "1"), UID_VALIDITY, InMemoryId.of(1));
+    private SimpleMailbox mailbox3 = new SimpleMailbox(MailboxPath.forUser("user", "2"), UID_VALIDITY, InMemoryId.of(2));
     private MailboxSession session;
 
     private static final String FROM_ADDRESS = "Harry <harry@example.org>";
@@ -97,12 +99,20 @@ public class LuceneMailboxMessageSearchIndexTest {
     public void setUp() throws Exception {
         session = new MockMailboxSession("username");
         TestMessageId.Factory factory = new TestMessageId.Factory();
+
+        InMemoryMailboxManager mailboxManager = new InMemoryIntegrationResources()
+            .createMailboxManager(new SimpleGroupMembershipResolver());
+
+        mailboxManager.getMapperFactory().getMailboxMapper().save(mailbox);
+        mailboxManager.getMapperFactory().getMailboxMapper().save(mailbox2);
+        mailboxManager.getMapperFactory().getMailboxMapper().save(mailbox3);
+
         id1 = factory.generate();
         id2 = factory.generate();
         id3 = factory.generate();
         id4 = factory.generate();
         id5 = factory.generate();
-        index = new LuceneMessageSearchIndex(null, new TestId.Factory(), new RAMDirectory(), true, useLenient(), factory);
+        index = new LuceneMessageSearchIndex(mailboxManager.getMapperFactory(), new TestId.Factory(), new RAMDirectory(), true, useLenient(), factory);
         index.setEnableSuffixMatch(true);
         Map<String, String> headersSubject = new HashMap<>();
         headersSubject.put("Subject", "test (fwd)");
@@ -124,23 +134,23 @@ public class LuceneMailboxMessageSearchIndexTest {
         
         uid1 = MessageUid.of(1);
         SimpleMailboxMembership m = new SimpleMailboxMembership(id1, mailbox.getMailboxId(), uid1, 0, new Date(), 200, new Flags(Flag.ANSWERED), "My Body".getBytes(), headersSubject);
-        index.add(session, mailbox, m);
+        index.add(mailbox, m);
 
         uid2 = MessageUid.of(1);
         SimpleMailboxMembership m2 = new SimpleMailboxMembership(id2, mailbox2.getMailboxId(), uid2, 0, new Date(), 20, new Flags(Flag.ANSWERED), "My Body".getBytes(), headersSubject);
-        index.add(session, mailbox2, m2);
+        index.add(mailbox2, m2);
         
         uid3 = MessageUid.of(2);
         Calendar cal = Calendar.getInstance();
         cal.set(1980, 2, 10);
         SimpleMailboxMembership m3 = new SimpleMailboxMembership(id3, mailbox.getMailboxId(), uid3, 0, cal.getTime(), 20, new Flags(Flag.DELETED), "My Otherbody".getBytes(), headersTest);
-        index.add(session, mailbox, m3);
+        index.add(mailbox, m3);
         
         uid4 = MessageUid.of(3);
         Calendar cal2 = Calendar.getInstance();
         cal2.set(8000, 2, 10);
         SimpleMailboxMembership m4 = new SimpleMailboxMembership(id4, mailbox.getMailboxId(), uid4, 0, cal2.getTime(), 20, new Flags(Flag.DELETED), "My Otherbody2".getBytes(), headersTestSubject);
-        index.add(session, mailbox, m4);
+        index.add(mailbox, m4);
         
         uid5 = MessageUid.of(10);
         MessageBuilder builder = new MessageBuilder();
@@ -152,7 +162,7 @@ public class LuceneMailboxMessageSearchIndexTest {
         builder.uid = uid5;
         builder.mailboxId = mailbox3.getMailboxId();
         
-        index.add(session, mailbox3, builder.build(id5));
+        index.add(mailbox3, builder.build(id5));
 
     }
     
@@ -635,81 +645,5 @@ public class LuceneMailboxMessageSearchIndexTest {
 
         Iterator<MessageUid> result = index.search(session, mailbox, query);
         assertThat(result).containsExactly(uid3, uid4);
-    }
-    
-    private final class SimpleMailbox implements Mailbox {
-        private final TestId id;
-
-        public SimpleMailbox(long id) {
-            this.id = TestId.of(id);
-        }
-
-        @Override
-        public void setMailboxId(MailboxId id) {
-        }
-
-        @Override
-        public MailboxPath generateAssociatedPath() {
-            return new MailboxPath(getNamespace(), getUser(), getName());
-        }
-
-        @Override
-        public TestId getMailboxId() {
-            return id;
-        }
-
-        @Override
-        public String getNamespace() {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-        @Override
-        public void setNamespace(String namespace) {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-        @Override
-        public String getUser() {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-        @Override
-        public void setUser(String user) {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-        @Override
-        public String getName() {
-            return id.serialize();
-        }
-
-        @Override
-        public void setName(String name) {
-            throw new UnsupportedOperationException("Not supported");
-
-        }
-
-        @Override
-        public long getUidValidity() {
-            return 0;
-        }
-
-        @Override
-        public MailboxACL getACL() {
-            return MailboxACL.OWNER_FULL_ACL;
-        }
-
-        @Override
-        public void setACL(MailboxACL acl) {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-
-        @Override
-        public boolean isChildOf(Mailbox potentialParent, MailboxSession mailboxSession) {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-
     }
 }

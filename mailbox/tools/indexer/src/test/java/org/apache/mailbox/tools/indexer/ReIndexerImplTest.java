@@ -21,7 +21,6 @@ package org.apache.mailbox.tools.indexer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -81,8 +80,8 @@ public class ReIndexerImplTest {
         ArgumentCaptor<Mailbox> mailboxCaptor1 = ArgumentCaptor.forClass(Mailbox.class);
         ArgumentCaptor<Mailbox> mailboxCaptor2 = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor1.capture());
-        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor2.capture(), messageCaptor.capture());
+        verify(messageSearchIndex).deleteAll(mailboxCaptor1.capture());
+        verify(messageSearchIndex).add(mailboxCaptor2.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor1.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
@@ -107,8 +106,8 @@ public class ReIndexerImplTest {
         ArgumentCaptor<Mailbox> mailboxCaptor1 = ArgumentCaptor.forClass(Mailbox.class);
         ArgumentCaptor<Mailbox> mailboxCaptor2 = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor1.capture());
-        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor2.capture(), messageCaptor.capture());
+        verify(messageSearchIndex).deleteAll(mailboxCaptor1.capture());
+        verify(messageSearchIndex).add(mailboxCaptor2.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor1.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
@@ -133,8 +132,8 @@ public class ReIndexerImplTest {
         ArgumentCaptor<Mailbox> mailboxCaptor1 = ArgumentCaptor.forClass(Mailbox.class);
         ArgumentCaptor<Mailbox> mailboxCaptor2 = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor1.capture());
-        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor2.capture(), messageCaptor.capture());
+        verify(messageSearchIndex).deleteAll(mailboxCaptor1.capture());
+        verify(messageSearchIndex).add(mailboxCaptor2.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor1.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
@@ -158,7 +157,7 @@ public class ReIndexerImplTest {
         ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
         ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
+        verify(messageSearchIndex).add(mailboxCaptor.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
@@ -181,7 +180,7 @@ public class ReIndexerImplTest {
         ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
         ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
+        verify(messageSearchIndex).add(mailboxCaptor.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
@@ -224,8 +223,8 @@ public class ReIndexerImplTest {
         ArgumentCaptor<MailboxMessage> messageCaptor = ArgumentCaptor.forClass(MailboxMessage.class);
         ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor.capture());
-        verify(messageSearchIndex).add(any(MailboxSession.class), mailboxCaptor.capture(), messageCaptor.capture());
+        verify(messageSearchIndex).deleteAll(mailboxCaptor.capture());
+        verify(messageSearchIndex).add(mailboxCaptor.capture(), messageCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
@@ -243,7 +242,7 @@ public class ReIndexerImplTest {
         reIndexer.reIndex(mailboxId).run();
         ArgumentCaptor<Mailbox> mailboxCaptor = ArgumentCaptor.forClass(Mailbox.class);
 
-        verify(messageSearchIndex).deleteAll(any(MailboxSession.class), mailboxCaptor.capture());
+        verify(messageSearchIndex).deleteAll(mailboxCaptor.capture());
         verifyNoMoreInteractions(messageSearchIndex);
 
         assertThat(mailboxCaptor.getValue()).satisfies(mailbox -> assertThat(mailbox.getMailboxId()).isEqualTo(mailboxId));
