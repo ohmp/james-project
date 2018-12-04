@@ -77,7 +77,7 @@ public class SpamAssassinListenerTest {
     public void setup() throws MailboxException {
         spamAssassin = mock(SpamAssassin.class);
         InMemoryMailboxSessionMapperFactory mapperFactory = new InMemoryMailboxSessionMapperFactory();
-        mailboxMapper = mapperFactory.getMailboxMapper(MAILBOX_SESSION);
+        mailboxMapper = mapperFactory.getMailboxMapper();
         inbox = new SimpleMailbox(MailboxPath.forUser(USER, DefaultMailboxes.INBOX), UID_VALIDITY);
         inboxId = mailboxMapper.save(inbox);
         mailbox1 = new SimpleMailbox(MailboxPath.forUser(USER, "mailbox1"), UID_VALIDITY);

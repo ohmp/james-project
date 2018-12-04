@@ -69,7 +69,7 @@ public class StoreMailboxManagerTest {
         MailboxSessionMapperFactory mockedMapperFactory = mock(MailboxSessionMapperFactory.class);
         mockedMailboxSession = new MockMailboxSession(CURRENT_USER);
         mockedMailboxMapper = mock(MailboxMapper.class);
-        when(mockedMapperFactory.getMailboxMapper(mockedMailboxSession))
+        when(mockedMapperFactory.getMailboxMapper())
             .thenReturn(mockedMailboxMapper);
         Factory messageIdFactory = mock(MessageId.Factory.class);
         FakeAuthenticator authenticator = new FakeAuthenticator();

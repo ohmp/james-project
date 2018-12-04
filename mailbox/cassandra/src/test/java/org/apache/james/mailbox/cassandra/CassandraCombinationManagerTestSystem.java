@@ -53,7 +53,7 @@ public class CassandraCombinationManagerTestSystem extends CombinationManagerTes
     @Override
     public Mailbox createMailbox(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
         cassandraMailboxManager.createMailbox(mailboxPath, session);
-        return mapperFactory.getMailboxMapper(session).findMailboxByPath(mailboxPath);
+        return mapperFactory.getMailboxMapper().findMailboxByPath(mailboxPath);
     }
 
     @Override

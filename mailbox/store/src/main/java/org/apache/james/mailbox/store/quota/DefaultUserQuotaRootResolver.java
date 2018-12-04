@@ -80,7 +80,7 @@ public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
         List<String> parts = toParts(quotaRoot.getValue());
         String namespace = parts.get(0);
         String user = parts.get(1);
-        return Lists.transform(factory.getMailboxMapper(mailboxSession)
+        return Lists.transform(factory.getMailboxMapper()
             .findMailboxWithPathLike(new MailboxPath(namespace, user, "%")),
             Mailbox::generateAssociatedPath);
     }

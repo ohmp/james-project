@@ -131,7 +131,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         }
         // INBOX is in the root of the folder
         if (Pattern.matches(mailboxPath.getName().replace(MaildirStore.WILDCARD, ".*"), MailboxConstants.INBOX)) {
-            Mailbox mailbox = maildirStore.loadMailbox( root, mailboxPath.getNamespace(), mailboxPath.getUser(), "");
+            Mailbox mailbox = maildirStore.loadMailbox(root, mailboxPath.getNamespace(), mailboxPath.getUser(), "");
             mailboxList.add(0, mailbox);
         }
         return mailboxList;

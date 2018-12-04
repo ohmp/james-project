@@ -69,7 +69,7 @@ public class StoreRightManagerTest {
         mailboxAclResolver = new UnionMailboxACLResolver();
         groupMembershipResolver = new SimpleGroupMembershipResolver();
         MailboxEventDispatcher dispatcher = mock(MailboxEventDispatcher.class);
-        when(mockedMapperFactory.getMailboxMapper(aliceSession))
+        when(mockedMapperFactory.getMailboxMapper())
             .thenReturn(mockedMailboxMapper);
 
         storeRightManager = new StoreRightManager(mockedMapperFactory,

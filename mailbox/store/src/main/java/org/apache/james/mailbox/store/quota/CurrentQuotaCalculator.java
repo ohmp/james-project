@@ -67,7 +67,7 @@ public class CurrentQuotaCalculator {
 
     private List<Mailbox> retrieveMailboxes(QuotaRoot quotaRoot, MailboxSession session) throws MailboxException {
         List<MailboxPath> paths = quotaRootResolver.retrieveAssociatedMailboxes(quotaRoot, session);
-        final MailboxMapper mapper = factory.getMailboxMapper(session);
+        final MailboxMapper mapper = factory.getMailboxMapper();
         return Lists.transform(paths, mailboxPath -> {
             try {
                 return mapper.findMailboxByPath(mailboxPath);

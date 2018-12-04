@@ -135,7 +135,7 @@ public class JPAHostSystem extends JamesImapHostSystem {
         if (mailboxManager != null) {
             MailboxSession session = mailboxManager.createSystemSession("test");
             mailboxManager.startProcessingRequest(session);
-            mailboxManager.deleteEverything(session);
+            mailboxManager.deleteEverything();
             mailboxManager.endProcessingRequest(session);
             mailboxManager.logout(session, false);
         }

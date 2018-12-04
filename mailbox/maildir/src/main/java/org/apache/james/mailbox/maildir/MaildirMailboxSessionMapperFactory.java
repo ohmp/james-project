@@ -20,6 +20,7 @@ package org.apache.james.mailbox.maildir;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.maildir.mail.MaildirMailboxMapper;
 import org.apache.james.mailbox.maildir.mail.MaildirMessageMapper;
 import org.apache.james.mailbox.maildir.user.MaildirSubscriptionMapper;
@@ -41,10 +42,9 @@ public class MaildirMailboxSessionMapperFactory extends
     public MaildirMailboxSessionMapperFactory(MaildirStore store) {
         this.store = store;
     }
-    
-    
+
     @Override
-    public MailboxMapper createMailboxMapper(MailboxSession session) {
+    public MailboxMapper getMailboxMapper() {
         return new MaildirMailboxMapper(store);
     }
 

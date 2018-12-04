@@ -453,7 +453,7 @@ public class StoreMailboxManager implements MailboxManager {
     @Override
     public MessageManager getMailbox(MailboxPath mailboxPath, MailboxSession session)
             throws MailboxException {
-        final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailboxRow = mapper.findMailboxByPath(mailboxPath);
 
         if (mailboxRow == null) {
@@ -470,7 +470,7 @@ public class StoreMailboxManager implements MailboxManager {
     @Override
     public MessageManager getMailbox(MailboxId mailboxId, MailboxSession session)
             throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailboxRow = mapper.findMailboxById(mailboxId);
 
         if (mailboxRow == null) {
@@ -522,7 +522,7 @@ public class StoreMailboxManager implements MailboxManager {
                 locker.executeWithLock(mailbox, (LockAwareExecution<Void>) () -> {
                     if (!mailboxExists(mailbox, mailboxSession)) {
                         Mailbox m = doCreateMailbox(mailbox, mailboxSession);
-                        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
+                        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
                         try {
                             mapper.execute(Mapper.toTransaction(() -> mailboxIds.add(mapper.save(m))));
                             // notify listeners
@@ -551,7 +551,7 @@ public class StoreMailboxManager implements MailboxManager {
     public void deleteMailbox(final MailboxPath mailboxPath, final MailboxSession session) throws MailboxException {
         LOGGER.info("deleteMailbox {}", mailboxPath);
         assertIsOwner(session, mailboxPath);
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
         MessageMapper messageMapper = mailboxSessionMapperFactory.getMessageMapper(session);
 
         mailboxMapper.execute((Mapper.Transaction<Mailbox>) () -> {
@@ -588,7 +588,7 @@ public class StoreMailboxManager implements MailboxManager {
         }
 
         assertIsOwner(session, from);
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         mapper.execute(Mapper.toTransaction(() -> doRenameMailbox(from, to, session, mapper)));
     }
 
@@ -668,7 +668,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private List<MailboxMetaData> searchMailboxes(MailboxQuery mailboxExpression, MailboxSession session, Right right) throws MailboxException {
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
         Stream<Mailbox> baseMailboxes = mailboxMapper
             .findMailboxWithPathLike(getPathLike(mailboxExpression, session))
             .stream();
@@ -758,7 +758,7 @@ public class StoreMailboxManager implements MailboxManager {
     @Override
     public boolean mailboxExists(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
         try {
-            final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+            final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
             mapper.findMailboxByPath(mailboxPath);
             return true;
         } catch (MailboxNotFoundException e) {
@@ -790,7 +790,7 @@ public class StoreMailboxManager implements MailboxManager {
 
     @Override
     public List<MailboxPath> list(MailboxSession session) throws MailboxException {
-        return mailboxSessionMapperFactory.getMailboxMapper(session)
+        return mailboxSessionMapperFactory.getMailboxMapper()
             .list()
             .stream()
             .map(Mailbox::generateAssociatedPath)
@@ -895,7 +895,7 @@ public class StoreMailboxManager implements MailboxManager {
 
     @Override
     public boolean hasChildren(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
         return mapper.hasChildren(mailbox, session.getPathDelimiter());
     }

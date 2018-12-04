@@ -79,7 +79,7 @@ public class DefaultUserQuotaRootResolverTest {
     @Test
     public void retrieveAssociatedMailboxesShouldWork() throws Exception {
         final MailboxMapper mockedMapper = mock(MailboxMapper.class);
-        when(mockedFactory.getMailboxMapper(null)).thenReturn(mockedMapper);
+        when(mockedFactory.getMailboxMapper()).thenReturn(mockedMapper);
         when(mockedMapper.findMailboxWithPathLike(PATH_LIKE)).thenReturn(Lists.newArrayList(MAILBOX, MAILBOX_2));
         assertThat(testee.retrieveAssociatedMailboxes(QUOTA_ROOT, null)).containsOnly(MAILBOX_PATH, MAILBOX_PATH_2);
     }

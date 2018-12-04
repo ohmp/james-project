@@ -39,9 +39,8 @@ public class CachingMailboxSessionMapperFactory extends
     }
 
     @Override
-    public MailboxMapper createMailboxMapper(MailboxSession session)
-            throws MailboxException {
-        return new CachingMailboxMapper(underlying.createMailboxMapper(session), mailboxByPathCache);
+    public MailboxMapper getMailboxMapper() throws MailboxException {
+        return new CachingMailboxMapper(underlying.getMailboxMapper(), mailboxByPathCache);
     }
 
     @Override

@@ -58,24 +58,24 @@ public class InMemoryMapperProvider implements MapperProvider {
     }
 
     @Override
-    public MailboxMapper createMailboxMapper() throws MailboxException {
-        return inMemoryMailboxSessionMapperFactory.createMailboxMapper(MAILBOX_SESSION);
+    public MailboxMapper createMailboxMapper() {
+        return inMemoryMailboxSessionMapperFactory.getMailboxMapper();
     }
 
     @Override
-    public MessageMapper createMessageMapper() throws MailboxException {
+    public MessageMapper createMessageMapper() {
         return inMemoryMailboxSessionMapperFactory.createMessageMapper(new MockMailboxSession("user"));
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper() throws MailboxException {
+    public MessageIdMapper createMessageIdMapper() {
         return new InMemoryMessageIdMapper(
-            inMemoryMailboxSessionMapperFactory.createMailboxMapper(MAILBOX_SESSION),
+            inMemoryMailboxSessionMapperFactory.getMailboxMapper(),
             inMemoryMailboxSessionMapperFactory.createMessageMapper(MAILBOX_SESSION));
     }
 
     @Override
-    public AttachmentMapper createAttachmentMapper() throws MailboxException {
+    public AttachmentMapper createAttachmentMapper() {
         return inMemoryMailboxSessionMapperFactory.createAttachmentMapper(MAILBOX_SESSION);
     }
 
@@ -95,7 +95,7 @@ public class InMemoryMapperProvider implements MapperProvider {
     }
 
     @Override
-    public AnnotationMapper createAnnotationMapper() throws MailboxException {
+    public AnnotationMapper createAnnotationMapper() {
         return inMemoryMailboxSessionMapperFactory.createAnnotationMapper(MAILBOX_SESSION);
     }
     

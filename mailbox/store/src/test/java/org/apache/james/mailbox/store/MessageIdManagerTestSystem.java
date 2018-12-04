@@ -72,13 +72,13 @@ public class MessageIdManagerTestSystem {
 
     public Mailbox createMailbox(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
         mailboxManager.createMailbox(mailboxPath, session);
-        return mapperFactory.getMailboxMapper(session).findMailboxByPath(mailboxPath);
+        return mapperFactory.getMailboxMapper().findMailboxByPath(mailboxPath);
     }
 
     public MessageId persist(MailboxId mailboxId, MessageUid uid, Flags flags, MailboxSession mailboxSession) {
         try {
             MessageId messageId = messageIdFactory.generate();
-            Mailbox mailbox = mapperFactory.getMailboxMapper(mailboxSession).findMailboxById(mailboxId);
+            Mailbox mailbox = mapperFactory.getMailboxMapper().findMailboxById(mailboxId);
             MailboxMessage message = createMessage(mailboxId, flags, messageId, uid);
             mapperFactory.getMessageMapper(mailboxSession).add(mailbox, message);
             mailboxManager.getEventDispatcher().added(mailboxSession, new SimpleMessageMetaData(message), mailbox);
@@ -94,7 +94,7 @@ public class MessageIdManagerTestSystem {
 
     public void deleteMailbox(MailboxId mailboxId, MailboxSession mailboxSession) {
         try {
-            Mailbox mailbox = mapperFactory.getMailboxMapper(mailboxSession).findMailboxById(mailboxId);
+            Mailbox mailbox = mapperFactory.getMailboxMapper().findMailboxById(mailboxId);
             mailboxManager.deleteMailbox(new MailboxPath(mailbox.getNamespace(), mailbox.getUser(), mailbox.getName()), mailboxSession);
         } catch (Exception e) {
             throw new RuntimeException(e);

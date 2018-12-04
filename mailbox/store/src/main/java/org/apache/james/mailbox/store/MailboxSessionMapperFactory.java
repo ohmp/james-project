@@ -89,25 +89,6 @@ public abstract class MailboxSessionMapperFactory implements RequestAware, Mailb
 
     public abstract MessageIdMapper createMessageIdMapper(MailboxSession session) throws MailboxException;
 
-    @Override
-    public MailboxMapper getMailboxMapper(MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = (MailboxMapper) session.getAttributes().get(MAILBOXMAPPER);
-        if (mapper == null) {
-            mapper = createMailboxMapper(session);
-            session.getAttributes().put(MAILBOXMAPPER, mapper);
-        }
-        return mapper;
-    }
-
-    /**
-     * Create a {@link MailboxMapper} instance which will get reused during the whole {@link MailboxSession}
-     * 
-     * @param session
-     * @return mailboxMapper
-     * @throws MailboxException
-     */
-    public abstract MailboxMapper createMailboxMapper(MailboxSession session) throws MailboxException;
-
     /**
      * Create a {@link SubscriptionMapper} instance or return the one which exists for the {@link MailboxSession} already
      * 

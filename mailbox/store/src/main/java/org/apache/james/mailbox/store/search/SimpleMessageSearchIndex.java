@@ -142,7 +142,7 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
 
     @Override
     public List<MessageId> search(MailboxSession session, final Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
-        MailboxMapper mailboxManager = mailboxMapperFactory.getMailboxMapper(session);
+        MailboxMapper mailboxManager = mailboxMapperFactory.getMailboxMapper();
 
         Stream<Mailbox> filteredMailboxes = mailboxIds
             .stream()

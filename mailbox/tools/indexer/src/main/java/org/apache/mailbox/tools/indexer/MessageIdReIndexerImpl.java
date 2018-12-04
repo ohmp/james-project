@@ -91,7 +91,7 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
 
         public Result reIndex(MailboxMessage mailboxMessage, MailboxSession session) {
             try {
-                MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+                MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
                 Mailbox mailbox = mailboxMapper.findMailboxById(mailboxMessage.getMailboxId());
                 index.add(session, mailbox, mailboxMessage);
                 return Result.COMPLETED;

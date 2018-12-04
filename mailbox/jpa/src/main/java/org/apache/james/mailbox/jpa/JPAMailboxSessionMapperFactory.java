@@ -55,9 +55,9 @@ public class JPAMailboxSessionMapperFactory extends MailboxSessionMapperFactory 
         this.modSeqProvider = modSeqProvider;
         createEntityManager().close();   
     }
-    
+
     @Override
-    public MailboxMapper createMailboxMapper(MailboxSession session) {
+    public MailboxMapper getMailboxMapper() {
         return new JPAMailboxMapper(entityManagerFactory);
     }
 

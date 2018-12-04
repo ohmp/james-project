@@ -132,7 +132,7 @@ public class SpamAssassinListener implements SpamEventListener {
         String userName = event.getSession().getUser().getUserName();
         MailboxPath mailboxPath = MailboxPath.forUser(userName, role.getDefaultMailbox());
 
-        return mapperFactory.getMailboxMapper(event.getSession())
+        return mapperFactory.getMailboxMapper()
             .findMailboxByPath(mailboxPath)
             .getMailboxId();
     }

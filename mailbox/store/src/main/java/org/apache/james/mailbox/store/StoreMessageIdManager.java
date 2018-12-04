@@ -216,7 +216,7 @@ public class StoreMessageIdManager implements MessageIdManager {
                     Message::getMessageId,
                     MailboxMessage::getMailboxId)));
 
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
         for (MetadataWithMailboxId metadataWithMailboxId : metadataWithMailbox) {
             dispatcher.expunged(mailboxSession, metadataWithMailboxId.messageMetaData,
                 mailboxMapper.findMailboxById(metadataWithMailboxId.mailboxId));
@@ -286,7 +286,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     private void removeMessageFromMailboxes(MailboxMessage message, Set<MailboxId> mailboxesToRemove, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
         SimpleMessageMetaData eventPayload = new SimpleMessageMetaData(message);
 
         for (MailboxId mailboxId: mailboxesToRemove) {
@@ -301,13 +301,13 @@ public class StoreMessageIdManager implements MessageIdManager {
     
     private void dispatchFlagsChange(MailboxSession mailboxSession, MailboxId mailboxId, UpdatedFlags updatedFlags) throws MailboxException {
         if (updatedFlags.flagsChanged()) {
-            Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).findMailboxById(mailboxId);
+            Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper().findMailboxById(mailboxId);
             dispatcher.flagsUpdated(mailboxSession, updatedFlags.getUid(), mailbox, updatedFlags);
         }
     }
 
     private void validateQuota(MessageMoves messageMoves, MailboxSession mailboxSession, MailboxMessage mailboxMessage) throws MailboxException {
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
 
         Map<QuotaRoot, Integer> messageCountByQuotaRoot = buildMapQuotaRoot(messageMoves, mailboxMapper);
         for (Map.Entry<QuotaRoot, Integer> entry : messageCountByQuotaRoot.entrySet()) {
@@ -344,7 +344,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     private void addMessageToMailboxes(MailboxMessage mailboxMessage, Set<MailboxId> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
+        MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper();
 
         for (MailboxId mailboxId : mailboxIds) {
             boolean shouldPreserveFlags = mailboxManager.myRights(mailboxId, mailboxSession).contains(Right.Write);

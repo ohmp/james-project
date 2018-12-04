@@ -86,14 +86,14 @@ public class StoreRightManager implements RightManager {
 
     @Override
     public Rfc4314Rights myRights(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
         return myRights(mailbox, session);
     }
 
     @Override
     public Rfc4314Rights myRights(MailboxId mailboxId, MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxById(mailboxId);
         return myRights(mailbox, session);
     }
@@ -115,7 +115,7 @@ public class StoreRightManager implements RightManager {
 
     @Override
     public Rfc4314Rights[] listRights(MailboxPath mailboxPath, EntryKey key, MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
 
         return aclResolver.listRights(key,
@@ -126,7 +126,7 @@ public class StoreRightManager implements RightManager {
 
     @Override
     public MailboxACL listRights(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
         return mailbox.getACL();
     }
@@ -134,7 +134,7 @@ public class StoreRightManager implements RightManager {
     @Override
     public void applyRightsCommand(MailboxPath mailboxPath, ACLCommand mailboxACLCommand, MailboxSession session) throws MailboxException {
         assertSharesBelongsToUserDomain(mailboxPath.getUser(), mailboxACLCommand);
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
         ACLDiff aclDiff = mapper.updateACL(mailbox, mailboxACLCommand);
 
@@ -181,7 +181,7 @@ public class StoreRightManager implements RightManager {
 
     @Override
     public void setRights(MailboxId mailboxId, MailboxACL mailboxACL, MailboxSession session) throws MailboxException {
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxById(mailboxId);
 
         setRights(mailbox.generateAssociatedPath(), mailboxACL, session);
@@ -190,7 +190,7 @@ public class StoreRightManager implements RightManager {
     @Override
     public void setRights(MailboxPath mailboxPath, MailboxACL mailboxACL, MailboxSession session) throws MailboxException {
         assertSharesBelongsToUserDomain(mailboxPath.getUser(), mailboxACL.getEntries());
-        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper();
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
 
         setRights(mailboxACL, mapper, mailbox, session);

@@ -61,14 +61,14 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
         attachmentMapper = new InMemoryAttachmentMapper();
         annotationMapper = new InMemoryAnnotationMapper();
     }
-    
+
     @Override
-    public MailboxMapper createMailboxMapper(MailboxSession session) throws MailboxException {
+    public MailboxMapper getMailboxMapper() {
         return mailboxMapper;
     }
 
     @Override
-    public InMemoryMessageMapper createMessageMapper(MailboxSession session) throws MailboxException {
+    public InMemoryMessageMapper createMessageMapper(MailboxSession session) {
         return messageMapper;
     }
 
@@ -78,7 +78,7 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     @Override
-    public SubscriptionMapper createSubscriptionMapper(MailboxSession session) throws SubscriptionException {
+    public SubscriptionMapper createSubscriptionMapper(MailboxSession session) {
         return subscriptionMapper;
     }
     
@@ -89,13 +89,12 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
 
     public void deleteAll() throws MailboxException {
         ((InMemoryMailboxMapper) mailboxMapper).deleteAll();
-        ((InMemoryMessageMapper) messageMapper).deleteAll();
+        messageMapper.deleteAll();
         ((InMemorySubscriptionMapper) subscriptionMapper).deleteAll();
     }
 
     @Override
-    public AnnotationMapper createAnnotationMapper(MailboxSession session)
-            throws MailboxException {
+    public AnnotationMapper createAnnotationMapper(MailboxSession session) {
         return annotationMapper;
     }
 

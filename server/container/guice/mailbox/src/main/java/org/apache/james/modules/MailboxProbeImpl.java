@@ -83,7 +83,7 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
         MailboxSession mailboxSession = null;
         try {
             mailboxSession = mailboxManager.createSystemSession(user);
-            MailboxMapper mailboxMapper = mailboxMapperFactory.getMailboxMapper(mailboxSession);
+            MailboxMapper mailboxMapper = mailboxMapperFactory.getMailboxMapper();
             return mailboxMapper.findMailboxByPath(new MailboxPath(namespace, user, name)).getMailboxId();
         } catch (MailboxException e) {
             throw new RuntimeException(e);

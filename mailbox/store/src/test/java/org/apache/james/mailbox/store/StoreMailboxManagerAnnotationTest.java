@@ -82,7 +82,7 @@ public class StoreMailboxManagerAnnotationTest {
 
         session = new MockMailboxSession("userName");
 
-        when(mailboxSessionMapperFactory.getMailboxMapper(eq(session))).thenReturn(mailboxMapper);
+        when(mailboxSessionMapperFactory.getMailboxMapper()).thenReturn(mailboxMapper);
         when(mailboxSessionMapperFactory.getAnnotationMapper(eq(session))).thenReturn(annotationMapper);
         when(mailbox.getMailboxId()).thenReturn(mailboxId);
         when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(mailbox);
