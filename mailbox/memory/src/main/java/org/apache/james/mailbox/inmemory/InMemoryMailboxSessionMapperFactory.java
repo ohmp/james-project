@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory;
 
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.mail.InMemoryAnnotationMapper;
 import org.apache.james.mailbox.inmemory.mail.InMemoryAttachmentMapper;
@@ -86,7 +85,7 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     @Override
-    public AttachmentMapper createAttachmentMapper(MailboxSession session) {
+    public AttachmentMapper getAttachmentMapper() {
         return attachmentMapper;
     }
 
@@ -104,11 +103,6 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     @Override
     public ModSeqProvider getModSeqProvider() {
         return modSeqProvider;
-    }
-
-    @Override
-    public AttachmentMapper getAttachmentMapper(MailboxSession session) {
-        return attachmentMapper;
     }
 
 }

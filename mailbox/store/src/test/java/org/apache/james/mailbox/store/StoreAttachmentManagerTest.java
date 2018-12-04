@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.store;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -59,7 +58,7 @@ public class StoreAttachmentManagerTest {
     public void setup() throws Exception {
         attachmentMapper = mock(AttachmentMapper.class);
         AttachmentMapperFactory attachmentMapperFactory = mock(AttachmentMapperFactory.class);
-        when(attachmentMapperFactory.getAttachmentMapper(any(MailboxSession.class)))
+        when(attachmentMapperFactory.getAttachmentMapper())
             .thenReturn(attachmentMapper);
         messageIdManager = mock(MessageIdManager.class);
 

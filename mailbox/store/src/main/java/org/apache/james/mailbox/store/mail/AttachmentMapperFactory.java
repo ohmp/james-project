@@ -21,8 +21,15 @@ package org.apache.james.mailbox.store.mail;
 import org.apache.james.mailbox.MailboxSession;
 
 public interface AttachmentMapperFactory {
+    @Deprecated
+    default AttachmentMapper createAttachmentMapper(MailboxSession session) {
+        return getAttachmentMapper();
+    }
 
-    AttachmentMapper createAttachmentMapper(MailboxSession session);
+    @Deprecated
+    default AttachmentMapper getAttachmentMapper(MailboxSession session) {
+        return getAttachmentMapper();
+    }
 
-    AttachmentMapper getAttachmentMapper(MailboxSession session);
+    AttachmentMapper getAttachmentMapper();
 }

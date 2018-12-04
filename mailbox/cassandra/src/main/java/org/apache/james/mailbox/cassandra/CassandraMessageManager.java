@@ -73,7 +73,7 @@ public class CassandraMessageManager extends StoreMessageManager {
 
     @Override
     protected void storeAttachment(final MailboxMessage message, final List<MessageAttachment> messageAttachments, final MailboxSession session) throws MailboxException {
-        mapperFactory.getAttachmentMapper(session)
+        mapperFactory.getAttachmentMapper()
             .storeAttachmentsForMessage(
                 messageAttachments.stream()
                     .map(MessageAttachment::getAttachment)

@@ -52,7 +52,7 @@ public class StoreAttachmentManager implements AttachmentManager {
     }
 
     @Override
-    public boolean exists(AttachmentId attachmentId, MailboxSession session) throws MailboxException {
+    public boolean exists(AttachmentId attachmentId, MailboxSession session) {
         return userHasAccessToAttachment(attachmentId, session);
     }
 
@@ -61,27 +61,27 @@ public class StoreAttachmentManager implements AttachmentManager {
         if (!userHasAccessToAttachment(attachmentId, mailboxSession)) {
             throw new AttachmentNotFoundException(attachmentId.getId());
         }
-        return attachmentMapperFactory.getAttachmentMapper(mailboxSession).getAttachment(attachmentId);
+        return attachmentMapperFactory.getAttachmentMapper().getAttachment(attachmentId);
     }
 
     @Override
-    public List<Attachment> getAttachments(List<AttachmentId> attachmentIds, MailboxSession mailboxSession) throws MailboxException {
+    public List<Attachment> getAttachments(List<AttachmentId> attachmentIds, MailboxSession mailboxSession) {
         List<AttachmentId> accessibleAttachmentIds = attachmentIds.stream()
             .filter(attachmentId -> userHasAccessToAttachment(attachmentId, mailboxSession))
             .collect(Guavate.toImmutableList());
 
-        return attachmentMapperFactory.getAttachmentMapper(mailboxSession).getAttachments(accessibleAttachmentIds);
+        return attachmentMapperFactory.getAttachmentMapper().getAttachments(accessibleAttachmentIds);
     }
 
     @Override
     public void storeAttachment(Attachment attachment, MailboxSession mailboxSession) throws MailboxException {
-        attachmentMapperFactory.getAttachmentMapper(mailboxSession)
+        attachmentMapperFactory.getAttachmentMapper()
             .storeAttachmentForOwner(attachment, Username.fromMailboxSession(mailboxSession));
     }
 
     @Override
     public void storeAttachmentsForMessage(Collection<Attachment> attachments, MessageId ownerMessageId, MailboxSession mailboxSession) throws MailboxException {
-        attachmentMapperFactory.getAttachmentMapper(mailboxSession).storeAttachmentsForMessage(attachments, ownerMessageId);
+        attachmentMapperFactory.getAttachmentMapper().storeAttachmentsForMessage(attachments, ownerMessageId);
     }
 
     private boolean userHasAccessToAttachment(AttachmentId attachmentId, MailboxSession mailboxSession) {
@@ -95,21 +95,21 @@ public class StoreAttachmentManager implements AttachmentManager {
     }
 
     private boolean isReferencedInUserMessages(AttachmentId attachmentId, MailboxSession mailboxSession) throws MailboxException {
-        Collection<MessageId> relatedMessageIds = getRelatedMessageIds(attachmentId, mailboxSession);
+        Collection<MessageId> relatedMessageIds = getRelatedMessageIds(attachmentId);
         return !messageIdManager
             .accessibleMessages(relatedMessageIds, mailboxSession)
             .isEmpty();
     }
 
     private boolean isExplicitlyAOwner(AttachmentId attachmentId, MailboxSession mailboxSession) throws MailboxException {
-        Collection<Username> explicitOwners = attachmentMapperFactory.getAttachmentMapper(mailboxSession)
+        Collection<Username> explicitOwners = attachmentMapperFactory.getAttachmentMapper()
             .getOwners(attachmentId);
         return explicitOwners.stream()
             .anyMatch(username -> mailboxSession.getUser().isSameUser(username.getValue()));
     }
 
-    private Collection<MessageId> getRelatedMessageIds(AttachmentId attachmentId, MailboxSession mailboxSession) throws MailboxException {
-        return attachmentMapperFactory.getAttachmentMapper(mailboxSession).getRelatedMessageIds(attachmentId);
+    private Collection<MessageId> getRelatedMessageIds(AttachmentId attachmentId) throws MailboxException {
+        return attachmentMapperFactory.getAttachmentMapper().getRelatedMessageIds(attachmentId);
     }
 
 }

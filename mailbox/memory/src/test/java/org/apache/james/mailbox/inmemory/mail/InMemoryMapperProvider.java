@@ -27,7 +27,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxSessionMapperFactory;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
-import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
@@ -41,9 +40,6 @@ import org.apache.james.mailbox.store.mail.model.MessageUidProvider;
 import com.google.common.collect.ImmutableList;
 
 public class InMemoryMapperProvider implements MapperProvider {
-
-    private static final MockMailboxSession MAILBOX_SESSION = new MockMailboxSession("user");
-
     private final Random random;
     private final MessageId.Factory messageIdFactory;
     private final MessageUidProvider messageUidProvider;
@@ -76,7 +72,7 @@ public class InMemoryMapperProvider implements MapperProvider {
 
     @Override
     public AttachmentMapper createAttachmentMapper() {
-        return inMemoryMailboxSessionMapperFactory.createAttachmentMapper(MAILBOX_SESSION);
+        return inMemoryMailboxSessionMapperFactory.getAttachmentMapper();
     }
 
     @Override
