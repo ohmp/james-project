@@ -39,12 +39,27 @@ public interface UidProvider {
      * Its important that the returned uid is higher then the last used and that the next call of this method does return a higher
      * one
      */
-    MessageUid nextUid(MailboxSession session, Mailbox mailbox) throws MailboxException;
-    
+    MessageUid nextUid(Mailbox mailbox) throws MailboxException;
+
+    @Deprecated
+    default MessageUid nextUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        return nextUid(mailbox);
+    }
+
     /**
      * Return the last uid which were used for storing a MailboxMessage in the {@link Mailbox}
      */
-    Optional<MessageUid> lastUid(MailboxSession session, Mailbox mailbox) throws MailboxException;
-    
-    MessageUid nextUid(MailboxSession session, MailboxId mailboxId) throws MailboxException;
+    Optional<MessageUid> lastUid(Mailbox mailbox) throws MailboxException;
+
+    @Deprecated
+    default Optional<MessageUid> lastUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+        return lastUid(mailbox);
+    }
+
+    MessageUid nextUid(MailboxId mailboxId) throws MailboxException;
+
+    @Deprecated
+    default MessageUid nextUid(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+        return nextUid(mailboxId);
+    }
 }

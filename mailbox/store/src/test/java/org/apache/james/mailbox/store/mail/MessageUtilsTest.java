@@ -29,9 +29,7 @@ import java.util.Date;
 import javax.mail.Flags;
 import javax.mail.util.SharedByteArrayInputStream;
 
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -54,7 +52,6 @@ public class MessageUtilsTest {
     @Mock private ModSeqProvider modSeqProvider;
     @Mock private UidProvider uidProvider;
     @Mock private Mailbox mailbox;
-    private MailboxSession mailboxSession;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -65,21 +62,20 @@ public class MessageUtilsTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mailboxSession = new MockMailboxSession("user");
-        messageUtils = new MessageUtils(mailboxSession, uidProvider, modSeqProvider);
+        messageUtils = new MessageUtils(uidProvider, modSeqProvider);
         message = new SimpleMailboxMessage(MESSAGE_ID, new Date(), CONTENT.length(), BODY_START, new SharedByteArrayInputStream(CONTENT.getBytes()), new Flags(), new PropertyBuilder(), mailbox.getMailboxId());
     }
     
     @Test
     public void newInstanceShouldFailWhenNullUidProvider() {
         expectedException.expect(NullPointerException.class);
-        new MessageUtils(mailboxSession, null, modSeqProvider);
+        new MessageUtils(null, modSeqProvider);
     }
     
     @Test
     public void newInstanceShouldFailWhenNullModSeqProvider() {
         expectedException.expect(NullPointerException.class);
-        new MessageUtils(mailboxSession, uidProvider, null);
+        new MessageUtils(uidProvider, null);
     }
     
     @Test
@@ -97,18 +93,18 @@ public class MessageUtilsTest {
     @Test
     public void getLastUidShouldCallUidProvider() throws Exception {
         messageUtils.getLastUid(mailbox);
-        verify(uidProvider).lastUid(eq(mailboxSession), eq(mailbox));
+        verify(uidProvider).lastUid(eq(mailbox));
     }
     
     @Test
     public void nextUidShouldCallUidProvider() throws Exception {
         messageUtils.nextUid(mailbox);
-        verify(uidProvider).nextUid(eq(mailboxSession), eq(mailbox));
+        verify(uidProvider).nextUid(eq(mailbox));
     }
     
     @Test
     public void enrichMesageShouldEnrichUidAndModSeq() throws Exception {
-        when(uidProvider.nextUid(eq(mailboxSession), eq(mailbox))).thenReturn(MESSAGE_UID);
+        when(uidProvider.nextUid(eq(mailbox))).thenReturn(MESSAGE_UID);
         when(modSeqProvider.nextModSeq(eq(mailbox))).thenReturn(11L);
 
         messageUtils.enrichMessage(mailbox, message);

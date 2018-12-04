@@ -354,7 +354,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
     @Override
     public Optional<MessageUid> getLastUid(Mailbox mailbox) throws MailboxException {
-        return uidProvider.lastUid(mailboxSession, mailbox);
+        return uidProvider.lastUid(mailbox);
     }
 
     @Override

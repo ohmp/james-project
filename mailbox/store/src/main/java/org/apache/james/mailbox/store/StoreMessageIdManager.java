@@ -362,14 +362,14 @@ public class StoreMessageIdManager implements MessageIdManager {
                                     .build())
                             .build())
                     .build();
-            save(mailboxSession, messageIdMapper, copy);
+            save(messageIdMapper, copy);
             dispatcher.added(mailboxSession, mailboxMapper.findMailboxById(mailboxId), copy);
         }
     }
 
-    private void save(MailboxSession mailboxSession, MessageIdMapper messageIdMapper, MailboxMessage mailboxMessage) throws MailboxException {
+    private void save(MessageIdMapper messageIdMapper, MailboxMessage mailboxMessage) throws MailboxException {
         long modSeq = mailboxSessionMapperFactory.getModSeqProvider().nextModSeq(mailboxMessage.getMailboxId());
-        MessageUid uid = mailboxSessionMapperFactory.getUidProvider().nextUid(mailboxSession, mailboxMessage.getMailboxId());
+        MessageUid uid = mailboxSessionMapperFactory.getUidProvider().nextUid(mailboxMessage.getMailboxId());
         mailboxMessage.setModSeq(modSeq);
         mailboxMessage.setUid(uid);
         messageIdMapper.copyInMailbox(mailboxMessage);

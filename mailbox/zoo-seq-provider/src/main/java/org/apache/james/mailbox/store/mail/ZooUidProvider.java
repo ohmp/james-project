@@ -27,7 +27,6 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.atomic.AtomicValue;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.curator.retry.RetryOneTime;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
@@ -59,7 +58,7 @@ public class ZooUidProvider implements UidProvider {
     }
 
     @Override
-    public MessageUid nextUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public MessageUid nextUid(Mailbox mailbox) throws MailboxException {
         if (client.getState() == CuratorFrameworkState.STARTED) {
             DistributedAtomicLong uid = new DistributedAtomicLong(client, pathForMailbox(mailbox), retryPolicy);
             try {
@@ -69,14 +68,14 @@ public class ZooUidProvider implements UidProvider {
                     return MessageUid.of(value.postValue());
                 }
             } catch (Exception e) {
-                throw new MailboxException("Exception incrementing UID for session " + session, e);
+                throw new MailboxException("Exception incrementing UID", e);
             }
         }
         throw new MailboxException("Curator client is closed.");
     }
 
     @Override
-    public Optional<MessageUid> lastUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public Optional<MessageUid> lastUid(Mailbox mailbox) throws MailboxException {
         if (client.getState() == CuratorFrameworkState.STARTED) {
             DistributedAtomicLong uid = new DistributedAtomicLong(client, pathForMailbox(mailbox), retryPolicy);
             try {
@@ -89,14 +88,14 @@ public class ZooUidProvider implements UidProvider {
                     return Optional.of(MessageUid.of(value.postValue()));
                 }
             } catch (Exception e) {
-                throw new MailboxException("Exception getting last UID for session " + session, e);
+                throw new MailboxException("Exception getting last UID", e);
             }
         }
         throw new MailboxException("Curator client is closed.");
     }
 
     @Override
-    public MessageUid nextUid(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+    public MessageUid nextUid(MailboxId mailboxId) {
         throw new NotImplementedException("Not implemented");
     }
 

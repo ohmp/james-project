@@ -172,25 +172,25 @@ public class ZooUidProviderTest {
 
     @Test
     public void testNextUid() throws Exception {
-        MessageUid result = uuidProvider.nextUid(null, mailboxUUID);
+        MessageUid result = uuidProvider.nextUid(mailboxUUID);
         assertThat(result.asLong()).describedAs("Next UID is 1").isEqualTo(1);
-        result = longProvider.nextUid(null, mailboxLong);
+        result = longProvider.nextUid(mailboxLong);
         assertThat(result.asLong()).describedAs("Next UID is 1").isEqualTo(1);
     }
 
     @Test
     public void testLastUid() throws Exception {
-        Optional<MessageUid> result = uuidProvider.lastUid(null, mailboxUUID);
+        Optional<MessageUid> result = uuidProvider.lastUid(mailboxUUID);
         assertThat(result).describedAs("Next UID is empty").isEqualTo(Optional.empty());
-        MessageUid nextResult = uuidProvider.nextUid(null, mailboxUUID);
+        MessageUid nextResult = uuidProvider.nextUid(mailboxUUID);
         assertThat(nextResult.asLong()).describedAs("Next UID is 1").isEqualTo(1);
     }
 
     @Test
     public void testLongLastUid() throws Exception {
-        Optional<MessageUid> result = longProvider.lastUid(null, mailboxLong);
+        Optional<MessageUid> result = longProvider.lastUid(mailboxLong);
         assertThat(result).describedAs("Next UID is empty").isEqualTo(Optional.empty());
-        MessageUid nextResult = longProvider.nextUid(null, mailboxLong);
+        MessageUid nextResult = longProvider.nextUid(mailboxLong);
         assertThat(nextResult.asLong()).describedAs("Next UID is 1").isEqualTo(1);
     }
 }

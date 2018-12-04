@@ -37,7 +37,6 @@ import javax.inject.Inject;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -93,12 +92,12 @@ public class CassandraUidProvider implements UidProvider {
     }
 
     @Override
-    public MessageUid nextUid(MailboxSession mailboxSession, Mailbox mailbox) throws MailboxException {
-        return nextUid(mailboxSession, mailbox.getMailboxId());
+    public MessageUid nextUid(Mailbox mailbox) throws MailboxException {
+        return nextUid(mailbox.getMailboxId());
     }
 
     @Override
-    public MessageUid nextUid(MailboxSession session, MailboxId mailboxId) throws MailboxException {
+    public MessageUid nextUid(MailboxId mailboxId) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailboxId;
         return nextUid(cassandraId)
         .join()
@@ -124,7 +123,7 @@ public class CassandraUidProvider implements UidProvider {
     }
 
     @Override
-    public Optional<MessageUid> lastUid(MailboxSession mailboxSession, Mailbox mailbox) throws MailboxException {
+    public Optional<MessageUid> lastUid(Mailbox mailbox) {
         return findHighestUid((CassandraId) mailbox.getMailboxId()).join();
     }
 

@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.mailbox.MailboxPathLocker;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
@@ -250,7 +249,7 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
     }
 
     @Override
-    public MessageUid nextUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public MessageUid nextUid(Mailbox mailbox) throws MailboxException {
         try {
             return createMaildirFolder(mailbox).getLastUid()
                 .map(MessageUid::next)
@@ -275,7 +274,7 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
     }
 
     @Override
-    public Optional<MessageUid> lastUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public Optional<MessageUid> lastUid(Mailbox mailbox) throws MailboxException {
        return createMaildirFolder(mailbox).getLastUid();
     }
 
@@ -308,7 +307,7 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
     }
 
     @Override
-    public MessageUid nextUid(MailboxSession session, MailboxId mailboxId) {
+    public MessageUid nextUid(MailboxId mailboxId) {
         throw new NotImplementedException("Not implemented");
     }
 

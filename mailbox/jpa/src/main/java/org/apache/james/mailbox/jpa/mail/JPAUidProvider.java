@@ -19,13 +19,13 @@
 package org.apache.james.mailbox.jpa.mail;
 
 import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 
 import org.apache.james.mailbox.MailboxPathLocker;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.JPAId;
@@ -45,7 +45,7 @@ public class JPAUidProvider extends AbstractLockingUidProvider {
     
     
     @Override
-    public Optional<MessageUid> lastUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    public Optional<MessageUid> lastUid(Mailbox mailbox) throws MailboxException {
         EntityManager manager = null;
         try {
             manager = factory.createEntityManager();
@@ -70,7 +70,7 @@ public class JPAUidProvider extends AbstractLockingUidProvider {
     }
 
     @Override
-    protected MessageUid lockedNextUid(MailboxSession session, Mailbox mailbox) throws MailboxException {
+    protected MessageUid lockedNextUid(Mailbox mailbox) throws MailboxException {
         EntityManager manager = null;
         try {
             manager = factory.createEntityManager();
