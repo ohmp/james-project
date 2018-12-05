@@ -18,14 +18,10 @@
  ****************************************************************/
 package org.apache.james.mailbox.store.event;
 
-import java.util.List;
-
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
-import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.AnnotationMapper;
@@ -48,26 +44,23 @@ public class MailboxAnnotationListener implements MailboxListener {
 
     @Override
     public void event(Event event) {
-        if (event instanceof EventFactory.MailboxDeletionImpl) {
-            try {
-                AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
-                MailboxId mailboxId = ((EventFactory.MailboxDeletionImpl) event).getMailbox().getMailboxId();
+        if (event instanceof MailboxDeletion) {
+            MailboxId mailboxId = ((MailboxDeletion) event).getMailboxId();
 
-                deleteRelatedAnnotations(mailboxId, annotationMapper);
-            } catch (MailboxException e) {
-                logger.error("Unable to look up AnnotationMapper", e);
-            }
+            deleteRelatedAnnotations(mailboxId);
         }
     }
 
-    private void deleteRelatedAnnotations(MailboxId mailboxId, AnnotationMapper annotationMapper) {
-        List<MailboxAnnotation> annotations = annotationMapper.getAllAnnotations(mailboxId);
-        for (MailboxAnnotation annotation : annotations) {
-            try {
-                annotationMapper.deleteAnnotation(mailboxId, annotation.getKey());
-            } catch (Exception e) {
-                logger.error("Unable to delete annotation {} cause {}", annotation.getKey(), e.getMessage());
-            }
-        }
+    private void deleteRelatedAnnotations(MailboxId mailboxId) {
+        AnnotationMapper annotationMapper = mailboxSessionMapperFactory.getAnnotationMapper();
+        annotationMapper.getAllAnnotations(mailboxId)
+            .forEach(annotation -> {
+                    try {
+                        annotationMapper.deleteAnnotation(mailboxId, annotation.getKey());
+                    } catch (Exception e) {
+                        logger.error("Unable to delete annotation {} cause {}", annotation.getKey(), e.getMessage());
+                    }
+                }
+            );
     }
 }
