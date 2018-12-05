@@ -21,8 +21,6 @@ package org.apache.james.queue.rabbitmq;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
