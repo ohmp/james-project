@@ -94,7 +94,6 @@ public class JMAPModule extends AbstractModule {
         bind(RequestHandler.class).in(Scopes.SINGLETON);
         bind(UploadHandler.class).in(Scopes.SINGLETON);
         bind(JsoupHtmlTextExtractor.class).in(Scopes.SINGLETON);
-        bind(SystemMailboxesProviderImpl.class).in(Scopes.SINGLETON);
 
         bind(HtmlTextExtractor.class).to(JsoupHtmlTextExtractor.class);
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(RequiredCapabilitiesPrecondition.class);
@@ -103,7 +102,6 @@ public class JMAPModule extends AbstractModule {
         transportProcessorChecks.addBinding().toInstance(VACATION_MAILET_CHECK);
         transportProcessorChecks.addBinding().toInstance(FILTERING_MAILET_CHECK);
 
-        bind(SystemMailboxesProvider.class).to(SystemMailboxesProviderImpl.class);
         bind(MailQueueItemDecoratorFactory.class).to(PostDequeueDecoratorFactory.class).in(Scopes.SINGLETON);
 
         Multibinder.newSetBinder(binder(), MailboxListener.class).addBinding().to(PropagateLookupRightListener.class);

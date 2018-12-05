@@ -96,7 +96,7 @@ public class SpamAssassinListener implements SpamEventListener {
     private boolean isAppendedToInbox(EventFactory.AddedImpl addedEvent) {
         try {
             return systemMailboxesProvider.findMailbox(Role.INBOX, addedEvent.getSession())
-                .getId() == addedEvent.getMailboxId();
+                .getId().equals(addedEvent.getMailboxId());
         } catch (MailboxException e) {
             LOGGER.warn("Could not resolve Inbox mailbox", e);
             return false;
@@ -114,7 +114,7 @@ public class SpamAssassinListener implements SpamEventListener {
     @VisibleForTesting
     boolean isMessageMovedToSpamMailbox(MessageMoveEvent event) {
         try {
-            MailboxId spamMailboxId = getMailboxId(event, Role.SPAM);
+            MailboxId spamMailboxId = systemMailboxesProvider.findMailbox(Role.SPAM, event.getSession()).getId();
 
             return event.getMessageMoves().addedMailboxIds().contains(spamMailboxId);
         } catch (MailboxException e) {
@@ -126,8 +126,8 @@ public class SpamAssassinListener implements SpamEventListener {
     @VisibleForTesting
     boolean isMessageMovedOutOfSpamMailbox(MessageMoveEvent event) {
         try {
-            MailboxId spamMailboxId = getMailboxId(event, Role.SPAM);
-            MailboxId trashMailboxId = getMailboxId(event, Role.TRASH);
+            MailboxId spamMailboxId = systemMailboxesProvider.findMailbox(Role.SPAM, event.getSession()).getId();
+            MailboxId trashMailboxId = systemMailboxesProvider.findMailbox(Role.TRASH, event.getSession()).getId();
 
             return event.getMessageMoves().removedMailboxIds().contains(spamMailboxId)
                 && !event.getMessageMoves().addedMailboxIds().contains(trashMailboxId);
@@ -135,10 +135,5 @@ public class SpamAssassinListener implements SpamEventListener {
             LOGGER.warn("Could not resolve Spam mailbox", e);
             return false;
         }
-    }
-
-    private MailboxId getMailboxId(MessageMoveEvent event, Role role) throws MailboxException {
-        return systemMailboxesProvider.findMailbox(role, event.getSession())
-            .getId();
     }
 }
