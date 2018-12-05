@@ -89,8 +89,7 @@ class Dequeuer {
         this.executor = Executors.newSingleThreadScheduledExecutor();
     }
 
-    @PreDestroy
-    public void destroy() {
+    void destroy() {
        executor.shutdownNow();
     }
 

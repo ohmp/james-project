@@ -21,6 +21,8 @@ package org.apache.james.queue.rabbitmq;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PreDestroy;
+
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
@@ -53,6 +55,10 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
         this.dequeuer = dequeuer;
         this.mailQueueView = mailQueueView;
         this.decoratorFactory = decoratorFactory;
+    }
+
+    void destroy() {
+        dequeuer.destroy();
     }
 
     @Override

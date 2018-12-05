@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.mail.internet.MimeMessage;
 
@@ -116,6 +117,11 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
         RabbitMQMailQueue retrieveInstanceFor(MailQueueName name) {
             return instanciatedQueues.computeIfAbsent(name, privateFactory::create);
         }
+
+        @PreDestroy
+        public void destroy() {
+            instanciatedQueues.values().forEach(RabbitMQMailQueue::destroy);
+        }
     }
 
     private final RabbitClient rabbitClient;
@@ -132,6 +138,11 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
         this.mqManagementApi = mqManagementApi;
         this.privateFactory = privateFactory;
         this.mailQueueObjectPool = new RabbitMQMailQueueObjectPool();
+    }
+
+    @PreDestroy
+    public void destroy() {
+        mailQueueObjectPool.destroy();
     }
 
     @Override
