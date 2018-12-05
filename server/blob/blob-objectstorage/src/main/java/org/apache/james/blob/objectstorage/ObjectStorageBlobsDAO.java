@@ -33,6 +33,7 @@ import org.apache.james.blob.api.ObjectStoreException;
 import org.apache.james.blob.objectstorage.swift.SwiftKeystone2ObjectStorage;
 import org.apache.james.blob.objectstorage.swift.SwiftKeystone3ObjectStorage;
 import org.apache.james.blob.objectstorage.swift.SwiftTempAuthObjectStorage;
+import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.options.CopyOptions;
 import org.jclouds.domain.Location;
@@ -64,7 +65,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         this.containerName = containerName;
         this.blobStore = blobStore;
         this.payloadCodec = payloadCodec;
-        this.executor = Executors.newCachedThreadPool();
+        this.executor = Executors.newCachedThreadPool(NamedThreadFactory.withClassName(getClass()));
     }
 
     public static ObjectStorageBlobsDAOBuilder.RequireContainerName builder(SwiftTempAuthObjectStorage.Configuration testConfig) {
