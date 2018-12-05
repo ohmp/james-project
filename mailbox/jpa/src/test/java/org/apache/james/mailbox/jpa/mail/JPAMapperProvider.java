@@ -27,9 +27,7 @@ import javax.persistence.EntityManagerFactory;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.jpa.JPAId;
-import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
@@ -53,17 +51,16 @@ public class JPAMapperProvider implements MapperProvider {
     }
 
     @Override
-    public MailboxMapper createMailboxMapper() throws MailboxException {
+    public MailboxMapper createMailboxMapper() {
         return new TransactionalMailboxMapper(new JPAMailboxMapper(jpaTestCluster.getEntityManagerFactory()));
     }
 
     @Override
-    public MessageMapper createMessageMapper() throws MailboxException {
+    public MessageMapper createMessageMapper() {
         EntityManagerFactory entityManagerFactory = jpaTestCluster.getEntityManagerFactory();
         JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
 
-        JPAMessageMapper messageMapper = new JPAMessageMapper(new MockMailboxSession("benwa"), 
-            new JPAUidProvider(locker, entityManagerFactory), 
+        JPAMessageMapper messageMapper = new JPAMessageMapper(new JPAUidProvider(locker, entityManagerFactory),
             new JPAModSeqProvider(locker, entityManagerFactory), 
             entityManagerFactory);
 
@@ -71,12 +68,12 @@ public class JPAMapperProvider implements MapperProvider {
     }
 
     @Override
-    public AttachmentMapper createAttachmentMapper() throws MailboxException {
+    public AttachmentMapper createAttachmentMapper() {
         throw new NotImplementedException("not implemented");
     }
 
     @Override
-    public AnnotationMapper createAnnotationMapper() throws MailboxException {
+    public AnnotationMapper createAnnotationMapper() {
         return new TransactionalAnnotationMapper(new JPAAnnotationMapper(jpaTestCluster.getEntityManagerFactory()));
     }
 
@@ -101,7 +98,7 @@ public class JPAMapperProvider implements MapperProvider {
     }
 
     @Override
-    public MessageIdMapper createMessageIdMapper() throws MailboxException {
+    public MessageIdMapper createMessageIdMapper() {
         throw new NotImplementedException("not implemented");
     }
 
@@ -111,12 +108,12 @@ public class JPAMapperProvider implements MapperProvider {
     }
 
     @Override
-    public long generateModSeq(Mailbox mailbox) throws MailboxException {
+    public long generateModSeq(Mailbox mailbox) {
         throw new NotImplementedException("not implemented");
     }
 
     @Override
-    public long highestModSeq(Mailbox mailbox) throws MailboxException {
+    public long highestModSeq(Mailbox mailbox) {
         throw new NotImplementedException("not implemented");
     }
 
