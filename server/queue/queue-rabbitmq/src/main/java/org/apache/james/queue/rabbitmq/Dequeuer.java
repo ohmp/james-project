@@ -24,8 +24,11 @@ import static org.apache.james.queue.api.MailQueue.DEQUEUED_METRIC_NAME_PREFIX;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.annotation.PreDestroy;
 
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
@@ -71,6 +74,7 @@ class Dequeuer {
     private final Metric dequeueMetric;
     private final MailReferenceSerializer mailReferenceSerializer;
     private final MailQueueView mailQueueView;
+    private final ScheduledExecutorService executor;
 
     Dequeuer(MailQueueName name, RabbitClient rabbitClient, Function<MailReferenceDTO, Mail> mailLoader,
              MailReferenceSerializer serializer, MetricFactory metricFactory,
@@ -81,6 +85,13 @@ class Dequeuer {
         this.mailReferenceSerializer = serializer;
         this.mailQueueView = mailQueueView;
         this.dequeueMetric = metricFactory.generate(DEQUEUED_METRIC_NAME_PREFIX + name.asString());
+
+        this.executor = Executors.newSingleThreadScheduledExecutor();
+    }
+
+    @PreDestroy
+    public void destroy() {
+       executor.shutdownNow();
     }
 
     MailQueue.MailQueueItem deQueue() {
@@ -125,7 +136,7 @@ class Dequeuer {
     }
 
     private CompletableFuture<GetResponse> pollChannel() {
-        return new AsyncRetryExecutor(Executors.newSingleThreadScheduledExecutor())
+        return new AsyncRetryExecutor(executor)
             .withFixedRate()
             .withMinDelay(TEN_MS)
             .retryOn(NoMailYetException.class)
