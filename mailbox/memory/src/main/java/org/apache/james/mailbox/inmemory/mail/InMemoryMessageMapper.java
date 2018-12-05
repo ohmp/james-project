@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
@@ -71,12 +71,12 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public long countMessagesInMailbox(Mailbox mailbox) throws MailboxException {
+    public long countMessagesInMailbox(Mailbox mailbox) {
         return getMembershipByUidForMailbox(mailbox).size();
     }
 
     @Override
-    public long countUnseenMessagesInMailbox(Mailbox mailbox) throws MailboxException {
+    public long countUnseenMessagesInMailbox(Mailbox mailbox) {
         return getMembershipByUidForMailbox(mailbox).values()
             .stream()
             .filter(member -> !member.isSeen())
@@ -84,7 +84,7 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public void delete(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+    public void delete(Mailbox mailbox, MailboxMessage message) {
         getMembershipByUidForMailbox(mailbox).remove(message.getUid());
     }
 
@@ -98,25 +98,20 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType ftype, int max)
-            throws MailboxException {
-        List<MailboxMessage> results = new ArrayList<>(getMembershipByUidForMailbox(mailbox).values());
-        for (Iterator<MailboxMessage> it = results.iterator(); it.hasNext();) {
-            if (!set.includes(it.next().getUid())) {
-                it.remove();
-            }
-        }
-        
-        Collections.sort(results);
+    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType ftype, int max) {
+        Stream<MailboxMessage> results = getMembershipByUidForMailbox(mailbox).values()
+            .stream()
+            .filter(message -> set.includes(message.getUid()))
+            .sorted();
 
-        if (max > 0 && results.size() > max) {
-            results = results.subList(0, max);
+        if (max > 0) {
+            return results.limit(max).iterator();
         }
         return results.iterator();
     }
 
     @Override
-    public List<MessageUid> findRecentMessageUidsInMailbox(Mailbox mailbox) throws MailboxException {
+    public List<MessageUid> findRecentMessageUidsInMailbox(Mailbox mailbox) {
         return getMembershipByUidForMailbox(mailbox).values()
             .stream()
             .filter(MailboxMessage::isRecent)
@@ -126,7 +121,7 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public MessageUid findFirstUnseenMessageUid(Mailbox mailbox) throws MailboxException {
+    public MessageUid findFirstUnseenMessageUid(Mailbox mailbox) {
         List<MailboxMessage> memberships = new ArrayList<>(getMembershipByUidForMailbox(mailbox).values());
         Collections.sort(memberships);
         return memberships.stream()
@@ -137,8 +132,7 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public Map<MessageUid, MessageMetaData> expungeMarkedForDeletionInMailbox(Mailbox mailbox, MessageRange set)
-            throws MailboxException {
+    public Map<MessageUid, MessageMetaData> expungeMarkedForDeletionInMailbox(Mailbox mailbox, MessageRange set) {
         final Map<MessageUid, MessageMetaData> filteredResult = new HashMap<>();
 
         Iterator<MailboxMessage> it = findInMailbox(mailbox, set, FetchType.Metadata, -1);
@@ -154,7 +148,7 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public Flags getApplicableFlag(Mailbox mailbox) throws MailboxException {
+    public Flags getApplicableFlag(Mailbox mailbox) {
         return new ApplicableFlagCalculator(getMembershipByUidForId((InMemoryId) mailbox.getMailboxId()).values())
             .computeApplicableFlags();
     }
@@ -193,16 +187,16 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    protected void begin() throws MailboxException {
+    protected void begin() {
 
     }
 
     @Override
-    protected void commit() throws MailboxException {
+    protected void commit() {
 
     }
 
     @Override
-    protected void rollback() throws MailboxException {
+    protected void rollback() {
     }
 }
