@@ -161,7 +161,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
     }
 
     @Override
-    public synchronized MailboxPath getPath() throws MailboxException {
+    public MailboxPath getPath() throws MailboxException {
         return mailboxManager.getMailbox(mailboxId, mailboxSession).getMailboxPath();
     }
 
