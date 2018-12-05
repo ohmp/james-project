@@ -41,7 +41,7 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     private final InMemoryMailboxMapper mailboxMapper;
     private final InMemoryMessageMapper messageMapper;
     private final InMemoryMessageIdMapper messageIdMapper;
-    private final SubscriptionMapper subscriptionMapper;
+    private final InMemorySubscriptionMapper subscriptionMapper;
     private final AttachmentMapper attachmentMapper;
     private final AnnotationMapper annotationMapper;
     private final InMemoryUidProvider uidProvider;
@@ -90,9 +90,9 @@ public class InMemoryMailboxSessionMapperFactory extends MailboxSessionMapperFac
     }
 
     public void deleteAll() throws MailboxException {
-        ((InMemoryMailboxMapper) mailboxMapper).deleteAll();
+        mailboxMapper.deleteAll();
         messageMapper.deleteAll();
-        ((InMemorySubscriptionMapper) subscriptionMapper).deleteAll();
+        subscriptionMapper.deleteAll();
     }
 
     @Override
