@@ -19,6 +19,7 @@
 package org.apache.james.protocols.smtp.core;
 
 import java.util.Locale;
+import java.util.Optional;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
@@ -46,27 +47,21 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
     public HookResult doRcpt(SMTPSession session, MaybeSender sender, MailAddress rcpt) {
         if (session.getUser() != null) {
             String authUser = (session.getUser()).toLowerCase(Locale.US);
-            MailAddress senderAddress = (MailAddress) session.getAttachment(
+            MaybeSender senderAddress = (MaybeSender) session.getAttachment(
                     SMTPSession.SENDER, ProtocolSession.State.Transaction);
-            String username = retrieveSender(sender, senderAddress);
+            Optional<String> username = sender.asOptional().map(this::getUser);
             
             // Check if the sender address is the same as the user which was used to authenticate.
             // Its important to ignore case here to fix JAMES-837. This is save todo because if the handler is called
             // the user was already authenticated
-            if ((senderAddress == null)
-                || (!authUser.equalsIgnoreCase(username))
-                || (!isLocalDomain(senderAddress.getDomain()))) {
+            if (senderAddress == null
+                || senderAddress.isNullSender()
+                || !username.get().equals(authUser)
+                || (!isLocalDomain(senderAddress.get().getDomain()))) {
                 return INVALID_AUTH;
             }
         }
         return HookResult.DECLINED;
-    }
-
-    public String retrieveSender(MaybeSender sender, MailAddress senderAddress) {
-        if (senderAddress != null && !sender.isNullSender()) {
-            return getUser(senderAddress);
-        }
-        return null;
     }
 
     /**

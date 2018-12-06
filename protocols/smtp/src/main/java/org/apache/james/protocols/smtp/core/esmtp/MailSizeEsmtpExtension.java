@@ -23,9 +23,12 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.protocols.api.ProtocolSession.State;
 import org.apache.james.protocols.api.Response;
 import org.apache.james.protocols.api.handler.LineHandler;
@@ -79,8 +82,10 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
     @Override
     public HookResult doMailParameter(SMTPSession session, String paramName,
                                       String paramValue) {
+        MaybeSender tempSender = (MaybeSender) session.getAttachment(SMTPSession.SENDER, State.Transaction);
         return doMailSize(session, paramValue,
-                (String) session.getAttachment(SMTPSession.SENDER, State.Transaction));
+            Optional.ofNullable(tempSender).flatMap(MaybeSender::asOptional)
+                .map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING));
     }
 
     @Override
