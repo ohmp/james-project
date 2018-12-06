@@ -19,14 +19,19 @@
 
 package org.apache.james.metrics.dropwizard;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
 
 import org.apache.james.metrics.api.Gauge;
 import org.apache.james.metrics.api.GaugeRegistry;
 
+import com.codahale.metrics.CachedGauge;
 import com.codahale.metrics.MetricRegistry;
 
 public class DropWizardGaugeRegistry implements GaugeRegistry {
+    private static final int CACHE_EXPIRACY_IN_SECONDS = 10;
+
     private final MetricRegistry metricRegistry;
 
     @Inject
@@ -36,7 +41,16 @@ public class DropWizardGaugeRegistry implements GaugeRegistry {
 
     @Override
     public <T> GaugeRegistry register(String name, Gauge<T> gauge) {
-        metricRegistry.gauge(name, () -> gauge::get);
+        metricRegistry.gauge(name, () -> toCachedGauge(gauge));
         return this;
+    }
+
+    private <T> CachedGauge<T> toCachedGauge(Gauge<T> gauge) {
+        return new CachedGauge<T>(CACHE_EXPIRACY_IN_SECONDS, TimeUnit.SECONDS) {
+            @Override
+            protected T loadValue() {
+                return gauge.get();
+            }
+        };
     }
 }
