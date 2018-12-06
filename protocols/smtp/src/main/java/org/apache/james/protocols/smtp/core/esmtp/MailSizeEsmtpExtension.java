@@ -23,9 +23,11 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.protocols.api.ProtocolSession.State;
 import org.apache.james.protocols.api.Response;
 import org.apache.james.protocols.api.handler.LineHandler;
@@ -79,8 +81,8 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
     @Override
     public HookResult doMailParameter(SMTPSession session, String paramName,
                                       String paramValue) {
-        return doMailSize(session, paramValue,
-                (String) session.getAttachment(SMTPSession.SENDER, State.Transaction));
+        MaybeSender tempSender = (MaybeSender) session.getAttachment(SMTPSession.SENDER, State.Transaction);
+        return doMailSize(session, paramValue, tempSender);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
      * @return true if further options should be processed, false otherwise
      */
     private HookResult doMailSize(SMTPSession session,
-            String mailOptionValue, String tempSender) {
+            String mailOptionValue, MaybeSender tempSender) {
         int size = 0;
         try {
             size = Integer.parseInt(mailOptionValue);
@@ -128,7 +130,11 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
         long maxMessageSize = session.getConfiguration().getMaxMessageSize();
         if ((maxMessageSize > 0) && (size > maxMessageSize)) {
             // Let the client know that the size limit has been hit.
-            LOGGER.error("Rejected message from {} from {} of size {} exceeding system maximum message size of {} based on SIZE option.", (tempSender != null ? tempSender : null), session.getRemoteAddress().getAddress().getHostAddress(), size, maxMessageSize);
+            LOGGER.error("Rejected message from {} from {} of size {} exceeding system maximum message size of {} based on SIZE option.",
+                Optional.ofNullable(tempSender).orElseGet(MaybeSender::nullSender).asString(),
+                session.getRemoteAddress().getAddress().getHostAddress(),
+                size,
+                maxMessageSize);
 
             return QUOTA_EXCEEDED;
         } else {
