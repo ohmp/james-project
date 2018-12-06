@@ -25,11 +25,36 @@ import javax.inject.Inject;
 
 import org.apache.james.metrics.api.Gauge;
 import org.apache.james.metrics.api.GaugeRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.CachedGauge;
 import com.codahale.metrics.MetricRegistry;
 
 public class DropWizardGaugeRegistry implements GaugeRegistry {
+
+    static class ErrorHandlingGauge<T> implements com.codahale.metrics.Gauge<T> {
+        private final String name;
+        private final com.codahale.metrics.Gauge<T> underlying;
+
+        ErrorHandlingGauge(String name, com.codahale.metrics.Gauge<T> underlying) {
+            this.name = name;
+            this.underlying = underlying;
+        }
+
+        @Override
+        public T getValue() {
+            try {
+                return underlying.getValue();
+            } catch (Exception e) {
+                LOGGER.error("Error reading gauge {}", name, e);
+                return null;
+            }
+        }
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DropWizardGaugeRegistry.class);
+
     private static final int CACHE_EXPIRACY_IN_SECONDS = 10;
 
     private final MetricRegistry metricRegistry;
@@ -41,7 +66,9 @@ public class DropWizardGaugeRegistry implements GaugeRegistry {
 
     @Override
     public <T> GaugeRegistry register(String name, Gauge<T> gauge) {
-        metricRegistry.gauge(name, () -> toCachedGauge(gauge));
+        metricRegistry.gauge(name, () ->
+            handleError(name,
+                toCachedGauge(gauge)));
         return this;
     }
 
@@ -52,5 +79,9 @@ public class DropWizardGaugeRegistry implements GaugeRegistry {
                 return gauge.get();
             }
         };
+    }
+
+    private <T> ErrorHandlingGauge<T> handleError(String name, com.codahale.metrics.Gauge<T> gauge) {
+        return new ErrorHandlingGauge<>(name, gauge);
     }
 }
