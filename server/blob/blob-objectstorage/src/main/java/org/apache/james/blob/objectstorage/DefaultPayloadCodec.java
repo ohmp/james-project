@@ -19,6 +19,7 @@
 
 package org.apache.james.blob.objectstorage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -33,6 +34,9 @@ public class DefaultPayloadCodec implements PayloadCodec {
 
     @Override
     public Payload write(byte[] bytes) {
+        if (bytes.length == 0) {
+            return write(new ByteArrayInputStream(bytes));
+        }
         return Payloads.newByteArrayPayload(bytes);
     }
 
