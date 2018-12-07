@@ -19,7 +19,6 @@
 package org.apache.james.protocols.smtp.core;
 
 import java.util.Locale;
-import java.util.Optional;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
