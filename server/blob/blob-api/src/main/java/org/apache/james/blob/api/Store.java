@@ -64,8 +64,38 @@ public interface Store<T, I> {
 
     class Impl<T, I extends BlobPartsId> implements Store<T, I> {
 
+        public interface ValueToSave {
+            CompletableFuture<BlobId> saveIn(BlobStore blobStore);
+        }
+
+        public static class BytesToSave implements ValueToSave {
+            private final byte[] bytes;
+
+            public BytesToSave(byte[] bytes) {
+                this.bytes = bytes;
+            }
+
+            @Override
+            public CompletableFuture<BlobId> saveIn(BlobStore blobStore) {
+                return blobStore.save(bytes);
+            }
+        }
+
+        public static class InputStreamToSave implements ValueToSave {
+            private final InputStream inputStream;
+
+            public InputStreamToSave(InputStream inputStream) {
+                this.inputStream = inputStream;
+            }
+
+            @Override
+            public CompletableFuture<BlobId> saveIn(BlobStore blobStore) {
+                return blobStore.save(inputStream);
+            }
+        }
+
         public interface Encoder<T> {
-            Stream<Pair<BlobType, InputStream>> encode(T t);
+            Stream<Pair<BlobType, ValueToSave>> encode(T t);
         }
 
         public interface Decoder<T> {
@@ -94,8 +124,8 @@ public interface Store<T, I> {
                 .thenApply(idFactory::generate);
         }
 
-        private CompletableFuture<Pair<BlobType, BlobId>> saveEntry(Pair<BlobType, InputStream> entry) {
-            return blobStore.save(entry.getRight())
+        private CompletableFuture<Pair<BlobType, BlobId>> saveEntry(Pair<BlobType, ValueToSave> entry) {
+            return entry.getValue().saveIn(blobStore)
                 .thenApply(blobId -> Pair.of(entry.getLeft(), blobId));
         }
 
