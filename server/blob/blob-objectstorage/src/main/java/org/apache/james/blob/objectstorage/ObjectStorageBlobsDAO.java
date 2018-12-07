@@ -97,7 +97,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         BlobId blobId = blobIdFactory.from(hashingInputStream.hash().toString());
 
         Blob blob = blobStore.blobBuilder(blobId.asString())
-            .payload(payloadCodec.write(new ByteArrayInputStream(data)))
+            .payload(payloadCodec.write(data))
             .build();
 
         return save(blob)
