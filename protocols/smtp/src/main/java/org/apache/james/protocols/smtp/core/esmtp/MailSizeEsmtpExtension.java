@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -130,7 +129,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
         long maxMessageSize = session.getConfiguration().getMaxMessageSize();
         if ((maxMessageSize > 0) && (size > maxMessageSize)) {
             // Let the client know that the size limit has been hit.
-            LOGGER.error("Rejected message from {} from {} of size {} exceeding system maximum message size of {} based on SIZE option.",
+            LOGGER.error("Rejected message from {} to {} of size {} exceeding system maximum message size of {} based on SIZE option.",
                 tempSender,
                 session.getRemoteAddress().getAddress().getHostAddress(),
                 size,
