@@ -36,7 +36,7 @@ public class MaybeSender {
     private static final Logger LOGGER = LoggerFactory.getLogger(MaybeSender.class);
 
     public static MaybeSender getMailSender(String sender) {
-        if (sender == null || sender.trim().length() <= 0) {
+        if (sender == null || sender.trim().isEmpty()) {
             return MaybeSender.nullSender();
         }
         if (sender.equals(MailAddress.NULL_SENDER_AS_STRING)) {
@@ -46,7 +46,7 @@ public class MaybeSender {
             return MaybeSender.of(new MailAddress(sender));
         } catch (AddressException e) {
             // Should never happen as long as the user does not modify the header by himself
-            LOGGER.error("Unable to parse the sender address {}, so we fallback to a null sender", sender, e);
+            LOGGER.warn("Unable to parse the sender address {}, so we fallback to a null sender", sender, e);
             return MaybeSender.nullSender();
         }
     }
