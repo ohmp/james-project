@@ -92,6 +92,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public CompletableFuture<BlobId> save(byte[] data) {
+        Preconditions.checkNotNull(data);
         BlobId blobId = blobIdFactory.forPayload(data);
 
         Blob blob = blobStore.blobBuilder(blobId.asString())
