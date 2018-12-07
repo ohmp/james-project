@@ -131,7 +131,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
         if ((maxMessageSize > 0) && (size > maxMessageSize)) {
             // Let the client know that the size limit has been hit.
             LOGGER.error("Rejected message from {} from {} of size {} exceeding system maximum message size of {} based on SIZE option.",
-                Optional.ofNullable(tempSender).orElseGet(MaybeSender::nullSender).asString(),
+                tempSender,
                 session.getRemoteAddress().getAddress().getHostAddress(),
                 size,
                 maxMessageSize);
