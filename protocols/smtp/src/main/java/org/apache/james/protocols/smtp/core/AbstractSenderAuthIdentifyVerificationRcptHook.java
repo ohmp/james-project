@@ -53,7 +53,7 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
             // Its important to ignore case here to fix JAMES-837. This is save todo because if the handler is called
             // the user was already authenticated
             if (isAnonymous(sender)
-                || !hasRightUsername(sender, session)
+                || !senderMatchSessionUser(sender, session)
                 || !belongsToLocalDomain(senderAddress)) {
                 return INVALID_AUTH;
             }
@@ -65,7 +65,7 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
         return maybeSender == null || maybeSender.isNullSender();
     }
 
-    private boolean hasRightUsername(MaybeSender maybeSender, SMTPSession session) {
+    private boolean senderMatchSessionUser(MaybeSender maybeSender, SMTPSession session) {
         Preconditions.checkArgument(!maybeSender.isNullSender());
 
         String authUser = session.getUser().toLowerCase(Locale.US);
