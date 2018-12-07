@@ -32,6 +32,8 @@ import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.hook.RcptHook;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Handler which check if the authenticated user is the same as the one used as MAIL FROM
  */
@@ -46,22 +48,36 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
     @Override
     public HookResult doRcpt(SMTPSession session, MaybeSender sender, MailAddress rcpt) {
         if (session.getUser() != null) {
-            String authUser = (session.getUser()).toLowerCase(Locale.US);
-            MaybeSender senderAddress = (MaybeSender) session.getAttachment(
-                    SMTPSession.SENDER, ProtocolSession.State.Transaction);
-            Optional<String> username = sender.asOptional().map(this::getUser);
+            MaybeSender senderAddress = (MaybeSender) session.getAttachment(SMTPSession.SENDER, ProtocolSession.State.Transaction);
             
             // Check if the sender address is the same as the user which was used to authenticate.
             // Its important to ignore case here to fix JAMES-837. This is save todo because if the handler is called
             // the user was already authenticated
-            if (senderAddress == null
-                || senderAddress.isNullSender()
-                || !username.get().equals(authUser)
-                || (!isLocalDomain(senderAddress.get().getDomain()))) {
+            if (isAnonymous(sender)
+                || !hasRightUsername(sender, session)
+                || !belongsToLocalDomain(senderAddress)) {
                 return INVALID_AUTH;
             }
         }
         return HookResult.DECLINED;
+    }
+
+    private boolean isAnonymous(MaybeSender maybeSender) {
+        return maybeSender == null || maybeSender.isNullSender();
+    }
+
+    private boolean hasRightUsername(MaybeSender maybeSender, SMTPSession session) {
+        Preconditions.checkArgument(!maybeSender.isNullSender());
+
+        String authUser = session.getUser().toLowerCase(Locale.US);
+        String username = getUser(maybeSender.get());
+
+        return username.equals(authUser);
+    }
+
+    private boolean belongsToLocalDomain(MaybeSender maybeSender) {
+        Preconditions.checkArgument(!maybeSender.isNullSender());
+        return isLocalDomain(maybeSender.get().getDomain());
     }
 
     /**
