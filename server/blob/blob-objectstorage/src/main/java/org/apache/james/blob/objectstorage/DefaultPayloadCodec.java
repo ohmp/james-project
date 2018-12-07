@@ -19,13 +19,11 @@
 
 package org.apache.james.blob.objectstorage;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.jclouds.io.Payload;
 import org.jclouds.io.Payloads;
-import org.jclouds.io.payloads.InputStreamPayload;
 
 public class DefaultPayloadCodec implements PayloadCodec {
     @Override
@@ -35,11 +33,7 @@ public class DefaultPayloadCodec implements PayloadCodec {
 
     @Override
     public Payload write(byte[] bytes) {
-        long contentLength = bytes.length;
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-        InputStreamPayload payload = Payloads.newInputStreamPayload(inputStream);
-        payload.getContentMetadata().setContentLength(contentLength);
-        return payload;
+        return Payloads.newByteArrayPayload(bytes);
     }
 
     @Override
