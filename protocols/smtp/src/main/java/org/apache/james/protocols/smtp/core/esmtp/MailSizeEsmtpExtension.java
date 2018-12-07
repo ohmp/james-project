@@ -83,9 +83,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
     public HookResult doMailParameter(SMTPSession session, String paramName,
                                       String paramValue) {
         MaybeSender tempSender = (MaybeSender) session.getAttachment(SMTPSession.SENDER, State.Transaction);
-        return doMailSize(session, paramValue,
-            Optional.ofNullable(tempSender).flatMap(MaybeSender::asOptional)
-                .map(MailAddress::asString).orElse(MailAddress.NULL_SENDER_AS_STRING));
+        return doMailSize(session, paramValue, tempSender);
     }
 
     @Override
@@ -119,7 +117,7 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
      * @return true if further options should be processed, false otherwise
      */
     private HookResult doMailSize(SMTPSession session,
-            String mailOptionValue, String tempSender) {
+            String mailOptionValue, MaybeSender tempSender) {
         int size = 0;
         try {
             size = Integer.parseInt(mailOptionValue);
@@ -133,7 +131,11 @@ public class MailSizeEsmtpExtension implements MailParametersHook, EhloExtension
         long maxMessageSize = session.getConfiguration().getMaxMessageSize();
         if ((maxMessageSize > 0) && (size > maxMessageSize)) {
             // Let the client know that the size limit has been hit.
-            LOGGER.error("Rejected message from {} from {} of size {} exceeding system maximum message size of {} based on SIZE option.", (tempSender != null ? tempSender : null), session.getRemoteAddress().getAddress().getHostAddress(), size, maxMessageSize);
+            LOGGER.error("Rejected message from {} from {} of size {} exceeding system maximum message size of {} based on SIZE option.",
+                Optional.ofNullable(tempSender).orElseGet(MaybeSender::nullSender).asString(),
+                session.getRemoteAddress().getAddress().getHostAddress(),
+                size,
+                maxMessageSize);
 
             return QUOTA_EXCEEDED;
         } else {
