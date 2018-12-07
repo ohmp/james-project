@@ -92,9 +92,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public CompletableFuture<BlobId> save(byte[] data) {
-        HashingInputStream hashingInputStream = new HashingInputStream(Hashing.sha256(), new ByteArrayInputStream(data));
-        readFully(hashingInputStream);
-        BlobId blobId = blobIdFactory.from(hashingInputStream.hash().toString());
+        BlobId blobId = blobIdFactory.forPayload(data);
 
         Blob blob = blobStore.blobBuilder(blobId.asString())
             .payload(payloadCodec.write(data))
