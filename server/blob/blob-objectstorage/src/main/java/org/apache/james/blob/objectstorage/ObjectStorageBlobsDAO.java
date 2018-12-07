@@ -92,7 +92,16 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public CompletableFuture<BlobId> save(byte[] data) {
-        return save(new ByteArrayInputStream(data));
+        HashingInputStream hashingInputStream = new HashingInputStream(Hashing.sha256(), new ByteArrayInputStream(data));
+        readFully(hashingInputStream);
+        BlobId blobId = blobIdFactory.from(hashingInputStream.hash().toString());
+
+        Blob blob = blobStore.blobBuilder(blobId.asString())
+            .payload(payloadCodec.write(new ByteArrayInputStream(data)))
+            .build();
+
+        return save(blob)
+            .thenApply(any -> blobId);
     }
 
     @Override
@@ -113,14 +122,18 @@ public class ObjectStorageBlobsDAO implements BlobStore {
     }
 
     private CompletableFuture<BlobId> save(InputStream data, BlobId id) {
-        String containerName = this.containerName.value();
         HashingInputStream hashingInputStream = new HashingInputStream(Hashing.sha256(), data);
         Payload payload = payloadCodec.write(hashingInputStream);
         Blob blob = blobStore.blobBuilder(id.asString()).payload(payload).build();
 
-        return CompletableFuture
-            .supplyAsync(() -> blobStore.putBlob(containerName, blob), executor)
+        return save(blob)
             .thenApply(any -> blobIdFactory.from(hashingInputStream.hash().toString()));
+    }
+
+    private CompletableFuture<String> save(Blob blob) {
+        String containerName = this.containerName.value();
+        return CompletableFuture
+            .supplyAsync(() -> blobStore.putBlob(containerName, blob), executor);
     }
 
     @Override
@@ -145,6 +158,15 @@ public class ObjectStorageBlobsDAO implements BlobStore {
                 cause);
         }
 
+    }
+
+    private void readFully(InputStream inputStream) {
+        byte[] buffer = new byte[1024];
+        try {
+            while (inputStream.read(buffer) > 0) { }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void deleteContainer() {
