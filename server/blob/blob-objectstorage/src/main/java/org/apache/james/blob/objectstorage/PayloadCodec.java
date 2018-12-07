@@ -27,6 +27,8 @@ import org.jclouds.io.Payload;
 public interface PayloadCodec {
     Payload write(InputStream is);
 
+    Payload write(byte[] bytes);
+
     InputStream read(Payload payload) throws IOException;
 
     PayloadCodec DEFAULT_CODEC = new DefaultPayloadCodec();

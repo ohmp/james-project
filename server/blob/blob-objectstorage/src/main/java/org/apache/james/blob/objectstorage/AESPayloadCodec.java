@@ -19,6 +19,7 @@
 
 package org.apache.james.blob.objectstorage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,6 +43,11 @@ public class AESPayloadCodec implements PayloadCodec {
 
     public AESPayloadCodec(CryptoConfig cryptoConfig) {
         streamingAead = PBKDF2StreamingAeadFactory.newAesGcmHkdfStreaming(cryptoConfig);
+    }
+
+    @Override
+    public Payload write(byte[] bytes) {
+        return write(new ByteArrayInputStream(bytes));
     }
 
     @Override
