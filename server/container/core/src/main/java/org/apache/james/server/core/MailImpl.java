@@ -417,7 +417,7 @@ public class MailImpl implements Disposable, Mail {
      * @param recipients the collection of recipients of this MailImpl
      */
     public MailImpl(String name, MailAddress sender, Collection<MailAddress> recipients) {
-        this(name, Optional.of(sender), recipients);
+        this(name, Optional.ofNullable(sender), recipients);
     }
 
     public MailImpl(String name, Optional<MailAddress> sender, Collection<MailAddress> recipients) {
