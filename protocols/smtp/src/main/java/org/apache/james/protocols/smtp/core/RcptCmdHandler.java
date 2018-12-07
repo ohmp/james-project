@@ -213,7 +213,7 @@ public class RcptCmdHandler extends AbstractHookableCmdHandler<RcptHook> impleme
         }
        MaybeSender sender = (MaybeSender) session.getAttachment(SMTPSession.SENDER, State.Transaction);
         if (null != sender && !sender.isNullSender()) {
-            sb.append(" [from:").append(sender.get().asString()).append(']');
+            sb.append(" [from:").append(sender.asString()).append(']');
         }
         return sb.toString();
     }
