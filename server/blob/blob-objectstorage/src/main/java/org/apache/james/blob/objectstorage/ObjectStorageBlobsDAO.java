@@ -96,12 +96,22 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         readFully(hashingInputStream);
         BlobId blobId = blobIdFactory.from(hashingInputStream.hash().toString());
 
-        Blob blob = blobStore.blobBuilder(blobId.asString())
-            .payload(payloadCodec.write(new ByteArrayInputStream(data)))
-            .build();
+        return exists(blobId).thenCompose(
+            exists -> {
+                if (exists) {
+                    return CompletableFuture.completedFuture(blobId);
+                }
+                Blob blob = blobStore.blobBuilder(blobId.asString())
+                    .payload(payloadCodec.write(new ByteArrayInputStream(data)))
+                    .build();
 
-        return save(blob)
-            .thenApply(any -> blobId);
+                return save(blob)
+                    .thenApply(any -> blobId);
+            });
+    }
+
+    private CompletableFuture<Boolean> exists(BlobId blobId) {
+        return CompletableFuture.supplyAsync(() -> blobStore.blobExists(containerName.value(), blobId.asString()), executor);
     }
 
     @Override
