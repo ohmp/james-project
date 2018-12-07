@@ -222,7 +222,7 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
             }
 
             if (sender.length() == 0) {
-                // This is the <> case. Let senderAddress == Optional.empty()
+                // This is the <> case. Let senderAddress == MaybeSender.nullSender()
             } else {
 
                 if (!sender.contains("@")) {
