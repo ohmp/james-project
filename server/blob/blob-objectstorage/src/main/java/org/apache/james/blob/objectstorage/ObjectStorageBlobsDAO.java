@@ -156,16 +156,6 @@ public class ObjectStorageBlobsDAO implements BlobStore {
                 "Failed to readBytes blob " + blobId.asString(),
                 cause);
         }
-
-    }
-
-    private void readFully(InputStream inputStream) {
-        byte[] buffer = new byte[1024];
-        try {
-            while (inputStream.read(buffer) > 0) { }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void deleteContainer() {
