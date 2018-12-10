@@ -156,8 +156,6 @@ class MaybeSenderTest {
             .isEqualTo("default");
     }
 
-
-
     @Test
     void getMailSenderShouldReturnNullSenderWhenNullSender() {
         assertThat(MaybeSender.getMailSender(MailAddress.NULL_SENDER_AS_STRING))
@@ -168,6 +166,30 @@ class MaybeSenderTest {
     void getMailSenderShouldReturnParsedAddressWhenNotNullAddress() throws Exception {
         assertThat(MaybeSender.getMailSender(GOOD_ADDRESS))
             .isEqualTo(MaybeSender.of(new MailAddress(GOOD_ADDRESS)));
+    }
+
+    @Test
+    void getMailSenderShouldReturnNullSenderWhenNull() {
+        assertThat(MaybeSender.getMailSender(null))
+            .isEqualTo(MaybeSender.nullSender());
+    }
+
+    @Test
+    void getMailSenderShouldReturnNullSenderWhenEmptyString() {
+        assertThat(MaybeSender.getMailSender(""))
+            .isEqualTo(MaybeSender.nullSender());
+    }
+
+    @Test
+    void getMailSenderShouldReturnNullSenderWhenOnlySpaces() {
+        assertThat(MaybeSender.getMailSender("   "))
+            .isEqualTo(MaybeSender.nullSender());
+    }
+
+    @Test
+    void getMailSenderShouldReturnNullSenderWhenBadValue() {
+        assertThat(MaybeSender.getMailSender("this@is@a@bad@address"))
+            .isEqualTo(MaybeSender.nullSender());
     }
 
     @Test
