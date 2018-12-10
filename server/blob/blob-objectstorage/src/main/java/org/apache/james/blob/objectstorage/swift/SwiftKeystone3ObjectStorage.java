@@ -29,6 +29,7 @@ import org.apache.james.blob.objectstorage.ObjectStorageBlobsDAOBuilder;
 import org.apache.james.util.OptionalUtils;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStore;
+import org.jclouds.http.apachehc.config.ApacheHCHttpCommandExecutorServiceModule;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.openstack.keystone.config.KeystoneProperties;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedBlobStoreContext;
@@ -43,7 +44,7 @@ public class SwiftKeystone3ObjectStorage {
     public static final String AUTH_API_NAME = "keystone3";
 
     private static final Iterable<Module> JCLOUDS_MODULES =
-        ImmutableSet.of(new SLF4JLoggingModule());
+        ImmutableSet.of(new SLF4JLoggingModule(), new ApacheHCHttpCommandExecutorServiceModule());
 
     public static ObjectStorageBlobsDAOBuilder.RequireContainerName daoBuilder(Configuration testConfig) {
         return ObjectStorageBlobsDAOBuilder.forBlobStore(new BlobStoreBuilder(testConfig));
