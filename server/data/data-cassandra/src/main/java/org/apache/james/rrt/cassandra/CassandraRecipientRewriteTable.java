@@ -96,20 +96,20 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
 
     @Override
     public void addMapping(MappingSource source, Mapping mapping) {
-        executor.executeVoid(insertStatement.bind()
+        executor.executeVoidReactor(insertStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain())
             .setString(MAPPING, mapping.asString()))
-            .join();
+            .block();
     }
 
     @Override
     public void removeMapping(MappingSource source, Mapping mapping) {
-        executor.executeVoid(deleteStatement.bind()
+        executor.executeVoidReactor(deleteStatement.bind()
                 .setString(USER, source.getFixedUser())
                 .setString(DOMAIN, source.getFixedDomain())
                 .setString(MAPPING, mapping.asString()))
-            .join();
+            .block();
     }
 
     @Override
@@ -119,27 +119,27 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     }
 
     private Optional<Mappings> retrieveMappings(MappingSource source) {
-        List<String> mappings = executor.execute(retrieveMappingStatement.bind()
+        List<String> mappings = executor.executeReactor(retrieveMappingStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain()))
-            .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
+            .map(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> row.getString(MAPPING))
                 .collect(Guavate.toImmutableList()))
-            .join();
+            .block();
 
         return MappingsImpl.fromCollection(mappings).toOptional();
     }
 
     @Override
     public Map<MappingSource, Mappings> getAllMappings() {
-        return executor.execute(retrieveAllMappingsStatement.bind())
-            .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
+        return executor.executeReactor(retrieveAllMappingsStatement.bind())
+            .map(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> new UserMapping(MappingSource.fromUser(row.getString(USER), row.getString(DOMAIN)), row.getString(MAPPING)))
                 .collect(Guavate.toImmutableMap(
                     UserMapping::getSource,
                     UserMapping::toMapping,
                     Mappings::union)))
-            .join();
+            .block();
     }
 
     private static class UserMapping {

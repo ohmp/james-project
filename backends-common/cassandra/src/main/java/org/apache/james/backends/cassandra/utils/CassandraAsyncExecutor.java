@@ -60,10 +60,6 @@ public class CassandraAsyncExecutor {
                 .toFuture();
     }
 
-    public CompletableFuture<Boolean> executeReturnExists(Statement statement) {
-        return executeReturnExistsReactor(statement).toFuture();
-    }
-
     public Mono<ResultSet> executeReactor(Statement statement) {
         return Mono.fromFuture(FutureConverter
                 .toCompletableFuture(session.executeAsync(statement)))
@@ -92,7 +88,7 @@ public class CassandraAsyncExecutor {
             .map(resultSet -> Optional.ofNullable(resultSet.one()));
     }
 
-    public Mono<Boolean> executeReturnExistsReactor(Statement statement) {
+    public Mono<Boolean> executeReturnExists(Statement statement) {
         return executeSingleRowReactor(statement)
                 .hasElement();
     }
