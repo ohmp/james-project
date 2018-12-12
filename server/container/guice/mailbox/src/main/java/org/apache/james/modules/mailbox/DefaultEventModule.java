@@ -27,7 +27,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.events.delivery.EventDelivery;
-import org.apache.james.mailbox.events.delivery.EventDeliveryImpl;
+import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
@@ -59,8 +59,8 @@ public class DefaultEventModule extends AbstractModule {
         bind(MailboxListenersLoader.class).to(MailboxListenersLoaderImpl.class);
         Multibinder.newSetBinder(binder(), MailboxListener.class);
 
-        bind(EventDeliveryImpl.class).in(Scopes.SINGLETON);
-        bind(EventDelivery.class).to(EventDeliveryImpl.class);
+        bind(InVmEventDelivery.class).in(Scopes.SINGLETON);
+        bind(EventDelivery.class).to(InVmEventDelivery.class);
     }
 
     @Singleton

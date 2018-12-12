@@ -36,12 +36,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class EventDeliveryImpl implements EventDelivery {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventDeliveryImpl.class);
+public class InVmEventDelivery implements EventDelivery {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InVmEventDelivery.class);
 
     private final MetricFactory metricFactory;
 
-    public EventDeliveryImpl(MetricFactory metricFactory) {
+    public InVmEventDelivery(MetricFactory metricFactory) {
         this.metricFactory = metricFactory;
     }
 
