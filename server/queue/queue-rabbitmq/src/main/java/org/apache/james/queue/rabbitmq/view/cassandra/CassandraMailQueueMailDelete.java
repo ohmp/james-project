@@ -30,6 +30,7 @@ import org.apache.james.queue.rabbitmq.view.cassandra.model.MailKey;
 import org.apache.mailet.Mail;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class CassandraMailQueueMailDelete {
 
@@ -59,22 +60,24 @@ public class CassandraMailQueueMailDelete {
     Mono<Void> considerDeleted(MailKey mailKey, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, mailKey)
-            .doOnTerminate(() -> maybeUpdateBrowseStart(mailQueueName));
+            .doOnTerminate(() -> maybeUpdateBrowseStart(mailQueueName).subscribe());
     }
 
     Mono<Boolean> isDeleted(Mail mail, MailQueueName mailQueueName) {
         return deletedMailsDao.isDeleted(mailQueueName, MailKey.fromMail(mail));
     }
 
-    void updateBrowseStart(MailQueueName mailQueueName) {
+    Mono<Void> updateBrowseStart(MailQueueName mailQueueName) {
         Mono<Instant> newBrowseStart = findNewBrowseStart(mailQueueName);
-        updateNewBrowseStart(mailQueueName, newBrowseStart);
+        return updateNewBrowseStart(mailQueueName, newBrowseStart)
+            .subscribeOn(Schedulers.elastic());
     }
 
-    private void maybeUpdateBrowseStart(MailQueueName mailQueueName) {
+    private Mono<Void> maybeUpdateBrowseStart(MailQueueName mailQueueName) {
         if (shouldUpdateBrowseStart()) {
-            updateBrowseStart(mailQueueName);
+            return updateBrowseStart(mailQueueName);
         }
+        return Mono.empty();
     }
 
     private Mono<Instant> findNewBrowseStart(MailQueueName mailQueueName) {
