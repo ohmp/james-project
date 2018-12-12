@@ -98,7 +98,7 @@ public class DefaultDelegatingMailboxListener implements DelegatingMailboxListen
 
         eventDelivery.deliver(listeners, event)
             .synchronousListenerFuture()
-            .join();
+            .block();
 
         if (event instanceof MailboxDeletion) {
             MailboxDeletion deletion = (MailboxDeletion) event;

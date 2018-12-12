@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.events.delivery;
 
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
@@ -47,12 +46,15 @@ public class InVmEventDelivery implements EventDelivery {
 
     @Override
     public ExecutionStages deliver(Collection<MailboxListener> mailboxListeners, Event event) {
-        CompletableFuture<Void> synchronousListeners = doDeliver(
-            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.SYNCHRONOUS),
-            event);
-        CompletableFuture<Void> asyncListener = doDeliver(
-            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.ASYNCHRONOUS),
-            event);
+        Mono<Void> synchronousListeners = doDeliver(
+            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.SYNCHRONOUS), event)
+            .cache();
+        Mono<Void> asyncListener = doDeliver(
+            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.ASYNCHRONOUS), event)
+            .cache();
+
+        synchronousListeners.subscribe();
+        asyncListener.subscribe();
 
         return new ExecutionStages(synchronousListeners, asyncListener);
     }
@@ -63,12 +65,11 @@ public class InVmEventDelivery implements EventDelivery {
             .collect(Guavate.toImmutableList());
     }
 
-    private CompletableFuture<Void> doDeliver(Collection<MailboxListener> mailboxListeners, Event event) {
+    private Mono<Void> doDeliver(Collection<MailboxListener> mailboxListeners, Event event) {
         return Flux.fromIterable(mailboxListeners)
             .flatMap(mailboxListener -> Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event)))
             .then()
-            .subscribeOn(Schedulers.elastic())
-            .toFuture();
+            .subscribeOn(Schedulers.elastic());
     }
 
     private void doDeliverToListener(MailboxListener mailboxListener, Event event) {
