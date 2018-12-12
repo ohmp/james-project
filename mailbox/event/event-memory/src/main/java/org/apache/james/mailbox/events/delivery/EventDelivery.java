@@ -17,13 +17,36 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.store.event;
+package org.apache.james.mailbox.events.delivery;
+
+import java.util.Collection;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 
+import reactor.core.publisher.Mono;
+
 public interface EventDelivery {
+    class ExecutionStages {
+        private final Mono<Void> synchronousListenerFuture;
+        private final Mono<Void> asynchronousListenerFuture;
 
-    void deliver(MailboxListener mailboxListener, Event event);
+        ExecutionStages(Mono<Void> synchronousListenerFuture, Mono<Void> asynchronousListenerFuture) {
+            this.synchronousListenerFuture = synchronousListenerFuture;
+            this.asynchronousListenerFuture = asynchronousListenerFuture;
+        }
 
+        public Mono<Void> synchronousListenerFuture() {
+            return synchronousListenerFuture;
+        }
+
+        public Mono<Void> allListenerFuture() {
+            return synchronousListenerFuture
+                .concatWith(asynchronousListenerFuture)
+                .then();
+        }
+    }
+
+
+    ExecutionStages deliver(Collection<MailboxListener> mailboxListeners, Event event);
 }

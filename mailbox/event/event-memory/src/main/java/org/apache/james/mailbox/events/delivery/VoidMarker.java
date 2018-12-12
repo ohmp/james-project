@@ -17,36 +17,9 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.store.event;
+package org.apache.james.mailbox.events.delivery;
 
-import javax.annotation.PreDestroy;
-
-import org.apache.james.mailbox.Event;
-import org.apache.james.mailbox.MailboxListener;
-
-public class MixedEventDelivery implements EventDelivery {
-
-    private final AsynchronousEventDelivery asynchronousEventDelivery;
-    private final SynchronousEventDelivery synchronousEventDelivery;
-
-    public MixedEventDelivery(AsynchronousEventDelivery asynchronousEventDelivery,
-                              SynchronousEventDelivery synchronousEventDelivery) {
-        this.asynchronousEventDelivery = asynchronousEventDelivery;
-        this.synchronousEventDelivery = synchronousEventDelivery;
-    }
-
-    @Override
-    public void deliver(MailboxListener mailboxListener, Event event) {
-        if (mailboxListener.getExecutionMode().equals(MailboxListener.ExecutionMode.SYNCHRONOUS)) {
-            synchronousEventDelivery.deliver(mailboxListener, event);
-        } else {
-            asynchronousEventDelivery.deliver(mailboxListener, event);
-        }
-    }
-
-    @PreDestroy
-    public void stop() {
-        asynchronousEventDelivery.stop();
-    }
-
+public interface VoidMarker {
+    VoidMarker IMPL = () -> null;
+    Void toVoid();
 }
