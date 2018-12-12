@@ -65,10 +65,7 @@ public class EventDeliveryImpl implements EventDelivery {
 
     private CompletableFuture<Void> doDeliver(Collection<MailboxListener> mailboxListeners, Event event) {
         return Flux.fromIterable(mailboxListeners)
-            .flatMap(mailboxListener -> Mono.fromCallable(() ->  {
-                doDeliverToListener(mailboxListener, event);
-                return VoidMarker.IMPL;
-            }))
+            .flatMap(mailboxListener -> Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event)))
             .then()
             .subscribeOn(Schedulers.elastic())
             .toFuture();
