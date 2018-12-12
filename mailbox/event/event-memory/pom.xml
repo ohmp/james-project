@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>apache-james-mailbox-event-memory</artifactId>
-    <name>Apache James :: Mailbox :: Event :: Memory implementation</name>
+    <name>Apache James :: Mailbox :: Event :: In VM implementation</name>
     <description>Memory implementation for the eventbus API</description>
 
     <dependencies>
