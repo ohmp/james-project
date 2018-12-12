@@ -20,7 +20,6 @@
 package org.apache.james.modules.mailbox;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -34,21 +33,16 @@ import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
 import org.apache.james.mailbox.store.event.MailboxListenerRegistry;
 import org.apache.james.mailbox.store.quota.ListeningCurrentQuotaUpdater;
-import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.server.core.configuration.ConfigurationProvider;
 import org.apache.james.utils.ConfigurationPerformer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
 public class DefaultEventModule extends AbstractModule {
-
-    private static final int DEFAULT_POOL_SIZE = 8;
-
     @Override
     protected void configure() {
         bind(DefaultDelegatingMailboxListener.class).in(Scopes.SINGLETON);
@@ -64,24 +58,9 @@ public class DefaultEventModule extends AbstractModule {
         bind(MailboxListenerRegistry.class).in(Scopes.SINGLETON);
         bind(MailboxListenersLoader.class).to(MailboxListenersLoaderImpl.class);
         Multibinder.newSetBinder(binder(), MailboxListener.class);
-    }
 
-    @Provides
-    @Singleton
-    EventDelivery provideEventDelivery(ConfigurationProvider configurationProvider, MetricFactory metricFactory) {
-        int poolSize = retrievePoolSize(configurationProvider);
-
-        return new EventDeliveryImpl(metricFactory);
-    }
-
-    private int retrievePoolSize(ConfigurationProvider configurationProvider) {
-        try {
-            return Optional.ofNullable(configurationProvider.getConfiguration("listeners")
-                .getInteger("poolSize", null))
-                .orElse(DEFAULT_POOL_SIZE);
-        } catch (ConfigurationException e) {
-            return DEFAULT_POOL_SIZE;
-        }
+        bind(EventDeliveryImpl.class).in(Scopes.SINGLETON);
+        bind(EventDelivery.class).to(EventDeliveryImpl.class);
     }
 
     @Singleton
