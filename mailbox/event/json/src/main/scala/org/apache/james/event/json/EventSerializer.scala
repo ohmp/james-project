@@ -26,7 +26,7 @@ import julienrf.json.derived
 import org.apache.james.core.quota.{QuotaCount, QuotaSize, QuotaValue}
 import org.apache.james.core.{Domain, User}
 import org.apache.james.mailbox.MailboxListener.{QuotaEvent => JavaQuotaEvent, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
-import org.apache.james.mailbox.model.{QuotaRoot, Quota => JavaQuota}
+import org.apache.james.mailbox.model.{MailboxId, QuotaRoot, Quota => JavaQuota}
 import org.apache.james.mailbox.{Event => JavaEvent}
 import play.api.libs.json._
 
@@ -56,7 +56,7 @@ private object DTO {
   }
 }
 
-private object JsonSerialize {
+private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
   implicit val userWriters: Writes[User] = (user: User) => JsString(user.asString)
   implicit val quotaRootWrites: Writes[QuotaRoot] = quotaRoot => JsString(quotaRoot.getValue)
   implicit val quotaValueWrites: Writes[QuotaValue[_]] = value => if (value.isUnlimited) JsNull else JsNumber(value.asLong())
@@ -107,7 +107,7 @@ private object JsonSerialize {
   def fromJson(json: String): JsResult[Event] = Json.fromJson[Event](Json.parse(json))
 }
 
-object EventSerializer {
+class EventSerializer(mailboxIdFactory: MailboxId.Factory) {
 
   private def toScala[T <: QuotaValue[T]](java: JavaQuota[T]): DTO.Quota[T] =
     DTO.Quota(used = java.getUsed, limit = java.getLimit, limits = java.getLimitByScope.asScala.toMap)
@@ -121,12 +121,12 @@ object EventSerializer {
       time = event.getInstant)
 
   def toJson(event: JavaEvent): String = event match {
-    case e: JavaQuotaUsageUpdatedEvent => JsonSerialize.toJson(toScala(e))
+    case e: JavaQuotaUsageUpdatedEvent => new JsonSerialize(mailboxIdFactory).toJson(toScala(e))
     case _ => throw new RuntimeException("no encoder found")
   }
 
   def fromJson(json: String): JsResult[JavaEvent] = {
-    JsonSerialize.fromJson(json)
+    new JsonSerialize(mailboxIdFactory).fromJson(json)
       .map(event => event.toJava)
   }
 }
