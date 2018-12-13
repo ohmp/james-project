@@ -81,7 +81,7 @@ class InVmEventDeliveryTest {
     }
 
     @Test
-    void deliverShouldNotBlockObAsynchronousListenersWhenSynchronousListenerExecutedJoined() {
+    void deliverShouldNotBlockOnAsynchronousListenersWhenSynchronousListenerExecutedJoined() {
         when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.ASYNCHRONOUS);
         CountDownLatch latch = new CountDownLatch(1);
         doAnswer(invocation -> {
