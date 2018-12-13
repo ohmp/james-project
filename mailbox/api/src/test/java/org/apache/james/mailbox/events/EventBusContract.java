@@ -172,14 +172,14 @@ public interface EventBusContract {
     }
 
     @Test
-    default void unregisterShouldNotRemoveDoubleRegisteredListener() {
+    default void unregisterShouldRemoveDoubleRegisteredListener() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1);
         eventBus().register(listener, KEY_1).unregister();
 
         eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
-        verify(listener, times(1)).event(any());
+        verifyZeroInteractions(listener);
     }
 
     @Test
