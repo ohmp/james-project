@@ -48,6 +48,9 @@ public interface EventBusContract {
 
     MailboxId ID_1 = TestId.of(18);
     MailboxId ID_2 = TestId.of(24);
+    ImmutableSet<RegistrationKey> NO_KEYS = ImmutableSet.of();
+    MailboxIdRegistrationKey KEY_1 = new MailboxIdRegistrationKey(ID_1);
+    MailboxIdRegistrationKey KEY_2 = new MailboxIdRegistrationKey(ID_2);
 
     EventBus eventBus();
 
@@ -63,7 +66,7 @@ public interface EventBusContract {
 
         eventBus().register(listener, new GroupA());
 
-        eventBus().dispatch(event, ImmutableSet.of()).block();
+        eventBus().dispatch(event, NO_KEYS).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -75,7 +78,7 @@ public interface EventBusContract {
         eventBus().register(listener, new GroupA());
         eventBus().register(listener2, new GroupB());
 
-        eventBus().dispatch(event, ImmutableSet.of()).block();
+        eventBus().dispatch(event, NO_KEYS).block();
 
         verify(listener, times(1)).event(any());
         verify(listener2, times(1)).event(any());
@@ -88,7 +91,7 @@ public interface EventBusContract {
 
         registration.unregister();
 
-        eventBus().dispatch(event, ImmutableSet.of()).block();
+        eventBus().dispatch(event, NO_KEYS).block();
         verifyZeroInteractions(listener);
     }
 
@@ -117,9 +120,9 @@ public interface EventBusContract {
     @Test
     default void dispatchShouldNotImpactListenerRegisteredWhenEmpty() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
+        eventBus().register(listener, KEY_1);
 
-        eventBus().dispatch(event, ImmutableSet.of()).block();
+        eventBus().dispatch(event, NO_KEYS).block();
 
         verifyZeroInteractions(listener);
     }
@@ -127,9 +130,9 @@ public interface EventBusContract {
     @Test
     default void dispatchShouldNotImpactListenerRegisteredOnOtherKeys() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
+        eventBus().register(listener, KEY_1);
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_2))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_2)).block();
 
         verifyZeroInteractions(listener);
     }
@@ -137,9 +140,9 @@ public interface EventBusContract {
     @Test
     default void dispatchShouldImpactListenerRegistered() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
+        eventBus().register(listener, KEY_1);
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -148,10 +151,10 @@ public interface EventBusContract {
     default void dispatchShouldImpactOnlyListenerRegistered() {
         MailboxListener listener = newListener();
         MailboxListener listener2 = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
-        eventBus().register(listener2, new MailboxIdRegistrationKey(ID_2));
+        eventBus().register(listener, KEY_1);
+        eventBus().register(listener2, KEY_2);
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verify(listener, times(1)).event(any());
         verifyZeroInteractions(listener2);
@@ -160,10 +163,10 @@ public interface EventBusContract {
     @Test
     default void registerShouldAllowDuplicatedRegistration() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
+        eventBus().register(listener, KEY_1);
+        eventBus().register(listener, KEY_1);
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -171,10 +174,10 @@ public interface EventBusContract {
     @Test
     default void unregisterShouldNotRemoveDoubleRegisteredListener() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1)).unregister();
+        eventBus().register(listener, KEY_1);
+        eventBus().register(listener, KEY_1).unregister();
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -182,11 +185,11 @@ public interface EventBusContract {
     @Test
     default void callingAllUnregisterMethodShouldUnregisterTheListener() {
         MailboxListener listener = newListener();
-        Registration registration = eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1)).unregister();
+        Registration registration = eventBus().register(listener, KEY_1);
+        eventBus().register(listener, KEY_1).unregister();
         registration.unregister();
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verifyZeroInteractions(listener);
     }
@@ -194,10 +197,10 @@ public interface EventBusContract {
     @Test
     default void unregisterShouldHaveNoImpactWhenCalledOnDifferentKeys() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_2)).unregister();
+        eventBus().register(listener, KEY_1);
+        eventBus().register(listener, KEY_2).unregister();
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -205,9 +208,9 @@ public interface EventBusContract {
     @Test
     default void dispatchShouldAcceptSeveralKeys() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
+        eventBus().register(listener, KEY_1);
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1), new MailboxIdRegistrationKey(ID_2))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1, KEY_2)).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -215,10 +218,10 @@ public interface EventBusContract {
     @Test
     default void dispatchShouldCallListenerOnceWhenSeveralKeysMatching() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1));
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_2));
+        eventBus().register(listener, KEY_1);
+        eventBus().register(listener, KEY_2);
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1), new MailboxIdRegistrationKey(ID_2))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1, KEY_2)).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -226,9 +229,9 @@ public interface EventBusContract {
     @Test
     default void dispatchShouldNotImpactUnregisteredListener() {
         MailboxListener listener = newListener();
-        eventBus().register(listener, new MailboxIdRegistrationKey(ID_1)).unregister();
+        eventBus().register(listener, KEY_1).unregister();
 
-        eventBus().dispatch(event, ImmutableSet.of(new MailboxIdRegistrationKey(ID_1))).block();
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verifyZeroInteractions(listener);
     }
@@ -239,7 +242,7 @@ public interface EventBusContract {
 
         eventBus().register(listener, new GroupA());
 
-        eventBus().dispatch(event, ImmutableSet.of()).block();
+        eventBus().dispatch(event, NO_KEYS).block();
 
         verify(listener, times(1)).event(any());
     }
@@ -256,7 +259,7 @@ public interface EventBusContract {
 
         assertTimeout(Duration.ofSeconds(2),
             () -> {
-                eventBus().dispatch(event, ImmutableSet.of()).block();
+                eventBus().dispatch(event, NO_KEYS).block();
                 latch.countDown();
             });
     }
