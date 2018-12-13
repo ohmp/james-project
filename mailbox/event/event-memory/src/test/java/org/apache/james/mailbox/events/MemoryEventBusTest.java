@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.events;
 
-import org.apache.james.mailbox.events.delivery.EventDeliveryImpl;
+import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -29,7 +29,7 @@ public class MemoryEventBusTest implements EventBusContract {
     @BeforeEach
     void setUp() {
         eventBus = new MemoryEventBus(
-            new EventDeliveryImpl(
+            new InVmEventDelivery(
                 new NoopMetricFactory()));
     }
 
