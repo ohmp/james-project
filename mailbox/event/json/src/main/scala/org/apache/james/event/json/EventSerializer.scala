@@ -25,15 +25,15 @@ import java.util.Optional
 import julienrf.json.derived
 import org.apache.james.core.quota.{QuotaCount, QuotaSize, QuotaValue}
 import org.apache.james.core.{Domain, User}
-import org.apache.james.mailbox.MailboxListener.{QuotaEvent => JavaQuotaEvent, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
+import org.apache.james.mailbox.MailboxListener.{QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
 import org.apache.james.mailbox.model.{MailboxId, QuotaRoot, Quota => JavaQuota}
 import org.apache.james.mailbox.{Event => JavaEvent}
-import play.api.libs.json._
+import play.api.libs.json.{JsError, JsNull, JsNumber, JsObject, JsResult, JsString, JsSuccess, Json, OFormat, Reads, Writes}
 
 import scala.collection.JavaConverters._
 
 private sealed trait Event {
-  def toJava: JavaQuotaEvent
+  def toJava: JavaEvent
 }
 
 private object DTO {
@@ -51,7 +51,7 @@ private object DTO {
                                     sizeQuota: Quota[QuotaSize], time: Instant) extends Event {
     def getQuotaRoot: QuotaRoot = quotaRoot
 
-    override def toJava: JavaQuotaEvent =
+    override def toJava: JavaEvent =
       new JavaQuotaUsageUpdatedEvent(user, getQuotaRoot, countQuota.toJava, sizeQuota.toJava, time)
   }
 }
