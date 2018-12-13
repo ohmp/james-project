@@ -72,7 +72,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void allListenerGroupShouldReceiveEvents() {
+    default void eachListenerGroupShouldReceiveEvents() {
         MailboxListener listener = newListener();
         MailboxListener listener2 = newListener();
         eventBus().register(listener, new GroupA());
