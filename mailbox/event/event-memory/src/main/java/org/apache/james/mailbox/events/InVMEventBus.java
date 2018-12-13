@@ -62,10 +62,10 @@ public class InVMEventBus implements EventBus {
 
     @Override
     public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
-        return eventDelivery.deliver(concernedListeners(keys), event).synchronousListenerFuture();
+        return eventDelivery.deliver(registeredListeners(keys), event).synchronousListenerFuture();
     }
 
-    private Set<MailboxListener> concernedListeners(Set<RegistrationKey> keys) {
+    private Set<MailboxListener> registeredListeners(Set<RegistrationKey> keys) {
         return ImmutableSet.<MailboxListener>builder()
             .addAll(groups.values())
             .addAll(keys.stream()
