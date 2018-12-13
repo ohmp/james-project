@@ -118,6 +118,17 @@ public interface EventBusContract {
     }
 
     @Test
+    default void unregisterShouldBeIdempotentForGroups() {
+        MailboxListener listener = newListener();
+
+        Registration registration = eventBus().register(listener, new GroupA());
+        registration.unregister();
+
+        assertThatCode(registration::unregister)
+            .doesNotThrowAnyException();
+    }
+
+    @Test
     default void registerShouldAcceptAlreadyUnregisteredGroups() {
         MailboxListener listener = newListener();
 
@@ -228,6 +239,17 @@ public interface EventBusContract {
         eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
 
         verify(listener, times(1)).event(any());
+    }
+
+    @Test
+    default void unregisterShouldBeIdempotentForKeyRegistrations() {
+        MailboxListener listener = newListener();
+
+        Registration registration = eventBus().register(listener, KEY_1);
+        registration.unregister();
+
+        assertThatCode(registration::unregister)
+            .doesNotThrowAnyException();
     }
 
     @Test
