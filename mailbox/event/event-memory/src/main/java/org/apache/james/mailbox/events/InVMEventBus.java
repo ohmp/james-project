@@ -27,7 +27,7 @@ import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.events.delivery.EventDelivery;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -41,7 +41,7 @@ public class InVMEventBus implements EventBus {
 
     InVMEventBus(EventDelivery eventDelivery) {
         this.eventDelivery = eventDelivery;
-        this.registrations = Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
+        this.registrations = Multimaps.synchronizedSetMultimap(HashMultimap.create());
         this.groups = new ConcurrentHashMap<>();
     }
 
