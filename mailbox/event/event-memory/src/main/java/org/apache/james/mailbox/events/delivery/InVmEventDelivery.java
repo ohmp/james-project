@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
@@ -43,6 +44,7 @@ public class InVmEventDelivery implements EventDelivery {
     private final MetricFactory metricFactory;
 
     @Inject
+    @VisibleForTesting
     public InVmEventDelivery(MetricFactory metricFactory) {
         this.metricFactory = metricFactory;
     }
