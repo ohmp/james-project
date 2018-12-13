@@ -150,7 +150,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void dispatchShouldImpactListenerRegistered() {
+    default void dispatchShouldNotifyRegisteredListeners() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1);
 
@@ -160,7 +160,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void dispatchShouldImpactOnlyListenerRegistered() {
+    default void dispatchShouldNotifyOnlyRegisteredListener() {
         MailboxListener listener = newListener();
         MailboxListener listener2 = newListener();
         eventBus().register(listener, KEY_1);
@@ -220,7 +220,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void unregisterShouldHaveNoImpactWhenCalledOnDifferentKeys() {
+    default void unregisterShouldHaveNotNotifyWhenCalledOnDifferentKeys() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1);
         eventBus().register(listener, KEY_2).unregister();
