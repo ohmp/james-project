@@ -118,7 +118,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void dispatchShouldNotImpactListenerRegisteredWhenEmpty() {
+    default void dispatchShouldNotNotifyRegisteredListenerWhenEmptyKeySet() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1);
 
@@ -128,7 +128,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void dispatchShouldNotImpactListenerRegisteredOnOtherKeys() {
+    default void dispatchShouldNotNotifyListenerRegisteredOnOtherKeys() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1);
 
@@ -227,7 +227,7 @@ public interface EventBusContract {
     }
 
     @Test
-    default void dispatchShouldNotImpactUnregisteredListener() {
+    default void dispatchShouldNotNotifyUnregisteredListener() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1).unregister();
 
