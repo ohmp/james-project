@@ -23,12 +23,12 @@ import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
 
-public class MemoryEventBusTest implements EventBusContract {
-    private MemoryEventBus eventBus;
+public class InVMEventBusTest implements EventBusContract {
+    private InVMEventBus eventBus;
 
     @BeforeEach
     void setUp() {
-        eventBus = new MemoryEventBus(
+        eventBus = new InVMEventBus(
             new InVmEventDelivery(
                 new NoopMetricFactory()));
     }

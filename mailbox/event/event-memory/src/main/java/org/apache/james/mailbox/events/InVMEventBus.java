@@ -34,12 +34,12 @@ import com.google.common.collect.Multimaps;
 
 import reactor.core.publisher.Mono;
 
-public class MemoryEventBus implements EventBus {
+public class InVMEventBus implements EventBus {
     private final Multimap<RegistrationKey, MailboxListener> registrations;
     private final ConcurrentHashMap<Group, MailboxListener> groups;
     private final EventDelivery eventDelivery;
 
-    MemoryEventBus(EventDelivery eventDelivery) {
+    InVMEventBus(EventDelivery eventDelivery) {
         this.eventDelivery = eventDelivery;
         this.registrations = Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
         this.groups = new ConcurrentHashMap<>();
