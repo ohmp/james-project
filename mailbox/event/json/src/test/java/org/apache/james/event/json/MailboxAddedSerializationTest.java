@@ -219,7 +219,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingLongNamespace() {
+        void fromJsonShouldRejectLongNamespace() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -236,7 +236,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingNullNamespace() {
+        void fromJsonShouldRejectNullNamespace() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -253,7 +253,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingLongUserInMailboxPath() {
+        void fromJsonShouldRejectLongUserInMailboxPath() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -270,7 +270,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingLongName() {
+        void fromJsonShouldRejectLongName() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -287,7 +287,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingNullName() {
+        void fromJsonShouldRejectNullName() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -304,7 +304,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingLongMailboxId() {
+        void fromJsonShouldRejectLongMailboxId() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -321,7 +321,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingNullMailboxId() {
+        void fromJsonShouldRejectNullMailboxId() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -338,7 +338,24 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingLongUser() {
+        void fromJsonShouldRejectInvalidMailboxId() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MailboxAdded\":{" +
+                "    \"mailboxPath\":{" +
+                "      \"namespace\":\"#private\"," +
+                "      \"user\":\"bob\"," +
+                "      \"name\":\"mailboxName\"" +
+                "     }," +
+                "     \"mailboxId\":\"invalid\"," +
+                "     \"user\":\"user\"," +
+                "     \"sessionId\":18" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NumberFormatException.class);
+        }
+
+        @Test
+        void fromJsonShouldRejectLongUser() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
@@ -355,7 +372,7 @@ class MailboxAddedSerializationTest {
         }
 
         @Test
-        void fromJsonShouldRejectMissingNullUser() {
+        void fromJsonShouldRejectNullUser() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +
                 "    \"mailboxPath\":{" +
