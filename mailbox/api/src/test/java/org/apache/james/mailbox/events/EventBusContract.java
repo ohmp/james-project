@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,6 +70,28 @@ public interface EventBusContract {
         eventBus().dispatch(event, NO_KEYS).block();
 
         verify(listener, times(1)).event(any());
+    }
+
+    @Test
+    default void dispatchShouldNotThrowWhenAGroupListenerFails() {
+        MailboxListener listener = newListener();
+        doThrow(new RuntimeException()).when(listener).event(any());
+
+        eventBus().register(listener, new GroupA());
+
+        assertThatCode(() -> eventBus().dispatch(event, NO_KEYS).block())
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    default void dispatchShouldNotThrowWhenARegisteredListenerFails() {
+        MailboxListener listener = newListener();
+        doThrow(new RuntimeException()).when(listener).event(any());
+
+        eventBus().register(listener, KEY_1);
+
+        assertThatCode(() -> eventBus().dispatch(event, NO_KEYS).block())
+            .doesNotThrowAnyException();
     }
 
     @Test
