@@ -20,21 +20,22 @@
 package org.apache.james.mailbox.events;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 
 import com.google.common.collect.ImmutableSet;
 
+import reactor.core.publisher.Mono;
+
 public interface EventBus {
     Registration register(MailboxListener listener, RegistrationKey key);
 
     Registration register(MailboxListener listener, Group group) throws GroupAlreadyRegistered;
 
-    CompletableFuture<Void> dispatch(Event event, Set<RegistrationKey> key);
+    Mono<Void> dispatch(Event event, Set<RegistrationKey> key);
 
-    default CompletableFuture<Void> dispatch(Event event, RegistrationKey key) {
+    default Mono<Void> dispatch(Event event, RegistrationKey key) {
         return dispatch(event, ImmutableSet.of(key));
     }
 }
