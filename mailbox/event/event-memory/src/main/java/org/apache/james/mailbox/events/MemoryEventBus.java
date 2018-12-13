@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.events;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.james.mailbox.Event;
@@ -32,6 +31,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+
+import reactor.core.publisher.Mono;
 
 public class MemoryEventBus implements EventBus {
     private final Multimap<RegistrationKey, MailboxListener> registrations;
@@ -60,7 +61,7 @@ public class MemoryEventBus implements EventBus {
     }
 
     @Override
-    public CompletableFuture<Void> dispatch(Event event, Set<RegistrationKey> keys) {
+    public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
         return eventDelivery.deliver(concernedListeners(keys), event).synchronousListenerFuture();
     }
 
