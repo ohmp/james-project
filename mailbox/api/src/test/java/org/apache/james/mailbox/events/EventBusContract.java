@@ -118,6 +118,18 @@ public interface EventBusContract {
     }
 
     @Test
+    default void registerShouldAcceptAlreadyUnregisteredGroups() {
+        MailboxListener listener = newListener();
+
+        eventBus().register(listener, new GroupA()).unregister();
+        eventBus().register(listener, new GroupA());
+
+        eventBus().dispatch(event, NO_KEYS).block();
+
+        verify(listener, times(1)).event(any());
+    }
+
+    @Test
     default void dispatchShouldNotNotifyRegisteredListenerWhenEmptyKeySet() {
         MailboxListener listener = newListener();
         eventBus().register(listener, KEY_1);
@@ -158,6 +170,19 @@ public interface EventBusContract {
 
         verify(listener, times(1)).event(any());
         verifyZeroInteractions(listener2);
+    }
+
+    @Test
+    default void dispatchShouldNotifyAllListenersRegisteredOnAKey() {
+        MailboxListener listener = newListener();
+        MailboxListener listener2 = newListener();
+        eventBus().register(listener, KEY_1);
+        eventBus().register(listener2, KEY_1);
+
+        eventBus().dispatch(event, ImmutableSet.of(KEY_1)).block();
+
+        verify(listener, times(1)).event(any());
+        verify(listener2, times(1)).event(any());
     }
 
     @Test
