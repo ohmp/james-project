@@ -21,6 +21,8 @@ package org.apache.james.mailbox.events.delivery;
 
 import java.util.Collection;
 
+import javax.inject.Inject;
+
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.metrics.api.MetricFactory;
@@ -40,6 +42,7 @@ public class InVmEventDelivery implements EventDelivery {
 
     private final MetricFactory metricFactory;
 
+    @Inject
     public InVmEventDelivery(MetricFactory metricFactory) {
         this.metricFactory = metricFactory;
     }
