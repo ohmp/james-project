@@ -22,14 +22,17 @@ package org.apache.james.event.json
 import java.time.Instant
 import java.util.Optional
 
+import javax.mail.{Flags => JavaMailFlags}
 import julienrf.json.derived
 import org.apache.james.core.quota.{QuotaCount, QuotaSize, QuotaValue}
 import org.apache.james.core.{Domain, User}
-import org.apache.james.mailbox.MailboxListener.{MailboxAdded => JavaMailboxAdded, MailboxDeletion => JavaMailboxDeletion, MailboxRenamed => JavaMailboxRenamed, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
+import org.apache.james.event.json.MetaDataDTO.Flags
+import org.apache.james.mailbox.MailboxListener.{Added => JavaAdded, MailboxAdded => JavaMailboxAdded, MailboxDeletion => JavaMailboxDeletion,
+  MailboxRenamed => JavaMailboxRenamed, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
 import org.apache.james.mailbox.MailboxSession.SessionId
-import org.apache.james.mailbox.model.{MailboxId, QuotaRoot, MailboxPath => JavaMailboxPath, Quota => JavaQuota}
-import org.apache.james.mailbox.{Event => JavaEvent}
-import play.api.libs.json.{JsError, JsNull, JsNumber, JsObject, JsResult, JsString, JsSuccess, Json, OFormat, Reads, Writes}
+import org.apache.james.mailbox.model.{MailboxId, MessageId, QuotaRoot, MailboxPath => JavaMailboxPath, Quota => JavaQuota}
+import org.apache.james.mailbox.{MessageUid, Event => JavaEvent}
+import play.api.libs.json.{JsArray, JsError, JsNull, JsNumber, JsObject, JsResult, JsString, JsSuccess, Json, OFormat, Reads, Writes}
 
 import scala.collection.JavaConverters._
 
@@ -78,6 +81,16 @@ private object DTO {
       totalDeletedSize,
       mailboxId)
   }
+
+  case class Added(sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
+                   added: Map[MessageUid, MetaDataDTO.MessageMetaData]) extends Event {
+    override def toJava: JavaEvent = new JavaAdded(
+      sessionId,
+      user,
+      path.toJava,
+      mailboxId,
+      added.map(entry => entry._1 -> entry._2.toJava).asJava)
+  }
 }
 
 private object ScalaConverter {
@@ -115,16 +128,25 @@ private object ScalaConverter {
     totalDeletedSize = event.getTotalDeletedSize,
     mailboxId = event.getMailboxId)
 
+  private def toScala(event: JavaAdded): DTO.Added = DTO.Added(
+    sessionId = event.getSessionId,
+    user = event.getUser,
+    path = DTO.MailboxPath.fromJava(event.getMailboxPath),
+    mailboxId = event.getMailboxId,
+    added = event.getAdded.asScala.map(entry => entry._1 -> MetaDataDTO.MessageMetaData.fromJava(entry._2)).toMap
+  )
+
   def toScala(javaEvent: JavaEvent): Event = javaEvent match {
     case e: JavaQuotaUsageUpdatedEvent => toScala(e)
     case e: JavaMailboxAdded => toScala(e)
     case e: JavaMailboxRenamed => toScala(e)
     case e: JavaMailboxDeletion => toScala(e)
-    case _ => throw new RuntimeException("no Scala convertion known")
+    case e: JavaAdded => toScala(e)
+    case _ => throw new RuntimeException("no Scala conversion known")
   }
 }
 
-private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
+private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactory: MessageId.Factory) {
   implicit val userWriters: Writes[User] = (user: User) => JsString(user.asString)
   implicit val quotaRootWrites: Writes[QuotaRoot] = quotaRoot => JsString(quotaRoot.getValue)
   implicit val quotaValueWrites: Writes[QuotaValue[_]] = value => if (value.isUnlimited) JsNull else JsNumber(value.asLong())
@@ -134,6 +156,10 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
   implicit val mailboxPathWrites: Writes[DTO.MailboxPath] = Json.writes[DTO.MailboxPath]
   implicit val mailboxIdWrites: Writes[MailboxId] = value => JsString(value.serialize())
   implicit val sessionIdWrites: Writes[SessionId] = value => JsNumber(value.getValue)
+  implicit val messageIdWrites: Writes[MessageId] = value => JsString(value.serialize())
+  implicit val messageUidWrites: Writes[MessageUid] = value => JsNumber(value.asLong())
+  implicit val flagsWrites: Writes[JavaMailFlags] = value => JsArray(Flags.fromJavaFlags(value).map(flag => JsString(flag)))
+  implicit val messageMetaDataWrites: Writes[MetaDataDTO.MessageMetaData] = Json.writes[MetaDataDTO.MessageMetaData]
 
   implicit val userReads: Reads[User] = {
     case JsString(userAsString) => JsSuccess(User.fromUsername(userAsString))
@@ -165,6 +191,18 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
     case JsString(value) => JsSuccess(JavaQuota.Scope.valueOf(value))
     case _ => JsError()
   }
+  implicit val messageIdReads: Reads[MessageId] = {
+    case JsString(value) => JsSuccess(messageIdFactory.fromString(value))
+    case _ => JsError()
+  }
+  implicit val messageUidReads: Reads[MessageUid] = {
+    case JsNumber(value) => JsSuccess(MessageUid.of(value.toLong))
+    case _ => JsError()
+  }
+  implicit val flagsReads: Reads[JavaMailFlags] = {
+    case JsArray(seqOfJsValues) => JsSuccess(Flags.toJavaFlags(seqOfJsValues.toArray.map(jsValue => jsValue.toString())))
+    case _ => JsError()
+  }
 
   implicit def scopeMapReads[V](implicit vr: Reads[V]): Reads[Map[JavaQuota.Scope, V]] =
     Reads.mapReads[JavaQuota.Scope, V] { str =>
@@ -176,9 +214,20 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
       JsObject(m.map { case (k, v) => (k.toString, vr.writes(v)) }.toSeq)
     }
 
+  implicit def scopeMessageUidMapReads[V](implicit vr: Reads[V]): Reads[Map[MessageUid, V]] =
+    Reads.mapReads[MessageUid, V] { str =>
+      JsSuccess(MessageUid.of(str.toLong))
+    }
+
+  implicit def scopeMessageUidMapWrite[V](implicit vr: Writes[V]): Writes[Map[MessageUid, V]] =
+    (m: Map[MessageUid, V]) => {
+      JsObject(m.map { case (k, v) => (String.valueOf(k.asLong()), vr.writes(v)) }.toSeq)
+    }
+
   implicit val quotaCReads: Reads[DTO.Quota[QuotaCount]] = Json.reads[DTO.Quota[QuotaCount]]
   implicit val quotaSReads: Reads[DTO.Quota[QuotaSize]] = Json.reads[DTO.Quota[QuotaSize]]
   implicit val mailboxPathReads: Reads[DTO.MailboxPath] = Json.reads[DTO.MailboxPath]
+  implicit val messageMetaDataReads: Reads[MetaDataDTO.MessageMetaData] = Json.reads[MetaDataDTO.MessageMetaData]
 
   implicit val eventOFormat: OFormat[Event] = derived.oformat()
 
@@ -187,11 +236,11 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
   def fromJson(json: String): JsResult[Event] = Json.fromJson[Event](Json.parse(json))
 }
 
-class EventSerializer(mailboxIdFactory: MailboxId.Factory) {
-  def toJson(event: JavaEvent): String = new JsonSerialize(mailboxIdFactory).toJson(ScalaConverter.toScala(event))
+class EventSerializer(mailboxIdFactory: MailboxId.Factory, messageIdFactory: MessageId.Factory) {
+  def toJson(event: JavaEvent): String = new JsonSerialize(mailboxIdFactory, messageIdFactory).toJson(ScalaConverter.toScala(event))
 
   def fromJson(json: String): JsResult[JavaEvent] = {
-    new JsonSerialize(mailboxIdFactory)
+    new JsonSerialize(mailboxIdFactory, messageIdFactory)
       .fromJson(json)
       .map(event => event.toJava)
   }
