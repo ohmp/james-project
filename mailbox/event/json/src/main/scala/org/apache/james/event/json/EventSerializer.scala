@@ -100,7 +100,7 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory) {
   implicit val quotaCReads: Reads[DTO.Quota[QuotaCount]] = Json.reads[DTO.Quota[QuotaCount]]
   implicit val quotaSReads: Reads[DTO.Quota[QuotaSize]] = Json.reads[DTO.Quota[QuotaSize]]
 
-  implicit val quotaEventOFormat: OFormat[Event] = derived.oformat()
+  implicit val eventOFormat: OFormat[Event] = derived.oformat()
 
   def toJson(event: Event): String = Json.toJson(event).toString()
 
