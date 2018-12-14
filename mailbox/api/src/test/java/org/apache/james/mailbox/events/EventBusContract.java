@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
@@ -33,6 +34,8 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.model.MailboxId;
@@ -54,6 +57,7 @@ public interface EventBusContract {
     MailboxIdRegistrationKey KEY_2 = new MailboxIdRegistrationKey(ID_2);
 
     EventBus eventBus();
+    EventBus newEventBus(Duration executionTimeout, int executionRetries);
 
     default MailboxListener newListener() {
         MailboxListener listener = mock(MailboxListener.class);
@@ -327,10 +331,59 @@ public interface EventBusContract {
             return null;
         }).when(listener).event(event);
 
+        eventBus().register(listener, new GroupA());
+
         assertTimeout(Duration.ofSeconds(2),
             () -> {
                 eventBus().dispatch(event, NO_KEYS).block();
                 latch.countDown();
             });
+    }
+
+    @Test
+    default void dispatchShouldNotBlockOnANeverFinishingListener() {
+        MailboxListener listener = newListener();
+        when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.SYNCHRONOUS);
+        CountDownLatch latch = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            latch.await();
+            return null;
+        }).when(listener).event(event);
+
+        int retries = 3;
+        EventBus timeOutEventBus = newEventBus(Duration.ofMillis(1000), retries);
+        timeOutEventBus.register(listener, new GroupA());
+
+        assertTimeout(Duration.ofSeconds(10),
+            () -> {
+                timeOutEventBus.dispatch(event, NO_KEYS).block();
+            });
+    }
+
+    @Test
+    default void dispatchShouldAttendSeveralNotificationWhenBlocking() {
+        int retries = 3;
+        MailboxListener listener = newListener();
+        when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.SYNCHRONOUS);
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger invocationCount = new AtomicInteger(0);
+        AtomicBoolean executionSuccess = new AtomicBoolean(false);
+        doAnswer(invocation -> {
+            if (invocationCount.incrementAndGet() < retries) {
+                latch.await();
+            }
+            executionSuccess.set(true);
+            return null;
+        }).when(listener).event(event);
+
+        EventBus timeOutEventBus = newEventBus(Duration.ofMillis(1000), retries);
+        timeOutEventBus.register(listener, new GroupA());
+
+        assertTimeout(Duration.ofSeconds(10),
+            () -> {
+                timeOutEventBus.dispatch(event, NO_KEYS).block();
+            });
+
+        assertThat(executionSuccess.get()).isTrue();
     }
 }

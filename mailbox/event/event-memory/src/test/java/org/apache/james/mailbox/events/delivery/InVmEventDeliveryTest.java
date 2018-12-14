@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.events.delivery;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -29,6 +30,8 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.metrics.api.NoopMetricFactory;
@@ -39,6 +42,8 @@ import com.google.common.collect.ImmutableList;
 
 class InVmEventDeliveryTest {
     private static final int DELIVERY_DELAY = (int) TimeUnit.MILLISECONDS.toMillis(100);
+    private static final Duration TIMEOUT = Duration.ofSeconds(1);
+    private static final int EXECUTION_RETRIES = 3;
 
     private InVmEventDelivery inVmEventDelivery;
     private MailboxListener listener;
@@ -50,7 +55,7 @@ class InVmEventDeliveryTest {
         event = mock(MailboxListener.MailboxEvent.class);
         listener = mock(MailboxListener.class);
         listener2 = mock(MailboxListener.class);
-        inVmEventDelivery = new InVmEventDelivery(new NoopMetricFactory());
+        inVmEventDelivery = new InVmEventDelivery(new NoopMetricFactory(), TIMEOUT, EXECUTION_RETRIES);
     }
 
     @Test
@@ -154,5 +159,44 @@ class InVmEventDeliveryTest {
         inVmEventDelivery.deliver(ImmutableList.of(listener, listener2), event).synchronousListenerFuture().block();
 
         verify(listener2).event(event);
+    }
+
+    @Test
+    void deliverShouldNotBlockOnANeverFinishingListener() {
+        when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.SYNCHRONOUS);
+        CountDownLatch latch = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            latch.await();
+            return null;
+        }).when(listener).event(event);
+
+
+        assertTimeout(Duration.ofSeconds(10),
+            () -> {
+                inVmEventDelivery.deliver(ImmutableList.of(listener), event).synchronousListenerFuture().block();
+            });
+    }
+
+    @Test
+    void deliverShouldAttendSeveralNotificationWhenBlocking() {
+        int retries = 3;
+        when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.SYNCHRONOUS);
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger invocationCount = new AtomicInteger(0);
+        AtomicBoolean executionSuccess = new AtomicBoolean(false);
+        doAnswer(invocation -> {
+            if (invocationCount.incrementAndGet() < retries) {
+                latch.await();
+            }
+            executionSuccess.set(true);
+            return null;
+        }).when(listener).event(event);
+
+        assertTimeout(Duration.ofSeconds(10),
+            () -> {
+                inVmEventDelivery.deliver(ImmutableList.of(listener), event).synchronousListenerFuture().block();
+            });
+
+        assertThat(executionSuccess.get()).isTrue();
     }
 }

@@ -19,7 +19,9 @@
 
 package org.apache.james.mailbox.events.delivery;
 
+import java.time.Duration;
 import java.util.Collection;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
@@ -33,18 +35,29 @@ import org.slf4j.LoggerFactory;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
+import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class InVmEventDelivery implements EventDelivery {
     private static final Logger LOGGER = LoggerFactory.getLogger(InVmEventDelivery.class);
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(10);
+    private static final int DEFAULT_RETRIES = 3;
 
     private final MetricFactory metricFactory;
+    private final Duration executionTimeout;
+    private final int executionRetries;
 
     @Inject
     public InVmEventDelivery(MetricFactory metricFactory) {
+        this(metricFactory, DEFAULT_TIMEOUT, DEFAULT_RETRIES);
+    }
+
+    public InVmEventDelivery(MetricFactory metricFactory, Duration executionTimeout, int executionRetries) {
         this.metricFactory = metricFactory;
+        this.executionTimeout = executionTimeout;
+        this.executionRetries = executionRetries;
     }
 
     @Override
@@ -70,9 +83,26 @@ public class InVmEventDelivery implements EventDelivery {
 
     private Mono<Void> doDeliver(Collection<MailboxListener> mailboxListeners, Event event) {
         return Flux.fromIterable(mailboxListeners)
-            .flatMap(mailboxListener -> Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event)))
+            .flatMap(mailboxListener -> deliverToListenerReliably(mailboxListener, event))
             .then()
             .subscribeOn(Schedulers.elastic());
+    }
+
+    private Mono<Object> deliverToListenerReliably(MailboxListener mailboxListener, Event event) {
+        return Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event))
+            .publishOn(Schedulers.elastic())
+            .timeout(executionTimeout)
+            .retryWhen(companion -> companion.zipWith(Flux.range(0, executionRetries),
+                (error, index) -> {
+                    if (error instanceof TimeoutException) {
+                        if (index < executionRetries) {
+                            return index;
+                        }
+                    }
+                    LOGGER.warn("Error while execution {}", mailboxListener, error);
+                    throw Exceptions.propagate(error);
+                })
+                .flatMap(index -> Mono.delay(Duration.ofSeconds(index))));
     }
 
     private void doDeliverToListener(MailboxListener mailboxListener, Event event) {

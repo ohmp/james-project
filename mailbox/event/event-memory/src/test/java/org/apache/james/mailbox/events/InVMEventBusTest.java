@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.events;
 
+import java.time.Duration;
+
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,5 +38,14 @@ public class InVMEventBusTest implements EventBusContract {
     @Override
     public EventBus eventBus() {
         return eventBus;
+    }
+
+    @Override
+    public EventBus newEventBus(Duration executionTimeout, int retries) {
+        return new InVMEventBus(
+            new InVmEventDelivery(
+                new NoopMetricFactory(),
+                executionTimeout,
+                retries));
     }
 }
