@@ -84,8 +84,7 @@ public class ListRightsProcessorTest {
         mailboxManager = mock(MailboxManager.class);
         subject = new ListRightsProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
         imapSession = mock(ImapSession.class);
-        mailboxSession = mock(MailboxSession.class);
-        User user1 = mock(User.class);
+        mailboxSession = MailboxSession.create(USER_1.asString());
         MessageManager messageManager = mock(MessageManager.class);
         metaData = mock(MetaData.class);
         responder = mock(Responder.class);
@@ -96,8 +95,6 @@ public class ListRightsProcessorTest {
             .thenReturn(mailboxSession);
         when(imapSession.getState())
             .thenReturn(ImapSessionState.AUTHENTICATED);
-        when(mailboxSession.getUser())
-            .thenReturn(user1);
         when(messageManager.getMetaData(anyBoolean(), any(MailboxSession.class), any(MetaData.FetchGroup.class)))
             .thenReturn(metaData);
         when(mailboxManager.getMailbox(any(MailboxPath.class), any(MailboxSession.class)))

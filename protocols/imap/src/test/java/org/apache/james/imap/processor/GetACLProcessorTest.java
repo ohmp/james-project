@@ -79,7 +79,7 @@ public class GetACLProcessorTest {
         mailboxManager = mock(MailboxManager.class);
         subject = new GetACLProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
         imapSession = mock(ImapSession.class);
-        mailboxSession = mock(MailboxSession.class);
+        mailboxSession = MailboxSession.create(USER_1.asString());
         MessageManager messageManager = mock(MessageManager.class);
         metaData = mock(MetaData.class);
         responder = mock(Responder.class);
@@ -90,8 +90,6 @@ public class GetACLProcessorTest {
             .thenReturn(mailboxSession);
         when(imapSession.getState())
             .thenReturn(ImapSessionState.AUTHENTICATED);
-        when(mailboxSession.getUser())
-            .thenReturn(USER_1);
         when(messageManager.getMetaData(anyBoolean(), any(MailboxSession.class), any(FetchGroup.class)))
             .thenReturn(metaData);
         when(mailboxManager.getMailbox(any(MailboxPath.class), any(MailboxSession.class)))
