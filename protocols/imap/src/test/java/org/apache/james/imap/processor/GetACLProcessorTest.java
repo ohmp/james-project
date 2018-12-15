@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapSessionState;
@@ -41,7 +42,6 @@ import org.apache.james.imap.message.response.ACLResponse;
 import org.apache.james.imap.message.response.UnpooledStatusResponseFactory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageManager.MetaData;
 import org.apache.james.mailbox.MessageManager.MetaData.FetchGroup;
@@ -60,7 +60,7 @@ import org.mockito.ArgumentCaptor;
 public class GetACLProcessorTest {
 
     private static final String MAILBOX_NAME = ImapConstants.INBOX_NAME;
-    private static final String USER_1 = "user1";
+    private static final User USER_1 = User.fromUsername("user1");
 
     private ImapSession imapSession;
     private MailboxManager mailboxManager;
@@ -74,13 +74,12 @@ public class GetACLProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        path = MailboxPath.forUser(USER_1, MAILBOX_NAME);
+        path = MailboxPath.forUser(USER_1.asString(), MAILBOX_NAME);
         UnpooledStatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();
         mailboxManager = mock(MailboxManager.class);
         subject = new GetACLProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
         imapSession = mock(ImapSession.class);
         mailboxSession = mock(MailboxSession.class);
-        User user1 = mock(User.class);
         MessageManager messageManager = mock(MessageManager.class);
         metaData = mock(MetaData.class);
         responder = mock(Responder.class);
@@ -92,8 +91,6 @@ public class GetACLProcessorTest {
         when(imapSession.getState())
             .thenReturn(ImapSessionState.AUTHENTICATED);
         when(mailboxSession.getUser())
-            .thenReturn(user1);
-        when(user1.getUserName())
             .thenReturn(USER_1);
         when(messageManager.getMetaData(anyBoolean(), any(MailboxSession.class), any(FetchGroup.class)))
             .thenReturn(metaData);

@@ -26,12 +26,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.User;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -51,10 +50,11 @@ import org.slf4j.Logger;
 
 public class LocalDeliveryTest {
 
-    public static final String RECEIVER_DOMAIN_COM = "receiver@domain.com";
+    private static final String RECEIVER_DOMAIN_COM = "receiver@domain.com";
+    private static final String USERNAME = "user@domain.tld";
+    public static final User USER = User.fromUsername(USERNAME);
     private UsersRepository usersRepository;
     private MailboxManager mailboxManager;
-    private MailboxSession.User user;
     private FakeMailetConfig config;
     private LocalDelivery testee;
 
@@ -67,11 +67,10 @@ public class LocalDeliveryTest {
         when(metricFactory.generate(anyString())).thenReturn(mock(Metric.class));
         testee = new LocalDelivery(usersRepository, mailboxManager, metricFactory);
 
-        user = mock(MailboxSession.User.class);
         MailboxSession session = mock(MailboxSession.class);
         when(session.getPathDelimiter()).thenReturn('.');
         when(mailboxManager.createSystemSession(any(String.class))).thenReturn(session);
-        when(session.getUser()).thenReturn(user);
+        when(session.getUser()).thenReturn(USER);
 
         config = FakeMailetConfig.builder()
             .mailetName("Local delivery")
@@ -82,14 +81,12 @@ public class LocalDeliveryTest {
     @Test
     public void mailShouldBeWellDeliveredByDefaultToUserWhenVirtualHostingIsTurnedOn() throws Exception {
         // Given
-        String username = "receiver@domain.com";
-        MailboxPath inbox = MailboxPath.forUser(username, "INBOX");
+        MailboxPath inbox = MailboxPath.forUser(USERNAME, "INBOX");
         MessageManager messageManager = mock(MessageManager.class);
 
         when(usersRepository.supportVirtualHosting()).thenReturn(true);
-        when(usersRepository.getUser(new MailAddress(username))).thenReturn(username);
+        when(usersRepository.getUser(new MailAddress(USERNAME))).thenReturn(USERNAME);
         when(mailboxManager.getMailbox(eq(inbox), any(MailboxSession.class))).thenReturn(messageManager);
-        when(user.getUserName()).thenReturn(username);
 
         // When
         Mail mail = createMail();
@@ -103,14 +100,12 @@ public class LocalDeliveryTest {
     @Test
     public void mailShouldBeWellDeliveredByDefaultToUserWhenVirtualHostingIsTurnedOff() throws Exception {
         // Given
-        String username = "receiver";
-        MailboxPath inbox = MailboxPath.forUser(username, "INBOX");
+        MailboxPath inbox = MailboxPath.forUser(USERNAME, "INBOX");
         MessageManager messageManager = mock(MessageManager.class);
         when(usersRepository.supportVirtualHosting()).thenReturn(false);
-        when(usersRepository.getUser(new MailAddress("receiver@localhost"))).thenReturn(username);
-        when(usersRepository.getUser(new MailAddress(RECEIVER_DOMAIN_COM))).thenReturn(username);
+        when(usersRepository.getUser(new MailAddress(USERNAME))).thenReturn(USERNAME);
+        when(usersRepository.getUser(new MailAddress(RECEIVER_DOMAIN_COM))).thenReturn(USERNAME);
         when(mailboxManager.getMailbox(eq(inbox), any(MailboxSession.class))).thenReturn(messageManager);
-        when(user.getUserName()).thenReturn(username);
 
         // When
         Mail mail = createMail();
@@ -121,7 +116,7 @@ public class LocalDeliveryTest {
         verify(messageManager).appendMessage(any(MessageManager.AppendCommand.class), any(MailboxSession.class));
     }
 
-    private Mail createMail() throws MessagingException, IOException {
+    private Mail createMail() throws MessagingException {
         return FakeMail.builder()
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setSender("sender@any.com")

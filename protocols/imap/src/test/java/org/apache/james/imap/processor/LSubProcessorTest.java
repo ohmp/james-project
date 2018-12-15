@@ -27,9 +27,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
@@ -69,28 +68,7 @@ public class LSubProcessorTest {
     private static final String MAILBOX_A = "A.MAILBOX";
 
     private static final String TAG = "TAG";
-    public static final MailboxSession.User USER = new MailboxSession.User() {
-        @Override
-        public List<Locale> getLocalePreferences() {
-            return new ArrayList<>();
-        }
-
-        @Override
-        public String getPassword() {
-            return "test";
-        }
-
-        @Override
-        public String getUserName() {
-            return "test";
-        }
-
-        @Override
-        public boolean isSameUser(String username) {
-            return "test".equalsIgnoreCase(username);
-        }
-
-    };
+    public static final User USER = User.fromUsername("test");
 
     LSubProcessor processor;
     ImapProcessor next;

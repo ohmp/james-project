@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.User;
 import org.apache.james.jmap.exceptions.MailboxHasChildException;
 import org.apache.james.jmap.exceptions.MailboxNotOwnedException;
 import org.apache.james.jmap.exceptions.MailboxParentNotFoundException;
@@ -36,7 +37,6 @@ import org.apache.james.jmap.model.SetMailboxesResponse;
 import org.apache.james.jmap.model.SetMailboxesResponse.Builder;
 import org.apache.james.jmap.model.mailbox.Mailbox;
 import org.apache.james.jmap.model.mailbox.MailboxUpdateRequest;
-import org.apache.james.jmap.model.mailbox.Rights.Username;
 import org.apache.james.jmap.utils.MailboxUtils;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -268,7 +268,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
             mailboxManager.setRights(originMailboxPath,
                 updateRequest.getSharedWith()
                     .get()
-                    .removeEntriesFor(Username.forMailboxPath(originMailboxPath))
+                    .removeEntriesFor(User.fromUsername(originMailboxPath.getUser()))
                     .toMailboxAcl(),
                 mailboxSession);
         }

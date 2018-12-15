@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapSessionState;
@@ -58,6 +59,8 @@ public class CopyProcessorTest {
 
     public static final String TAG = "TAG";
     private static final MailboxSession.SessionId SESSION_ID_42 = MailboxSession.SessionId.of(42L);
+    private static final String USERNAME = "username";
+    private static final User USER = User.fromUsername(USERNAME);
 
     private CopyProcessor testee;
     private ImapProcessor mockNextProcessor;
@@ -83,9 +86,7 @@ public class CopyProcessorTest {
     public void processShouldWork() throws Exception {
         CopyRequest copyRequest = new CopyRequest(ImapCommand.anyStateCommand("Name"), new IdRange[] {new IdRange(4, 6)}, ImapConstants.INBOX_NAME, true, TAG);
 
-        MailboxSession.User user = mock(MailboxSession.User.class);
-        when(user.getUserName()).thenReturn("username");
-        when(mockMailboxSession.getUser()).thenReturn(user);
+        when(mockMailboxSession.getUser()).thenReturn(USER);
         when(mockMailboxSession.getSessionId()).thenReturn(SESSION_ID_42);
         when(mockImapSession.getState()).thenReturn(ImapSessionState.SELECTED);
         when(mockImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mockMailboxSession);
@@ -121,9 +122,7 @@ public class CopyProcessorTest {
     public void processShouldWorkWithMultipleRanges() throws Exception {
         CopyRequest copyRequest = new CopyRequest(ImapCommand.anyStateCommand("Name"), new IdRange[] {new IdRange(5, 6), new IdRange(1, 3)}, ImapConstants.INBOX_NAME, true, TAG);
 
-        MailboxSession.User user = mock(MailboxSession.User.class);
-        when(user.getUserName()).thenReturn("username");
-        when(mockMailboxSession.getUser()).thenReturn(user);
+        when(mockMailboxSession.getUser()).thenReturn(USER);
         when(mockMailboxSession.getSessionId()).thenReturn(SESSION_ID_42);
         when(mockImapSession.getState()).thenReturn(ImapSessionState.SELECTED);
         when(mockImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mockMailboxSession);
@@ -158,9 +157,7 @@ public class CopyProcessorTest {
     public void processShouldRespondNoOnUnExistingTargetMailbox() throws Exception {
         CopyRequest copyRequest = new CopyRequest(ImapCommand.anyStateCommand("Name"), new IdRange[] {new IdRange(4, 6)}, ImapConstants.INBOX_NAME, true, TAG);
 
-        MailboxSession.User user = mock(MailboxSession.User.class);
-        when(user.getUserName()).thenReturn("username");
-        when(mockMailboxSession.getUser()).thenReturn(user);
+        when(mockMailboxSession.getUser()).thenReturn(USER);
         when(mockMailboxSession.getSessionId()).thenReturn(SESSION_ID_42);
         when(mockImapSession.getState()).thenReturn(ImapSessionState.SELECTED);
         when(mockImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mockMailboxSession);
@@ -189,9 +186,7 @@ public class CopyProcessorTest {
     public void processShouldRespondNoOnMailboxException() throws Exception {
         CopyRequest copyRequest = new CopyRequest(ImapCommand.anyStateCommand("Name"), new IdRange[] {new IdRange(4, 6)}, ImapConstants.INBOX_NAME, true, TAG);
 
-        MailboxSession.User user = mock(MailboxSession.User.class);
-        when(user.getUserName()).thenReturn("username");
-        when(mockMailboxSession.getUser()).thenReturn(user);
+        when(mockMailboxSession.getUser()).thenReturn(USER);
         when(mockMailboxSession.getSessionId()).thenReturn(SESSION_ID_42);
         when(mockImapSession.getState()).thenReturn(ImapSessionState.SELECTED);
         when(mockImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mockMailboxSession);

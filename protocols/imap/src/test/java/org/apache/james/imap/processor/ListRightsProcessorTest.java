@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapSessionState;
@@ -41,7 +42,6 @@ import org.apache.james.imap.message.response.ListRightsResponse;
 import org.apache.james.imap.message.response.UnpooledStatusResponseFactory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.MailboxSession.User;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageManager.MetaData;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -63,7 +63,7 @@ import org.mockito.ArgumentCaptor;
 public class ListRightsProcessorTest {
 
     private static final String MAILBOX_NAME = ImapConstants.INBOX_NAME;
-    private static final String USER_1 = "user1";
+    private static final User USER_1 = User.fromUsername("user1");
 
     private ImapSession imapSession;
     private MailboxManager mailboxManager;
@@ -79,7 +79,7 @@ public class ListRightsProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        path = MailboxPath.forUser(USER_1, MAILBOX_NAME);
+        path = MailboxPath.forUser(USER_1.asString(), MAILBOX_NAME);
         UnpooledStatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();
         mailboxManager = mock(MailboxManager.class);
         subject = new ListRightsProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
@@ -98,16 +98,14 @@ public class ListRightsProcessorTest {
             .thenReturn(ImapSessionState.AUTHENTICATED);
         when(mailboxSession.getUser())
             .thenReturn(user1);
-        when(user1.getUserName())
-            .thenReturn(USER_1);
         when(messageManager.getMetaData(anyBoolean(), any(MailboxSession.class), any(MetaData.FetchGroup.class)))
             .thenReturn(metaData);
         when(mailboxManager.getMailbox(any(MailboxPath.class), any(MailboxSession.class)))
             .thenReturn(messageManager);
 
-        listRightsRequest = new ListRightsRequest("TAG", ImapCommand.anyStateCommand("Name"), MAILBOX_NAME, USER_1);
+        listRightsRequest = new ListRightsRequest("TAG", ImapCommand.anyStateCommand("Name"), MAILBOX_NAME, USER_1.asString());
 
-        user1Key = EntryKey.deserialize(USER_1);
+        user1Key = EntryKey.deserialize(USER_1.asString());
         listRights = new Rfc4314Rights[] {Rfc4314Rights.fromSerializedRfc4314Rights("ae"), Rfc4314Rights.fromSerializedRfc4314Rights("i"), Rfc4314Rights.fromSerializedRfc4314Rights("k")};
     }
     
@@ -177,7 +175,7 @@ public class ListRightsProcessorTest {
 
         subject.doProcess(listRightsRequest, responder, imapSession);
 
-        ListRightsResponse response = new ListRightsResponse(MAILBOX_NAME, USER_1, listRights);
+        ListRightsResponse response = new ListRightsResponse(MAILBOX_NAME, USER_1.asString(), listRights);
         verify(responder, times(2)).respond(argumentCaptor.capture());
         verifyNoMoreInteractions(responder);
 

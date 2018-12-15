@@ -27,12 +27,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.User;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -53,20 +52,19 @@ import org.slf4j.Logger;
 
 @Deprecated
 public class ToRecipientFolderTest {
-
-    public static final String USER_LOCAL_PART = "receiver";
-    public static final String USER = USER_LOCAL_PART + "@domain.com";
-    public static final MailboxPath INBOX = MailboxPath.forUser(USER, "INBOX");
-    public static final MailboxPath JUNK = MailboxPath.forUser(USER_LOCAL_PART, "Junk");
-    public static final MailboxPath JUNK_VIRTUAL_HOSTING = MailboxPath.forUser(USER, "Junk");
-    public static final String MAILET_NAME = "RecipientFolderTest";
+    private static final String USER_LOCAL_PART = "receiver";
+    private static final User USER = User.fromUsername(USER_LOCAL_PART + "@domain.com");
+    private static final MailboxPath INBOX = MailboxPath.forUser(USER.asString(), "INBOX");
+    private static final MailboxPath JUNK = MailboxPath.forUser(USER_LOCAL_PART, "Junk");
+    private static final MailboxPath JUNK_VIRTUAL_HOSTING = MailboxPath.forUser(USER.asString(), "Junk");
+    private static final String MAILET_NAME = "RecipientFolderTest";
 
     private MessageManager messageManager;
     private UsersRepository usersRepository;
     private MailboxManager mailboxManager;
     private ToRecipientFolder testee;
-    private MailboxSession.User user;
     private FakeMailContext mailetContext;
+    private MailboxSession session;
 
     @Before
     public void setUp() throws Exception {
@@ -74,21 +72,20 @@ public class ToRecipientFolderTest {
         messageManager = mock(MessageManager.class);
         usersRepository = mock(UsersRepository.class);
         mailboxManager = mock(MailboxManager.class);
-        user = mock(MailboxSession.User.class);
 
 
         MetricFactory metricFactory = mock(MetricFactory.class);
         when(metricFactory.generate(anyString())).thenReturn(mock(Metric.class));
         testee = new ToRecipientFolder(mailboxManager, usersRepository, metricFactory);
 
-        MailboxSession session = mock(MailboxSession.class);
+        session = mock(MailboxSession.class);
         when(session.getPathDelimiter()).thenReturn('.');
         try {
             when(mailboxManager.createSystemSession(any(String.class))).thenReturn(session);
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         }
-        when(session.getUser()).thenReturn(user);
+        when(session.getUser()).thenReturn(USER);
     }
 
     @Test
@@ -132,9 +129,8 @@ public class ToRecipientFolderTest {
     @Test
     public void folderParameterShouldIndicateDestinationFolder() throws Exception {
         when(usersRepository.supportVirtualHosting()).thenReturn(true);
-        when(usersRepository.getUser(new MailAddress(USER))).thenReturn(USER);
+        when(usersRepository.getUser(USER.asMailAddress())).thenReturn(USER.asString());
         when(mailboxManager.getMailbox(eq(JUNK_VIRTUAL_HOSTING), any(MailboxSession.class))).thenReturn(messageManager);
-        when(user.getUserName()).thenReturn(USER);
 
         testee.init(FakeMailetConfig.builder()
             .mailetName(MAILET_NAME)
@@ -149,9 +145,8 @@ public class ToRecipientFolderTest {
     @Test
     public void folderParameterShouldBeInboxByDefault() throws Exception {
         when(usersRepository.supportVirtualHosting()).thenReturn(true);
-        when(usersRepository.getUser(new MailAddress(USER))).thenReturn(USER);
+        when(usersRepository.getUser(USER.asMailAddress())).thenReturn(USER.asString());
         when(mailboxManager.getMailbox(eq(INBOX), any(MailboxSession.class))).thenReturn(messageManager);
-        when(user.getUserName()).thenReturn(USER);
 
         testee.init(FakeMailetConfig.builder()
             .mailetName(MAILET_NAME)
@@ -165,10 +160,10 @@ public class ToRecipientFolderTest {
     @Test
     public void folderParameterShouldWorkWhenVirtualHostingIsTurnedOff() throws Exception {
         when(usersRepository.supportVirtualHosting()).thenReturn(false);
+        when(usersRepository.getUser(USER.asMailAddress())).thenReturn(USER_LOCAL_PART);
         when(usersRepository.getUser(new MailAddress(USER_LOCAL_PART + "@localhost"))).thenReturn(USER_LOCAL_PART);
-        when(usersRepository.getUser(new MailAddress(USER))).thenReturn(USER_LOCAL_PART);
         when(mailboxManager.getMailbox(eq(JUNK), any(MailboxSession.class))).thenReturn(messageManager);
-        when(user.getUserName()).thenReturn(USER_LOCAL_PART);
+        when(session.getUser()).thenReturn(User.fromUsername(USER_LOCAL_PART));
 
         testee.init(FakeMailetConfig.builder()
             .mailetName(MAILET_NAME)
@@ -181,12 +176,12 @@ public class ToRecipientFolderTest {
         verify(messageManager).appendMessage(any(MessageManager.AppendCommand.class), any(MailboxSession.class));
     }
 
-    private Mail createMail() throws MessagingException, IOException {
+    private Mail createMail() throws MessagingException {
         return FakeMail.builder()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .setSender("sender@any.com")
                 .setSubject("Subject")
-                .addToRecipient(USER)
+                .addToRecipient(USER.asString())
                 .setMultipartWithBodyParts(
                     MimeMessageBuilder.bodyPartBuilder()
                         .data("toto")

@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.mailbox.MailboxSession;
@@ -35,25 +36,21 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class PathConverterTest {
-
     private static final String USERNAME = "username";
+    private static final User USER = User.fromUsername(USERNAME);
     private static final char PATH_DELIMITER = '.';
 
-    private ImapSession imapSession;
-    private MailboxSession mailboxSession;
     private PathConverter pathConverter;
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() {
-        imapSession = mock(ImapSession.class);
-        mailboxSession = mock(MailboxSession.class);
-        MailboxSession.User user = mock(MailboxSession.User.class);
+        ImapSession imapSession = mock(ImapSession.class);
+        MailboxSession mailboxSession = mock(MailboxSession.class);
         pathConverter = PathConverter.forSession(imapSession);
         when(imapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mailboxSession);
-        when(mailboxSession.getUser()).thenReturn(user);
+        when(mailboxSession.getUser()).thenReturn(USER);
         when(mailboxSession.getPathDelimiter()).thenReturn(PATH_DELIMITER);
-        when(user.getUserName()).thenReturn(USERNAME);
     }
 
     @Test
