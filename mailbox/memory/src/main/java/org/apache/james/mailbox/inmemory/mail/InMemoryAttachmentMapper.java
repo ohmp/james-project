@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
-import org.apache.james.mailbox.store.mail.model.Username;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -43,7 +43,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     private static final int INITIAL_SIZE = 128;
     private final Map<AttachmentId, Attachment> attachmentsById;
     private final Multimap<AttachmentId, MessageId> messageIdsByAttachmentId;
-    private final Multimap<AttachmentId, Username> ownersByAttachmentId;
+    private final Multimap<AttachmentId, User> ownersByAttachmentId;
 
     public InMemoryAttachmentMapper() {
         attachmentsById = new ConcurrentHashMap<>(INITIAL_SIZE);
@@ -73,7 +73,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException {
+    public void storeAttachmentForOwner(Attachment attachment, User owner) throws MailboxException {
         attachmentsById.put(attachment.getAttachmentId(), attachment);
         ownersByAttachmentId.put(attachment.getAttachmentId(), owner);
     }
@@ -102,7 +102,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public Collection<Username> getOwners(final AttachmentId attachmentId) throws MailboxException {
+    public Collection<User> getOwners(final AttachmentId attachmentId) throws MailboxException {
         return ownersByAttachmentId.get(attachmentId);
     }
 }

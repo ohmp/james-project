@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.blob.api.BlobStore;
+import org.apache.james.core.User;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2.DAOAttachment;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -36,7 +37,6 @@ import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
-import org.apache.james.mailbox.store.mail.model.Username;
 import org.apache.james.util.FluentFutureStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +121,7 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException {
+    public void storeAttachmentForOwner(Attachment attachment, User owner) throws MailboxException {
         ownerDAO.addOwner(attachment.getAttachmentId(), owner)
             .thenCompose(any -> blobStore.save(attachment.getBytes()))
             .thenApply(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
@@ -144,7 +144,7 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public Collection<Username> getOwners(AttachmentId attachmentId) throws MailboxException {
+    public Collection<User> getOwners(AttachmentId attachmentId) throws MailboxException {
         return ownerDAO.retrieveOwners(attachmentId).join().collect(Guavate.toImmutableList());
     }
 

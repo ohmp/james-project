@@ -26,9 +26,9 @@ import java.util.stream.IntStream;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
+import org.apache.james.core.User;
 import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
 import org.apache.james.mailbox.model.AttachmentId;
-import org.apache.james.mailbox.store.mail.model.Username;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,8 +37,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class CassandraAttachmentOwnerDAOTest {
     private static final AttachmentId ATTACHMENT_ID = AttachmentId.from("id1");
-    private static final Username OWNER_1 = Username.fromRawValue("owner1");
-    private static final Username OWNER_2 = Username.fromRawValue("owner2");
+    private static final User OWNER_1 = User.fromUsername("owner1");
+    private static final User OWNER_2 = User.fromUsername("owner2");
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraAttachmentModule.MODULE);
@@ -83,7 +83,7 @@ class CassandraAttachmentOwnerDAOTest {
             .collect(JamesCollectors.chunker(128))
             .forEach(chunk -> FluentFutureStream.of(
                 chunk.stream()
-                    .map(i -> testee.addOwner(ATTACHMENT_ID, Username.fromRawValue("owner" + i))))
+                    .map(i -> testee.addOwner(ATTACHMENT_ID, User.fromUsername("owner" + i))))
                 .join());
 
         assertThat(testee.retrieveOwners(ATTACHMENT_ID).join())

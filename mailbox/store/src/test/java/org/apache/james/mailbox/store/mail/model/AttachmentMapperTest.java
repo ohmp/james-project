@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Attachment;
@@ -39,8 +40,8 @@ import com.google.common.collect.ImmutableList;
 
 public abstract class AttachmentMapperTest {
     private static final AttachmentId UNKNOWN_ATTACHMENT_ID = AttachmentId.from("unknown");
-    public static final Username OWNER = Username.fromRawValue("owner");
-    public static final Username ADDITIONAL_OWNER = Username.fromRawValue("additionalOwner");
+    public static final User OWNER = User.fromUsername("owner");
+    public static final User ADDITIONAL_OWNER = User.fromUsername("additionalOwner");
 
     private AttachmentMapper attachmentMapper;
 
@@ -275,8 +276,8 @@ public abstract class AttachmentMapperTest {
         attachmentMapper.storeAttachmentForOwner(attachment, OWNER);
 
         //When
-        Collection<Username> expectedOwners = ImmutableList.of(OWNER);
-        Collection<Username> actualOwners = attachmentMapper.getOwners(attachmentId);
+        Collection<User> expectedOwners = ImmutableList.of(OWNER);
+        Collection<User> actualOwners = attachmentMapper.getOwners(attachmentId);
         //Then
         assertThat(actualOwners).containsOnlyElementsOf(expectedOwners);
     }
@@ -293,7 +294,7 @@ public abstract class AttachmentMapperTest {
         attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), generateMessageId());
 
         //When
-        Collection<Username> actualOwners = attachmentMapper.getOwners(attachmentId);
+        Collection<User> actualOwners = attachmentMapper.getOwners(attachmentId);
         //Then
         assertThat(actualOwners).isEmpty();
     }
@@ -311,15 +312,15 @@ public abstract class AttachmentMapperTest {
         attachmentMapper.storeAttachmentForOwner(attachment, ADDITIONAL_OWNER);
 
         //When
-        Collection<Username> expectedOwners = ImmutableList.of(OWNER, ADDITIONAL_OWNER);
-        Collection<Username> actualOwners = attachmentMapper.getOwners(attachmentId);
+        Collection<User> expectedOwners = ImmutableList.of(OWNER, ADDITIONAL_OWNER);
+        Collection<User> actualOwners = attachmentMapper.getOwners(attachmentId);
         //Then
         assertThat(actualOwners).containsOnlyElementsOf(expectedOwners);
     }
 
     @Test
     public void getOwnersShouldReturnEmptyWhenUnknownAttachmentId() throws Exception {
-        Collection<Username> actualOwners = attachmentMapper.getOwners(AttachmentId.from("any"));
+        Collection<User> actualOwners = attachmentMapper.getOwners(AttachmentId.from("any"));
 
         assertThat(actualOwners).isEmpty();
     }
