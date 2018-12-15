@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -41,7 +42,7 @@ public class MailboxPath {
      * @return inbox
      */
     public static MailboxPath inbox(MailboxSession session) {
-        return MailboxPath.forUser(session.getUser().getUserName(), MailboxConstants.INBOX);
+        return MailboxPath.forUser(session.getUser().asString(), MailboxConstants.INBOX);
     }
 
     /**
@@ -101,7 +102,7 @@ public class MailboxPath {
     }
 
     public boolean belongsTo(MailboxSession mailboxSession) {
-        return mailboxSession.getUser().isSameUser(user);
+        return mailboxSession.getUser().equals(User.fromUsername(user));
     }
 
     /**

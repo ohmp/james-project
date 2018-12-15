@@ -76,7 +76,7 @@ public class StoreAttachmentManager implements AttachmentManager {
     @Override
     public void storeAttachment(Attachment attachment, MailboxSession mailboxSession) throws MailboxException {
         attachmentMapperFactory.getAttachmentMapper(mailboxSession)
-            .storeAttachmentForOwner(attachment, mailboxSession.getUser().getCoreUser());
+            .storeAttachmentForOwner(attachment, mailboxSession.getUser());
     }
 
     @Override
@@ -105,7 +105,7 @@ public class StoreAttachmentManager implements AttachmentManager {
         Collection<User> explicitOwners = attachmentMapperFactory.getAttachmentMapper(mailboxSession)
             .getOwners(attachmentId);
         return explicitOwners.stream()
-            .anyMatch(username -> mailboxSession.getUser().isSameUser(username.asString()));
+            .anyMatch(username -> mailboxSession.getUser().equals(User.fromUsername(username.asString())));
     }
 
     private Collection<MessageId> getRelatedMessageIds(AttachmentId attachmentId, MailboxSession mailboxSession) throws MailboxException {
