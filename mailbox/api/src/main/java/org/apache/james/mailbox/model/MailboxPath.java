@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.james.core.User;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -102,7 +101,7 @@ public class MailboxPath {
     }
 
     public boolean belongsTo(MailboxSession mailboxSession) {
-        return mailboxSession.getUser().equals(User.fromUsername(user));
+        return user.equalsIgnoreCase(mailboxSession.getUser().asString());
     }
 
     /**
