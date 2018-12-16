@@ -81,12 +81,12 @@ public class SetACLProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        path = MailboxPath.forUser(USER_1.asString(), MAILBOX_NAME);
+        path = MailboxPath.forUser(USER_1, MAILBOX_NAME);
         UnpooledStatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();
         mailboxManager = mock(MailboxManager.class);
         subject = new SetACLProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
         imapSession = mock(ImapSession.class);
-        mailboxSession = MailboxSession.create(USER_1.asString());
+        mailboxSession = MailboxSession.create(USER_1);
         MessageManager messageManager = mock(MessageManager.class);
         MetaData metaData = mock(MetaData.class);
         responder = mock(Responder.class);

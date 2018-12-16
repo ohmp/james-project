@@ -100,7 +100,7 @@ public class StoreMailboxManagerTest {
     public void getMailboxShouldReturnMailboxManagerWhenKnownId() throws Exception {
         Mailbox mockedMailbox = mock(Mailbox.class);
         when(mockedMailbox.generateAssociatedPath())
-            .thenReturn(MailboxPath.forUser(CURRENT_USER.asString(), "mailboxName"));
+            .thenReturn(MailboxPath.forUser(CURRENT_USER, "mailboxName"));
         when(mockedMailbox.getMailboxId()).thenReturn(MAILBOX_ID);
         when(mockedMailboxMapper.findMailboxById(MAILBOX_ID)).thenReturn(mockedMailbox);
 

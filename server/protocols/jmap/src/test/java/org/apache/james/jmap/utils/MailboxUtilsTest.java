@@ -47,7 +47,7 @@ public class MailboxUtilsTest {
     
     @Test
     public void hasChildrenShouldReturnFalseWhenNoChild() throws Exception {
-        MailboxPath mailboxPath = MailboxPath.forUser(USER.asString(), "myBox");
+        MailboxPath mailboxPath = MailboxPath.forUser(USER, "myBox");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
         MailboxId mailboxId = mailboxManager.getMailbox(mailboxPath, mailboxSession).getId();
 
@@ -56,11 +56,11 @@ public class MailboxUtilsTest {
 
     @Test
     public void hasChildrenShouldReturnTrueWhenHasAChild() throws Exception {
-        MailboxPath parentMailboxPath = MailboxPath.forUser(USER.asString(), "inbox");
+        MailboxPath parentMailboxPath = MailboxPath.forUser(USER, "inbox");
         mailboxManager.createMailbox(parentMailboxPath, mailboxSession);
         MailboxId parentId = mailboxManager.getMailbox(parentMailboxPath, mailboxSession).getId();
 
-        MailboxPath mailboxPath = MailboxPath.forUser(USER.asString(), "inbox.myBox");
+        MailboxPath mailboxPath = MailboxPath.forUser(USER, "inbox.myBox");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
 
         assertThat(sut.hasChildren(parentId, mailboxSession)).isTrue();

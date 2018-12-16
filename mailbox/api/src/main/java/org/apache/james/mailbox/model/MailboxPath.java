@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -49,6 +50,10 @@ public class MailboxPath {
      */
     public static MailboxPath forUser(String username, String mailboxName) {
         return new MailboxPath(MailboxConstants.USER_NAMESPACE, username, mailboxName);
+    }
+
+    public static MailboxPath forUser(User user, String mailboxName) {
+        return new MailboxPath(MailboxConstants.USER_NAMESPACE, user.asString(), mailboxName);
     }
 
     private final String namespace;

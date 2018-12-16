@@ -54,9 +54,9 @@ import org.slf4j.Logger;
 public class ToRecipientFolderTest {
     private static final String USER_LOCAL_PART = "receiver";
     private static final User USER = User.fromUsername(USER_LOCAL_PART + "@domain.com");
-    private static final MailboxPath INBOX = MailboxPath.forUser(USER.asString(), "INBOX");
+    private static final MailboxPath INBOX = MailboxPath.forUser(USER, "INBOX");
     private static final MailboxPath JUNK = MailboxPath.forUser(USER_LOCAL_PART, "Junk");
-    private static final MailboxPath JUNK_VIRTUAL_HOSTING = MailboxPath.forUser(USER.asString(), "Junk");
+    private static final MailboxPath JUNK_VIRTUAL_HOSTING = MailboxPath.forUser(USER, "Junk");
     private static final String MAILET_NAME = "RecipientFolderTest";
 
     private MessageManager messageManager;

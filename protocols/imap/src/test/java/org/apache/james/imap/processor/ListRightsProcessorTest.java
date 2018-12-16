@@ -79,7 +79,7 @@ public class ListRightsProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        path = MailboxPath.forUser(USER_1.asString(), MAILBOX_NAME);
+        path = MailboxPath.forUser(USER_1, MAILBOX_NAME);
         UnpooledStatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();
         mailboxManager = mock(MailboxManager.class);
         subject = new ListRightsProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
