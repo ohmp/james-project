@@ -23,13 +23,13 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.User;
 import org.apache.james.core.quota.QuotaValue;
 import org.apache.james.jmap.model.mailbox.Mailbox;
 import org.apache.james.jmap.model.mailbox.MailboxNamespace;
 import org.apache.james.jmap.model.mailbox.Quotas;
 import org.apache.james.jmap.model.mailbox.Quotas.QuotaId;
 import org.apache.james.jmap.model.mailbox.Rights;
-import org.apache.james.jmap.model.mailbox.Rights.Username;
 import org.apache.james.jmap.model.mailbox.SortOrder;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -116,8 +116,8 @@ public class MailboxFactory {
         MessageManager.MetaData metaData = messageManager.getMetaData(NO_RESET_RECENT, mailboxSession, MessageManager.MetaData.FetchGroup.NO_COUNT);
 
         Rights rights = Rights.fromACL(metaData.getACL())
-            .removeEntriesFor(Username.forMailboxPath(mailboxPath));
-        Username username = Username.fromSession(mailboxSession);
+            .removeEntriesFor(User.fromUsername(mailboxPath.getUser()));
+        User user = mailboxSession.getUser().getCoreUser();
         Quotas quotas = getQuotas(mailboxPath);
 
         return Mailbox.builder()
@@ -129,12 +129,12 @@ public class MailboxFactory {
             .totalMessages(mailboxCounters.getCount())
             .sortOrder(SortOrder.getSortOrder(role))
             .sharedWith(rights)
-            .mayAddItems(rights.mayAddItems(username).orElse(isOwner))
-            .mayCreateChild(rights.mayCreateChild(username).orElse(isOwner))
-            .mayDelete(rights.mayDelete(username).orElse(isOwner))
-            .mayReadItems(rights.mayReadItems(username).orElse(isOwner))
-            .mayRemoveItems(rights.mayRemoveItems(username).orElse(isOwner))
-            .mayRename(rights.mayRename(username).orElse(isOwner))
+            .mayAddItems(rights.mayAddItems(user).orElse(isOwner))
+            .mayCreateChild(rights.mayCreateChild(user).orElse(isOwner))
+            .mayDelete(rights.mayDelete(user).orElse(isOwner))
+            .mayReadItems(rights.mayReadItems(user).orElse(isOwner))
+            .mayRemoveItems(rights.mayRemoveItems(user).orElse(isOwner))
+            .mayRename(rights.mayRename(user).orElse(isOwner))
             .namespace(getNamespace(mailboxPath, isOwner))
             .quotas(quotas)
             .build();

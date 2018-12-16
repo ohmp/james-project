@@ -28,11 +28,10 @@ import java.util.Optional;
 import java.util.function.BinaryOperator;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.core.User;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxACL.EntryKey;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
-import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.util.GuavaUtils;
 import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
@@ -93,57 +92,20 @@ public class Rights {
         }
     }
 
-    public static class Username {
-        public static Username forMailboxPath(MailboxPath mailboxPath) {
-            return new Username(mailboxPath.getUser());
-        }
-
-        public static Username fromSession(MailboxSession mailboxSession) {
-            return new Username(mailboxSession.getUser().getUserName());
-        }
-
-        private final String value;
-
-        public Username(String value) {
-            this.value = value;
-        }
-
-        @JsonValue
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof Username) {
-                Username username = (Username) o;
-
-                return Objects.equals(this.value, username.value);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(value);
-        }
-
-    }
-
     public static class Builder {
-        private Multimap<Username, Right> rights;
+        private Multimap<User, Right> rights;
 
         public Builder() {
             rights = ArrayListMultimap.create();
         }
 
-        public Builder delegateTo(Username username, Right... rights) {
-            delegateTo(username, Arrays.asList(rights));
+        public Builder delegateTo(User user, Right... rights) {
+            delegateTo(user, Arrays.asList(rights));
             return this;
         }
 
-        public Builder delegateTo(Username username, Collection<Right> rights) {
-            this.rights.putAll(username, rights);
+        public Builder delegateTo(User user, Collection<Right> rights) {
+            this.rights.putAll(user, rights);
             return this;
         }
 
@@ -173,7 +135,7 @@ public class Rights {
 
     private static Builder toRightsBuilder(Map.Entry<EntryKey, MailboxACL.Rfc4314Rights> entry) {
         return builder().delegateTo(
-            new Username(entry.getKey().getName()),
+            User.fromUsername(entry.getKey().getName()),
             fromACL(entry.getValue()));
     }
 
@@ -203,28 +165,28 @@ public class Rights {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Rights.class);
 
-    private final Multimap<Username, Right> rights;
+    private final Multimap<User, Right> rights;
 
     @JsonCreator
-    public Rights(Map<Username, List<Right>> rights) {
+    public Rights(Map<User, List<Right>> rights) {
         this(GuavaUtils.toMultimap(rights));
     }
 
-    private Rights(Multimap<Username, Right> rights) {
+    private Rights(Multimap<User, Right> rights) {
         this.rights = rights;
     }
 
     @JsonAnyGetter
-    public Map<Username, Collection<Right>> getRights() {
+    public Map<User, Collection<Right>> getRights() {
         return rights.asMap();
     }
 
-    public Rights removeEntriesFor(Username username) {
+    public Rights removeEntriesFor(User user) {
         return new Rights(
             rights.asMap()
                 .entrySet()
                 .stream()
-                .filter(entry -> !entry.getKey().equals(username))
+                .filter(entry -> !entry.getKey().equals(user))
                 .flatMap(entry -> entry.getValue()
                     .stream()
                     .map(v -> Pair.of(entry.getKey(), v)))
@@ -239,37 +201,37 @@ public class Rights {
             .stream()
             .map(entry -> new MailboxACL(
                 ImmutableMap.of(
-                    EntryKey.createUserEntryKey(entry.getKey().value),
+                    EntryKey.createUserEntryKey(entry.getKey().asString()),
                     toMailboxAclRights(entry.getValue()))))
             .reduce(MailboxACL.EMPTY, union);
     }
 
-    public Optional<Boolean> mayReadItems(Username username) {
-        return containsRight(username, Right.Read);
+    public Optional<Boolean> mayReadItems(User user) {
+        return containsRight(user, Right.Read);
     }
 
-    public Optional<Boolean> mayAddItems(Username username) {
-        return containsRight(username, Right.Insert);
+    public Optional<Boolean> mayAddItems(User user) {
+        return containsRight(user, Right.Insert);
     }
 
-    public Optional<Boolean> mayCreateChild(Username username) {
+    public Optional<Boolean> mayCreateChild(User user) {
         return UNSUPPORTED;
     }
 
-    public Optional<Boolean> mayRemoveItems(Username username) {
-        return containsRight(username, Right.DeleteMessages);
+    public Optional<Boolean> mayRemoveItems(User user) {
+        return containsRight(user, Right.DeleteMessages);
     }
 
-    public Optional<Boolean> mayRename(Username username) {
+    public Optional<Boolean> mayRename(User user) {
         return UNSUPPORTED;
     }
 
-    public Optional<Boolean> mayDelete(Username username) {
+    public Optional<Boolean> mayDelete(User user) {
         return UNSUPPORTED;
     }
 
-    private Optional<Boolean> containsRight(Username username, Right right) {
-        return Optional.ofNullable(rights.get(username))
+    private Optional<Boolean> containsRight(User user, Right right) {
+        return Optional.ofNullable(rights.get(user))
             .filter(rightList -> !rightList.isEmpty())
             .map(rightList -> rightList.contains(right));
     }
