@@ -79,7 +79,7 @@ public class GetACLProcessorTest {
         mailboxManager = mock(MailboxManager.class);
         subject = new GetACLProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new NoopMetricFactory());
         imapSession = mock(ImapSession.class);
-        mailboxSession = MailboxSession.create(USER_1.asString());
+        mailboxSession = MailboxSession.create(USER_1);
         MessageManager messageManager = mock(MessageManager.class);
         metaData = mock(MetaData.class);
         responder = mock(Responder.class);

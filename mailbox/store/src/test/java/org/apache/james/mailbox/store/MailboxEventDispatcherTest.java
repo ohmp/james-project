@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.MailboxListener;
@@ -63,7 +64,7 @@ public class MailboxEventDispatcherTest {
     private MessageResult result;
     private Mailbox mailbox;
 
-    private MailboxSession session = MailboxSession.create("test", SESSION_ID);
+    private MailboxSession session = MailboxSession.create(User.fromUsername("test"), SESSION_ID);
 
     @Before
     public void setUp() throws Exception {

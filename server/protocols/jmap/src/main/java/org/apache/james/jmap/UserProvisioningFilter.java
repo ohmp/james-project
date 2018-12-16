@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.mail.internet.AddressException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -91,11 +90,10 @@ public class UserProvisioningFilter implements Filter {
     }
 
     private String getUsername(User user) throws UsersRepositoryException {
-        try {
-            return usersRepository.getUser(user.asMailAddress());
-        } catch (AddressException e) {
+        if (usersRepository.supportVirtualHosting()) {
             return user.asString();
         }
+        return user.getLocalPart();
     }
     
     private String generatePassword() {

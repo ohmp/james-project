@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -34,9 +35,9 @@ import org.junit.rules.ExpectedException;
 public class UserRepositoryAuthenticatorTest {
 
     public static final String PASSWORD = "password";
-    public static final String USER = "user";
+    public static final User USER = User.fromUsername("user");
     public static final String BAD_PASSWORD = "badPassword";
-    public static final String BAD_USER = "badUser";
+    public static final User BAD_USER = User.fromUsername("badUser");
     private UsersRepository usersRepository;
     private UserRepositoryAuthenticator testee;
 
@@ -51,28 +52,28 @@ public class UserRepositoryAuthenticatorTest {
 
     @Test
     public void isAuthenticShouldReturnTrueWhenGoodLoginPassword() throws Exception {
-        when(usersRepository.test(USER, PASSWORD)).thenReturn(true);
+        when(usersRepository.test(USER.asString(), PASSWORD)).thenReturn(true);
 
         assertThat(testee.isAuthentic(USER, PASSWORD)).isTrue();
     }
 
     @Test
     public void isAuthenticShouldReturnFalseWhenWrongPassword() throws Exception {
-        when(usersRepository.test(USER, BAD_PASSWORD)).thenReturn(false);
+        when(usersRepository.test(USER.asString(), BAD_PASSWORD)).thenReturn(false);
 
         assertThat(testee.isAuthentic(USER, BAD_PASSWORD)).isFalse();
     }
 
     @Test
     public void isAuthenticShouldReturnFalseWhenBadUser() throws Exception {
-        when(usersRepository.test(USER, BAD_PASSWORD)).thenReturn(false);
+        when(usersRepository.test(USER.asString(), BAD_PASSWORD)).thenReturn(false);
 
         assertThat(testee.isAuthentic(BAD_USER, BAD_PASSWORD)).isFalse();
     }
 
     @Test
     public void isAuthenticShouldFailOnUserRepositoryFailure() throws Exception {
-        when(usersRepository.test(USER, PASSWORD)).thenThrow(new UsersRepositoryException(""));
+        when(usersRepository.test(USER.asString(), PASSWORD)).thenThrow(new UsersRepositoryException(""));
 
         expectedException.expect(MailboxException.class);
 

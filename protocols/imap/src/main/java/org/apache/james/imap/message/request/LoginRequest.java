@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.imap.message.request;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.message.request.ImapRequest;
 
@@ -25,13 +26,12 @@ import org.apache.james.imap.api.message.request.ImapRequest;
  * {@link ImapRequest} which requests the login of a user
  */
 public class LoginRequest extends AbstractImapRequest {
-    private final String userid;
-
+    private final User user;
     private final String password;
 
-    public LoginRequest(ImapCommand command, String userid, String password, String tag) {
+    public LoginRequest(ImapCommand command, User user, String password, String tag) {
         super(tag, command);
-        this.userid = userid;
+        this.user = user;
         this.password = password;
     }
 
@@ -40,7 +40,7 @@ public class LoginRequest extends AbstractImapRequest {
      * 
      * @return pass
      */
-    public final String getPassword() {
+    public String getPassword() {
         return password;
     }
 
@@ -49,7 +49,7 @@ public class LoginRequest extends AbstractImapRequest {
      * 
      * @return user
      */
-    public final String getUserid() {
-        return userid;
+    public User getUser() {
+        return user;
     }
 }

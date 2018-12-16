@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.store;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.exception.MailboxException;
 
 /**
@@ -29,10 +30,10 @@ public interface Authenticator {
     /**
      * Is the given user authentic?
      * 
-     * @param userid not null
+     * @param user not null
      * @param passwd not null
      * @return true when the user is authentic,
      * false otherwise
      */
-    boolean isAuthentic(String userid, CharSequence passwd) throws MailboxException;
+    boolean isAuthentic(User user, CharSequence passwd) throws MailboxException;
 }

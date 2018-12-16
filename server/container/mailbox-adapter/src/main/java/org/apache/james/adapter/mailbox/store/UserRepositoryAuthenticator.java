@@ -21,6 +21,7 @@ package org.apache.james.adapter.mailbox.store;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.store.Authenticator;
 import org.apache.james.user.api.UsersRepository;
@@ -40,9 +41,9 @@ public class UserRepositoryAuthenticator implements Authenticator {
     }
 
     @Override
-    public boolean isAuthentic(String userid, CharSequence passwd) throws MailboxException {
+    public boolean isAuthentic(User user, CharSequence passwd) throws MailboxException {
         try {
-            return repos.test(userid, passwd.toString());
+            return repos.test(user.asString(), passwd.toString());
         } catch (UsersRepositoryException e) {
             throw new MailboxException("Unable to access UsersRepository", e);
         }

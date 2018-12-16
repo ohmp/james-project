@@ -65,9 +65,9 @@ public class MailboxFactoryTest {
         QuotaManager quotaManager = inMemoryIntegrationResources.createQuotaManager(maxQuotaManager, mailboxManager);
 
         user = ManagerTestResources.USER.asString();
-        otherUser = ManagerTestResources.OTHER_USER;
-        mailboxSession = mailboxManager.login(user, ManagerTestResources.USER_PASS);
-        otherMailboxSession = mailboxManager.login(otherUser, ManagerTestResources.OTHER_USER_PASS);
+        otherUser = ManagerTestResources.OTHER_USER.asString();
+        mailboxSession = mailboxManager.login(ManagerTestResources.USER, ManagerTestResources.USER_PASS);
+        otherMailboxSession = mailboxManager.login(ManagerTestResources.OTHER_USER, ManagerTestResources.OTHER_USER_PASS);
         sut = new MailboxFactory(mailboxManager, quotaManager, quotaRootResolver);
     }
 

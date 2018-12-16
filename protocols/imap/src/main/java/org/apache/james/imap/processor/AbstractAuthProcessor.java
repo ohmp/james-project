@@ -99,7 +99,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
                 try {
                     final MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
                         authenticationAttempt.getPassword(),
-                        authenticationAttempt.getDelegateUserName().get());
+                        authenticationAttempt.getDelegateUser().get());
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
                     provisionInbox(session, mailboxManager, mailboxSession);
@@ -115,7 +115,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             LOGGER.info("User {} does not exist", authenticationAttempt.getAuthenticationId(), e);
             no(command, tag, responder, HumanReadableText.USER_DOES_NOT_EXIST);
         } catch (NotAdminException e) {
-            LOGGER.info("User {} is not an admin", authenticationAttempt.getDelegateUserName(), e);
+            LOGGER.info("User {} is not an admin", authenticationAttempt.getDelegateUser(), e);
             no(command, tag, responder, HumanReadableText.NOT_AN_ADMIN);
         } catch (MailboxException e) {
             LOGGER.info("Login failed", e);
@@ -164,22 +164,22 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
     }
 
     protected static class AuthenticationAttempt {
-        private final Optional<User> delegateUserName;
+        private final Optional<User> delegateUser;
         private final User authenticationId;
         private final String password;
 
-        public AuthenticationAttempt(Optional<User> delegateUserName, User authenticationId, String password) {
-            this.delegateUserName = delegateUserName;
+        public AuthenticationAttempt(Optional<User> delegateUser, User authenticationId, String password) {
+            this.delegateUser = delegateUser;
             this.authenticationId = authenticationId;
             this.password = password;
         }
 
         public boolean isDelegation() {
-            return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId);
+            return delegateUser.isPresent() && !delegateUser.get().equals(authenticationId);
         }
 
-        public Optional<User> getDelegateUserName() {
-            return delegateUserName;
+        public Optional<User> getDelegateUser() {
+            return delegateUser;
         }
 
         public User getAuthenticationId() {

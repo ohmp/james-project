@@ -137,7 +137,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
     private Resources createMailboxManager(GroupMembershipResolver groupMembershipResolver,
                                            BiFunction<StoreRightManager, InMemoryMailboxSessionMapperFactory, StoreMailboxAnnotationManager> annotationManagerBiFunction) throws MailboxException {
         FakeAuthenticator fakeAuthenticator = new FakeAuthenticator();
-        fakeAuthenticator.addUser(ManagerTestResources.USER.asString(), ManagerTestResources.USER_PASS);
+        fakeAuthenticator.addUser(ManagerTestResources.USER, ManagerTestResources.USER_PASS);
         fakeAuthenticator.addUser(ManagerTestResources.OTHER_USER, ManagerTestResources.OTHER_USER_PASS);
         InMemoryMailboxSessionMapperFactory mailboxSessionMapperFactory = new InMemoryMailboxSessionMapperFactory();
         DefaultDelegatingMailboxListener delegatingListener = new DefaultDelegatingMailboxListener();

@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
@@ -50,12 +51,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class StoreMailboxManagerTest {
-    private static final String CURRENT_USER = "user";
+    private static final User CURRENT_USER = User.fromUsername("user");
     private static final String CURRENT_USER_PASSWORD = "secret";
-    private static final String ADMIN = "admin";
+    private static final User ADMIN = User.fromUsername("admin");
     private static final String ADMIN_PASSWORD = "adminsecret";
     private static final MailboxId MAILBOX_ID = TestId.of(123);
-    private static final String UNKNOWN_USER = "otheruser";
+    private static final User UNKNOWN_USER = User.fromUsername("otheruser");
     private static final String BAD_PASSWORD = "badpassword";
     private static final String EMPTY_PREFIX = "";
 
@@ -99,7 +100,7 @@ public class StoreMailboxManagerTest {
     public void getMailboxShouldReturnMailboxManagerWhenKnownId() throws Exception {
         Mailbox mockedMailbox = mock(Mailbox.class);
         when(mockedMailbox.generateAssociatedPath())
-            .thenReturn(MailboxPath.forUser(CURRENT_USER, "mailboxName"));
+            .thenReturn(MailboxPath.forUser(CURRENT_USER.asString(), "mailboxName"));
         when(mockedMailbox.getMailboxId()).thenReturn(MAILBOX_ID);
         when(mockedMailboxMapper.findMailboxById(MAILBOX_ID)).thenReturn(mockedMailbox);
 
@@ -140,7 +141,7 @@ public class StoreMailboxManagerTest {
     public void loginShouldCreateSessionWhenGoodPassword() throws Exception {
         MailboxSession expected = storeMailboxManager.login(CURRENT_USER, CURRENT_USER_PASSWORD);
 
-        assertThat(expected.getUser().asString()).isEqualTo(CURRENT_USER);
+        assertThat(expected.getUser()).isEqualTo(CURRENT_USER);
     }
 
     @Test(expected = BadCredentialsException.class)
@@ -182,7 +183,7 @@ public class StoreMailboxManagerTest {
     public void loginAsOtherUserShouldCreateUserSessionWhenAdminWithGoodPassword() throws Exception {
         MailboxSession expected = storeMailboxManager.loginAsOtherUser(ADMIN, ADMIN_PASSWORD, CURRENT_USER);
 
-        assertThat(expected.getUser().asString()).isEqualTo(CURRENT_USER);
+        assertThat(expected.getUser()).isEqualTo(CURRENT_USER);
     }
 
     @Test

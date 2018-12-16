@@ -53,7 +53,7 @@ public class LoginProcessor extends AbstractAuthProcessor<LoginRequest> implemen
             if (session.isPlainAuthDisallowed() && session.isTLSActive() == false) {
                 no(command, tag, responder, HumanReadableText.DISABLED_LOGIN);
             } else {
-                doAuth(noDelegation(request.getUserid(), request.getPassword()),
+                doAuth(noDelegation(request.getUser(), request.getPassword()),
                     session, tag, command, responder, HumanReadableText.INVALID_LOGIN);
             }
     }
@@ -72,7 +72,7 @@ public class LoginProcessor extends AbstractAuthProcessor<LoginRequest> implemen
     protected Closeable addContextToMDC(LoginRequest message) {
         return MDCBuilder.create()
             .addContext(MDCBuilder.ACTION, "LOGIN")
-            .addContext(MDCBuilder.USER, message.getUserid())
+            .addContext(MDCBuilder.USER, message.getUser())
             .build();
     }
 }

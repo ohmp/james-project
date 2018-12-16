@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.imap.decode.parser;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
@@ -38,8 +39,8 @@ public class LoginCommandParser extends AbstractImapCommandParser {
 
     @Override
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        final String userid = request.astring();
-        final String password = request.astring();
+        User userid = User.fromUsername(request.astring());
+        String password = request.astring();
         request.eol();
 
         return new LoginRequest(command, userid, password, tag);

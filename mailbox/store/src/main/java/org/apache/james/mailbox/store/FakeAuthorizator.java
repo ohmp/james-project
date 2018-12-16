@@ -20,33 +20,35 @@ package org.apache.james.mailbox.store;
 
 import java.util.Optional;
 
+import org.apache.james.core.User;
+
 public class FakeAuthorizator implements Authorizator {
 
     public static FakeAuthorizator defaultReject() {
         return new FakeAuthorizator(Optional.empty(), Optional.empty());
     }
 
-    public static FakeAuthorizator forUserAndAdmin(String admin, String user) {
+    public static FakeAuthorizator forUserAndAdmin(User admin, User user) {
         return new FakeAuthorizator(Optional.of(admin), Optional.of(user));
     }
 
-    private final Optional<String> adminId;
-    private final Optional<String> delegatedUserId;
+    private final Optional<User> adminId;
+    private final Optional<User> delegatedUserId;
 
-    private FakeAuthorizator(Optional<String> adminId, Optional<String> userId) {
+    private FakeAuthorizator(Optional<User> adminId, Optional<User> userId) {
         this.adminId = adminId;
         this.delegatedUserId = userId;
     }
 
     @Override
-    public AuthorizationState canLoginAsOtherUser(String userId, String otherUserId) {
+    public AuthorizationState canLoginAsOtherUser(User user, User otherUser) {
         if (!adminId.isPresent() || !this.delegatedUserId.isPresent()) {
             return AuthorizationState.NOT_ADMIN;
         }
-        if (!adminId.get().equals(userId)) {
+        if (!adminId.get().equals(user)) {
             return AuthorizationState.NOT_ADMIN;
         }
-        if (!otherUserId.equals(this.delegatedUserId.get())) {
+        if (!otherUser.equals(this.delegatedUserId.get())) {
             return AuthorizationState.UNKNOWN_USER;
         }
         return AuthorizationState.ALLOWED;

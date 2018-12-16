@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.james.core.User;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.mailbox.MailboxAnnotationManager;
@@ -346,18 +347,18 @@ public class StoreMailboxManager implements MailboxManager {
 
     @Override
     public MailboxSession createSystemSession(String userName) {
-        return createSession(userName, SessionType.System);
+        return createSession(User.fromUsername(userName), SessionType.System);
     }
 
     /**
      * Create Session
      *
-     * @param userName
+     * @param user
      * @return session
      */
 
-    protected MailboxSession createSession(String userName, SessionType type) {
-        return new MailboxSession(newSessionId(), userName, new ArrayList<>(), getDelimiter(), type);
+    protected MailboxSession createSession(User user, SessionType type) {
+        return new MailboxSession(newSessionId(), user, new ArrayList<>(), getDelimiter(), type);
     }
 
     private MailboxSession.SessionId newSessionId() {
@@ -381,36 +382,36 @@ public class StoreMailboxManager implements MailboxManager {
     /**
      * Log in the user with the given userid and password
      *
-     * @param userid the username
+     * @param user the username
      * @param passwd the password
      * @return success true if login success false otherwise
      */
-    private boolean isValidLogin(String userid, String passwd) throws MailboxException {
-        return authenticator.isAuthentic(userid, passwd);
+    private boolean isValidLogin(User user, String passwd) throws MailboxException {
+        return authenticator.isAuthentic(user, passwd);
     }
 
     @Override
-    public MailboxSession login(String userid, String passwd) throws MailboxException {
-        if (isValidLogin(userid, passwd)) {
-            return createSession(userid, SessionType.User);
+    public MailboxSession login(User user, String passwd) throws MailboxException {
+        if (isValidLogin(user, passwd)) {
+            return createSession(user, SessionType.User);
         } else {
             throw new BadCredentialsException();
         }
     }
 
     @Override
-    public MailboxSession loginAsOtherUser(String adminUserid, String passwd, String otherUserId) throws MailboxException {
-        if (! isValidLogin(adminUserid, passwd)) {
+    public MailboxSession loginAsOtherUser(User adminUser, String passwd, User otherUser) throws MailboxException {
+        if (! isValidLogin(adminUser, passwd)) {
             throw new BadCredentialsException();
         }
-        Authorizator.AuthorizationState authorizationState = authorizator.canLoginAsOtherUser(adminUserid, otherUserId);
+        Authorizator.AuthorizationState authorizationState = authorizator.canLoginAsOtherUser(adminUser, otherUser);
         switch (authorizationState) {
             case ALLOWED:
-                return createSystemSession(otherUserId);
+                return createSystemSession(otherUser.asString());
             case NOT_ADMIN:
                 throw new NotAdminException();
             case UNKNOWN_USER:
-                throw new UserDoesNotExistException(otherUserId);
+                throw new UserDoesNotExistException(otherUser);
             default:
                 throw new RuntimeException("Unknown AuthorizationState " + authorizationState);
         }

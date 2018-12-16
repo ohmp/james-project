@@ -108,7 +108,7 @@ public class GetMessagesMethodTest {
         GroupMembershipResolver groupMembershipResolver = inMemoryIntegrationResources.createGroupMembershipResolver();
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(groupMembershipResolver);
 
-        session = MailboxSession.create(ROBERT.asString());
+        session = MailboxSession.create(ROBERT);
         inboxPath = MailboxPath.inbox(session);
         customMailboxPath = new MailboxPath(inboxPath, "custom");
         mailboxManager.createMailbox(inboxPath, session);

@@ -41,11 +41,16 @@ public class MailboxSession {
 
     @VisibleForTesting
     public static MailboxSession create(String username) {
-        return create(username, SessionId.of(RANDOM.nextLong()));
+        return create(User.fromUsername(username));
     }
 
     @VisibleForTesting
-    public static MailboxSession create(String username, SessionId sessionId) {
+    public static MailboxSession create(User user) {
+        return create(user, SessionId.of(RANDOM.nextLong()));
+    }
+
+    @VisibleForTesting
+    public static MailboxSession create(User username, SessionId sessionId) {
         ArrayList<Locale> locales = new ArrayList<>();
 
         return new MailboxSession(
@@ -117,22 +122,22 @@ public class MailboxSession {
     private final String otherUsersSpace;
     private final String personalSpace;
     private final SessionId sessionId;
-    private final String userName;
+    private final User user;
     private boolean open = true;
     private final List<Locale> localePreferences;
     private final Map<Object, Object> attributes;
     private final char pathSeparator;
     private final SessionType type;
 
-    public MailboxSession(SessionId sessionId, String userName,
+    public MailboxSession(SessionId sessionId, User user,
                                 List<Locale> localePreferences, char pathSeparator, SessionType type) {
-        this(sessionId, userName, localePreferences, new ArrayList<>(), null, pathSeparator, type);
+        this(sessionId, user, localePreferences, new ArrayList<>(), null, pathSeparator, type);
     }
 
-    public MailboxSession(SessionId sessionId, String userName,
+    public MailboxSession(SessionId sessionId, User user,
                                 List<Locale> localePreferences, List<String> sharedSpaces, String otherUsersSpace, char pathSeparator, SessionType type) {
         this.sessionId = sessionId;
-        this.userName = userName;
+        this.user = user;
         this.otherUsersSpace = otherUsersSpace;
         this.sharedSpaces = sharedSpaces;
         this.type = type;
@@ -187,7 +192,7 @@ public class MailboxSession {
      * @return not null
      */
     public User getUser() {
-        return User.fromUsername(userName);
+        return user;
     }
 
     /**

@@ -47,7 +47,7 @@ import org.apache.james.mailbox.quota.QuotaRootResolver;
 public class ManagerTestResources<T extends MailboxManager> {
     public static final User USER = User.fromUsername("user@domain.org");
     public static final String USER_PASS = "pass";
-    public static final String OTHER_USER = "otherUser@domain.org";
+    public static final User OTHER_USER = User.fromUsername("otherUser@domain.org");
     public static final String OTHER_USER_PASS = "otherPass";
 
     private T mailboxManager;

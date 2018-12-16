@@ -77,7 +77,7 @@ public class MoveProcessorTest {
         mockStatusResponseFactory = mock(StatusResponseFactory.class);
         mockResponder = mock(ImapProcessor.Responder.class);
         mockImapSession = mock(ImapSession.class);
-        mailboxSession = MailboxSession.create(USER.asString());
+        mailboxSession = MailboxSession.create(USER);
 
         when(mockMailboxManager.hasCapability(eq(MailboxCapabilities.Move))).thenReturn(true);
         testee = new MoveProcessor(mockNextProcessor, mockMailboxManager, mockStatusResponseFactory, new NoopMetricFactory());

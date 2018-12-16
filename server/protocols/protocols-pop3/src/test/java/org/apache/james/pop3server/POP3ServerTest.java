@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.net.pop3.POP3Client;
 import org.apache.commons.net.pop3.POP3MessageInfo;
 import org.apache.commons.net.pop3.POP3Reply;
+import org.apache.james.core.User;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.filesystem.api.mock.MockFileSystem;
 import org.apache.james.mailbox.MailboxManager;
@@ -205,7 +206,7 @@ public class POP3ServerTest {
 
         pop3Client.disconnect();
         MailboxPath mailboxPath = MailboxPath.forUser("foo", "INBOX");
-        MailboxSession session = mailboxManager.login("foo", "bar");
+        MailboxSession session = mailboxManager.login(User.fromUsername("foo"), "bar");
         if (!mailboxManager.mailboxExists(mailboxPath, session)) {
             mailboxManager.createMailbox(mailboxPath, session);
         }
@@ -290,7 +291,7 @@ public class POP3ServerTest {
         usersRepository.addUser("foo2", "bar2");
 
         MailboxPath mailboxPath = MailboxPath.forUser("foo2", "INBOX");
-        MailboxSession session = mailboxManager.login("foo2", "bar2");
+        MailboxSession session = mailboxManager.login(User.fromUsername("foo2"), "bar2");
 
         if (!mailboxManager.mailboxExists(mailboxPath, session)) {
             mailboxManager.createMailbox(mailboxPath, session);
@@ -379,7 +380,7 @@ public class POP3ServerTest {
         usersRepository.addUser("foo2", "bar2");
 
         MailboxPath mailboxPath = MailboxPath.forUser("foo2", "INBOX");
-        MailboxSession session = mailboxManager.login("foo2", "bar2");
+        MailboxSession session = mailboxManager.login(User.fromUsername("foo2"), "bar2");
 
         if (!mailboxManager.mailboxExists(mailboxPath, session)) {
             mailboxManager.createMailbox(mailboxPath, session);
@@ -432,7 +433,7 @@ public class POP3ServerTest {
         usersRepository.addUser("foo2", "bar2");
 
         MailboxPath mailboxPath = MailboxPath.forUser("foo2", "INBOX");
-        MailboxSession session = mailboxManager.login("foo2", "bar2");
+        MailboxSession session = mailboxManager.login(User.fromUsername("foo2"), "bar2");
 
         if (!mailboxManager.mailboxExists(mailboxPath, session)) {
             mailboxManager.createMailbox(mailboxPath, session);
@@ -640,7 +641,7 @@ public class POP3ServerTest {
         pop3Client.connect(bindedAddress.getAddress().getHostAddress(), bindedAddress.getPort());
 
         usersRepository.addUser("foo6", "bar6");
-        MailboxSession session = mailboxManager.login("foo6", "bar6");
+        MailboxSession session = mailboxManager.login(User.fromUsername("foo6"), "bar6");
 
         MailboxPath mailboxPath = MailboxPath.inbox(session);
 
@@ -717,7 +718,7 @@ public class POP3ServerTest {
             .createMailboxManager(new SimpleGroupMembershipResolver(),
                 (userid, passwd) -> {
                     try {
-                        return usersRepository.test(userid, passwd.toString());
+                        return usersRepository.test(userid.asString(), passwd.toString());
                     } catch (UsersRepositoryException e) {
                         e.printStackTrace();
                         return false;

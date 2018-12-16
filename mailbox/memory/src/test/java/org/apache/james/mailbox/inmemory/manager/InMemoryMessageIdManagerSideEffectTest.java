@@ -53,7 +53,7 @@ public class InMemoryMessageIdManagerSideEffectTest extends AbstractMessageIdMan
         InMemoryMailboxSessionMapperFactory mapperFactory = new InMemoryMailboxSessionMapperFactory();
 
         FakeAuthenticator fakeAuthenticator = new FakeAuthenticator();
-        fakeAuthenticator.addUser(ManagerTestResources.USER.asString(), ManagerTestResources.USER_PASS);
+        fakeAuthenticator.addUser(ManagerTestResources.USER, ManagerTestResources.USER_PASS);
         fakeAuthenticator.addUser(ManagerTestResources.OTHER_USER, ManagerTestResources.OTHER_USER_PASS);
         FakeAuthorizator fakeAuthorizator = FakeAuthorizator.defaultReject();
 

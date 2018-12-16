@@ -83,6 +83,7 @@ public class ObjectMapperFactory {
         mailboxIdModule.addDeserializer(DispositionActionMode.class, new MDNActionModeDeserializer());
         mailboxIdModule.addDeserializer(DispositionSendingMode.class, new MDNSendingModeDeserializer());
         mailboxIdModule.addDeserializer(DispositionType.class, new MDNTypeDeserializer());
+        mailboxIdModule.addDeserializer(User.class, new UserDeserializer());
 
         mailboxIdModule.setMixInAnnotation(Role.class, RoleMixIn.class);
 
@@ -145,6 +146,13 @@ public class ObjectMapperFactory {
         }
     }
 
+    public static class UserDeserializer extends JsonDeserializer<User> {
+        @Override
+        public User deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            return User.fromUsername(jsonParser.getValueAsString());
+        }
+    }
+
     public static class MailboxIdDeserializer extends JsonDeserializer<MailboxId> {
         private MailboxId.Factory factory;
 
@@ -159,7 +167,6 @@ public class ObjectMapperFactory {
     }
 
     public static class MailboxIdSerializer extends JsonSerializer<MailboxId> {
-
         @Override
         public void serialize(MailboxId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
             gen.writeString(value.serialize());

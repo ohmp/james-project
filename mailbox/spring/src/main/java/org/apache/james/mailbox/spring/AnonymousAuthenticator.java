@@ -18,12 +18,13 @@
  ****************************************************************/
 package org.apache.james.mailbox.spring;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.store.Authenticator;
 
 public class AnonymousAuthenticator implements Authenticator {
 
     @Override
-    public boolean isAuthentic(String userid, CharSequence passwd) {
+    public boolean isAuthentic(User user, CharSequence passwd) {
         return true;
     }
 
