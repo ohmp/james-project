@@ -25,6 +25,7 @@ import java.util.Calendar;
 
 import javax.mail.Flags;
 
+import org.apache.james.core.User;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.mailbox.FlagsBuilder;
@@ -44,8 +45,7 @@ import org.apache.james.mailbox.quota.QuotaRootResolver;
  * Provide an initialized Mailbox environment where we can run managers tests
  */
 public class ManagerTestResources<T extends MailboxManager> {
-
-    public static final String USER = "user@domain.org";
+    public static final User USER = User.fromUsername("user@domain.org");
     public static final String USER_PASS = "pass";
     public static final String OTHER_USER = "otherUser@domain.org";
     public static final String OTHER_USER_PASS = "otherPass";

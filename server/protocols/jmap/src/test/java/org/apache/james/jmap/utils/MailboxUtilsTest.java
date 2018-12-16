@@ -21,6 +21,7 @@ package org.apache.james.jmap.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
@@ -30,24 +31,23 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MailboxUtilsTest {
+    public static final User USER = User.fromUsername("user@domain.org");
 
     private MailboxManager mailboxManager;
     private MailboxSession mailboxSession;
-    private String user;
     private MailboxUtils sut;
 
     @Before
     public void setup() throws Exception {
         InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(inMemoryIntegrationResources.createGroupMembershipResolver());
-        user = "user@domain.org";
-        mailboxSession = mailboxManager.login(user, "pass");
+        mailboxSession = mailboxManager.login(USER, "pass");
         sut = new MailboxUtils(mailboxManager);
     }
     
     @Test
     public void hasChildrenShouldReturnFalseWhenNoChild() throws Exception {
-        MailboxPath mailboxPath = MailboxPath.forUser(user, "myBox");
+        MailboxPath mailboxPath = MailboxPath.forUser(USER.asString(), "myBox");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
         MailboxId mailboxId = mailboxManager.getMailbox(mailboxPath, mailboxSession).getId();
 
@@ -56,11 +56,11 @@ public class MailboxUtilsTest {
 
     @Test
     public void hasChildrenShouldReturnTrueWhenHasAChild() throws Exception {
-        MailboxPath parentMailboxPath = MailboxPath.forUser(user, "inbox");
+        MailboxPath parentMailboxPath = MailboxPath.forUser(USER.asString(), "inbox");
         mailboxManager.createMailbox(parentMailboxPath, mailboxSession);
         MailboxId parentId = mailboxManager.getMailbox(parentMailboxPath, mailboxSession).getId();
 
-        MailboxPath mailboxPath = MailboxPath.forUser(user, "inbox.myBox");
+        MailboxPath mailboxPath = MailboxPath.forUser(USER.asString(), "inbox.myBox");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
 
         assertThat(sut.hasChildren(parentId, mailboxSession)).isTrue();

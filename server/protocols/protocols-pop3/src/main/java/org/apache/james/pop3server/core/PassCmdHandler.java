@@ -24,6 +24,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
@@ -70,7 +71,7 @@ public class PassCmdHandler extends AbstractPassCmdHandler  {
     protected Mailbox auth(POP3Session session, String username, String password) throws Exception {
         MailboxSession mSession = null;
         try {
-            mSession = manager.login(session.getUser(), password);
+            mSession = manager.login(User.fromUsername(session.getUser()), password);
             manager.startProcessingRequest(mSession);
             MailboxPath inbox = MailboxPath.inbox(mSession);
             

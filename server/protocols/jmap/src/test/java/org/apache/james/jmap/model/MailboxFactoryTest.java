@@ -64,7 +64,7 @@ public class MailboxFactoryTest {
         QuotaRootResolver quotaRootResolver = inMemoryIntegrationResources.createQuotaRootResolver(mailboxManager);
         QuotaManager quotaManager = inMemoryIntegrationResources.createQuotaManager(maxQuotaManager, mailboxManager);
 
-        user = ManagerTestResources.USER;
+        user = ManagerTestResources.USER.asString();
         otherUser = ManagerTestResources.OTHER_USER;
         mailboxSession = mailboxManager.login(user, ManagerTestResources.USER_PASS);
         otherMailboxSession = mailboxManager.login(otherUser, ManagerTestResources.OTHER_USER_PASS);

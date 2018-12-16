@@ -20,6 +20,7 @@ package org.apache.james.imap.processor;
 
 import java.util.Optional;
 
+import org.apache.james.core.User;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
@@ -154,20 +155,20 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         }
     }
 
-    protected static AuthenticationAttempt delegation(String authorizeId, String authenticationId, String password) {
+    protected static AuthenticationAttempt delegation(User authorizeId, User authenticationId, String password) {
         return new AuthenticationAttempt(Optional.of(authorizeId), authenticationId, password);
     }
 
-    protected static AuthenticationAttempt noDelegation(String authenticationId, String password) {
+    protected static AuthenticationAttempt noDelegation(User authenticationId, String password) {
         return new AuthenticationAttempt(Optional.empty(), authenticationId, password);
     }
 
     protected static class AuthenticationAttempt {
-        private final Optional<String> delegateUserName;
-        private final String authenticationId;
+        private final Optional<User> delegateUserName;
+        private final User authenticationId;
         private final String password;
 
-        public AuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
+        public AuthenticationAttempt(Optional<User> delegateUserName, User authenticationId, String password) {
             this.delegateUserName = delegateUserName;
             this.authenticationId = authenticationId;
             this.password = password;
@@ -177,11 +178,11 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId);
         }
 
-        public Optional<String> getDelegateUserName() {
+        public Optional<User> getDelegateUserName() {
             return delegateUserName;
         }
 
-        public String getAuthenticationId() {
+        public User getAuthenticationId() {
             return authenticationId;
         }
 

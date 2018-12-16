@@ -23,6 +23,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.james.core.User;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
@@ -286,7 +287,7 @@ public interface MailboxManager extends RequestAware, MailboxListenerSupport, Ri
      * @throws MailboxException
      *             when the creation fails for other reasons
      */
-    MailboxSession login(String userid, String passwd) throws BadCredentialsException, MailboxException;
+    MailboxSession login(User userid, String passwd) throws BadCredentialsException, MailboxException;
 
     /**
      * Autenticates the given administrator against the given password,
@@ -306,7 +307,7 @@ public interface MailboxManager extends RequestAware, MailboxListenerSupport, Ri
      * @throws MailboxException
      *             when the creation fails for other reasons
      */
-    MailboxSession loginAsOtherUser(String adminUserId, String passwd, String otherUserId) throws BadCredentialsException, MailboxException;
+    MailboxSession loginAsOtherUser(User adminUserId, String passwd, User otherUserId) throws BadCredentialsException, MailboxException;
 
     /**
      * <p>
