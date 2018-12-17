@@ -71,7 +71,7 @@ class MessageMoveEventSerializationTest {
     class ValidPayloads {
         @Nested
         class NoVirtualHosting {
-            private final Event EVENT = MessageMoveEvent.builder()
+            private final Event event = MessageMoveEvent.builder()
                 .user(User.fromUsername("bob"))
                 .messageId(TestMessageId.of(42))
                 .messageMoves(
@@ -80,7 +80,7 @@ class MessageMoveEventSerializationTest {
                         .targetMailboxIds(TestId.of(36))
                         .build())
                 .build();
-            private final String JSON = "{" +
+            private final String json = "{" +
                 "  \"MessageMoveEvent\": {" +
                 "    \"user\": \"bob\"," +
                 "    \"previousMailboxIds\": [\"18\", \"24\"]," +
@@ -91,20 +91,20 @@ class MessageMoveEventSerializationTest {
 
             @Test
             void messageMoveEventShouldBeWellSerialized() {
-                assertThatJson(EVENT_SERIALIZER.toJson(EVENT))
-                    .isEqualTo(JSON);
+                assertThatJson(EVENT_SERIALIZER.toJson(event))
+                    .isEqualTo(json);
             }
 
             @Test
             void messageMoveEventShouldBeWellDeSerialized() {
-                assertThat(EVENT_SERIALIZER.fromJson(JSON).get())
-                    .isEqualTo(EVENT);
+                assertThat(EVENT_SERIALIZER.fromJson(json).get())
+                    .isEqualTo(event);
             }
         }
 
         @Nested
         class EmptyTargetMailboxIds {
-            private final Event EVENT = MessageMoveEvent.builder()
+            private final Event event = MessageMoveEvent.builder()
                 .user(User.fromUsername("bob"))
                 .messageId(TestMessageId.of(42))
                 .messageMoves(
@@ -112,7 +112,7 @@ class MessageMoveEventSerializationTest {
                         .previousMailboxIds(TestId.of(18), TestId.of(24))
                         .build())
                 .build();
-            private final String JSON = "{" +
+            private final String json = "{" +
                 "  \"MessageMoveEvent\": {" +
                 "    \"user\": \"bob\"," +
                 "    \"previousMailboxIds\": [\"18\", \"24\"]," +
@@ -123,20 +123,20 @@ class MessageMoveEventSerializationTest {
 
             @Test
             void messageMoveEventShouldBeWellSerialized() {
-                assertThatJson(EVENT_SERIALIZER.toJson(EVENT))
-                    .isEqualTo(JSON);
+                assertThatJson(EVENT_SERIALIZER.toJson(event))
+                    .isEqualTo(json);
             }
 
             @Test
             void messageMoveEventShouldBeWellDeSerialized() {
-                assertThat(EVENT_SERIALIZER.fromJson(JSON).get())
-                    .isEqualTo(EVENT);
+                assertThat(EVENT_SERIALIZER.fromJson(json).get())
+                    .isEqualTo(event);
             }
         }
 
         @Nested
         class EmptyPreviousMailboxIds {
-            private final Event EVENT = MessageMoveEvent.builder()
+            private final Event event = MessageMoveEvent.builder()
                 .user(User.fromUsername("bob"))
                 .messageId(TestMessageId.of(42))
                 .messageMoves(
@@ -144,7 +144,7 @@ class MessageMoveEventSerializationTest {
                         .targetMailboxIds(TestId.of(36))
                         .build())
                 .build();
-            private final String JSON = "{" +
+            private final String json = "{" +
                 "  \"MessageMoveEvent\": {" +
                 "    \"user\": \"bob\"," +
                 "    \"previousMailboxIds\": []," +
@@ -155,20 +155,20 @@ class MessageMoveEventSerializationTest {
 
             @Test
             void messageMoveEventShouldBeWellSerialized() {
-                assertThatJson(EVENT_SERIALIZER.toJson(EVENT))
-                    .isEqualTo(JSON);
+                assertThatJson(EVENT_SERIALIZER.toJson(event))
+                    .isEqualTo(json);
             }
 
             @Test
             void messageMoveEventShouldBeWellDeSerialized() {
-                assertThat(EVENT_SERIALIZER.fromJson(JSON).get())
-                    .isEqualTo(EVENT);
+                assertThat(EVENT_SERIALIZER.fromJson(json).get())
+                    .isEqualTo(event);
             }
         }
 
         @Nested
         class EmptyMessagesIds {
-            private final Event EVENT = MessageMoveEvent.builder()
+            private final Event event = MessageMoveEvent.builder()
                 .user(User.fromUsername("bob"))
                 .messageMoves(
                     MessageMoves.builder()
@@ -176,7 +176,7 @@ class MessageMoveEventSerializationTest {
                         .targetMailboxIds(TestId.of(36))
                         .build())
                 .build();
-            private final String JSON = "{" +
+            private final String json = "{" +
                 "  \"MessageMoveEvent\": {" +
                 "    \"user\": \"bob\"," +
                 "    \"previousMailboxIds\": [\"18\", \"24\"]," +
@@ -187,14 +187,14 @@ class MessageMoveEventSerializationTest {
 
             @Test
             void messageMoveEventShouldBeWellSerialized() {
-                assertThatJson(EVENT_SERIALIZER.toJson(EVENT))
-                    .isEqualTo(JSON);
+                assertThatJson(EVENT_SERIALIZER.toJson(event))
+                    .isEqualTo(json);
             }
 
             @Test
             void messageMoveEventShouldBeWellDeSerialized() {
-                assertThat(EVENT_SERIALIZER.fromJson(JSON).get())
-                    .isEqualTo(EVENT);
+                assertThat(EVENT_SERIALIZER.fromJson(json).get())
+                    .isEqualTo(event);
             }
         }
     }

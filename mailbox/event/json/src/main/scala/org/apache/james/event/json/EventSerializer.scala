@@ -148,8 +148,8 @@ private object ScalaConverter {
 
   private def toScala(event: JavaMessageMoveEvent): DTO.MessageMoveEvent = DTO.MessageMoveEvent(
     user = event.getUser,
-    previousMailboxIds = event.getMessageMoves.getPreviousMailboxIds.asList().asScala.toList,
-    targetMailboxIds = event.getMessageMoves.getTargetMailboxIds.asList().asScala.toList,
+    previousMailboxIds = event.getMessageMoves.getPreviousMailboxIds.asScala.toList,
+    targetMailboxIds = event.getMessageMoves.getTargetMailboxIds.asScala.toList,
     messageIds = event.getMessageIds.asScala.toList)
 
   def toScala(javaEvent: JavaEvent): Event = javaEvent match {
