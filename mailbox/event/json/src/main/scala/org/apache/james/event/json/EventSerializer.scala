@@ -91,8 +91,8 @@ private object DTO {
       added.map(entry => entry._1 -> entry._2.toJava).asJava)
   }
 
-  case class MessageMoveEvent(user: User, previousMailboxIds: List[MailboxId], targetMailboxIds: List[MailboxId],
-                              messageIds: List[MessageId]) extends Event {
+  case class MessageMoveEvent(user: User, previousMailboxIds: Seq[MailboxId], targetMailboxIds: Seq[MailboxId],
+                              messageIds: Seq[MessageId]) extends Event {
     override def toJava: JavaEvent = JavaMessageMoveEvent.builder()
       .user(user)
       .messageId(messageIds.asJava)
