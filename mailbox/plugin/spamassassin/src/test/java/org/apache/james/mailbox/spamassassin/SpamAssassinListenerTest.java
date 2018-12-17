@@ -34,6 +34,7 @@ import javax.mail.util.SharedByteArrayInputStream;
 
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.MessageMoveEvent;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -49,7 +50,6 @@ import org.apache.james.mailbox.store.SimpleMessageMetaData;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.SystemMailboxesProviderImpl;
 import org.apache.james.mailbox.store.event.EventFactory;
-import org.apache.james.mailbox.store.event.MessageMoveEvent;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
