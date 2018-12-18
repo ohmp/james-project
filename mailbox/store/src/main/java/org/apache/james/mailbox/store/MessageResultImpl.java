@@ -155,7 +155,7 @@ public class MessageResultImpl implements MessageResult {
     public String toString() {
         final String TAB = " ";
 
-        return "MessageResultImpl ( " + "uid = " + messageMetaData().getUid() + TAB + "flags = " + messageMetaData().getFlags() + TAB + "size = " + messageMetaData().getSize() + TAB + "internalDate = " + messageMetaData().getInternalDate() + ")";
+        return "MessageResultImpl ( " + "uid = " + getUid() + TAB + "flags = " + getFlags() + TAB + "size = " + getSize() + TAB + "internalDate = " + getInternalDate() + ")";
     }
 
     @Override
