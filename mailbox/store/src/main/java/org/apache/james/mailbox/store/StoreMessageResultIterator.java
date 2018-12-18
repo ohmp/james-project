@@ -279,17 +279,20 @@ public class StoreMessageResultIterator implements MessageResultIterator {
             if (o instanceof UnloadedMessageResult) {
                 UnloadedMessageResult that = (UnloadedMessageResult) o;
 
-                return Objects.equals(this.exception, that.exception)
-                    && Objects.equals(this.messageMetaData, that.messageMetaData)
-                    && Objects.equals(this.messageId, that.messageId)
-                    && Objects.equals(this.mailboxId, that.mailboxId);
+                return Objects.equals(exception, that.exception)
+                    && Objects.equals(this.getInternalDate(), that.getInternalDate())
+                    && Objects.equals(this.getSize(), that.getSize())
+                    && Objects.equals(this.getUid(), that.getUid())
+                    && Objects.equals(this.getFlags(), that.getFlags())
+                    && Objects.equals(this.getModSeq(), that.getModSeq())
+                    && Objects.equals(this.messageId, that.messageId);
             }
             return false;
         }
 
         @Override
         public final int hashCode() {
-            return Objects.hash(exception, messageMetaData, messageId, mailboxId);
+            return Objects.hash(exception, getInternalDate(), getSize(), getUid(), getFlags(), getModSeq(), messageId);
         }
 
         @Override
