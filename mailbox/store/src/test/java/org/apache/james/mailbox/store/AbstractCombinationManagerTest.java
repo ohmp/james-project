@@ -384,8 +384,7 @@ public abstract class AbstractCombinationManagerTest {
         assertThat(messageManager1.getMessages(MessageRange.all(), FetchGroupImpl.MINIMAL, session)).isEmpty();
         assertThat(messageManager2.getMessages(MessageRange.all(), FetchGroupImpl.MINIMAL, session))
             .hasSize(1)
-            .extractingResultOf("messageMetaData")
-            .extractingResultOf("getMessageId")
+            .extracting(MessageResult::getMessageId)
             .containsOnly(messageId);
     }
 
