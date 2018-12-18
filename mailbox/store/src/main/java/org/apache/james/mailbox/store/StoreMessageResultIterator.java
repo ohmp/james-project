@@ -186,7 +186,7 @@ public class StoreMessageResultIterator implements MessageResultIterator {
         MessageResult result;
         try {
             result = ResultUtils.loadMessageResult(message, group);
-            cursor = result.messageMetaData().getUid();
+            cursor = result.getUid();
         } catch (MailboxException e) {
             result = new UnloadedMessageResult(message, e);
         }
