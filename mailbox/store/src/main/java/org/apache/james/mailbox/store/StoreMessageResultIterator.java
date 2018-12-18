@@ -48,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StoreMessageResultIterator implements MessageResultIterator {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreMessageResultIterator.class);
 
     private Iterator<MailboxMessage> next = null;
