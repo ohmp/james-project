@@ -22,16 +22,15 @@ package org.apache.james.event.json
 import java.time.Instant
 import java.util.{Optional, TreeMap => JavaTreeMap}
 
-import javax.mail.{Flags => JavaMailFlags}
 import julienrf.json.derived
 import org.apache.james.core.quota.{QuotaCount, QuotaSize, QuotaValue}
 import org.apache.james.core.{Domain, User}
-import org.apache.james.event.json.DTOs.{ACLDiff, Flags, MailboxPath, Quota}
+import org.apache.james.event.json.DTOs.{ACLDiff, Flags, MailboxPath, Quota, SystemFlag}
 import org.apache.james.mailbox.MailboxListener.{Added => JavaAdded, Expunged => JavaExpunged, FlagsUpdated => JavaFlagsUpdated, MailboxACLUpdated => JavaMailboxACLUpdated, MailboxAdded => JavaMailboxAdded, MailboxDeletion => JavaMailboxDeletion, MailboxRenamed => JavaMailboxRenamed, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
 import org.apache.james.mailbox.MailboxSession.SessionId
 import org.apache.james.mailbox.model.{MailboxId, MessageId, MessageMoves, QuotaRoot, MailboxACL => JavaMailboxACL, MessageMetaData => JavaMessageMetaData, Quota => JavaQuota}
 import org.apache.james.mailbox.{MessageUid, Event => JavaEvent, MessageMoveEvent => JavaMessageMoveEvent}
-import play.api.libs.json.{JsArray, JsError, JsNull, JsNumber, JsObject, JsResult, JsString, JsSuccess, Json, OFormat, Reads, Writes}
+import play.api.libs.json.{JsError, JsNull, JsNumber, JsObject, JsResult, JsString, JsSuccess, Json, OFormat, Reads, Writes}
 
 import scala.collection.JavaConverters._
 
@@ -205,7 +204,8 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
   implicit val aclDiffWrites: Writes[ACLDiff] = Json.writes[ACLDiff]
   implicit val messageIdWrites: Writes[MessageId] = value => JsString(value.serialize())
   implicit val messageUidWrites: Writes[MessageUid] = value => JsNumber(value.asLong())
-  implicit val flagsWrites: Writes[JavaMailFlags] = value => JsArray(Flags.fromJavaFlags(value).map(flag => JsString(flag)))
+  implicit val systemFlagsWrites: Writes[SystemFlag] = value => JsString(value.rawString)
+  implicit val flagsWrites: Writes[Flags] = Json.writes[Flags]
   implicit val messageMetaDataWrites: Writes[DTOs.MessageMetaData] = Json.writes[DTOs.MessageMetaData]
   implicit val updatedFlagsWrites: Writes[DTOs.UpdatedFlags] = Json.writes[DTOs.UpdatedFlags]
 
@@ -255,8 +255,8 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
     case JsNumber(value) => JsSuccess(MessageUid.of(value.toLong))
     case _ => JsError()
   }
-  implicit val flagsReads: Reads[JavaMailFlags] = {
-    case JsArray(seqOfJsValues) => JsSuccess(Flags.toJavaFlags(seqOfJsValues.toArray.map(jsValue => jsValue.toString())))
+  implicit val systemFlagsReads: Reads[SystemFlag] = {
+    case JsString(value) => JsSuccess(SystemFlag.fromString(value))
     case _ => JsError()
   }
 
@@ -295,6 +295,7 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
   implicit val quotaCReads: Reads[DTOs.Quota[QuotaCount]] = Json.reads[DTOs.Quota[QuotaCount]]
   implicit val quotaSReads: Reads[DTOs.Quota[QuotaSize]] = Json.reads[DTOs.Quota[QuotaSize]]
   implicit val mailboxPathReads: Reads[DTOs.MailboxPath] = Json.reads[DTOs.MailboxPath]
+  implicit val flagsReads: Reads[Flags] = Json.reads[DTOs.Flags]
   implicit val messageMetaDataReads: Reads[DTOs.MessageMetaData] = Json.reads[DTOs.MessageMetaData]
   implicit val updatedFlagsReads: Reads[DTOs.UpdatedFlags] = Json.reads[DTOs.UpdatedFlags]
 

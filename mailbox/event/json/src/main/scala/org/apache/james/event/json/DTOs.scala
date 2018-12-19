@@ -74,75 +74,103 @@ object DTOs {
     def fromJava(javaMessageMetaData: JavaMessageMetaData): MessageMetaData = DTOs.MessageMetaData(
       javaMessageMetaData.getUid,
       javaMessageMetaData.getModSeq,
-      javaMessageMetaData.getFlags,
+      Flags.toScala(javaMessageMetaData.getFlags),
       javaMessageMetaData.getSize,
       javaMessageMetaData.getInternalDate.toInstant,
       javaMessageMetaData.getMessageId)
   }
 
-  case class MessageMetaData(uid: MessageUid, modSeq: Long, flags: JavaMailFlags, size: Long, internalDate: Instant, messageId: MessageId) {
-    def toJava: JavaMessageMetaData = new JavaMessageMetaData(uid, modSeq, flags, size, Date.from(internalDate), messageId)
+  case class MessageMetaData(uid: MessageUid, modSeq: Long, flags: Flags, size: Long, internalDate: Instant, messageId: MessageId) {
+    def toJava: JavaMessageMetaData = new JavaMessageMetaData(uid, modSeq, flags.toJava, size, Date.from(internalDate), messageId)
+  }
+
+  object SystemFlag {
+    def addToBuilder(flagsBuilder: FlagsBuilder, systemFlag: SystemFlag): FlagsBuilder = systemFlag match {
+      case Answered => flagsBuilder.add(JavaMailFlags.Flag.ANSWERED)
+      case Deleted => flagsBuilder.add(JavaMailFlags.Flag.DELETED)
+      case Draft => flagsBuilder.add(JavaMailFlags.Flag.DRAFT)
+      case Flagged => flagsBuilder.add(JavaMailFlags.Flag.FLAGGED)
+      case Recent => flagsBuilder.add(JavaMailFlags.Flag.RECENT)
+      case Seen => flagsBuilder.add(JavaMailFlags.Flag.SEEN)
+    }
+
+    def toScala(flag: JavaMailFlags.Flag): SystemFlag = flag match {
+      case JavaMailFlags.Flag.ANSWERED => Answered
+      case JavaMailFlags.Flag.DELETED => Deleted
+      case JavaMailFlags.Flag.DRAFT => Draft
+      case JavaMailFlags.Flag.FLAGGED => Flagged
+      case JavaMailFlags.Flag.RECENT => Recent
+      case JavaMailFlags.Flag.SEEN => Seen
+    }
+
+    val ANSWERED = "Answered"
+    val DELETED = "Deleted"
+    val DRAFT = "Draft"
+    val FLAGGED = "Flagged"
+    val RECENT = "Recent"
+    val SEEN = "Seen"
+
+    def fromString(value: String): SystemFlag = value match {
+      case ANSWERED => Answered
+      case DELETED => Deleted
+      case DRAFT => Draft
+      case FLAGGED => Flagged
+      case RECENT => Recent
+      case SEEN => Seen
+      case unknown => throw new RuntimeException("Unknown system flag " + unknown)
+    }
+  }
+
+  sealed trait SystemFlag {
+    def rawString: String
+  }
+  case object Answered extends SystemFlag {
+    override def rawString: String = SystemFlag.ANSWERED
+  }
+  case object Deleted extends SystemFlag {
+    override def rawString: String = SystemFlag.DELETED
+  }
+  case object Draft extends SystemFlag {
+    override def rawString: String = SystemFlag.DRAFT
+  }
+  case object Flagged extends SystemFlag {
+    override def rawString: String = SystemFlag.FLAGGED
+  }
+  case object Recent extends SystemFlag {
+    override def rawString: String = SystemFlag.RECENT
+  }
+  case object Seen extends SystemFlag {
+    override def rawString: String = SystemFlag.SEEN
   }
 
   object Flags {
-    val ANSWERED = "\\Answered"
-    val DELETED = "\\Deleted"
-    val DRAFT = "\\Draft"
-    val FLAGGED = "\\Flagged"
-    val RECENT = "\\Recent"
-    val SEEN = "\\Seen"
-    val ALL_SYSTEM_FLAGS = List(ANSWERED, DELETED, DRAFT, FLAGGED, RECENT, SEEN)
+    def toScala(flags: JavaMailFlags): Flags = Flags(
+        Option(flags.getSystemFlags).getOrElse(Array()).map(SystemFlag.toScala).toList,
+        Option(flags.getUserFlags).getOrElse(Array()).toList)
+  }
 
-    def toJavaFlags(serializedFlags: Array[String]): JavaMailFlags = {
-      serializedFlags
-        .map(toJavaMailFlag)
-        .foldLeft(new FlagsBuilder)((builder, flag) => builder.add(flag))
-        .build()
-    }
-
-    def toJavaMailFlag(flag: String): JavaMailFlags = ALL_SYSTEM_FLAGS.contains(flag) match {
-      case true => new FlagsBuilder().add(stringToSystemFlag(flag)).build()
-      case false => new FlagsBuilder().add(flag).build()
-    }
-
-    def fromJavaFlags(flags: JavaMailFlags): Array[String] = {
-      flags.getUserFlags ++ flags.getSystemFlags.map(flag => systemFlagToString(flag))
-    }
-
-    private def stringToSystemFlag(serializedFlag: String): JavaMailFlags.Flag = serializedFlag match {
-      case ANSWERED => JavaMailFlags.Flag.ANSWERED
-      case DELETED => JavaMailFlags.Flag.DELETED
-      case DRAFT => JavaMailFlags.Flag.DRAFT
-      case FLAGGED => JavaMailFlags.Flag.FLAGGED
-      case RECENT => JavaMailFlags.Flag.RECENT
-      case SEEN => JavaMailFlags.Flag.SEEN
-      case _ => throw new IllegalArgumentException(serializedFlag + " is not a system flag")
-    }
-
-    private def systemFlagToString(flag: JavaMailFlags.Flag): String = flag match {
-      case JavaMailFlags.Flag.ANSWERED => ANSWERED
-      case JavaMailFlags.Flag.DELETED => DELETED
-      case JavaMailFlags.Flag.DRAFT => DRAFT
-      case JavaMailFlags.Flag.FLAGGED => FLAGGED
-      case JavaMailFlags.Flag.RECENT => RECENT
-      case JavaMailFlags.Flag.SEEN => SEEN
-    }
+  case class Flags(systemFlags: List[SystemFlag], userFlags: List[String]) {
+    def toJava: JavaMailFlags = systemFlags.foldLeft(new FlagsBuilder())(SystemFlag.addToBuilder)
+      .addUserFlags(userFlags.asJava)
+      .build()
   }
 
   object UpdatedFlags {
     def toUpdatedFlags(javaUpdatedFlags: JavaUpdatedFlags): UpdatedFlags = UpdatedFlags(
       javaUpdatedFlags.getUid,
       javaUpdatedFlags.getModSeq,
-      Flags.fromJavaFlags(javaUpdatedFlags.getOldFlags).toList,
-      Flags.fromJavaFlags(javaUpdatedFlags.getNewFlags).toList)
+      Flags.toScala(javaUpdatedFlags.getOldFlags),
+      Flags.toScala(javaUpdatedFlags.getNewFlags))
   }
 
-  case class UpdatedFlags(uid: MessageUid, modSeq: Long, oldFlags: List[String], newFlags: List[String]) {
+  case class UpdatedFlags(uid: MessageUid, modSeq: Long, oldFlags: Flags, newFlags: Flags) {
     def toJava: JavaUpdatedFlags = JavaUpdatedFlags.builder()
       .uid(uid)
       .modSeq(modSeq)
-      .oldFlags(Flags.toJavaFlags(oldFlags.toArray))
-      .newFlags(Flags.toJavaFlags(newFlags.toArray))
+      .oldFlags(oldFlags.toJava)
+      .newFlags(newFlags.toJava)
       .build()
   }
 }
+
+
