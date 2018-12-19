@@ -46,7 +46,6 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -55,23 +54,11 @@ import com.google.common.collect.ImmutableSortedMap;
  * Helper class to dispatch {@link org.apache.james.mailbox.Event}'s to registerend MailboxListener
  */
 public class MailboxEventDispatcher {
-
-    @VisibleForTesting
-    public static MailboxEventDispatcher ofListener(MailboxListener mailboxListener) {
-        return new MailboxEventDispatcher(mailboxListener, new EventFactory());
-    }
-
     private final MailboxListener listener;
-    private final EventFactory eventFactory;
 
     @Inject
     public MailboxEventDispatcher(DelegatingMailboxListener delegatingMailboxListener) {
-        this(delegatingMailboxListener, new EventFactory());
-    }
-
-    private MailboxEventDispatcher(MailboxListener listener, EventFactory eventFactory) {
-        this.listener = listener;
-        this.eventFactory = eventFactory;
+        this.listener = delegatingMailboxListener;
     }
 
     /**
@@ -83,7 +70,11 @@ public class MailboxEventDispatcher {
      * @param mailbox The mailbox
      */
     public void added(MailboxSession session, SortedMap<MessageUid, MessageMetaData> uids, Mailbox mailbox) {
-        event(eventFactory.added(session, uids, mailbox));
+        event(EventFactory.added()
+            .mailboxSession(session)
+            .mailbox(mailbox)
+            .addMetaData(uids.values())
+            .build());
     }
 
     public void added(MailboxSession session, Mailbox mailbox, MailboxMessage mailboxMessage) {
@@ -110,7 +101,11 @@ public class MailboxEventDispatcher {
      * @param mailbox The mailbox
      */
     public void expunged(MailboxSession session,  Map<MessageUid, MessageMetaData> uids, Mailbox mailbox) {
-        event(eventFactory.expunged(session, uids, mailbox));
+        event(EventFactory.expunged()
+            .mailboxSession(session)
+            .mailbox(mailbox)
+            .addMetaData(uids.values())
+            .build());
     }
 
     public void expunged(MailboxSession session,  MessageMetaData messageMetaData, Mailbox mailbox) {
@@ -125,7 +120,11 @@ public class MailboxEventDispatcher {
      * registered MailboxListener will get triggered then
      */
     public void flagsUpdated(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> uflags) {
-        event(eventFactory.flagsUpdated(session, mailbox, uflags));
+        event(EventFactory.flagsUpdated()
+            .mailboxSession(session)
+            .mailbox(mailbox)
+            .updatedFlags(uflags)
+            .build());
     }
 
     public void flagsUpdated(MailboxSession session, Mailbox mailbox, UpdatedFlags uflags) {
@@ -137,7 +136,12 @@ public class MailboxEventDispatcher {
      * MailboxListener will get triggered then
      */
     public void mailboxRenamed(MailboxSession session, MailboxPath from, Mailbox to) {
-        event(eventFactory.mailboxRenamed(session, from, to));
+        event(EventFactory.mailboxRenamed()
+            .mailboxSession(session)
+            .mailboxId(to.getMailboxId())
+            .oldPath(from)
+            .newPath(to.generateAssociatedPath())
+            .build());
     }
 
     /**
@@ -145,7 +149,13 @@ public class MailboxEventDispatcher {
      * MailboxListener will get triggered then
      */
     public void mailboxDeleted(MailboxSession session, Mailbox mailbox, QuotaRoot quotaRoot, QuotaCount deletedMessageCount, QuotaSize totalDeletedSize) {
-        event(eventFactory.mailboxDeleted(session, mailbox, quotaRoot, deletedMessageCount, totalDeletedSize));
+        event(EventFactory.mailboxDeleted()
+            .mailboxSession(session)
+            .mailbox(mailbox)
+            .quotaRoot(quotaRoot)
+            .quotaCount(deletedMessageCount)
+            .quotaSize(totalDeletedSize)
+            .build());
     }
 
     /**
@@ -153,15 +163,27 @@ public class MailboxEventDispatcher {
      * MailboxListener will get triggered then
      */
     public void mailboxAdded(MailboxSession session, Mailbox mailbox) {
-        event(eventFactory.mailboxAdded(session, mailbox));
+        event(EventFactory.mailboxAdded()
+            .mailboxSession(session)
+            .mailbox(mailbox)
+            .build());
     }
 
     public void aclUpdated(MailboxSession session, MailboxPath mailboxPath, ACLDiff aclDiff, MailboxId mailboxId) {
-        event(eventFactory.aclUpdated(session, mailboxPath, aclDiff, mailboxId));
+        event(EventFactory.aclUpdated()
+            .mailboxSession(session)
+            .mailboxId(mailboxId)
+            .mailboxPath(mailboxPath)
+            .aclDiff(aclDiff)
+            .build());
     }
 
     public void moved(MailboxSession session, MessageMoves messageMoves, Collection<MessageId> messageIds) {
-        event(eventFactory.moved(session, messageMoves, messageIds));
+        event(EventFactory.moved()
+            .session(session)
+            .messageMoves(messageMoves)
+            .messageId(messageIds)
+            .build());
     }
 
     public void quota(User user, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota) {
