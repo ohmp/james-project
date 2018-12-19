@@ -22,8 +22,10 @@ package org.apache.james.event.json
 import java.time.Instant
 import java.util.Date
 
+import javax.mail.Flags.Flag
 import javax.mail.{Flags => JavaMailFlags}
 import org.apache.james.core.quota.QuotaValue
+import org.apache.james.event.json.DTOs.SystemFlag._
 import org.apache.james.mailbox.acl.{ACLDiff => JavaACLDiff}
 import org.apache.james.mailbox.model.{MailboxACL, MessageId, MailboxPath => JavaMailboxPath, MessageMetaData => JavaMessageMetaData, Quota => JavaQuota, UpdatedFlags => JavaUpdatedFlags}
 import org.apache.james.mailbox.{FlagsBuilder, MessageUid}
@@ -84,48 +86,52 @@ object DTOs {
     def toJava: JavaMessageMetaData = new JavaMessageMetaData(uid, modSeq, flags, size, Date.from(internalDate), messageId)
   }
 
+  sealed trait Flag
+
+  case class UserFlag(value: String) extends Flag
+
+  trait SystemFlag extends Flag
+
+  object SystemFlag {
+    case object Answered extends SystemFlag
+    case object Deleted extends SystemFlag
+    case object Draft extends SystemFlag
+    case object Flagged extends SystemFlag
+    case object Recent extends SystemFlag
+    case object Seen extends SystemFlag
+  }
+
+  case class Flags(flags: Seq[Flag])
+
   object Flags {
-    val ANSWERED = "\\Answered"
-    val DELETED = "\\Deleted"
-    val DRAFT = "\\Draft"
-    val FLAGGED = "\\Flagged"
-    val RECENT = "\\Recent"
-    val SEEN = "\\Seen"
-    val ALL_SYSTEM_FLAGS = List(ANSWERED, DELETED, DRAFT, FLAGGED, RECENT, SEEN)
 
-    def toJavaFlags(serializedFlags: Array[String]): JavaMailFlags = {
-      serializedFlags
-        .map(toJavaMailFlag)
-        .foldLeft(new FlagsBuilder)((builder, flag) => builder.add(flag))
-        .build()
+    def toJavaFlags(scalaFlags: Flags): JavaMailFlags = {
+      scalaFlags.flags.foldLeft(new FlagsBuilder)((builder, flag) =>
+        flag match {
+          case UserFlag(value) => builder.add(value)
+          case SystemFlag.Answered => builder.add(Flag.ANSWERED)
+          case SystemFlag.Deleted => builder.add(Flag.DELETED)
+          case SystemFlag.Draft => builder.add(Flag.DRAFT)
+          case SystemFlag.Flagged => builder.add(Flag.FLAGGED)
+          case SystemFlag.Recent => builder.add(Flag.RECENT)
+          case SystemFlag.Seen => builder.add(Flag.SEEN)
+        }
+      ).build()
     }
 
-    def toJavaMailFlag(flag: String): JavaMailFlags = ALL_SYSTEM_FLAGS.contains(flag) match {
-      case true => new FlagsBuilder().add(stringToSystemFlag(flag)).build()
-      case false => new FlagsBuilder().add(flag).build()
+    def fromJavaFlags(flags: JavaMailFlags): Flags = {
+      Flags(
+        flags.getUserFlags.map(UserFlag) ++ flags.getSystemFlags.map(javaFlagToSystemFlag)
+      )
     }
 
-    def fromJavaFlags(flags: JavaMailFlags): Array[String] = {
-      flags.getUserFlags ++ flags.getSystemFlags.map(flag => systemFlagToString(flag))
-    }
-
-    private def stringToSystemFlag(serializedFlag: String): JavaMailFlags.Flag = serializedFlag match {
-      case ANSWERED => JavaMailFlags.Flag.ANSWERED
-      case DELETED => JavaMailFlags.Flag.DELETED
-      case DRAFT => JavaMailFlags.Flag.DRAFT
-      case FLAGGED => JavaMailFlags.Flag.FLAGGED
-      case RECENT => JavaMailFlags.Flag.RECENT
-      case SEEN => JavaMailFlags.Flag.SEEN
-      case _ => throw new IllegalArgumentException(serializedFlag + " is not a system flag")
-    }
-
-    private def systemFlagToString(flag: JavaMailFlags.Flag): String = flag match {
-      case JavaMailFlags.Flag.ANSWERED => ANSWERED
-      case JavaMailFlags.Flag.DELETED => DELETED
-      case JavaMailFlags.Flag.DRAFT => DRAFT
-      case JavaMailFlags.Flag.FLAGGED => FLAGGED
-      case JavaMailFlags.Flag.RECENT => RECENT
-      case JavaMailFlags.Flag.SEEN => SEEN
+    private def javaFlagToSystemFlag(flag: JavaMailFlags.Flag): Flag = flag match {
+      case Flag.ANSWERED => Answered
+      case Flag.DELETED => Deleted
+      case Flag.DRAFT => Draft
+      case Flag.FLAGGED => Flagged
+      case Flag.RECENT => Recent
+      case Flag.SEEN => Seen
     }
   }
 
@@ -133,16 +139,16 @@ object DTOs {
     def toUpdatedFlags(javaUpdatedFlags: JavaUpdatedFlags): UpdatedFlags = UpdatedFlags(
       javaUpdatedFlags.getUid,
       javaUpdatedFlags.getModSeq,
-      Flags.fromJavaFlags(javaUpdatedFlags.getOldFlags).toList,
-      Flags.fromJavaFlags(javaUpdatedFlags.getNewFlags).toList)
+      Flags.fromJavaFlags(javaUpdatedFlags.getOldFlags),
+      Flags.fromJavaFlags(javaUpdatedFlags.getNewFlags))
   }
 
-  case class UpdatedFlags(uid: MessageUid, modSeq: Long, oldFlags: List[String], newFlags: List[String]) {
+  case class UpdatedFlags(uid: MessageUid, modSeq: Long, oldFlags: Flags, newFlags: Flags) {
     def toJava: JavaUpdatedFlags = JavaUpdatedFlags.builder()
       .uid(uid)
       .modSeq(modSeq)
-      .oldFlags(Flags.toJavaFlags(oldFlags.toArray))
-      .newFlags(Flags.toJavaFlags(newFlags.toArray))
+      .oldFlags(Flags.toJavaFlags(oldFlags))
+      .newFlags(Flags.toJavaFlags(newFlags))
       .build()
   }
 }
