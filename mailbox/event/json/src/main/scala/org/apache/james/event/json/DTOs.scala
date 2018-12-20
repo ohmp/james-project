@@ -98,18 +98,19 @@ object DTOs {
   object Flags {
 
     def toJavaFlags(scalaFlags: Flags): JavaMailFlags = {
-      (scalaFlags.systemFlags ++ scalaFlags.userFlags)
-        .foldLeft(new FlagsBuilder)((builder, flag) =>
-          flag match {
-            case UserFlag(value) => builder.add(value)
-            case SystemFlag.Answered => builder.add(Flag.ANSWERED)
-            case SystemFlag.Deleted => builder.add(Flag.DELETED)
-            case SystemFlag.Draft => builder.add(Flag.DRAFT)
-            case SystemFlag.Flagged => builder.add(Flag.FLAGGED)
-            case SystemFlag.Recent => builder.add(Flag.RECENT)
-            case SystemFlag.Seen => builder.add(Flag.SEEN)
-          })
-        .build()
+      new FlagsBuilder { builder =>
+        scalaFlags.userFlags.foreach(flag => builder.add(flag.value))
+        scalaFlags.systemFlags.foreach(flag => addJavaFlag(builder, flag))
+      }.build()
+    }
+
+    private def addJavaFlag(builder: FlagsBuilder, flag: SystemFlag): FlagsBuilder = flag match {
+      case SystemFlag.Answered => builder.add(Flag.ANSWERED)
+      case SystemFlag.Deleted => builder.add(Flag.DELETED)
+      case SystemFlag.Draft => builder.add(Flag.DRAFT)
+      case SystemFlag.Flagged => builder.add(Flag.FLAGGED)
+      case SystemFlag.Recent => builder.add(Flag.RECENT)
+      case SystemFlag.Seen => builder.add(Flag.SEEN)
     }
 
     def fromJavaFlags(flags: JavaMailFlags): Flags = {
