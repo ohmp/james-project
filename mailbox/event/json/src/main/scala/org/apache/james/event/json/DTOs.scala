@@ -25,7 +25,7 @@ import java.util.Date
 import javax.mail.Flags.Flag
 import javax.mail.{Flags => JavaMailFlags}
 import org.apache.james.core.quota.QuotaValue
-import org.apache.james.event.json.DTOs.SystemFlag._
+import org.apache.james.event.json.DTOs.SystemFlag.SystemFlag
 import org.apache.james.mailbox.acl.{ACLDiff => JavaACLDiff}
 import org.apache.james.mailbox.model.{MailboxACL, MessageId, MailboxPath => JavaMailboxPath, MessageMetaData => JavaMessageMetaData, Quota => JavaQuota, UpdatedFlags => JavaUpdatedFlags}
 import org.apache.james.mailbox.{FlagsBuilder, MessageUid}
@@ -86,33 +86,11 @@ object DTOs {
     def toJava: JavaMessageMetaData = new JavaMessageMetaData(uid, modSeq, Flags.toJavaFlags(flags), size, Date.from(internalDate), messageId)
   }
 
-  sealed trait Flag
+  case class UserFlag(value: String) extends AnyVal
 
-  case class UserFlag(value: String) extends Flag
-
-  trait SystemFlag extends Flag {
-    def asString: String
-  }
-
-  object SystemFlag {
-    case object Answered extends SystemFlag {
-      val asString = "Answered"
-    }
-    case object Deleted extends SystemFlag {
-      val asString = "Deleted"
-    }
-    case object Draft extends SystemFlag {
-      val asString = "Draft"
-    }
-    case object Flagged extends SystemFlag {
-      val asString = "Flagged"
-    }
-    case object Recent extends SystemFlag {
-      val asString = "Recent"
-    }
-    case object Seen extends SystemFlag {
-      val asString = "Seen"
-    }
+  object SystemFlag extends Enumeration {
+    type SystemFlag = Value
+    val Answered, Deleted, Draft, Flagged, Recent, Seen = Value
   }
 
   case class Flags(systemFlags: Seq[SystemFlag], userFlags: Seq[UserFlag])
@@ -141,12 +119,12 @@ object DTOs {
     }
 
     private def javaFlagToSystemFlag(flag: JavaMailFlags.Flag): SystemFlag = flag match {
-      case Flag.ANSWERED => Answered
-      case Flag.DELETED => Deleted
-      case Flag.DRAFT => Draft
-      case Flag.FLAGGED => Flagged
-      case Flag.RECENT => Recent
-      case Flag.SEEN => Seen
+      case Flag.ANSWERED => SystemFlag.Answered
+      case Flag.DELETED => SystemFlag.Deleted
+      case Flag.DRAFT => SystemFlag.Draft
+      case Flag.FLAGGED => SystemFlag.Flagged
+      case Flag.RECENT => SystemFlag.Recent
+      case Flag.SEEN => SystemFlag.Seen
     }
   }
 

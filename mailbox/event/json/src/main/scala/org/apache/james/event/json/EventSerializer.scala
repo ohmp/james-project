@@ -25,7 +25,7 @@ import java.util.{Optional, TreeMap => JavaTreeMap}
 import julienrf.json.derived
 import org.apache.james.core.quota.{QuotaCount, QuotaSize, QuotaValue}
 import org.apache.james.core.{Domain, User}
-import org.apache.james.event.json.DTOs.SystemFlag.{Answered, Deleted, Draft, Flagged, Recent, Seen}
+import org.apache.james.event.json.DTOs.SystemFlag.SystemFlag
 import org.apache.james.event.json.DTOs.{ACLDiff, Flags, MailboxPath, Quota, SystemFlag, UserFlag}
 import org.apache.james.mailbox.MailboxListener.{Added => JavaAdded, Expunged => JavaExpunged, FlagsUpdated => JavaFlagsUpdated, MailboxACLUpdated => JavaMailboxACLUpdated, MailboxAdded => JavaMailboxAdded, MailboxDeletion => JavaMailboxDeletion, MailboxRenamed => JavaMailboxRenamed, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
 import org.apache.james.mailbox.MailboxSession.SessionId
@@ -191,6 +191,7 @@ private object ScalaConverter {
 }
 
 private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactory: MessageId.Factory) {
+  implicit val systemFlagsWrites: Writes[SystemFlag] = Writes.enumNameWrites
   implicit val userWriters: Writes[User] = (user: User) => JsString(user.asString)
   implicit val quotaRootWrites: Writes[QuotaRoot] = quotaRoot => JsString(quotaRoot.getValue)
   implicit val quotaValueWrites: Writes[QuotaValue[_]] = value => if (value.isUnlimited) JsNull else JsNumber(value.asLong())
@@ -206,11 +207,12 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
   implicit val messageIdWrites: Writes[MessageId] = value => JsString(value.serialize())
   implicit val messageUidWrites: Writes[MessageUid] = value => JsNumber(value.asLong())
   implicit val userFlagWrites: Writes[UserFlag] = value => JsString(value.value)
-  implicit val systemFlagWrites: Writes[SystemFlag] = value => JsString(value.asString)
   implicit val flagWrites: Writes[Flags] = Json.writes[Flags]
 
   implicit val messageMetaDataWrites: Writes[DTOs.MessageMetaData] = Json.writes[DTOs.MessageMetaData]
   implicit val updatedFlagsWrites: Writes[DTOs.UpdatedFlags] = Json.writes[DTOs.UpdatedFlags]
+
+  implicit val systemFlagsReads: Reads[SystemFlag] = Reads.enumNameReads(SystemFlag)
 
   implicit val aclEntryKeyReads: Reads[JavaMailboxACL.EntryKey] = {
     case JsString(keyAsString) => JsSuccess(JavaMailboxACL.EntryKey.deserialize(keyAsString))
@@ -260,15 +262,6 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
   }
   implicit val userFlagsReads: Reads[UserFlag] = {
     case JsString(x) => JsSuccess(UserFlag(x))
-    case _ => JsError()
-  }
-  implicit val systemFlagsReads: Reads[SystemFlag] = {
-    case JsString(Answered.asString) => JsSuccess(Answered)
-    case JsString(Deleted.asString) => JsSuccess(Deleted)
-    case JsString(Draft.asString) => JsSuccess(Draft)
-    case JsString(Flagged.asString) => JsSuccess(Flagged)
-    case JsString(Recent.asString) => JsSuccess(Recent)
-    case JsString(Seen.asString) => JsSuccess(Seen)
     case _ => JsError()
   }
 
