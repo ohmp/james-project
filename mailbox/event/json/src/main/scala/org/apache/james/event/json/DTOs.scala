@@ -76,56 +76,71 @@ object DTOs {
     def fromJava(javaMessageMetaData: JavaMessageMetaData): MessageMetaData = DTOs.MessageMetaData(
       javaMessageMetaData.getUid,
       javaMessageMetaData.getModSeq,
-      javaMessageMetaData.getFlags,
+      Flags.fromJavaFlags(javaMessageMetaData.getFlags),
       javaMessageMetaData.getSize,
       javaMessageMetaData.getInternalDate.toInstant,
       javaMessageMetaData.getMessageId)
   }
 
-  case class MessageMetaData(uid: MessageUid, modSeq: Long, flags: JavaMailFlags, size: Long, internalDate: Instant, messageId: MessageId) {
-    def toJava: JavaMessageMetaData = new JavaMessageMetaData(uid, modSeq, flags, size, Date.from(internalDate), messageId)
+  case class MessageMetaData(uid: MessageUid, modSeq: Long, flags: Flags, size: Long, internalDate: Instant, messageId: MessageId) {
+    def toJava: JavaMessageMetaData = new JavaMessageMetaData(uid, modSeq, Flags.toJavaFlags(flags), size, Date.from(internalDate), messageId)
   }
 
   sealed trait Flag
 
   case class UserFlag(value: String) extends Flag
 
-  trait SystemFlag extends Flag
-
-  object SystemFlag {
-    case object Answered extends SystemFlag
-    case object Deleted extends SystemFlag
-    case object Draft extends SystemFlag
-    case object Flagged extends SystemFlag
-    case object Recent extends SystemFlag
-    case object Seen extends SystemFlag
+  trait SystemFlag extends Flag {
+    def asString: String
   }
 
-  case class Flags(flags: Seq[Flag])
+  object SystemFlag {
+    case object Answered extends SystemFlag {
+      val asString = "Answered"
+    }
+    case object Deleted extends SystemFlag {
+      val asString = "Deleted"
+    }
+    case object Draft extends SystemFlag {
+      val asString = "Draft"
+    }
+    case object Flagged extends SystemFlag {
+      val asString = "Flagged"
+    }
+    case object Recent extends SystemFlag {
+      val asString = "Recent"
+    }
+    case object Seen extends SystemFlag {
+      val asString = "Seen"
+    }
+  }
+
+  case class Flags(systemFlags: Seq[SystemFlag], userFlags: Seq[UserFlag])
 
   object Flags {
 
     def toJavaFlags(scalaFlags: Flags): JavaMailFlags = {
-      scalaFlags.flags.foldLeft(new FlagsBuilder)((builder, flag) =>
-        flag match {
-          case UserFlag(value) => builder.add(value)
-          case SystemFlag.Answered => builder.add(Flag.ANSWERED)
-          case SystemFlag.Deleted => builder.add(Flag.DELETED)
-          case SystemFlag.Draft => builder.add(Flag.DRAFT)
-          case SystemFlag.Flagged => builder.add(Flag.FLAGGED)
-          case SystemFlag.Recent => builder.add(Flag.RECENT)
-          case SystemFlag.Seen => builder.add(Flag.SEEN)
-        }
-      ).build()
+      (scalaFlags.systemFlags ++ scalaFlags.userFlags)
+        .foldLeft(new FlagsBuilder)((builder, flag) =>
+          flag match {
+            case UserFlag(value) => builder.add(value)
+            case SystemFlag.Answered => builder.add(Flag.ANSWERED)
+            case SystemFlag.Deleted => builder.add(Flag.DELETED)
+            case SystemFlag.Draft => builder.add(Flag.DRAFT)
+            case SystemFlag.Flagged => builder.add(Flag.FLAGGED)
+            case SystemFlag.Recent => builder.add(Flag.RECENT)
+            case SystemFlag.Seen => builder.add(Flag.SEEN)
+          })
+        .build()
     }
 
     def fromJavaFlags(flags: JavaMailFlags): Flags = {
       Flags(
-        flags.getUserFlags.map(UserFlag) ++ flags.getSystemFlags.map(javaFlagToSystemFlag)
-      )
+        flags.getSystemFlags.map(javaFlagToSystemFlag),
+        flags.getUserFlags.map(UserFlag))
     }
 
-    private def javaFlagToSystemFlag(flag: JavaMailFlags.Flag): Flag = flag match {
+    private def javaFlagToSystemFlag(flag: JavaMailFlags.Flag): SystemFlag = flag match {
       case Flag.ANSWERED => Answered
       case Flag.DELETED => Deleted
       case Flag.DRAFT => Draft
