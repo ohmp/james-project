@@ -21,6 +21,7 @@ package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.apache.james.mailbox.model.MailboxConstants.USER_NAMESPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,10 +68,11 @@ class AddedSerializationTest {
     private static final SortedMap<MessageUid, MessageMetaData> ADDED = ImmutableSortedMap.of(
         MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(INSTANT), MESSAGE_ID));
 
-    private static final MailboxListener.Added DEFAULT_ADDED_EVENT = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, ADDED);
+    private static final MailboxListener.Added DEFAULT_ADDED_EVENT = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, ADDED, EVENT_ID);
     private static final String DEFAULT_ADDED_EVENT_JSON = 
         "{" +
         "  \"Added\": {" +
+        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
         "    \"path\": {" +
         "      \"namespace\": \"#private\"," +
         "      \"user\": \"user\"," +
@@ -111,10 +113,11 @@ class AddedSerializationTest {
     @Nested
     class WithEmptyAddedMap {
 
-        private final MailboxListener.Added emptyAddedEvent = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, ImmutableSortedMap.of());
+        private final MailboxListener.Added emptyAddedEvent = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, ImmutableSortedMap.of(), EVENT_ID);
         private final String emptyAddedEventJson =
             "{" +
             "  \"Added\": {" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"path\": {" +
             "      \"namespace\": \"#private\"," +
             "      \"user\": \"user\"," +
@@ -149,11 +152,13 @@ class AddedSerializationTest {
             private final MailboxListener.Added emptyFlagsAddedEvent = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID,
                 ImmutableSortedMap.of(
                     MESSAGE_UID,
-                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, emptyFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)));
+                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, emptyFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)),
+                EVENT_ID);
 
             private final String emptyFlagsAddedEventJson =
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -198,11 +203,13 @@ class AddedSerializationTest {
             private final MailboxListener.Added onlyUserFlagsAddedEvent = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID,
                 ImmutableSortedMap.of(
                     MESSAGE_UID,
-                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlyUserFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)));
+                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlyUserFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)),
+                EVENT_ID);
 
             private final String userOnlyFlagsAddedEventJson =
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -248,11 +255,13 @@ class AddedSerializationTest {
             private final MailboxListener.Added onlySystemFlagsAddedEvent = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID,
                 ImmutableSortedMap.of(
                     MESSAGE_UID,
-                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlySystemFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)));
+                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlySystemFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)),
+                EVENT_ID);
 
             private final String systemOnlyFlagsAddedEventJson =
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -298,11 +307,12 @@ class AddedSerializationTest {
         void addedShouldDeserializeWhenInternalDateIsInGoodISOFormat() {
             SortedMap<MessageUid, MessageMetaData> added = ImmutableSortedMap.of(
                 MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(Instant.parse("2018-12-14T09:41:51Z")), MESSAGE_ID));
-            MailboxListener.Added eventRoundToMillis = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, added);
+            MailboxListener.Added eventRoundToMillis = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, added, EVENT_ID);
 
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -332,11 +342,12 @@ class AddedSerializationTest {
         void addedShouldDeserializeWhenInternalDateIsMissingMilliSeconds() {
             SortedMap<MessageUid, MessageMetaData> added = ImmutableSortedMap.of(
                 MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(Instant.parse("2018-12-14T09:41:51Z")), MESSAGE_ID));
-            MailboxListener.Added eventRoundToMillis = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, added);
+            MailboxListener.Added eventRoundToMillis = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, added, EVENT_ID);
 
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -366,11 +377,12 @@ class AddedSerializationTest {
         void addedShouldDeserializeWhenInternalDateIsMissingSeconds() {
             SortedMap<MessageUid, MessageMetaData> added = ImmutableSortedMap.of(
                 MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(Instant.parse("2018-12-14T09:41:00Z")), MESSAGE_ID));
-            MailboxListener.Added eventRoundToMinute = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, added);
+            MailboxListener.Added eventRoundToMinute = new MailboxListener.Added(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, added, EVENT_ID);
 
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -405,6 +417,7 @@ class AddedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"user\": \"user\"," +
                 "      \"name\": \"mailboxName\"" +
@@ -434,6 +447,7 @@ class AddedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Added\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"\"," +
                 "      \"user\": \"user\"," +
@@ -468,11 +482,13 @@ class AddedSerializationTest {
             USER,
             new MailboxPath(USER_NAMESPACE, nullUser, MAILBOX_NAME),
             MAILBOX_ID,
-            ADDED);
+            ADDED,
+            EVENT_ID);
 
         private static final String EVENT_JSON_WITH_NULL_USER_IN_PATH =
             "{" +
             "  \"Added\": {" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"path\": {" +
             "      \"namespace\": \"#private\"," +
             "      \"name\": \"mailboxName\"" +
@@ -518,6 +534,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -547,6 +564,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -577,6 +595,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -610,6 +629,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -639,6 +659,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -669,6 +690,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -702,6 +724,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -731,6 +754,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -761,6 +785,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -797,6 +822,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 48246," +
                         "      \"user\": \"user\"," +
@@ -830,6 +856,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": 265412.64," +
@@ -864,6 +891,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -894,6 +922,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -928,6 +957,7 @@ class AddedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -950,6 +980,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -980,6 +1011,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1014,6 +1046,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1044,6 +1077,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1078,6 +1112,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1108,6 +1143,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1142,6 +1178,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1172,6 +1209,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1205,6 +1243,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1235,6 +1274,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1265,6 +1305,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1295,6 +1336,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1325,6 +1367,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1355,6 +1398,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1385,6 +1429,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1419,6 +1464,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1447,6 +1493,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1477,6 +1524,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1507,6 +1555,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1537,6 +1586,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1567,6 +1617,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1597,6 +1648,7 @@ class AddedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1625,28 +1677,29 @@ class AddedSerializationTest {
                 void addedShouldThrowWhenNoUserFlags() {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
-                            "  \"Added\": {" +
-                            "    \"path\": {" +
-                            "      \"namespace\": \"#private\"," +
-                            "      \"user\": \"user\"," +
-                            "      \"name\": \"mailboxName\"" +
-                            "    }," +
-                            "    \"mailboxId\": \"18\"," +
-                            "    \"added\": {" +
-                            "      \"123456\": {" +
-                            "        \"uid\": 123456," +
-                            "        \"modSeq\": 35," +
-                            "        \"flags\": {" +
-                            "          \"systemFlags\":[\"Draft\"]}," +
-                            "        \"size\": 45,  " +
-                            "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
-                            "        \"messageId\": \"42\"" +
-                            "      }" +
-                            "    }," +
-                            "    \"sessionId\": 42," +
-                            "    \"user\": \"user\"" +
-                            "  }" +
-                            "}").get())
+                        "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
+                        "    \"path\": {" +
+                        "      \"namespace\": \"#private\"," +
+                        "      \"user\": \"user\"," +
+                        "      \"name\": \"mailboxName\"" +
+                        "    }," +
+                        "    \"mailboxId\": \"18\"," +
+                        "    \"added\": {" +
+                        "      \"123456\": {" +
+                        "        \"uid\": 123456," +
+                        "        \"modSeq\": 35," +
+                        "        \"flags\": {" +
+                        "          \"systemFlags\":[\"Draft\"]}," +
+                        "        \"size\": 45,  " +
+                        "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                        "        \"messageId\": \"42\"" +
+                        "      }" +
+                        "    }," +
+                        "    \"sessionId\": 42," +
+                        "    \"user\": \"user\"" +
+                        "  }" +
+                        "}").get())
                         .isInstanceOf(NoSuchElementException.class);
                 }
             }

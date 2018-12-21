@@ -20,6 +20,7 @@
 package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -56,10 +57,12 @@ class MailboxACLUpdatedEventSerializationTest {
                 USER,
                 new MailboxPath(MailboxConstants.USER_NAMESPACE, "bob", "mailboxName"),
                 ACLDiff.computeDiff(MailboxACL.EMPTY, MAILBOX_ACL),
-                TestId.of(23));
+                TestId.of(23),
+                EVENT_ID);
 
     private static final String MAILBOX_ACL_UPDATED_JSON = "{" +
         "  \"MailboxACLUpdated\":{" +
+        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
         "    \"mailboxPath\":{" +
         "       \"namespace\":\"#private\"," +
         "       \"user\":\"bob\"," +
@@ -91,6 +94,7 @@ class MailboxACLUpdatedEventSerializationTest {
         private final String NULL_USER = null;
         private static final String JSON_2 = "{" +
             "  \"MailboxACLUpdated\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"mailboxPath\":{" +
             "       \"namespace\":\"#private\"," +
             "       \"name\":\"mailboxName\"" +
@@ -112,7 +116,8 @@ class MailboxACLUpdatedEventSerializationTest {
                 USER,
                 new MailboxPath(MailboxConstants.USER_NAMESPACE, NULL_USER, "mailboxName"),
                 ACLDiff.computeDiff(MailboxACL.EMPTY, MAILBOX_ACL),
-                TestId.of(23));
+                TestId.of(23),
+                EVENT_ID);
 
         @Test
         void mailboxACLUpdatedShouldBeWellSerializedWithNullUser() {
@@ -138,13 +143,15 @@ class MailboxACLUpdatedEventSerializationTest {
             USER,
             new MailboxPath(MailboxConstants.USER_NAMESPACE, "bob", "mailboxName"),
             ACLDiff.computeDiff(MailboxACL.EMPTY, MAILBOX_ACL),
-            TestId.of(23));
+            TestId.of(23),
+            EVENT_ID);
 
         @Test
         void mailboxAddedShouldBeWellDeSerializedWhenMissingNameSpace() {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"MailboxACLUpdated\":{" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"mailboxPath\":{" +
                 "       \"user\": \"bob\"," +
                 "       \"name\":\"mailboxName\"" +
@@ -165,6 +172,7 @@ class MailboxACLUpdatedEventSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"MailboxACLUpdated\":{" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"mailboxPath\":{" +
                 "       \"namespace\":null," +
                 "       \"user\": \"bob\"," +
@@ -188,6 +196,7 @@ class MailboxACLUpdatedEventSerializationTest {
         private final String jsonNullRight =
             "{" +
             "  \"MailboxACLUpdated\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"mailboxPath\":{" +
             "       \"namespace\":\"#private\"," +
             "       \"user\":\"bob\"," +
@@ -210,7 +219,8 @@ class MailboxACLUpdatedEventSerializationTest {
                 USER,
                 new MailboxPath(MailboxConstants.USER_NAMESPACE, "bob", "mailboxName"),
                 ACLDiff.computeDiff(mailboxACL, MailboxACL.EMPTY),
-                TestId.of(23));
+                TestId.of(23),
+                EVENT_ID);
 
         @Test
         void mailboxACLUpdatedShouldBeWellSerializedWithNullRight() {
@@ -231,6 +241,7 @@ class MailboxACLUpdatedEventSerializationTest {
         private final String jsonDoubleRight =
             "{" +
             "  \"MailboxACLUpdated\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"mailboxPath\":{" +
             "       \"namespace\":\"#private\"," +
             "       \"user\":\"bob\"," +
@@ -253,7 +264,8 @@ class MailboxACLUpdatedEventSerializationTest {
             USER,
             new MailboxPath(MailboxConstants.USER_NAMESPACE, "bob", "mailboxName"),
             ACLDiff.computeDiff(mailboxACL, MailboxACL.EMPTY),
-            TestId.of(23));
+            TestId.of(23),
+            EVENT_ID);
 
         @Test
         void mailboxACLUpdatedShouldBeWellSerializedWithNullRight() {
@@ -278,6 +290,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -298,6 +311,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -319,6 +333,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -344,6 +359,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"name\":\"mailboxName\"" +
@@ -363,6 +379,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"name\":\"mailboxName\"" +
@@ -383,6 +400,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"name\":\"mailboxName\"" +
@@ -407,6 +425,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"name\":\"mailboxName\"" +
@@ -428,6 +447,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"name\":\"mailboxName\"" +
@@ -450,6 +470,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -471,6 +492,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -492,6 +514,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -513,6 +536,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -534,6 +558,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -559,6 +584,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -580,6 +606,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -601,6 +628,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -628,6 +656,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"name\":\"mailboxName\"" +
@@ -650,6 +679,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -671,6 +701,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -692,6 +723,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -713,6 +745,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -734,6 +767,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -759,6 +793,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -780,6 +815,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -801,6 +837,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":\"#private\"," +
                         "       \"user\":\"bob\"," +
@@ -827,6 +864,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -847,6 +885,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -868,6 +907,7 @@ class MailboxACLUpdatedEventSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxACLUpdated\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"mailboxPath\":{" +
                     "       \"namespace\":\"#private\"," +
                     "       \"user\":\"bob\"," +
@@ -895,6 +935,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":230192.06," +
                         "       \"user\":\"bob\"," +
@@ -919,6 +960,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":230192.06," +
                         "       \"user\":180806," +
@@ -944,6 +986,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":230192.06," +
                         "       \"user\":180806," +
@@ -965,6 +1008,7 @@ class MailboxACLUpdatedEventSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxACLUpdated\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"mailboxPath\":{" +
                         "       \"namespace\":230192.06," +
                         "       \"user\":\"bob\"," +

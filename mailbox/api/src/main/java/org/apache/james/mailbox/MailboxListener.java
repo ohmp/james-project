@@ -77,13 +77,15 @@ public interface MailboxListener {
     }
 
     class QuotaUsageUpdatedEvent implements QuotaEvent {
+        private final EventId eventId;
         private final User user;
         private final QuotaRoot quotaRoot;
         private final Quota<QuotaCount> countQuota;
         private final Quota<QuotaSize> sizeQuota;
         private final Instant instant;
 
-        public QuotaUsageUpdatedEvent(User user, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota, Instant instant) {
+        public QuotaUsageUpdatedEvent(EventId eventId, User user, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota, Instant instant) {
+            this.eventId = eventId;
             this.user = user;
             this.quotaRoot = quotaRoot;
             this.countQuota = countQuota;
@@ -111,6 +113,11 @@ public interface MailboxListener {
 
         public Instant getInstant() {
             return instant;
+        }
+
+        @Override
+        public EventId getEventId() {
+            return eventId;
         }
 
         @Override
@@ -142,12 +149,14 @@ public interface MailboxListener {
         protected final MailboxId mailboxId;
         protected final User user;
         protected final MailboxSession.SessionId sessionId;
+        protected final EventId eventId;
 
-        public MailboxEvent(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId) {
+        public MailboxEvent(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, EventId eventId) {
             this.user = user;
             this.path = path;
             this.mailboxId = mailboxId;
             this.sessionId = sessionId;
+            this.eventId = eventId;
         }
 
         /**
@@ -159,6 +168,11 @@ public interface MailboxListener {
         @Override
         public User getUser() {
             return user;
+        }
+
+        @Override
+        public EventId getEventId() {
+            return eventId;
         }
 
         /**
@@ -199,8 +213,8 @@ public interface MailboxListener {
         private final QuotaSize totalDeletedSize;
 
         public MailboxDeletion(MailboxSession.SessionId sessionId, User user, MailboxPath path, QuotaRoot quotaRoot, QuotaCount deletedMessageCount, QuotaSize totalDeletedSize,
-                               MailboxId mailboxId) {
-            super(sessionId, user, path, mailboxId);
+                               MailboxId mailboxId, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
             this.quotaRoot = quotaRoot;
             this.deletedMessageCount = deletedMessageCount;
             this.totalDeletedSize = totalDeletedSize;
@@ -245,8 +259,8 @@ public interface MailboxListener {
      */
     class MailboxAdded extends MailboxEvent {
 
-        public MailboxAdded(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId) {
-            super(sessionId, user, path, mailboxId);
+        public MailboxAdded(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
         }
 
         @Override
@@ -274,8 +288,8 @@ public interface MailboxListener {
     class MailboxRenamed extends MailboxEvent {
         private final MailboxPath newPath;
 
-        public MailboxRenamed(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, MailboxPath newPath) {
-            super(sessionId, user, path, mailboxId);
+        public MailboxRenamed(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, MailboxPath newPath, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
             this.newPath = newPath;
         }
 
@@ -315,8 +329,8 @@ public interface MailboxListener {
     class MailboxACLUpdated extends MailboxEvent {
         private final ACLDiff aclDiff;
 
-        public MailboxACLUpdated(MailboxSession.SessionId sessionId, User user, MailboxPath path, ACLDiff aclDiff, MailboxId mailboxId) {
-            super(sessionId, user, path, mailboxId);
+        public MailboxACLUpdated(MailboxSession.SessionId sessionId, User user, MailboxPath path, ACLDiff aclDiff, MailboxId mailboxId, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
             this.aclDiff = aclDiff;
         }
 
@@ -350,8 +364,8 @@ public interface MailboxListener {
      */
     abstract class MessageEvent extends MailboxEvent {
 
-        public MessageEvent(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId) {
-            super(sessionId, user, path, mailboxId);
+        public MessageEvent(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
         }
 
         /**
@@ -364,8 +378,8 @@ public interface MailboxListener {
 
     abstract class MetaDataHoldingEvent extends MessageEvent {
 
-        public MetaDataHoldingEvent(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId) {
-            super(sessionId, user, path, mailboxId);
+        public MetaDataHoldingEvent(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
         }
 
         /**
@@ -380,8 +394,8 @@ public interface MailboxListener {
     class Expunged extends MetaDataHoldingEvent {
         private final Map<MessageUid, MessageMetaData> expunged;
 
-        public Expunged(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, Map<MessageUid, MessageMetaData> uids) {
-            super(sessionId, user, path, mailboxId);
+        public Expunged(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, Map<MessageUid, MessageMetaData> uids, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
             this.expunged = ImmutableMap.copyOf(uids);
         }
 
@@ -431,8 +445,9 @@ public interface MailboxListener {
         private final List<MessageUid> uids;
         private final List<UpdatedFlags> updatedFlags;
 
-        public FlagsUpdated(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, List<UpdatedFlags> updatedFlags) {
-            super(sessionId, user, path, mailboxId);
+        public FlagsUpdated(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, List<UpdatedFlags> updatedFlags,
+                            EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
             this.updatedFlags = ImmutableList.copyOf(updatedFlags);
             this.uids = updatedFlags.stream()
                 .map(UpdatedFlags::getUid)
@@ -475,8 +490,9 @@ public interface MailboxListener {
     class Added extends MetaDataHoldingEvent {
         private final Map<MessageUid, MessageMetaData> added;
 
-        public Added(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId, SortedMap<MessageUid, MessageMetaData> uids) {
-            super(sessionId, user, path, mailboxId);
+        public Added(MailboxSession.SessionId sessionId, User user, MailboxPath path, MailboxId mailboxId,
+                     SortedMap<MessageUid, MessageMetaData> uids, EventId eventId) {
+            super(sessionId, user, path, mailboxId, eventId);
             this.added = ImmutableMap.copyOf(uids);
         }
 

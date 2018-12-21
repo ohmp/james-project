@@ -20,6 +20,7 @@
 package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -39,7 +40,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class QuotaUsageUpdatedEventSerializationTest {
-
     private static final User USER = User.fromUsername("user");
     private static final QuotaRoot QUOTA_ROOT = QuotaRoot.quotaRoot("foo", Optional.empty());
     private static final Quota<QuotaCount> QUOTA_COUNT = Quota.<QuotaCount>builder()
@@ -52,11 +52,12 @@ class QuotaUsageUpdatedEventSerializationTest {
         .build();
     private static final Instant INSTANT = Instant.parse("2018-11-13T12:00:55Z");
     private static final MailboxListener.QuotaUsageUpdatedEvent DEFAULT_QUOTA_EVENT =
-        new MailboxListener.QuotaUsageUpdatedEvent(USER, QUOTA_ROOT, QUOTA_COUNT, QUOTA_SIZE, INSTANT);
+        new MailboxListener.QuotaUsageUpdatedEvent(EVENT_ID, USER, QUOTA_ROOT, QUOTA_COUNT, QUOTA_SIZE, INSTANT);
 
     private static final String DEFAULT_QUOTA_EVENT_JSON =
         "{" +
             "\"QuotaUsageUpdatedEvent\":{" +
+            "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "\"quotaRoot\":\"foo\"," +
             "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
             "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -77,6 +78,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             class WithUserContainsOnlyUsername {
 
                 private final MailboxListener.QuotaUsageUpdatedEvent eventWithUserContainsUsername = new MailboxListener.QuotaUsageUpdatedEvent(
+                    EVENT_ID,
                     User.fromUsername("onlyUsername"),
                     QUOTA_ROOT,
                     QUOTA_COUNT,
@@ -85,6 +87,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String quotaUsageUpdatedEvent =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -110,6 +113,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             class WithUserContainsUsernameAndDomain {
 
                 private final MailboxListener.QuotaUsageUpdatedEvent eventWithUserContainsUsernameAndDomain = new MailboxListener.QuotaUsageUpdatedEvent(
+                    EVENT_ID,
                     User.fromUsername("user@domain"),
                     QUOTA_ROOT,
                     QUOTA_COUNT,
@@ -118,6 +122,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String quotaUsageUpdatedEvent =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -148,6 +153,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 String quotaUsageUpdatedEvent =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -165,6 +171,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 String quotaUsageUpdatedEvent =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -181,6 +188,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 String quotaUsageUpdatedEvent =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -219,6 +227,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             private final QuotaRoot emptyQuotaRoot = QuotaRoot.quotaRoot("", Optional.empty());
             private final MailboxListener.QuotaUsageUpdatedEvent eventWithEmptyQuotaRoot =
                 new MailboxListener.QuotaUsageUpdatedEvent(
+                    EVENT_ID,
                     USER,
                     emptyQuotaRoot,
                     QUOTA_COUNT,
@@ -227,6 +236,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             private final String quotaUsageUpdatedEvent =
                 "{" +
                     "\"QuotaUsageUpdatedEvent\":{" +
+                    "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "\"quotaRoot\":\"\"," +
                     "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                     "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -252,6 +262,7 @@ class QuotaUsageUpdatedEventSerializationTest {
         class WithNullQuotaRoot {
             private final MailboxListener.QuotaUsageUpdatedEvent eventWithNullQuotaRoot =
                 new MailboxListener.QuotaUsageUpdatedEvent(
+                    EVENT_ID,
                     USER,
                     null,
                     QUOTA_COUNT,
@@ -261,6 +272,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             private final String quotaUsageUpdatedEvent =
                 "{" +
                     "\"QuotaUsageUpdatedEvent\":{" +
+                    "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                     "\"time\":\"2018-11-13T12:00:55Z\"," +
                     "\"sizeQuota\":{\"used\":1234,\"limit\":10000,\"limits\":{}}," +
@@ -287,7 +299,7 @@ class QuotaUsageUpdatedEventSerializationTest {
     class WithQuotaCount {
 
         private MailboxListener.QuotaUsageUpdatedEvent quotaEventByQuotaCount(Quota<QuotaCount> countQuota) {
-            return new MailboxListener.QuotaUsageUpdatedEvent(USER, QUOTA_ROOT, countQuota, QUOTA_SIZE, INSTANT);
+            return new MailboxListener.QuotaUsageUpdatedEvent(EVENT_ID, USER, QUOTA_ROOT, countQuota, QUOTA_SIZE, INSTANT);
         }
 
         @Nested
@@ -307,6 +319,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String limitedQuotaCountEventJsonGlobalScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{\"Global\":100}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -337,6 +350,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String limitedQuotaCountEventJsonDomainScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{\"Domain\":100}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -367,6 +381,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String limitedQuotaCountEventJsonUserScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{\"User\":100}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -409,6 +424,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String unLimitedQuotaCountEventJsonGlobalScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":null,\"limits\":{\"Global\":null}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -439,6 +455,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String unLimitedQuotaCountEventJsonDomainScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":null,\"limits\":{\"Domain\":null}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -469,6 +486,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String unLimitedQuotaCountEventJsonUserScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":null,\"limits\":{\"User\":null}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -501,7 +519,7 @@ class QuotaUsageUpdatedEventSerializationTest {
     class WithQuotaSize {
 
         private MailboxListener.QuotaUsageUpdatedEvent quotaEventByQuotaSize(Quota<QuotaSize> quotaSize) {
-            return new MailboxListener.QuotaUsageUpdatedEvent(USER, QUOTA_ROOT, QUOTA_COUNT, quotaSize, INSTANT);
+            return new MailboxListener.QuotaUsageUpdatedEvent(EVENT_ID, USER, QUOTA_ROOT, QUOTA_COUNT, quotaSize, INSTANT);
         }
 
         @Nested
@@ -521,6 +539,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String limitedQuotaSizeEventJsonGlobalScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -551,6 +570,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String limitedQuotaSizeEventJsonDomainScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -581,6 +601,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String limitedQuotaSizeEventJsonUserScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -624,6 +645,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String unLimitedQuotaSizeEventJsonGlobalScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -654,6 +676,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String unLimitedQuotaSizeEventJsonDomainScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -684,6 +707,7 @@ class QuotaUsageUpdatedEventSerializationTest {
                 private final String unLimitedQuotaSizeEventJsonUserScope =
                     "{" +
                         "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "\"quotaRoot\":\"foo\"," +
                         "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
                         "\"time\":\"2018-11-13T12:00:55Z\"," +
@@ -731,6 +755,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             String quotaUsageUpdatedEvent =
                 "{" +
                     "\"QuotaUsageUpdatedEvent\":{" +
+                    "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "\"quotaRoot\":\"foo\"," +
                     "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{\"Domain\":100}}," +
                     "\"sizeQuota\":{\"used\":1234,\"limit\":10000,\"limits\":{}}," +
@@ -747,6 +772,7 @@ class QuotaUsageUpdatedEventSerializationTest {
             String quotaUsageUpdatedEvent =
                 "{" +
                     "\"QuotaUsageUpdatedEvent\":{" +
+                    "\"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "\"quotaRoot\":\"foo\"," +
                     "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{\"Domain\":100}}," +
                     "\"time\":\"\"," +

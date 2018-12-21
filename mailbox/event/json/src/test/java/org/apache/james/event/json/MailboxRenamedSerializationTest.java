@@ -20,6 +20,7 @@
 package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.apache.james.mailbox.model.MailboxConstants.USER_NAMESPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,11 +51,13 @@ class MailboxRenamedSerializationTest {
         DEFAULT_USER,
         DEFAULT_OLD_MAILBOX_PATH,
         DEFAULT_MAILBOX_ID,
-        DEFAULT_NEW_MAILBOX_PATH);
+        DEFAULT_NEW_MAILBOX_PATH,
+        EVENT_ID);
 
     private static final String DEFAULT_MAILBOX_RENAMED_EVENT_JSON =
             "{" +
             "  \"MailboxRenamed\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"sessionId\":123456789," +
             "    \"user\":\"user\"," +
             "    \"path\":{" +
@@ -96,10 +99,12 @@ class MailboxRenamedSerializationTest {
                 DEFAULT_USER,
                 new MailboxPath(USER_NAMESPACE, nullUser, OLD_MAILBOX_NAME),
                 DEFAULT_MAILBOX_ID,
-                DEFAULT_NEW_MAILBOX_PATH);
+                DEFAULT_NEW_MAILBOX_PATH,
+                EVENT_ID);
 
             private static final String EVENT_JSON_WITH_NULL_USER_OLD_PATH = "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -136,10 +141,12 @@ class MailboxRenamedSerializationTest {
                 DEFAULT_USER,
                 DEFAULT_OLD_MAILBOX_PATH,
                 DEFAULT_MAILBOX_ID,
-                new MailboxPath(USER_NAMESPACE, nullUser, NEW_MAILBOX_NAME));
+                new MailboxPath(USER_NAMESPACE, nullUser, NEW_MAILBOX_NAME),
+                EVENT_ID);
 
             private static final String EVENT_JSON_WITH_NULL_USER_NEW_PATH = "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -176,11 +183,13 @@ class MailboxRenamedSerializationTest {
                 DEFAULT_USER,
                 new MailboxPath(USER_NAMESPACE, nullUser, OLD_MAILBOX_NAME),
                 DEFAULT_MAILBOX_ID,
-                new MailboxPath(USER_NAMESPACE, nullUser, NEW_MAILBOX_NAME));
+                new MailboxPath(USER_NAMESPACE, nullUser, NEW_MAILBOX_NAME),
+                EVENT_ID);
 
             private static final String EVENT_JSON_WITH_NULL_USER_BOTH_PATH =
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -217,6 +226,7 @@ class MailboxRenamedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"MailboxRenamed\":{" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"sessionId\":123456789," +
                 "    \"user\":\"user\"," +
                 "    \"path\":{" +
@@ -240,6 +250,7 @@ class MailboxRenamedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"MailboxRenamed\":{" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"sessionId\":123456789," +
                 "    \"user\":\"user\"," +
                 "    \"path\":{" +
@@ -263,6 +274,7 @@ class MailboxRenamedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"MailboxRenamed\":{" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"sessionId\":123456789," +
                 "    \"user\":\"user\"," +
                 "    \"path\":{" +
@@ -292,6 +304,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"path\":{" +
                     "      \"namespace\":\"#private\"," +
@@ -314,6 +327,7 @@ class MailboxRenamedSerializationTest {
                 String eventWithEmptyUser =
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"\"," +
                     "    \"path\":{" +
@@ -338,6 +352,7 @@ class MailboxRenamedSerializationTest {
                 String eventWithBadUser =
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user@user@user\"," +
                     "    \"path\":{" +
@@ -365,6 +380,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":\"123456789\"," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -388,6 +404,7 @@ class MailboxRenamedSerializationTest {
                 String eventWithNullSessionId =
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
                     "      \"namespace\":\"#private\"," +
@@ -414,6 +431,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -437,6 +455,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -463,6 +482,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -485,6 +505,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -508,6 +529,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -530,6 +552,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -553,6 +576,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -575,6 +599,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -598,6 +623,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -620,6 +646,7 @@ class MailboxRenamedSerializationTest {
                 String eventWithNumberMailboxId =
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -644,6 +671,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -666,6 +694,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -689,6 +718,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -711,6 +741,7 @@ class MailboxRenamedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":123456789," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +

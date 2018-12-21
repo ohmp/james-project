@@ -27,6 +27,7 @@ import java.util.SortedMap;
 import org.apache.james.core.User;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageMoveEvent;
@@ -48,7 +49,8 @@ public class EventFactory {
     }
 
     public MailboxListener.Added added(MailboxSession.SessionId sessionId, User user, SortedMap<MessageUid, MessageMetaData> uids, Mailbox mailbox) {
-        return new MailboxListener.Added(sessionId, user, mailbox.generateAssociatedPath(), mailbox.getMailboxId(), uids);
+        return new MailboxListener.Added(sessionId, user, mailbox.generateAssociatedPath(), mailbox.getMailboxId(),
+            uids, Event.EventId.random());
     }
 
     public MailboxListener.Expunged expunged(MailboxSession session,  Map<MessageUid, MessageMetaData> uids, Mailbox mailbox) {
@@ -56,11 +58,12 @@ public class EventFactory {
     }
 
     public MailboxListener.Expunged expunged(MailboxSession.SessionId sessionId, User user, Map<MessageUid, MessageMetaData> uids, Mailbox mailbox) {
-        return new MailboxListener.Expunged(sessionId, user, mailbox.generateAssociatedPath(), mailbox.getMailboxId(), uids);
+        return new MailboxListener.Expunged(sessionId, user, mailbox.generateAssociatedPath(), mailbox.getMailboxId(), uids, Event.EventId.random());
     }
 
     public MailboxListener.FlagsUpdated flagsUpdated(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> uflags) {
-        return new MailboxListener.FlagsUpdated(session.getSessionId(), session.getUser(), mailbox.generateAssociatedPath(), mailbox.getMailboxId(), uflags);
+        return new MailboxListener.FlagsUpdated(session.getSessionId(), session.getUser(), mailbox.generateAssociatedPath(),
+            mailbox.getMailboxId(), uflags, Event.EventId.random());
     }
 
     public MailboxListener.MailboxRenamed mailboxRenamed(MailboxSession session, MailboxPath from, Mailbox to) {
@@ -68,7 +71,7 @@ public class EventFactory {
     }
 
     public MailboxListener.MailboxRenamed mailboxRenamed(MailboxSession.SessionId sessionId, User user, MailboxPath from, Mailbox to) {
-        return new MailboxListener.MailboxRenamed(sessionId, user, from, to.getMailboxId(), to.generateAssociatedPath());
+        return new MailboxListener.MailboxRenamed(sessionId, user, from, to.getMailboxId(), to.generateAssociatedPath(), Event.EventId.random());
     }
 
     public MailboxListener.MailboxDeletion mailboxDeleted(MailboxSession session, Mailbox mailbox, QuotaRoot quotaRoot,
@@ -78,7 +81,7 @@ public class EventFactory {
 
     public MailboxListener.MailboxDeletion mailboxDeleted(MailboxSession.SessionId sessionId, User user, Mailbox mailbox, QuotaRoot quotaRoot,
                                                           QuotaCount deletedMessageCount, QuotaSize totalDeletedSize) {
-        return new MailboxListener.MailboxDeletion(sessionId, user, mailbox.generateAssociatedPath(), quotaRoot, deletedMessageCount, totalDeletedSize, mailbox.getMailboxId());
+        return new MailboxListener.MailboxDeletion(sessionId, user, mailbox.generateAssociatedPath(), quotaRoot, deletedMessageCount, totalDeletedSize, mailbox.getMailboxId(), Event.EventId.random());
     }
 
     public MailboxListener.MailboxAdded mailboxAdded(MailboxSession session, Mailbox mailbox) {
@@ -86,7 +89,7 @@ public class EventFactory {
     }
 
     public MailboxListener.MailboxAdded mailboxAdded(MailboxSession.SessionId sessionId, User user, Mailbox mailbox) {
-        return new MailboxListener.MailboxAdded(sessionId, user, mailbox.generateAssociatedPath(), mailbox.getMailboxId());
+        return new MailboxListener.MailboxAdded(sessionId, user, mailbox.generateAssociatedPath(), mailbox.getMailboxId(), Event.EventId.random());
     }
 
     public MailboxListener.MailboxACLUpdated aclUpdated(MailboxSession session, MailboxPath mailboxPath, ACLDiff aclDiff, MailboxId mailboxId) {
@@ -94,7 +97,7 @@ public class EventFactory {
     }
 
     public MailboxListener.MailboxACLUpdated aclUpdated(MailboxSession.SessionId sessionId, User user, MailboxPath mailboxPath, ACLDiff aclDiff, MailboxId mailboxId) {
-        return new MailboxListener.MailboxACLUpdated(sessionId, user, mailboxPath, aclDiff, mailboxId);
+        return new MailboxListener.MailboxACLUpdated(sessionId, user, mailboxPath, aclDiff, mailboxId, Event.EventId.random());
     }
 
     public MessageMoveEvent moved(MailboxSession session, MessageMoves messageMoves, Collection<MessageId> messageIds) {

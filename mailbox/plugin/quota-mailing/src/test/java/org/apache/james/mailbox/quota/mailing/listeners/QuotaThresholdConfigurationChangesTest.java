@@ -29,6 +29,7 @@ import static org.apache.james.mailbox.quota.model.QuotaThresholdFixture.mailetC
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.eventsourcing.eventstore.EventStore;
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener.QuotaUsageUpdatedEvent;
 import org.apache.james.mailbox.quota.QuotaFixture.Counts;
 import org.apache.james.mailbox.quota.QuotaFixture.Sizes;
@@ -37,6 +38,7 @@ import org.apache.mailet.base.test.FakeMailContext;
 import org.junit.jupiter.api.Test;
 
 public interface QuotaThresholdConfigurationChangesTest {
+    Event.EventId EVENT_ID = Event.EventId.of("6e0dd59d-660e-4d9b-b22f-0354479f47b4");
 
     QuotaMailingListenerConfiguration CONFIGURATION_50 = QuotaMailingListenerConfiguration.builder()
         .addThreshold(_50)
@@ -57,12 +59,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._55_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -72,12 +74,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -87,12 +89,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).hasSize(1);
     }
@@ -102,12 +104,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -117,12 +119,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._30_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -132,12 +134,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).hasSize(1);
     }
@@ -147,13 +149,13 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store,
             CONFIGURATION_50_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).hasSize(1);
     }
@@ -163,13 +165,13 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store,
             CONFIGURATION_50_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -179,13 +181,13 @@ public interface QuotaThresholdConfigurationChangesTest {
         FakeMailContext mailetContext = mailetContext();
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store,
             CONFIGURATION_50_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -196,12 +198,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store,
             CONFIGURATION_50_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_75);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -212,12 +214,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store,
             CONFIGURATION_50_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._92_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }
@@ -228,12 +230,12 @@ public interface QuotaThresholdConfigurationChangesTest {
         QuotaThresholdListenersTestSystem testee = new QuotaThresholdListenersTestSystem(mailetContext, store,
             CONFIGURATION_50_75);
 
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
 
         testee = new QuotaThresholdListenersTestSystem(mailetContext, store, CONFIGURATION_50);
 
         mailetContext.resetSentMails();
-        testee.event(new QuotaUsageUpdatedEvent(BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
+        testee.event(new QuotaUsageUpdatedEvent(EVENT_ID, BOB_USER, QUOTAROOT, Counts._40_PERCENT, Sizes._60_PERCENT, NOW));
 
         assertThat(mailetContext.getSentMails()).isEmpty();
     }

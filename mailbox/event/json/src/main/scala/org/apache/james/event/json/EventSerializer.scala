@@ -27,6 +27,7 @@ import org.apache.james.core.quota.{QuotaCount, QuotaSize, QuotaValue}
 import org.apache.james.core.{Domain, User}
 import org.apache.james.event.json.DTOs.SystemFlag.SystemFlag
 import org.apache.james.event.json.DTOs.{ACLDiff, Flags, MailboxPath, Quota, SystemFlag, UserFlag}
+import org.apache.james.mailbox.Event.EventId
 import org.apache.james.mailbox.MailboxListener.{Added => JavaAdded, Expunged => JavaExpunged, FlagsUpdated => JavaFlagsUpdated, MailboxACLUpdated => JavaMailboxACLUpdated, MailboxAdded => JavaMailboxAdded, MailboxDeletion => JavaMailboxDeletion, MailboxRenamed => JavaMailboxRenamed, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
 import org.apache.james.mailbox.MailboxSession.SessionId
 import org.apache.james.mailbox.model.{MailboxId, MessageId, MessageMoves, QuotaRoot, MailboxACL => JavaMailboxACL, MessageMetaData => JavaMessageMetaData, Quota => JavaQuota}
@@ -40,53 +41,55 @@ private sealed trait Event {
 }
 
 private object DTO {
-  case class MailboxACLUpdated(sessionId: SessionId, user: User, mailboxPath: MailboxPath, aclDiff: ACLDiff, mailboxId: MailboxId) extends Event {
-    override def toJava: JavaEvent = new JavaMailboxACLUpdated(sessionId, user, mailboxPath.toJava, aclDiff.toJava, mailboxId)
+  case class MailboxACLUpdated(eventId: EventId, sessionId: SessionId, user: User, mailboxPath: MailboxPath, aclDiff: ACLDiff, mailboxId: MailboxId) extends Event {
+    override def toJava: JavaEvent = new JavaMailboxACLUpdated(sessionId, user, mailboxPath.toJava, aclDiff.toJava, mailboxId, eventId)
   }
 
-  case class MailboxAdded(mailboxPath: MailboxPath, mailboxId: MailboxId, user: User, sessionId: SessionId) extends Event {
-    override def toJava: JavaEvent = new JavaMailboxAdded(sessionId, user, mailboxPath.toJava, mailboxId)
+  case class MailboxAdded(eventId: EventId, mailboxPath: MailboxPath, mailboxId: MailboxId, user: User, sessionId: SessionId) extends Event {
+    override def toJava: JavaEvent = new JavaMailboxAdded(sessionId, user, mailboxPath.toJava, mailboxId, eventId)
   }
 
-  case class MailboxDeletion(sessionId: SessionId, user: User, path: MailboxPath, quotaRoot: QuotaRoot,
+  case class MailboxDeletion(eventId: EventId, sessionId: SessionId, user: User, path: MailboxPath, quotaRoot: QuotaRoot,
                              deletedMessageCount: QuotaCount, totalDeletedSize: QuotaSize, mailboxId: MailboxId) extends Event {
     override def toJava: JavaEvent = new JavaMailboxDeletion(sessionId, user, path.toJava, quotaRoot, deletedMessageCount,
-      totalDeletedSize,
-      mailboxId)
+      totalDeletedSize, mailboxId, eventId)
   }
 
-  case class MailboxRenamed(sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId, newPath: MailboxPath) extends Event {
-    override def toJava: JavaEvent = new JavaMailboxRenamed(sessionId, user, path.toJava, mailboxId, newPath.toJava)
+  case class MailboxRenamed(eventId: EventId, sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId, newPath: MailboxPath) extends Event {
+    override def toJava: JavaEvent = new JavaMailboxRenamed(sessionId, user, path.toJava, mailboxId, newPath.toJava, eventId)
   }
 
-  case class QuotaUsageUpdatedEvent(user: User, quotaRoot: QuotaRoot, countQuota: Quota[QuotaCount],
+  case class QuotaUsageUpdatedEvent(eventId: EventId, user: User, quotaRoot: QuotaRoot, countQuota: Quota[QuotaCount],
                                     sizeQuota: Quota[QuotaSize], time: Instant) extends Event {
-    override def toJava: JavaEvent = new JavaQuotaUsageUpdatedEvent(user, quotaRoot, countQuota.toJava, sizeQuota.toJava, time)
+    override def toJava: JavaEvent = new JavaQuotaUsageUpdatedEvent(eventId, user, quotaRoot, countQuota.toJava, sizeQuota.toJava, time)
   }
 
-  case class Added(sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
+  case class Added(eventId: EventId, sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
                    added: Map[MessageUid, DTOs.MessageMetaData]) extends Event {
     override def toJava: JavaEvent = new JavaAdded(
       sessionId,
       user,
       path.toJava,
       mailboxId,
-      new JavaTreeMap[MessageUid, JavaMessageMetaData](added.mapValues(_.toJava).asJava))
+      new JavaTreeMap[MessageUid, JavaMessageMetaData](added.mapValues(_.toJava).asJava),
+      eventId)
   }
 
-  case class Expunged(sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
+  case class Expunged(eventId: EventId, sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
                       expunged: Map[MessageUid, DTOs.MessageMetaData]) extends Event {
     override def toJava: JavaEvent = new JavaExpunged(
       sessionId,
       user,
       path.toJava,
       mailboxId,
-      expunged.mapValues(_.toJava).asJava)
+      expunged.mapValues(_.toJava).asJava,
+      eventId)
   }
 
-  case class MessageMoveEvent(user: User, previousMailboxIds: Iterable[MailboxId], targetMailboxIds: Iterable[MailboxId],
+  case class MessageMoveEvent(eventId: EventId, user: User, previousMailboxIds: Iterable[MailboxId], targetMailboxIds: Iterable[MailboxId],
                               messageIds: Iterable[MessageId]) extends Event {
     override def toJava: JavaEvent = JavaMessageMoveEvent.builder()
+      .eventId(eventId)
       .user(user)
       .messageId(messageIds.asJava)
       .messageMoves(MessageMoves.builder()
@@ -96,19 +99,21 @@ private object DTO {
       .build()
   }
 
-  case class FlagsUpdated(sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
+  case class FlagsUpdated(eventId: EventId, sessionId: SessionId, user: User, path: MailboxPath, mailboxId: MailboxId,
                           updatedFlags: List[DTOs.UpdatedFlags]) extends Event {
     override def toJava: JavaEvent = new JavaFlagsUpdated(
       sessionId,
       user,
       path.toJava,
       mailboxId,
-      updatedFlags.map(_.toJava).asJava)
+      updatedFlags.map(_.toJava).asJava,
+      eventId)
   }
 }
 
 private object ScalaConverter {
   private def toScala(event: JavaMailboxACLUpdated): DTO.MailboxACLUpdated = DTO.MailboxACLUpdated(
+    eventId = event.getEventId,
     sessionId = event.getSessionId,
     user = event.getUser,
     mailboxPath = MailboxPath.fromJava(event.getMailboxPath),
@@ -121,12 +126,14 @@ private object ScalaConverter {
     limits = java.getLimitByScope.asScala.toMap)
 
   private def toScala(event: JavaMailboxAdded): DTO.MailboxAdded = DTO.MailboxAdded(
+    eventId = event.getEventId,
     mailboxPath = MailboxPath.fromJava(event.getMailboxPath),
     mailboxId = event.getMailboxId,
     user = event.getUser,
     sessionId = event.getSessionId)
 
   private def toScala(event: JavaMailboxDeletion): DTO.MailboxDeletion = DTO.MailboxDeletion(
+    eventId = event.getEventId,
     sessionId = event.getSessionId,
     user = event.getUser,
     quotaRoot = event.getQuotaRoot,
@@ -136,6 +143,7 @@ private object ScalaConverter {
     mailboxId = event.getMailboxId)
 
   private def toScala(event: JavaMailboxRenamed): DTO.MailboxRenamed = DTO.MailboxRenamed(
+    eventId = event.getEventId,
     sessionId = event.getSessionId,
     user = event.getUser,
     path = MailboxPath.fromJava(event.getMailboxPath),
@@ -143,6 +151,7 @@ private object ScalaConverter {
     newPath = MailboxPath.fromJava(event.getNewPath))
 
   private def toScala(event: JavaQuotaUsageUpdatedEvent): DTO.QuotaUsageUpdatedEvent = DTO.QuotaUsageUpdatedEvent(
+    eventId = event.getEventId,
     user = event.getUser,
     quotaRoot = event.getQuotaRoot,
     countQuota = Quota.toScala(event.getCountQuota),
@@ -150,6 +159,7 @@ private object ScalaConverter {
     time = event.getInstant)
 
   private def toScala(event: JavaAdded): DTO.Added = DTO.Added(
+    eventId = event.getEventId,
     sessionId = event.getSessionId,
     user = event.getUser,
     path = MailboxPath.fromJava(event.getMailboxPath),
@@ -157,6 +167,7 @@ private object ScalaConverter {
     added = event.getAdded.asScala.mapValues(DTOs.MessageMetaData.fromJava).toMap)
 
   private def toScala(event: JavaExpunged): DTO.Expunged = DTO.Expunged(
+    eventId = event.getEventId,
     sessionId = event.getSessionId,
     user = event.getUser,
     path = MailboxPath.fromJava(event.getMailboxPath),
@@ -164,12 +175,14 @@ private object ScalaConverter {
     expunged = event.getExpunged.asScala.mapValues(DTOs.MessageMetaData.fromJava).toMap)
 
   private def toScala(event: JavaMessageMoveEvent): DTO.MessageMoveEvent = DTO.MessageMoveEvent(
+    eventId = event.getEventId,
     user = event.getUser,
     previousMailboxIds = event.getMessageMoves.getPreviousMailboxIds.asScala,
     targetMailboxIds = event.getMessageMoves.getTargetMailboxIds.asScala,
     messageIds = event.getMessageIds.asScala)
 
   private def toScala(event: JavaFlagsUpdated): DTO.FlagsUpdated = DTO.FlagsUpdated(
+    eventId = event.getEventId,
     sessionId = event.getSessionId,
     user = event.getUser,
     path = DTOs.MailboxPath.fromJava(event.getMailboxPath),
@@ -208,6 +221,7 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
   implicit val messageUidWrites: Writes[MessageUid] = value => JsNumber(value.asLong())
   implicit val userFlagWrites: Writes[UserFlag] = value => JsString(value.value)
   implicit val flagWrites: Writes[Flags] = Json.writes[Flags]
+  implicit val eventIdWrites: Writes[EventId] = value => JsString(value.getId.toString)
 
   implicit val messageMetaDataWrites: Writes[DTOs.MessageMetaData] = Json.writes[DTOs.MessageMetaData]
   implicit val updatedFlagsWrites: Writes[DTOs.UpdatedFlags] = Json.writes[DTOs.UpdatedFlags]
@@ -262,6 +276,10 @@ private class JsonSerialize(mailboxIdFactory: MailboxId.Factory, messageIdFactor
   }
   implicit val userFlagsReads: Reads[UserFlag] = {
     case JsString(x) => JsSuccess(UserFlag(x))
+    case _ => JsError()
+  }
+  implicit val eventIdReads: Reads[EventId] = {
+    case JsString(x) => JsSuccess(EventId.of(x))
     case _ => JsError()
   }
 

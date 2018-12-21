@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -95,7 +96,7 @@ public class MailboxAnnotationListenerTest {
 
     @Test
     public void eventShouldDoNothingIfDoNotHaveMailboxDeletionEvent() {
-        MailboxListener.MailboxEvent event = new MailboxListener.MailboxEvent(null, null, MAILBOX_PATH, MAILBOX_ID) {};
+        MailboxListener.MailboxEvent event = new MailboxListener.MailboxEvent(null, null, MAILBOX_PATH, MAILBOX_ID, Event.EventId.random()) {};
         listener.event(event);
 
         verifyNoMoreInteractions(mailboxSessionMapperFactory);

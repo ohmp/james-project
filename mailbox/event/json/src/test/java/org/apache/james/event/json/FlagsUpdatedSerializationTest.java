@@ -20,6 +20,7 @@
 package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -91,10 +92,11 @@ class FlagsUpdatedSerializationTest {
     private static List<UpdatedFlags> UPDATED_FLAGS_LIST = ImmutableList.of(UPDATED_FLAG_1, UPDATED_FLAG_2);
 
     private static final MailboxListener.FlagsUpdated DEFAULT_EVENT = new MailboxListener.FlagsUpdated(SESSION_ID, USER,
-        MAILBOX_PATH, MAILBOX_ID, UPDATED_FLAGS_LIST);
+        MAILBOX_PATH, MAILBOX_ID, UPDATED_FLAGS_LIST, EVENT_ID);
     private static final String DEFAULT_EVENT_JSON =
         "{" +
         "  \"FlagsUpdated\": {" +
+        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
         "    \"path\": {" +
         "      \"namespace\": \"#private\"," +
         "      \"user\": \"user\"," +
@@ -143,6 +145,7 @@ class FlagsUpdatedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"FlagsUpdated\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": null," +
                 "      \"user\": \"user\"," +
@@ -175,6 +178,7 @@ class FlagsUpdatedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"FlagsUpdated\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"\"," +
                 "      \"user\": \"user\"," +
@@ -208,11 +212,12 @@ class FlagsUpdatedSerializationTest {
         private final String nullUser = null;
         private final MailboxListener.FlagsUpdated nullUserEvent = new MailboxListener.FlagsUpdated(SESSION_ID, USER,
             new MailboxPath(MailboxConstants.USER_NAMESPACE, nullUser, MAILBOX_NAME),
-            MAILBOX_ID, UPDATED_FLAGS_LIST);
+            MAILBOX_ID, UPDATED_FLAGS_LIST, EVENT_ID);
 
         private static final String EVENT_JSON_WITH_NULL_USER_IN_PATH =
             "{" +
             "  \"FlagsUpdated\": {" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"path\": {" +
             "      \"namespace\": \"#private\"," +
             "      \"name\": \"mailboxName\"" +
@@ -258,11 +263,12 @@ class FlagsUpdatedSerializationTest {
         class EmptyUpdatedFlags {
             private final List<UpdatedFlags> emptyUpdatedFlags = ImmutableList.of();
             private final MailboxListener.FlagsUpdated emptyUpdatedFlagsEvent = new MailboxListener.FlagsUpdated(SESSION_ID, USER, MAILBOX_PATH,
-                MAILBOX_ID, emptyUpdatedFlags);
+                MAILBOX_ID, emptyUpdatedFlags, EVENT_ID);
 
             private static final String EVENT_JSON_WITH_EMPTY_UPDATED_FLAGS =
                 "{" +
                 "  \"FlagsUpdated\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -298,11 +304,12 @@ class FlagsUpdatedSerializationTest {
                 .newFlags(NEW_FLAGS_1)
                 .build();
             private final MailboxListener.FlagsUpdated emptyOldFlagsUpdatedFlagsEvent = new MailboxListener.FlagsUpdated(SESSION_ID, USER, MAILBOX_PATH,
-                MAILBOX_ID, ImmutableList.of(emptyOldFlags));
+                MAILBOX_ID, ImmutableList.of(emptyOldFlags), EVENT_ID);
 
             private static final String EVENT_JSON_WITH_EMPTY_OLD_FLAGS =
                 "{" +
                 "  \"FlagsUpdated\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -345,11 +352,12 @@ class FlagsUpdatedSerializationTest {
                 .newFlags(FlagsBuilder.builder().build())
                 .build();
             private final MailboxListener.FlagsUpdated emptyNewFlagsUpdatedFlagsEvent = new MailboxListener.FlagsUpdated(SESSION_ID, USER, MAILBOX_PATH,
-                MAILBOX_ID, ImmutableList.of(emptyNewFlags));
+                MAILBOX_ID, ImmutableList.of(emptyNewFlags), EVENT_ID);
 
             private static final String EVENT_JSON_WITH_EMPTY_NEW_FLAGS =
                 "{" +
                 "  \"FlagsUpdated\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -392,11 +400,12 @@ class FlagsUpdatedSerializationTest {
                 .newFlags(FlagsBuilder.builder().build())
                 .build();
             private final MailboxListener.FlagsUpdated emptyFlagsUpdatedFlagsEvent = new MailboxListener.FlagsUpdated(SESSION_ID, USER, MAILBOX_PATH,
-                MAILBOX_ID, ImmutableList.of(emptyFlags));
+                MAILBOX_ID, ImmutableList.of(emptyFlags), EVENT_ID);
 
             private static final String EVENT_JSON_WITH_EMPTY_OLD_AND_NEW_FLAGS =
                 "{" +
                 "  \"FlagsUpdated\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -441,6 +450,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -472,6 +482,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -504,6 +515,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -539,6 +551,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -570,6 +583,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -602,6 +616,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -637,6 +652,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -668,6 +684,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -700,6 +717,7 @@ class FlagsUpdatedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"FlagsUpdated\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -738,6 +756,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -773,6 +792,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": 682695," +
@@ -809,6 +829,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -841,6 +862,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -881,6 +903,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -907,6 +930,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -933,6 +957,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -963,6 +988,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -989,6 +1015,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1015,6 +1042,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1045,6 +1073,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1071,6 +1100,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1097,6 +1127,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1123,6 +1154,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1149,6 +1181,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1175,6 +1208,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1201,6 +1235,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1230,6 +1265,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1256,6 +1292,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1282,6 +1319,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1308,6 +1346,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1334,6 +1373,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1360,6 +1400,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +
@@ -1386,6 +1427,7 @@ class FlagsUpdatedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"FlagsUpdated\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 482," +
                         "      \"user\": \"user\"," +

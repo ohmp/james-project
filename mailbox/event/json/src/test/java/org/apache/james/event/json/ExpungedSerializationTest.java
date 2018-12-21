@@ -21,6 +21,7 @@ package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.apache.james.mailbox.model.MailboxConstants.USER_NAMESPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,10 +68,11 @@ class ExpungedSerializationTest {
     private static final Map<MessageUid, MessageMetaData> EXPUNGED = ImmutableMap.of(
         MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(INSTANT), MESSAGE_ID));
 
-    private static final MailboxListener.Expunged DEFAULT_EXPUNGED_EVENT = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, EXPUNGED);
+    private static final MailboxListener.Expunged DEFAULT_EXPUNGED_EVENT = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, EXPUNGED, EVENT_ID);
     private static final String DEFAULT_EXPUNGED_EVENT_JSON =
         "{" +
         "  \"Expunged\": {" +
+        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
         "    \"path\": {" +
         "      \"namespace\": \"#private\"," +
         "      \"user\": \"user\"," +
@@ -111,10 +113,11 @@ class ExpungedSerializationTest {
     @Nested
     class WithEmptyExpungedMap {
 
-        private final MailboxListener.Expunged emptyExpungedEvent = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, ImmutableMap.of());
+        private final MailboxListener.Expunged emptyExpungedEvent = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, ImmutableMap.of(), EVENT_ID);
         private final String emptyExpungedEventJson =
             "{" +
             "  \"Expunged\": {" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"path\": {" +
             "      \"namespace\": \"#private\"," +
             "      \"user\": \"user\"," +
@@ -149,11 +152,13 @@ class ExpungedSerializationTest {
             private final MailboxListener.Expunged emptyFlagsExpungedEvent = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID,
                 ImmutableMap.of(
                     MESSAGE_UID,
-                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, emptyFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)));
+                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, emptyFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)),
+                EVENT_ID);
 
             private final String emptyFlagsExpungedEventJson =
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -198,11 +203,13 @@ class ExpungedSerializationTest {
             private final MailboxListener.Expunged onlyUserFlagsExpungedEvent = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID,
                 ImmutableMap.of(
                     MESSAGE_UID,
-                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlyUserFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)));
+                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlyUserFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)),
+                EVENT_ID);
 
             private final String userOnlyFlagsExpungedEventJson =
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -248,11 +255,13 @@ class ExpungedSerializationTest {
             private final MailboxListener.Expunged onlySystemFlagsExpungedEvent = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID,
                 ImmutableMap.of(
                     MESSAGE_UID,
-                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlySystemFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)));
+                    new MessageMetaData(MESSAGE_UID, MOD_SEQ, onlySystemFlags, SIZE, Date.from(INSTANT), MESSAGE_ID)),
+                EVENT_ID);
 
             private final String systemOnlyFlagsExpungedEventJson =
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -296,13 +305,14 @@ class ExpungedSerializationTest {
 
         @Test
         void expungedShouldDeserializeWhenInternalDateIsInGoodISOFormat() {
-            Map<MessageUid, MessageMetaData> Expunged = ImmutableMap.of(
+            Map<MessageUid, MessageMetaData> expunged = ImmutableMap.of(
                 MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(Instant.parse("2018-12-14T09:41:51Z")), MESSAGE_ID));
-            MailboxListener.Expunged eventRoundToMillis = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, Expunged);
+            MailboxListener.Expunged eventRoundToMillis = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, expunged, EVENT_ID);
 
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -330,13 +340,14 @@ class ExpungedSerializationTest {
 
         @Test
         void expungedShouldDeserializeWhenInternalDateIsMissingMilliSeconds() {
-            Map<MessageUid, MessageMetaData> Expunged = ImmutableMap.of(
+            Map<MessageUid, MessageMetaData> expunged = ImmutableMap.of(
                 MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(Instant.parse("2018-12-14T09:41:51Z")), MESSAGE_ID));
-            MailboxListener.Expunged eventRoundToMillis = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, Expunged);
+            MailboxListener.Expunged eventRoundToMillis = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, expunged, EVENT_ID);
 
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -364,13 +375,14 @@ class ExpungedSerializationTest {
 
         @Test
         void expungedShouldDeserializeWhenInternalDateIsMissingSeconds() {
-            Map<MessageUid, MessageMetaData> Expunged = ImmutableMap.of(
+            Map<MessageUid, MessageMetaData> expunged = ImmutableMap.of(
                 MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(Instant.parse("2018-12-14T09:41:00Z")), MESSAGE_ID));
-            MailboxListener.Expunged eventRoundToMinute = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, Expunged);
+            MailboxListener.Expunged eventRoundToMinute = new MailboxListener.Expunged(SESSION_ID, USER, MAILBOX_PATH, MAILBOX_ID, expunged, EVENT_ID);
 
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"#private\"," +
                 "      \"user\": \"user\"," +
@@ -404,6 +416,7 @@ class ExpungedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"user\": \"user\"," +
                 "      \"name\": \"mailboxName\"" +
@@ -433,6 +446,7 @@ class ExpungedSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"Expunged\": {" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"path\": {" +
                 "      \"namespace\": \"\"," +
                 "      \"user\": \"user\"," +
@@ -467,11 +481,13 @@ class ExpungedSerializationTest {
             USER,
             new MailboxPath(USER_NAMESPACE, nullUser, MAILBOX_NAME),
             MAILBOX_ID,
-            EXPUNGED);
+            EXPUNGED,
+            EVENT_ID);
 
         private static final String EVENT_JSON_WITH_NULL_USER_IN_PATH =
             "{" +
             "  \"Expunged\": {" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"path\": {" +
             "      \"namespace\": \"#private\"," +
             "      \"name\": \"mailboxName\"" +
@@ -517,6 +533,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -546,6 +563,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -576,6 +594,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -609,6 +628,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -638,6 +658,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -668,6 +689,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -701,6 +723,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -730,6 +753,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -760,6 +784,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -796,6 +821,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": 48246," +
                         "      \"user\": \"user\"," +
@@ -829,6 +855,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": 265412.64," +
@@ -863,6 +890,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -893,6 +921,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -927,6 +956,7 @@ class ExpungedSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Expunged\": {" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -949,6 +979,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -979,6 +1010,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1013,6 +1045,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1043,6 +1076,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1078,6 +1112,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1108,6 +1143,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1142,6 +1178,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1172,6 +1209,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1205,6 +1243,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1235,6 +1274,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1265,6 +1305,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1295,6 +1336,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1325,6 +1367,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1355,6 +1398,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1385,6 +1429,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1419,6 +1464,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1447,6 +1493,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1477,6 +1524,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1507,6 +1555,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1537,6 +1586,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1567,6 +1617,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1597,6 +1648,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +
@@ -1626,6 +1678,7 @@ class ExpungedSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"Expunged\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"path\": {" +
                         "      \"namespace\": \"#private\"," +
                         "      \"user\": \"user\"," +

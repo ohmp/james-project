@@ -174,7 +174,7 @@ public class MailboxEventDispatcher {
     }
 
     public void quota(User user, QuotaRoot quotaRoot, Quota<QuotaCount> countQuota, Quota<QuotaSize> sizeQuota) {
-        listener.event(new MailboxListener.QuotaUsageUpdatedEvent(user, quotaRoot, countQuota, sizeQuota, Instant.now()));
+        listener.event(new MailboxListener.QuotaUsageUpdatedEvent(Event.EventId.random(), user, quotaRoot, countQuota, sizeQuota, Instant.now()));
     }
 
     public void event(Event event) {

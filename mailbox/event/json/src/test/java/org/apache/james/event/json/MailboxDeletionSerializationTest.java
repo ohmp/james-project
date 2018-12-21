@@ -20,6 +20,7 @@
 package org.apache.james.event.json;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.apache.james.event.json.JsonSerializationFixture.EVENT_ID;
 import static org.apache.james.mailbox.model.MailboxConstants.USER_NAMESPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,11 +57,13 @@ class MailboxDeletionSerializationTest {
         QUOTA_ROOT,
         DELETED_MESSAGE_COUNT,
         TOTAL_DELETED_SIZE,
-        MAILBOX_ID);
+        MAILBOX_ID,
+        EVENT_ID);
 
     private static final String DEFAULT_EVEN_JSON =
         "{" +
         "  \"MailboxDeletion\":{" +
+        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
         "    \"sessionId\":3652," +
         "    \"user\":\"user\"," +
         "    \"path\":{" +
@@ -97,6 +100,7 @@ class MailboxDeletionSerializationTest {
             assertThat(EVENT_SERIALIZER.fromJson(
                 "{" +
                 "  \"MailboxDeletion\":{" +
+                "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                 "    \"sessionId\":3652," +
                 "    \"user\":\"user\"," +
                 "    \"path\":{" +
@@ -125,10 +129,12 @@ class MailboxDeletionSerializationTest {
                 QUOTA_ROOT,
                 DELETED_MESSAGE_COUNT,
                 TOTAL_DELETED_SIZE,
-                MAILBOX_ID);
+                MAILBOX_ID,
+                EVENT_ID);
         private final String nullUserMailboxEventJson =
             "{" +
             "  \"MailboxDeletion\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"sessionId\":3652," +
             "    \"user\":\"user\"," +
             "    \"path\":{" +
@@ -164,10 +170,12 @@ class MailboxDeletionSerializationTest {
                 QuotaRoot.quotaRoot("", Optional.empty()),
                 DELETED_MESSAGE_COUNT,
                 TOTAL_DELETED_SIZE,
-                MAILBOX_ID);
+                MAILBOX_ID,
+                EVENT_ID);
         private final String nullUserMailboxEventJson =
             "{" +
             "  \"MailboxDeletion\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"sessionId\":3652," +
             "    \"user\":\"user\"," +
             "    \"path\":{" +
@@ -204,10 +212,12 @@ class MailboxDeletionSerializationTest {
                 QUOTA_ROOT,
                 QuotaCount.unlimited(),
                 TOTAL_DELETED_SIZE,
-                MAILBOX_ID);
+                MAILBOX_ID,
+                EVENT_ID);
         private final String nullQuotaCountInDeletedMessageCountEventJson =
             "{" +
             "  \"MailboxDeletion\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"sessionId\":3652," +
             "    \"user\":\"user\"," +
             "    \"path\":{" +
@@ -244,10 +254,12 @@ class MailboxDeletionSerializationTest {
                 QUOTA_ROOT,
                 DELETED_MESSAGE_COUNT,
                 QuotaSize.unlimited(),
-                MAILBOX_ID);
+                MAILBOX_ID,
+                EVENT_ID);
         private final String nullQuotaSizeInTotalDeletedMessageEventJson =
             "{" +
             "  \"MailboxDeletion\":{" +
+            "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
             "    \"sessionId\":3652," +
             "    \"user\":\"user\"," +
             "    \"path\":{" +
@@ -285,6 +297,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
                     "      \"namespace\":\"#private\"," +
@@ -305,6 +318,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":null," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -326,6 +340,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":\"3652\"," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -350,6 +365,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"path\":{" +
                     "      \"namespace\":\"#private\"," +
@@ -370,6 +386,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":5489515," +
                     "    \"path\":{" +
@@ -391,6 +408,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user@domain@secondDomain\"," +
                     "    \"path\":{" +
@@ -415,6 +433,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -435,6 +454,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -456,6 +476,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -480,6 +501,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -500,6 +522,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -524,6 +547,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -544,6 +568,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -568,6 +593,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -588,6 +614,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -609,6 +636,7 @@ class MailboxDeletionSerializationTest {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                     "    \"sessionId\":3652," +
                     "    \"user\":\"user\"," +
                     "    \"path\":{" +
@@ -636,6 +664,7 @@ class MailboxDeletionSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxDeletion\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"sessionId\":3652," +
                         "    \"user\":\"user\"," +
                         "    \"path\":{" +
@@ -660,6 +689,7 @@ class MailboxDeletionSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxDeletion\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"sessionId\":3652," +
                         "    \"user\":\"user\"," +
                         "    \"path\":{" +
@@ -685,6 +715,7 @@ class MailboxDeletionSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxDeletion\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"sessionId\":3652," +
                         "    \"user\":\"user\"," +
                         "    \"path\":{" +
@@ -706,6 +737,7 @@ class MailboxDeletionSerializationTest {
                     assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                         "{" +
                         "  \"MailboxDeletion\":{" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
                         "    \"sessionId\":3652," +
                         "    \"user\":\"user\"," +
                         "    \"path\":{" +

@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.User;
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener.QuotaUsageUpdatedEvent;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.quota.QuotaFixture;
@@ -34,11 +35,13 @@ import org.apache.james.util.ClassLoaderUtils;
 import org.junit.jupiter.api.Test;
 
 public class QuotaRatioToElasticSearchJsonTest {
+    private static Event.EventId EVENT_ID = Event.EventId.of("6e0dd59d-660e-4d9b-b22f-0354479f47b4");
 
     @Test
     public void quotaRatioShouldBeWellConvertedToJson() throws IOException {
         String user = "user@domain.org";
         QuotaUsageUpdatedEvent event = new QuotaUsageUpdatedEvent(
+                EVENT_ID,
                 User.fromUsername(user),
                 QuotaRoot.quotaRoot("any", Optional.of(Domain.of("domain.org"))),
                 QuotaFixture.Counts._52_PERCENT,
@@ -58,6 +61,7 @@ public class QuotaRatioToElasticSearchJsonTest {
     public void quotaRatioShouldBeWellConvertedToJsonWhenNoDomain() throws IOException {
         String user = "user";
         QuotaUsageUpdatedEvent event = new QuotaUsageUpdatedEvent(
+                EVENT_ID,
                 User.fromUsername(user),
                 QuotaRoot.quotaRoot("any", Optional.empty()),
                 QuotaFixture.Counts._52_PERCENT,

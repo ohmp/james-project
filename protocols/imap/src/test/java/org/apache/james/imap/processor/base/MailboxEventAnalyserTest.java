@@ -32,6 +32,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.imap.api.ImapSessionState;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -136,7 +137,7 @@ public class MailboxEventAnalyserTest {
     @Test
     public void testShouldBeNoSizeChangeOnOtherEvent() {
         MailboxListener.MailboxEvent event = new MailboxListener.MailboxEvent(MAILBOX_SESSION.getSessionId(),
-            MAILBOX_SESSION.getUser(), MAILBOX_PATH, MAILBOX_ID) {};
+            MAILBOX_SESSION.getUser(), MAILBOX_PATH, MAILBOX_ID, Event.EventId.random()) {};
       
         testee.event(event);
 
