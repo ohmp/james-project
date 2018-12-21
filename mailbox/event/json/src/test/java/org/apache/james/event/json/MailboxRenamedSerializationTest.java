@@ -374,6 +374,106 @@ class MailboxRenamedSerializationTest {
         }
 
         @Nested
+        class DeserializationErrorOnEventId {
+            @Test
+            void mailboxRenamedDeSerializeShouldThrowWhenLongEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":42," +
+                    "    \"sessionId\":\"123456789\"," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"oldMailboxName\"" +
+                    "     }," +
+                    "    \"mailboxId\":\"123456\"," +
+                    "    \"newPath\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"newMailboxName\"" +
+                    "     }" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void mailboxRenamedDeSerializeShouldThrowWhenInvalidEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":\"invalid\"," +
+                    "    \"sessionId\":\"123456789\"," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"oldMailboxName\"" +
+                    "     }," +
+                    "    \"mailboxId\":\"123456\"," +
+                    "    \"newPath\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"newMailboxName\"" +
+                    "     }" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(IllegalArgumentException.class);
+            }
+
+            @Test
+            void mailboxRenamedDeSerializeShouldThrowWhenNullEventIdId() {
+                String eventWithNullSessionId =
+                    "{" +
+                    "  \"MailboxRenamed\":{" +
+                    "    \"eventId\":null," +
+                    "    \"sessionId\":42," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"oldMailboxName\"" +
+                    "     }," +
+                    "    \"mailboxId\":\"123456\"," +
+                    "    \"newPath\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"newMailboxName\"" +
+                    "     }" +
+                    "  }" +
+                    "}";
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(eventWithNullSessionId).get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void mailboxRenamedDeSerializeShouldThrowWhenMissingEventIdId() {
+                String eventWithNullSessionId =
+                    "{" +
+                    "  \"MailboxRenamed\":{" +
+                    "    \"sessionId\":42," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"oldMailboxName\"" +
+                    "     }," +
+                    "    \"mailboxId\":\"123456\"," +
+                    "    \"newPath\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"newMailboxName\"" +
+                    "     }" +
+                    "  }" +
+                    "}";
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(eventWithNullSessionId).get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+        }
+
+        @Nested
         class DeserializationErrorOnSessionId {
             @Test
             void mailboxRenamedDeSerializeShouldThrowWhenStringSessionId() {

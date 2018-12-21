@@ -528,13 +528,13 @@ class AddedSerializationTest {
     class DeserializationErrors {
 
         @Nested
-        class DeserializationErrorOnSessionId {
+        class DeserializationErrorOnEventId {
             @Test
-            void addedShouldThrowWhenMissingSessionId() {
+            void addedShouldThrowWhenMissingEventId() {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
                     "  \"Added\": {" +
-                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
+                    "    \"sessionId\":42," +
                     "    \"path\": {" +
                     "      \"namespace\": \"#private\"," +
                     "      \"user\": \"user\"," +
@@ -557,68 +557,194 @@ class AddedSerializationTest {
                     "  }" +
                     "}").get())
                 .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void addedShouldThrowWhenNullEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Added\": {" +
+                    "    \"eventId\":null," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"added\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"sessionId\": 42," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void addedShouldThrowWhenLongSessionId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Added\": {" +
+                    "    \"eventId\":421," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"added\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"sessionId\": 42," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void addedShouldThrowWhenInvalidSessionId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Added\": {" +
+                    "    \"eventId\":\"invalid\"," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"added\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"sessionId\": 42," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(IllegalArgumentException.class);
+            }
+        }
+
+        @Nested
+        class DeserializationErrorOnSessionId {
+            @Test
+            void addedShouldThrowWhenMissingSessionId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                        "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
+                        "    \"path\": {" +
+                        "      \"namespace\": \"#private\"," +
+                        "      \"user\": \"user\"," +
+                        "      \"name\": \"mailboxName\"" +
+                        "    }," +
+                        "    \"mailboxId\": \"18\"," +
+                        "    \"added\": {" +
+                        "      \"123456\": {" +
+                        "        \"uid\": 123456," +
+                        "        \"modSeq\": 35," +
+                        "        \"flags\": {" +
+                        "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                        "          \"userFlags\":[\"User Custom Flag\"]}," +
+                        "        \"size\": 45,  " +
+                        "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                        "        \"messageId\": \"42\"" +
+                        "      }" +
+                        "    }," +
+                        "    \"user\": \"user\"" +
+                        "  }" +
+                        "}").get())
+                    .isInstanceOf(NoSuchElementException.class);
             }
 
             @Test
             void addedShouldThrowWhenNullSessionId() {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
-                    "  \"Added\": {" +
-                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
-                    "    \"path\": {" +
-                    "      \"namespace\": \"#private\"," +
-                    "      \"user\": \"user\"," +
-                    "      \"name\": \"mailboxName\"" +
-                    "    }," +
-                    "    \"mailboxId\": \"18\"," +
-                    "    \"added\": {" +
-                    "      \"123456\": {" +
-                    "        \"uid\": 123456," +
-                    "        \"modSeq\": 35," +
-                    "        \"flags\": {" +
-                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
-                    "          \"userFlags\":[\"User Custom Flag\"]}," +
-                    "        \"size\": 45,  " +
-                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
-                    "        \"messageId\": \"42\"" +
-                    "      }" +
-                    "    }," +
-                    "    \"sessionId\": null," +
-                    "    \"user\": \"user\"" +
-                    "  }" +
-                    "}").get())
-                .isInstanceOf(NoSuchElementException.class);
+                        "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
+                        "    \"path\": {" +
+                        "      \"namespace\": \"#private\"," +
+                        "      \"user\": \"user\"," +
+                        "      \"name\": \"mailboxName\"" +
+                        "    }," +
+                        "    \"mailboxId\": \"18\"," +
+                        "    \"added\": {" +
+                        "      \"123456\": {" +
+                        "        \"uid\": 123456," +
+                        "        \"modSeq\": 35," +
+                        "        \"flags\": {" +
+                        "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                        "          \"userFlags\":[\"User Custom Flag\"]}," +
+                        "        \"size\": 45,  " +
+                        "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                        "        \"messageId\": \"42\"" +
+                        "      }" +
+                        "    }," +
+                        "    \"sessionId\": null," +
+                        "    \"user\": \"user\"" +
+                        "  }" +
+                        "}").get())
+                    .isInstanceOf(NoSuchElementException.class);
             }
 
             @Test
             void addedShouldThrowWhenStringSessionId() {
                 assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
                     "{" +
-                    "  \"Added\": {" +
-                    "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
-                    "    \"path\": {" +
-                    "      \"namespace\": \"#private\"," +
-                    "      \"user\": \"user\"," +
-                    "      \"name\": \"mailboxName\"" +
-                    "    }," +
-                    "    \"mailboxId\": \"18\"," +
-                    "    \"added\": {" +
-                    "      \"123456\": {" +
-                    "        \"uid\": 123456," +
-                    "        \"modSeq\": 35," +
-                    "        \"flags\": {" +
-                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
-                    "          \"userFlags\":[\"User Custom Flag\"]}," +
-                    "        \"size\": 45,  " +
-                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
-                    "        \"messageId\": \"42\"" +
-                    "      }" +
-                    "    }," +
-                    "    \"sessionId\": \"42\"," +
-                    "    \"user\": \"user\"" +
-                    "  }" +
-                    "}").get())
-                .isInstanceOf(NoSuchElementException.class);
+                        "  \"Added\": {" +
+                        "    \"eventId\":\"6e0dd59d-660e-4d9b-b22f-0354479f47b4\"," +
+                        "    \"path\": {" +
+                        "      \"namespace\": \"#private\"," +
+                        "      \"user\": \"user\"," +
+                        "      \"name\": \"mailboxName\"" +
+                        "    }," +
+                        "    \"mailboxId\": \"18\"," +
+                        "    \"added\": {" +
+                        "      \"123456\": {" +
+                        "        \"uid\": 123456," +
+                        "        \"modSeq\": 35," +
+                        "        \"flags\": {" +
+                        "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                        "          \"userFlags\":[\"User Custom Flag\"]}," +
+                        "        \"size\": 45,  " +
+                        "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                        "        \"messageId\": \"42\"" +
+                        "      }" +
+                        "    }," +
+                        "    \"sessionId\": \"42\"," +
+                        "    \"user\": \"user\"" +
+                        "  }" +
+                        "}").get())
+                    .isInstanceOf(NoSuchElementException.class);
             }
         }
 

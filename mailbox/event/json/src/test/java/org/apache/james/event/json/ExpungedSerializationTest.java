@@ -1704,5 +1704,131 @@ class ExpungedSerializationTest {
                 }
             }
         }
+
+        @Nested
+        class DeserializationErrorOnEventId {
+            @Test
+            void addedShouldThrowWhenMissingEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Expunged\": {" +
+                    "    \"sessionId\":42," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"expunged\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                    "}").get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void addedShouldThrowWhenNullEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Expunged\": {" +
+                    "    \"eventId\":null," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"expunged\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"sessionId\": 42," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                    "}").get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void addedShouldThrowWhenLongSessionId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Expunged\": {" +
+                    "    \"eventId\":421," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"expunged\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"sessionId\": 42," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                    "}").get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void addedShouldThrowWhenInvalidSessionId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"Expunged\": {" +
+                    "    \"eventId\":\"invalid\"," +
+                    "    \"path\": {" +
+                    "      \"namespace\": \"#private\"," +
+                    "      \"user\": \"user\"," +
+                    "      \"name\": \"mailboxName\"" +
+                    "    }," +
+                    "    \"mailboxId\": \"18\"," +
+                    "    \"expunged\": {" +
+                    "      \"123456\": {" +
+                    "        \"uid\": 123456," +
+                    "        \"modSeq\": 35," +
+                    "        \"flags\": {" +
+                    "          \"systemFlags\":[\"Answered\",\"Draft\"], " +
+                    "          \"userFlags\":[\"User Custom Flag\"]}," +
+                    "        \"size\": 45,  " +
+                    "        \"internalDate\": \"2018-12-14T09:41:51.541Z\"," +
+                    "        \"messageId\": \"42\"" +
+                    "      }" +
+                    "    }," +
+                    "    \"sessionId\": 42," +
+                    "    \"user\": \"user\"" +
+                    "  }" +
+                   "}").get())
+                    .isInstanceOf(IllegalArgumentException.class);
+            }
+        }
     }
 }

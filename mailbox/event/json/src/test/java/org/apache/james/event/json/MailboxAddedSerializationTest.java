@@ -156,6 +156,77 @@ class MailboxAddedSerializationTest {
     class DeserializationErrors {
 
         @Test
+        void fromJsonShouldRejectMissingEventId() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MailboxAdded\":{" +
+                "    \"mailboxPath\":{" +
+                "      \"namespace\":\"#private\"," +
+                "      \"user\":\"bob\"," +
+                "      \"name\":\"mailboxName\"" +
+                "     }," +
+                "     \"mailboxId\":\"18\"," +
+                "     \"user\":\"user\"," +
+                "     \"sessionId\":42" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+        }
+
+        @Test
+        void fromJsonShouldRejectNullEventId() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MailboxAdded\":{" +
+                "    \"eventId\":null," +
+                "    \"mailboxPath\":{" +
+                "      \"namespace\":\"#private\"," +
+                "      \"user\":\"bob\"," +
+                "      \"name\":\"mailboxName\"" +
+                "     }," +
+                "     \"mailboxId\":\"18\"," +
+                "     \"user\":\"user\"," +
+                "     \"sessionId\":42" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+        }
+
+        @Test
+        void fromJsonShouldRejectLongEventId() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MailboxAdded\":{" +
+                "    \"eventId\":42," +
+                "    \"mailboxPath\":{" +
+                "      \"namespace\":\"#private\"," +
+                "      \"user\":\"bob\"," +
+                "      \"name\":\"mailboxName\"" +
+                "     }," +
+                "     \"mailboxId\":\"18\"," +
+                "     \"user\":\"user\"," +
+                "     \"sessionId\":42" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+        }
+
+        @Test
+        void fromJsonShouldRejectInvalidEventId() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MailboxAdded\":{" +
+                "    \"eventId\":\"invalid\"," +
+                "    \"mailboxPath\":{" +
+                "      \"namespace\":\"#private\"," +
+                "      \"user\":\"bob\"," +
+                "      \"name\":\"mailboxName\"" +
+                "     }," +
+                "     \"mailboxId\":\"18\"," +
+                "     \"user\":\"user\"," +
+                "     \"sessionId\":42" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
         void fromJsonShouldRejectNullSessionId() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MailboxAdded\":{" +

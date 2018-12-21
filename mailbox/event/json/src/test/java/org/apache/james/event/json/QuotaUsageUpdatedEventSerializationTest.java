@@ -69,6 +69,81 @@ class QuotaUsageUpdatedEventSerializationTest {
     private static final EventSerializer EVENT_SERIALIZER = new EventSerializer(new TestId.Factory(), new TestMessageId.Factory());
 
     @Nested
+    class WithEventId {
+        @Nested
+        class WithInvalidEventId {
+
+            @Test
+            void fromJsonShouldThrowWhenNoEventId() {
+                String quotaUsageUpdatedEvent =
+                    "{" +
+                        "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"quotaRoot\":\"foo\"," +
+                        "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
+                        "\"time\":\"2018-11-13T12:00:55Z\"," +
+                        "\"sizeQuota\":{\"used\":1234,\"limit\":10000,\"limits\":{}}," +
+                        "\"user\":\"user\"" +
+                        "}" +
+                    "}";
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(quotaUsageUpdatedEvent).get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void fromJsonShouldThrowWhenNullEventId() {
+                String quotaUsageUpdatedEvent =
+                    "{" +
+                        "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":null," +
+                        "\"quotaRoot\":\"foo\"," +
+                        "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
+                        "\"time\":\"2018-11-13T12:00:55Z\"," +
+                        "\"sizeQuota\":{\"used\":1234,\"limit\":10000,\"limits\":{}}," +
+                        "\"user\":\"user\"" +
+                        "}" +
+                    "}";
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(quotaUsageUpdatedEvent).get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void fromJsonShouldThrowWhenEventIdIsALong() {
+                String quotaUsageUpdatedEvent =
+                    "{" +
+                        "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":42," +
+                        "\"quotaRoot\":\"foo\"," +
+                        "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
+                        "\"time\":\"2018-11-13T12:00:55Z\"," +
+                        "\"sizeQuota\":{\"used\":1234,\"limit\":10000,\"limits\":{}}," +
+                        "\"user\":\"a@domain\"" +
+                        "}" +
+                    "}";
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(quotaUsageUpdatedEvent).get())
+                    .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void fromJsonShouldThrowWhenEventIdIsInvalid() {
+                String quotaUsageUpdatedEvent =
+                    "{" +
+                        "\"QuotaUsageUpdatedEvent\":{" +
+                        "\"eventId\":\"invalid\"," +
+                        "\"quotaRoot\":\"foo\"," +
+                        "\"countQuota\":{\"used\":12,\"limit\":100,\"limits\":{}}," +
+                        "\"time\":\"2018-11-13T12:00:55Z\"," +
+                        "\"sizeQuota\":{\"used\":1234,\"limit\":10000,\"limits\":{}}," +
+                        "\"user\":\"a@domain\"" +
+                        "}" +
+                    "}";
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(quotaUsageUpdatedEvent).get())
+                    .isInstanceOf(IllegalArgumentException.class);
+            }
+        }
+
+    }
+
+    @Nested
     class WithUser {
 
         @Nested
@@ -293,7 +368,6 @@ class QuotaUsageUpdatedEventSerializationTest {
             }
         }
     }
-
     
     @Nested
     class WithQuotaCount {
@@ -513,7 +587,6 @@ class QuotaUsageUpdatedEventSerializationTest {
             }
         }
     }
-
     
     @Nested
     class WithQuotaSize {

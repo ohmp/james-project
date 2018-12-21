@@ -291,6 +291,96 @@ class MailboxDeletionSerializationTest {
     class DeserializationErrors {
 
         @Nested
+        class DeserializationErrorOnEventId {
+            @Test
+            void mailboxAddedShouldThrowWhenMissingEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"MailboxDeletion\":{" +
+                    "    \"sessionId\":42," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"mailboxName\"" +
+                    "    }," +
+                    "    \"quotaRoot\":\"user@domain\"," +
+                    "    \"deletedMessageCount\":60," +
+                    "    \"totalDeletedSize\":100," +
+                    "    \"mailboxId\":\"789\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void mailboxAddedShouldThrowWhenNullEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":null," +
+                    "    \"sessionId\":42," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"mailboxName\"" +
+                    "    }," +
+                    "    \"quotaRoot\":\"user@domain\"," +
+                    "    \"deletedMessageCount\":60," +
+                    "    \"totalDeletedSize\":100," +
+                    "    \"mailboxId\":\"789\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void mailboxAddedShouldThrowWhenLongEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":42," +
+                    "    \"sessionId\":3652," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"mailboxName\"" +
+                    "    }," +
+                    "    \"quotaRoot\":\"user@domain\"," +
+                    "    \"deletedMessageCount\":60," +
+                    "    \"totalDeletedSize\":100," +
+                    "    \"mailboxId\":\"789\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+            }
+
+            @Test
+            void mailboxAddedShouldThrowWhenInvalidEventId() {
+                assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson(
+                    "{" +
+                    "  \"MailboxDeletion\":{" +
+                    "    \"eventId\":\"invalid\"," +
+                    "    \"sessionId\":3652," +
+                    "    \"user\":\"user\"," +
+                    "    \"path\":{" +
+                    "      \"namespace\":\"#private\"," +
+                    "      \"user\":\"user\"," +
+                    "      \"name\":\"mailboxName\"" +
+                    "    }," +
+                    "    \"quotaRoot\":\"user@domain\"," +
+                    "    \"deletedMessageCount\":60," +
+                    "    \"totalDeletedSize\":100," +
+                    "    \"mailboxId\":\"789\"" +
+                    "  }" +
+                    "}").get())
+                .isInstanceOf(IllegalArgumentException.class);
+            }
+        }
+
+        @Nested
         class DeserializationErrorOnSessionId {
             @Test
             void mailboxAddedShouldThrowWhenMissingSessionId() {

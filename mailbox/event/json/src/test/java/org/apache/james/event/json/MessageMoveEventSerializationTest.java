@@ -227,6 +227,61 @@ class MessageMoveEventSerializationTest {
         }
 
         @Test
+        void noEventIdShouldBeRejected() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MessageMoveEvent\": {" +
+                "    \"user\": \"a\"," +
+                "    \"previousMailboxIds\": [\"18\", \"24\"]," +
+                "    \"targetMailboxIds\": [\"36\"]," +
+                "    \"messageIds\": [\"42\"]" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+        }
+
+        @Test
+        void nullEventIdShouldBeRejected() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MessageMoveEvent\": {" +
+                "    \"eventId\":null," +
+                "    \"user\": \"a\"," +
+                "    \"previousMailboxIds\": [\"18\", \"24\"]," +
+                "    \"targetMailboxIds\": [\"36\"]," +
+                "    \"messageIds\": [\"42\"]" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+        }
+
+        @Test
+        void longEventIdShouldBeRejected() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MessageMoveEvent\": {" +
+                "    \"eventId\":42," +
+                "    \"user\": \"a\"," +
+                "    \"previousMailboxIds\": [\"18\", \"24\"]," +
+                "    \"targetMailboxIds\": [\"36\"]," +
+                "    \"messageIds\": [\"42\"]" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(NoSuchElementException.class);
+        }
+
+        @Test
+        void invalidEventIdShouldBeRejected() {
+            assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
+                "  \"MessageMoveEvent\": {" +
+                "    \"eventId\":\"invalid\"," +
+                "    \"user\": \"a\"," +
+                "    \"previousMailboxIds\": [\"18\", \"24\"]," +
+                "    \"targetMailboxIds\": [\"36\"]," +
+                "    \"messageIds\": [\"42\"]" +
+                "  }" +
+                "}").get())
+                .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
         void basUsersShouldBeRejected() {
             assertThatThrownBy(() -> EVENT_SERIALIZER.fromJson("{" +
                 "  \"MessageMoveEvent\": {" +
