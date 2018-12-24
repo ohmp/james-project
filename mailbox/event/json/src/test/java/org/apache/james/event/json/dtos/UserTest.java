@@ -19,13 +19,11 @@
 
 package org.apache.james.event.json.dtos;
 
+import static org.apache.james.event.json.SerializerFixture.DTO_JSON_SERIALIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.core.User;
-import org.apache.james.event.json.JsonSerialize;
-import org.apache.james.mailbox.model.TestId;
-import org.apache.james.mailbox.model.TestMessageId;
 import org.junit.jupiter.api.Test;
 
 import play.api.libs.json.JsError;
@@ -38,53 +36,51 @@ import scala.collection.immutable.List;
 import scala.math.BigDecimal;
 
 class UserTest {
-    private static final JsonSerialize JSON_SERIALIZE = new JsonSerialize(new TestId.Factory(), new TestMessageId.Factory());
-
     @Test
     void userShouldBeWellSerialized() {
-        assertThat(JSON_SERIALIZE.userWriters().writes(User.fromUsername("bob")))
+        assertThat(DTO_JSON_SERIALIZE.userWriters().writes(User.fromUsername("bob")))
             .isEqualTo(new JsString("bob"));
     }
 
     @Test
     void userShouldBeWellDeSerialized() {
-        assertThat(JSON_SERIALIZE.userReads().reads(new JsString("bob")))
+        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob")))
             .isEqualTo(new JsSuccess<>(User.fromUsername("bob"), new JsPath(List.empty())));
     }
 
     @Test
     void userShouldBeWellSerializedWhenVirtualHosting() {
-        assertThat(JSON_SERIALIZE.userWriters().writes(User.fromUsername("bob@domain")))
+        assertThat(DTO_JSON_SERIALIZE.userWriters().writes(User.fromUsername("bob@domain")))
             .isEqualTo(new JsString("bob@domain"));
     }
 
     @Test
     void userShouldBeWellDeSerializedWhenVirtualHosting() {
-        assertThat(JSON_SERIALIZE.userReads().reads(new JsString("bob@domain")))
+        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob@domain")))
             .isEqualTo(new JsSuccess<>(User.fromUsername("bob@domain"), new JsPath(List.empty())));
     }
 
     @Test
     void userDeserializationShouldReturnErrorWhenNumber() {
-        assertThat(JSON_SERIALIZE.userReads().reads(new JsNumber(BigDecimal.valueOf(18))))
+        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsNumber(BigDecimal.valueOf(18))))
             .isInstanceOf(JsError.class);
     }
 
     @Test
     void userDeserializationShouldReturnErrorWhenNull() {
-        assertThat(JSON_SERIALIZE.userReads().reads(JsNull$.MODULE$))
+        assertThat(DTO_JSON_SERIALIZE.userReads().reads(JsNull$.MODULE$))
             .isInstanceOf(JsError.class);
     }
 
     @Test
     void userDeserializationShouldThrowWhenBadUsername() {
-        assertThatThrownBy(() -> JSON_SERIALIZE.userReads().reads(new JsString("bob@bad@bad")))
+        assertThatThrownBy(() -> DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob@bad@bad")))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void userDeserializationShouldThrowWhenEmpty() {
-        assertThatThrownBy(() -> JSON_SERIALIZE.userReads().reads(new JsString("")))
+        assertThatThrownBy(() -> DTO_JSON_SERIALIZE.userReads().reads(new JsString("")))
             .isInstanceOf(IllegalArgumentException.class);
     }
 }
