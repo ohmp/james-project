@@ -29,10 +29,7 @@ import org.junit.jupiter.api.Test;
 import play.api.libs.json.JsError;
 import play.api.libs.json.JsNull$;
 import play.api.libs.json.JsNumber;
-import play.api.libs.json.JsPath;
 import play.api.libs.json.JsString;
-import play.api.libs.json.JsSuccess;
-import scala.collection.immutable.List;
 import scala.math.BigDecimal;
 
 class MailboxIdTest {
@@ -44,8 +41,8 @@ class MailboxIdTest {
 
     @Test
     void mailboxIdShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.mailboxIdReads().reads(new JsString("18")))
-            .isEqualTo(new JsSuccess<>(TestId.of(18), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.mailboxIdReads().reads(new JsString("18")).get())
+            .isEqualTo(TestId.of(18));
     }
 
     @Test
