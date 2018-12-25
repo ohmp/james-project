@@ -31,10 +31,7 @@ import org.junit.jupiter.api.Test;
 import play.api.libs.json.JsError;
 import play.api.libs.json.JsNull$;
 import play.api.libs.json.JsNumber;
-import play.api.libs.json.JsPath;
 import play.api.libs.json.JsString;
-import play.api.libs.json.JsSuccess;
-import scala.collection.immutable.List;
 import scala.math.BigDecimal;
 
 class QuotaRootTest {
@@ -46,8 +43,8 @@ class QuotaRootTest {
 
     @Test
     void quotaRootWithDomainShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.quotaRootReads().reads(new JsString("bob@domain.tld")))
-            .isEqualTo(new JsSuccess<>(QuotaRoot.quotaRoot("bob@domain.tld", Optional.of(Domain.of("domain.tld"))), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.quotaRootReads().reads(new JsString("bob@domain.tld")).get())
+            .isEqualTo(QuotaRoot.quotaRoot("bob@domain.tld", Optional.of(Domain.of("domain.tld"))));
     }
 
     @Test
@@ -58,8 +55,8 @@ class QuotaRootTest {
 
     @Test
     void quotaRootShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.quotaRootReads().reads(new JsString("bob")))
-            .isEqualTo(new JsSuccess<>(QuotaRoot.quotaRoot("bob", Optional.empty()), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.quotaRootReads().reads(new JsString("bob")).get())
+            .isEqualTo(QuotaRoot.quotaRoot("bob", Optional.empty()));
     }
 
     @Test
@@ -70,8 +67,8 @@ class QuotaRootTest {
 
     @Test
     void emptyQuotaRootShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.quotaRootReads().reads(new JsString("")))
-            .isEqualTo(new JsSuccess<>(QuotaRoot.quotaRoot("", Optional.empty()), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.quotaRootReads().reads(new JsString("")).get())
+            .isEqualTo(QuotaRoot.quotaRoot("", Optional.empty()));
     }
 
     @Test
