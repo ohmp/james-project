@@ -43,8 +43,8 @@ class MessageUidTest {
 
     @Test
     void messageUidShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.messageUidReads().reads(new JsNumber(BigDecimal.valueOf(18))))
-            .isEqualTo(new JsSuccess<>(MessageUid.of(18), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.messageUidReads().reads(new JsNumber(BigDecimal.valueOf(18))).get())
+            .isEqualTo(MessageUid.of(18));
     }
 
     @Test
