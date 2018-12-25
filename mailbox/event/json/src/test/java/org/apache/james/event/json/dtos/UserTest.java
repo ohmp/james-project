@@ -29,10 +29,7 @@ import org.junit.jupiter.api.Test;
 import play.api.libs.json.JsError;
 import play.api.libs.json.JsNull$;
 import play.api.libs.json.JsNumber;
-import play.api.libs.json.JsPath;
 import play.api.libs.json.JsString;
-import play.api.libs.json.JsSuccess;
-import scala.collection.immutable.List;
 import scala.math.BigDecimal;
 
 class UserTest {
@@ -44,8 +41,8 @@ class UserTest {
 
     @Test
     void userShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob")))
-            .isEqualTo(new JsSuccess<>(User.fromUsername("bob"), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob")).get())
+            .isEqualTo(User.fromUsername("bob"));
     }
 
     @Test
@@ -56,8 +53,8 @@ class UserTest {
 
     @Test
     void userShouldBeWellDeSerializedWhenVirtualHosting() {
-        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob@domain")))
-            .isEqualTo(new JsSuccess<>(User.fromUsername("bob@domain"), new JsPath(List.empty())));
+        assertThat(DTO_JSON_SERIALIZE.userReads().reads(new JsString("bob@domain")).get())
+            .isEqualTo(User.fromUsername("bob@domain"));
     }
 
     @Test
