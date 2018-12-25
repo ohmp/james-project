@@ -23,8 +23,12 @@ import static org.apache.james.event.json.SerializerFixture.DTO_JSON_SERIALIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.james.mailbox.acl.ACLDiff;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 import play.api.libs.json.JsError;
 import play.api.libs.json.JsNull$;
@@ -39,6 +43,28 @@ class ACLDiffTest {
         assertThat(DTO_JSON_SERIALIZE.aclDiffReads().reads(Json.parse(
             "{\"oldACL\":{}}")))
             .isInstanceOf(JsError.class);
+    }
+
+    @Test
+    void deSerializeShouldAcceptDoubleRight() {
+        assertThat(DTO_JSON_SERIALIZE.aclDiffReads().reads(Json.parse(
+            "{\"oldACL\":{\"$any\":\"aa\"},\"newACL\":{}}"))
+            .get().toJava())
+            .isEqualTo(new ACLDiff(new MailboxACL(ImmutableMap.of(
+                new MailboxACL.EntryKey("any", MailboxACL.NameType.group, false),
+                new MailboxACL.Rfc4314Rights(MailboxACL.Right.Administer))),
+                new MailboxACL()));
+    }
+
+    @Test
+    void deSerializeShouldAcceptEmptyRight() {
+        assertThat(DTO_JSON_SERIALIZE.aclDiffReads().reads(Json.parse(
+            "{\"oldACL\":{\"$any\":\"\"},\"newACL\":{}}"))
+            .get().toJava())
+            .isEqualTo(new ACLDiff(new MailboxACL(ImmutableMap.of(
+                new MailboxACL.EntryKey("any", MailboxACL.NameType.group, false),
+                new MailboxACL.Rfc4314Rights())),
+                new MailboxACL()));
     }
 
     @Test
