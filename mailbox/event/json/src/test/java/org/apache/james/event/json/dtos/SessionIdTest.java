@@ -28,10 +28,7 @@ import org.junit.jupiter.api.Test;
 import play.api.libs.json.JsError;
 import play.api.libs.json.JsNull$;
 import play.api.libs.json.JsNumber;
-import play.api.libs.json.JsPath;
 import play.api.libs.json.JsString;
-import play.api.libs.json.JsSuccess;
-import scala.collection.immutable.List;
 import scala.math.BigDecimal;
 
 class SessionIdTest {
@@ -44,7 +41,7 @@ class SessionIdTest {
     @Test
     void sessionIdShouldBeWellDeSerialized() {
         assertThat(DTO_JSON_SERIALIZE.sessionIdReads().reads(new JsNumber(BigDecimal.valueOf(18))))
-            .isEqualTo(new JsSuccess<>(MailboxSession.SessionId.of(18), new JsPath(List.empty())));
+            .isEqualTo(MailboxSession.SessionId.of(18));
     }
 
     @Test
