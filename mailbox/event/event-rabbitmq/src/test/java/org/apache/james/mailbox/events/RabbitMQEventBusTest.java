@@ -73,7 +73,7 @@ class RabbitMQEventBusTest implements EventBusContract {
         eventSerializer = new EventSerializer(mailboxIdFactory, new TestMessageId.Factory());
         RoutingKeyConverter routingKeyConverter = RoutingKeyConverter.forFactories(new MailboxIdRegistrationKey.Factory(mailboxIdFactory));
         eventBus = new RabbitMQEventBus(connectionFactory, eventSerializer, routingKeyConverter);
-        eventBus.start().block();
+        eventBus.start();
         sender = RabbitFlux.createSender(new SenderOptions().connectionMono(connectionMono));
 
         createQueue();

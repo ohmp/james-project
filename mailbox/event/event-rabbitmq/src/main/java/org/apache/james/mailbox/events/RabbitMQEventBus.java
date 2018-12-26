@@ -19,17 +19,7 @@
 
 package org.apache.james.mailbox.events;
 
-import static org.apache.james.backend.rabbitmq.Constants.AUTO_DELETE;
-import static org.apache.james.backend.rabbitmq.Constants.DIRECT_EXCHANGE;
-import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
-import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
-import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
-import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PreDestroy;
 
@@ -38,145 +28,54 @@ import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Delivery;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.rabbitmq.ExchangeSpecification;
-import reactor.rabbitmq.OutboundMessage;
-import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
-import reactor.rabbitmq.Receiver;
-import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
 class RabbitMQEventBus implements EventBus {
-
     static final String MAILBOX_EVENT = "mailboxEvent";
     static final String MAILBOX_EVENT_EXCHANGE_NAME = MAILBOX_EVENT + "-exchange";
 
-    private final EventSerializer eventSerializer;
     private final Sender sender;
-    private final Mono<Connection> connectionMono;
-    private final Map<Group, GroupRegistration> groupRegistrations;
-    private final MailboxListenerRegistry mailboxListenerRegistry;
-    private final RoutingKeyConverter routingKeyConverter;
-    private String registrationQueue;
-    private Receiver registrationReciever;
+    private final GroupRegistrationHandler groupRegistrationHandler;
+    private final KeyRegistrationHandler keyRegistrationHandler;
+    private final EventDispatcher eventDispatcher;
 
     RabbitMQEventBus(RabbitMQConnectionFactory rabbitMQConnectionFactory, EventSerializer eventSerializer, RoutingKeyConverter routingKeyConverter) {
-        this.connectionMono = Mono.fromSupplier(rabbitMQConnectionFactory::create).cache();
-        this.eventSerializer = eventSerializer;
-        this.routingKeyConverter = routingKeyConverter;
+        Mono<Connection> connectionMono = Mono.fromSupplier(rabbitMQConnectionFactory::create).cache();
         this.sender = RabbitFlux.createSender(new SenderOptions().connectionMono(connectionMono));
-        this.groupRegistrations = new ConcurrentHashMap<>();
-        this.mailboxListenerRegistry = new MailboxListenerRegistry();
+        this.groupRegistrationHandler = new GroupRegistrationHandler(eventSerializer, sender, connectionMono);
+        this.keyRegistrationHandler = new KeyRegistrationHandler(eventSerializer, sender, connectionMono, routingKeyConverter);
+        this.eventDispatcher = new EventDispatcher(eventSerializer, sender);
     }
 
-    public Mono<Void> start() {
-        registrationQueue = sender.declareQueue(QueueSpecification.queue()
-            .durable(DURABLE)
-            .exclusive(EXCLUSIVE)
-            .autoDelete(AUTO_DELETE)
-            .arguments(NO_ARGUMENTS))
-            .map(AMQP.Queue.DeclareOk::getQueue)
-            .block();
-        registrationReciever = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
-
-
-        registrationReciever.consumeAutoAck(registrationQueue)
-            .subscribeOn(Schedulers.parallel())
-            .flatMap(this::handleDelivery)
-            .subscribe();
-
-        return sender.declareExchange(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME)
-            .durable(DURABLE)
-            .type(DIRECT_EXCHANGE))
-            .subscribeOn(Schedulers.elastic())
-            .then();
-    }
-
-    private Mono<Void> handleDelivery(Delivery delivery) {
-        if (delivery.getBody() == null) {
-            return Mono.empty();
-        }
-        String routingKey = delivery.getEnvelope().getRoutingKey();
-        RegistrationKey registrationKey = routingKeyConverter.toRegistrationKey(routingKey);
-        Event event = eventSerializer.fromJson(new String(delivery.getBody(), StandardCharsets.UTF_8)).get();
-
-        return mailboxListenerRegistry.getLocalMailboxListeners(registrationKey)
-            .flatMap(listener -> Mono.fromRunnable(() -> listener.event(event)))
-            .subscribeOn(Schedulers.elastic())
-            .then();
+    public void start() {
+        eventDispatcher.start();
+        keyRegistrationHandler.start();
     }
 
     @PreDestroy
     public void stop() {
-        registrationReciever.close();
-        sender.delete(QueueSpecification.queue(registrationQueue)).block();
+        keyRegistrationHandler.stop();
+        groupRegistrationHandler.stop();
         sender.close();
-        groupRegistrations.values().forEach(GroupRegistration::unregister);
     }
 
     @Override
     public Registration register(MailboxListener listener, RegistrationKey key) {
-        KeyRegistration keyRegistration = new KeyRegistration(sender, key, registrationQueue, () -> mailboxListenerRegistry.removeListener(key, listener));
-        keyRegistration.createRegistrationBinding().block();
-        mailboxListenerRegistry.addListener(key, listener);
-        return keyRegistration;
+        return keyRegistrationHandler.register(listener, key);
     }
 
     @Override
     public Registration register(MailboxListener listener, Group group) {
-        return groupRegistrations
-            .compute(group, (groupToRegister, oldGroupRegistration) -> {
-                if (oldGroupRegistration != null) {
-                    throw new GroupAlreadyRegistered(group);
-                }
-                return newRegistrationGroup(listener, groupToRegister);
-            })
-            .start();
-    }
-
-    private GroupRegistration newRegistrationGroup(MailboxListener listener, Group group) {
-        return new GroupRegistration(
-            connectionMono,
-            sender,
-            eventSerializer,
-            listener,
-            group,
-            () -> groupRegistrations.remove(group));
+        return groupRegistrationHandler.register(listener, group);
     }
 
     @Override
     public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
-        Mono<byte[]> serializedEvent = Mono.just(event)
-            .publishOn(Schedulers.parallel())
-            .map(this::serializeEvent)
-            .cache();
-
-        Mono<Void> dispatchMono = doDispatch(serializedEvent, keys).cache();
-        dispatchMono.subscribe();
-
-        return dispatchMono;
-    }
-
-    private Mono<Void> doDispatch(Mono<byte[]> serializedEvent, Set<RegistrationKey> keys) {
-        return Flux.concat(
-            Mono.just(EMPTY_ROUTING_KEY),
-            Flux.fromIterable(keys)
-                .map(RoutingKeyConverter::toRoutingKey))
-            .map(routingKey -> serializedEvent
-                .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey, payload)))
-            .flatMap(sender::send)
-            .then();
-    }
-
-    private byte[] serializeEvent(Event event) {
-        return eventSerializer.toJson(event).getBytes(StandardCharsets.UTF_8);
+        return eventDispatcher.dispatch(event, keys);
     }
 }
