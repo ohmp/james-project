@@ -26,19 +26,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PreDestroy;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.backend.rabbitmq.RabbitMQConnectionFactory;
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 
+import com.google.common.collect.ImmutableMap;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.Delivery;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
+import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
+import reactor.rabbitmq.Receiver;
+import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
@@ -51,19 +57,44 @@ class RabbitMQEventBus implements EventBus {
     static final boolean DURABLE = true;
     private static final String DIRECT_EXCHANGE = "direct";
 
+    private static final boolean AUTO_DELETE = true;
+    private static final boolean EXCLUSIVE = true;
+    private final ImmutableMap<String, Object> NO_ARGUMENTS = ImmutableMap.of();
+
     private final EventSerializer eventSerializer;
     private final Sender sender;
     private final Mono<Connection> connectionMono;
     private final Map<Group, GroupRegistration> groupRegistrations;
+    private final MailboxListenerRegistry mailboxListenerRegistry;
+    private final RoutingKeyConverter routingKeyConverter;
+    private String registrationQueue;
+    private Receiver registrationReciever;
 
-    RabbitMQEventBus(RabbitMQConnectionFactory rabbitMQConnectionFactory, EventSerializer eventSerializer) {
+    RabbitMQEventBus(RabbitMQConnectionFactory rabbitMQConnectionFactory, EventSerializer eventSerializer, RoutingKeyConverter routingKeyConverter) {
         this.connectionMono = Mono.fromSupplier(rabbitMQConnectionFactory::create).cache();
         this.eventSerializer = eventSerializer;
+        this.routingKeyConverter = routingKeyConverter;
         this.sender = RabbitFlux.createSender(new SenderOptions().connectionMono(connectionMono));
         this.groupRegistrations = new ConcurrentHashMap<>();
+        this.mailboxListenerRegistry = new MailboxListenerRegistry();
     }
 
     public Mono<Void> start() {
+        registrationQueue = sender.declareQueue(QueueSpecification.queue()
+            .durable(DURABLE)
+            .exclusive(EXCLUSIVE)
+            .autoDelete(AUTO_DELETE)
+            .arguments(NO_ARGUMENTS))
+            .map(AMQP.Queue.DeclareOk::getQueue)
+            .block();
+        registrationReciever = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
+
+
+        registrationReciever.consumeAutoAck(registrationQueue)
+            .subscribeOn(Schedulers.parallel())
+            .flatMap(this::handleDelivery)
+            .subscribe();
+
         return sender.declareExchange(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME)
                 .durable(DURABLE)
                 .type(DIRECT_EXCHANGE))
@@ -71,15 +102,34 @@ class RabbitMQEventBus implements EventBus {
             .then();
     }
 
+    private Mono<Void> handleDelivery(Delivery delivery) {
+        if (delivery.getBody() == null) {
+            return Mono.empty();
+        }
+        String routingKey = delivery.getEnvelope().getRoutingKey();
+        RegistrationKey registrationKey = routingKeyConverter.toRegistrationKey(routingKey);
+        Event event = eventSerializer.fromJson(new String(delivery.getBody(), StandardCharsets.UTF_8)).get();
+
+        return mailboxListenerRegistry.getLocalMailboxListeners(registrationKey)
+            .flatMap(listener -> Mono.fromRunnable(() -> listener.event(event)))
+            .subscribeOn(Schedulers.elastic())
+            .then();
+    }
+
     @PreDestroy
     public void stop() {
+        registrationReciever.close();
+        sender.delete(QueueSpecification.queue(registrationQueue)).block();
         sender.close();
         groupRegistrations.values().forEach(GroupRegistration::unregister);
     }
 
     @Override
     public Registration register(MailboxListener listener, RegistrationKey key) {
-        throw new NotImplementedException("will implement latter");
+        KeyRegistration keyRegistration = new KeyRegistration(sender, key, registrationQueue, () -> mailboxListenerRegistry.removeListener(key, listener));
+        keyRegistration.createRegistrationBinding().block();
+        mailboxListenerRegistry.addListener(key, listener);
+        return keyRegistration;
     }
 
     @Override
@@ -105,15 +155,27 @@ class RabbitMQEventBus implements EventBus {
     }
 
     @Override
-    public Mono<Void> dispatch(Event event, Set<RegistrationKey> key) {
-        Mono<OutboundMessage> outboundMessage = Mono.just(event)
-            .publishOn(Schedulers.parallel())
-            .map(this::serializeEvent)
-            .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, EMPTY_ROUTING_KEY, payload));
+    public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
+        Mono<byte[]> serializedEvent = Mono.just(event)
+                    .publishOn(Schedulers.parallel())
+                    .map(this::serializeEvent)
+                    .cache();
 
-        Mono<Void> publishMono = sender.send(outboundMessage).cache();
-        publishMono.subscribe();
-        return publishMono;
+        Mono<Void> dispatchMono = doDispatch(serializedEvent, keys).cache();
+        dispatchMono.subscribe();
+
+        return dispatchMono;
+    }
+
+    private Mono<Void> doDispatch(Mono<byte[]> serializedEvent, Set<RegistrationKey> keys) {
+        return Flux.concat(
+            Mono.just(EMPTY_ROUTING_KEY),
+            Flux.fromIterable(keys)
+                        .map(RoutingKeyConverter::toRoutingKey))
+            .map(routingKey -> serializedEvent
+                .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey, payload)))
+            .flatMap(sender::send)
+            .then();
     }
 
     private byte[] serializeEvent(Event event) {

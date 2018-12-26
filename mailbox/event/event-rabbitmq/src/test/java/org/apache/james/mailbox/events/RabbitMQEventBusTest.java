@@ -38,7 +38,6 @@ import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -70,8 +69,10 @@ class RabbitMQEventBusTest implements EventBusContract {
         connectionFactory = rabbitMQExtension.getConnectionFactory();
         connectionMono = Mono.fromSupplier(connectionFactory::create).cache();
 
-        eventSerializer = new EventSerializer(new TestId.Factory(), new TestMessageId.Factory());
-        eventBus = new RabbitMQEventBus(connectionFactory, eventSerializer);
+        TestId.Factory mailboxIdFactory = new TestId.Factory();
+        eventSerializer = new EventSerializer(mailboxIdFactory, new TestMessageId.Factory());
+        RoutingKeyConverter routingKeyConverter = RoutingKeyConverter.forFactories(new MailboxIdRegistrationKey.Factory(mailboxIdFactory));
+        eventBus = new RabbitMQEventBus(connectionFactory, eventSerializer, routingKeyConverter);
         eventBus.start().block();
         sender = RabbitFlux.createSender(new SenderOptions().connectionMono(connectionMono));
 
@@ -133,75 +134,5 @@ class RabbitMQEventBusTest implements EventBusContract {
 
         return eventSerializer.fromJson(new String(eventInBytes, StandardCharsets.UTF_8))
             .get();
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void registerShouldAllowDuplicatedRegistration() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotifyRegisteredListeners() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotNotifyRegisteredListenerWhenEmptyKeySet() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldAcceptSeveralKeys() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotifyOnlyRegisteredListener() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void unregisterShouldHaveNotNotifyWhenCalledOnDifferentKeys() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldCallListenerOnceWhenSeveralKeysMatching() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void callingAllUnregisterMethodShouldUnregisterTheListener() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void unregisterShouldBeIdempotentForKeyRegistrations() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotifyAllListenersRegisteredOnAKey() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotNotifyListenerRegisteredOnOtherKeys() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void unregisterShouldRemoveDoubleRegisteredListener() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotThrowWhenARegisteredListenerFails() {
-    }
-
-    @Disabled("Dispatching for RegistrationKey is not yet implemented")
-    @Override
-    public void dispatchShouldNotNotifyUnregisteredListener() {
     }
 }
