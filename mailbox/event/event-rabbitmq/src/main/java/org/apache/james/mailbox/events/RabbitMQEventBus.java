@@ -94,8 +94,8 @@ class RabbitMQEventBus implements EventBus {
             .subscribe();
 
         return sender.declareExchange(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME)
-                .durable(DURABLE)
-                .type(DIRECT_EXCHANGE))
+            .durable(DURABLE)
+            .type(DIRECT_EXCHANGE))
             .subscribeOn(Schedulers.elastic())
             .then();
     }
@@ -155,9 +155,9 @@ class RabbitMQEventBus implements EventBus {
     @Override
     public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
         Mono<byte[]> serializedEvent = Mono.just(event)
-                    .publishOn(Schedulers.parallel())
-                    .map(this::serializeEvent)
-                    .cache();
+            .publishOn(Schedulers.parallel())
+            .map(this::serializeEvent)
+            .cache();
 
         Mono<Void> dispatchMono = doDispatch(serializedEvent, keys).cache();
         dispatchMono.subscribe();
@@ -169,7 +169,7 @@ class RabbitMQEventBus implements EventBus {
         return Flux.concat(
             Mono.just(EMPTY_ROUTING_KEY),
             Flux.fromIterable(keys)
-                        .map(RoutingKeyConverter::toRoutingKey))
+                .map(RoutingKeyConverter::toRoutingKey))
             .map(routingKey -> serializedEvent
                 .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey, payload)))
             .flatMap(sender::send)
