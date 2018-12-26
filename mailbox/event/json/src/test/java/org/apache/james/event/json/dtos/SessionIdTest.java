@@ -40,7 +40,7 @@ class SessionIdTest {
 
     @Test
     void sessionIdShouldBeWellDeSerialized() {
-        assertThat(DTO_JSON_SERIALIZE.sessionIdReads().reads(new JsNumber(BigDecimal.valueOf(18))))
+        assertThat(DTO_JSON_SERIALIZE.sessionIdReads().reads(new JsNumber(BigDecimal.valueOf(18))).get())
             .isEqualTo(MailboxSession.SessionId.of(18));
     }
 
