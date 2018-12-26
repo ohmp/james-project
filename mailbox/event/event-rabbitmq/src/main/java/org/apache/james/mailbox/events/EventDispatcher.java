@@ -66,14 +66,16 @@ class EventDispatcher {
     }
 
     private Mono<Void> doDispatch(Mono<byte[]> serializedEvent, Set<RegistrationKey> keys) {
-        return Flux.concat(
+        Flux<String> routingKeys = Flux.concat(
             Mono.just(EMPTY_ROUTING_KEY),
             Flux.fromIterable(keys)
-                .map(RoutingKeyConverter::toRoutingKey))
-            .map(routingKey -> serializedEvent
-                .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey, payload)))
-            .flatMap(sender::send)
-            .then();
+                .map(RoutingKeyConverter::toRoutingKey));
+
+        Flux<OutboundMessage> outboundMessages = routingKeys
+            .flatMap(routingKey -> serializedEvent
+                .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey, payload)));
+
+        return sender.send(outboundMessages);
     }
 
     private byte[] serializeEvent(Event event) {
