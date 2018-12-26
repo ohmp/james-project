@@ -19,11 +19,11 @@
 
 package org.apache.james.mailbox.events;
 
+import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
 import static org.apache.james.backend.rabbitmq.RabbitMQFixture.AUTO_DELETE;
 import static org.apache.james.backend.rabbitmq.RabbitMQFixture.DURABLE;
 import static org.apache.james.backend.rabbitmq.RabbitMQFixture.EXCLUSIVE;
 import static org.apache.james.backend.rabbitmq.RabbitMQFixture.NO_ARGUMENTS;
-import static org.apache.james.mailbox.events.RabbitMQEventBus.EMPTY_ROUTING_KEY;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
