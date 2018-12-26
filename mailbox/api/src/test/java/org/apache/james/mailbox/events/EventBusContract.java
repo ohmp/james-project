@@ -27,7 +27,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -204,7 +203,7 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
-        verify(listener, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
     }
 
     @Test
@@ -216,7 +215,7 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
-        verify(listener, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
         verifyZeroInteractions(listener2);
     }
 
@@ -229,8 +228,8 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
-        verify(listener, times(1)).event(any());
-        verify(listener2, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
+        verify(listener2, timeout(ONE_SECOND).times(1)).event(any());
     }
 
     @Test
@@ -241,7 +240,7 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
-        verify(listener, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
     }
 
     @Test
@@ -275,7 +274,7 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
-        verify(listener, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
     }
 
     @Test
@@ -296,7 +295,7 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1, KEY_2)).block();
 
-        verify(listener, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
     }
 
     @Test
@@ -307,7 +306,7 @@ public interface EventBusContract {
 
         eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1, KEY_2)).block();
 
-        verify(listener, times(1)).event(any());
+        verify(listener, timeout(ONE_SECOND).times(1)).event(any());
     }
 
     @Test
