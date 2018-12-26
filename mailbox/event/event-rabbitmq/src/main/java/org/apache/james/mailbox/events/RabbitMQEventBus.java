@@ -19,6 +19,13 @@
 
 package org.apache.james.mailbox.events;
 
+import static org.apache.james.backend.rabbitmq.Constants.AUTO_DELETE;
+import static org.apache.james.backend.rabbitmq.Constants.DIRECT_EXCHANGE;
+import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
+import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
+import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
+import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +38,6 @@ import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
 
-import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Delivery;
@@ -52,14 +58,6 @@ class RabbitMQEventBus implements EventBus {
 
     static final String MAILBOX_EVENT = "mailboxEvent";
     static final String MAILBOX_EVENT_EXCHANGE_NAME = MAILBOX_EVENT + "-exchange";
-    static final String EMPTY_ROUTING_KEY = "";
-
-    static final boolean DURABLE = true;
-    private static final String DIRECT_EXCHANGE = "direct";
-
-    private static final boolean AUTO_DELETE = true;
-    private static final boolean EXCLUSIVE = true;
-    private final ImmutableMap<String, Object> NO_ARGUMENTS = ImmutableMap.of();
 
     private final EventSerializer eventSerializer;
     private final Sender sender;

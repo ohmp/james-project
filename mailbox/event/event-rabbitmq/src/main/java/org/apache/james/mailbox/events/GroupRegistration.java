@@ -19,8 +19,11 @@
 
 package org.apache.james.mailbox.events;
 
-import static org.apache.james.mailbox.events.RabbitMQEventBus.DURABLE;
-import static org.apache.james.mailbox.events.RabbitMQEventBus.EMPTY_ROUTING_KEY;
+import static org.apache.james.backend.rabbitmq.Constants.AUTO_DELETE;
+import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
+import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
+import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
+import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
@@ -31,7 +34,6 @@ import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.MailboxListener;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Delivery;
 
@@ -71,10 +73,6 @@ class GroupRegistration implements Registration {
             return MAILBOX_EVENT_WORK_QUEUE_PREFIX + name;
         }
     }
-
-    private static final boolean AUTO_DELETE = true;
-    private static final boolean EXCLUSIVE = true;
-    private static final ImmutableMap<String, Object> NO_ARGUMENTS = ImmutableMap.of();
 
     private final MailboxListener mailboxListener;
     private final WorkQueueName queueName;
