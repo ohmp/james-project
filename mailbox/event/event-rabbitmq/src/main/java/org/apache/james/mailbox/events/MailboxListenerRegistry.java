@@ -34,12 +34,18 @@ class MailboxListenerRegistry {
         this.listeners = Multimaps.synchronizedMultimap(HashMultimap.create());
     }
 
-    void addListener(RegistrationKey registationKey, MailboxListener listener) {
+    synchronized void addListener(RegistrationKey registationKey, MailboxListener listener, Runnable runIfEmpty) {
+        if (listeners.get(registationKey).isEmpty()) {
+            runIfEmpty.run();
+        }
         listeners.put(registationKey, listener);
     }
 
-    void removeListener(RegistrationKey registationKey, MailboxListener listener) {
-        listeners.remove(registationKey, listener);
+    synchronized void removeListener(RegistrationKey registationKey, MailboxListener listener, Runnable runIfEmpty) {
+        boolean wasRemoved = listeners.remove(registationKey, listener);
+        if (wasRemoved && listeners.get(registationKey).isEmpty()) {
+            runIfEmpty.run();
+        }
     }
 
     Flux<MailboxListener> getLocalMailboxListeners(RegistrationKey registationKey) {

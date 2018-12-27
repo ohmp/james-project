@@ -49,6 +49,7 @@ class KeyRegistrationHandler {
     private final RoutingKeyConverter routingKeyConverter;
     private final Receiver receiver;
     private String registrationQueue;
+    private RegistrationBinder registrationBinder;
 
     KeyRegistrationHandler(EventSerializer eventSerializer, Sender sender, Mono<Connection> connectionMono, RoutingKeyConverter routingKeyConverter) {
         this.eventSerializer = eventSerializer;
@@ -66,6 +67,7 @@ class KeyRegistrationHandler {
             .arguments(NO_ARGUMENTS))
             .map(AMQP.Queue.DeclareOk::getQueue)
             .block();
+        registrationBinder = new RegistrationBinder(sender, registrationQueue);
 
         receiver.consumeAutoAck(registrationQueue)
             .subscribeOn(Schedulers.parallel())
@@ -79,9 +81,13 @@ class KeyRegistrationHandler {
     }
 
     Registration register(MailboxListener listener, RegistrationKey key) {
-        KeyRegistration keyRegistration = new KeyRegistration(sender, key, registrationQueue, () -> mailboxListenerRegistry.removeListener(key, listener));
-        keyRegistration.createRegistrationBinding().block();
-        mailboxListenerRegistry.addListener(key, listener);
+        Runnable bindIfEmpty = () -> registrationBinder.bind(key).block();
+        Runnable unbindIfEmpty = () -> registrationBinder.unbind(key).block();
+        Runnable unregister = () -> mailboxListenerRegistry.removeListener(key, listener, unbindIfEmpty);
+
+        KeyRegistration keyRegistration = new KeyRegistration(unregister);
+        mailboxListenerRegistry.addListener(key, listener, bindIfEmpty);
+
         return keyRegistration;
     }
 

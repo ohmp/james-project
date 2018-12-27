@@ -19,15 +19,36 @@
 
 package org.apache.james.mailbox.events;
 
-class KeyRegistration implements Registration {
-    private final Runnable unregister;
+import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
-    KeyRegistration(Runnable unregister) {
-        this.unregister = unregister;
+import reactor.core.publisher.Mono;
+import reactor.rabbitmq.BindingSpecification;
+import reactor.rabbitmq.Sender;
+
+class RegistrationBinder {
+    private final Sender sender;
+    private final String registrationQueue;
+
+    RegistrationBinder(Sender sender, String registrationQueue) {
+        this.sender = sender;
+        this.registrationQueue = registrationQueue;
     }
 
-    @Override
-    public void unregister() {
-        unregister.run();
+    Mono<Void> bind(RegistrationKey key) {
+        return sender.bind(bindingSpecification(key))
+            .then();
+    }
+
+    Mono<Void> unbind(RegistrationKey key) {
+        return sender.bind(bindingSpecification(key))
+            .then();
+    }
+
+    private BindingSpecification bindingSpecification(RegistrationKey key) {
+        String routingKey = RoutingKeyConverter.toRoutingKey(key);
+        return BindingSpecification.binding()
+            .exchange(MAILBOX_EVENT_EXCHANGE_NAME)
+            .queue(registrationQueue)
+            .routingKey(routingKey);
     }
 }
