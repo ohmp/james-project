@@ -27,23 +27,22 @@ import com.google.common.collect.Multimaps;
 
 import reactor.core.publisher.Flux;
 
-public class MailboxListenerRegistry {
+class MailboxListenerRegistry {
     private final Multimap<RegistrationKey, MailboxListener> listeners;
 
-    public MailboxListenerRegistry() {
+    MailboxListenerRegistry() {
         this.listeners = Multimaps.synchronizedMultimap(HashMultimap.create());
     }
 
-    public void addListener(RegistrationKey registationKey, MailboxListener listener) {
+    void addListener(RegistrationKey registationKey, MailboxListener listener) {
         listeners.put(registationKey, listener);
     }
 
-
-    public void removeListener(RegistrationKey registationKey, MailboxListener listener) {
+    void removeListener(RegistrationKey registationKey, MailboxListener listener) {
         listeners.remove(registationKey, listener);
     }
 
-    public Flux<MailboxListener> getLocalMailboxListeners(RegistrationKey registationKey) {
+    Flux<MailboxListener> getLocalMailboxListeners(RegistrationKey registationKey) {
         return Flux.fromIterable(listeners.get(registationKey));
     }
 
