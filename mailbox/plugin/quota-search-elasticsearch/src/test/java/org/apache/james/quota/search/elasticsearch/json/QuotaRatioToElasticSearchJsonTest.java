@@ -25,26 +25,28 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 
-import org.apache.james.core.Domain;
 import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxListener.QuotaUsageUpdatedEvent;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.quota.QuotaFixture;
+import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.util.ClassLoaderUtils;
 import org.junit.jupiter.api.Test;
 
-public class QuotaRatioToElasticSearchJsonTest {
+class QuotaRatioToElasticSearchJsonTest {
+
+    private static final QuotaRoot QUOTA_ROOT = QuotaRoot.quotaRoot("any", Optional.empty());
 
     @Test
-    public void quotaRatioShouldBeWellConvertedToJson() throws IOException {
+    void quotaRatioShouldBeWellConvertedToJson() throws IOException {
         String user = "user@domain.org";
-        QuotaUsageUpdatedEvent event = new QuotaUsageUpdatedEvent(
-                User.fromUsername(user),
-                QuotaRoot.quotaRoot("any", Optional.of(Domain.of("domain.org"))),
-                QuotaFixture.Counts._52_PERCENT,
-                QuotaFixture.Sizes._55_PERCENT,
-                Instant.now());
-        
+        QuotaUsageUpdatedEvent event = EventFactory.quotaUpdated()
+            .user(User.fromUsername(user))
+            .quotaRoot(QUOTA_ROOT)
+            .quotaCount(QuotaFixture.Counts._52_PERCENT)
+            .quotaSize(QuotaFixture.Sizes._55_PERCENT)
+            .instant(Instant.now())
+            .build();
 
         QuotaRatioToElasticSearchJson quotaRatioToElasticSearchJson = new QuotaRatioToElasticSearchJson();
         String convertToJson = quotaRatioToElasticSearchJson.convertToJson(user, event);
@@ -55,14 +57,15 @@ public class QuotaRatioToElasticSearchJsonTest {
     }
 
     @Test
-    public void quotaRatioShouldBeWellConvertedToJsonWhenNoDomain() throws IOException {
+    void quotaRatioShouldBeWellConvertedToJsonWhenNoDomain() throws IOException {
         String user = "user";
-        QuotaUsageUpdatedEvent event = new QuotaUsageUpdatedEvent(
-                User.fromUsername(user),
-                QuotaRoot.quotaRoot("any", Optional.empty()),
-                QuotaFixture.Counts._52_PERCENT,
-                QuotaFixture.Sizes._55_PERCENT,
-                Instant.now());
+        QuotaUsageUpdatedEvent event = EventFactory.quotaUpdated()
+            .user(User.fromUsername(user))
+            .quotaRoot(QUOTA_ROOT)
+            .quotaCount(QuotaFixture.Counts._52_PERCENT)
+            .quotaSize(QuotaFixture.Sizes._55_PERCENT)
+            .instant(Instant.now())
+            .build();
 
 
         QuotaRatioToElasticSearchJson quotaRatioToElasticSearchJson = new QuotaRatioToElasticSearchJson();
