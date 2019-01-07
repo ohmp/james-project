@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.mailbox.acl.ACLDiff;
+import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -111,19 +112,19 @@ class ACLDiffTest {
     class RightTest {
         @Test
         void deSerializeShouldThrowWhenUnsupportedRightInNewACL() {
-            assertThat(DTO_JSON_SERIALIZE.aclDiffReads().reads(new JsString("\"unsupported\"")))
-                .isInstanceOf(JsError.class);
+            assertThatThrownBy(() -> DTO_JSON_SERIALIZE.aclRightsReads().reads(new JsString("\"unsupported\"")))
+                .isInstanceOf(UnsupportedRightException.class);
         }
 
         @Test
         void deSerializeShouldThrowWhenNull() {
-            assertThat(DTO_JSON_SERIALIZE.aclDiffReads().reads(JsNull$.MODULE$))
+            assertThat(DTO_JSON_SERIALIZE.aclRightsReads().reads(JsNull$.MODULE$))
                 .isInstanceOf(JsError.class);
         }
 
         @Test
         void deSerializeShouldThrowWhenRightIsNotString() {
-            assertThat(DTO_JSON_SERIALIZE.aclDiffReads().reads(new JsNumber(BigDecimal.valueOf(18))))
+            assertThat(DTO_JSON_SERIALIZE.aclRightsReads().reads(new JsNumber(BigDecimal.valueOf(18))))
                 .isInstanceOf(JsError.class);
         }
     }
