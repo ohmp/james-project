@@ -98,7 +98,7 @@ class CassandraMailRepositoryMailDAOTest {
                 blobIdBody)
                 .join();
 
-            testee.remove(URL, KEY_1).join();
+            testee.remove(URL, KEY_1).block();
 
             assertThat(testee.read(URL, KEY_1).join())
                 .isEmpty();
@@ -368,7 +368,7 @@ class CassandraMailRepositoryMailDAOTest {
                 blobIdBody2)
                 .join();
 
-            testee.remove(URL, KEY_1).join();
+            testee.remove(URL, KEY_1).block();
 
             Optional<CassandraMailRepositoryMailDaoAPI.MailDTO> v1Entry = v1.read(URL, KEY_1).join();
             Optional<CassandraMailRepositoryMailDaoAPI.MailDTO> v2Entry = v2.read(URL, KEY_1).join();
