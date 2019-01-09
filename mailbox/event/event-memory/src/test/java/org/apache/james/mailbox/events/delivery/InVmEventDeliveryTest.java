@@ -19,9 +19,13 @@
 
 package org.apache.james.mailbox.events.delivery;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,8 +35,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.util.EventCollector;
 import org.apache.james.metrics.api.NoopMetricFactory;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -51,6 +58,116 @@ class InVmEventDeliveryTest {
         listener = mock(MailboxListener.class);
         listener2 = mock(MailboxListener.class);
         inVmEventDelivery = new InVmEventDelivery(new NoopMetricFactory());
+    }
+
+    @Nested
+    class ErrorHandling {
+
+        class AsyncEventCollector extends EventCollector {
+            @Override
+            public ExecutionMode getExecutionMode() {
+                return ExecutionMode.ASYNCHRONOUS;
+            }
+        }
+
+        private EventCollector syncEventCollector;
+        private EventCollector asyncEventCollector;
+
+        @BeforeEach
+        void setUp() {
+            syncEventCollector = spy(new EventCollector());
+            asyncEventCollector = spy(new AsyncEventCollector());
+        }
+
+        @Nested
+        class SynchronousOnly {
+            @Test
+            void deliverShouldNotDeliverEventToListenerWhenException() {
+                doThrow(RuntimeException.class).when(syncEventCollector).event(event);
+
+                inVmEventDelivery.deliver(ImmutableList.of(syncEventCollector), event).allListenerFuture().subscribe();
+
+                assertThat(syncEventCollector.getEvents())
+                    .isEmpty();
+            }
+
+            @Test
+            void deliverShouldBeErrorWhenException() {
+                doThrow(RuntimeException.class).when(syncEventCollector).event(event);
+
+                assertThatThrownBy(() -> inVmEventDelivery
+                    .deliver(ImmutableList.of(syncEventCollector), event).allListenerFuture()
+                    .block())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Retries exhausted");
+            }
+        }
+
+        @Nested
+        class AsynchronousOnly {
+            @Test
+            void deliverShouldNotDeliverEventToListenerWhenException() {
+
+                doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
+
+                inVmEventDelivery.deliver(ImmutableList.of(asyncEventCollector), event).allListenerFuture().subscribe();
+
+                assertThat(asyncEventCollector.getEvents())
+                    .isEmpty();
+            }
+
+            @Test
+            void deliverShouldBeErrorWhenException() {
+                doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
+
+                assertThatThrownBy(() -> inVmEventDelivery
+                    .deliver(ImmutableList.of(asyncEventCollector), event).allListenerFuture()
+                    .block())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Retries exhausted");
+            }
+        }
+
+        @Nested
+        class BothAsynchronousAndSynchronous {
+            @Test
+            void deliverShouldDeliverEventToSyncListenerWhenAsyncGetException() {
+                doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
+
+                inVmEventDelivery.deliver(ImmutableList.of(asyncEventCollector, syncEventCollector), event).allListenerFuture().subscribe();
+
+                SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(asyncEventCollector.getEvents()).isEmpty();
+                    softly.assertThat(syncEventCollector.getEvents()).hasSize(1);
+                });
+
+            }
+
+            @Test
+            void deliverShouldDeliverEventToAsyncListenerWhenSyncGetException() {
+                doThrow(RuntimeException.class).when(syncEventCollector).event(event);
+
+                inVmEventDelivery.deliver(ImmutableList.of(asyncEventCollector, syncEventCollector), event).allListenerFuture().subscribe();
+
+                SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(syncEventCollector.getEvents()).isEmpty();
+                    softly.assertThat(asyncEventCollector.getEvents()).hasSize(1);
+                });
+
+            }
+
+            @Test
+            void deliverShouldBeErrorWhenException() {
+                doThrow(RuntimeException.class).when(syncEventCollector).event(event);
+                doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
+
+                assertThatThrownBy(() -> inVmEventDelivery
+                    .deliver(ImmutableList.of(asyncEventCollector), event).allListenerFuture()
+                    .block())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Retries exhausted");
+            }
+        }
     }
 
     @Test
