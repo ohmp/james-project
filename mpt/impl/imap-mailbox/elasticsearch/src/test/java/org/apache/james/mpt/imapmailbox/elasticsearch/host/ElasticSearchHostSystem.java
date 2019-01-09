@@ -116,7 +116,7 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
 
         ThreadFactory threadFactory = NamedThreadFactory.withClassName(getClass());
         ElasticSearchListeningMessageSearchIndex searchIndex = new ElasticSearchListeningMessageSearchIndex(
-            mailboxManager.getMapperFactory(),
+            mailboxSessionMapperFactory,
             new ElasticSearchIndexer(client,
                 Executors.newSingleThreadExecutor(threadFactory),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_WRITE_ALIAS,
