@@ -19,7 +19,11 @@
 
 package org.apache.james.mailbox.events.delivery;
 
-import java.time.Duration;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.FIRST_BACKOFF;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_BACKOFF;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_RETRIES;
+
 import java.util.Collection;
 
 import javax.inject.Inject;
@@ -41,10 +45,6 @@ import reactor.core.scheduler.Schedulers;
 
 public class InVmEventDelivery implements EventDelivery {
     private static final Logger LOGGER = LoggerFactory.getLogger(InVmEventDelivery.class);
-    private static final int MAX_RETRIES = 3;
-    private static final Duration FIRST_BACKOFF = Duration.ofMillis(100);
-    private static final Duration MAX_BACKOFF = Duration.ofMillis(Long.MAX_VALUE);
-    private static final double DEFAULT_JITTER_FACTOR = 0.5;
 
     private final MetricFactory metricFactory;
 
