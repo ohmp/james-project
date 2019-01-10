@@ -44,6 +44,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.Authenticator;
 import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
+import org.apache.james.mailbox.store.MailboxManagerConfiguration;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
@@ -110,6 +111,7 @@ public class JPAMailboxModule extends AbstractModule {
             .to(MailboxAnnotationListener.class);
 
         bind(MailboxManager.class).annotatedWith(Names.named(MAILBOXMANAGER_NAME)).to(MailboxManager.class);
+        bind(MailboxManagerConfiguration.class).toInstance(MailboxManagerConfiguration.DEFAULT);
     }
     
     @Singleton
