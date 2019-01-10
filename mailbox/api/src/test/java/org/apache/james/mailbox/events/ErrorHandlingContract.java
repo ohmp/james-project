@@ -21,6 +21,7 @@ package org.apache.james.mailbox.events;
 
 import static org.apache.james.mailbox.events.EventBusTestFixture.EVENT;
 import static org.apache.james.mailbox.events.EventBusTestFixture.NO_KEYS;
+import static org.apache.james.mailbox.events.EventBusTestFixture.WAIT_CONDITION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -35,8 +36,6 @@ import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.util.EventCollector;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
-
-import com.google.common.base.Stopwatch;
 
 interface ErrorHandlingContract extends EventBusContract {
 
@@ -68,12 +67,6 @@ interface ErrorHandlingContract extends EventBusContract {
         return new ThrowingListener();
     }
 
-    default long recordTimeRun(Runnable operation) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        operation.run();
-        return stopwatch.elapsed(TimeUnit.MILLISECONDS);
-    }
-
     @Test
     default void listenerShouldReceiveWhenFailsLessThanMaxRetries() {
         EventCollector eventCollector = eventCollector();
@@ -86,8 +79,8 @@ interface ErrorHandlingContract extends EventBusContract {
         eventBus().register(eventCollector, new EventBusTestFixture.GroupA());
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
-        assertThat(eventCollector.getEvents())
-            .hasSize(1);
+        WAIT_CONDITION
+            .until(() -> assertThat(eventCollector.getEvents()).hasSize(1));
     }
 
     @Test
@@ -103,12 +96,12 @@ interface ErrorHandlingContract extends EventBusContract {
         eventBus().register(eventCollector, new EventBusTestFixture.GroupA());
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
-        assertThat(eventCollector.getEvents())
-            .hasSize(1);
+        WAIT_CONDITION
+            .until(() -> assertThat(eventCollector.getEvents()).hasSize(1));
     }
 
     @Test
-    default void listenerShouldNotReceiveWhenFailsGreaterThanMaxRetries() {
+    default void listenerShouldNotReceiveWhenFailsGreaterThanMaxRetries() throws Exception {
         EventCollector eventCollector = eventCollector();
 
         doThrow(new RuntimeException())
@@ -121,16 +114,18 @@ interface ErrorHandlingContract extends EventBusContract {
         eventBus().register(eventCollector, new EventBusTestFixture.GroupA());
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
-        assertThat(eventCollector.getEvents())
-            .isEmpty();
+        TimeUnit.SECONDS.sleep(1);
+        assertThat(eventCollector.getEvents()).isEmpty();
     }
 
     @Test
-    default void dispatchShouldTakeTimeToDoRetries() {
+    default void dispatchShouldTakeTimeToDoRetries() throws Exception {
         ThrowingListener throwingListener = throwingListener();
 
         eventBus().register(throwingListener, new EventBusTestFixture.GroupA());
-        long dispatchingInMs = recordTimeRun(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+        eventBus().dispatch(EVENT, NO_KEYS).block();
+
+        TimeUnit.SECONDS.sleep(1); // make sure events are all came to listeners
 
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(throwingListener.timeElapsed).hasSize(4);
@@ -138,8 +133,6 @@ interface ErrorHandlingContract extends EventBusContract {
             long minFirstDelayAfter = 100; // first backOff
             long minSecondDelayAfter = 100; // 200 * jitter factor (200 * 0.5)
             long minThirdDelayAfter = 200; // 400 * jitter factor (400 * 0.5)
-            softly.assertThat(dispatchingInMs)
-                .isGreaterThanOrEqualTo(minFirstDelayAfter + minSecondDelayAfter + minThirdDelayAfter);
 
             softly.assertThat(throwingListener.timeElapsed.get(1))
                 .isAfterOrEqualTo(throwingListener.timeElapsed.get(0).plusMillis(minFirstDelayAfter));

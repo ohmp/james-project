@@ -24,6 +24,10 @@ import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
 import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
 import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
 import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.FIRST_BACKOFF;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_BACKOFF;
+import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_RETRIES;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
@@ -130,16 +134,24 @@ class GroupRegistration implements Registration {
             .map(eventInBytes -> new String(eventInBytes, StandardCharsets.UTF_8))
             .map(eventSerializer::fromJson)
             .map(JsResult::get)
+            .flatMap(event -> deliverEvent(mailboxListener, event))
             .subscribeOn(Schedulers.elastic())
-            .subscribe(event -> deliverEvent(mailboxListener, event)));
+            .subscribe());
     }
 
-    private void deliverEvent(MailboxListener mailboxListener, Event event) {
-        try {
-            mailboxListener.event(event);
-        } catch (Exception e) {
-            LOGGER.error("Exception happens when handling event of user {}", event.getUser().asString(), e);
-        }
+    private Mono<Void> deliverEvent(MailboxListener mailboxListener, Event event) {
+        return Mono.fromRunnable(() -> mailboxListener.event(event))
+            .doOnError(throwable -> LOGGER.error("Error while processing listener {} for {}",
+                listenerName(mailboxListener),
+                eventName(event),
+                throwable))
+            .retryBackoff(MAX_RETRIES, FIRST_BACKOFF, MAX_BACKOFF, DEFAULT_JITTER_FACTOR)
+            .doOnError(throwable -> LOGGER.error("listener {} exceeded maximum retry({}) to handle event {}",
+                listenerName(mailboxListener),
+                MAX_RETRIES,
+                eventName(event),
+                throwable))
+            .then();
     }
 
     @Override
@@ -148,5 +160,13 @@ class GroupRegistration implements Registration {
             .ifPresent(subscriber -> subscriber.dispose());
         receiver.close();
         unregisterGroup.run();
+    }
+
+    private String listenerName(MailboxListener mailboxListener) {
+        return mailboxListener.getClass().getCanonicalName();
+    }
+
+    private String eventName(Event event) {
+        return event.getClass().getCanonicalName();
     }
 }
