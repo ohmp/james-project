@@ -19,21 +19,15 @@
 
 package org.apache.james.mailbox.events.delivery;
 
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.FIRST_BACKOFF;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_BACKOFF;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_RETRIES;
-
 import java.util.Collection;
 
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.events.RetryBackOffDeliver;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
@@ -44,7 +38,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class InVmEventDelivery implements EventDelivery {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InVmEventDelivery.class);
 
     private final MetricFactory metricFactory;
 
@@ -77,27 +70,15 @@ public class InVmEventDelivery implements EventDelivery {
 
     private Mono<Void> doDeliver(Collection<MailboxListener> mailboxListeners, Event event) {
         return Flux.fromIterable(mailboxListeners)
-            .flatMap(mailboxListener -> deliveryWithRetries(event, mailboxListener))
+            .flatMap(mailboxListener -> RetryBackOffDeliver.mailboxListener(mailboxListener)
+                .event(event)
+                .deliverOperation(this::metricableDelivery)
+                .deliver())
             .then()
             .subscribeOn(Schedulers.elastic());
     }
 
-    private Mono<Void> deliveryWithRetries(Event event, MailboxListener mailboxListener) {
-        return Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event))
-            .doOnError(throwable -> LOGGER.error("Error while processing listener {} for {}",
-                listenerName(mailboxListener),
-                eventName(event),
-                throwable))
-            .retryBackoff(MAX_RETRIES, FIRST_BACKOFF, MAX_BACKOFF, DEFAULT_JITTER_FACTOR)
-            .doOnError(throwable -> LOGGER.error("listener {} exceeded maximum retry({}) to handle event {}",
-                listenerName(mailboxListener),
-                MAX_RETRIES,
-                eventName(event),
-                throwable))
-            .then();
-    }
-
-    private void doDeliverToListener(MailboxListener mailboxListener, Event event) {
+    private void metricableDelivery(MailboxListener mailboxListener, Event event) {
         TimeMetric timer = metricFactory.timer("mailbox-listener-" + mailboxListener.getClass().getSimpleName());
         try {
             mailboxListener.event(event);
@@ -106,11 +87,4 @@ public class InVmEventDelivery implements EventDelivery {
         }
     }
 
-    private String listenerName(MailboxListener mailboxListener) {
-        return mailboxListener.getClass().getCanonicalName();
-    }
-
-    private String eventName(Event event) {
-        return event.getClass().getCanonicalName();
-    }
 }

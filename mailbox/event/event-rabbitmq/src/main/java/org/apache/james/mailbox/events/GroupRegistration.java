@@ -24,10 +24,6 @@ import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
 import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
 import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
 import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.FIRST_BACKOFF;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_BACKOFF;
-import static org.apache.james.mailbox.events.EventBusConstants.ErrorHandling.MAX_RETRIES;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
@@ -36,10 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.james.event.json.EventSerializer;
-import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -83,8 +76,6 @@ class GroupRegistration implements Registration {
             return MAILBOX_EVENT_WORK_QUEUE_PREFIX + name;
         }
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupRegistration.class);
 
     private final MailboxListener mailboxListener;
     private final WorkQueueName queueName;
@@ -134,24 +125,12 @@ class GroupRegistration implements Registration {
             .map(eventInBytes -> new String(eventInBytes, StandardCharsets.UTF_8))
             .map(eventSerializer::fromJson)
             .map(JsResult::get)
-            .flatMap(event -> deliverEvent(mailboxListener, event))
+            .flatMap(event -> RetryBackOffDeliver.mailboxListener(mailboxListener)
+                .event(event)
+                .deliverOperation(MailboxListener::event)
+                .deliver())
             .subscribeOn(Schedulers.elastic())
             .subscribe());
-    }
-
-    private Mono<Void> deliverEvent(MailboxListener mailboxListener, Event event) {
-        return Mono.fromRunnable(() -> mailboxListener.event(event))
-            .doOnError(throwable -> LOGGER.error("Error while processing listener {} for {}",
-                listenerName(mailboxListener),
-                eventName(event),
-                throwable))
-            .retryBackoff(MAX_RETRIES, FIRST_BACKOFF, MAX_BACKOFF, DEFAULT_JITTER_FACTOR)
-            .doOnError(throwable -> LOGGER.error("listener {} exceeded maximum retry({}) to handle event {}",
-                listenerName(mailboxListener),
-                MAX_RETRIES,
-                eventName(event),
-                throwable))
-            .then();
     }
 
     @Override
@@ -160,13 +139,5 @@ class GroupRegistration implements Registration {
             .ifPresent(subscriber -> subscriber.dispose());
         receiver.close();
         unregisterGroup.run();
-    }
-
-    private String listenerName(MailboxListener mailboxListener) {
-        return mailboxListener.getClass().getCanonicalName();
-    }
-
-    private String eventName(Event event) {
-        return event.getClass().getCanonicalName();
     }
 }
