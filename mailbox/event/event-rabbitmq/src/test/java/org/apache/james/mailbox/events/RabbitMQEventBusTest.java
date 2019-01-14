@@ -41,6 +41,7 @@ import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -94,6 +95,12 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             .forEach(queueName -> sender.delete(QueueSpecification.queue(queueName)).block());
         sender.delete(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME)).block();
         sender.close();
+    }
+
+    @Override
+    @Disabled("Dispatch do not await any execution by design with RabbitMQ")
+    public void dispatchShouldTakeTimeToDoRetries() throws Exception {
+
     }
 
     @Override
