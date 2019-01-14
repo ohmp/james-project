@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -183,10 +184,14 @@ public class CassandraMailboxMapper implements MailboxMapper {
     }
 
     private Mono<Boolean> trySave(SimpleMailbox cassandraMailbox, CassandraId cassandraId) {
-        return mailboxPathV2DAO.save(cassandraMailbox.generateAssociatedPath(), cassandraId)
+        return mailboxDAO.retrieveMailbox(cassandraId)
+            .filter(mailbox -> mailbox.generateAssociatedPath().equals(cassandraMailbox.generateAssociatedPath()))
+            .flatMap(any -> mailboxPathV2DAO.save(cassandraMailbox.generateAssociatedPath(), cassandraId))
             .filter(FunctionalUtils.toPredicate(Function.identity()))
             .flatMap(any -> Flux.merge(
-                        retrieveMailbox(cassandraId).flatMap(mailbox -> mailboxPathV2DAO.delete(mailbox.generateAssociatedPath())),
+                        retrieveMailbox(cassandraId)
+                            .filter(mailbox -> mailbox.generateAssociatedPath().equals(cassandraMailbox.generateAssociatedPath()))
+                            .flatMap(mailbox -> mailboxPathV2DAO.delete(mailbox.generateAssociatedPath())),
                         mailboxDAO.save(cassandraMailbox)).then(Mono.just(true)))
             .switchIfEmpty(Mono.just(false));
     }
