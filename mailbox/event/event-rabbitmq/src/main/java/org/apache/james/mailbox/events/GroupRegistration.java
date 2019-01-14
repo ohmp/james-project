@@ -30,7 +30,6 @@ import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXC
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -100,7 +99,7 @@ class GroupRegistration implements Registration {
     private Optional<Disposable> receiverSubscriber;
 
     GroupRegistration(Mono<Connection> connectionSupplier, Sender sender, EventSerializer eventSerializer,
-                              MailboxListener mailboxListener, Group group, Runnable unregisterGroup) {
+                      MailboxListener mailboxListener, Group group, Runnable unregisterGroup) {
         this.eventSerializer = eventSerializer;
         this.mailboxListener = mailboxListener;
         this.queueName = WorkQueueName.of(group);
@@ -148,12 +147,7 @@ class GroupRegistration implements Registration {
     private void deliver(AcknowledgableDelivery acknowledgableDelivery) {
         byte[] eventAsBytes = acknowledgableDelivery.getBody();
         Event event = eventSerializer.fromJson(new String(eventAsBytes, StandardCharsets.UTF_8)).get();
-
         int deliveryCount = getDeliveryCount(acknowledgableDelivery);
-
-        System.out.println(event + " " + deliveryCount + " " + mailboxListener);
-
-        System.out.println("sleep " + waitDelay(deliveryCount));
 
         Mono.delay(waitDelay(deliveryCount))
             .flatMap(any -> Mono.fromRunnable(() -> mailboxListener.event(event)))
@@ -165,33 +159,23 @@ class GroupRegistration implements Registration {
 
     private Mono<Void> handleErrors(AcknowledgableDelivery acknowledgableDelivery, Event event, byte[] eventAsByte, int deliveryCount, Throwable e) {
         LOGGER.error("Exception happens when handling event of user {}", event.getUser().asString(), e);
-        try {
-            Mono.just(deliveryCount)
-                .flatMap(count -> sender.send(Mono.just(
-                    OutboundMessageFactory.create(
-                        queueName.retryExchangeName(),
-                        eventAsByte,
-                        deliveryCount + 1))))
-                .doOnSuccess(any -> acknowledgableDelivery.ack())
-                .doOnError(Throwable::printStackTrace)
-                .subscribeWith(MonoProcessor.create());
-        } catch (Exception e2) {
-            e2.printStackTrace();
-        }
-        return Mono.empty();
+        return   Mono.just(deliveryCount)
+            .flatMap(count -> sender.send(Mono.just(
+                OutboundMessageFactory.create(
+                    queueName.retryExchangeName(),
+                    eventAsByte,
+                    deliveryCount + 1))))
+            .doOnSuccess(any -> acknowledgableDelivery.ack())
+            .doOnError(Throwable::printStackTrace)
+            .subscribeWith(MonoProcessor.create());
     }
 
     private int getDeliveryCount(AcknowledgableDelivery acknowledgableDelivery) {
-        try {
-            return Optional.ofNullable(acknowledgableDelivery.getProperties().getHeaders())
-                .flatMap(headers -> Optional.ofNullable(headers.get(DELIVERY_COUNT)))
-                .filter(object -> object instanceof Integer)
-                .map(object -> (Integer) object)
-                .orElse(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 1;
-        }
+        return Optional.ofNullable(acknowledgableDelivery.getProperties().getHeaders())
+            .flatMap(headers -> Optional.ofNullable(headers.get(DELIVERY_COUNT)))
+            .filter(object -> object instanceof Integer)
+            .map(object -> (Integer) object)
+            .orElse(1);
     }
 
     private Duration waitDelay(int deliveryCount) {
@@ -199,7 +183,7 @@ class GroupRegistration implements Registration {
             return Duration.ZERO;
         }
         double jitterFactor = Math.pow(1.0 + EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR, deliveryCount);
-        double delayInMs = EventBusConstants.ErrorHandling.FIRST_BACKOFF.get(ChronoUnit.MILLIS) * jitterFactor;
+        double delayInMs = EventBusConstants.ErrorHandling.FIRST_BACKOFF_MILLIS * jitterFactor;
         return Duration.ofMillis(Math.round(delayInMs));
     }
 

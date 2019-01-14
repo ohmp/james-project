@@ -25,7 +25,8 @@ public interface EventBusConstants {
 
     interface ErrorHandling {
         int MAX_RETRIES = 3;
-        Duration FIRST_BACKOFF = Duration.ofMillis(100);
+        int FIRST_BACKOFF_MILLIS = 100;
+        Duration FIRST_BACKOFF = Duration.ofMillis(FIRST_BACKOFF_MILLIS);
         Duration MAX_BACKOFF = Duration.ofMillis(Long.MAX_VALUE);
         double DEFAULT_JITTER_FACTOR = 0.5;
     }
