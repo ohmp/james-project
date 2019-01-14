@@ -138,36 +138,38 @@ class GroupRegistration implements Registration {
 
         int deliveryCount = getDeliveryCount(acknowledgableDelivery);
 
-        System.out.println(event);
+        System.out.println(event + " " + deliveryCount + " " + mailboxListener);
 
         Mono.delay(waitDelay(deliveryCount))
             .flatMap(any -> Mono.fromRunnable(() -> mailboxListener.event(event)))
             .doOnSuccess(success -> acknowledgableDelivery.ack())
-            .doOnError(e -> {
-                e.printStackTrace();
-                LOGGER.error("Exception happens when handling event of user {}", event.getUser().asString(), e);
-                try {
-                    if (deliveryCount < EventBusConstants.ErrorHandling.MAX_RETRIES) {
-                        acknowledgableDelivery.getProperties().getHeaders().put(DELIVERY_COUNT, deliveryCount + 1);
-                        acknowledgableDelivery.nack(REQUEUE);
-                    } else {
-                        acknowledgableDelivery.nack(!REQUEUE);
-                    }
-                } catch (Exception e2) {
-                    e2.printStackTrace();
-                }
-            })
+            .doOnError(e -> handleErrors(acknowledgableDelivery, event, deliveryCount, e))
             .onErrorResume(e -> Mono.empty())
             .then()
             .block();
     }
 
+    private void handleErrors(AcknowledgableDelivery acknowledgableDelivery, Event event, int deliveryCount, Throwable e) {
+        LOGGER.error("Exception happens when handling event of user {}", event.getUser().asString(), e);
+        if (deliveryCount < EventBusConstants.ErrorHandling.MAX_RETRIES) {
+            acknowledgableDelivery.getProperties().getHeaders().put(DELIVERY_COUNT, deliveryCount + 1);
+            acknowledgableDelivery.nack(REQUEUE);
+        } else {
+            acknowledgableDelivery.nack(!REQUEUE);
+        }
+    }
+
     private int getDeliveryCount(AcknowledgableDelivery acknowledgableDelivery) {
-        return Optional.ofNullable(acknowledgableDelivery.getProperties().getHeaders())
-            .flatMap(headers -> Optional.ofNullable(headers.get(DELIVERY_COUNT)))
-            .filter(object -> object instanceof Integer)
-            .map(object -> (Integer) object)
-            .orElse(0);
+        try {
+            return Optional.ofNullable(acknowledgableDelivery.getProperties().getHeaders())
+                .flatMap(headers -> Optional.ofNullable(headers.get(DELIVERY_COUNT)))
+                .filter(object -> object instanceof Integer)
+                .map(object -> (Integer) object)
+                .orElse(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 1;
+        }
     }
 
     private Duration waitDelay(int deliveryCount) {
@@ -182,7 +184,7 @@ class GroupRegistration implements Registration {
     @Override
     public void unregister() {
         receiverSubscriber.filter(subscriber -> !subscriber.isDisposed())
-            .ifPresent(subscriber -> subscriber.dispose());
+            .ifPresent(Disposable::dispose);
         receiver.close();
         unregisterGroup.run();
     }
