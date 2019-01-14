@@ -20,11 +20,11 @@
 package org.apache.james.mailbox.events;
 
 import static org.apache.james.backend.rabbitmq.Constants.AUTO_DELETE;
+import static org.apache.james.backend.rabbitmq.Constants.DIRECT_EXCHANGE;
 import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
 import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
 import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
 import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
-import static org.apache.james.backend.rabbitmq.Constants.REQUEUE;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
@@ -48,9 +48,11 @@ import com.rabbitmq.client.Connection;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.AcknowledgableDelivery;
 import reactor.rabbitmq.BindingSpecification;
+import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Receiver;
@@ -79,6 +81,10 @@ class GroupRegistration implements Registration {
 
         String asString() {
             return MAILBOX_EVENT_WORK_QUEUE_PREFIX + name;
+        }
+
+        String retryExchangeName() {
+            return asString() + "-retry";
         }
     }
 
@@ -113,6 +119,9 @@ class GroupRegistration implements Registration {
 
     private Mono<Void> createGroupWorkQueue() {
         return Flux.concat(
+            sender.declareExchange(ExchangeSpecification.exchange(queueName.retryExchangeName())
+                .durable(DURABLE)
+                .type(DIRECT_EXCHANGE)),
             sender.declareQueue(QueueSpecification.queue(queueName.asString())
                 .durable(DURABLE)
                 .exclusive(!EXCLUSIVE)
@@ -120,6 +129,10 @@ class GroupRegistration implements Registration {
                 .arguments(NO_ARGUMENTS)),
             sender.bind(BindingSpecification.binding()
                 .exchange(MAILBOX_EVENT_EXCHANGE_NAME)
+                .queue(queueName.asString())
+                .routingKey(EMPTY_ROUTING_KEY)),
+            sender.bind(BindingSpecification.binding()
+                .exchange(queueName.retryExchangeName())
                 .queue(queueName.asString())
                 .routingKey(EMPTY_ROUTING_KEY)))
             .then();
@@ -140,23 +153,32 @@ class GroupRegistration implements Registration {
 
         System.out.println(event + " " + deliveryCount + " " + mailboxListener);
 
+        System.out.println("sleep " + waitDelay(deliveryCount));
+
         Mono.delay(waitDelay(deliveryCount))
             .flatMap(any -> Mono.fromRunnable(() -> mailboxListener.event(event)))
             .doOnSuccess(success -> acknowledgableDelivery.ack())
-            .doOnError(e -> handleErrors(acknowledgableDelivery, event, deliveryCount, e))
-            .onErrorResume(e -> Mono.empty())
+            .onErrorResume(e -> handleErrors(acknowledgableDelivery, event, eventAsBytes, deliveryCount, e))
             .then()
             .block();
     }
 
-    private void handleErrors(AcknowledgableDelivery acknowledgableDelivery, Event event, int deliveryCount, Throwable e) {
+    private Mono<Void> handleErrors(AcknowledgableDelivery acknowledgableDelivery, Event event, byte[] eventAsByte, int deliveryCount, Throwable e) {
         LOGGER.error("Exception happens when handling event of user {}", event.getUser().asString(), e);
-        if (deliveryCount < EventBusConstants.ErrorHandling.MAX_RETRIES) {
-            acknowledgableDelivery.getProperties().getHeaders().put(DELIVERY_COUNT, deliveryCount + 1);
-            acknowledgableDelivery.nack(REQUEUE);
-        } else {
-            acknowledgableDelivery.nack(!REQUEUE);
+        try {
+            Mono.just(deliveryCount)
+                .flatMap(count -> sender.send(Mono.just(
+                    OutboundMessageFactory.create(
+                        queueName.retryExchangeName(),
+                        eventAsByte,
+                        deliveryCount + 1))))
+                .doOnSuccess(any -> acknowledgableDelivery.ack())
+                .doOnError(Throwable::printStackTrace)
+                .subscribeWith(MonoProcessor.create());
+        } catch (Exception e2) {
+            e2.printStackTrace();
         }
+        return Mono.empty();
     }
 
     private int getDeliveryCount(AcknowledgableDelivery acknowledgableDelivery) {
@@ -176,7 +198,7 @@ class GroupRegistration implements Registration {
         if (deliveryCount < 1) {
             return Duration.ZERO;
         }
-        double jitterFactor = Math.pow(1 + EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR, deliveryCount);
+        double jitterFactor = Math.pow(1.0 + EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR, deliveryCount);
         double delayInMs = EventBusConstants.ErrorHandling.FIRST_BACKOFF.get(ChronoUnit.MILLIS) * jitterFactor;
         return Duration.ofMillis(Math.round(delayInMs));
     }

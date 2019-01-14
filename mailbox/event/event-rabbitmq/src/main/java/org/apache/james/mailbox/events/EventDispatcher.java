@@ -21,16 +21,12 @@ package org.apache.james.mailbox.events;
 
 import static org.apache.james.backend.rabbitmq.Constants.DIRECT_EXCHANGE;
 import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
-import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
 import java.nio.charset.StandardCharsets;
 
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.Event;
-
-import com.google.common.collect.ImmutableMap;
-import com.rabbitmq.client.AMQP;
 
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
@@ -39,7 +35,9 @@ import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
 import reactor.rabbitmq.Sender;
 
-public class EventDispatcher {
+class EventDispatcher {
+    private static final int FIRST_DELIVERY = 0;
+
     private final EventSerializer eventSerializer;
     private final Sender sender;
 
@@ -59,11 +57,7 @@ public class EventDispatcher {
         Mono<OutboundMessage> outboundMessage = Mono.just(event)
             .publishOn(Schedulers.parallel())
             .map(this::serializeEvent)
-            .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, EMPTY_ROUTING_KEY,
-                new AMQP.BasicProperties.Builder()
-                    .headers(ImmutableMap.of(GroupRegistration.DELIVERY_COUNT, 0))
-                    .build(),
-                payload));
+            .map(payload -> OutboundMessageFactory.create(MAILBOX_EVENT_EXCHANGE_NAME, payload, FIRST_DELIVERY));
 
         return sender.send(outboundMessage)
             .subscribeWith(MonoProcessor.create());
