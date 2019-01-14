@@ -16,14 +16,30 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.modules.mailbox;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.james.mailbox.MailboxListener;
-import org.apache.james.mailbox.events.Group;
+package org.apache.james.mailbox.events;
 
-public interface MailboxListenersLoader {
-    Pair<Group, MailboxListener> createListener(ListenerConfiguration configuration);
+import java.util.Objects;
 
-    void register(Pair<Group, MailboxListener> listener);
+public class GenericGroup extends Group {
+    private final String groupName;
+
+    public GenericGroup(String groupName) {
+        this.groupName = groupName;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof GenericGroup) {
+            GenericGroup that = (GenericGroup) o;
+
+            return Objects.equals(this.groupName, that.groupName);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(groupName);
+    }
 }

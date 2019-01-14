@@ -58,4 +58,14 @@ class GroupTest {
     void equalsShouldReturnFalseOnParentClass() {
         assertThat(new GroupC()).isNotEqualTo(new GroupA());
     }
+
+    @Test
+    void equalsShouldReturnFalseForBetweenGenericAndRegularGroup() {
+        assertThat(new GenericGroup("a")).isNotEqualTo(new GroupA());
+    }
+
+    @Test
+    void equalsShouldReturnFalseForTwoDifferentGenericGroups() {
+        assertThat(new GenericGroup("a")).isNotEqualTo(new GenericGroup("b"));
+    }
 }
