@@ -59,6 +59,7 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Strings;
@@ -100,15 +101,20 @@ public abstract class MailboxManagerTest {
         mailboxManager.endProcessingRequest(session);
     }
 
-    @Test
+    @RepeatedTest(100)
     public void creatingConcurrentlyMailboxesWithSameParentShouldNotFail() throws Exception {
         MailboxSession session = mailboxManager.createSystemSession(USER_1);
-        String mailboxName = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z";
+        String baseName = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z";
+        String mailboxName = baseName + ".";
 
         ConcurrentTestRunner.builder()
             .operation((a, b) -> mailboxManager.createMailbox(MailboxPath.forUser(USER_1, mailboxName + a), session))
             .threadCount(10)
             .runSuccessfullyWithin(Duration.ofMinutes(1));
+
+        assertThat(
+            mailboxManager.list(session))
+            .contains(MailboxPath.forUser(USER_1, baseName));
     }
 
     @Test
