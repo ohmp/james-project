@@ -37,6 +37,7 @@ import org.apache.james.mailbox.model.TestId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionFactory;
 
 public interface EventBusTestFixture {
@@ -97,7 +98,7 @@ public interface EventBusTestFixture {
     MailboxIdRegistrationKey KEY_2 = new MailboxIdRegistrationKey(ID_2);
     List<Class<? extends Group>> ALL_GROUPS = ImmutableList.of(GroupA.class, GroupB.class, GroupC.class);
 
-    ConditionFactory WAIT_CONDITION = await().timeout(com.jayway.awaitility.Duration.ONE_SECOND);
+    ConditionFactory WAIT_CONDITION = await().timeout(Duration.FIVE_SECONDS);
 
     static MailboxListener newListener() {
         MailboxListener listener = mock(MailboxListener.class);

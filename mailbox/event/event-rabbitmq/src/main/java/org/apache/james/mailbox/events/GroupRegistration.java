@@ -24,27 +24,32 @@ import static org.apache.james.backend.rabbitmq.Constants.DURABLE;
 import static org.apache.james.backend.rabbitmq.Constants.EMPTY_ROUTING_KEY;
 import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
 import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
+import static org.apache.james.backend.rabbitmq.Constants.REQUEUE;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.james.event.json.EventSerializer;
+import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Delivery;
 
-import play.api.libs.json.JsResult;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.rabbitmq.AcknowledgableDelivery;
 import reactor.rabbitmq.BindingSpecification;
 import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
@@ -76,6 +81,9 @@ class GroupRegistration implements Registration {
             return MAILBOX_EVENT_WORK_QUEUE_PREFIX + name;
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupRegistration.class);
+    public static final String DELIVERY_COUNT = "delivery-count";
 
     private final MailboxListener mailboxListener;
     private final WorkQueueName queueName;
@@ -118,19 +126,57 @@ class GroupRegistration implements Registration {
     }
 
     private void subscribeWorkQueue() {
-        receiverSubscriber = Optional.of(receiver.consumeAutoAck(queueName.asString())
-            .subscribeOn(Schedulers.parallel())
-            .map(Delivery::getBody)
-            .filter(Objects::nonNull)
-            .map(eventInBytes -> new String(eventInBytes, StandardCharsets.UTF_8))
-            .map(eventSerializer::fromJson)
-            .map(JsResult::get)
-            .flatMap(event -> RetryBackOffDeliver.mailboxListener(mailboxListener)
-                .event(event)
-                .deliverOperation(MailboxListener::event)
-                .deliver())
+        receiverSubscriber = Optional.of(receiver.consumeManualAck(queueName.asString())
             .subscribeOn(Schedulers.elastic())
-            .subscribe());
+            .filter(delivery -> Objects.nonNull(delivery.getBody()))
+            .subscribe(this::deliver));
+    }
+
+    private void deliver(AcknowledgableDelivery acknowledgableDelivery) {
+        byte[] eventAsBytes = acknowledgableDelivery.getBody();
+        Event event = eventSerializer.fromJson(new String(eventAsBytes, StandardCharsets.UTF_8)).get();
+
+        int deliveryCount = getDeliveryCount(acknowledgableDelivery);
+
+        System.out.println(event);
+
+        Mono.delay(waitDelay(deliveryCount))
+            .flatMap(any -> Mono.fromRunnable(() -> mailboxListener.event(event)))
+            .doOnSuccess(success -> acknowledgableDelivery.ack())
+            .doOnError(e -> {
+                e.printStackTrace();
+                LOGGER.error("Exception happens when handling event of user {}", event.getUser().asString(), e);
+                try {
+                    if (deliveryCount < EventBusConstants.ErrorHandling.MAX_RETRIES) {
+                        acknowledgableDelivery.getProperties().getHeaders().put(DELIVERY_COUNT, deliveryCount + 1);
+                        acknowledgableDelivery.nack(REQUEUE);
+                    } else {
+                        acknowledgableDelivery.nack(!REQUEUE);
+                    }
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+            })
+            .onErrorResume(e -> Mono.empty())
+            .then()
+            .block();
+    }
+
+    private int getDeliveryCount(AcknowledgableDelivery acknowledgableDelivery) {
+        return Optional.ofNullable(acknowledgableDelivery.getProperties().getHeaders())
+            .flatMap(headers -> Optional.ofNullable(headers.get(DELIVERY_COUNT)))
+            .filter(object -> object instanceof Integer)
+            .map(object -> (Integer) object)
+            .orElse(0);
+    }
+
+    private Duration waitDelay(int deliveryCount) {
+        if (deliveryCount < 1) {
+            return Duration.ZERO;
+        }
+        double jitterFactor = Math.pow(1 + EventBusConstants.ErrorHandling.DEFAULT_JITTER_FACTOR, deliveryCount);
+        double delayInMs = EventBusConstants.ErrorHandling.FIRST_BACKOFF.get(ChronoUnit.MILLIS) * jitterFactor;
+        return Duration.ofMillis(Math.round(delayInMs));
     }
 
     @Override

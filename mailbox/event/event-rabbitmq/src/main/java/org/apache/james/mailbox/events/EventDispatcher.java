@@ -29,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.Event;
 
+import com.google.common.collect.ImmutableMap;
+import com.rabbitmq.client.AMQP;
+
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Schedulers;
@@ -56,7 +59,11 @@ public class EventDispatcher {
         Mono<OutboundMessage> outboundMessage = Mono.just(event)
             .publishOn(Schedulers.parallel())
             .map(this::serializeEvent)
-            .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, EMPTY_ROUTING_KEY, payload));
+            .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, EMPTY_ROUTING_KEY,
+                new AMQP.BasicProperties.Builder()
+                    .headers(ImmutableMap.of(GroupRegistration.DELIVERY_COUNT, 0))
+                    .build(),
+                payload));
 
         return sender.send(outboundMessage)
             .subscribeWith(MonoProcessor.create());

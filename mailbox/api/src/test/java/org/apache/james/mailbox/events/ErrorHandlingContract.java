@@ -125,7 +125,7 @@ interface ErrorHandlingContract extends EventBusContract {
         eventBus().register(throwingListener, new EventBusTestFixture.GroupA());
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
-        TimeUnit.SECONDS.sleep(1); // make sure events are all came to listeners
+        TimeUnit.SECONDS.sleep(5); // make sure events are all came to listeners
 
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(throwingListener.timeElapsed).hasSize(4);
