@@ -27,6 +27,7 @@ import javax.inject.Inject;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
@@ -40,25 +41,44 @@ import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Schedulers;
 
 public class InVmEventDelivery implements EventDelivery {
+
+    private enum DeliveryOption {
+        NO_RETRY, WITH_RETRY
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(InVmEventDelivery.class);
-    private static final int MAX_RETRIES = 3;
-    private static final Duration FIRST_BACKOFF = Duration.ofMillis(100);
     private static final Duration MAX_BACKOFF = Duration.ofMillis(Long.MAX_VALUE);
-    private static final double DEFAULT_JITTER_FACTOR = 0.5;
 
     private final MetricFactory metricFactory;
+    private final RetryBackoffConfiguration retryBackoff;
 
     @Inject
     @VisibleForTesting
-    public InVmEventDelivery(MetricFactory metricFactory) {
+    public InVmEventDelivery(MetricFactory metricFactory, RetryBackoffConfiguration retryBackoff) {
         this.metricFactory = metricFactory;
+        this.retryBackoff = retryBackoff;
+    }
+
+    public InVmEventDelivery(MetricFactory metricFactory) {
+        this(metricFactory, RetryBackoffConfiguration.DEFAULT);
     }
 
     @Override
     public ExecutionStages deliver(Collection<MailboxListener> mailboxListeners, Event event) {
-        Mono<Void> synchronousListeners = doDeliver(filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.SYNCHRONOUS), event)
+        return deliverByOption(mailboxListeners, event, DeliveryOption.NO_RETRY);
+    }
+
+    @Override
+    public ExecutionStages deliverWithRetries(Collection<MailboxListener> mailboxListeners, Event event) {
+        return deliverByOption(mailboxListeners, event, DeliveryOption.WITH_RETRY);
+    }
+
+    private ExecutionStages deliverByOption(Collection<MailboxListener> mailboxListeners, Event event, DeliveryOption deliveryOption) {
+        Mono<Void> synchronousListeners = doDeliver(
+            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.SYNCHRONOUS), event, deliveryOption)
             .subscribeWith(MonoProcessor.create());
-        Mono<Void> asyncListener = doDeliver(filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.ASYNCHRONOUS), event)
+        Mono<Void> asyncListener = doDeliver(
+            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.ASYNCHRONOUS), event, deliveryOption)
             .subscribeWith(MonoProcessor.create());
 
         return new ExecutionStages(synchronousListeners, asyncListener);
@@ -69,23 +89,30 @@ public class InVmEventDelivery implements EventDelivery {
             .filter(listener -> listener.getExecutionMode() == executionMode);
     }
 
-    private Mono<Void> doDeliver(Stream<MailboxListener> mailboxListeners, Event event) {
+    private Mono<Void> doDeliver(Stream<MailboxListener> mailboxListeners, Event event, DeliveryOption deliveryOption) {
         return Flux.fromStream(mailboxListeners)
-            .flatMap(mailboxListener -> deliveryWithRetries(event, mailboxListener))
+            .flatMap(mailboxListener -> deliveryWithRetries(event, mailboxListener, deliveryOption))
             .then()
             .subscribeOn(Schedulers.elastic());
     }
 
-    private Mono<Void> deliveryWithRetries(Event event, MailboxListener mailboxListener) {
-        return Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event))
+    private Mono<Void> deliveryWithRetries(Event event, MailboxListener mailboxListener, DeliveryOption deliveryOption) {
+        Mono<Void> firstDelivery = Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event))
             .doOnError(throwable -> LOGGER.error("Error while processing listener {} for {}",
                 listenerName(mailboxListener),
                 eventName(event),
                 throwable))
-            .retryBackoff(MAX_RETRIES, FIRST_BACKOFF, MAX_BACKOFF, DEFAULT_JITTER_FACTOR)
+            .then();
+
+        if (deliveryOption == DeliveryOption.NO_RETRY) {
+            return firstDelivery;
+        }
+
+        return firstDelivery
+            .retryBackoff(retryBackoff.getMaxRetries(), retryBackoff.getFirstBackoff(), MAX_BACKOFF, retryBackoff.getJitterFactor())
             .doOnError(throwable -> LOGGER.error("listener {} exceeded maximum retry({}) to handle event {}",
                 listenerName(mailboxListener),
-                MAX_RETRIES,
+                retryBackoff.getMaxRetries(),
                 eventName(event),
                 throwable))
             .then();
