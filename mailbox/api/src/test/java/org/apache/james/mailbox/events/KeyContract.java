@@ -266,7 +266,7 @@ public interface KeyContract extends EventBusContract {
         }
 
         @Test
-        default void allRegisteredListenersShouldBeExecutedWhenARegisteredListenerFails() {
+        default void allRegisteredListenersShouldBeExecutedWhenARegisteredListenerFails() throws Exception {
             MailboxListener listener = newListener();
 
             MailboxListener failingListener = mock(MailboxListener.class);
@@ -285,7 +285,7 @@ public interface KeyContract extends EventBusContract {
     interface MultipleEventBusKeyContract extends MultipleEventBusContract {
 
         @Test
-        default void crossEventBusRegistrationShouldBeAllowed() {
+        default void crossEventBusRegistrationShouldBeAllowed() throws Exception {
             MailboxListener mailboxListener = newListener();
 
             eventBus().register(mailboxListener, KEY_1);
@@ -296,7 +296,7 @@ public interface KeyContract extends EventBusContract {
         }
 
         @Test
-        default void unregisteredDistantListenersShouldNotBeNotified() {
+        default void unregisteredDistantListenersShouldNotBeNotified() throws Exception {
             MailboxListener mailboxListener = newListener();
 
             eventBus().register(mailboxListener, KEY_1).unregister();
@@ -308,7 +308,7 @@ public interface KeyContract extends EventBusContract {
         }
 
         @Test
-        default void allRegisteredListenersShouldBeDispatched() {
+        default void allRegisteredListenersShouldBeDispatched() throws Exception {
             MailboxListener mailboxListener1 = newListener();
             MailboxListener mailboxListener2 = newListener();
 
