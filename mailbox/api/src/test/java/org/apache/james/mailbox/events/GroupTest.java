@@ -60,12 +60,9 @@ class GroupTest {
     }
 
     @Test
-    void equalsShouldReturnFalseForBetweenGenericAndRegularGroup() {
-        assertThat(new GenericGroup("a")).isNotEqualTo(new GroupA());
-    }
-
-    @Test
-    void equalsShouldReturnFalseForTwoDifferentGenericGroups() {
-        assertThat(new GenericGroup("a")).isNotEqualTo(new GenericGroup("b"));
+    void genericGroupShouldMatchBeanContract() {
+        EqualsVerifier.forClass(GenericGroup.class)
+            .withRedefinedSuperclass()
+            .verify();
     }
 }
