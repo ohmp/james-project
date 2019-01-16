@@ -72,7 +72,7 @@ public class SingleMailboxReindexingTask implements Task {
     public Result run() {
         try {
             return reIndexerPerformer.reIndex(mailboxId, reprocessingContext);
-        } catch (MailboxException e) {
+        } catch (Exception e) {
             return Result.PARTIAL;
         }
     }
