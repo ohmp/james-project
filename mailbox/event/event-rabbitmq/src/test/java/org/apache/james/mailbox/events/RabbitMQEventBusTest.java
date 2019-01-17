@@ -175,6 +175,26 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
     }
 
     @Override
+    public EventDeadLetters deadLetter() {
+        return null;
+    }
+
+    @Test
+    @Disabled("Implemented later")
+    public void deadLettersIsNotAppliedForKeyRegistrations() {
+    }
+
+    @Test
+    @Disabled("Implemented later")
+    public void deadLetterShouldNotStoreWhenFailsLessThanMaxRetries() {
+    }
+
+    @Test
+    @Disabled("Implemented later")
+    public void deadLetterShouldStoreWhenFailsGreaterThanMaxRetries() {
+    }
+
+    @Override
     @Test
     @Disabled("This test is failing by RabbitMQEventBus exponential backoff is not implemented at this time")
     public void failingRegisteredListenersShouldNotAbortRegisteredDelivery() {

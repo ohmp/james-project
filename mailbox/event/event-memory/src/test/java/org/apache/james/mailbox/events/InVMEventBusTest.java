@@ -27,16 +27,23 @@ public class InVMEventBusTest implements KeyContract.SingleEventBusKeyContract, 
     ErrorHandlingContract{
 
     private InVMEventBus eventBus;
+    private MemoryEventDeadLetters deadLetters;
 
     @BeforeEach
     void setUp() {
+        deadLetters = new MemoryEventDeadLetters();
         eventBus = new InVMEventBus(
             new InVmEventDelivery(
-                new NoopMetricFactory(), RetryBackoffConfiguration.DEFAULT, new MemoryEventDeadLetters()));
+                new NoopMetricFactory(), RetryBackoffConfiguration.DEFAULT, deadLetters));
     }
 
     @Override
     public EventBus eventBus() {
         return eventBus;
+    }
+
+    @Override
+    public EventDeadLetters deadLetter() {
+        return deadLetters;
     }
 }

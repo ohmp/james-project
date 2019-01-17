@@ -20,6 +20,7 @@
 package org.apache.james.mailbox.events;
 
 import static org.apache.james.mailbox.events.EventBusTestFixture.EVENT;
+import static org.apache.james.mailbox.events.EventBusTestFixture.GROUP_A;
 import static org.apache.james.mailbox.events.EventBusTestFixture.KEY_1;
 import static org.apache.james.mailbox.events.EventBusTestFixture.NO_KEYS;
 import static org.apache.james.mailbox.events.EventBusTestFixture.WAIT_CONDITION;
@@ -56,6 +57,8 @@ interface ErrorHandlingContract extends EventBusContract {
         }
     }
 
+    EventDeadLetters deadLetter();
+
     default EventCollector eventCollector() {
         return spy(new EventCollector());
     }
@@ -76,6 +79,28 @@ interface ErrorHandlingContract extends EventBusContract {
 
         assertThat(eventCollector.getEvents())
             .isEmpty();
+    }
+
+    @Test
+    default void deadLettersIsNotAppliedForKeyRegistrations() throws Exception {
+        EventCollector eventCollector = eventCollector();
+
+        doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doCallRealMethod()
+            .when(eventCollector).event(EVENT);
+
+        eventBus().register(eventCollector, KEY_1);
+        eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
+
+        TimeUnit.SECONDS.sleep(1);
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(eventCollector.getEvents()).isEmpty();
+            softly.assertThat(deadLetter().failedEventIds(GROUP_A).toIterable())
+                .isEmpty();
+        });
     }
 
     @Test
@@ -169,6 +194,47 @@ interface ErrorHandlingContract extends EventBusContract {
 
             softly.assertThat(timeElapsed.get(3))
                 .isAfterOrEqualTo(timeElapsed.get(2).plusMillis(minThirdDelayAfter));
+        });
+    }
+
+    @Test
+    default void deadLetterShouldNotStoreWhenFailsLessThanMaxRetries() {
+        EventCollector eventCollector = eventCollector();
+
+        doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doCallRealMethod()
+            .when(eventCollector).event(EVENT);
+
+        eventBus().register(eventCollector, new EventBusTestFixture.GroupA());
+        eventBus().dispatch(EVENT, NO_KEYS).block();
+
+        WAIT_CONDITION
+            .until(() -> assertThat(eventCollector.getEvents()).hasSize(1));
+
+        assertThat(deadLetter().groupsWithFailedEvents().toIterable())
+            .isEmpty();
+    }
+
+    @Test
+    default void deadLetterShouldStoreWhenFailsGreaterThanMaxRetries() throws Exception {
+        EventCollector eventCollector = eventCollector();
+
+        doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doThrow(new RuntimeException())
+            .doCallRealMethod()
+            .when(eventCollector).event(EVENT);
+
+        eventBus().register(eventCollector, GROUP_A);
+        eventBus().dispatch(EVENT, NO_KEYS).block();
+
+        TimeUnit.SECONDS.sleep(1);
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(eventCollector.getEvents()).isEmpty();
+            softly.assertThat(deadLetter().failedEventIds(GROUP_A).toIterable())
+                .containsOnly(EVENT.getEventId());
         });
     }
 }
