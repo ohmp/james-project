@@ -33,8 +33,10 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 import org.apache.james.mailbox.util.EventCollector;
 import org.apache.james.metrics.api.NoopMetricFactory;
@@ -43,11 +45,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
 class InVmEventDeliveryTest {
+
+    static ImmutableList<EventDelivery.DeliverableListener> toDeliverableListeners(MailboxListener... listeners) {
+        return Stream.of(listeners)
+            .map(EventDelivery.DeliverableListener::withoutGroup)
+            .collect(Guavate.toImmutableList());
+    }
+
     private static final int DELIVERY_DELAY = (int) TimeUnit.MILLISECONDS.toMillis(100);
 
     private InVmEventDelivery inVmEventDelivery;
@@ -60,7 +70,7 @@ class InVmEventDeliveryTest {
         event = mock(MailboxListener.MailboxEvent.class);
         listener = mock(MailboxListener.class);
         listener2 = mock(MailboxListener.class);
-        inVmEventDelivery = new InVmEventDelivery(new NoopMetricFactory(), RetryBackoffConfiguration.DEFAULT);
+        inVmEventDelivery = new InVmEventDelivery(new NoopMetricFactory(), RetryBackoffConfiguration.DEFAULT, new MemoryEventDeadLetters());
     }
 
     @Nested
@@ -102,7 +112,7 @@ class InVmEventDeliveryTest {
                 doThrow(RuntimeException.class).when(syncEventCollector).event(event);
 
                 assertThatThrownBy(() -> inVmEventDelivery
-                    .deliverWithRetries(ImmutableList.of(syncEventCollector), event).allListenerFuture()
+                    .deliverWithRetries(toDeliverableListeners(syncEventCollector), event).allListenerFuture()
                     .block())
                     .isInstanceOf(IllegalStateException.class);
 
@@ -126,7 +136,7 @@ class InVmEventDeliveryTest {
                 doThrow(RuntimeException.class).when(syncEventCollector).event(event);
 
                 assertThatThrownBy(() -> inVmEventDelivery
-                    .deliverWithRetries(ImmutableList.of(syncEventCollector), event).allListenerFuture()
+                    .deliverWithRetries(toDeliverableListeners(syncEventCollector), event).allListenerFuture()
                     .block())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Retries exhausted");
@@ -153,7 +163,7 @@ class InVmEventDeliveryTest {
                 doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
 
                 assertThatThrownBy(() -> inVmEventDelivery
-                    .deliverWithRetries(ImmutableList.of(asyncEventCollector), event).allListenerFuture()
+                    .deliverWithRetries(toDeliverableListeners(asyncEventCollector), event).allListenerFuture()
                     .block())
                     .isInstanceOf(IllegalStateException.class);
 
@@ -177,7 +187,7 @@ class InVmEventDeliveryTest {
                 doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
 
                 assertThatThrownBy(() -> inVmEventDelivery
-                    .deliverWithRetries(ImmutableList.of(asyncEventCollector), event).allListenerFuture()
+                    .deliverWithRetries(toDeliverableListeners(asyncEventCollector), event).allListenerFuture()
                     .block())
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Retries exhausted");
@@ -207,7 +217,7 @@ class InVmEventDeliveryTest {
                 doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
 
                 assertThatThrownBy(() -> inVmEventDelivery
-                    .deliverWithRetries(ImmutableList.of(asyncEventCollector, syncEventCollector), event).allListenerFuture()
+                    .deliverWithRetries(toDeliverableListeners(asyncEventCollector, syncEventCollector), event).allListenerFuture()
                     .block())
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Retries exhausted");
@@ -236,7 +246,7 @@ class InVmEventDeliveryTest {
             void deliverWithRetriesShouldDeliverEventToAsyncListenerWhenSyncGetException() {
                 doThrow(RuntimeException.class).when(syncEventCollector).event(event);
 
-                inVmEventDelivery.deliverWithRetries(ImmutableList.of(asyncEventCollector, syncEventCollector), event).allListenerFuture()
+                inVmEventDelivery.deliverWithRetries(toDeliverableListeners(asyncEventCollector, syncEventCollector), event).allListenerFuture()
                     .onErrorResume(e -> Mono.empty())
                     .block();
 
@@ -264,7 +274,7 @@ class InVmEventDeliveryTest {
                 doThrow(RuntimeException.class).when(asyncEventCollector).event(event);
 
                 assertThatThrownBy(() -> inVmEventDelivery
-                    .deliverWithRetries(ImmutableList.of(asyncEventCollector), event).allListenerFuture()
+                    .deliverWithRetries(toDeliverableListeners(asyncEventCollector), event).allListenerFuture()
                     .block())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Retries exhausted");

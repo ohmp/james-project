@@ -27,12 +27,15 @@ import javax.inject.Inject;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
+import org.apache.james.mailbox.events.EventDeadLetters;
+import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 
 import reactor.core.publisher.Flux;
@@ -51,55 +54,64 @@ public class InVmEventDelivery implements EventDelivery {
 
     private final MetricFactory metricFactory;
     private final RetryBackoffConfiguration retryBackoff;
+    private final EventDeadLetters eventDeadLetters;
 
     @Inject
     @VisibleForTesting
-    public InVmEventDelivery(MetricFactory metricFactory, RetryBackoffConfiguration retryBackoff) {
+    public InVmEventDelivery(MetricFactory metricFactory, RetryBackoffConfiguration retryBackoff, EventDeadLetters eventDeadLetters) {
         this.metricFactory = metricFactory;
         this.retryBackoff = retryBackoff;
+        this.eventDeadLetters = eventDeadLetters;
     }
 
+    @VisibleForTesting
     public InVmEventDelivery(MetricFactory metricFactory) {
-        this(metricFactory, RetryBackoffConfiguration.DEFAULT);
+        this(metricFactory, RetryBackoffConfiguration.DEFAULT, new MemoryEventDeadLetters());
     }
 
     @Override
     public ExecutionStages deliver(Collection<MailboxListener> mailboxListeners, Event event) {
-        return deliverByOption(mailboxListeners, event, DeliveryOption.NO_RETRY);
+        return deliverByOption(
+            mailboxListeners.stream().map(DeliverableListener::withoutGroup).collect(Guavate.toImmutableList()),
+            event,
+            DeliveryOption.NO_RETRY);
     }
 
     @Override
-    public ExecutionStages deliverWithRetries(Collection<MailboxListener> mailboxListeners, Event event) {
-        return deliverByOption(mailboxListeners, event, DeliveryOption.WITH_RETRY);
+    public ExecutionStages deliverWithRetries(Collection<DeliverableListener> deliverableListeners, Event event) {
+        return deliverByOption(
+            deliverableListeners,
+            event,
+            DeliveryOption.WITH_RETRY);
     }
 
-    private ExecutionStages deliverByOption(Collection<MailboxListener> mailboxListeners, Event event, DeliveryOption deliveryOption) {
+    private ExecutionStages deliverByOption(Collection<DeliverableListener> deliverableListeners, Event event, DeliveryOption deliveryOption) {
         Mono<Void> synchronousListeners = doDeliver(
-            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.SYNCHRONOUS), event, deliveryOption)
+            filterByExecutionMode(deliverableListeners, MailboxListener.ExecutionMode.SYNCHRONOUS), event, deliveryOption)
             .subscribeWith(MonoProcessor.create());
         Mono<Void> asyncListener = doDeliver(
-            filterByExecutionMode(mailboxListeners, MailboxListener.ExecutionMode.ASYNCHRONOUS), event, deliveryOption)
+            filterByExecutionMode(deliverableListeners, MailboxListener.ExecutionMode.ASYNCHRONOUS), event, deliveryOption)
             .subscribeWith(MonoProcessor.create());
 
         return new ExecutionStages(synchronousListeners, asyncListener);
     }
 
-    private Stream<MailboxListener> filterByExecutionMode(Collection<MailboxListener> mailboxListeners, MailboxListener.ExecutionMode executionMode) {
-        return mailboxListeners.stream()
-            .filter(listener -> listener.getExecutionMode() == executionMode);
+    private Stream<DeliverableListener> filterByExecutionMode(Collection<DeliverableListener> deliverableListeners, MailboxListener.ExecutionMode executionMode) {
+        return deliverableListeners.stream()
+            .filter(deliverableListener -> deliverableListener.getMailboxListener().getExecutionMode() == executionMode);
     }
 
-    private Mono<Void> doDeliver(Stream<MailboxListener> mailboxListeners, Event event, DeliveryOption deliveryOption) {
-        return Flux.fromStream(mailboxListeners)
-            .flatMap(mailboxListener -> deliveryWithRetries(event, mailboxListener, deliveryOption))
+    private Mono<Void> doDeliver(Stream<DeliverableListener> deliverableListeners, Event event, DeliveryOption deliveryOption) {
+        return Flux.fromStream(deliverableListeners)
+            .flatMap(deliverableListener -> deliveryWithRetries(event, deliverableListener, deliveryOption))
             .then()
             .subscribeOn(Schedulers.elastic());
     }
 
-    private Mono<Void> deliveryWithRetries(Event event, MailboxListener mailboxListener, DeliveryOption deliveryOption) {
-        Mono<Void> firstDelivery = Mono.fromRunnable(() -> doDeliverToListener(mailboxListener, event))
+    private Mono<Void> deliveryWithRetries(Event event, DeliverableListener deliverableListener, DeliveryOption deliveryOption) {
+        Mono<Void> firstDelivery = Mono.fromRunnable(() -> doDeliverToListener(deliverableListener.getMailboxListener(), event))
             .doOnError(throwable -> LOGGER.error("Error while processing listener {} for {}",
-                listenerName(mailboxListener),
+                listenerName(deliverableListener.getMailboxListener()),
                 eventName(event),
                 throwable))
             .then();
@@ -111,10 +123,17 @@ public class InVmEventDelivery implements EventDelivery {
         return firstDelivery
             .retryBackoff(retryBackoff.getMaxRetries(), retryBackoff.getFirstBackoff(), MAX_BACKOFF, retryBackoff.getJitterFactor())
             .doOnError(throwable -> LOGGER.error("listener {} exceeded maximum retry({}) to handle event {}",
-                listenerName(mailboxListener),
+                listenerName(deliverableListener.getMailboxListener()),
                 retryBackoff.getMaxRetries(),
                 eventName(event),
                 throwable))
+            .onErrorResume(throwable -> storeToDeadLetters(event, deliverableListener))
+            .then();
+    }
+
+    private Mono<Void> storeToDeadLetters(Event event, DeliverableListener deliverableListener) {
+        return Mono.justOrEmpty(deliverableListener.getGroup())
+            .map(group -> eventDeadLetters.store(group, event))
             .then();
     }
 

@@ -67,7 +67,10 @@ public class InVMEventBus implements EventBus {
     public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
         if (!event.isNoop()) {
             return Flux.merge(
-                eventDelivery.deliverWithRetries(groups.values(), event).synchronousListenerFuture(),
+                eventDelivery.deliverWithRetries(
+                        EventDelivery.DeliverableListener.from(groups).collect(Guavate.toImmutableList()),
+                        event)
+                    .synchronousListenerFuture(),
                 eventDelivery.deliver(registeredListenersByKeys(keys), event).synchronousListenerFuture())
                 .then()
                 .onErrorResume(throwable -> Mono.empty());
