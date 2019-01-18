@@ -35,7 +35,6 @@ import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 
 import reactor.core.publisher.Flux;
@@ -45,9 +44,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class InVmEventDelivery implements EventDelivery {
 
-    private enum DeliveryOption {
-        NO_RETRY, WITH_RETRY
-    }
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InVmEventDelivery.class);
     private static final Duration MAX_BACKOFF = Duration.ofMillis(Long.MAX_VALUE);
@@ -70,19 +67,14 @@ public class InVmEventDelivery implements EventDelivery {
     }
 
     @Override
-    public ExecutionStages deliver(Collection<MailboxListener> mailboxListeners, Event event) {
-        return deliverByOption(
-            mailboxListeners.stream().map(DeliverableListener::withoutGroup).collect(Guavate.toImmutableList()),
-            event,
-            DeliveryOption.NO_RETRY);
-    }
+    public ExecutionStages deliver(MailboxListener listener, Event event, EventDelivery.DeliveryOption option) {
+        Mono<Void> delivery = option.getRetrier().run(() -> doDeliverToListener(listener, event))
+            .onErrorResume(e -> option.getPermanentFailureHandler().handle(event));
 
-    @Override
-    public ExecutionStages deliverWithRetries(Collection<DeliverableListener> deliverableListeners, Event event) {
-        return deliverByOption(
-            deliverableListeners,
-            event,
-            DeliveryOption.WITH_RETRY);
+        if (listener.getExecutionMode() == MailboxListener.ExecutionMode.SYNCHRONOUS) {
+            return new ExecutionStages(delivery, Mono.empty());
+        }
+        return new ExecutionStages(Mono.empty(), delivery);
     }
 
     private ExecutionStages deliverByOption(Collection<DeliverableListener> deliverableListeners, Event event, DeliveryOption deliveryOption) {

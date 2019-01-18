@@ -66,12 +66,16 @@ public class InVMEventBus implements EventBus {
     @Override
     public Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
         if (!event.isNoop()) {
+
             return Flux.merge(
-                eventDelivery.deliverWithRetries(
-                        EventDelivery.DeliverableListener.from(groups).collect(Guavate.toImmutableList()),
-                        event)
-                    .synchronousListenerFuture(),
-                eventDelivery.deliver(registeredListenersByKeys(keys), event).synchronousListenerFuture())
+                Flux.fromIterable(groups.entrySet())
+                    .map(entry -> eventDelivery.deliver(entry.getValue(), event, /*RetryBackOff + SaveToDeadLetter*/)),
+                Flux.fromIterable(registeredListenersByKeys(keys))
+                    .map(listener -> eventDelivery.deliver(listener, event, EventDelivery.DeliveryOption.none())))
+                .reduceWith(
+                    new EventDelivery.ExecutionStages(Mono.empty(), Mono.empty()),
+                    EventDelivery.ExecutionStages::combine)
+                .synchronousListenerFuture()
                 .then()
                 .onErrorResume(throwable -> Mono.empty());
         }

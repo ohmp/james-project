@@ -19,52 +19,56 @@
 
 package org.apache.james.mailbox.events.delivery;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
-import org.apache.james.mailbox.events.Group;
+import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface EventDelivery {
 
-    class DeliverableListener {
-        public static Stream<DeliverableListener> from(Map<Group, MailboxListener> mailboxListeners) {
-            return mailboxListeners.entrySet().stream()
-                .map(entry -> DeliverableListener.from(entry.getKey(), entry.getValue()));
+
+    class DeliveryOption {
+        private final Retrier retrier;
+        private final PermanentFailureHandler permanentFailureHandler;
+
+        public Retrier getRetrier() {
+            return retrier;
         }
 
-        private static DeliverableListener from(Group group, MailboxListener listener) {
-            return new DeliverableListener(group, listener);
+        public PermanentFailureHandler getPermanentFailureHandler() {
+            return permanentFailureHandler;
+        }
+    }
+
+
+    interface Retrier {
+        Mono<Void> run(Runnable runnable);
+    }
+
+    interface PermanentFailureHandler {
+        Mono<Void> handle(Event event);
+    }
+
+    class NoRetrier implements Retrier {
+        @Override
+        public Mono<Void> run(Runnable runnable) {
+            return Mono.fromRunnable(runnable);
+        }
+    }
+
+    class BackoffRetrier implements Retrier {
+        private final RetryBackoffConfiguration configuration;
+
+        public BackoffRetrier(RetryBackoffConfiguration configuration) {
+            this.configuration = configuration;
         }
 
-        static DeliverableListener withoutGroup(MailboxListener listener) {
-            return new DeliverableListener(listener);
-        }
-
-        private final Optional<Group> group;
-        private final MailboxListener mailboxListener;
-
-        private DeliverableListener(MailboxListener mailboxListener) {
-            this.group = Optional.empty();
-            this.mailboxListener = mailboxListener;
-        }
-
-        private DeliverableListener(Group group, MailboxListener mailboxListener) {
-            this.group = Optional.ofNullable(group);
-            this.mailboxListener = mailboxListener;
-        }
-
-        public Optional<Group> getGroup() {
-            return group;
-        }
-
-        public MailboxListener getMailboxListener() {
-            return mailboxListener;
+        @Override
+        public Mono<Void> run(Runnable runnable) {
+            return Mono.fromRunnable(runnable)
+                .retry(...);
         }
     }
 
@@ -72,7 +76,7 @@ public interface EventDelivery {
         private final Mono<Void> synchronousListenerFuture;
         private final Mono<Void> asynchronousListenerFuture;
 
-        ExecutionStages(Mono<Void> synchronousListenerFuture, Mono<Void> asynchronousListenerFuture) {
+        public ExecutionStages(Mono<Void> synchronousListenerFuture, Mono<Void> asynchronousListenerFuture) {
             this.synchronousListenerFuture = synchronousListenerFuture;
             this.asynchronousListenerFuture = asynchronousListenerFuture;
         }
@@ -86,10 +90,13 @@ public interface EventDelivery {
                 .concatWith(asynchronousListenerFuture)
                 .then();
         }
+
+        public ExecutionStages combine(ExecutionStages other) {
+            return new ExecutionStages(
+                Flux.concat(this.synchronousListenerFuture, other.synchronousListenerFuture).then(),
+                )
+        }
     }
 
-
-    ExecutionStages deliver(Collection<MailboxListener> mailboxListeners, Event event);
-
-    ExecutionStages deliverWithRetries(Collection<InVmEventDelivery.DeliverableListener> deliverableListeners, Event event);
+    ExecutionStages deliver(MailboxListener listener, Event event, DeliveryOption option);
 }
