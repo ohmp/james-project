@@ -229,7 +229,7 @@ public interface GroupContract {
         }
 
         @Test
-        default void allGroupListenersShouldBeExecutedWhenGenericGroups() {
+        default void allGroupListenersShouldBeExecutedWhenGenericGroups() throws Exception {
             MailboxListener listener1 = newListener();
             MailboxListener listener2 = newListener();
 
