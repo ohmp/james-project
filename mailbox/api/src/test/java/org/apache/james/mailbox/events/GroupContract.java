@@ -55,6 +55,18 @@ public interface GroupContract {
     interface SingleEventBusGroupContract extends EventBusContract {
 
         @Test
+        default void registerShouldNotDispatchPastEventsForGroups() throws Exception {
+            MailboxListener listener = newListener();
+
+            eventBus().dispatch(EVENT, NO_KEYS).block();
+
+            eventBus().register(listener, GROUP_A);
+
+            verify(listener, after(FIVE_HUNDRED_MS).never())
+                .event(any());
+        }
+
+        @Test
         default void listenerGroupShouldReceiveEvents() throws Exception {
             MailboxListener listener = newListener();
 
