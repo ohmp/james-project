@@ -248,5 +248,17 @@ public interface GroupContract {
             verify(mailboxListener, after(FIVE_HUNDRED_MS).never())
                 .event(any());
         }
+
+        @Test
+        default void registerShouldNotDispatchPastEventsForGroupsInADistributedContext() throws Exception {
+            MailboxListener listener = newListener();
+
+            eventBus().dispatch(EVENT, NO_KEYS).block();
+
+            eventBus2().register(listener, GROUP_A);
+
+            verify(listener, after(FIVE_HUNDRED_MS).never())
+                .event(any());
+        }
     }
 }

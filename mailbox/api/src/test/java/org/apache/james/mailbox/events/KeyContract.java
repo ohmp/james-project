@@ -333,5 +333,17 @@ public interface KeyContract extends EventBusContract {
             verify(mailboxListener2, timeout(ONE_SECOND).times(1)).event(any());
         }
 
+        @Test
+        default void registerShouldNotDispatchPastEventsInDistributedContext() throws Exception {
+            MailboxListener listener = newListener();
+
+            eventBus2().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
+
+            eventBus().register(listener, KEY_1);
+
+            verify(listener, after(FIVE_HUNDRED_MS).never())
+                .event(any());
+        }
+
     }
 }
