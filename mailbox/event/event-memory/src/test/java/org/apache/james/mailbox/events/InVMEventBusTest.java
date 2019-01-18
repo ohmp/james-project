@@ -22,7 +22,6 @@ package org.apache.james.mailbox.events;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.metrics.api.NoopMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 
 public class InVMEventBusTest implements KeyContract.SingleEventBusKeyContract, GroupContract.SingleEventBusGroupContract,
     ErrorHandlingContract{
@@ -39,11 +38,5 @@ public class InVMEventBusTest implements KeyContract.SingleEventBusKeyContract, 
     @Override
     public EventBus eventBus() {
         return eventBus;
-    }
-
-    @Disabled("MAILBOX-372 Reactor fails telling us calling .block is not allowed in the retrying thread")
-    @Override
-    public void retryingListenerCallingDispatchShouldNotFail() {
-
     }
 }
