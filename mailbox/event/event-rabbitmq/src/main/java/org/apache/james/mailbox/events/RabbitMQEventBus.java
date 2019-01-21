@@ -36,7 +36,7 @@ import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
-class RabbitMQEventBus implements EventBus {
+public class RabbitMQEventBus implements EventBus {
     static final String MAILBOX_EVENT = "mailboxEvent";
     static final String MAILBOX_EVENT_EXCHANGE_NAME = MAILBOX_EVENT + "-exchange";
     static final String EVENT_BUS_ID = "eventBusId";
@@ -55,7 +55,7 @@ class RabbitMQEventBus implements EventBus {
     private EventDispatcher eventDispatcher;
     private Sender sender;
 
-    RabbitMQEventBus(RabbitMQConnectionFactory rabbitMQConnectionFactory, EventSerializer eventSerializer,
+    public RabbitMQEventBus(RabbitMQConnectionFactory rabbitMQConnectionFactory, EventSerializer eventSerializer,
                      RetryBackoffConfiguration retryBackoff,
                      RoutingKeyConverter routingKeyConverter,
                      EventDeadLetters eventDeadLetters) {
@@ -85,6 +85,7 @@ class RabbitMQEventBus implements EventBus {
     @PreDestroy
     public void stop() {
         if (isRunning.get()) {
+            eventDispatcher.stop();
             groupRegistrationHandler.stop();
             keyRegistrationHandler.stop();
             sender.close();
