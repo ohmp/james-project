@@ -83,7 +83,7 @@ LOG INFO awaiting commands
 AWAIT
 
 C: A006 GETQUOTAROOT #private.imapuser.test
-S: \* QUOTAROOT "#private.imapuser.test" #private&imapuser
+S: \* QUOTAROOT "#private\.imapuser\.test" #private&imapuser
 S: \* QUOTA #private&imapuser \(MESSAGE 7 4096\)
 S: \* QUOTA #private&imapuser \(STORAGE 1 5242880\)
 S: A006 OK GETQUOTAROOT completed.
