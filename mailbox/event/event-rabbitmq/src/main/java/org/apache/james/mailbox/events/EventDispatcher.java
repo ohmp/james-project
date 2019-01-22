@@ -57,7 +57,7 @@ public class EventDispatcher {
     private final AMQP.BasicProperties basicProperties;
     private final Object lock = new Object();
     private EmitterProcessor<OutboundMessage> emitterProcessor;
-    private Disposable consumerSubscripotion;
+    private Disposable consumerSubscription;
 
     EventDispatcher(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, MailboxListenerRegistry mailboxListenerRegistry) {
         this.eventSerializer = eventSerializer;
@@ -75,12 +75,12 @@ public class EventDispatcher {
             .block();
 
         emitterProcessor = EmitterProcessor.create();
-        consumerSubscripotion = sender.send(emitterProcessor.publish().autoConnect()).subscribe();
+        consumerSubscription = sender.send(emitterProcessor.publish().autoConnect()).subscribe();
     }
 
     void stop() {
         emitterProcessor.dispose();
-        consumerSubscripotion.dispose();
+        consumerSubscription.dispose();
     }
 
     Mono<Void> dispatch(Event event, Set<RegistrationKey> keys) {
