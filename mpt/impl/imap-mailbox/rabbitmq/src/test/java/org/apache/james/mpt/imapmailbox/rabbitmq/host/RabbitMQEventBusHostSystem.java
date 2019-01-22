@@ -20,15 +20,9 @@
 
 package org.apache.james.mpt.imapmailbox.rabbitmq.host;
 
-import static org.apache.james.backend.rabbitmq.RabbitMQFixture.DEFAULT_MANAGEMENT_CREDENTIAL;
-
-import java.net.URISyntaxException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.backend.rabbitmq.DockerRabbitMQ;
-import org.apache.james.backend.rabbitmq.RabbitMQConfiguration;
 import org.apache.james.backend.rabbitmq.RabbitMQConnectionFactory;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
@@ -52,10 +46,8 @@ import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.mpt.api.ImapFeatures;
 import org.apache.james.mpt.api.ImapFeatures.Feature;
 import org.apache.james.mpt.host.JamesImapHostSystem;
-import org.apache.james.util.concurrent.NamedThreadFactory;
 
 import com.google.common.collect.ImmutableSet;
-import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
 public class RabbitMQEventBusHostSystem extends JamesImapHostSystem {
 
@@ -65,10 +57,6 @@ public class RabbitMQEventBusHostSystem extends JamesImapHostSystem {
         Feature.QUOTA_SUPPORT,
         Feature.ANNOTATION_SUPPORT,
         Feature.MOD_SEQ_SEARCH);
-
-
-    private static final int THREE_RETRIES = 3;
-    private static final int ONE_HUNDRED_MILLISECONDS = 100;
 
     private final DockerRabbitMQ dockerRabbitMQ;
     private StoreMailboxManager mailboxManager;
@@ -87,7 +75,7 @@ public class RabbitMQEventBusHostSystem extends JamesImapHostSystem {
         InMemoryId.Factory mailboxIdFactory = new InMemoryId.Factory();
         EventSerializer eventSerializer = new EventSerializer(mailboxIdFactory, messageIdFactory);
         RoutingKeyConverter routingKeyConverter = new RoutingKeyConverter(ImmutableSet.of(new MailboxIdRegistrationKey.Factory(mailboxIdFactory)));
-        RabbitMQConnectionFactory rabbitConnectionFactory = createRabbitConnectionFactory();
+        RabbitMQConnectionFactory rabbitConnectionFactory = dockerRabbitMQ.createRabbitConnectionFactory();
         eventBus = new RabbitMQEventBus(rabbitConnectionFactory, eventSerializer, RetryBackoffConfiguration.DEFAULT, routingKeyConverter, new MemoryEventDeadLetters());
         eventBus.start();
 
@@ -106,22 +94,6 @@ public class RabbitMQEventBusHostSystem extends JamesImapHostSystem {
         configure(new DefaultImapDecoderFactory().buildImapDecoder(),
             new DefaultImapEncoderFactory().buildImapEncoder(),
             defaultImapProcessorFactory);
-    }
-
-
-    private RabbitMQConnectionFactory createRabbitConnectionFactory() throws URISyntaxException {
-        RabbitMQConfiguration rabbitMQConfiguration = RabbitMQConfiguration.builder()
-            .amqpUri(dockerRabbitMQ.amqpUri())
-            .managementUri(dockerRabbitMQ.managementUri())
-            .managementCredentials(DEFAULT_MANAGEMENT_CREDENTIAL)
-            .maxRetries(THREE_RETRIES)
-            .minDelay(ONE_HUNDRED_MILLISECONDS)
-            .build();
-
-        ThreadFactory threadFactory = NamedThreadFactory.withClassName(getClass());
-        return new RabbitMQConnectionFactory(
-            rabbitMQConfiguration,
-            new AsyncRetryExecutor(Executors.newSingleThreadScheduledExecutor(threadFactory)));
     }
 
     @Override
