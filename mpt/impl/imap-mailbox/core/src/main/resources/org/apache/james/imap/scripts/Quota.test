@@ -17,10 +17,10 @@
 # under the License.                                           #
 ################################################################
 
-C: 10 CREATE test
+C: 10 CREATE #private.imapuser.test
 S: 10 OK CREATE completed.
 
-C: A002 SELECT test
+C: A002 SELECT #private.imapuser.test
 S: \* FLAGS \(\\Answered \\Deleted \\Draft \\Flagged \\Seen\)
 S: \* 0 EXISTS
 S: \* 0 RECENT
@@ -30,7 +30,7 @@ S: \* OK \[HIGHESTMODSEQ \d+\].*
 S: \* OK \[UIDNEXT 1\] Predicted next UID
 S: A002 OK \[READ-WRITE\] SELECT completed\.
 
-C: A003 APPEND test {310}
+C: A003 APPEND #private.imapuser.test {310}
 # Use command continuation request
 S: \+
 C: Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)
@@ -47,7 +47,7 @@ S: \* 1 EXISTS
 S: \* 1 RECENT
 S: A003 OK (\[.+\] )?APPEND completed.
 
-C: A004 APPEND test (\Seen) "17-Jul-1996 02:44:25 -0700" {310+}
+C: A004 APPEND #private.imapuser.test (\Seen) "17-Jul-1996 02:44:25 -0700" {310+}
 # use synchronising literal
 C: Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)
 C: From: Fred Foobar <foobar@Blurdybloop.COM>
@@ -63,7 +63,7 @@ S: \* 2 EXISTS
 S: \* 2 RECENT
 S: A004 OK (\[.+\] )?APPEND completed.
 
-C: A005 APPEND test (\Seen \Draft) "09-Apr-2008 15:17:51 +0200" {310+}
+C: A005 APPEND #private.imapuser.test (\Seen \Draft) "09-Apr-2008 15:17:51 +0200" {310+}
 C: Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)
 C: From: Fred Foobar <foobar@Blurdybloop.COM>
 C: Subject: afternoon meeting 2
@@ -82,8 +82,8 @@ LOG INFO awaiting commands
 # RabbitMQ do not process events straight away
 AWAIT
 
-C: A006 GETQUOTAROOT test
-S: \* QUOTAROOT "test" #private&imapuser
+C: A006 GETQUOTAROOT #private.imapuser.test
+S: \* QUOTAROOT "#private.imapuser.test" #private&imapuser
 S: \* QUOTA #private&imapuser \(MESSAGE 7 4096\)
 S: \* QUOTA #private&imapuser \(STORAGE 1 5242880\)
 S: A006 OK GETQUOTAROOT completed.
