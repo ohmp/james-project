@@ -19,13 +19,11 @@
 package org.apache.james.mailbox.store.quota;
 
 import java.time.Instant;
-import java.util.Collection;
 
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.Event;
 import org.apache.james.mailbox.MailboxListener;
-import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.RegistrationKey;
@@ -78,16 +76,11 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     }
 
     private void handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) throws MailboxException {
-        long addedSize = 0;
-        long addedCount = 0;
-        Collection<MessageUid> uids = expunged.getUids();
-        for (MessageUid uid : uids) {
-            addedSize += expunged.getMetaData(uid).getSize();
-            addedCount++;
-        }
+        long expungedSize = expunged.getUids().stream().mapToLong(uid -> expunged.getMetaData(uid).getSize()).sum();
+        long expungedCount = (long) expunged.getUids().size();
         // Expunge event can contain no data (expunge performed while no messages marked \Deleted)
-        if (addedCount != 0 && addedSize != 0) {
-            currentQuotaManager.decrease(quotaRoot, addedCount, addedSize);
+        if (expungedCount != 0 && expungedSize != 0) {
+            currentQuotaManager.decrease(quotaRoot, expungedCount, expungedSize);
         }
         eventBus.dispatch(
             EventFactory.quotaUpdated()
@@ -103,13 +96,8 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     }
 
     private void handleAddedEvent(Added added, QuotaRoot quotaRoot) throws MailboxException {
-        long addedSize = 0;
-        long addedCount = 0;
-        Collection<MessageUid> uids = added.getUids();
-        for (MessageUid uid : uids) {
-            addedSize += added.getMetaData(uid).getSize();
-            addedCount++;
-        }
+        long addedSize = added.getUids().stream().mapToLong(uid -> added.getMetaData(uid).getSize()).sum();
+        long addedCount = (long) added.getUids().size();
         if (addedCount != 0 && addedSize != 0) {
             currentQuotaManager.increase(quotaRoot, addedCount, addedSize);
         }
