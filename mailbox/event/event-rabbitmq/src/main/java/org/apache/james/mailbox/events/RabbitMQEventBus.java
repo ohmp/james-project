@@ -73,10 +73,10 @@ public class RabbitMQEventBus implements EventBus {
             sender = RabbitFlux.createSender(new SenderOptions().connectionMono(connectionMono));
             mailboxListenerRegistry = new MailboxListenerRegistry();
             keyRegistrationHandler = new KeyRegistrationHandler(eventBusId, eventSerializer, sender, connectionMono, routingKeyConverter, mailboxListenerRegistry);
-            groupRegistrationHandler = new GroupRegistrationHandler(eventSerializer, sender, connectionMono, retryBackoff, eventDeadLetters);
             eventDispatcher = new EventDispatcher(eventBusId, eventSerializer, sender, mailboxListenerRegistry);
-
             eventDispatcher.start();
+            groupRegistrationHandler = new GroupRegistrationHandler(eventSerializer, sender, connectionMono, retryBackoff, eventDeadLetters, eventDispatcher);
+
             keyRegistrationHandler.start();
             isRunning.set(true);
         }

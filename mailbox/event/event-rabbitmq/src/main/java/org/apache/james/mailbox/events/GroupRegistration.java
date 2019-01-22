@@ -102,7 +102,7 @@ class GroupRegistration implements Registration {
     GroupRegistration(Mono<Connection> connectionSupplier, Sender sender, EventSerializer eventSerializer,
                       MailboxListener mailboxListener, Group group, RetryBackoffConfiguration retryBackoff,
                       EventDeadLetters eventDeadLetters,
-                      Runnable unregisterGroup) {
+                      Runnable unregisterGroup, EventDispatcher eventDispatcher) {
         this.eventSerializer = eventSerializer;
         this.mailboxListener = mailboxListener;
         this.queueName = WorkQueueName.of(group);
@@ -110,7 +110,7 @@ class GroupRegistration implements Registration {
         this.receiver = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionSupplier));
         this.receiverSubscriber = Optional.empty();
         this.unregisterGroup = unregisterGroup;
-        this.retryHandler = new GroupConsumerRetry(sender, queueName, group, retryBackoff, eventDeadLetters);
+        this.retryHandler = new GroupConsumerRetry(sender, queueName, group, retryBackoff, eventDeadLetters, eventDispatcher);
         this.delayGenerator = WaitDelayGenerator.of(retryBackoff);
     }
 

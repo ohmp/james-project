@@ -109,8 +109,12 @@ public class EventDispatcher {
             Stream.of(RoutingKeyConverter.RoutingKey.empty()),
             keys.stream().map(RoutingKeyConverter.RoutingKey::of));
 
+        return doDispatch(serializedEvent, MAILBOX_EVENT_EXCHANGE_NAME, routingKeyStream, basicProperties);
+    }
+
+    Mono<Void> doDispatch(Mono<byte[]> serializedEvent, String exchangeName, Stream<RoutingKeyConverter.RoutingKey> routingKeyStream, AMQP.BasicProperties properties) {
         Stream<OutboundMessage> outboundMessages = routingKeyStream
-            .map(routingKey -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey.asString(), basicProperties, serializedEvent.block()));
+            .map(routingKey -> new OutboundMessage(exchangeName, routingKey.asString(), properties, serializedEvent.block()));
 
         return Mono.fromRunnable(() -> {
             synchronized (lock) {
