@@ -26,9 +26,8 @@
         <version>3.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>apache-james-mpt-imapmailbpx-rabbitmq</artifactId>
+    <artifactId>apache-james-mpt-imapmailopx-rabbitmq</artifactId>
     <name>Apache James MPT Imap Mailbox - RabbitMQ EventBus</name>
-
 
     <dependencies>
         <dependency>
