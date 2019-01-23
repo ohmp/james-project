@@ -31,7 +31,7 @@ import org.apache.james.event.json.DTOs.{ACLDiff, Flags, MailboxPath, Quota, Sys
 import org.apache.james.mailbox.MailboxSession.SessionId
 import org.apache.james.mailbox.events.Event.EventId
 import org.apache.james.mailbox.events.MailboxListener.{Added => JavaAdded, Expunged => JavaExpunged, FlagsUpdated => JavaFlagsUpdated, MailboxACLUpdated => JavaMailboxACLUpdated, MailboxAdded => JavaMailboxAdded, MailboxDeletion => JavaMailboxDeletion, MailboxRenamed => JavaMailboxRenamed, QuotaUsageUpdatedEvent => JavaQuotaUsageUpdatedEvent}
-import org.apache.james.mailbox.events.MessageMoveEvent
+import org.apache.james.mailbox.events.{MessageMoveEvent => JavaMessageMoveEvent}
 import org.apache.james.mailbox.model.{MailboxId, MessageId, MessageMoves, QuotaRoot, MailboxACL => JavaMailboxACL, MessageMetaData => JavaMessageMetaData, Quota => JavaQuota}
 import org.apache.james.mailbox.{MessageUid, events}
 import play.api.libs.json.{JsError, JsNull, JsNumber, JsObject, JsResult, JsString, JsSuccess, Json, OFormat, Reads, Writes}
@@ -171,7 +171,7 @@ private object ScalaConverter {
     mailboxId = event.getMailboxId,
     expunged = event.getExpunged.asScala.mapValues(DTOs.MessageMetaData.fromJava).toMap)
 
-  private def toScala(event: MessageMoveEvent): DTO.MessageMoveEvent = DTO.MessageMoveEvent(
+  private def toScala(event: JavaMessageMoveEvent): DTO.MessageMoveEvent = DTO.MessageMoveEvent(
     eventId = event.getEventId,
     user = event.getUser,
     previousMailboxIds = event.getMessageMoves.getPreviousMailboxIds.asScala,
@@ -194,7 +194,7 @@ private object ScalaConverter {
     case e: JavaMailboxAdded => toScala(e)
     case e: JavaMailboxDeletion => toScala(e)
     case e: JavaMailboxRenamed => toScala(e)
-    case e: MessageMoveEvent => toScala(e)
+    case e: JavaMessageMoveEvent => toScala(e)
     case e: JavaQuotaUsageUpdatedEvent => toScala(e)
     case _ => throw new RuntimeException("no Scala conversion known")
   }
