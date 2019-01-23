@@ -76,7 +76,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     }
 
     private void handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) throws MailboxException {
-        long expungedSize = expunged.getUids().stream().mapToLong(uid -> expunged.getMetaData(uid).getSize()).sum();
+        long expungedSize = totalSize(expunged);
         long expungedCount = (long) expunged.getUids().size();
         // Expunge event can contain no data (expunge performed while no messages marked \Deleted)
         if (expungedCount != 0 && expungedSize != 0) {
@@ -96,7 +96,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     }
 
     private void handleAddedEvent(Added added, QuotaRoot quotaRoot) throws MailboxException {
-        long addedSize = added.getUids().stream().mapToLong(uid -> added.getMetaData(uid).getSize()).sum();
+        long addedSize = totalSize(added);
         long addedCount = (long) added.getUids().size();
         if (addedCount != 0 && addedSize != 0) {
             currentQuotaManager.increase(quotaRoot, addedCount, addedSize);
@@ -112,6 +112,13 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
                 .build(),
             NO_REGISTRATION_KEYS)
             .block();
+    }
+
+    private long totalSize(MetaDataHoldingEvent metaDataHoldingEvent) {
+        return metaDataHoldingEvent.getUids()
+            .stream()
+            .mapToLong(uid -> metaDataHoldingEvent.getMetaData(uid).getSize())
+            .sum();
     }
 
     private void handleMailboxDeletionEvent(MailboxDeletion mailboxDeletionEvent) throws MailboxException {
