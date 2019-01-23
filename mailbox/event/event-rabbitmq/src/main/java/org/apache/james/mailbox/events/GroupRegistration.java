@@ -53,7 +53,6 @@ import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 
 class GroupRegistration implements Registration {
-
     static class WorkQueueName {
         static WorkQueueName of(Group group) {
             return new WorkQueueName(group);
@@ -66,10 +65,6 @@ class GroupRegistration implements Registration {
         private WorkQueueName(Group group) {
             Preconditions.checkNotNull(group, "Group must be specified");
             this.group = group;
-        }
-
-        Group getGroup() {
-            return group;
         }
 
         String asString() {
@@ -101,13 +96,13 @@ class GroupRegistration implements Registration {
         this.receiver = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionSupplier));
         this.receiverSubscriber = Optional.empty();
         this.unregisterGroup = unregisterGroup;
-        this.retryHandler = new GroupConsumerRetry(sender, queueName, group, retryBackoff, eventDeadLetters);
+        this.retryHandler = new GroupConsumerRetry(sender, group, retryBackoff, eventDeadLetters);
         this.delayGenerator = WaitDelayGenerator.of(retryBackoff);
     }
 
     GroupRegistration start() {
         createGroupWorkQueue()
-            .then(retryHandler.createRetryExchange())
+            .then(retryHandler.createRetryExchange(queueName))
             .doOnSuccess(any -> this.subscribeWorkQueue())
             .block();
         return this;
@@ -149,7 +144,7 @@ class GroupRegistration implements Registration {
             .then();
     }
 
-    static int getRetryCount(AcknowledgableDelivery acknowledgableDelivery) {
+    private int getRetryCount(AcknowledgableDelivery acknowledgableDelivery) {
         return Optional.ofNullable(acknowledgableDelivery.getProperties().getHeaders())
             .flatMap(headers -> Optional.ofNullable(headers.get(RETRY_COUNT)))
             .filter(object -> object instanceof Integer)
@@ -160,7 +155,7 @@ class GroupRegistration implements Registration {
     @Override
     public void unregister() {
         receiverSubscriber.filter(subscriber -> !subscriber.isDisposed())
-            .ifPresent(subscriber -> subscriber.dispose());
+            .ifPresent(Disposable::dispose);
         receiver.close();
         unregisterGroup.run();
     }
