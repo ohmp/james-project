@@ -50,8 +50,8 @@ import com.rabbitmq.client.ConnectionFactory;
 public class DockerRabbitMQ {
     private static final Logger LOGGER = LoggerFactory.getLogger(DockerRabbitMQ.class);
 
-    private static final int THREE_RETRIES = 3;
-    private static final int ONE_HUNDRED_MILLISECONDS = 100;
+    private static final int MAX_THREE_RETRIES = 3;
+    private static final int MIN_DELAY_OF_ONE_HUNDRED_MILLISECONDS = 100;
     private static final String DEFAULT_RABBIT_HOST_NAME_PREFIX = "my-rabbit";
     private static final String DEFAULT_RABBIT_NODE_NAME_PREFIX = "rabbit";
     private static final int DEFAULT_RABBITMQ_PORT = 5672;
@@ -241,8 +241,8 @@ public class DockerRabbitMQ {
             .amqpUri(amqpUri())
             .managementUri(managementUri())
             .managementCredentials(DEFAULT_MANAGEMENT_CREDENTIAL)
-            .maxRetries(THREE_RETRIES)
-            .minDelay(ONE_HUNDRED_MILLISECONDS)
+            .maxRetries(MAX_THREE_RETRIES)
+            .minDelay(MIN_DELAY_OF_ONE_HUNDRED_MILLISECONDS)
             .build();
 
         ThreadFactory threadFactory = NamedThreadFactory.withClassName(getClass());
