@@ -84,6 +84,7 @@ public interface EventBusTestFixture {
     MailboxListener.MailboxEvent EVENT = new MailboxListener.MailboxAdded(SESSION_ID, USER, MAILBOX_PATH, TEST_ID, EVENT_ID);
     MailboxListener.MailboxEvent EVENT_2 = new MailboxListener.MailboxAdded(SESSION_ID, USER, MAILBOX_PATH, TEST_ID, EVENT_ID_2);
 
+    int FIVE_SECOND = 5000;
     int ONE_SECOND = 1000;
     int FIVE_HUNDRED_MS = 500;
     MailboxId ID_1 = TEST_ID;

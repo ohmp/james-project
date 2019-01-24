@@ -27,6 +27,7 @@ import static org.apache.james.backend.rabbitmq.Constants.EXCLUSIVE;
 import static org.apache.james.backend.rabbitmq.Constants.NO_ARGUMENTS;
 import static org.apache.james.mailbox.events.EventBusTestFixture.ALL_GROUPS;
 import static org.apache.james.mailbox.events.EventBusTestFixture.EVENT;
+import static org.apache.james.mailbox.events.EventBusTestFixture.FIVE_SECOND;
 import static org.apache.james.mailbox.events.EventBusTestFixture.GROUP_A;
 import static org.apache.james.mailbox.events.EventBusTestFixture.GroupA;
 import static org.apache.james.mailbox.events.EventBusTestFixture.KEY_1;
@@ -39,10 +40,13 @@ import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -298,6 +302,40 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                         assertThat(exchange.isDurable()).isTrue();
                         assertThat(exchange.getType()).isEqualTo(DIRECT_EXCHANGE);
                     });
+            }
+
+            @Test
+            void dispatchShouldWorkAfterNetworkIssuesForOldRegistration() throws Exception {
+                eventBus.start();
+                MailboxListener listener = newListener();
+                eventBus.register(listener, GROUP_A);
+
+                rabbitMQExtension.getRabbitMQ().pause();
+
+                assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
+                    .isNotNull();
+
+                rabbitMQExtension.getRabbitMQ().unpause();
+
+                eventBus.dispatch(EVENT, NO_KEYS).block();
+                verify(listener, after(FIVE_SECOND).times(1)).event(EVENT);
+            }
+
+            @Test
+            void dispatchShouldWorkAfterNetworkIssuesForNewRegistration() throws Exception {
+                eventBus.start();
+                MailboxListener listener = newListener();
+
+                rabbitMQExtension.getRabbitMQ().pause();
+
+                assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
+                    .isNotNull();
+
+                rabbitMQExtension.getRabbitMQ().unpause();
+
+                eventBus.register(listener, GROUP_A);
+                eventBus.dispatch(EVENT, NO_KEYS).block();
+                verify(listener, after(FIVE_SECOND).times(1)).event(EVENT);
             }
 
             @Test
