@@ -171,6 +171,32 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     }
 
     @Test
+    void dequeueShouldWorkAfterNetworkOutage() throws Exception {
+        String name = "myMail";
+        getMailQueue().enQueue(defaultMail()
+            .name(name)
+            .build());
+
+        rabbitMQExtension.getRabbitMQ().pause();
+
+        new Thread(() -> {
+            try {
+                int threeMinutes = 180000;
+                Thread.sleep(threeMinutes);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            rabbitMQExtension.getRabbitMQ().unpause();
+        }).start();
+
+        getMailQueue().enQueue(defaultMail().build());
+
+
+        MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
+        assertThat(mailQueueItem.getMail().getName()).isEqualTo(name);
+    }
+
+    @Test
     void browseAndDequeueShouldCombineWellWhenDifferentSlices() throws Exception {
         ManageableMailQueue mailQueue = getManageableMailQueue();
         int emailCount = 5;

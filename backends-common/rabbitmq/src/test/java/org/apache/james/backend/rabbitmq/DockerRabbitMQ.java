@@ -197,6 +197,16 @@ public class DockerRabbitMQ {
         startApp();
     }
 
+
+
+    public void pause() {
+        DockerClientFactory.instance().client().pauseContainerCmd(container.getContainerId()).exec();
+    }
+
+    public void unpause() {
+        DockerClientFactory.instance().client().unpauseContainerCmd(container.getContainerId()).exec();
+    }
+
     public void forgetNode(String removalClusterNodeName) throws Exception {
         String stdout = container()
             .execInContainer("rabbitmqctl", "-n", this.nodeName, "forget_cluster_node", removalClusterNodeName)
