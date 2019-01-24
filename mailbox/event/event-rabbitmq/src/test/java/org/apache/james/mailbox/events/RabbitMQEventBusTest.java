@@ -77,6 +77,7 @@ import reactor.rabbitmq.BindingSpecification;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
+import reactor.rabbitmq.RabbitFluxException;
 import reactor.rabbitmq.Receiver;
 import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
@@ -313,7 +314,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 rabbitMQExtension.getRabbitMQ().pause();
 
                 assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
-                    .isNotNull();
+                    .isInstanceOf(RabbitFluxException.class);
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 
@@ -379,7 +380,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 rabbitMQExtension.getRabbitMQ().pause();
 
                 assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
-                    .isNotNull();
+                    .isInstanceOf(RabbitFluxException.class);
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 
@@ -397,7 +398,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 rabbitMQExtension.getRabbitMQ().pause();
 
                 assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
-                    .isNotNull();
+                    .isInstanceOf(RabbitFluxException.class);
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 
@@ -413,7 +414,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 rabbitMQExtension.getRabbitMQ().pause();
 
                 assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
-                    .isNotNull();
+                    .isInstanceOf(RabbitFluxException.class);
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 
