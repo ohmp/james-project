@@ -32,11 +32,11 @@ import reactor.core.scheduler.Schedulers;
 
 public class RabbitMQConnectionFactory {
     private class ConnectionCallable implements Callable<Connection> {
-        private final Callable<Connection> wrapped;
+        private final ConnectionFactory connectionFactory;
         private Optional<Connection> connection;
 
-        ConnectionCallable(Callable<Connection> wrapped) {
-            this.wrapped = wrapped;
+        ConnectionCallable(ConnectionFactory connectionFactory) {
+            this.connectionFactory = connectionFactory;
             connection = Optional.empty();
         }
 
@@ -45,7 +45,7 @@ public class RabbitMQConnectionFactory {
             if (connection.map(Connection::isOpen).orElse(false)) {
                 return connection.get();
             }
-            Connection newConnection = wrapped.call();
+            Connection newConnection = connectionFactory.newConnection();
             connection = Optional.of(newConnection);
             return newConnection;
         }
@@ -76,7 +76,7 @@ public class RabbitMQConnectionFactory {
     }
 
     public Mono<Connection> connectionMono() {
-        return Mono.fromCallable(new ConnectionCallable(connectionFactory::newConnection))
+        return Mono.fromCallable(new ConnectionCallable(connectionFactory))
             .retryBackoff(configuration.getMaxRetries(), Duration.ofMillis(configuration.getMinDelayInMs()))
             .publishOn(Schedulers.elastic());
     }
