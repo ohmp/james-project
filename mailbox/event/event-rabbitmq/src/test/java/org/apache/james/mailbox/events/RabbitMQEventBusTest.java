@@ -339,6 +339,40 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
+            void dispatchShouldWorkAfterNetworkIssuesForOldKeyRegistration() throws Exception {
+                eventBus.start();
+                MailboxListener listener = newListener();
+                eventBus.register(listener, KEY_1);
+
+                rabbitMQExtension.getRabbitMQ().pause();
+
+                assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
+                    .isNotNull();
+
+                rabbitMQExtension.getRabbitMQ().unpause();
+
+                eventBus.dispatch(EVENT, KEY_1).block();
+                verify(listener, after(FIVE_SECOND).times(1)).event(EVENT);
+            }
+
+            @Test
+            void dispatchShouldWorkAfterNetworkIssuesForNewKeyRegistration() throws Exception {
+                eventBus.start();
+                MailboxListener listener = newListener();
+
+                rabbitMQExtension.getRabbitMQ().pause();
+
+                assertThatThrownBy(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
+                    .isNotNull();
+
+                rabbitMQExtension.getRabbitMQ().unpause();
+
+                eventBus.register(listener, KEY_1);
+                eventBus.dispatch(EVENT, KEY_1).block();
+                verify(listener, after(FIVE_SECOND).times(1)).event(EVENT);
+            }
+
+            @Test
             void stopShouldNotDeleteEventBusExchange() {
                 eventBus.start();
                 eventBus.stop();
