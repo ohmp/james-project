@@ -168,6 +168,17 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             .anyMatch(exchange -> exchange.getName().equals(retryExchangeName.asString()));
     }
 
+    @Test
+    void channelIsNotClosedAfterEventDispatched() {
+        eventBus.dispatch(EVENT, KEY_1).block();
+
+        assertThat(eventBus.getSendOptions().getChannelMono().block())
+            .satisfies(channel -> {
+                assertThat(channel.isOpen()).isTrue();
+                assertThat(channel.getConnection().isOpen()).isTrue();
+            });
+    }
+
     @Nested
     class ConcurrentTest implements EventBusConcurrentTestContract.MultiEventBusConcurrentContract,
         EventBusConcurrentTestContract.SingleEventBusConcurrentContract {

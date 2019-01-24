@@ -45,6 +45,7 @@ import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
+import reactor.rabbitmq.SendOptions;
 import reactor.rabbitmq.Sender;
 
 class EventDispatcher {
@@ -55,10 +56,12 @@ class EventDispatcher {
     private final MailboxListenerRegistry mailboxListenerRegistry;
     private final AMQP.BasicProperties basicProperties;
     private final MailboxListenerExecutor mailboxListenerExecutor;
+    private final SendOptions sendOptions;
 
-    EventDispatcher(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, MailboxListenerRegistry mailboxListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor) {
+    EventDispatcher(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, SendOptions sendOptions, MailboxListenerRegistry mailboxListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor) {
         this.eventSerializer = eventSerializer;
         this.sender = sender;
+        this.sendOptions = sendOptions;
         this.mailboxListenerRegistry = mailboxListenerRegistry;
         this.basicProperties = new AMQP.BasicProperties.Builder()
             .headers(ImmutableMap.of(EVENT_BUS_ID, eventBusId.asString()))
@@ -124,7 +127,7 @@ class EventDispatcher {
             .flatMap(routingKey -> serializedEvent
                 .map(payload -> new OutboundMessage(MAILBOX_EVENT_EXCHANGE_NAME, routingKey.asString(), basicProperties, payload)));
 
-        return sender.send(outboundMessages);
+        return sender.send(outboundMessages, sendOptions);
     }
 
     private byte[] serializeEvent(Event event) {
