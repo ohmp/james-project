@@ -64,7 +64,7 @@ public class RabbitMQEventBus implements EventBus {
                      EventDeadLetters eventDeadLetters, MetricFactory metricFactory) {
         this.mailboxListenerExecutor = new MailboxListenerExecutor(metricFactory);
         this.eventBusId = EventBusId.random();
-        this.connectionMono = Mono.fromSupplier(rabbitMQConnectionFactory::create).cache();
+        this.connectionMono = rabbitMQConnectionFactory.connectionMono();
         this.eventSerializer = eventSerializer;
         this.routingKeyConverter = routingKeyConverter;
         this.retryBackoff = retryBackoff;
