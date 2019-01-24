@@ -47,6 +47,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -393,6 +394,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             void dispatchShouldWorkAfterNetworkIssuesForOldKeyRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
+                when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.ASYNCHRONOUS);
                 eventBus.register(listener, KEY_1);
 
                 rabbitMQExtension.getRabbitMQ().pause();
@@ -410,6 +412,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             void dispatchShouldWorkAfterNetworkIssuesForNewKeyRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
+                when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.ASYNCHRONOUS);
 
                 rabbitMQExtension.getRabbitMQ().pause();
 
