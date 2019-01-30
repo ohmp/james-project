@@ -80,8 +80,8 @@ public class JPARecipientRewriteTable extends AbstractRecipientRewriteTable {
         if (userDomainMapping != null && !userDomainMapping.isEmpty()) {
             return userDomainMapping;
         }
-        MappingSource domainDource = MappingSource.fromDomain(domain);
-        Mappings domainMapping = getMapping(domainDource.getFixedUser(), domain, "selectUserDomainMapping");
+        MappingSource domainSource = MappingSource.fromDomain(domain);
+        Mappings domainMapping = getMapping(domainSource.getFixedUser(), domain, "selectUserDomainMapping");
         if (domainMapping != null && !domainMapping.isEmpty()) {
             return domainMapping;
         }
