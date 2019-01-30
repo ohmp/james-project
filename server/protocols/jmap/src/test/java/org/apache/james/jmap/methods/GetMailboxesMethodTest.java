@@ -35,6 +35,7 @@ import org.apache.james.jmap.model.GetMailboxesRequest;
 import org.apache.james.jmap.model.GetMailboxesResponse;
 import org.apache.james.jmap.model.MailboxFactory;
 import org.apache.james.jmap.model.Number;
+import org.apache.james.jmap.model.QuotaLoader;
 import org.apache.james.jmap.model.mailbox.Mailbox;
 import org.apache.james.jmap.model.mailbox.SortOrder;
 import org.apache.james.mailbox.MailboxManager;
@@ -48,7 +49,7 @@ import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.quota.QuotaManager;
-import org.apache.james.mailbox.quota.QuotaRootResolver;
+import org.apache.james.mailbox.quota.UserQuotaRootResolver;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.mime4j.dom.Message;
@@ -67,6 +68,7 @@ public class GetMailboxesMethodTest {
     private GetMailboxesMethod getMailboxesMethod;
     private ClientId clientId;
     private MailboxFactory mailboxFactory;
+    private QuotaLoader quotaLoader;
 
     @Before
     public void setup() throws Exception {
@@ -74,11 +76,12 @@ public class GetMailboxesMethodTest {
         InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
         GroupMembershipResolver groupMembershipResolver = inMemoryIntegrationResources.createGroupMembershipResolver();
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(groupMembershipResolver);
-        QuotaRootResolver quotaRootResolver = mailboxManager.getQuotaComponents().getQuotaRootResolver();
+        UserQuotaRootResolver quotaRootResolver = mailboxManager.getQuotaComponents().getQuotaRootResolver();
         QuotaManager quotaManager = mailboxManager.getQuotaComponents().getQuotaManager();
-        mailboxFactory = new MailboxFactory(mailboxManager, quotaManager, quotaRootResolver);
+        quotaLoader = new QuotaLoader(quotaManager, quotaRootResolver);
+        mailboxFactory = new MailboxFactory(mailboxManager, quotaLoader);
 
-        getMailboxesMethod = new GetMailboxesMethod(mailboxManager, mailboxFactory, new DefaultMetricFactory());
+        getMailboxesMethod = new GetMailboxesMethod(mailboxManager, mailboxFactory, new DefaultMetricFactory(), quotaLoader);
     }
 
     @Test
@@ -106,7 +109,7 @@ public class GetMailboxesMethodTest {
             .thenReturn(ImmutableList.of(new MailboxPath("namespace", "user", "name")));
         when(mockedMailboxManager.getMailbox(any(MailboxPath.class), any()))
             .thenThrow(new MailboxException());
-        GetMailboxesMethod testee = new GetMailboxesMethod(mockedMailboxManager, mailboxFactory, new DefaultMetricFactory());
+        GetMailboxesMethod testee = new GetMailboxesMethod(mockedMailboxManager, mailboxFactory, new DefaultMetricFactory(), quotaLoader);
         
         GetMailboxesRequest getMailboxesRequest = GetMailboxesRequest.builder()
                 .build();

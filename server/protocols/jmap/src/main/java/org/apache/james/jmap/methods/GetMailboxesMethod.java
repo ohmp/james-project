@@ -32,7 +32,9 @@ import org.apache.james.jmap.model.GetMailboxesRequest;
 import org.apache.james.jmap.model.GetMailboxesResponse;
 import org.apache.james.jmap.model.MailboxFactory;
 import org.apache.james.jmap.model.MailboxProperty;
+import org.apache.james.jmap.model.QuotaLoader;
 import org.apache.james.jmap.model.mailbox.Mailbox;
+import org.apache.james.jmap.model.mailbox.Quotas;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -58,12 +60,14 @@ public class GetMailboxesMethod implements Method {
     private final MailboxManager mailboxManager; 
     private final MailboxFactory mailboxFactory;
     private final MetricFactory metricFactory;
+    private final QuotaLoader quotaLoader;
 
     @Inject
-    @VisibleForTesting public GetMailboxesMethod(MailboxManager mailboxManager, MailboxFactory mailboxFactory, MetricFactory metricFactory) {
+    @VisibleForTesting public GetMailboxesMethod(MailboxManager mailboxManager, MailboxFactory mailboxFactory, MetricFactory metricFactory, QuotaLoader quotaLoader) {
         this.mailboxManager = mailboxManager;
         this.mailboxFactory = mailboxFactory;
         this.metricFactory = metricFactory;
+        this.quotaLoader = quotaLoader;
     }
 
     @Override
@@ -117,21 +121,24 @@ public class GetMailboxesMethod implements Method {
 
     private Stream<Mailbox> retrieveMailboxes(Optional<ImmutableList<MailboxId>> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
         return mailboxIds
-            .map(ids -> retrieveSpecificMailboxes(mailboxSession, ids))
+            .map(Throwing.function((ImmutableList<MailboxId> ids) -> retrieveSpecificMailboxes(mailboxSession, ids)).sneakyThrow())
             .orElseGet(Throwing.supplier(() -> retrieveAllMailboxes(mailboxSession)).sneakyThrow());
     }
 
-    private Stream<Mailbox> retrieveSpecificMailboxes(MailboxSession mailboxSession, ImmutableList<MailboxId> mailboxIds) {
+    private Stream<Mailbox> retrieveSpecificMailboxes(MailboxSession mailboxSession, ImmutableList<MailboxId> mailboxIds) throws MailboxException {
+        Quotas quotas = quotaLoader.getQuotas(mailboxSession.getUser());
         return mailboxIds
             .stream()
             .map(mailboxId -> mailboxFactory.builder()
                 .id(mailboxId)
+                .withUserQuota(quotas)
                 .session(mailboxSession)
                 .build())
             .flatMap(OptionalUtils::toStream);
     }
 
     private Stream<Mailbox> retrieveAllMailboxes(MailboxSession mailboxSession) throws MailboxException {
+        Quotas quotas = quotaLoader.getQuotas(mailboxSession.getUser());
         List<MailboxMetaData> userMailboxes = mailboxManager.search(
             MailboxQuery.builder()
                 .matchesAllMailboxNames()
@@ -142,6 +149,7 @@ public class GetMailboxesMethod implements Method {
             .map(MailboxMetaData::getId)
             .map(mailboxId -> mailboxFactory.builder()
                 .id(mailboxId)
+                .withUserQuota(quotas)
                 .session(mailboxSession)
                 .usingPreloadedMailboxesMetadata(userMailboxes)
                 .build())

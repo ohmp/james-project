@@ -23,7 +23,7 @@ import javax.inject.Inject;
 
 import org.apache.james.mailbox.quota.MaxQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
-import org.apache.james.mailbox.quota.QuotaRootResolver;
+import org.apache.james.mailbox.quota.UserQuotaRootResolver;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.SessionProvider;
 
@@ -38,11 +38,11 @@ public class QuotaComponents {
 
     private final MaxQuotaManager maxQuotaManager;
     private final QuotaManager quotaManager;
-    private final QuotaRootResolver quotaRootResolver;
+    private final UserQuotaRootResolver quotaRootResolver;
     private final QuotaUpdater quotaUpdater;
 
     @Inject
-    public QuotaComponents(MaxQuotaManager maxQuotaManager, QuotaManager quotaManager, QuotaRootResolver quotaRootResolver, QuotaUpdater quotaUpdater) {
+    public QuotaComponents(MaxQuotaManager maxQuotaManager, QuotaManager quotaManager, UserQuotaRootResolver quotaRootResolver, QuotaUpdater quotaUpdater) {
         this.maxQuotaManager = maxQuotaManager;
         this.quotaManager = quotaManager;
         this.quotaRootResolver = quotaRootResolver;
@@ -57,7 +57,7 @@ public class QuotaComponents {
         return quotaManager;
     }
 
-    public QuotaRootResolver getQuotaRootResolver() {
+    public UserQuotaRootResolver getQuotaRootResolver() {
         return quotaRootResolver;
     }
 

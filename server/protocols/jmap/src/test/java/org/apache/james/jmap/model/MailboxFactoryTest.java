@@ -33,7 +33,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.quota.QuotaManager;
-import org.apache.james.mailbox.quota.QuotaRootResolver;
+import org.apache.james.mailbox.quota.UserQuotaRootResolver;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.Before;
@@ -59,14 +59,14 @@ public class MailboxFactoryTest {
     public void setup() throws Exception {
         InMemoryIntegrationResources inMemoryIntegrationResources = new InMemoryIntegrationResources();
         mailboxManager = inMemoryIntegrationResources.createMailboxManager(inMemoryIntegrationResources.createGroupMembershipResolver());
-        QuotaRootResolver quotaRootResolver = mailboxManager.getQuotaComponents().getQuotaRootResolver();
+        UserQuotaRootResolver quotaRootResolver = mailboxManager.getQuotaComponents().getQuotaRootResolver();
         QuotaManager quotaManager = mailboxManager.getQuotaComponents().getQuotaManager();
 
         user = ManagerTestResources.USER;
         otherUser = ManagerTestResources.OTHER_USER;
         mailboxSession = mailboxManager.login(user, ManagerTestResources.USER_PASS);
         otherMailboxSession = mailboxManager.login(otherUser, ManagerTestResources.OTHER_USER_PASS);
-        sut = new MailboxFactory(mailboxManager, quotaManager, quotaRootResolver);
+        sut = new MailboxFactory(mailboxManager, new QuotaLoader(quotaManager, quotaRootResolver));
     }
 
 

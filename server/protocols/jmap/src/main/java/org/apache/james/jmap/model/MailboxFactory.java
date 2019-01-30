@@ -23,11 +23,9 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.james.core.quota.QuotaValue;
 import org.apache.james.jmap.model.mailbox.Mailbox;
 import org.apache.james.jmap.model.mailbox.MailboxNamespace;
 import org.apache.james.jmap.model.mailbox.Quotas;
-import org.apache.james.jmap.model.mailbox.Quotas.QuotaId;
 import org.apache.james.jmap.model.mailbox.Rights;
 import org.apache.james.jmap.model.mailbox.Rights.Username;
 import org.apache.james.jmap.model.mailbox.SortOrder;
@@ -41,32 +39,37 @@ import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.model.Quota;
-import org.apache.james.mailbox.model.QuotaRoot;
-import org.apache.james.mailbox.quota.QuotaManager;
-import org.apache.james.mailbox.quota.QuotaRootResolver;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
 public class MailboxFactory {
     private final MailboxManager mailboxManager;
-    private final QuotaManager quotaManager;
-    private final QuotaRootResolver quotaRootResolver;
+    private final QuotaLoader quotaLoader;
 
     public static class MailboxBuilder {
         private final MailboxFactory mailboxFactory;
+        private final QuotaLoader quotaLoader;
         private MailboxSession session;
         private MailboxId id;
+        private Optional<Quotas> quotas;
         private List<MailboxMetaData> userMailboxesMetadata;
 
-        private MailboxBuilder(MailboxFactory mailboxFactory) {
+        private MailboxBuilder(MailboxFactory mailboxFactory, QuotaLoader quotaLoader) {
             this.mailboxFactory = mailboxFactory;
+            this.quotaLoader = quotaLoader;
+            this.quotas = Optional.empty();
         }
 
         public MailboxBuilder id(MailboxId id) {
             this.id = id;
+            return this;
+        }
+
+        public MailboxBuilder withUserQuota(Quotas quotas) {
+            this.quotas = Optional.of(quotas);
             return this;
         }
 
@@ -86,28 +89,36 @@ public class MailboxFactory {
 
             try {
                 MessageManager mailbox = mailboxFactory.mailboxManager.getMailbox(id, session);
-                return Optional.of(mailboxFactory.fromMessageManager(mailbox, Optional.ofNullable(userMailboxesMetadata), session));
+                return Optional.of(mailboxFactory.fromMessageManager(mailbox, Optional.ofNullable(userMailboxesMetadata), quotas(mailbox), session));
             } catch (MailboxNotFoundException e) {
                 return Optional.empty();
             } catch (MailboxException e) {
                 throw new RuntimeException(e);
             }
         }
+
+        private Quotas quotas(MessageManager messageManager) throws MailboxException {
+            MailboxPath mailboxPath = messageManager.getMailboxPath();
+            return quotas
+                .filter(value -> mailboxPath.belongsTo(session))
+                .orElseGet(Throwing.supplier(
+                    () -> quotaLoader.getQuotas(mailboxPath))
+                        .sneakyThrow());
+        }
     }
 
     @Inject
-    public MailboxFactory(MailboxManager mailboxManager, QuotaManager quotaManager, QuotaRootResolver quotaRootResolver) {
+    public MailboxFactory(MailboxManager mailboxManager, QuotaLoader quotaLoader) {
         this.mailboxManager = mailboxManager;
-        this.quotaManager = quotaManager;
-        this.quotaRootResolver = quotaRootResolver;
+        this.quotaLoader = quotaLoader;
     }
 
     public MailboxBuilder builder() {
-        return new MailboxBuilder(this);
+        return new MailboxBuilder(this, quotaLoader);
     }
 
     private Mailbox fromMessageManager(MessageManager messageManager, Optional<List<MailboxMetaData>> userMailboxesMetadata,
-                                                 MailboxSession mailboxSession) throws MailboxException {
+                                       Quotas quotas, MailboxSession mailboxSession) throws MailboxException {
         MailboxPath mailboxPath = messageManager.getMailboxPath();
         boolean isOwner = mailboxPath.belongsTo(mailboxSession);
         Optional<Role> role = Role.from(mailboxPath.getName());
@@ -116,7 +127,6 @@ public class MailboxFactory {
         Rights rights = Rights.fromACL(messageManager.getResolvedAcl(mailboxSession))
             .removeEntriesFor(Username.forMailboxPath(mailboxPath));
         Username username = Username.fromSession(mailboxSession);
-        Quotas quotas = getQuotas(mailboxPath);
 
         return Mailbox.builder()
             .id(messageManager.getId())
@@ -136,32 +146,6 @@ public class MailboxFactory {
             .namespace(getNamespace(mailboxPath, isOwner))
             .quotas(quotas)
             .build();
-    }
-
-    private Quotas getQuotas(MailboxPath mailboxPath) throws MailboxException {
-        QuotaRoot quotaRoot = quotaRootResolver.getQuotaRoot(mailboxPath);
-        return Quotas.from(
-            QuotaId.fromQuotaRoot(quotaRoot),
-            Quotas.Quota.from(
-                quotaToValue(quotaManager.getStorageQuota(quotaRoot)),
-                quotaToValue(quotaManager.getMessageQuota(quotaRoot))));
-    }
-
-    private <T extends QuotaValue<T>> Quotas.Value<T> quotaToValue(Quota<T> quota) {
-        return new Quotas.Value<>(
-                quotaValueToNumber(quota.getUsed()),
-                quotaValueToOptionalNumber(quota.getLimit()));
-    }
-
-    private Number quotaValueToNumber(QuotaValue<?> value) {
-        return Number.BOUND_SANITIZING_FACTORY.from(value.asLong());
-    }
-
-    private Optional<Number> quotaValueToOptionalNumber(QuotaValue<?> value) {
-        if (value.isUnlimited()) {
-            return Optional.empty();
-        }
-        return Optional.of(quotaValueToNumber(value));
     }
 
     private MailboxNamespace getNamespace(MailboxPath mailboxPath, boolean isOwner) {
