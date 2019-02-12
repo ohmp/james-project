@@ -28,8 +28,10 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 
-import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -56,9 +58,16 @@ public class CassandraAsyncExecutor {
     }
 
     public Mono<ResultSet> executeReactor(Statement statement) {
-        return Mono.defer(() -> Mono.fromFuture(FutureConverter
-                .toCompletableFuture(session.executeAsync(statement)))
-                .publishOn(Schedulers.elastic()));
+        return Mono.<ResultSet>create(sink -> Futures.addCallback(session.executeAsync(statement), new FutureCallback<ResultSet>() {
+            public void onSuccess(ResultSet result) {
+                sink.success(result);
+            }
+
+            public void onFailure(Throwable e) {
+                sink.error(e);
+            }
+        }, MoreExecutors.directExecutor()))
+            .publishOn(Schedulers.elastic());
     }
 
 
