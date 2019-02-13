@@ -61,6 +61,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Bytes;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import reactor.core.publisher.Flux;
 
@@ -186,9 +187,10 @@ class CassandraMessageDAOTest {
     }
 
     private MessageWithoutAttachment toMessage(Flux<CassandraMessageDAO.MessageResult> read) throws InterruptedException, java.util.concurrent.ExecutionException {
-        return read.toStream()
-            .map(CassandraMessageDAO.MessageResult::message)
+        return read
+            .flatMap(CassandraMessageDAO.MessageResult::message)
             .map(Pair::getLeft)
+            .toStream()
             .findAny()
             .orElseThrow(() -> new IllegalStateException("Collection is not supposed to be empty"));
     }

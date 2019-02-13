@@ -364,18 +364,18 @@ public class CassandraMessageDAO {
     }
 
     public static MessageResult notFound(ComposedMessageIdWithMetaData id) {
-        return new MessageResult(id, Optional.empty());
+        return new MessageResult(id, Mono.empty());
     }
 
     public static MessageResult found(Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message) {
-        return new MessageResult(message.getLeft().getMetadata(), Optional.of(message));
+        return new MessageResult(message.getLeft().getMetadata(), Mono.just(message));
     }
 
     public static class MessageResult {
         private final ComposedMessageIdWithMetaData metaData;
-        private final Optional<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message;
+        private final Mono<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message;
 
-        public MessageResult(ComposedMessageIdWithMetaData metaData, Optional<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message) {
+        public MessageResult(ComposedMessageIdWithMetaData metaData, Mono<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message) {
             this.metaData = metaData;
             this.message = message;
         }
@@ -384,12 +384,8 @@ public class CassandraMessageDAO {
             return metaData;
         }
 
-        public boolean isFound() {
-            return message.isPresent();
-        }
-
-        public Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message() {
-            return message.get();
+        public Mono<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message() {
+            return message;
         }
     }
 
