@@ -51,6 +51,7 @@ public class ResilientClusterProvider implements Provider<Cluster> {
         Duration waitDelay = Duration.ofMillis(configuration.getMinDelay());
         cluster = Mono.fromCallable(getClusterRetryCallable(configuration))
             .retryBackoff(configuration.getMaxRetry(), waitDelay, waitDelay)
+            .doOnError(e -> LOGGER.warn("Error establishing Cassandra connection. Next retry scheduled in {} ms", waitDelay, e))
             .publishOn(Schedulers.elastic())
             .block();
     }
