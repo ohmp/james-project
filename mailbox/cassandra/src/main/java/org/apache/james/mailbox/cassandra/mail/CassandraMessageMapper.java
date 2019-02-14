@@ -177,7 +177,8 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private Flux<MailboxMessage> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
         return messageDAO.retrieveMessages(messageIds, fetchType, limit)
-            .flatMap(CassandraMessageDAO.MessageResult::message)
+            .filter(CassandraMessageDAO.MessageResult::isFound)
+            .map(CassandraMessageDAO.MessageResult::message)
             .flatMap(stream -> attachmentLoader.addAttachmentToMessage(stream, fetchType));
     }
 
@@ -213,7 +214,8 @@ public class CassandraMessageMapper implements MessageMapper {
             .flatMap(idWithMetadata -> deleteUsingMailboxId(idWithMetadata).thenReturn(idWithMetadata))
             .flatMapMany(idWithMetadata ->
                 messageDAO.retrieveMessages(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited()))
-            .flatMap(CassandraMessageDAO.MessageResult::message)
+            .filter(CassandraMessageDAO.MessageResult::isFound)
+            .map(CassandraMessageDAO.MessageResult::message)
             .map(pair -> pair.getKey().toMailboxMessage(ImmutableList.of()));
     }
 
