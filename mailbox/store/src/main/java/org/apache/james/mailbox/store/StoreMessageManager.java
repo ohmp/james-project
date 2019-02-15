@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.store;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -297,7 +299,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
             // source for the InputStream
             file = File.createTempFile("imap", ".msg");
             try (FileOutputStream out = new FileOutputStream(file);
-                 TeeInputStream tmpMsgIn = new TeeInputStream(msgIn, out);
+                 TeeInputStream tmpMsgIn = new TeeInputStream(new BufferedInputStream(msgIn), new BufferedOutputStream(out));
                  BodyOffsetInputStream bIn = new BodyOffsetInputStream(tmpMsgIn)) {
                 // Disable line length... This should be handled by the smtp server
                 // component and not the parser itself
