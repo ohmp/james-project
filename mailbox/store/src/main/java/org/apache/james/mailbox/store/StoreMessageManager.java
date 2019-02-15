@@ -409,12 +409,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
                         MessageMetaData data = appendMessageToStore(message, attachments, mailboxSession);
 
                         Mailbox mailbox = getMailboxEntity();
-                        MailboxMessage copy = copyMessage(message);
+
                         eventBus.dispatch(EventFactory.added()
                             .randomEventId()
                             .mailboxSession(mailboxSession)
                             .mailbox(mailbox)
-                            .addMessage(copy)
+                            .addMetaData(message.metaData())
                             .build(),
                             new MailboxIdRegistrationKey(mailbox.getMailboxId()))
                             .block();
