@@ -460,15 +460,6 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         return new SimpleMailboxMessage(messageIdFactory.generate(), internalDate, size, bodyStartOctet, content, flags, propertyBuilder, getMailboxEntity().getMailboxId(), attachments);
     }
 
-    private MailboxMessage copyMessage(MailboxMessage message) throws MailboxException {
-        return SimpleMailboxMessage
-            .from(message)
-            .mailboxId(message.getMailboxId())
-            .uid(message.getUid())
-            .modseq(message.getModSeq())
-            .build();
-    }
-
     @Override
     public boolean isWriteable(MailboxSession session) throws MailboxException {
         return storeRightManager.isReadWrite(session, mailbox, getSharedPermanentFlags(session));
