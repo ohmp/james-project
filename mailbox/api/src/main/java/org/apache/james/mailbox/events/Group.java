@@ -21,7 +21,27 @@ package org.apache.james.mailbox.events;
 
 import java.util.Objects;
 
+import com.google.common.base.Preconditions;
+
 public class Group {
+    public static Group deserialize(String serializedGroup) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        if (serializedGroup.startsWith(GenericGroup.class.getName() + GenericGroup.DELIMITER)) {
+            return new GenericGroup(serializedGroup.substring(GenericGroup.class.getName().length() + 1));
+        }
+        return loadGroup(serializedGroup);
+    }
+
+    private static Group loadGroup(String serializedGroup) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        ClassLoader classLoader = Group.class.getClassLoader();
+        Class<?> aClass = classLoader.loadClass(serializedGroup);
+        return instanciateGroup(aClass);
+    }
+
+    private static Group instanciateGroup(Class<?> aClass) throws InstantiationException, IllegalAccessException {
+        Preconditions.checkArgument(Group.class.isAssignableFrom(aClass), "The supplied class is not a group: " + aClass.getName());
+        return (Group) aClass.newInstance();
+    }
+
     public String asString() {
         return getClass().getName();
     }
