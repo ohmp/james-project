@@ -113,4 +113,15 @@ class GroupTest {
             .isInstanceOf(InstantiationException.class);
     }
 
+    @Test
+    void deserializeShouldThrowWhenNull() {
+        assertThatThrownBy(() -> Group.deserialize(null))
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void deserializeShouldThrowWhenEmpty() {
+        assertThatThrownBy(() -> Group.deserialize(""))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
 }
