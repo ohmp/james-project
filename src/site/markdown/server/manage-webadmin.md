@@ -2434,7 +2434,7 @@ failing, then the event will be stored in the "Event Dead Letter". This API allo
 This endpoint allows discovering the list of groups.
 
 ```
-curl -XGET http://ip:port//events/deadLetter/groups
+curl -XGET http://ip:port/events/deadLetter/groups
 ```
 
 Will return a list of group names that can be further used to interact with the dead letter API:
@@ -2452,7 +2452,7 @@ Response codes:
 This endpoint allows listing failed events for a given group:
 
 ```
-curl -XGET http://ip:port//events/deadLetter/groups/org.apache.james.mailbox.events.EventBusTestFixture$GroupA/events
+curl -XGET http://ip:port/events/deadLetter/groups/org.apache.james.mailbox.events.EventBusTestFixture$GroupA/events
 ```
 
 Will return a list of event ids:
@@ -2469,7 +2469,7 @@ Response codes:
 ### Getting event details
 
 ```
-curl -XGET http://ip:port//events/deadLetter/groups/org.apache.james.mailbox.events.EventBusTestFixture$GroupA/events/6e0dd59d-660e-4d9b-b22f-0354479f47b4
+curl -XGET http://ip:port/events/deadLetter/groups/org.apache.james.mailbox.events.EventBusTestFixture$GroupA/events/6e0dd59d-660e-4d9b-b22f-0354479f47b4
 ```
 
 Will return the full JSON associated with this event.
@@ -2482,7 +2482,7 @@ Response codes:
 ### Deleting an event
 
 ```
-curl -XDELETE http://ip:port//events/deadLetter/groups/org.apache.james.mailbox.events.EventBusTestFixture$GroupA/events/6e0dd59d-660e-4d9b-b22f-0354479f47b4
+curl -XDELETE http://ip:port/events/deadLetter/groups/org.apache.james.mailbox.events.EventBusTestFixture$GroupA/events/6e0dd59d-660e-4d9b-b22f-0354479f47b4
 ```
 
 Will delete this event.
