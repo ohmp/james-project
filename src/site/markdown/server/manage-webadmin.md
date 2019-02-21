@@ -2420,7 +2420,7 @@ The EventBus allows to register 'group listeners' that are called in a (potentia
 listeners enable the implementation of some advanced mailbox manager feature like indexing, spam reporting, quota management
 and the like.
 
-Upon exceptions, a bounded number of retries is performed (with exponential backoff delays). If after those retries the listener is still
+Upon exceptions, a bounded number of retries are performed (with exponential backoff delays). If after those retries the listener is still
 failing, then the event will be stored in the "Event Dead Letter". This API allows diagnosing issues, as well as performing event replay (not implemented yet).
 
  - [Listing groups](#Listing_groups)
