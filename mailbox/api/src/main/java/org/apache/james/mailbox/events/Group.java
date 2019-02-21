@@ -25,16 +25,26 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public class Group {
-    public static Group deserialize(String serializedGroup) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        Preconditions.checkNotNull(serializedGroup, "A serialized group can not be null");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(serializedGroup), "A serialized group can not be empty");
-
-        if (serializedGroup.startsWith(GenericGroup.class.getName() + GenericGroup.DELIMITER)) {
-            return new GenericGroup(serializedGroup.substring(GenericGroup.class.getName().length() + 1));
+    public static class GroupDeserializationException extends Exception {
+        GroupDeserializationException(Throwable cause) {
+            super(cause);
         }
+    }
 
-        Class<?> groupClass = Class.forName(serializedGroup);
-        return instanciateGroup(groupClass);
+    public static Group deserialize(String serializedGroup) throws GroupDeserializationException {
+        try {
+            Preconditions.checkNotNull(serializedGroup, "A serialized group can not be null");
+            Preconditions.checkArgument(!Strings.isNullOrEmpty(serializedGroup), "A serialized group can not be empty");
+
+            if (serializedGroup.startsWith(GenericGroup.class.getName() + GenericGroup.DELIMITER)) {
+                return new GenericGroup(serializedGroup.substring(GenericGroup.class.getName().length() + 1));
+            }
+
+            Class<?> groupClass = Class.forName(serializedGroup);
+            return instanciateGroup(groupClass);
+        } catch (Exception e) {
+            throw new GroupDeserializationException(e);
+        }
     }
 
     private static Group instanciateGroup(Class<?> aClass) throws InstantiationException, IllegalAccessException {

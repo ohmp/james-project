@@ -98,30 +98,30 @@ class GroupTest {
     @Test
     void deserializeShouldThrowWhenClassNotFound() {
         assertThatThrownBy(() -> Group.deserialize("org.apache.james.mailbox.events.Noone"))
-            .isInstanceOf(ClassNotFoundException.class);
+            .isInstanceOf(Group.GroupDeserializationException.class);
     }
 
     @Test
     void deserializeShouldThrowWhenNotAGroup() {
         assertThatThrownBy(() -> Group.deserialize("java.lang.String"))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(Group.GroupDeserializationException.class);
     }
 
     @Test
     void deserializeShouldThrowWhenConstructorArgumentsRequired() {
         assertThatThrownBy(() -> Group.deserialize("org.apache.james.mailbox.events.GenericGroup"))
-            .isInstanceOf(InstantiationException.class);
+            .isInstanceOf(Group.GroupDeserializationException.class);
     }
 
     @Test
     void deserializeShouldThrowWhenNull() {
         assertThatThrownBy(() -> Group.deserialize(null))
-            .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(Group.GroupDeserializationException.class);
     }
 
     @Test
     void deserializeShouldThrowWhenEmpty() {
         assertThatThrownBy(() -> Group.deserialize(""))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(Group.GroupDeserializationException.class);
     }
 }
