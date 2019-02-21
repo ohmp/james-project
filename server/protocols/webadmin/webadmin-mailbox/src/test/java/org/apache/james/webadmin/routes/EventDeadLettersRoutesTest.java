@@ -285,7 +285,7 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_1).block();
 
             when()
-                .delete("/events/deadLetter/groups/" + new EventBusTestFixture.GroupA().asString() + "/events/" + UUID_1)
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NO_CONTENT_204);
         }
@@ -293,7 +293,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void deleteShouldReturnOkWhenEventNotFound() {
             when()
-                .delete("/events/deadLetter/groups/" + new EventBusTestFixture.GroupA().asString() + "/events/" + UUID_1)
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NO_CONTENT_204);
         }
@@ -313,7 +313,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void deleteShouldFailWhenInvalidEventId() {
             when()
-                .delete("/events/deadLetter/groups/" + new EventBusTestFixture.GroupA().asString() + "/events/invalid")
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/invalid")
             .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
@@ -327,10 +327,10 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_1).block();
 
             with()
-                .delete("/events/deadLetter/groups/" + new EventBusTestFixture.GroupA().asString() + "/events/" + UUID_1);
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1);
 
             when()
-                .get("/events/deadLetter/groups/" + new EventBusTestFixture.GroupA().asString() + "/events/" + UUID_1)
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NOT_FOUND_404);
         }
