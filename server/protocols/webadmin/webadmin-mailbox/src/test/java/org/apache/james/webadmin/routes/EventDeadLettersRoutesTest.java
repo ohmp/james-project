@@ -134,7 +134,7 @@ class EventDeadLettersRoutesTest {
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
-                .body(".", contains(EventBusTestFixture.GroupA.class.getName()));
+                .body(".", containsInAnyOrder(EventBusTestFixture.GroupA.class.getName()));
         }
 
         @Test
@@ -147,7 +147,7 @@ class EventDeadLettersRoutesTest {
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
-                .body(".", contains(EventBusTestFixture.GroupA.class.getName()));
+                .body(".", containsInAnyOrder(EventBusTestFixture.GroupA.class.getName()));
         }
 
         @Test
