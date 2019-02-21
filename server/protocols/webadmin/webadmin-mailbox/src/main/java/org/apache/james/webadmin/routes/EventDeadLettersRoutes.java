@@ -191,7 +191,7 @@ public class EventDeadLettersRoutes implements Routes {
         String groupAsString = request.params(GROUP_PARAM);
         try {
             return Group.deserialize(groupAsString);
-        } catch (Exception e) {
+        } catch (Group.GroupDeserializationException e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .message("Can not deserialize the supplied group: " + groupAsString)
