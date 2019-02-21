@@ -143,7 +143,7 @@ public class EventDeadLettersRoutes implements Routes {
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.OK_200, message = "OK - returns an event detail", response = Event.class),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid group name or event id"),
-        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "No message with this eventId"),
+        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "No event with this eventId"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side.")
     })
     private String getEventDetails(Request request, Response response) {
