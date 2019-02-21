@@ -197,7 +197,7 @@ class EventDeadLettersRoutesTest {
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
-                .body(".", contains(UUID_1));
+                .body(".", containsInAnyOrder(UUID_1));
         }
 
         @Test
@@ -210,7 +210,7 @@ class EventDeadLettersRoutesTest {
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
-                .body(".", contains(UUID_1));
+                .body(".", containsInAnyOrder(UUID_1));
         }
 
         @Test
