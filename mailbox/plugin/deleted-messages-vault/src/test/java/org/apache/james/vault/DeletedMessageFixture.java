@@ -35,6 +35,7 @@ import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 
 public interface DeletedMessageFixture {
     InMemoryMessageId MESSAGE_ID = InMemoryMessageId.of(42);
+    InMemoryMessageId MESSAGE_ID_2 = InMemoryMessageId.of(45);
     InMemoryId MAILBOX_ID_1 = InMemoryId.of(43);
     InMemoryId MAILBOX_ID_2 = InMemoryId.of(44);
     User USER = User.fromUsername("bob@apache.org");
@@ -59,4 +60,15 @@ public interface DeletedMessageFixture {
         .subject(SUBJECT)
         .build();
     DeletedMessage DELETED_MESSAGE = FINAL_STAGE.get().build();
+    DeletedMessage DELETED_MESSAGE_2 = DeletedMessage.builder()
+        .messageId(MESSAGE_ID_2)
+        .originMailboxes(MAILBOX_ID_1, MAILBOX_ID_2)
+        .user(USER)
+        .deliveryDate(DELIVERY_DATE)
+        .deletionDate(DELETION_DATE)
+        .content(() -> new ByteArrayInputStream(CONTENT))
+        .sender(MaybeSender.of(SENDER))
+        .recipients(RECIPIENT1, RECIPIENT2)
+        .hasAttachment(false)
+        .build();
 }

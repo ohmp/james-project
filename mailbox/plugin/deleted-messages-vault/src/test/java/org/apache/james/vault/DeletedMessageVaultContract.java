@@ -20,6 +20,7 @@
 package org.apache.james.vault;
 
 import static org.apache.james.vault.DeletedMessageFixture.DELETED_MESSAGE;
+import static org.apache.james.vault.DeletedMessageFixture.DELETED_MESSAGE_2;
 import static org.apache.james.vault.DeletedMessageFixture.MESSAGE_ID;
 import static org.apache.james.vault.DeletedMessageFixture.USER;
 import static org.apache.james.vault.DeletedMessageFixture.USER_2;
@@ -82,6 +83,15 @@ public interface DeletedMessageVaultContract {
 
         assertThat(Flux.from(getVault().search(USER, Query.all())).collectList().block())
             .containsOnly(DELETED_MESSAGE);
+    }
+
+    @Test
+    default void searchAllShouldReturnAllContainedItems() {
+        Mono.from(getVault().append(USER, DELETED_MESSAGE)).block();
+        Mono.from(getVault().append(USER, DELETED_MESSAGE_2)).block();
+
+        assertThat(Flux.from(getVault().search(USER, Query.all())).collectList().block())
+            .containsOnly(DELETED_MESSAGE, DELETED_MESSAGE_2);
     }
 
     @Test
