@@ -38,6 +38,7 @@ import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireDates;
 import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireEnvelope;
 import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireMailboxContext;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 public class DeletedMessage {
@@ -105,9 +106,13 @@ public class DeletedMessage {
 
         interface Steps {
             interface RequireMailboxContext<T> extends RequireMessageId<RequireOriginMailboxes<RequireUser<T>>> {}
+
             interface RequireEnvelope<T> extends RequireSender<RequireRecipients<T>> {}
+
             interface RequireDates<T> extends RequireDeliveryDate<RequireDeletionDate<T>> {}
+
             interface RequireMetadata<T> extends RequireMailboxContext<RequireDates<RequireEnvelope<T>>> {}
+
             interface RequirePayload<T> extends RequireContent<RequireHasAttachment<T>> {}
         }
 
@@ -246,5 +251,13 @@ public class DeletedMessage {
     public final int hashCode() {
         return Objects.hash(messageId, originMailboxes, owner, content, deliveryDate, deletionDate, sender, recipients,
             subject, hasAttachment);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("owner", owner)
+            .add("messageId", messageId)
+            .toString();
     }
 }
