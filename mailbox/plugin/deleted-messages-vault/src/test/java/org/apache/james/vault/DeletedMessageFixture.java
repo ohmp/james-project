@@ -26,6 +26,7 @@ import static org.apache.mailet.base.MailAddressFixture.SENDER;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.function.Supplier;
 
 import org.apache.james.core.MaybeSender;
 import org.apache.james.core.User;
@@ -44,7 +45,7 @@ public interface DeletedMessageFixture {
     String SUBJECT = "subject";
 
 
-    DeletedMessage.Builder.FinalStage FINAL_STAGE = DeletedMessage.builder()
+    Supplier<DeletedMessage.Builder.FinalStage> FINAL_STAGE = () -> DeletedMessage.builder()
         .messageId(MESSAGE_ID)
         .originMailboxes(MAILBOX_ID_1, MAILBOX_ID_2)
         .user(USER)
@@ -54,8 +55,8 @@ public interface DeletedMessageFixture {
         .sender(MaybeSender.of(SENDER))
         .recipients(RECIPIENT1, RECIPIENT2)
         .hasAttachment(false);
-    DeletedMessage DELETED_MESSAGE_WITH_SUBJECT = FINAL_STAGE
+    DeletedMessage DELETED_MESSAGE_WITH_SUBJECT = FINAL_STAGE.get()
         .subject(SUBJECT)
         .build();
-    DeletedMessage DELETED_MESSAGE = FINAL_STAGE.build();
+    DeletedMessage DELETED_MESSAGE = FINAL_STAGE.get().build();
 }
