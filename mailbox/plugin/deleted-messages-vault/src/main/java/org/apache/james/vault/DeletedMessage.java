@@ -32,11 +32,8 @@ import org.apache.james.core.User;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.vault.DeletedMessage.Builder.FinalStage;
-import org.apache.james.vault.DeletedMessage.Builder.Steps.RequirePayload;
 import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireMetadata;
-import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireDates;
-import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireEnvelope;
-import org.apache.james.vault.DeletedMessage.Builder.Steps.RequireMailboxContext;
+import org.apache.james.vault.DeletedMessage.Builder.Steps.RequirePayload;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
