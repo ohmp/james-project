@@ -92,6 +92,16 @@ public interface DeletedMessageVaultContract {
     }
 
     @Test
+    default void contentShouldBePreserved() {
+        Mono.from(getVault().append(USER, DELETED_MESSAGE)).block();
+        DeletedMessage deletedMessage = Flux.from(getVault().search(USER, ALL)).blockFirst();
+
+
+        assertThat(deletedMessage.getContent().get())
+            .hasSameContentAs(DELETED_MESSAGE.getContent().get());
+    }
+
+    @Test
     default void searchAllShouldReturnAllContainedItems() {
         Mono.from(getVault().append(USER, DELETED_MESSAGE)).block();
         Mono.from(getVault().append(USER, DELETED_MESSAGE_2)).block();

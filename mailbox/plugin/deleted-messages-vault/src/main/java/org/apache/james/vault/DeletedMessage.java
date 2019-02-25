@@ -230,6 +230,7 @@ public class DeletedMessage {
         return hasAttachment;
     }
 
+
     @Override
     public final boolean equals(Object o) {
         if (o instanceof DeletedMessage) {
@@ -239,7 +240,6 @@ public class DeletedMessage {
                 && Objects.equals(this.messageId, that.messageId)
                 && Objects.equals(this.originMailboxes, that.originMailboxes)
                 && Objects.equals(this.owner, that.owner)
-                && Objects.equals(this.content, that.content)
                 && Objects.equals(this.deliveryDate, that.deliveryDate)
                 && Objects.equals(this.deletionDate, that.deletionDate)
                 && Objects.equals(this.sender, that.sender)
@@ -251,8 +251,7 @@ public class DeletedMessage {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(messageId, originMailboxes, owner, content, deliveryDate, deletionDate, sender, recipients,
-            subject, hasAttachment);
+        return Objects.hash(messageId, originMailboxes, owner, deliveryDate, deletionDate, sender, recipients, subject, hasAttachment);
     }
 
     @Override

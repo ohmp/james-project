@@ -46,6 +46,7 @@ class DeletedMessageTest {
     @Test
     void deletedMessageShouldMatchBeanContract() {
         EqualsVerifier.forClass(DeletedMessage.class)
+            .withIgnoredFields("content")
             .verify();
     }
 
