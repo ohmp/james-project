@@ -103,6 +103,7 @@
 
         <module>task</module>
         <module>testing</module>
+        <module>mailrepository/deleted-messages-vault-repository</module>
     </modules>
 
     <properties>
