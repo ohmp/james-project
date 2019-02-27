@@ -83,7 +83,7 @@ public class MemoryMailRepositoryStore implements MailRepositoryStore, Configura
     public void init() throws Exception {
         LOGGER.info("JamesMailStore init... {}", this);
 
-        for(MailRepositoryStoreConfiguration.Item item : configuration.getItems()) {
+        for (MailRepositoryStoreConfiguration.Item item : configuration.getItems()) {
             initEntry(item);
         }
     }
