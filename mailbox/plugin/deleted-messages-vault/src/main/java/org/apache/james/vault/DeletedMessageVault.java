@@ -29,7 +29,7 @@ import org.reactivestreams.Publisher;
 public interface DeletedMessageVault {
     Publisher<Void> append(User user, DeletedMessage deletedMessage, InputStream data);
 
-    Publisher<InputStream> loadContent(User user, MessageId messageId);
+    Publisher<InputStream> loadMimeMessage(User user, MessageId messageId);
 
     Publisher<Void> delete(User user, MessageId messageId);
 

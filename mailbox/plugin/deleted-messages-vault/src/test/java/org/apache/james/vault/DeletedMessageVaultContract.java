@@ -86,14 +86,14 @@ public interface DeletedMessageVaultContract {
     }
 
     @Test
-    default void loadContentShouldThrowOnNullMessageId() {
-       assertThatThrownBy(() -> getVault().loadContent(null, MESSAGE_ID))
+    default void loadMimeMessageShouldThrowOnNullMessageId() {
+       assertThatThrownBy(() -> getVault().loadMimeMessage(null, MESSAGE_ID))
            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    default void loadContentShouldThrowOnNullUser() {
-       assertThatThrownBy(() -> getVault().loadContent(USER, null))
+    default void loadMimeMessageShouldThrowOnNullUser() {
+       assertThatThrownBy(() -> getVault().loadMimeMessage(USER, null))
            .isInstanceOf(NullPointerException.class);
     }
 
@@ -139,27 +139,27 @@ public interface DeletedMessageVaultContract {
     }
 
     @Test
-    default void loadContentShouldReturnEmptyWhenNone() {
-        assertThat(Mono.from(getVault().loadContent(USER, MESSAGE_ID)).blockOptional())
+    default void loadMimeMessageShouldReturnEmptyWhenNone() {
+        assertThat(Mono.from(getVault().loadMimeMessage(USER, MESSAGE_ID)).blockOptional())
             .isEmpty();
     }
 
     @Test
-    default void loadContentShouldReturnStoredValue() {
+    default void loadMimeMessageShouldReturnStoredValue() {
         Mono.from(getVault().append(USER, DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
 
-        assertThat(Mono.from(getVault().loadContent(USER, MESSAGE_ID)).blockOptional())
+        assertThat(Mono.from(getVault().loadMimeMessage(USER, MESSAGE_ID)).blockOptional())
             .isNotEmpty()
             .satisfies(maybeContent -> assertThat(maybeContent.get()).hasSameContentAs(new ByteArrayInputStream(CONTENT)));
     }
 
     @Test
-    default void loadContentShouldReturnEmptyWhenDeleted() {
+    default void loadMimeMessageShouldReturnEmptyWhenDeleted() {
         Mono.from(getVault().append(USER, DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
 
         Mono.from(getVault().delete(USER, MESSAGE_ID)).block();
 
-        assertThat(Mono.from(getVault().loadContent(USER, MESSAGE_ID)).blockOptional())
+        assertThat(Mono.from(getVault().loadMimeMessage(USER, MESSAGE_ID)).blockOptional())
             .isEmpty();
     }
 
