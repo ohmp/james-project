@@ -27,7 +27,7 @@ import org.apache.james.vault.search.Query;
 import org.reactivestreams.Publisher;
 
 public interface DeletedMessageVault {
-    Publisher<Void> append(User user, DeletedMessage deletedMessage, InputStream data);
+    Publisher<Void> append(User user, DeletedMessage deletedMessage, InputStream mimeMessage);
 
     Publisher<InputStream> loadMimeMessage(User user, MessageId messageId);
 
