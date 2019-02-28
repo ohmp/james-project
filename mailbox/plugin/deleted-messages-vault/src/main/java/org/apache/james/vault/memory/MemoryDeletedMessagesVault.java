@@ -19,6 +19,12 @@
 
 package org.apache.james.vault.memory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.james.core.User;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.vault.DeletedMessage;
@@ -34,18 +40,25 @@ import reactor.core.publisher.Mono;
 
 public class MemoryDeletedMessagesVault implements DeletedMessageVault {
     private final Table<User, MessageId, DeletedMessage> table;
+    private final Table<User, MessageId, byte[]> contentTable;
 
     MemoryDeletedMessagesVault() {
         table = HashBasedTable.create();
+        contentTable = HashBasedTable.create();
     }
 
     @Override
-    public synchronized Mono<Void> append(User user, DeletedMessage deletedMessage) {
+    public synchronized Mono<Void> append(User user, DeletedMessage deletedMessage, InputStream inputStream) {
         Preconditions.checkNotNull(user);
         Preconditions.checkNotNull(deletedMessage);
 
-        table.put(user, deletedMessage.getMessageId(), deletedMessage);
-        return Mono.empty();
+        try {
+            table.put(user, deletedMessage.getMessageId(), deletedMessage);
+            contentTable.put(user, deletedMessage.getMessageId(), IOUtils.toByteArray(inputStream));
+            return Mono.empty();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -54,7 +67,17 @@ public class MemoryDeletedMessagesVault implements DeletedMessageVault {
         Preconditions.checkNotNull(messageId);
 
         table.remove(user, messageId);
+        contentTable.remove(user, messageId);
         return Mono.empty();
+    }
+
+    @Override
+    public synchronized Mono<InputStream> loadContent(User user, MessageId messageId) {
+        Preconditions.checkNotNull(user);
+        Preconditions.checkNotNull(messageId);
+
+        return Mono.justOrEmpty(Optional.ofNullable(contentTable.get(user, messageId)))
+            .map(ByteArrayInputStream::new);
     }
 
     @Override
