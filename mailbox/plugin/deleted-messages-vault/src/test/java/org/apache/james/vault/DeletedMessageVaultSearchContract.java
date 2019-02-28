@@ -572,7 +572,6 @@ public interface DeletedMessageVaultSearchContract {
             .deletionDate(DELETION_DATE)
             .sender(MaybeSender.of(SENDER))
             .recipients(recipients)
-            .content(() -> new ByteArrayInputStream(CONTENT))
             .hasAttachment(false)
             .build();
 
@@ -588,7 +587,7 @@ public interface DeletedMessageVaultSearchContract {
             .deletionDate(DELETION_DATE)
             .sender(sender)
             .recipients(RECIPIENT1, RECIPIENT2)
-            .content(() -> new ByteArrayInputStream(CONTENT))
+
             .hasAttachment(false)
             .build();
 
@@ -604,7 +603,7 @@ public interface DeletedMessageVaultSearchContract {
             .deletionDate(DELETION_DATE)
             .sender(MaybeSender.of(SENDER))
             .recipients(RECIPIENT1, RECIPIENT2)
-            .content(() -> new ByteArrayInputStream(CONTENT))
+
             .hasAttachment(hasAttachment)
             .build();
 
@@ -620,7 +619,7 @@ public interface DeletedMessageVaultSearchContract {
             .deletionDate(DELETION_DATE)
             .sender(MaybeSender.of(SENDER))
             .recipients(RECIPIENT1, RECIPIENT2)
-            .content(() -> new ByteArrayInputStream(CONTENT))
+
             .hasAttachment(true)
             .build();
 
@@ -651,7 +650,7 @@ public interface DeletedMessageVaultSearchContract {
     }
 
     default DeletedMessage storeDeletedMessage(DeletedMessage deletedMessage, User user) {
-        Mono.from(getVault().append(user, deletedMessage))
+        Mono.from(getVault().append(user, deletedMessage, new ByteArrayInputStream(CONTENT)))
             .block();
         return deletedMessage;
     }
@@ -665,7 +664,7 @@ public interface DeletedMessageVaultSearchContract {
             .deletionDate(deletionDate)
             .sender(MaybeSender.of(SENDER))
             .recipients(RECIPIENT1)
-            .content(() -> new ByteArrayInputStream(CONTENT))
+
             .hasAttachment(false);
     }
 }
