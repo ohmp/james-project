@@ -21,10 +21,9 @@ package org.apache.james.modules.server;
 
 import java.util.List;
 
-import org.apache.james.lifecycle.api.Startable;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.james.lifecycle.api.Configurable;
+import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.mailrepository.api.MailRepositoryProvider;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.file.FileMailRepositoryProvider;
