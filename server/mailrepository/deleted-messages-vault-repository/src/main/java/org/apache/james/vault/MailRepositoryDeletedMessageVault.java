@@ -68,6 +68,7 @@ public class MailRepositoryDeletedMessageVault implements DeletedMessageVault {
         MailRepository mailRepository = repositoryForUser(user);
 
         return Mono.fromCallable(() -> mailRepository.store(mailConverter.toMail(deletedMessage, inputStream)))
+            .subscribeOn(Schedulers.elastic())
             .then();
     }
 
