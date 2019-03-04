@@ -21,6 +21,7 @@ package org.apache.james.vault;
 
 import java.io.InputStream;
 
+import javax.inject.Inject;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.User;
@@ -42,6 +43,11 @@ import reactor.core.scheduler.Schedulers;
 
 public class MailRepositoryDeletedMessageVault implements DeletedMessageVault {
     public static class Configuration {
+        public static Configuration from(org.apache.commons.configuration.Configuration propertiesConfiguration) {
+            return new Configuration(
+                MailRepositoryUrl.from(propertiesConfiguration.getString("urlPrefix")));
+        }
+
         private final MailRepositoryUrl urlPrefix;
 
         public Configuration(MailRepositoryUrl urlPrefix) {
@@ -53,6 +59,7 @@ public class MailRepositoryDeletedMessageVault implements DeletedMessageVault {
     private final Configuration configuration;
     private final MailConverter mailConverter;
 
+    @Inject
     public MailRepositoryDeletedMessageVault(MailRepositoryStore mailRepositoryStore, Configuration configuration, MailConverter mailConverter) {
         this.mailRepositoryStore = mailRepositoryStore;
         this.configuration = configuration;
