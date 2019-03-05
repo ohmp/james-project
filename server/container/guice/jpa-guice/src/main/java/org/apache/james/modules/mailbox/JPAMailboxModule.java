@@ -113,8 +113,6 @@ public class JPAMailboxModule extends AbstractModule {
 
         bind(MailboxManager.class).annotatedWith(Names.named(MAILBOXMANAGER_NAME)).to(MailboxManager.class);
         bind(MailboxManagerConfiguration.class).toInstance(MailboxManagerConfiguration.DEFAULT);
-
-        Multibinder<PreDeletionHook> noPreDeletionHooks = Multibinder.newSetBinder(binder(), PreDeletionHook.class);
     }
     
     @Singleton
