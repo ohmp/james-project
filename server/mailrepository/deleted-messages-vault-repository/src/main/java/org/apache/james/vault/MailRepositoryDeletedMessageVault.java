@@ -60,7 +60,7 @@ public class MailRepositoryDeletedMessageVault implements DeletedMessageVault {
     private final MailConverter mailConverter;
 
     @Inject
-    public MailRepositoryDeletedMessageVault(MailRepositoryStore mailRepositoryStore, Configuration configuration, MailConverter mailConverter) {
+    MailRepositoryDeletedMessageVault(MailRepositoryStore mailRepositoryStore, Configuration configuration, MailConverter mailConverter) {
         this.mailRepositoryStore = mailRepositoryStore;
         this.configuration = configuration;
         this.mailConverter = mailConverter;
