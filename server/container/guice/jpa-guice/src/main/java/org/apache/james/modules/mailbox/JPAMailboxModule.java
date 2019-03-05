@@ -32,7 +32,6 @@ import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.events.MailboxListener;
-import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.jpa.JPAId;
 import org.apache.james.mailbox.jpa.JPAMailboxSessionMapperFactory;
