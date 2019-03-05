@@ -51,8 +51,8 @@
         <module>jpa-smtp-common</module>
         <module>jpa-smtp-mariadb</module>
         <module>mailbox</module>
-        <module>mailbox-plugin-spamassassin</module>
         <module>mailbox-plugin-deleted-messages-vault-guice</module>
+        <module>mailbox-plugin-spamassassin</module>
         <module>mailet</module>
         <module>memory-guice</module>
         <module>onami</module>
