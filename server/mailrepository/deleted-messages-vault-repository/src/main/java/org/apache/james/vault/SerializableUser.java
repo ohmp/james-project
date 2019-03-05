@@ -19,6 +19,7 @@
 
 package org.apache.james.vault;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 import org.apache.james.core.User;
@@ -27,7 +28,7 @@ import org.apache.mailet.AttributeValue;
 
 import com.google.common.base.Preconditions;
 
-public class SerializableUser implements ArbitrarySerializable<SerializableUser> {
+public class SerializableUser implements ArbitrarySerializable<SerializableUser>, Serializable {
     public static class Factory implements ArbitrarySerializable.Deserializer<SerializableUser> {
         @Override
         public Optional<SerializableUser> deserialize(Serializable<SerializableUser> serializable) {
@@ -43,20 +44,20 @@ public class SerializableUser implements ArbitrarySerializable<SerializableUser>
         return AttributeValue.of(new SerializableUser(user));
     }
 
-    private final User value;
+    private final String value;
 
     SerializableUser(User value) {
         Preconditions.checkNotNull(value);
 
-        this.value = value;
+        this.value = value.asString();
     }
 
     @Override
     public Serializable<SerializableUser> serialize() {
-        return new Serializable<>(AttributeValue.of(value.asString()), Factory.class);
+        return new Serializable<>(AttributeValue.of(value), Factory.class);
     }
 
     public User getValue() {
-        return value;
+        return User.fromUsername(value);
     }
 }

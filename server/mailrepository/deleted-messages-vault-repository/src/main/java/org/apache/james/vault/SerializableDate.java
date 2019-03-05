@@ -19,6 +19,7 @@
 
 package org.apache.james.vault;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -28,7 +29,7 @@ import org.apache.mailet.AttributeValue;
 
 import com.google.common.base.Preconditions;
 
-public class SerializableDate implements ArbitrarySerializable<SerializableDate> {
+public class SerializableDate implements ArbitrarySerializable<SerializableDate>, Serializable {
     public static class Factory implements ArbitrarySerializable.Deserializer<SerializableDate> {
         @Override
         public Optional<SerializableDate> deserialize(Serializable<SerializableDate> serializable) {
@@ -44,20 +45,20 @@ public class SerializableDate implements ArbitrarySerializable<SerializableDate>
         return AttributeValue.of(new SerializableDate(date));
     }
 
-    private final ZonedDateTime value;
+    private final String value;
 
     SerializableDate(ZonedDateTime value) {
         Preconditions.checkNotNull(value);
 
-        this.value = value;
+        this.value = value.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
     }
 
     @Override
     public Serializable<SerializableDate> serialize() {
-        return new Serializable<>(AttributeValue.of(value.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)), SerializableDate.Factory.class);
+        return new Serializable<>(AttributeValue.of(value), SerializableDate.Factory.class);
     }
 
     public ZonedDateTime getValue() {
-        return value;
+        return ZonedDateTime.parse(value);
     }
 }

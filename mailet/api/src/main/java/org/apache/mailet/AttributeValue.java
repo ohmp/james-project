@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.apache.james.mailbox.model.MessageIdDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +42,13 @@ import com.google.common.base.Preconditions;
 
 /** 
  * Strong typing for attribute value, which represents the value of an attribute stored in a mail.
+ *
+ * Note that this class is Java serializable for compatibility purposes. Use at your own risks and always prefer relying on the JSON representation.
  * 
  * @since Mailet API v3.2
  */
-public class AttributeValue<T> {
+@Immutable
+public class AttributeValue<T> implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AttributeValue.class);
 
     public static AttributeValue<Boolean> of(Boolean value) {
@@ -196,8 +201,8 @@ public class AttributeValue<T> {
                 .flatMap(s -> s.deserialize(value));
     }
 
-    private final T value;
-    private final Serializer<T> serializer;
+    private T value; // not final because of Java serialization
+    private Serializer<T> serializer; // not final because of Java serialization
 
     private AttributeValue(T value, Serializer<T> serializer) {
         this.value = value;
@@ -235,6 +240,17 @@ public class AttributeValue<T> {
 
     public T getValue() {
         return value;
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException, ClassCastException {
+        String json = (String) in.readObject();
+        AttributeValue<T> other = (AttributeValue<T>) AttributeValue.fromJsonString(json);
+        value = other.value;
+        serializer = other.serializer;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.writeObject(toJson().toString());
     }
 
     @Override

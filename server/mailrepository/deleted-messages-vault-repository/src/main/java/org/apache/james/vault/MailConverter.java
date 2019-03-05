@@ -60,7 +60,7 @@ class MailConverter {
     }
 
     MailImpl toMail(DeletedMessage deletedMessage, InputStream inputStream) throws MessagingException {
-        return MailImpl.builder()
+        MailImpl.Builder builder = MailImpl.builder()
             .name(deletedMessage.getMessageId().serialize())
             .sender(deletedMessage.getSender())
             .addRecipients(deletedMessage.getRecipients())
@@ -69,9 +69,11 @@ class MailConverter {
             .addAttribute(HAS_ATTACHMENT_ATTRIBUTE_NAME.withValue(AttributeValue.of(deletedMessage.hasAttachment())))
             .addAttribute(DELIVERY_DATE_ATTRIBUTE_NAME.withValue(SerializableDate.toAttributeValue(deletedMessage.getDeliveryDate())))
             .addAttribute(DELETION_DATE_ATTRIBUTE_NAME.withValue(SerializableDate.toAttributeValue(deletedMessage.getDeletionDate())))
-            .addAttribute(ORIGIN_MAILBOXES_ATTRIBUTE_NAME.withValue(AttributeValue.of(serializedMailboxIds(deletedMessage))))
-            .addAttribute(SUBJECT_ATTRIBUTE_VALUE.withValue(subjectAttributeValue(deletedMessage)))
-            .build();
+            .addAttribute(ORIGIN_MAILBOXES_ATTRIBUTE_NAME.withValue(AttributeValue.of(serializedMailboxIds(deletedMessage))));
+
+        deletedMessage.getSubject().ifPresent(subject -> builder.addAttribute(SUBJECT_ATTRIBUTE_VALUE.withValue(AttributeValue.of(subject))));
+
+        return builder.build();
     }
 
     DeletedMessage fromMail(Mail mail) {
@@ -95,28 +97,12 @@ class MailConverter {
             .collect(Guavate.toImmutableList());
     }
 
-    private AttributeValue<Optional<AttributeValue<String>>> subjectAttributeValue(DeletedMessage deletedMessage) {
-        return AttributeValue.of(deletedMessage.getSubject().map(AttributeValue::of));
-    }
-
     private Optional<String> retrieveSubject(Mail mail) {
-        return AttributeUtils.getValueAndCastFromMail(mail, SUBJECT_ATTRIBUTE_VALUE, Optional.class)
-                .map(this::retrieveSubject)
-                .orElseThrow(() -> new IllegalArgumentException("mail should have a 'subject' attribute being of type 'Optional<String>"));
-    }
-
-    private Optional<String> retrieveSubject(Optional<?> maybeSubject) {
-        return maybeSubject.map(this::castSubjectToString);
-    }
-
-    private String castSubjectToString(Object object) {
-        Optional<String> optional = Optional.of(object)
-            .filter(obj -> obj instanceof AttributeValue)
-            .map(AttributeValue.class::cast)
-            .flatMap(attributeValue -> attributeValue.valueAs(String.class));
-
-        return optional
-            .orElseThrow(() -> new IllegalArgumentException("mail should have a 'subject' attribute being of type 'Optional<String>"));
+        if (!mail.getAttribute(SUBJECT_ATTRIBUTE_VALUE).isPresent()) {
+            return Optional.empty();
+        }
+        return Optional.of(AttributeUtils.getValueAndCastFromMail(mail, SUBJECT_ATTRIBUTE_VALUE, String.class)
+            .orElseThrow(() -> new IllegalArgumentException("mail should have a 'subject' attribute of type string")));
     }
 
     private boolean retrieveHasAttachment(Mail mail) {
