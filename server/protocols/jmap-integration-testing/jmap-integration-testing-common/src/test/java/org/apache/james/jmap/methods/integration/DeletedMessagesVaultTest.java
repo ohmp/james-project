@@ -125,7 +125,7 @@ public abstract class DeletedMessagesVaultTest {
 
     @Category(BasicFeature.class)
     @Test
-    public void postShouldRestoreJmapDeletedEmail() {
+    public void vaultEndpointShouldRestoreJmapDeletedEmail() {
         bartSendMessageToHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
@@ -149,7 +149,7 @@ public abstract class DeletedMessagesVaultTest {
 
     @Category(BasicFeature.class)
     @Test
-    public void postShouldRestoreImapDeletedEmail() throws Exception {
+    public void vaultEndpointShouldRestoreImapDeletedEmail() throws Exception {
         bartSendMessageToHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
@@ -179,7 +179,7 @@ public abstract class DeletedMessagesVaultTest {
     @Disabled("MAILBOX-379 PreDeletionHook are not yet triggered upon mailbox deletion")
     @Category(BasicFeature.class)
     @Test
-    public void postShouldRestoreImapDeletedMailbox() throws Exception {
+    public void vaultEndpointShouldRestoreImapDeletedMailbox() throws Exception {
         bartSendMessageToHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
@@ -279,7 +279,7 @@ public abstract class DeletedMessagesVaultTest {
     }
 
     @Test
-    public void postShouldNotRestoreItemsWhenTheVaultIsEmpty() throws Exception {
+    public void vaultEndpointShouldNotRestoreItemsWhenTheVaultIsEmpty() {
         bartSendMessageToHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
@@ -292,7 +292,7 @@ public abstract class DeletedMessagesVaultTest {
     }
 
     @Test
-    public void postShouldNotRestoreMessageForSharee() throws Exception {
+    public void vaultEndpointShouldNotRestoreMessageForSharee() {
         bartSendMessageToHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(bartAccessToken).size() == 1);
@@ -314,7 +314,7 @@ public abstract class DeletedMessagesVaultTest {
     }
 
     @Test
-    public void postShouldRestoreMessageForSharer() {
+    public void vaultEndpointShouldRestoreMessageForSharer() {
         bartSendMessageToHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
@@ -341,7 +341,7 @@ public abstract class DeletedMessagesVaultTest {
             .body(ARGUMENTS + ".list.subject", hasItem(SUBJECT));
     }
 
-    public void homerSharesHisMailboxWithBart() {
+    private void homerSharesHisMailboxWithBart() {
         with()
             .header("Authorization", homerAccessToken.serialize())
             .body("[" +
