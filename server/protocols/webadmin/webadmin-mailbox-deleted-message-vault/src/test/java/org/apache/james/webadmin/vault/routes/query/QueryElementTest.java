@@ -17,41 +17,23 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.vault.search;
+package org.apache.james.webadmin.vault.routes.query;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.api.Test;
 
-import org.apache.james.vault.DeletedMessage;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class Criterion<T> {
+class QueryElementTest {
 
-    public interface ValueMatcher<T> {
-        boolean matches(T referenceValue);
+    @Test
+    void queryDTOShouldMatchBeanContract() {
+        EqualsVerifier.forClass(QueryDTO.class)
+            .verify();
     }
 
-    public interface ExpectMatcher<T> {
-        Criterion<T> withMatcher(ValueMatcher<T> valueMatcher);
-    }
-
-    public interface Builder {
-        static <U> ExpectMatcher<U> forField(DeletedMessageField<U> field) {
-            return matcher -> new Criterion<>(field, matcher);
-        }
-    }
-
-    private static final boolean DEFAULT_TO_NON_MATCHED_IF_NON_EXIST = false;
-
-    private final DeletedMessageField<T> field;
-    private final ValueMatcher<T> valueMatcher;
-
-    private Criterion(DeletedMessageField<T> field, ValueMatcher<T> valueMatcher) {
-        this.field = field;
-        this.valueMatcher = valueMatcher;
-    }
-
-    Predicate<DeletedMessage> toPredicate() {
-        return deletedMessage -> field.valueExtractor().extract(deletedMessage)
-            .map(valueMatcher::matches)
-            .orElse(DEFAULT_TO_NON_MATCHED_IF_NON_EXIST);
+    @Test
+    void criterionDTOShouldMatchBeanContract() {
+        EqualsVerifier.forClass(CriterionDTO.class)
+            .verify();
     }
 }

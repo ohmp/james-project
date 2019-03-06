@@ -30,6 +30,10 @@ public class Query {
     public static final Query ALL = new Query(ImmutableList.of());
     private static final Predicate<DeletedMessage> MATCH_ALL = any -> true;
 
+    public static Query and(List<Criterion> criteria) {
+        return new Query(criteria);
+    }
+
     public static Query of(Criterion... criteria) {
         return new Query(ImmutableList.copyOf(criteria));
     }
