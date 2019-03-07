@@ -53,7 +53,7 @@ public class MemoryFileRepositoryDeletedMessagesVaultTest extends DeletedMessage
     }
 
     @Override
-    protected void await() {
+    protected void awaitSearchUpToDate() {
 
     }
 

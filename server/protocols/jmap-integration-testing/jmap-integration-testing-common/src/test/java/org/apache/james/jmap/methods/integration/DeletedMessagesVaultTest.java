@@ -80,7 +80,7 @@ public abstract class DeletedMessagesVaultTest {
 
     protected abstract GuiceJamesServer createJmapServer() throws IOException;
 
-    protected abstract void await();
+    protected abstract void awaitSearchUpToDate();
 
     @Rule
     public IMAPMessageReader imapMessageReader = new IMAPMessageReader();
@@ -284,7 +284,7 @@ public abstract class DeletedMessagesVaultTest {
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
         restoreAllMessagesOfHomer();
-        await();
+        awaitSearchUpToDate();
 
         // No additional had been restored as the vault is empty
         assertThat(listMessageIdsForAccount(homerAccessToken).size())
@@ -306,7 +306,7 @@ public abstract class DeletedMessagesVaultTest {
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
         restoreMessagesFor(BART);
-        await();
+        awaitSearchUpToDate();
 
         // No additional had been restored for Bart as the vault is empty
         assertThat(listMessageIdsForAccount(bartAccessToken).size())

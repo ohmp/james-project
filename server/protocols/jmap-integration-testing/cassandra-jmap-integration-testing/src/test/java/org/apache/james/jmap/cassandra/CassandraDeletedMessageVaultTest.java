@@ -58,7 +58,7 @@ public class CassandraDeletedMessageVaultTest extends DeletedMessagesVaultTest {
     }
 
     @Override
-    protected void await() {
+    protected void awaitSearchUpToDate() {
         rule.await();
     }
 
