@@ -314,9 +314,9 @@ public class MailImplTest extends ContractMailTest {
         objectOutputStream.close();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-        Object object = objectInputStream.readObject();
+        Object unserialized = objectInputStream.readObject();
 
-        assertThat(object)
+        assertThat(unserialized)
             .isInstanceOf(MailImpl.class)
             .isEqualToComparingFieldByField(mail);
     }
@@ -335,9 +335,9 @@ public class MailImplTest extends ContractMailTest {
         objectOutputStream.close();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-        Object object = objectInputStream.readObject();
+        Object unserialized = objectInputStream.readObject();
 
-        assertThat(object)
+        assertThat(unserialized)
             .isInstanceOf(MailImpl.class)
             .isEqualToComparingFieldByField(mail);
     }
@@ -356,9 +356,9 @@ public class MailImplTest extends ContractMailTest {
         objectOutputStream.close();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-        Object object = objectInputStream.readObject();
+        Object unserialized = objectInputStream.readObject();
 
-        assertThat(object)
+        assertThat(unserialized)
             .isInstanceOf(MailImpl.class)
             .isEqualToComparingFieldByField(mail);
     }
