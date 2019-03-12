@@ -38,6 +38,11 @@ public class MemoryFileMailRepositoryDeletedMessagesVaultTest extends DeletedMes
     public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
 
     @Override
+    protected void awaitSearchUpToDate() {
+
+    }
+
+    @Override
     protected GuiceJamesServer createJmapServer() throws IOException {
         return memoryJmap.jmapServer(
             binder -> binder.bind(PreDeletionHooksConfiguration.class)
