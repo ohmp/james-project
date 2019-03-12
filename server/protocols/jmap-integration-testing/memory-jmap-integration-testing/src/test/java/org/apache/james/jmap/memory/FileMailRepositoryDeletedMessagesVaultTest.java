@@ -32,7 +32,7 @@ import org.apache.james.vault.MailRepositoryDeletedMessageVault;
 import org.apache.james.webadmin.WebAdminConfiguration;
 import org.junit.Rule;
 
-public class MemoryFileMailRepositoryDeletedMessagesVaultTest extends DeletedMessagesVaultTest {
+public class FileMailRepositoryDeletedMessagesVaultTest extends DeletedMessagesVaultTest {
 
     @Rule
     public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
