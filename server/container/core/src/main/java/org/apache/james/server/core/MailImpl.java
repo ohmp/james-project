@@ -621,7 +621,7 @@ public class MailImpl implements Disposable, Mail {
     }
 
     /**
-     * Fallback to Java deserialization if {@link MailImpl#setAttributesUsingJavaSerializable(ObjectInputStream)} fails.
+     * Fallback to Java deserialization if {@link MailImpl#setAttributesUsingJsonable(ObjectInputStream)} fails.
      */
     private void setAttributesUsingJavaSerializable(ObjectInputStream in) throws IOException, ClassNotFoundException {
         // the following is under try/catch to be backwards compatible
