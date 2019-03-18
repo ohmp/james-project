@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Implementation of the RabbitMQ EventBus
 - DeadLetter APIs and memory implementation for storing events that failed delivery
 - RecipientRewriteTable Aliases and associated WebAdmin routes
+- Dead letter reDeliver routes on top of WebAdmin
+- Dead letter Cassandra implementation
+- Deleted Message vault implementation on top of MailReposiotries
+- WebAdmin routes for restoring deleted messages
+- PreDeletionHook extension mechanism
 
 ### Fixed
 - MAILBOX-350 Potential invalid UID <-> MSN mapping upon IMAP COPY
