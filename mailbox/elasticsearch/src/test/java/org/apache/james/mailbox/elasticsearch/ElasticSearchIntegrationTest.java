@@ -105,7 +105,8 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
             .fakeAuthorizator()
             .inVmEventBus()
             .defaultAnnotationLimits()
-            .defaultMessageParser()            .listeningSearchIndex(preInstanciationStage -> new ElasticSearchListeningMessageSearchIndex(
+            .defaultMessageParser()
+            .listeningSearchIndex(preInstanciationStage -> new ElasticSearchListeningMessageSearchIndex(
                 preInstanciationStage.getMapperFactory(),
                 new ElasticSearchIndexer(client,
                     Executors.newSingleThreadExecutor(threadFactory),
