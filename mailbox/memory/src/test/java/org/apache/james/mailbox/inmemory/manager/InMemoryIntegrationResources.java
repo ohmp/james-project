@@ -130,7 +130,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
 
         public Factory withPreDeletionHooks(Collection<PreDeletionHook> preDeletionHooks) {
             this.preDeletionHooksInstanciators.addAll(preDeletionHooks.stream()
-                .map(this::toInstanciator)
+                .map(this::toFactory)
                 .collect(Guavate.toImmutableList()));
             return this;
         }
@@ -154,7 +154,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
             return this;
         }
 
-        private Function<MailboxManagerPreInstanciationStage, PreDeletionHook> toInstanciator(PreDeletionHook preDeletionHook) {
+        private Function<MailboxManagerPreInstanciationStage, PreDeletionHook> toFactory(PreDeletionHook preDeletionHook) {
             return any -> preDeletionHook;
         }
 
