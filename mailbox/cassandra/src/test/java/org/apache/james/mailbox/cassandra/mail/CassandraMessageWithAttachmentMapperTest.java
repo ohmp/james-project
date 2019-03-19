@@ -21,6 +21,7 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.DockerCassandraSingleton;
 import org.apache.james.mailbox.store.mail.model.MapperProvider;
 import org.apache.james.mailbox.store.mail.model.MessageWithAttachmentMapperTest;
 import org.junit.After;
@@ -37,6 +38,7 @@ public class CassandraMessageWithAttachmentMapperTest extends MessageWithAttachm
 
     @BeforeClass
     public static void setUpClass() {
+        DockerCassandraSingleton.restart();
         cassandra = CassandraCluster.create(MailboxAggregateModule.MODULE, cassandraServer.getHost());
     }
 
