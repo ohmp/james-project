@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
-import org.apache.james.server.core.configuration.Configuration;
+import org.apache.james.server.core.JamesServerResourceLoader;
 import org.apache.james.server.core.filesystem.FileSystemImpl;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -38,11 +38,7 @@ public class FileSystemExtension implements ParameterResolver, BeforeAllCallback
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        Configuration configuration = Configuration.builder()
-            .workingDirectory("../testsFileSystemExtension/" + UUID.randomUUID())
-            .configurationFromClasspath()
-            .build();
-        fileSystem = new FileSystemImpl(configuration.directories());
+        fileSystem = new FileSystemImpl(new JamesServerResourceLoader("../testsFileSystemExtension/" + UUID.randomUUID()));
     }
 
     @Override
