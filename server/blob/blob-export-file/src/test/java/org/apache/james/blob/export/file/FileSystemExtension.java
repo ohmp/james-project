@@ -39,7 +39,7 @@ public class FileSystemExtension implements ParameterResolver, BeforeAllCallback
     @Override
     public void beforeAll(ExtensionContext context) {
         Configuration configuration = Configuration.builder()
-            .workingDirectory("../" + UUID.randomUUID())
+            .workingDirectory("../testsFileSystemExtension/" + UUID.randomUUID())
             .configurationFromClasspath()
             .build();
         fileSystem = new FileSystemImpl(configuration.directories());
