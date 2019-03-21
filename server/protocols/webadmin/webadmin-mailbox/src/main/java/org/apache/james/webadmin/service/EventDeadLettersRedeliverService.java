@@ -52,10 +52,8 @@ public class EventDeadLettersRedeliverService {
 
     private Mono<Task.Result> redeliverGroupEvents(Group group, Event event, EventDeadLetters.InsertionId insertionId) {
         return eventBus.reDeliver(group, event)
-            .then(Mono.fromCallable(() -> {
-                deadLetters.remove(group, insertionId);
-                return Task.Result.COMPLETED;
-            }))
+            .then(deadLetters.remove(group, insertionId)
+                .then(Mono.just(Task.Result.COMPLETED)))
             .onErrorResume(e -> {
                 LOGGER.error("Error while performing redelivery of event: {} for group: {}",
                     event.getEventId().toString(), group.asString(), e);
