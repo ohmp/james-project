@@ -50,6 +50,7 @@ import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.Clock;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -72,6 +73,7 @@ import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.vault.DeletedMessage;
+import org.apache.james.vault.RetentionConfiguration;
 import org.apache.james.vault.memory.MemoryDeletedMessagesVault;
 import org.apache.james.vault.search.Query;
 import org.apache.james.webadmin.WebAdminServer;
@@ -108,7 +110,7 @@ class DeletedMessagesVaultRoutesTest {
 
     @BeforeEach
     void beforeEach() throws Exception {
-        vault = spy(new MemoryDeletedMessagesVault());
+        vault = spy(new MemoryDeletedMessagesVault(RetentionConfiguration.DEFAULT, Clock.systemUTC()));
         InMemoryIntegrationResources inMemoryResource = InMemoryIntegrationResources.defaultResources();
         mailboxManager = spy(inMemoryResource.getMailboxManager());
 

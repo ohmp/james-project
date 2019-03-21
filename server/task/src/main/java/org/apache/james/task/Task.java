@@ -55,9 +55,10 @@ public interface Task {
             return this;
         }
 
-        private void run(Operation... operation) {
+        public Result run(Operation... operation) {
             Arrays.stream(operation)
                 .forEach(Operation::run);
+            return this;
         }
     }
 
