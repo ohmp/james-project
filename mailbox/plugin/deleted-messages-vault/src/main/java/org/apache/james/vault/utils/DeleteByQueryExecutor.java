@@ -31,13 +31,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DeleteByQueryExecutor {
-    static class Notifiers {
-        private final Runnable userHandledNotifier;
-        private final Runnable searchErrorNotifier;
-        private final Runnable deletionErrorNotifier;
-        private final Runnable permanentlyDeletedMessageNotifyer;
+    @FunctionalInterface
+    interface Notifier {
+        void doNotify();
+    }
 
-        Notifiers(Runnable userHandledNotifier, Runnable searchErrorNotifier, Runnable deletionErrorNotifier, Runnable permanentlyDeletedMessageNotifyer) {
+    static class Notifiers {
+        private final Notifier userHandledNotifier;
+        private final Notifier searchErrorNotifier;
+        private final Notifier deletionErrorNotifier;
+        private final Notifier permanentlyDeletedMessageNotifyer;
+
+        Notifiers(Notifier userHandledNotifier, Notifier searchErrorNotifier, Notifier deletionErrorNotifier, Notifier permanentlyDeletedMessageNotifyer) {
             this.userHandledNotifier = userHandledNotifier;
             this.searchErrorNotifier = searchErrorNotifier;
             this.deletionErrorNotifier = deletionErrorNotifier;
@@ -70,22 +75,22 @@ public class DeleteByQueryExecutor {
             .flatMap(message -> deleteMessage(user, message.getMessageId(), notifiers))
             .onErrorResume(e -> {
                 LOGGER.error("Error encountered while searching old mails in {} vault", user.asString(), e);
-                notifiers.searchErrorNotifier.run();
+                notifiers.searchErrorNotifier.doNotify();
                 return Mono.just(Task.Result.PARTIAL);
             })
             .reduce(Task::combine)
             .map(result -> result.run(
                     () -> LOGGER.info("Retention applied for {} vault", user.asString()),
-                    notifiers.userHandledNotifier::run));
+                    notifiers.userHandledNotifier::doNotify));
     }
 
     private Mono<Task.Result> deleteMessage(User user, MessageId messageId, Notifiers notifiers) {
         return Mono.from(deletedMessageVault.delete(user, messageId))
-            .then(Mono.fromRunnable(notifiers.permanentlyDeletedMessageNotifyer))
+            .then(Mono.fromRunnable(notifiers.permanentlyDeletedMessageNotifyer::doNotify))
             .thenReturn(Task.Result.COMPLETED)
             .onErrorResume(e -> {
                 LOGGER.error("Error encountered while deleting a mail in {} vault: {}", user.asString(), messageId.serialize(), e);
-                notifiers.deletionErrorNotifier.run();
+                notifiers.deletionErrorNotifier.doNotify();
                 return Mono.just(Task.Result.PARTIAL);
             });
     }
