@@ -39,29 +39,29 @@ public class DurationParser {
     private static Pattern PATTERN = Pattern.compile(PATTERN_STRING);
 
     private enum Unit {
-        MILLI_SECONDS(ImmutableList.of("ms", "msec", "msecs"), ChronoUnit.MILLIS.getDuration()),
-        SECONDS(ImmutableList.of("s", "sec", "secs", "second", "seconds"), ChronoUnit.SECONDS.getDuration()),
-        MINUTES(ImmutableList.of("m", "min", "mins", "minute", "minutes"), ChronoUnit.MINUTES.getDuration()),
-        HOURS(ImmutableList.of("h", "hour", "hours"), ChronoUnit.HOURS.getDuration()),
-        DAYS(ImmutableList.of("d", "day", "days"), ChronoUnit.DAYS.getDuration()),
-        WEEKS(ImmutableList.of("w", "week", "weeks"), ChronoUnit.WEEKS.getDuration()),
-        MONTH(ImmutableList.of("month", "months"), ChronoUnit.MONTHS.getDuration()),
-        YEARS(ImmutableList.of("y", "year", "years"), ChronoUnit.YEARS.getDuration());
+        MILLI_SECONDS(ImmutableList.of("ms", "msec", "msecs"), ChronoUnit.MILLIS),
+        SECONDS(ImmutableList.of("s", "sec", "secs", "second", "seconds"), ChronoUnit.SECONDS),
+        MINUTES(ImmutableList.of("m", "min", "mins", "minute", "minutes"), ChronoUnit.MINUTES),
+        HOURS(ImmutableList.of("h", "hour", "hours"), ChronoUnit.HOURS),
+        DAYS(ImmutableList.of("d", "day", "days"), ChronoUnit.DAYS),
+        WEEKS(ImmutableList.of("w", "week", "weeks"), ChronoUnit.WEEKS),
+        MONTH(ImmutableList.of("month", "months"), ChronoUnit.MONTHS),
+        YEARS(ImmutableList.of("y", "year", "years"), ChronoUnit.YEARS);
 
-        public static Duration associatedDuration(String string) {
+        public static ChronoUnit parse(String string) {
             return Arrays.stream(values())
                 .filter(value -> value.validPatterns.contains(string.toLowerCase(Locale.US)))
                 .findFirst()
-                .map(entry -> entry.associatedDuration)
+                .map(entry -> entry.unit)
                 .orElseThrow(() -> new NumberFormatException("Unknown unit: " + string));
         }
 
         private final List<String> validPatterns;
-        private final Duration associatedDuration;
+        private final ChronoUnit unit;
 
-        Unit(List<String> validPatterns, Duration associatedDuration) {
+        Unit(List<String> validPatterns, ChronoUnit unit) {
             this.validPatterns = validPatterns;
-            this.associatedDuration = associatedDuration;
+            this.unit = unit;
         }
 
     }
@@ -101,6 +101,6 @@ public class DurationParser {
         if (Strings.isNullOrEmpty(unit)) {
             return Optional.empty();
         }
-        return Optional.of(Unit.associatedDuration(unit));
+        return Optional.of(Unit.parse(unit).getDuration());
     }
 }
