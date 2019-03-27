@@ -51,20 +51,20 @@ class DeleteByQueryExecutorTest {
     private DeletedMessageVault vault;
     private DeleteByQueryExecutor testee;
     private DeleteByQueryExecutor.Notifiers notifiers;
-    private Runnable userHandledNotifier;
-    private Runnable searchErrorNotifier;
-    private Runnable deletionErrorNotifier;
-    private Runnable permanentlyDeletedMessageNotifyer;
+    private DeleteByQueryExecutor.Notifier userHandledNotifier;
+    private DeleteByQueryExecutor.Notifier searchErrorNotifier;
+    private DeleteByQueryExecutor.Notifier deletionErrorNotifier;
+    private DeleteByQueryExecutor.Notifier permanentlyDeletedMessageNotifyer;
 
     @BeforeEach
     void setUp() {
         vault = Mockito.spy(new MemoryDeletedMessagesVault(RetentionConfiguration.DEFAULT, CLOCK));
         testee = new DeleteByQueryExecutor(vault);
 
-        userHandledNotifier = mock(Runnable.class);
-        searchErrorNotifier = mock(Runnable.class);
-        deletionErrorNotifier = mock(Runnable.class);
-        permanentlyDeletedMessageNotifyer = mock(Runnable.class);
+        userHandledNotifier = mock(DeleteByQueryExecutor.Notifier.class);
+        searchErrorNotifier = mock(DeleteByQueryExecutor.Notifier.class);
+        deletionErrorNotifier = mock(DeleteByQueryExecutor.Notifier.class);
+        permanentlyDeletedMessageNotifyer = mock(DeleteByQueryExecutor.Notifier.class);
         notifiers = new DeleteByQueryExecutor.Notifiers(
             userHandledNotifier,
             searchErrorNotifier,
@@ -107,8 +107,8 @@ class DeleteByQueryExecutorTest {
 
         testee.deleteByQuery(Query.ALL, notifiers);
 
-        verify(userHandledNotifier, times(2)).run();
-        verify(permanentlyDeletedMessageNotifyer, times(3)).run();
+        verify(userHandledNotifier, times(2)).doNotify();
+        verify(permanentlyDeletedMessageNotifyer, times(3)).doNotify();
         verifyZeroInteractions(searchErrorNotifier);
         verifyZeroInteractions(deletionErrorNotifier);
 
@@ -137,9 +137,9 @@ class DeleteByQueryExecutorTest {
 
         testee.deleteByQuery(Query.ALL, notifiers);
 
-        verify(userHandledNotifier, times(2)).run();
-        verify(searchErrorNotifier, times(1)).run();
-        verify(permanentlyDeletedMessageNotifyer, times(1)).run();
+        verify(userHandledNotifier, times(2)).doNotify();
+        verify(searchErrorNotifier, times(1)).doNotify();
+        verify(permanentlyDeletedMessageNotifyer, times(1)).doNotify();
         verifyZeroInteractions(deletionErrorNotifier);
 
         verifyNoMoreInteractions(userHandledNotifier);
@@ -167,9 +167,9 @@ class DeleteByQueryExecutorTest {
 
         testee.deleteByQuery(Query.ALL, notifiers);
 
-        verify(userHandledNotifier, times(2)).run();
-        verify(permanentlyDeletedMessageNotifyer, times(2)).run();
-        verify(deletionErrorNotifier, times(1)).run();
+        verify(userHandledNotifier, times(2)).doNotify();
+        verify(permanentlyDeletedMessageNotifyer, times(2)).doNotify();
+        verify(deletionErrorNotifier, times(1)).doNotify();
         verifyZeroInteractions(searchErrorNotifier);
 
         verifyNoMoreInteractions(userHandledNotifier);
