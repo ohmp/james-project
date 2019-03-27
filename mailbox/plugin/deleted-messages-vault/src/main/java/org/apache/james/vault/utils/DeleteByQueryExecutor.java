@@ -22,6 +22,7 @@ package org.apache.james.vault.utils;
 import org.apache.james.core.User;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.task.Task;
+import org.apache.james.util.FunctionalUtils;
 import org.apache.james.vault.DeletedMessageVault;
 import org.apache.james.vault.search.Query;
 import org.slf4j.Logger;
@@ -79,9 +80,9 @@ public class DeleteByQueryExecutor {
                 return Mono.just(Task.Result.PARTIAL);
             })
             .reduce(Task::combine)
-            .map(result -> result.run(
-                    () -> LOGGER.info("Retention applied for {} vault", user.asString()),
-                    notifiers.userHandledNotifier::doNotify));
+
+            .map(FunctionalUtils.identityWithSideEffect(() -> LOGGER.info("Retention applied for {} vault", user.asString())))
+            .map(FunctionalUtils.identityWithSideEffect(notifiers.userHandledNotifier::doNotify));
     }
 
     private Mono<Task.Result> deleteMessage(User user, MessageId messageId, Notifiers notifiers) {
