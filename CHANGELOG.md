@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - RecipientRewriteTable Aliases and associated WebAdmin routes
 - EventBus DeadLetter reDeliver routes on top of WebAdmin
 - EventBus DeadLetter Cassandra implementation
-- WebAdmin routes for restoring deleted messages from the Deleted Messages Vault
+- WebAdmin routes for restoring and exporting deleted messages from the Deleted Messages Vault
 - PreDeletionHook extension mechanism
 
 ### Fixed
