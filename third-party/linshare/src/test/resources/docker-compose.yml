@@ -1,0 +1,102 @@
+# Docker compose file for a full-featured Linshare architecture
+version: '3.7'
+
+services:
+
+    docker-socket:
+        container_name: linshare_docker-socket
+        image: tecnativa/docker-socket-proxy
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - CONTAINERS=1
+
+    database:
+        container_name: linshare_database
+        restart: on-failure
+        image: linagora/linshare-database:2.2
+        environment:
+            - PGDATA=/var/lib/postgresql/data/pgdata
+            - POSTGRES_USER=linshare
+            - POSTGRES_PASSWORD=linshare
+
+    backend:
+        container_name: linshare_backend
+        restart: on-failure
+        image: linagora/linshare-backend:2.2
+        links:
+            - database:linshare_database
+            - mongodb:linshare_mongodb
+        depends_on:
+            - database
+            - mongodb
+        volumes:
+            - ./conf/catalina.properties:/usr/local/tomcat/conf/catalina.properties
+            - ./conf/log4j.properties:/etc/linshare/log4j.properties
+        healthcheck:
+            test: ["CMD", "curl", "-s", "-f", "http://localhost:8080/linshare/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+        environment:
+            # These variables are mandatory
+            - SMTP_HOST=linshare_smtp
+            - SMTP_PORT=25
+            - CLAMAV_HOST=linshare_clamav
+            - CLAMAV_PORT=3310
+            - POSTGRES_HOST=linshare_database
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=linshare
+            - POSTGRES_PASSWORD=linshare
+            - MONGODB_HOST=linshare_mongodb
+            - MONGODB_PORT=27017
+            - THUMBNAIL_ENABLE=false
+
+    mongodb:
+        container_name: linshare_mongodb
+        restart: on-failure
+        image: mongo:3.2
+        command: mongod --smallfiles
+
+    smtp:
+        container_name: linshare_smtp
+        restart: on-failure
+        image: linagora/opensmtpd
+        volumes:
+            - ./conf/smtpd.conf:/etc/smtpd/smtpd.conf
+
+    ldap:
+        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-ldap-for-tests
+        container_name: linshare_ldap
+        tty: true
+        stdin_open: true
+        ports:
+            - "20389:389"
+
+    database-init:
+        container_name: linshare_database-init
+        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database-init:2.2
+        links:
+            - backend:linshare_backend
+        environment:
+            - TOMCAT_HOST=${BACKEND_TOMCAT_HOST}
+            - TOMCAT_LDAP_NAME=ldap-local
+            - TOMCAT_LDAP_URL=ldap://ldap:389
+            - TOMCAT_LDAP_BASE_DN=ou=People,dc=linshare,dc=org
+            - TOMCAT_LDAP_DN=cn=linshare,dc=linshare,dc=org
+            - TOMCAT_LDAP_PW=linshare
+            - TOMCAT_DOMAIN_PATTERN_NAME=openldap-local
+            - TOMCAT_DOMAIN_PATTERN_MODEL=868400c0-c12e-456a-8c3c-19e985290586
+            - NO_REPLY_ADDRESS=linshare-noreply@linshare.org
+
+    clamav:
+        container_name: linshare_clamav
+        restart: on-failure
+        image: mkodockx/docker-clamav
+
+networks:
+    linshare-backend-tier:
+        driver: bridge
+
+
