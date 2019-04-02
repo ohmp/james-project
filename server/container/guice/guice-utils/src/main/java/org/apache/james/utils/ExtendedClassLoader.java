@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.util.StreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class ExtendedClassLoader {
 
     private URL[] retrieveExtensionsUrls(FileSystem fileSystem) {
         try {
-            File file = fileSystem.getFile("file://" + EXTENSIONS_JARS_FOLDER_NAME);
+            File file = fileSystem.getFile(FileUrl.relativeFile(EXTENSIONS_JARS_FOLDER_NAME));
             return recursiveExpand(file)
                 .toArray(URL[]::new);
         } catch (IOException e) {

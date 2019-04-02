@@ -90,23 +90,23 @@ public abstract class AbstractFileSystemTest {
 
     @Test(expected = NullPointerException.class)
     public final void nullInputShouldThrowNullPointerException() throws Exception {
-        fileSystem.getFile(null);
+        fileSystem.getFile((FileUrl) null);
     }
 
     public final void emptyInputShouldThrowReturnEmptyPathFile() throws Exception {
-        File file = fileSystem.getFile("");
+        File file = fileSystem.getFile(FileUrl.of(""));
         assertThat(file.getPath()).isEmpty();
     }
 
     @Test
     public final void protocolOnlyShouldReturnEmptyPathFile() throws Exception {
-        File file = fileSystem.getFile("file:");
+        File file = fileSystem.getFile(FileUrl.of("file:"));
         assertThat(file.getPath()).isEmpty();
     }
 
     @Test
     public final void protocolWithDoubleSlashesOnlyShouldReturnDir() throws Exception {
-        File file = fileSystem.getFile("file://");
+        File file = fileSystem.getFile(FileUrl.of("file://"));
         assertThat(file).isDirectory();
     }
 
@@ -128,7 +128,7 @@ public abstract class AbstractFileSystemTest {
     public final void urlAsFileThrowingFileNotFoundException(String url) throws Exception {
         url = replacePort(url);
         
-        fileSystem.getFile(url);
+        fileSystem.getFile(FileUrl.of(url));
     }
 
     public static class NonExistingFilesProvider {
@@ -145,7 +145,7 @@ public abstract class AbstractFileSystemTest {
     @Test
     @Parameters(source = NonExistingFilesProvider.class)
     public void nonExistingFilesShouldNotExist(String url) throws Exception {
-        File f = fileSystem.getFile(url);
+        File f = fileSystem.getFile(FileUrl.of(url));
         assertThat(f).doesNotExist();
     }
 
@@ -164,7 +164,7 @@ public abstract class AbstractFileSystemTest {
     public final void getFakeHttpResourceAsInputStreamShouldThrow(String url) throws Exception {
         url = replacePort(url);
         
-        fileSystem.getResource(url);
+        fileSystem.getResource(FileUrl.of(url));
     }
 
     public static class AvailableStreamsProvider {
@@ -184,7 +184,7 @@ public abstract class AbstractFileSystemTest {
     @Parameters(source = AvailableStreamsProvider.class)
     public final void availableInputStreamShouldReturnANonEmptyStream(String url) throws Exception {
         url = replacePort(url);
-        try (InputStream inputStream = fileSystem.getResource(url)) {
+        try (InputStream inputStream = fileSystem.getResource(FileUrl.of(url))) {
             assertThat(IOUtils.toByteArray(inputStream).length).isGreaterThan(0);
         }
     }
@@ -207,7 +207,7 @@ public abstract class AbstractFileSystemTest {
     public final void createdFilesShouldExist(String name, String extension) throws Exception {
         File temp = createTempFile(name, extension);
         try {
-            File expected = fileSystem.getFile("file:" + temp.getAbsolutePath());
+            File expected = fileSystem.getFile(FileUrl.absoluteFile("file:" + temp.getAbsolutePath()));
             assertThat(expected).exists();
         } finally {
             temp.delete();
@@ -219,7 +219,7 @@ public abstract class AbstractFileSystemTest {
     public final void createdFilesShouldExistWhenAccessedWithTwoSlashes(String name, String extension) throws Exception {
         File temp = createTempFile(name, extension);
         try {
-            File expected = fileSystem.getFile("file://" + temp.getAbsolutePath());
+            File expected = fileSystem.getFile(FileUrl.absoluteFile(temp.getAbsolutePath()));
             assertThat(expected).exists();
         } finally {
             temp.delete();
@@ -230,7 +230,7 @@ public abstract class AbstractFileSystemTest {
     @Parameters(source = FileToCreateProvider.class)
     public final void createdFilesAsInputStreamShouldBeAvailable(String name, String extension) throws Exception {
         File temp = createTempFile(name, extension);
-        try (InputStream inputStream = fileSystem.getResource("file:" + temp.getAbsolutePath())) {
+        try (InputStream inputStream = fileSystem.getResource(FileUrl.of("file:" + temp.getAbsolutePath()))) {
             assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8)).isEqualTo("content");
         } finally {
             temp.delete();
@@ -241,7 +241,8 @@ public abstract class AbstractFileSystemTest {
     @Parameters(source = FileToCreateProvider.class)
     public final void createdFilesAsInputStreamShouldBeAvailableWhenAccessedWithTwoSlashes(String name, String extension) throws Exception {
         File temp = createTempFile(name, extension);
-        try (InputStream inputStream = fileSystem.getResource("file://" + temp.getAbsolutePath())) {
+        FileUrl of = FileUrl.absoluteFile(temp.getAbsolutePath());
+        try (InputStream inputStream = fileSystem.getResource(of)) {
             assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8)).isEqualTo("content");
         } finally {
             temp.delete();
@@ -256,14 +257,14 @@ public abstract class AbstractFileSystemTest {
 
     @Test
     public void testConfProtocolSouldReturnConfFile() throws Exception {
-        File file = fileSystem.getFile("file://conf/conf.txt");
+        File file = fileSystem.getFile(FileUrl.relativeFile("conf/conf.txt"));
 
         assertThat(file).hasContent("confcontent");
     }
     
     @Test
     public void testVarProtocolSouldReturnVarFile() throws Exception {
-        File file = fileSystem.getFile("file://var/var.txt");
+        File file = fileSystem.getFile(FileUrl.relativeFile("var/var.txt"));
 
         assertThat(file).hasContent("varcontent");
     }

@@ -38,6 +38,7 @@ import org.apache.james.blob.api.ObjectStoreException;
 import org.apache.james.blob.memory.MemoryBlobStore;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMailContext;
@@ -112,7 +113,7 @@ class LocalFileBlobExportMechanismTest {
             .element(0)
             .satisfies(sentMail -> {
                 try {
-                    String fileUrl = sentMail.getMsg().getHeader(LocalFileBlobExportMechanism.CORRESPONDING_FILE_HEADER)[0];
+                    FileUrl fileUrl = FileUrl.of(sentMail.getMsg().getHeader(LocalFileBlobExportMechanism.CORRESPONDING_FILE_HEADER)[0]);
 
                     assertThat(fileSystem.getResource(fileUrl)).hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
                 } catch (Exception e) {

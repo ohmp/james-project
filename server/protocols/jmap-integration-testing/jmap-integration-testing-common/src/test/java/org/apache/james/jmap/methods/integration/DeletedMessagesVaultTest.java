@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
 import org.apache.james.mailbox.DefaultMailboxes;
@@ -464,7 +465,7 @@ public abstract class DeletedMessagesVaultTest {
         homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
+        FileUrl fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocation))) {
             zipAssert.containsOnlyEntriesMatching(hasName(messageIdOfHomer));
@@ -486,7 +487,7 @@ public abstract class DeletedMessagesVaultTest {
 
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
+        FileUrl fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocation))) {
             zipAssert.containsOnlyEntriesMatching(hasName(messageIdOfHomer));
@@ -510,7 +511,7 @@ public abstract class DeletedMessagesVaultTest {
 
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
+        FileUrl fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocation))) {
             zipAssert.containsOnlyEntriesMatching(hasName(messageIdOfHomer));
@@ -538,7 +539,7 @@ public abstract class DeletedMessagesVaultTest {
                 "  \"operator\": \"equals\"," +
                 "  \"value\": \"" + FIRST_SUBJECT + "\"" +
                 "}");
-        String fileLocation = exportAndGetFileLocationFromLastMail(exportRequest, bartAccessToken);
+        FileUrl fileLocation = exportAndGetFileLocationFromLastMail(exportRequest, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocation))) {
             zipAssert.containsOnlyEntriesMatching(hasName(firstMessageIdOfHomer));
@@ -562,7 +563,7 @@ public abstract class DeletedMessagesVaultTest {
                 "  \"operator\": \"equals\"," +
                 "  \"value\": \"non matching\"" +
                 "}");
-        String fileLocation = exportAndGetFileLocationFromLastMail(exportRequest, bartAccessToken);
+        FileUrl fileLocation = exportAndGetFileLocationFromLastMail(exportRequest, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocation))) {
             zipAssert.hasNoEntry();
@@ -571,7 +572,7 @@ public abstract class DeletedMessagesVaultTest {
 
     @Test
     public void vaultExportShouldExportEmptyZipWhenVaultIsEmpty() throws Exception {
-        String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
+        FileUrl fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocation))) {
             zipAssert.hasNoEntry();
@@ -586,15 +587,15 @@ public abstract class DeletedMessagesVaultTest {
         homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        String fileLocationFirstExport = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
-        String fileLocationSecondExport = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
+        FileUrl fileLocationFirstExport = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
+        FileUrl fileLocationSecondExport = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
 
         try (ZipAssert zipAssert = assertThatZip(fileSystem.getResource(fileLocationFirstExport))) {
             zipAssert.hasSameContentWith(fileSystem.getResource(fileLocationSecondExport));
         }
     }
 
-    private String exportAndGetFileLocationFromLastMail(ExportRequest exportRequest, AccessToken shareeAccessToken) {
+    private FileUrl exportAndGetFileLocationFromLastMail(ExportRequest exportRequest, AccessToken shareeAccessToken) {
         int currentNumberOfMessages = listMessageIdsForAccount(shareeAccessToken).size();
         exportVaultContent(exportRequest);
 
@@ -604,14 +605,14 @@ public abstract class DeletedMessagesVaultTest {
 
     }
 
-    private String exportedFileLocationFromMailHeader(String messageId, AccessToken accessToken) {
-        return with()
+    private FileUrl exportedFileLocationFromMailHeader(String messageId, AccessToken accessToken) {
+        return FileUrl.of(with()
                 .header("Authorization", accessToken.serialize())
                 .body("[[\"getMessages\", {\"ids\": [\"" + messageId + "\"]}, \"#0\"]]")
                 .post("/jmap")
             .jsonPath()
                 .getList(ARGUMENTS + ".list.headers.corresponding-file", String.class)
-                .get(0);
+                .get(0));
     }
 
     private void homerSharesHisMailboxWithBart() {

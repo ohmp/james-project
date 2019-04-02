@@ -20,12 +20,11 @@
 package org.apache.james.jmap.crypto;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.jmap.JMAPConfiguration;
 import org.apache.james.jmap.JMAPConfiguration.Builder;
 
@@ -54,7 +53,7 @@ public class JamesSignatureHandlerProvider {
     public static Builder newConfigurationBuilder() {
         return JMAPConfiguration.builder()
             .enable()
-            .keystore("keystore")
+            .keystore(FileUrl.relativeFile("keystore"))
             .secret("james72laBalle")
             .jwtPublicKeyPem(Optional.of(JWT_PUBLIC_KEY));
     }
@@ -62,17 +61,17 @@ public class JamesSignatureHandlerProvider {
     public static FileSystem newFileSystem() {
         return new FileSystem() {
             @Override
-            public InputStream getResource(String url) throws IOException {
-                return ClassLoader.getSystemResourceAsStream(url);
+            public InputStream getResource(FileUrl url) {
+                return ClassLoader.getSystemResourceAsStream(url.toRelativeFilePath());
             }
 
             @Override
-            public File getFile(String fileURL) throws FileNotFoundException {
+            public File getFile(FileUrl fileURL) {
                 return null;
             }
 
             @Override
-            public File getBasedir() throws FileNotFoundException {
+            public File getBasedir() {
                 return null;
             }
         };

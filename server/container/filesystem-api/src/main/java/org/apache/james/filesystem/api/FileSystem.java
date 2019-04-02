@@ -68,7 +68,7 @@ public interface FileSystem {
      * @throws IOException
      *             if the resource could not be accessed
      */
-    InputStream getResource(String url) throws IOException;
+    InputStream getResource(FileUrl url) throws IOException;
 
     /**
      * Used to retrieve a specific file in the application context
@@ -79,7 +79,7 @@ public interface FileSystem {
      * @throws FileNotFoundException
      *             if the file cannot be found/read
      */
-    File getFile(String fileURL) throws FileNotFoundException;
+    File getFile(FileUrl fileURL) throws FileNotFoundException;
 
     /**
      * Return the base folder used by the application

@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Optional;
 
+import org.apache.james.filesystem.api.FileUrl;
 import org.junit.Test;
 
 public class JMAPConfigurationTest {
@@ -45,7 +46,7 @@ public class JMAPConfigurationTest {
     public void buildShouldThrowWhenKeystoreIsEmpty() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
                 .enable()
-                .keystore("")
+                .keystore(FileUrl.of(""))
                 .build())
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("'keystore' is mandatory");
@@ -55,7 +56,7 @@ public class JMAPConfigurationTest {
     public void buildShouldThrowWhenSecretIsNull() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
                 .enable()
-                .keystore("keystore")
+                .keystore(FileUrl.relativeFile("keystore"))
                 .secret(null)
                 .build())
             .isInstanceOf(IllegalStateException.class)
@@ -66,7 +67,7 @@ public class JMAPConfigurationTest {
     public void buildShouldThrowWhenSecretIsEmpty() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
                 .enable()
-                .keystore("keystore")
+                .keystore(FileUrl.relativeFile("keystore"))
                 .secret("")
                 .build())
             .isInstanceOf(IllegalStateException.class)
@@ -77,7 +78,7 @@ public class JMAPConfigurationTest {
     public void buildShouldThrowWhenJwtPublicKeyPemIsNull() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
                 .enable()
-                .keystore("keystore")
+                .keystore(FileUrl.relativeFile("keystore"))
                 .secret("secret")
                 .jwtPublicKeyPem(null)
                 .build())
@@ -88,7 +89,7 @@ public class JMAPConfigurationTest {
     public void buildShouldThrowWhenJwtPublicKeyPemIsEmpty() {
         assertThatThrownBy(() -> JMAPConfiguration.builder()
             .enable()
-            .keystore("keystore")
+                .keystore(FileUrl.relativeFile("keystore"))
             .secret("secret")
             .jwtPublicKeyPem(Optional.empty())
             .build())
@@ -97,11 +98,11 @@ public class JMAPConfigurationTest {
 
     @Test
     public void buildShouldWorkWhenRandomPort() {
-        JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(ENABLED, "keystore", "secret", Optional.of("file://conf/jwt_publickey"), Optional.empty());
+        JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(ENABLED, FileUrl.fileConfiguration("keystore"), "secret", Optional.of("file://conf/jwt_publickey"), Optional.empty());
 
         JMAPConfiguration jmapConfiguration = JMAPConfiguration.builder()
             .enable()
-            .keystore("keystore")
+                .keystore(FileUrl.relativeFile("keystore"))
             .secret("secret")
             .jwtPublicKeyPem(Optional.of("file://conf/jwt_publickey"))
             .randomPort()
@@ -111,11 +112,11 @@ public class JMAPConfigurationTest {
 
     @Test
     public void buildShouldWorkWhenFixedPort() {
-        JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(ENABLED, "keystore", "secret", Optional.of("file://conf/jwt_publickey"), Optional.of(80));
+        JMAPConfiguration expectedJMAPConfiguration = new JMAPConfiguration(ENABLED, FileUrl.fileConfiguration("keystore"), "secret", Optional.of("file://conf/jwt_publickey"), Optional.of(80));
 
         JMAPConfiguration jmapConfiguration = JMAPConfiguration.builder()
             .enable()
-            .keystore("keystore")
+                .keystore(FileUrl.relativeFile("keystore"))
             .secret("secret")
             .jwtPublicKeyPem(Optional.of("file://conf/jwt_publickey"))
             .port(80)
@@ -125,7 +126,7 @@ public class JMAPConfigurationTest {
 
     @Test
     public void buildShouldWorkWhenDisabled() {
-        String keystore = null;
+        FileUrl keystore = null;
         String secret = null;
         Optional<String> jwtPublicKeyPem = Optional.empty();
         Optional<Integer> port = Optional.empty();

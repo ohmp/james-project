@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import javax.annotation.PostConstruct;
@@ -40,6 +41,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.lib.jmx.ServerMBean;
@@ -100,7 +102,7 @@ public abstract class AbstractConfigurableAsyncServer extends AbstractAsyncServe
 
     private String helloName;
 
-    private String keystore;
+    private FileUrl keystore;
 
     private String secret;
 
@@ -243,10 +245,9 @@ public abstract class AbstractConfigurableAsyncServer extends AbstractAsyncServe
 
         if (useStartTLS || useSSL) {
             enabledCipherSuites = config.getStringArray("tls.supportedCipherSuites.cipherSuite");
-            keystore = config.getString("tls.keystore", null);
-            if (keystore == null) {
-                throw new ConfigurationException("keystore needs to get configured");
-            }
+            keystore = Optional.ofNullable(config.getString("tls.keystore", null))
+                .map(FileUrl::of)
+                .orElseThrow(() -> new ConfigurationException("keystore needs to get configured"));
             secret = config.getString("tls.secret", "");
             x509Algorithm = config.getString("tls.algorithm", defaultX509algorithm);
         }

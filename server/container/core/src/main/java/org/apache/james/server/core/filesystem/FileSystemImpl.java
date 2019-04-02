@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.filesystem.api.JamesDirectoriesProvider;
 
 public class FileSystemImpl implements FileSystem {
@@ -37,19 +38,19 @@ public class FileSystemImpl implements FileSystem {
     }
 
     @Override
-    public File getBasedir() throws FileNotFoundException {
+    public File getBasedir() {
         return new File(directoryProvider.getRootDirectory());
     }
 
     @Override
-    public InputStream getResource(String url) throws IOException {
-        return resourceLoader.getResource(url).getInputStream();
+    public InputStream getResource(FileUrl url) throws IOException {
+        return resourceLoader.getResource(url.getValue()).getInputStream();
     }
 
     @Override
-    public File getFile(String fileURL) throws FileNotFoundException {
+    public File getFile(FileUrl fileURL) throws FileNotFoundException {
         try {
-            return resourceLoader.getResource(fileURL).getFile();
+            return resourceLoader.getResource(fileURL.getValue()).getFile();
         } catch (IOException e) {
             throw new FileNotFoundException(e.getMessage());
         }

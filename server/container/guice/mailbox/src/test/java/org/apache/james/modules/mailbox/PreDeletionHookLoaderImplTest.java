@@ -21,13 +21,14 @@ package org.apache.james.modules.mailbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.FileNotFoundException;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.utils.ExtendedClassLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ class PreDeletionHookLoaderImplTest {
     @BeforeEach
     void setUp() throws Exception {
         FileSystem fileSystem = mock(FileSystem.class);
-        when(fileSystem.getFile(anyString()))
+        when(fileSystem.getFile(any(FileUrl.class)))
             .thenThrow(new FileNotFoundException());
 
         testee = new PreDeletionHookLoaderImpl(Guice.createInjector(), new ExtendedClassLoader(fileSystem));

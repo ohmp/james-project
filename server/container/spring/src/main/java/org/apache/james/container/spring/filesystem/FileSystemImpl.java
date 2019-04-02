@@ -25,6 +25,7 @@ import java.io.InputStream;
 
 import org.apache.james.container.spring.resource.JamesResourceLoader;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -38,19 +39,19 @@ public class FileSystemImpl implements FileSystem, ApplicationContextAware {
     private JamesResourceLoader resourceLoader = null;
 
     @Override
-    public File getBasedir() throws FileNotFoundException {
+    public File getBasedir() {
         return new File(resourceLoader.getRootDirectory());
     }
 
     @Override
-    public InputStream getResource(String url) throws IOException {
-        return resourceLoader.getResource(url).getInputStream();
+    public InputStream getResource(FileUrl url) throws IOException {
+        return resourceLoader.getResource(url.getValue()).getInputStream();
     }
 
     @Override
-    public File getFile(String fileURL) throws FileNotFoundException {
+    public File getFile(FileUrl fileURL) throws FileNotFoundException {
         try {
-            return resourceLoader.getResource(fileURL).getFile();
+            return resourceLoader.getResource(fileURL.getValue()).getFile();
         } catch (IOException e) {
             throw new FileNotFoundException(e.getMessage());
         }

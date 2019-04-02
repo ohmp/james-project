@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.queue.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
@@ -79,7 +81,9 @@ public class FileMailQueueFactory implements MailQueueFactory<ManageableMailQueu
     private ManageableMailQueue createAndRegisterQueue(String name) {
         synchronized (queues) {
             try {
-                FileMailQueue queue = new FileMailQueue(mailQueueActionItemDecoratorFactory, fs.getFile("file://var/store/queue"), name, sync);
+                FileUrl fileURL = FileUrl.relativeFile("var/store/queue");
+                File file = fs.getFile(fileURL);
+                FileMailQueue queue = new FileMailQueue(mailQueueActionItemDecoratorFactory, file, name, sync);
                 queues.put(name, queue);
                 return queue;
             } catch (IOException e) {

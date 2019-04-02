@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import org.apache.james.core.User;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.sieverepository.api.ScriptContent;
 import org.apache.james.sieverepository.api.ScriptName;
 import org.apache.james.sieverepository.api.ScriptSummary;
@@ -93,10 +94,10 @@ public class SieveDefaultRepository implements SieveRepository {
         // RFC 5228 permits extensions: .siv .sieve
         String sieveFilePrefix = FileSystem.FILE_PROTOCOL + "sieve/" + user.asString() + ".";
         try {
-            return fileSystem.getFile(sieveFilePrefix + "sieve");
+            return fileSystem.getFile(FileUrl.of(sieveFilePrefix + "sieve"));
         } catch (FileNotFoundException e) {
             try {
-                return fileSystem.getFile(sieveFilePrefix + "siv");
+                return fileSystem.getFile(FileUrl.of(sieveFilePrefix + "siv"));
             } catch (FileNotFoundException fileNotFoundException) {
                 throw new ScriptNotFoundException(fileNotFoundException);
             }

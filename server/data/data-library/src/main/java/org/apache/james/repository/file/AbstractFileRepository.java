@@ -37,6 +37,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.repository.api.Repository;
 import org.slf4j.Logger;
@@ -64,11 +65,11 @@ public abstract class AbstractFileRepository implements Repository, Configurable
 
     private FileSystem fileSystem;
 
-    private String destination;
+    private FileUrl destination;
 
     @Override
     public void configure(HierarchicalConfiguration configuration) throws ConfigurationException {
-        destination = configuration.getString("[@destinationURL]");
+        destination = FileUrl.of(configuration.getString("[@destinationURL]"));
     }
 
     @Inject
@@ -139,9 +140,9 @@ public abstract class AbstractFileRepository implements Repository, Configurable
      * @throws ConfigurationException
      *             get thrown on invalid destintion syntax
      */
-    protected void setDestination(String destination) throws ConfigurationException {
+    protected void setDestination(FileUrl destination) throws ConfigurationException {
 
-        if (!destination.startsWith(FileSystem.FILE_PROTOCOL)) {
+        if (!destination.hasProtocol(FileUrl.Protocol.FILE)) {
             throw new ConfigurationException("cannot handle destination " + destination);
         }
 
@@ -178,7 +179,7 @@ public abstract class AbstractFileRepository implements Repository, Configurable
         child.setFileSystem(fileSystem);
 
         try {
-            child.setDestination(baseDirectory.getAbsolutePath() + File.pathSeparatorChar + childName + File.pathSeparator);
+            child.setDestination(FileUrl.of(baseDirectory.getAbsolutePath() + File.pathSeparatorChar + childName + File.pathSeparator));
         } catch (ConfigurationException ce) {
             throw new RuntimeException("Cannot set destination for child child " + "repository " + childName + " : " + ce);
         }

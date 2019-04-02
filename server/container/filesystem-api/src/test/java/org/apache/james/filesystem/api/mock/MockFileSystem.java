@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.junit.rules.TemporaryFolder;
 
 public class MockFileSystem implements FileSystem {
@@ -40,21 +41,21 @@ public class MockFileSystem implements FileSystem {
     }
 
     @Override
-    public File getBasedir() throws FileNotFoundException {
+    public File getBasedir() {
         return temporaryFolder.getRoot();
     }
 
     @Override
-    public InputStream getResource(String url) throws IOException {
+    public InputStream getResource(FileUrl url) throws IOException {
         return new FileInputStream(getFile(url));
     }
 
     @Override
-    public File getFile(String fileURL) throws FileNotFoundException {
+    public File getFile(FileUrl fileURL) throws FileNotFoundException {
         try {
-            if (fileURL.startsWith("file://")) {
-                if (fileURL.startsWith("file://conf/")) {
-                    URL url = MockFileSystem.class.getClassLoader().getResource("./" + fileURL.substring(12));
+            if (fileURL.getValue().startsWith("file://")) {
+                if (fileURL.getValue().startsWith("file://conf/")) {
+                    URL url = MockFileSystem.class.getClassLoader().getResource("./" + fileURL.getValue().substring(12));
                     try {
                         return new File(new URI(url.toString()));
                     } catch (URISyntaxException e) {
@@ -62,7 +63,7 @@ public class MockFileSystem implements FileSystem {
                     }
                     // return new File("./src"+fileURL.substring(6));
                 } else {
-                    return new File(temporaryFolder.getRoot() + File.separator + fileURL.substring(FileSystem.FILE_PROTOCOL.length()));
+                    return new File(temporaryFolder.getRoot() + File.separator + fileURL.toRelativeFilePath());
                 }
             } else {
                 throw new UnsupportedOperationException("getFile: " + fileURL);

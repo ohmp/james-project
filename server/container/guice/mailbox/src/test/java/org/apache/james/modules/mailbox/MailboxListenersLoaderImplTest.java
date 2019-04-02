@@ -20,7 +20,7 @@ package org.apache.james.modules.mailbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +32,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.mailbox.events.GenericGroup;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.InVMEventBus;
@@ -53,7 +54,7 @@ class MailboxListenersLoaderImplTest {
     @BeforeEach
     void setup() throws Exception {
         FileSystem fileSystem = mock(FileSystem.class);
-        when(fileSystem.getFile(anyString()))
+        when(fileSystem.getFile(any(FileUrl.class)))
             .thenThrow(new FileNotFoundException());
 
         eventBus = new InVMEventBus(new InVmEventDelivery(new NoopMetricFactory()));

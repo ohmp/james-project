@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.KeyStoreException;
 
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.jmap.JMAPConfiguration;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public class JamesSignatureHandlerTest {
     @Test(expected = KeyStoreException.class)
     public void initShouldThrowOnUnknownKeystore() throws Exception {
         JMAPConfiguration jmapConfiguration = JamesSignatureHandlerProvider.newConfigurationBuilder()
-            .keystore("badAliasKeystore")
+            .keystore(FileUrl.fromClasspath("badAliasKeystore"))
             .secret("password")
             .build();
 

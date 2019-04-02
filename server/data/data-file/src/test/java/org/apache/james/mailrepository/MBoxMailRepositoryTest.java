@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.Iterator;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.filesystem.api.mock.MockFileSystem;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
@@ -51,7 +52,7 @@ public class MBoxMailRepositoryTest {
 
         DefaultConfigurationBuilder defaultConfiguration = new DefaultConfigurationBuilder();
 
-        File fInbox = new MockFileSystem().getFile("file://conf/org/apache/james/mailrepository/testdata/Inbox");
+        File fInbox = new MockFileSystem().getFile(FileUrl.fileConfiguration("org/apache/james/mailrepository/testdata/Inbox"));
         String mboxPath = "mbox://" + fInbox.toURI().toString().substring(new File("").toURI().toString().length());
 
         defaultConfiguration.addProperty("[@destinationURL]", mboxPath);

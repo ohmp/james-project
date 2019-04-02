@@ -24,13 +24,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.metrics.api.GaugeRegistry;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.DelayedManageableMailQueueContract;
@@ -50,14 +50,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Years;
 
 @ExtendWith(BrokerExtension.class)
 @Tag(BrokerExtension.STATISTICS)
 public class ActiveMQMailQueueBlobTest implements DelayedManageableMailQueueContract, DelayedPriorityMailQueueContract, PriorityManageableMailQueueContract,
     MailQueueMetricContract {
 
-    static final String BASE_DIR = "file://target/james-test";
+    static final FileUrl BASE_DIR = FileUrl.relativeFile("target/james-test");
     static final boolean USE_BLOB = true;
 
     ActiveMQMailQueue mailQueue;
@@ -69,7 +68,7 @@ public class ActiveMQMailQueueBlobTest implements DelayedManageableMailQueueCont
         ActiveMQConnectionFactory connectionFactory = createConnectionFactory();
         FileSystemBlobTransferPolicy policy = new FileSystemBlobTransferPolicy();
         policy.setFileSystem(fileSystem);
-        policy.setDefaultUploadUrl(BASE_DIR);
+        policy.setDefaultUploadUrl(BASE_DIR.getValue());
         connectionFactory.setBlobTransferPolicy(policy);
 
         RawMailQueueItemDecoratorFactory mailQueueItemDecoratorFactory = new RawMailQueueItemDecoratorFactory();
@@ -144,7 +143,7 @@ public class ActiveMQMailQueueBlobTest implements DelayedManageableMailQueueCont
 
         FileSystemBlobTransferPolicy policy = new FileSystemBlobTransferPolicy();
         policy.setFileSystem(new MyFileSystem());
-        policy.setDefaultUploadUrl(BASE_DIR);
+        policy.setDefaultUploadUrl(BASE_DIR.getValue());
         factory.setBlobTransferPolicy(policy);
 
         return factory;
@@ -154,17 +153,17 @@ public class ActiveMQMailQueueBlobTest implements DelayedManageableMailQueueCont
         private static final Logger LOGGER = LoggerFactory.getLogger(MyFileSystem.class);
 
         @Override
-        public InputStream getResource(String url) {
+        public InputStream getResource(FileUrl url) {
             return null;
         }
 
         @Override
-        public File getFile(String fileURL) throws FileNotFoundException {
-            if (fileURL.startsWith("file://")) {
-                return new File(fileURL.substring("file://".length()));
+        public File getFile(FileUrl fileURL) throws FileNotFoundException {
+            if (fileURL.hasProtocol(FileUrl.Protocol.FILE)) {
+                return new File(fileURL.toRelativeFilePath());
 
-            } else if (fileURL.startsWith("file:/")) {
-                return new File(fileURL.substring("file:".length()));
+            } else if (fileURL.getValue().startsWith("file:/")) {
+                return new File(fileURL.getValue().substring("file:".length()));
 
             }
             throw new FileNotFoundException();

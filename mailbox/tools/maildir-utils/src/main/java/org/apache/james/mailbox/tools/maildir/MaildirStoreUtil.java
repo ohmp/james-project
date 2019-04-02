@@ -21,6 +21,7 @@ package org.apache.james.mailbox.tools.maildir;
 import java.io.FileNotFoundException;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.maildir.MaildirStore;
 import org.apache.james.user.api.UsersRepository;
@@ -43,7 +44,7 @@ public class MaildirStoreUtil {
      */
     public static MaildirStore create(FileSystem fs, UsersRepository usersRepos, String rootURL, MailboxPathLocker locker) throws FileNotFoundException, UsersRepositoryException {
         StringBuilder root = new StringBuilder();
-        root.append(fs.getFile(rootURL).getAbsolutePath());
+        root.append(fs.getFile(FileUrl.of(rootURL)).getAbsolutePath());
         if (usersRepos.supportVirtualHosting()) {
             root.append("/").append(MaildirStore.PATH_DOMAIN).append("/").append(MaildirStore.PATH_USER).append("/");
         } else {

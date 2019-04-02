@@ -43,6 +43,7 @@ import org.apache.james.core.MaybeSender;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.library.netmatcher.NetMatcher;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.core.fastfail.AbstractGreylistHandler;
@@ -79,7 +80,7 @@ public class JDBCGreylistHandler extends AbstractGreylistHandler implements Prot
     private final SqlResources sqlQueries = new SqlResources();
 
     /** The sqlFileUrl */
-    private String sqlFileUrl;
+    private FileUrl sqlFileUrl;
 
     /** Holds value of property sqlParameters. */
     private final Map<String, String> sqlParameters = new HashMap<>();
@@ -125,7 +126,7 @@ public class JDBCGreylistHandler extends AbstractGreylistHandler implements Prot
      * @param sqlFileUrl
      *            The fileUrl
      */
-    public void setSqlFileUrl(String sqlFileUrl) {
+    public void setSqlFileUrl(FileUrl sqlFileUrl) {
         this.sqlFileUrl = sqlFileUrl;
     }
 
@@ -289,7 +290,7 @@ public class JDBCGreylistHandler extends AbstractGreylistHandler implements Prot
      * @throws Exception
      *             If any error occurs
      */
-    private void initSqlQueries(Connection conn, String sqlFileUrl) throws Exception {
+    private void initSqlQueries(Connection conn, FileUrl sqlFileUrl) throws Exception {
         try {
 
             File sqlFile;
@@ -398,9 +399,9 @@ public class JDBCGreylistHandler extends AbstractGreylistHandler implements Prot
         String sFile = handlerConfiguration.getString("sqlFile", null);
         if (sFile != null) {
 
-            setSqlFileUrl(sFile);
+            setSqlFileUrl(FileUrl.of(sFile));
 
-            if (!sqlFileUrl.startsWith("file://") && !sqlFileUrl.startsWith("classpath:")) {
+            if (!sqlFileUrl.hasProtocol(FileUrl.Protocol.FILE) && !sqlFileUrl.hasProtocol(FileUrl.Protocol.CLASSPATH)) {
                 throw new ConfigurationException("Malformed sqlFile - Must be of the format \"file://<filename>\".");
             }
         } else {

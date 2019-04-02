@@ -37,6 +37,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.core.Domain;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
 import org.apache.james.rrt.lib.Mapping;
@@ -73,7 +74,7 @@ public class JDBCRecipientRewriteTable extends AbstractRecipientRewriteTable {
      * The name of the SQL configuration file to be used to configure this
      * repository.
      */
-    private String sqlFileName;
+    private FileUrl sqlFileName;
 
     private FileSystem fileSystem;
 
@@ -183,7 +184,7 @@ public class JDBCRecipientRewriteTable extends AbstractRecipientRewriteTable {
 
         LOGGER.debug("Parsed URL: table = '{}'", tableName);
 
-        sqlFileName = conf.getString("sqlFile");
+        sqlFileName = FileUrl.of(conf.getString("sqlFile"));
 
     }
 

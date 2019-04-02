@@ -21,61 +21,61 @@ package org.apache.james.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 
 public class FileSystemFixture {
 
     public static final FileSystem THROWING_FILE_SYSTEM = new FileSystem() {
         @Override
-        public InputStream getResource(String url) throws IOException {
+        public InputStream getResource(FileUrl url) {
             throw new NotImplementedException();
         }
 
         @Override
-        public File getFile(String fileURL) throws FileNotFoundException {
+        public File getFile(FileUrl fileURL) throws FileNotFoundException {
             throw new FileNotFoundException();
         }
 
         @Override
-        public File getBasedir() throws FileNotFoundException {
+        public File getBasedir() {
             throw new NotImplementedException();
         }
     };
 
     public static final FileSystem CLASSPATH_FILE_SYSTEM = new FileSystem() {
         @Override
-        public InputStream getResource(String url) throws IOException {
+        public InputStream getResource(FileUrl url) {
             throw new NotImplementedException();
         }
 
         @Override
-        public File getFile(String fileURL) throws FileNotFoundException {
+        public File getFile(FileUrl fileURL) {
             return new File(ClassLoader.getSystemResource("recursive/extensions-jars").getFile());
         }
 
         @Override
-        public File getBasedir() throws FileNotFoundException {
+        public File getBasedir() {
             throw new NotImplementedException();
         }
     };
 
     public static final FileSystem RECURSIVE_CLASSPATH_FILE_SYSTEM = new FileSystem() {
         @Override
-        public InputStream getResource(String url) throws IOException {
+        public InputStream getResource(FileUrl url) {
             throw new NotImplementedException();
         }
 
         @Override
-        public File getFile(String fileURL) throws FileNotFoundException {
+        public File getFile(FileUrl fileURL) {
             return new File(ClassLoader.getSystemResource("recursive/").getFile());
         }
 
         @Override
-        public File getBasedir() throws FileNotFoundException {
+        public File getBasedir() {
             throw new NotImplementedException();
         }
     };

@@ -28,6 +28,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -45,7 +46,7 @@ public class PropertiesProvider {
 
     public Configuration getConfiguration(String fileName) throws FileNotFoundException, ConfigurationException {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(fileName));
-        File file = fileSystem.getFile(configurationPrefix + fileName + ".properties");
+        File file = fileSystem.getFile(FileUrl.of(configurationPrefix + fileName + ".properties"));
         if (!file.exists()) {
             throw new FileNotFoundException();
         }

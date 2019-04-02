@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.util.bayesian.JDBCBayesianAnalyzer;
 import org.apache.james.util.sql.JDBCUtil;
 import org.apache.mailet.Attribute;
@@ -269,7 +270,7 @@ public class BayesianAnalysis extends GenericMailet {
     private void initDb() throws MessagingException {
 
         try {
-            analyzer.initSqlQueries(datasource.getConnection(), fs.getFile("file://conf/sqlResources.xml"));
+            analyzer.initSqlQueries(datasource.getConnection(), fs.getFile(FileUrl.fileConfiguration("sqlResources.xml")));
         } catch (Exception e) {
             throw new MessagingException("Exception initializing queries", e);
         }

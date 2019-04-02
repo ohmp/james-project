@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 
@@ -32,14 +33,14 @@ public class ResourceLoaderFileSystem implements FileSystem, ResourceLoaderAware
     private ResourceLoader loader;
 
     @Override
-    public InputStream getResource(String url) throws IOException {
-        return loader.getResource(url).getInputStream();
+    public InputStream getResource(FileUrl url) throws IOException {
+        return loader.getResource(url.getValue()).getInputStream();
     }
 
     @Override
-    public File getFile(String fileURL) throws FileNotFoundException {
+    public File getFile(FileUrl fileURL) throws FileNotFoundException {
         try {
-            return loader.getResource(fileURL).getFile();
+            return loader.getResource(fileURL.getValue()).getFile();
         } catch (IOException e) {
             throw new FileNotFoundException("Could not load file " + fileURL);
         }

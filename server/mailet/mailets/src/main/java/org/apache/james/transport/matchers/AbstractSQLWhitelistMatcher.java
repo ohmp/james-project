@@ -37,6 +37,7 @@ import javax.sql.DataSource;
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.transport.mailets.WhiteListManager;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.model.JamesUser;
@@ -215,7 +216,8 @@ public abstract class AbstractSQLWhitelistMatcher extends GenericMatcher {
             }
 
             /* Holds value of property sqlFile. */
-            File sqlFile = fs.getFile("classpath:sqlResources.xml");
+            FileUrl fileURL = FileUrl.fromClasspath("sqlResources.xml");
+            File sqlFile = fs.getFile(fileURL);
             sqlQueries.init(sqlFile, getSQLSectionName(), conn, getSqlParameters());
             checkTables(conn);
         } finally {

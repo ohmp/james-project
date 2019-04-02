@@ -44,6 +44,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.james.core.User;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.sieverepository.api.ScriptContent;
 import org.apache.james.sieverepository.api.ScriptName;
 import org.apache.james.sieverepository.api.ScriptSummary;
@@ -63,7 +64,7 @@ import org.apache.james.sieverepository.api.exception.StorageException;
  */
 public class SieveFileRepository implements SieveRepository {
 
-    private static final String SIEVE_ROOT = FileSystem.FILE_PROTOCOL + "sieve/";
+    private static final FileUrl SIEVE_ROOT = FileUrl.relativeFile("sieve/");
     private static final String UTF_8 = "UTF-8";
     private static final String FILE_NAME_QUOTA = ".quota";
     private static final String FILE_NAME_ACTIVE = ".active";

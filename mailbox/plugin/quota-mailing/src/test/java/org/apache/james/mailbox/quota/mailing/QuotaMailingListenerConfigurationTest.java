@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.mailbox.quota.mailing.QuotaMailingListenerConfiguration.RenderingInformation;
 import org.apache.james.mailbox.quota.model.QuotaThreshold;
 import org.junit.jupiter.api.Test;
@@ -37,12 +38,12 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class QuotaMailingListenerConfigurationTest {
 
-    private static final String SUBJECT_TEMPLATE = "sbj.mustache";
-    private static final String BODY_TEMPLATE = "body.mustache";
-    private static final String OTHER_SUBJECT_TEMPLATE = "other_sbj.mustache";
-    private static final String OTHER_BODY_TEMPLATE = "other_body.mustache";
-    private static final String YET_ANOTHER_SUBJECT_TEMPLATE = "yet_another_sbj.mustache";
-    private static final String YET_ANOTHER_BODY_TEMPLATE = "yet_another_body.mustache";
+    private static final FileUrl SUBJECT_TEMPLATE = FileUrl.fileConfiguration("sbj.mustache");
+    private static final FileUrl BODY_TEMPLATE = FileUrl.fileConfiguration("body.mustache");
+    private static final FileUrl OTHER_SUBJECT_TEMPLATE = FileUrl.fileConfiguration("other_sbj.mustache");
+    private static final FileUrl OTHER_BODY_TEMPLATE = FileUrl.fileConfiguration("other_body.mustache");
+    private static final FileUrl YET_ANOTHER_SUBJECT_TEMPLATE = FileUrl.fileConfiguration("yet_another_sbj.mustache");
+    private static final FileUrl YET_ANOTHER_BODY_TEMPLATE = FileUrl.fileConfiguration("yet_another_body.mustache");
 
     @Test
     public void shouldMatchBeanContract() {
@@ -58,17 +59,17 @@ public class QuotaMailingListenerConfigurationTest {
                 "  <thresholds>\n" +
                 "    <threshold>" +
                 "      <value>0.85</value>" +
-                "      <subjectTemplate>" + SUBJECT_TEMPLATE + "</subjectTemplate>\n" +
-                "      <bodyTemplate>" + BODY_TEMPLATE + "</bodyTemplate>\n" +
+                "      <subjectTemplate>" + SUBJECT_TEMPLATE.getValue() + "</subjectTemplate>\n" +
+                "      <bodyTemplate>" + BODY_TEMPLATE.getValue() + "</bodyTemplate>\n" +
                 "    </threshold>\n" +
                 "    <threshold>\n" +
                 "      <value>0.98</value>\n" +
-                "      <subjectTemplate>" + OTHER_SUBJECT_TEMPLATE + "</subjectTemplate>\n" +
-                "      <bodyTemplate>" + OTHER_BODY_TEMPLATE + "</bodyTemplate>\n" +
+                "      <subjectTemplate>" + OTHER_SUBJECT_TEMPLATE.getValue() + "</subjectTemplate>\n" +
+                "      <bodyTemplate>" + OTHER_BODY_TEMPLATE.getValue() + "</bodyTemplate>\n" +
                 "    </threshold>\n" +
                 "  </thresholds>\n" +
-                "  <subjectTemplate>" + YET_ANOTHER_SUBJECT_TEMPLATE + "</subjectTemplate>\n" +
-                "  <bodyTemplate>" + YET_ANOTHER_BODY_TEMPLATE + "</bodyTemplate>\n" +
+                "  <subjectTemplate>" + YET_ANOTHER_SUBJECT_TEMPLATE.getValue() + "</subjectTemplate>\n" +
+                "  <bodyTemplate>" + YET_ANOTHER_BODY_TEMPLATE.getValue() + "</bodyTemplate>\n" +
                 "  <gracePeriod>3 days</gracePeriod>\n" +
                 "  <name>listener-name</name>\n" +
                 "</configuration>"));
@@ -96,11 +97,11 @@ public class QuotaMailingListenerConfigurationTest {
                 "  <thresholds>\n" +
                 "    <threshold>" +
                 "      <value>0.85</value>" +
-                "      <bodyTemplate>" + BODY_TEMPLATE + "</bodyTemplate>\n" +
+                "      <bodyTemplate>" + BODY_TEMPLATE.getValue() + "</bodyTemplate>\n" +
                 "    </threshold>\n" +
                 "    <threshold>\n" +
                 "      <value>0.98</value>\n" +
-                "      <subjectTemplate>" + OTHER_SUBJECT_TEMPLATE + "</subjectTemplate>\n" +
+                "      <subjectTemplate>" + OTHER_SUBJECT_TEMPLATE.getValue() + "</subjectTemplate>\n" +
                 "    </threshold>\n" +
                 "    <threshold>\n" +
                 "      <value>0.99</value>\n" +
@@ -210,7 +211,7 @@ public class QuotaMailingListenerConfigurationTest {
                 "    <threshold>" +
                 "      <value>0.85</value>" +
                 "      <subjectTemplate></subjectTemplate>\n" +
-                "      <bodyTemplate>" + BODY_TEMPLATE + "</bodyTemplate>\n" +
+                "      <bodyTemplate>" + BODY_TEMPLATE.getValue() + "</bodyTemplate>\n" +
                 "    </threshold>\n" +
                 "  </thresholds>\n" +
                 "  <gracePeriod>3 days</gracePeriod>\n" +
@@ -228,7 +229,7 @@ public class QuotaMailingListenerConfigurationTest {
                 "  <thresholds>\n" +
                 "    <threshold>" +
                 "      <value>0.85</value>" +
-                "      <subjectTemplate>" + SUBJECT_TEMPLATE + "</subjectTemplate>\n" +
+                "      <subjectTemplate>" + SUBJECT_TEMPLATE.getValue() + "</subjectTemplate>\n" +
                 "      <bodyTemplate></bodyTemplate>\n" +
                 "    </threshold>\n" +
                 "  </thresholds>\n" +

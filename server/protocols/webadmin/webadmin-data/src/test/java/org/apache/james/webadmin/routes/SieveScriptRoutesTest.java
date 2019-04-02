@@ -37,6 +37,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.core.User;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.junit.TemporaryFolderExtension;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.sieverepository.api.ScriptContent;
@@ -76,13 +77,13 @@ public class SieveScriptRoutesTest {
             }
 
             @Override
-            public InputStream getResource(String url) throws IOException {
+            public InputStream getResource(FileUrl url) throws IOException {
                 return new FileInputStream(getFile(url));
             }
 
             @Override
-            public File getFile(String fileURL) {
-                return new File(getBasedir(), fileURL.substring(FileSystem.FILE_PROTOCOL.length()));
+            public File getFile(FileUrl fileURL) {
+                return new File(getBasedir(), fileURL.toRelativeFilePath());
             }
         };
 

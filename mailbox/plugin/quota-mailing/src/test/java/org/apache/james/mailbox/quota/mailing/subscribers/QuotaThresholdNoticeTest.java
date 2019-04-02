@@ -32,6 +32,7 @@ import java.util.Optional;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.quota.QuotaFixture.Counts;
 import org.apache.james.mailbox.quota.QuotaFixture.Sizes;
@@ -286,11 +287,11 @@ class QuotaThresholdNoticeTest {
     void renderingShouldUsePerThresholdTemplate() throws Exception {
         QuotaMailingListenerConfiguration configuration = QuotaMailingListenerConfiguration.builder()
             .addThreshold(_80, RenderingInformation.from(
-                "classpath://templates/body1.mustache",
-                "classpath://templates/subject1.mustache"))
+                FileUrl.fromClasspath("templates/body1.mustache"),
+                FileUrl.fromClasspath("templates/subject1.mustache")))
             .addThreshold(_95, RenderingInformation.from(
-                "classpath://templates/body2.mustache",
-                "classpath://templates/subject2.mustache"))
+                FileUrl.fromClasspath("templates/body2.mustache"),
+                FileUrl.fromClasspath("templates/subject2.mustache")))
             .build();
 
         QuotaThresholdNotice quotaThresholdNotice1 = QuotaThresholdNotice.builder()
@@ -325,11 +326,11 @@ class QuotaThresholdNoticeTest {
     void renderingShouldUseMostSignificantThreshold() throws Exception {
         QuotaMailingListenerConfiguration configuration = QuotaMailingListenerConfiguration.builder()
             .addThreshold(_80, RenderingInformation.from(
-                "classpath://templates/body1.mustache",
-                "classpath://templates/subject1.mustache"))
+                FileUrl.fromClasspath("templates/body1.mustache"),
+                FileUrl.fromClasspath("templates/subject1.mustache")))
             .addThreshold(_95, RenderingInformation.from(
-                "classpath://templates/body2.mustache",
-                "classpath://templates/subject2.mustache"))
+                FileUrl.fromClasspath("templates/body2.mustache"),
+                FileUrl.fromClasspath("templates/subject2.mustache")))
             .build();
 
         QuotaThresholdNotice quotaThresholdNotice1 = QuotaThresholdNotice.builder()
@@ -354,12 +355,12 @@ class QuotaThresholdNoticeTest {
         QuotaMailingListenerConfiguration configuration = QuotaMailingListenerConfiguration.builder()
             .addThreshold(_80, RenderingInformation.from(
                 Optional.empty(),
-                Optional.of("classpath://templates/subject1.mustache")))
+                Optional.of(FileUrl.fromClasspath("templates/subject1.mustache"))))
             .addThreshold(_95, RenderingInformation.from(
-                Optional.of("classpath://templates/body1.mustache"),
+                Optional.of(FileUrl.fromClasspath("templates/body1.mustache")),
                 Optional.empty()))
-            .subjectTemplate("classpath://templates/subject2.mustache")
-            .bodyTemplate("classpath://templates/body2.mustache")
+            .subjectTemplate(FileUrl.fromClasspath("templates/subject2.mustache"))
+            .bodyTemplate(FileUrl.fromClasspath("templates/body2.mustache"))
             .build();
 
         QuotaThresholdNotice quotaThresholdNotice1 = QuotaThresholdNotice.builder()
@@ -394,7 +395,7 @@ class QuotaThresholdNoticeTest {
     void renderingShouldDefaultToDefaultValueWhenSpecificThresholdAndGlobalValueIsOmited() throws Exception {
         QuotaMailingListenerConfiguration configuration = QuotaMailingListenerConfiguration.builder()
             .addThreshold(_80, RenderingInformation.from(
-                Optional.of("classpath://templates/body2.mustache"),
+                Optional.of(FileUrl.fromClasspath("templates/body2.mustache")),
                 Optional.empty()))
             .build();
 

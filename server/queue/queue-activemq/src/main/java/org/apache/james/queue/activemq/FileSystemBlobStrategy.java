@@ -36,6 +36,7 @@ import org.apache.activemq.blob.BlobUploadStrategy;
 import org.apache.activemq.command.ActiveMQBlobMessage;
 import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 
 /**
  * {@link BlobUploadStrategy} and {@link BlobDownloadStrategy} implementation
@@ -121,7 +122,7 @@ public class FileSystemBlobStrategy implements BlobUploadStrategy, BlobDownloadS
      */
     protected File getFile(ActiveMQBlobMessage message) throws JMSException, IOException {
         if (message.getURL() != null) {
-            return fileSystem.getFile(message.getURL().toString());
+            return fileSystem.getFile(FileUrl.of(message.getURL().toString()));
         }
 
         // Make sure it works on windows in all cases and make sure
@@ -130,7 +131,7 @@ public class FileSystemBlobStrategy implements BlobUploadStrategy, BlobDownloadS
         String filename = message.getJMSMessageID().replaceAll("[:\\\\/*?|<>]", "_");
         int i = RANDOM.nextInt(splitCount) + 1;
 
-        String queueUrl = policy.getUploadUrl() + "/" + i;
+        FileUrl queueUrl = FileUrl.of(policy.getUploadUrl()).append(Integer.toString(i));
 
         File queueF = fileSystem.getFile(queueUrl);
 
@@ -139,6 +140,6 @@ public class FileSystemBlobStrategy implements BlobUploadStrategy, BlobDownloadS
             FileUtils.forceMkdir(queueF);
         }
 
-        return fileSystem.getFile(queueUrl + "/" + filename);
+        return fileSystem.getFile(queueUrl.append(filename));
     }
 }

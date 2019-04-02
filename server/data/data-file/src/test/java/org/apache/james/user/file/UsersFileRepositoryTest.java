@@ -21,7 +21,6 @@ package org.apache.james.user.file;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -29,6 +28,7 @@ import java.util.Iterator;
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.lib.AbstractUsersRepository;
@@ -66,18 +66,18 @@ public class UsersFileRepositoryTest extends AbstractUsersRepositoryTest {
         FileSystem fs = new FileSystem() {
 
             @Override
-            public File getBasedir() throws FileNotFoundException {
+            public File getBasedir() {
                 return new File(".");
             }
 
             @Override
-            public InputStream getResource(String url) throws IOException {
+            public InputStream getResource(FileUrl url) throws IOException {
                 return new FileInputStream(getFile(url));
             }
 
             @Override
-            public File getFile(String fileURL) throws FileNotFoundException {
-                return new File(fileURL.substring(FileSystem.FILE_PROTOCOL.length()));
+            public File getFile(FileUrl fileURL) {
+                return new File(fileURL.toRelativeFilePath());
             }
 
         };
@@ -98,7 +98,7 @@ public class UsersFileRepositoryTest extends AbstractUsersRepositoryTest {
     @Override
     @Ignore
     @Test
-    public void addUserShouldThrowWhenSameUsernameWithDifferentCase() throws UsersRepositoryException {
+    public void addUserShouldThrowWhenSameUsernameWithDifferentCase() {
     }
 
     @Override
@@ -114,6 +114,6 @@ public class UsersFileRepositoryTest extends AbstractUsersRepositoryTest {
 
     @Ignore
     @Override
-    public void testShouldReturnTrueWhenAUserHasACorrectPasswordAndOtherCaseInDomain() throws Exception {
+    public void testShouldReturnTrueWhenAUserHasACorrectPasswordAndOtherCaseInDomain() {
     }
 }

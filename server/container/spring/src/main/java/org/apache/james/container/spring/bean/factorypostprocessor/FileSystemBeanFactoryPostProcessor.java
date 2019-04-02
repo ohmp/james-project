@@ -21,6 +21,7 @@ package org.apache.james.container.spring.bean.factorypostprocessor;
 import java.io.FileNotFoundException;
 
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -62,7 +63,7 @@ public class FileSystemBeanFactoryPostProcessor implements BeanFactoryPostProces
         protected String resolveStringValue(String strVal) throws BeansException {
             if (strVal.startsWith(FS_PREFIX)) {
                 try {
-                    return fileSystem.getFile(strVal.substring(FS_PREFIX.length())).toString();
+                    return fileSystem.getFile(FileUrl.of(strVal.substring(FS_PREFIX.length()))).toString();
                 } catch (FileNotFoundException e) {
                     throw new FatalBeanException("Unable to convert value with filesystem service", e);
                 }

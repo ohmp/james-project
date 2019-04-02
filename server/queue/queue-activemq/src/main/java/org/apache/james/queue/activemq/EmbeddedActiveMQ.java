@@ -32,15 +32,16 @@ import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.plugin.StatisticsBrokerPlugin;
 import org.apache.activemq.store.PersistenceAdapter;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EmbeddedActiveMQ {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddedActiveMQ.class);
-    private static final String KAHADB_STORE_LOCATION = "file://var/store/activemq/brokers/KahaDB";
-    private static final String BLOB_TRANSFER_LOCATION = "file://var/store/activemq/blob-transfer";
-    private static final String BROCKERS_LOCATION = "file://var/store/activemq/brokers";
+    private static final FileUrl KAHADB_STORE_LOCATION = FileUrl.relativeFile("var/store/activemq/brokers/KahaDB");
+    private static final FileUrl BLOB_TRANSFER_LOCATION = FileUrl.relativeFile("var/store/activemq/blob-transfer");
+    private static final FileUrl BROCKERS_LOCATION = FileUrl.relativeFile("var/store/activemq/brokers");
     private static final String BROKER_ID = "broker";
     private static final String BROKER_NAME = "james";
     private static final String BROCKER_URI = "tcp://localhost:0";
@@ -86,7 +87,7 @@ public class EmbeddedActiveMQ {
 
     private BlobTransferPolicy createBlobTransferPolicy(FileSystem fileSystem) {
         FileSystemBlobTransferPolicy blobTransferPolicy = new FileSystemBlobTransferPolicy();
-        blobTransferPolicy.setDefaultUploadUrl(BLOB_TRANSFER_LOCATION);
+        blobTransferPolicy.setDefaultUploadUrl(BLOB_TRANSFER_LOCATION.getValue());
         blobTransferPolicy.setFileSystem(fileSystem);
         return blobTransferPolicy;
     }

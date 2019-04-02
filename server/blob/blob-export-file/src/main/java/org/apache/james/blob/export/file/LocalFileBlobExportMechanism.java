@@ -34,8 +34,11 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.server.core.MailImpl;
 import org.apache.mailet.MailetContext;
+
+import com.google.common.base.Preconditions;
 
 public class LocalFileBlobExportMechanism implements BlobExportMechanism {
     private static final int STRING_LENGTH = 32;
@@ -45,13 +48,14 @@ public class LocalFileBlobExportMechanism implements BlobExportMechanism {
     static final String CORRESPONDING_FILE_HEADER = "corresponding-file";
 
     public static class Configuration {
-
-        private static final String DEFAULT_DIRECTORY_LOCATION = "file://var/blobExporting";
+        private static final FileUrl DEFAULT_DIRECTORY_LOCATION = FileUrl.relativeFile("var/blobExporting");
         public static final Configuration DEFAULT_CONFIGURATION = new Configuration(DEFAULT_DIRECTORY_LOCATION);
 
-        private final String exportDirectory;
+        private final FileUrl exportDirectory;
 
-        public Configuration(String exportDirectory) {
+        public Configuration(FileUrl exportDirectory) {
+            Preconditions.checkNotNull(exportDirectory);
+
             this.exportDirectory = exportDirectory;
         }
     }
@@ -74,19 +78,18 @@ public class LocalFileBlobExportMechanism implements BlobExportMechanism {
     @Override
     public ShareeStage blobId(BlobId blobId) {
         return mailAddress -> explanation -> () ->  {
-            String fileUrl = copyBlobToFile(blobId);
+            FileUrl fileUrl = copyBlobToFile(blobId);
             sendMail(mailAddress, fileUrl, explanation);
         };
     }
 
-    private String copyBlobToFile(BlobId blobId) {
+    private FileUrl copyBlobToFile(BlobId blobId) {
         try {
             File exportingDirectory = fileSystem.getFile(configuration.exportDirectory);
             FileUtils.forceMkdir(exportingDirectory);
 
-
             String fileName = RandomStringUtils.random(STRING_LENGTH, WITH_LETTERS, !WITH_NUMBERS);
-            String fileURL = configuration.exportDirectory + "/" + fileName;
+            FileUrl fileURL = configuration.exportDirectory.append(fileName);
             File file = fileSystem.getFile(fileURL);
             FileUtils.copyToFile(blobStore.read(blobId), file);
 
@@ -96,14 +99,14 @@ public class LocalFileBlobExportMechanism implements BlobExportMechanism {
         }
     }
 
-    private void sendMail(MailAddress mailAddress, String fileUrl, String explanation) {
+    private void sendMail(MailAddress mailAddress, FileUrl fileUrl, String explanation) {
         try {
             MimeMessageBuilder mimeMessage = MimeMessageBuilder.mimeMessageBuilder()
-                .addHeader(CORRESPONDING_FILE_HEADER, fileUrl)
+                .addHeader(CORRESPONDING_FILE_HEADER, fileUrl.getValue())
                 .addFrom(mailetContext.getPostmaster().asString())
                 .addToRecipient(mailAddress.asString())
                 .setSubject(SUBJECT)
-                .setText(computeMessage(explanation, fileUrl));
+                .setText(computeMessage(explanation, fileUrl.getValue()));
 
             MailImpl mail = MailImpl.builder()
                 .name(MailImpl.getId())
