@@ -19,12 +19,11 @@
 
 package org.apache.james.modules;
 
-import java.io.FileNotFoundException;
 import java.util.Optional;
 
 import javax.inject.Singleton;
 
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.james.filesystem.api.FileUrl;
 import org.apache.james.jmap.JMAPConfiguration;
 import org.apache.james.jmap.methods.GetMessageListMethod;
 
@@ -58,10 +57,10 @@ public class TestJMAPServerModule extends AbstractModule {
 
     @Provides
     @Singleton
-    JMAPConfiguration provideConfiguration() throws FileNotFoundException, ConfigurationException {
+    JMAPConfiguration provideConfiguration() {
         return JMAPConfiguration.builder()
                 .enable()
-                .keystore("keystore")
+                .keystore(FileUrl.fromClasspath("keystore"))
                 .secret("james72laBalle")
                 .jwtPublicKeyPem(Optional.of(PUBLIC_PEM_KEY))
                 .randomPort()
