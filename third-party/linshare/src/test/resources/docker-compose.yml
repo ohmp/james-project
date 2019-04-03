@@ -2,19 +2,10 @@
 version: '3.7'
 
 services:
-
-    docker-socket:
-        container_name: linshare_docker-socket
-        image: tecnativa/docker-socket-proxy
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-        environment:
-            - CONTAINERS=1
-
     database:
         container_name: linshare_database
         restart: on-failure
-        image: linagora/linshare-database:2.2
+        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database:2.3
         environment:
             - PGDATA=/var/lib/postgresql/data/pgdata
             - POSTGRES_USER=linshare
@@ -23,7 +14,9 @@ services:
     backend:
         container_name: linshare_backend
         restart: on-failure
-        image: linagora/linshare-backend:2.2
+        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-backend:2.3
+        ports:
+            - 28080:8080
         links:
             - database:linshare_database
             - mongodb:linshare_mongodb
@@ -33,6 +26,8 @@ services:
         volumes:
             - ./conf/catalina.properties:/usr/local/tomcat/conf/catalina.properties
             - ./conf/log4j.properties:/etc/linshare/log4j.properties
+            - ./ssl/id_rsa:/etc/linshare/id_rsa
+            - ./ssl/id_rsa.pub:/etc/linshare/id_rsa.pub
         healthcheck:
             test: ["CMD", "curl", "-s", "-f", "http://localhost:8080/linshare/"]
             interval: 30s
@@ -76,11 +71,15 @@ services:
 
     database-init:
         container_name: linshare_database-init
-        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database-init:2.2
+        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database-init:2.3
         links:
             - backend:linshare_backend
+        depends_on:
+            - backend
+            - ldap
         environment:
-            - TOMCAT_HOST=${BACKEND_TOMCAT_HOST}
+            - TOMCAT_HOST=linshare_backend_dev
+            - TOMCAT_PORT=8080
             - TOMCAT_LDAP_NAME=ldap-local
             - TOMCAT_LDAP_URL=ldap://ldap:389
             - TOMCAT_LDAP_BASE_DN=ou=People,dc=linshare,dc=org
@@ -89,11 +88,8 @@ services:
             - TOMCAT_DOMAIN_PATTERN_NAME=openldap-local
             - TOMCAT_DOMAIN_PATTERN_MODEL=868400c0-c12e-456a-8c3c-19e985290586
             - NO_REPLY_ADDRESS=linshare-noreply@linshare.org
-
-    clamav:
-        container_name: linshare_clamav
-        restart: on-failure
-        image: mkodockx/docker-clamav
+            - DEBUG=1
+            - FORCE_INIT=1
 
 networks:
     linshare-backend-tier:
