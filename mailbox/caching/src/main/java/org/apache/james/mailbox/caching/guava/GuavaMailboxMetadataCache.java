@@ -10,6 +10,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 
 import com.google.common.cache.Cache;
+
 /**
  * Guava-based implementation of MailboxMetadataCache.
  * Note: for efficiency/simplicity reasons the cache key is Mailbox.getMailboxId()
