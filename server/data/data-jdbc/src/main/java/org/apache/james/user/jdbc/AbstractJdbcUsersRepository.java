@@ -94,7 +94,7 @@ import org.slf4j.LoggerFactory;
  *
  * @deprecated JAMES-2703 This class is deprecated and will be removed straight after upcoming James 3.4.0 release, unless it finds a maintainer
  *
- * Please migrate to other UsersRepository implementations
+ * Please migrate to other UsersRepository implementations like JpaUsersRepository
  */
 @Deprecated
 public abstract class AbstractJdbcUsersRepository extends AbstractJamesUsersRepository {
