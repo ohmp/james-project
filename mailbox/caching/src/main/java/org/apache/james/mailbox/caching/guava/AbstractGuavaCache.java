@@ -4,6 +4,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.CacheBuilder;
 
+/**
+ * @deprecated JAMES-2703 This class is deprecated and will be removed straight after upcoming James 3.4.0 release, unless it finds a maintainer
+ */
+@Deprecated
 public class AbstractGuavaCache {
 
     // TODO this can probably be instantiated more elegant way

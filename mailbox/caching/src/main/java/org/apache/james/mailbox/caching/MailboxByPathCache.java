@@ -8,8 +8,10 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 
 /**
  * Caches the MailboxPath -> Mailbox mapping
- * 
+ *
+ * @deprecated JAMES-2703 This class is deprecated and will be removed straight after upcoming James 3.4.0 release, unless it finds a maintainer
  */
+@Deprecated
 public interface MailboxByPathCache {
 
     Mailbox findMailboxByPath(MailboxPath mailboxName,

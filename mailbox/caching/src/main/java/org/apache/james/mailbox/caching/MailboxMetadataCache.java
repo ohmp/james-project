@@ -10,8 +10,10 @@ import org.apache.james.mailbox.store.mail.MessageMapper;
 /**
  * Caches the simple yet possibly expensive to compute metadata info 
  * about a Mailbox like all/unseen messages count and similar
- * 
+ *
+ * @deprecated JAMES-2703 This class is deprecated and will be removed straight after upcoming James 3.4.0 release, unless it finds a maintainer
  */
+@Deprecated
 public interface MailboxMetadataCache {
 
     long countMessagesInMailbox(Mailbox mailbox,
