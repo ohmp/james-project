@@ -63,11 +63,7 @@ public class JPAMailbox {
     private static final String TAB = " ";
 
     public static JPAMailbox from(Mailbox mailbox) {
-        JPAMailbox jpaMailbox = new JPAMailbox(mailbox);
-        /*if (mailbox.getMailboxId() != null) {
-            jpaMailbox.setMailboxId(mailbox.getMailboxId());
-        }*/
-        return jpaMailbox;
+        return new JPAMailbox(mailbox);
     }
 
     /** The value for the mailboxId field */
