@@ -3,7 +3,6 @@ version: '3.7'
 
 services:
     database:
-        container_name: linshare_database
         restart: on-failure
         image: linagora/linshare-database:2.2
         environment:
@@ -12,11 +11,8 @@ services:
             - POSTGRES_PASSWORD=linshare
 
     backend:
-        container_name: backend
         restart: on-failure
         image: linagora/linshare-backend:2.2
-        ports:
-            - 28080:8080
         links:
             - database:linshare_database
             - mongodb:linshare_mongodb
@@ -35,11 +31,8 @@ services:
             retries: 3
             start_period: 40s
         environment:
-            # These variables are mandatory
             - SMTP_HOST=linshare_smtp
             - SMTP_PORT=25
-            - CLAMAV_HOST=linshare_clamav
-            - CLAMAV_PORT=3310
             - POSTGRES_HOST=linshare_database
             - POSTGRES_PORT=5432
             - POSTGRES_USER=linshare
@@ -49,13 +42,11 @@ services:
             - THUMBNAIL_ENABLE=false
 
     mongodb:
-        container_name: linshare_mongodb
         restart: on-failure
         image: mongo:3.2
         command: mongod --smallfiles
 
     smtp:
-        container_name: linshare_smtp
         restart: on-failure
         image: linagora/opensmtpd
         volumes:
@@ -63,14 +54,10 @@ services:
 
     ldap:
         image: linagora/linshare-ldap-for-tests:1.0
-        container_name: linshare_ldap
         tty: true
         stdin_open: true
-        ports:
-            - "20389:389"
 
     database-init:
-        container_name: linshare_database-init
         image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database-init:2.2
         links:
             - backend:backend

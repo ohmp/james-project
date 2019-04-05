@@ -18,12 +18,13 @@
  ****************************************************************/
 package org.apache.james.linshare;
 
-import static io.restassured.RestAssured.when;
+import static io.restassured.RestAssured.given;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
 import java.nio.charset.StandardCharsets;
 
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +38,7 @@ import io.restassured.http.ContentType;
 class LinshareTest {
     @BeforeEach
     void setup(DockerComposeContainer<?> linshare) {
-        new RequestSpecBuilder()
+        RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
                 .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
@@ -47,10 +48,14 @@ class LinshareTest {
     }
 
     @Test
-    void linshareShouldAnswer() {
-        when()
-            .get("/documents/document_uuid/download")
+    void linshareShouldStart() {
+        given()
+            .auth().basic("user1@linshare.org", "password1")
+        .when()
+            .log().uri()
+            .get("linshare/webservice/rest/user/v2/documents")
+            .prettyPeek()
         .then()
-            .statusCode(404);
+            .statusCode(HttpStatus.SC_OK);
     }
 }

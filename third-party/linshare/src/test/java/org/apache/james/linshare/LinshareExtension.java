@@ -19,7 +19,6 @@
 package org.apache.james.linshare;
 
 import java.io.File;
-import java.time.Duration;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -31,9 +30,10 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class LinshareExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
+    private static final String WAIT_FOR_LOG_MSG_PATTERN = ".*/linshare/webservice/rest/admin/authentication/change_password.*";
     public static final String BASE_PATH = "/linshare/webservice/rest/user/v2";
     private static final String DOCKER_COMPOSE_YML = "docker-compose.yml";
-    public static final String LINSHARE_BACKEND_SERVICE = "linshare_backend";
+    public static final String LINSHARE_BACKEND_SERVICE = "backend";
     public static final int LINSHARE_BACKEND_PORT = 8080;
 
     private DockerComposeContainer<?> linshare;
@@ -45,7 +45,7 @@ public class LinshareExtension implements BeforeAllCallback, AfterAllCallback, P
         linshare = new DockerComposeContainer<>(file)
                 .withExposedService(LINSHARE_BACKEND_SERVICE,
                     LINSHARE_BACKEND_PORT,
-                    Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(10)));
+                    Wait.forLogMessage(WAIT_FOR_LOG_MSG_PATTERN, 1));
         linshare.start();
     }
 
