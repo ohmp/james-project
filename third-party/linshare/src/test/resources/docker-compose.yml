@@ -5,16 +5,16 @@ services:
     database:
         container_name: linshare_database
         restart: on-failure
-        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database:2.3
+        image: linagora/linshare-database:2.2
         environment:
             - PGDATA=/var/lib/postgresql/data/pgdata
             - POSTGRES_USER=linshare
             - POSTGRES_PASSWORD=linshare
 
     backend:
-        container_name: linshare_backend
+        container_name: backend
         restart: on-failure
-        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-backend:2.3
+        image: linagora/linshare-backend:2.2
         ports:
             - 28080:8080
         links:
@@ -62,7 +62,7 @@ services:
             - ./conf/smtpd.conf:/etc/smtpd/smtpd.conf
 
     ldap:
-        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-ldap-for-tests
+        image: linagora/linshare-ldap-for-tests:1.0
         container_name: linshare_ldap
         tty: true
         stdin_open: true
@@ -71,14 +71,13 @@ services:
 
     database-init:
         container_name: linshare_database-init
-        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database-init:2.3
+        image: docker-registry.linagora.com:5000/linshare-snapshots/linshare-database-init:2.2
         links:
-            - backend:linshare_backend
+            - backend:backend
         depends_on:
             - backend
-            - ldap
         environment:
-            - TOMCAT_HOST=linshare_backend_dev
+            - TOMCAT_HOST=backend
             - TOMCAT_PORT=8080
             - TOMCAT_LDAP_NAME=ldap-local
             - TOMCAT_LDAP_URL=ldap://ldap:389
@@ -89,10 +88,3 @@ services:
             - TOMCAT_DOMAIN_PATTERN_MODEL=868400c0-c12e-456a-8c3c-19e985290586
             - NO_REPLY_ADDRESS=linshare-noreply@linshare.org
             - DEBUG=1
-            - FORCE_INIT=1
-
-networks:
-    linshare-backend-tier:
-        driver: bridge
-
-
