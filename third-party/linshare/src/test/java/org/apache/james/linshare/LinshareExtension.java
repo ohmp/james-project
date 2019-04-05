@@ -18,7 +18,12 @@
  ****************************************************************/
 package org.apache.james.linshare;
 
+import static io.restassured.RestAssured.with;
+import static io.restassured.config.EncoderConfig.encoderConfig;
+import static io.restassured.config.RestAssuredConfig.newConfig;
+
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -28,6 +33,8 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+
+import io.restassured.http.ContentType;
 
 public class LinshareExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
     private static final String WAIT_FOR_LOG_MSG_PATTERN = ".*/linshare/webservice/rest/admin/authentication/change_password.*";
@@ -47,6 +54,20 @@ public class LinshareExtension implements BeforeAllCallback, AfterAllCallback, P
                     LINSHARE_BACKEND_PORT,
                     Wait.forLogMessage(WAIT_FOR_LOG_MSG_PATTERN, 1));
         linshare.start();
+
+        with()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .config(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
+            .port(linshare.getServicePort(LinshareExtension.LINSHARE_BACKEND_SERVICE, LinshareExtension.LINSHARE_BACKEND_PORT))
+            .auth().basic("user1@linshare.org", "password1")
+            .param("label", "ldap-local")
+            .param("providerUrl", "ldap://ldap:389")
+            .param("securityCredentials", "linshare")
+            .param("securityPrincipal", "cn=linshare,dc=linshare,dc=org")
+            .log().uri()
+        .post("linshare/webservice/rest/admin/ldap_connections")
+            .prettyPeek();
     }
 
     @Override
