@@ -35,7 +35,7 @@ import io.restassured.http.ContentType;
 
 class LinshareTest {
     @RegisterExtension
-    LinshareExtension linshareExtension = new LinshareExtension();
+    static LinshareExtension linshareExtension = new LinshareExtension();
 
     @BeforeEach
     void setup() {
