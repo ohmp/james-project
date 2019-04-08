@@ -46,4 +46,8 @@ public class Linshare extends DockerComposeContainer<Linshare> {
     public int getPort() {
         return getServicePort(LINSHARE_BACKEND_SERVICE, LINSHARE_BACKEND_PORT);
     }
+
+    public String getHost() {
+        return getServiceHost(LINSHARE_BACKEND_SERVICE, LINSHARE_BACKEND_PORT);
+    }
 }
