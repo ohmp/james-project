@@ -43,6 +43,7 @@ class LinshareTest {
             .setContentType(ContentType.JSON)
             .setAccept(ContentType.JSON)
             .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
+            .setBaseUri("http://" + linshareExtension.getLinshare().getHost())
             .setPort(linshareExtension.getLinshare().getPort())
             .build();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
