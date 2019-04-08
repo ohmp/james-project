@@ -35,6 +35,5 @@
 
     <modules>
         <module>linshare</module>
-        <module>spamassassin</module>
     </modules>
 </project>
