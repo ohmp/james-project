@@ -26,13 +26,13 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class Linshare extends DockerComposeContainer<Linshare> {
     private static final String WAIT_FOR_LOG_MSG_PATTERN = ".*/linshare/webservice/rest/admin/authentication/change_password.*";
-    private static final String DOCKER_COMPOSE_YML = "docker-compose.yml";
+    private static final String DOCKER_COMPOSE_YML = "src/test/resources/docker-compose.yml";
     private static final String LINSHARE_BACKEND_SERVICE = "backend";
     private static final int LINSHARE_BACKEND_PORT = 8080;
 
     @SuppressWarnings("resource")
     public static Linshare create() throws Exception {
-        File file = new File(ClassLoader.getSystemResource(DOCKER_COMPOSE_YML).toURI());
+        File file = new File(DOCKER_COMPOSE_YML);
         return new Linshare(file)
             .withExposedService(LINSHARE_BACKEND_SERVICE,
                 LINSHARE_BACKEND_PORT,
