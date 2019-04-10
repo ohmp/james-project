@@ -19,6 +19,8 @@
 
 package org.apache.james.linshare;
 
+import java.time.Duration;
+
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -31,7 +33,6 @@ public class Linshare {
 
     private final GenericContainer<?> linshareBackend;
     private final GenericContainer<?> linshareDatabase;
-    private final GenericContainer<?> linshareDatabaseInit;
     private final GenericContainer<?> linshareSmtp;
     private final GenericContainer<?> linshareLdap;
     private final GenericContainer<?> linshareMongodb;
@@ -46,7 +47,6 @@ public class Linshare {
         linshareLdap = createDockerLdap();
         linshareSmtp = createDockerSmtp();
         linshareBackend = createDockerBackend();
-        linshareDatabaseInit = createDockerDatabaseInit();
     }
 
     public void start() {
@@ -55,7 +55,8 @@ public class Linshare {
         linshareLdap.start();
         linshareSmtp.start();
         linshareBackend.start();
-        linshareDatabaseInit.start();
+
+        LDAPConfigurationPerformer.configureLdap(this);
     }
 
     public void stop() {
@@ -64,7 +65,6 @@ public class Linshare {
         linshareLdap.stop();
         linshareSmtp.stop();
         linshareBackend.stop();
-        linshareDatabaseInit.stop();
     }
 
     public int getPort() {
@@ -141,14 +141,9 @@ public class Linshare {
             .withClasspathResourceMapping("./conf/log4j.properties",
                 "/etc/linshare/log4j.properties",
                 BindMode.READ_ONLY)
-            .withClasspathResourceMapping("./ssl/id_rsa",
-                "/etc/linshare/id_rsa",
-                BindMode.READ_ONLY)
-            .withClasspathResourceMapping("./ssl/id_rsa.pub",
-                "/etc/linshare/id_rsa.pub",
-                BindMode.READ_ONLY)
             .withExposedPorts(LINSHARE_BACKEND_PORT)
-            .waitingFor(Wait.forLogMessage(WAIT_FOR_BACKEND_INIT_LOG, 1))
+            .waitingFor(Wait.forLogMessage(WAIT_FOR_BACKEND_INIT_LOG, 1)
+                .withStartupTimeout(Duration.ofMinutes(10)))
             .withNetwork(network);
     }
 }
