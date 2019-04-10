@@ -106,23 +106,6 @@ public class Linshare {
             .withNetwork(network);
     }
 
-    private GenericContainer createDockerDatabaseInit() {
-        return new GenericContainer<>("chibenwa/linshare-database-init:2.2")
-            .withEnv("TOMCAT_HOST", "backend")
-            .withEnv("TOMCAT_PORT", "8080")
-            .withEnv("TOMCAT_LDAP_NAME", "ldap-local")
-            .withEnv("TOMCAT_LDAP_URL", "ldap://ldap:389")
-            .withEnv("TOMCAT_LDAP_BASE_DN", "ou=People,dc=linshare,dc=org")
-            .withEnv("TOMCAT_LDAP_DN", "cn=linshare,dc=linshare,dc=org")
-            .withEnv("TOMCAT_LDAP_PW", "linshare")
-            .withEnv("TOMCAT_DOMAIN_PATTERN_NAME", "openldap-local")
-            .withEnv("TOMCAT_DOMAIN_PATTERN_MODEL", "868400c0-c12e-456a-8c3c-19e985290586")
-            .withEnv("NO_REPLY_ADDRESS", "linshare-noreply@linshare.org")
-            .withEnv("DEBUG", "1")
-            .withNetwork(network)
-            .waitingFor(Wait.forLogMessage(WAIT_FOR_DB_INIT_LOG, 1));
-    }
-
     private GenericContainer createDockerBackend() {
         return new GenericContainer<>("linagora/linshare-backend:2.2")
             .withNetworkAliases("backend")
