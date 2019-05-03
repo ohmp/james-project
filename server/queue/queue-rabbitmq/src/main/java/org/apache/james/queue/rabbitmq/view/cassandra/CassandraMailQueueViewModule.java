@@ -146,5 +146,13 @@ public interface CassandraMailQueueViewModule {
             .addPartitionKey(BucketSizeTable.BUCKET_ID, cint())
             .addColumn(BucketSizeTable.MAIL_COUNT, counter()))
 
+        .table(MailKeyToBucketTable.TABLE_NAME)
+        .comment("Given a mailKey, resolve the bucket it belongs to")
+        .statement(statement -> statement
+            .addPartitionKey(MailKeyToBucketTable.QUEUE_NAME, text())
+            .addPartitionKey(MailKeyToBucketTable.MAIL_KEY, text())
+            .addColumn(MailKeyToBucketTable.TIME_RANGE_START, timestamp())
+            .addColumn(MailKeyToBucketTable.BUCKET_ID, cint()))
+
         .build();
 }
