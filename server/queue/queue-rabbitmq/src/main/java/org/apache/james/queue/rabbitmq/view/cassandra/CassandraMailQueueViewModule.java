@@ -21,6 +21,7 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import static com.datastax.driver.core.DataType.blob;
 import static com.datastax.driver.core.DataType.cint;
+import static com.datastax.driver.core.DataType.counter;
 import static com.datastax.driver.core.DataType.list;
 import static com.datastax.driver.core.DataType.map;
 import static com.datastax.driver.core.DataType.text;
@@ -71,6 +72,26 @@ public interface CassandraMailQueueViewModule {
         String MAIL_KEY = "mailKey";
     }
 
+    interface BucketSizeTable {
+        String TABLE_NAME = "bucketSize";
+
+        String QUEUE_NAME = "queueName";
+        String TIME_RANGE_START = "timeRangeStart";
+        String BUCKET_ID = "bucketId";
+
+        String MAIL_COUNT = "mailCount";
+    }
+
+    interface MailKeyToBucketTable {
+        String TABLE_NAME = "bucketSize";
+
+        String QUEUE_NAME = "queueName";
+        String MAIL_KEY = "mailKey";
+
+        String TIME_RANGE_START = "timeRangeStart";
+        String BUCKET_ID = "bucketId";
+    }
+
     CassandraModule MODULE = CassandraModule
         .type(EnqueuedMailsTable.HEADER_TYPE)
             .statement(statement -> statement
@@ -116,6 +137,14 @@ public interface CassandraMailQueueViewModule {
         .statement(statement -> statement
             .addPartitionKey(DeletedMailTable.QUEUE_NAME, text())
             .addPartitionKey(DeletedMailTable.MAIL_KEY, text()))
+
+        .table(BucketSizeTable.TABLE_NAME)
+        .comment("Holds the count of remaining email per bucket")
+        .statement(statement -> statement
+            .addPartitionKey(BucketSizeTable.QUEUE_NAME, text())
+            .addPartitionKey(BucketSizeTable.TIME_RANGE_START, timestamp())
+            .addPartitionKey(BucketSizeTable.BUCKET_ID, cint())
+            .addColumn(BucketSizeTable.MAIL_COUNT, counter()))
 
         .build();
 }
