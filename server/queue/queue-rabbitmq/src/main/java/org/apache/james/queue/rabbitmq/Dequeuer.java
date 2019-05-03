@@ -83,7 +83,18 @@ class Dequeuer {
 
     Flux<? extends MailQueue.MailQueueItem> deQueue() {
         return flux.flatMap(this::loadItem)
-            .filterWhen(item -> mailQueueView.isPresent(item.getMail()));
+            .flatMap(this::filterIfDeleted);
+    }
+
+    private Mono<RabbitMQMailQueueItem> filterIfDeleted(RabbitMQMailQueueItem item) {
+        return mailQueueView.isPresent(item.getMail())
+            .flatMap(isPresent -> {
+                if (isPresent) {
+                    return Mono.just(item);
+                }
+                item.done(true);
+                return Mono.empty();
+            });
     }
 
     private Mono<RabbitMQMailQueueItem> loadItem(AcknowledgableDelivery response) {
