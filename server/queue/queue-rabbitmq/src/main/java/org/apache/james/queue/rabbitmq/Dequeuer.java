@@ -34,6 +34,7 @@ import org.apache.mailet.Mail;
 
 import com.github.fge.lambdas.consumers.ThrowingConsumer;
 import com.rabbitmq.client.Delivery;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.rabbitmq.AcknowledgableDelivery;
@@ -80,8 +81,9 @@ class Dequeuer {
             .filter(getResponse -> getResponse.getBody() != null);
     }
 
-    Flux<MailQueue.MailQueueItem> deQueue() {
-        return flux.flatMap(this::loadItem);
+    Flux<? extends MailQueue.MailQueueItem> deQueue() {
+        return flux.flatMap(this::loadItem)
+            .filterWhen(item -> mailQueueView.isPresent(item.getMail()));
     }
 
     private Mono<RabbitMQMailQueueItem> loadItem(AcknowledgableDelivery response) {
