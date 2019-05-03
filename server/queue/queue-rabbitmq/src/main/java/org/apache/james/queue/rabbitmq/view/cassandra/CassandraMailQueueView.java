@@ -96,7 +96,9 @@ public class CassandraMailQueueView implements MailQueueView {
 
     @Override
     public long getSize() {
-        return cassandraMailQueueBrowser.browseReferences(mailQueueName).count().block();
+        return cassandraMailQueueBrowser.getSize(mailQueueName)
+            .blockOptional()
+            .orElse(0L);
     }
 
     @Override
@@ -120,7 +122,8 @@ public class CassandraMailQueueView implements MailQueueView {
     }
 
     private Mono<Void> delete(MailKey mailKey) {
-        return cassandraMailQueueMailDelete.considerDeleted(mailKey, mailQueueName);
+        return cassandraMailQueueMailDelete.considerDeleted(mailKey, mailQueueName)
+            .then();
     }
 
     @Override

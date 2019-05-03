@@ -50,11 +50,12 @@ public class CassandraMailQueueViewTestFactory {
         EnqueuedMailsDAO enqueuedMailsDao = new EnqueuedMailsDAO(session, typesProvider, blobIdFactory);
         BrowseStartDAO browseStartDao = new BrowseStartDAO(session);
         DeletedMailsDAO deletedMailsDao = new DeletedMailsDAO(session);
+        BucketSizeDAO bucketSizeDAO = new BucketSizeDAO(session);
+        MailKeyToBucketDAO mailKeyToBucketDAO = new MailKeyToBucketDAO(session);
 
-        CassandraMailQueueBrowser cassandraMailQueueBrowser = new CassandraMailQueueBrowser(browseStartDao, deletedMailsDao, enqueuedMailsDao, mimeMessageStoreFactory, configuration, clock);
-        CassandraMailQueueMailStore cassandraMailQueueMailStore = new CassandraMailQueueMailStore(enqueuedMailsDao, browseStartDao, configuration, clock);
-        CassandraMailQueueMailDelete cassandraMailQueueMailDelete = new CassandraMailQueueMailDelete(deletedMailsDao, browseStartDao, cassandraMailQueueBrowser, configuration, random);
-
+        CassandraMailQueueBrowser cassandraMailQueueBrowser = new CassandraMailQueueBrowser(browseStartDao, deletedMailsDao, enqueuedMailsDao, bucketSizeDAO, mimeMessageStoreFactory, configuration, clock);
+        CassandraMailQueueMailStore cassandraMailQueueMailStore = new CassandraMailQueueMailStore(enqueuedMailsDao, browseStartDao, bucketSizeDAO, mailKeyToBucketDAO, configuration, clock);
+        CassandraMailQueueMailDelete cassandraMailQueueMailDelete = new CassandraMailQueueMailDelete(deletedMailsDao, browseStartDao, bucketSizeDAO, mailKeyToBucketDAO, cassandraMailQueueBrowser, configuration, random);
 
         EventsourcingConfigurationManagement eventsourcingConfigurationManagement = new EventsourcingConfigurationManagement(new CassandraEventStore(new EventStoreDao(session,
             new JsonEventSerializer(ImmutableSet.of(CassandraMailQueueViewConfigurationModule.MAIL_QUEUE_VIEW_CONFIGURATION)))));

@@ -35,6 +35,8 @@ public class CassandraMailQueueMailDelete {
 
     private final DeletedMailsDAO deletedMailsDao;
     private final BrowseStartDAO browseStartDao;
+    private final BucketSizeDAO bucketSizeDAO;
+    private final MailKeyToBucketDAO mailKeyToBucketDAO;
     private final CassandraMailQueueBrowser cassandraMailQueueBrowser;
     private final CassandraMailQueueViewConfiguration configuration;
     private final ThreadLocalRandom random;
@@ -42,11 +44,13 @@ public class CassandraMailQueueMailDelete {
     @Inject
     CassandraMailQueueMailDelete(DeletedMailsDAO deletedMailsDao,
                                  BrowseStartDAO browseStartDao,
-                                 CassandraMailQueueBrowser cassandraMailQueueBrowser,
+                                 BucketSizeDAO bucketSizeDAO, MailKeyToBucketDAO mailKeyToBucketDAO, CassandraMailQueueBrowser cassandraMailQueueBrowser,
                                  CassandraMailQueueViewConfiguration configuration,
                                  ThreadLocalRandom random) {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
+        this.bucketSizeDAO = bucketSizeDAO;
+        this.mailKeyToBucketDAO = mailKeyToBucketDAO;
         this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
         this.configuration = configuration;
         this.random = random;
@@ -59,7 +63,13 @@ public class CassandraMailQueueMailDelete {
     Mono<Void> considerDeleted(MailKey mailKey, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, mailKey)
+            .then(decrementBucketSize(mailKey, mailQueueName))
             .doOnNext(ignored -> maybeUpdateBrowseStart(mailQueueName));
+    }
+
+    private Mono<Void> decrementBucketSize(MailKey mailKey, MailQueueName mailQueueName) {
+        return mailKeyToBucketDAO.retrieveBucket(mailQueueName, mailKey)
+            .flatMap(sliceContext -> bucketSizeDAO.decrement(mailQueueName, sliceContext.getKey(), sliceContext.getValue()));
     }
 
     Mono<Boolean> isDeleted(Mail mail, MailQueueName mailQueueName) {

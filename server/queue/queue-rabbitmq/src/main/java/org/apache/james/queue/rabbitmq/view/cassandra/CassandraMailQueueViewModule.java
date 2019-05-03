@@ -83,7 +83,7 @@ public interface CassandraMailQueueViewModule {
     }
 
     interface MailKeyToBucketTable {
-        String TABLE_NAME = "bucketSize";
+        String TABLE_NAME = "mailKeyToBucket";
 
         String QUEUE_NAME = "queueName";
         String MAIL_KEY = "mailKey";

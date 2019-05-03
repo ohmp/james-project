@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfiguration;
+import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.BucketId;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedItemWithSlicingContext;
 import org.apache.mailet.Mail;
@@ -37,16 +38,20 @@ public class CassandraMailQueueMailStore {
 
     private final EnqueuedMailsDAO enqueuedMailsDao;
     private final BrowseStartDAO browseStartDao;
+    private final BucketSizeDAO bucketSizeDAO;
+    private final MailKeyToBucketDAO mailKeyToBucketDAO;
     private final CassandraMailQueueViewConfiguration configuration;
     private final Clock clock;
 
     @Inject
     CassandraMailQueueMailStore(EnqueuedMailsDAO enqueuedMailsDao,
                                 BrowseStartDAO browseStartDao,
-                                CassandraMailQueueViewConfiguration configuration,
+                                BucketSizeDAO bucketSizeDAO, MailKeyToBucketDAO mailKeyToBucketDAO, CassandraMailQueueViewConfiguration configuration,
                                 Clock clock) {
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
+        this.bucketSizeDAO = bucketSizeDAO;
+        this.mailKeyToBucketDAO = mailKeyToBucketDAO;
         this.configuration = configuration;
         this.clock = clock;
     }
@@ -54,7 +59,12 @@ public class CassandraMailQueueMailStore {
     Mono<Void> storeMail(EnqueuedItem enqueuedItem) {
         EnqueuedItemWithSlicingContext enqueuedItemAndSlicing = addSliceContext(enqueuedItem);
 
-        return enqueuedMailsDao.insert(enqueuedItemAndSlicing);
+        BucketedSlices.Slice slice = BucketedSlices.Slice.of(enqueuedItemAndSlicing.getSlicingContext().getTimeRangeStart());
+        BucketId bucketId = enqueuedItemAndSlicing.getSlicingContext().getBucketId();
+
+        return enqueuedMailsDao.insert(enqueuedItemAndSlicing)
+            .then(mailKeyToBucketDAO.registerBucket(enqueuedItem.getMailQueueName(), enqueuedItem.getMailKey(), slice, bucketId))
+            .then(bucketSizeDAO.increment(enqueuedItem.getMailQueueName(), slice, bucketId));
     }
 
     Mono<Void> initializeBrowseStart(MailQueueName mailQueueName) {
