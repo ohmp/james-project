@@ -43,7 +43,6 @@ import java.util.function.Function;
 import org.apache.james.core.Domain;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
-import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.lib.Mappings;
@@ -133,7 +132,7 @@ class DomainMappingsRoutesTest {
         }
 
         @Test
-        void getDomainMappingsShouldReturnAllDomainMappings() throws RecipientRewriteTableException {
+        void getDomainMappingsShouldReturnAllDomainMappings() throws Exception {
             String alias1 = "to_1.com";
             String alias2 = "to_2.com";
             String alias3 = "to_3.com";
@@ -161,7 +160,7 @@ class DomainMappingsRoutesTest {
         }
 
         @Test
-        void getDomainMappingsEmptyMappingsAreFilteredOut() throws RecipientRewriteTableException {
+        void getDomainMappingsEmptyMappingsAreFilteredOut() {
             MappingSource nonEmptyMapping = MappingSource.fromDomain(Domain.of("abc.com"));
             MappingSource emptyMapping = MappingSource.fromDomain(Domain.of("def.com"));
 
@@ -189,7 +188,7 @@ class DomainMappingsRoutesTest {
         }
 
         @Test
-        void getDomainMappingsShouldFilterNonDomainMappings() throws RecipientRewriteTableException {
+        void getDomainMappingsShouldFilterNonDomainMappings() throws Exception {
             MappingSource mappingSource = MappingSource.fromDomain(Domain.of("abc.com"));
             String address = "addr@domain.com";
 
@@ -229,7 +228,7 @@ class DomainMappingsRoutesTest {
         }
 
         @Test
-        void deleteDomainMappingShouldRemoveMapping() throws RecipientRewriteTableException {
+        void deleteDomainMappingShouldRemoveMapping() throws Exception {
             MappingSource mappingSource = MappingSource.fromDomain(Domain.of("from.com"));
             String alias = "to.com";
 
@@ -248,7 +247,7 @@ class DomainMappingsRoutesTest {
         }
 
         @Test
-        void getSpecificDomainMappingShouldRespondWithNotFoundWhenHasNoAliases() throws RecipientRewriteTableException {
+        void getSpecificDomainMappingShouldRespondEmptyWhenHasNoAliases() {
             String domain = "from.com";
 
             when(recipientRewriteTable.getStoredMappings(any())).thenReturn(MappingsImpl.empty());
@@ -257,14 +256,12 @@ class DomainMappingsRoutesTest {
                 .get(domain)
             .then()
                 .contentType(ContentType.JSON)
-                .statusCode(HttpStatus.NOT_FOUND_404)
-                .body("type", is(ErrorResponder.ErrorType.NOT_FOUND.getType()))
-                .body("statusCode", is(HttpStatus.NOT_FOUND_404))
-                .body("message", is("Cannot find mappings for " + domain));
+                .statusCode(HttpStatus.OK_200)
+                .body(is("[]"));
         }
 
         @Test
-        void getSpecificDomainMappingShouldRespondWithNotFoundWhenHasEmptyAliases() throws RecipientRewriteTableException {
+        void getSpecificDomainMappingShouldRespondEmptyWhenHasEmptyAliases() {
             String domain = "from.com";
 
             when(recipientRewriteTable.getStoredMappings(any())).thenReturn(MappingsImpl.empty());
@@ -273,14 +270,12 @@ class DomainMappingsRoutesTest {
                 .get(domain)
             .then()
                 .contentType(ContentType.JSON)
-                .statusCode(HttpStatus.NOT_FOUND_404)
-                .body("type", is(ErrorResponder.ErrorType.NOT_FOUND.getType()))
-                .body("statusCode", is(HttpStatus.NOT_FOUND_404))
-                .body("message", is("Cannot find mappings for " + domain));
+                .statusCode(HttpStatus.OK_200)
+                .body(is("[]"));
         }
 
         @Test
-        void getSpecificDomainMappingShouldFilterOutNonDomainMappings() throws RecipientRewriteTableException {
+        void getSpecificDomainMappingShouldFilterOutNonDomainMappings() throws Exception {
             String domain = "from.com";
             String aliasDomain = "to.com";
             final MappingSource mappingSource = MappingSource.fromDomain(Domain.of(domain));
@@ -305,7 +300,7 @@ class DomainMappingsRoutesTest {
         }
 
         @Test
-        void getSpecificDomainMappingShouldReturnDomainMappings() throws RecipientRewriteTableException {
+        void getSpecificDomainMappingShouldReturnDomainMappings() {
             String domain = "abc.com";
             String aliasDomain = "a.com";
             Mappings mappings = MappingsImpl.fromMappings(Mapping.domain(Domain.of(aliasDomain)));

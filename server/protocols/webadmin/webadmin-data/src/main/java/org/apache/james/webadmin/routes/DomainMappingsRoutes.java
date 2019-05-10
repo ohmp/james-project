@@ -48,6 +48,7 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -182,14 +183,10 @@ public class DomainMappingsRoutes implements Routes {
         return Optional.of(recipientRewriteTable.getStoredMappings(mappingSource).select(Mapping.Type.Domain))
             .filter(mappings -> mappings.contains(Mapping.Type.Domain))
             .map(this::toDomainList)
-            .orElseThrow(() -> ErrorResponder.builder()
-                .statusCode(HttpStatus.NOT_FOUND_404)
-                .type(ErrorResponder.ErrorType.NOT_FOUND)
-                .message(String.format("Cannot find mappings for %s", mappingSource.getFixedDomain()))
-                .haltError());
+            .orElse(ImmutableList.of());
     }
 
-    private MappingSource mappingSourceFrom(final Request request) {
+    private MappingSource mappingSourceFrom(Request request) {
         Domain fromDomain = extractDomain(request.params(FROM_DOMAIN));
         return MappingSource.fromDomain(fromDomain);
     }
