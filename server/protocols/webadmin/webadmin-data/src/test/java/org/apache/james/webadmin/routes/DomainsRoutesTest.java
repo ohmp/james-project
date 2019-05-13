@@ -25,6 +25,9 @@ import static io.restassured.RestAssured.with;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -40,6 +43,7 @@ import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
+import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -54,14 +58,16 @@ import io.restassured.http.ContentType;
 
 
 public class DomainsRoutesTest {
-    public static final String DOMAIN = "domain";
+    private static final String DOMAIN = "domain";
+    private static final String ALIAS_DOMAIN = "alias.domain";
+    private static final String ALIAS_DOMAIN_2 = "alias.domain.bis";
 
     private WebAdminServer webAdminServer;
 
     private void createServer(DomainList domainList) throws Exception {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
-            new DomainsRoutes(domainList, new JsonTransformer()));
+            new DomainsRoutes(domainList, new MemoryRecipientRewriteTable(), new JsonTransformer()));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
@@ -253,6 +259,197 @@ public class DomainsRoutesTest {
                 .get(DOMAIN)
             .then()
                 .statusCode(HttpStatus.NOT_FOUND_404);
+        }
+
+        @Nested
+        class DomainAlias{
+            @Test
+            void getAliasesShouldReturnNotFoundWhenDomainDoesNotExist() {
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.NOT_FOUND_404)
+                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("The domain list does not contain: domain"));
+            }
+
+            @Test
+            void getAliasesShouldReturnEmptyWhenNone() {
+                with().put(DOMAIN);
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body(".", hasSize(0));
+            }
+
+            @Test
+            void getAliasesShouldReturnCreatedAliases() {
+                with().put(DOMAIN);
+                with().put(ALIAS_DOMAIN);
+                with().put(ALIAS_DOMAIN_2);
+
+                with().put(DOMAIN + "/aliases/" + ALIAS_DOMAIN);
+                with().put(DOMAIN + "/aliases/" + ALIAS_DOMAIN_2);
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body("source", containsInAnyOrder(ALIAS_DOMAIN, ALIAS_DOMAIN_2));
+            }
+
+            @Test
+            void putShouldLowercaseDomain() {
+                with().put(DOMAIN);
+                with().put(ALIAS_DOMAIN);
+
+                with().put(DOMAIN + "/aliases/" + "Alias.Domain");
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body("source", containsInAnyOrder(ALIAS_DOMAIN));
+            }
+
+            @Test
+            void getAliasesShouldNotReturnDeletedAliases() {
+                with().put(DOMAIN);
+                with().put(ALIAS_DOMAIN);
+
+                with().put(DOMAIN + "/aliases/" + ALIAS_DOMAIN);
+                with().delete(DOMAIN + "/aliases/" + ALIAS_DOMAIN);
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body(".", hasSize(0));
+            }
+
+            @Test
+            void deleteShouldReturnNotFoundWhenAliasDomainDoesNotExist() {
+                with().put(DOMAIN);
+
+                when()
+                    .delete(DOMAIN + "/aliases/" + ALIAS_DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.NOT_FOUND_404)
+                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("The domain list does not contain: " + ALIAS_DOMAIN));
+            }
+
+            @Test
+            void deleteShouldReturnNotFoundWhenDestinationDomainDomainDoesNotExist() {
+                with().put(ALIAS_DOMAIN);
+
+                when()
+                    .delete(DOMAIN + "/aliases/" + ALIAS_DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.NOT_FOUND_404)
+                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("The domain list does not contain: " + DOMAIN));
+            }
+
+            @Test
+            void putShouldReturnNotFoundWhenAliasDomainDoesNotExist() {
+                with().put(DOMAIN);
+
+                when()
+                    .put(DOMAIN + "/aliases/" + ALIAS_DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.NOT_FOUND_404)
+                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("The domain list does not contain: " + ALIAS_DOMAIN));
+            }
+
+            @Test
+            void putShouldReturnNotFoundWhenDestinationDomainDomainDoesNotExist() {
+                with().put(ALIAS_DOMAIN);
+
+                when()
+                    .put(DOMAIN + "/aliases/" + ALIAS_DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.NOT_FOUND_404)
+                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("The domain list does not contain: " + DOMAIN));
+            }
+
+            @Test
+            void putShouldReturnBadRequestWhenDestinationDomainIsInvalid() {
+                when()
+                    .put("invalid@domain/aliases/" + ALIAS_DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.BAD_REQUEST_400)
+                    .body("statusCode", is(HttpStatus.BAD_REQUEST_400))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("Invalid request for domain creation invalid@domain"));
+            }
+
+            @Test
+            void putShouldReturnBadRequestWhenSourceDomainIsInvalid() {
+                when()
+                    .put("domain/aliases/invalid@alias.domain")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.BAD_REQUEST_400)
+                    .body("statusCode", is(HttpStatus.BAD_REQUEST_400))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("Invalid request for domain creation invalid@alias.domain"));
+            }
+
+            @Test
+            void deleteShouldReturnBadRequestWhenDestinationDomainIsInvalid() {
+                when()
+                    .delete("invalid@domain/aliases/" + ALIAS_DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.BAD_REQUEST_400)
+                    .body("statusCode", is(HttpStatus.BAD_REQUEST_400))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("Invalid request for domain creation invalid@domain"));
+            }
+
+            @Test
+            void deleteShouldReturnBadRequestWhenSourceDomainIsInvalid() {
+                when()
+                    .delete("domain/aliases/invalid@alias.domain")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.BAD_REQUEST_400)
+                    .body("statusCode", is(HttpStatus.BAD_REQUEST_400))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("Invalid request for domain creation invalid@alias.domain"));
+            }
+
+            @Test
+            void getAliasesShouldReturnBadRequestWhenDomainIsInvalid() {
+                when()
+                    .get("invalid@domain/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.BAD_REQUEST_400)
+                    .body("statusCode", is(HttpStatus.BAD_REQUEST_400))
+                    .body("type", is("InvalidArgument"))
+                    .body("message", is("Invalid request for domain creation invalid@domain"));
+            }
         }
 
     }
