@@ -21,7 +21,6 @@ package org.apache.james.webadmin.routes;
 
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -293,16 +292,15 @@ public class DomainsRoutes implements Routes {
         }
     }
 
-    private ImmutableSet<DomainAliasResponse> listDomainAliases(Request request, Response response) throws DomainListException, RecipientRewriteTableException {
+    private ImmutableList<DomainAliasResponse> listDomainAliases(Request request, Response response) throws DomainListException, RecipientRewriteTableException {
         Domain domain = checkValidDomain(request.params(DOMAIN_NAME));
 
         if (!hasAliases(domain)) {
             throw domainHasNoAliases(domain);
         } else {
             return recipientRewriteTable.listSources(Mapping.domain(domain))
-                .sorted(Comparator.comparing(MappingSource::asMailAddressString))
                 .map(DomainAliasResponse::new)
-                .collect(Guavate.toImmutableSet());
+                .collect(Guavate.toImmutableList());
         }
     }
 

@@ -306,6 +306,37 @@ public class DomainsRoutesTest {
             }
 
             @Test
+            void putShouldBeIdempotent() {
+                with().put(DOMAIN);
+                with().put(ALIAS_DOMAIN);
+
+                with().put(DOMAIN + "/aliases/" + ALIAS_DOMAIN);
+                with().put(DOMAIN + "/aliases/" + ALIAS_DOMAIN);
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body("source", containsInAnyOrder(ALIAS_DOMAIN));
+            }
+
+            @Test
+            void deleteShouldNotFailOnNonExistingEvents() {
+                with().put(DOMAIN);
+                with().put(ALIAS_DOMAIN);
+
+                with().delete(DOMAIN + "/aliases/" + ALIAS_DOMAIN);
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body("", hasSize(0));
+            }
+
+            @Test
             void putShouldLowercaseDomain() {
                 with().put(DOMAIN);
                 with().put(ALIAS_DOMAIN);
