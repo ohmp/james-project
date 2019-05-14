@@ -125,8 +125,8 @@ Response codes:
    - [Test if a domain exists](#Test_if_a_domain_exists)
    - [Get the list of domains](#Get_the_list_of_domains)
    - [Get the list of aliases for a domain](#Get_the_list_of_aliases_for_a_domain)
-   - [Create an alias for a domain](#Create_an__alias_for_a_domain)
-   - [Delete an alias for a domain](#Delete_an__alias_for_a_domain)
+   - [Create an alias for a domain](#Create_an_alias_for_a_domain)
+   - [Delete an alias for a domain](#Delete_an_alias_for_a_domain)
 
 ### Create a domain
 
