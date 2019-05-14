@@ -443,7 +443,7 @@ public abstract class AbstractRecipientRewriteTableTest {
     }
 
     @Test
-    public void listSourcesShouldHandleDomainSources() throws Exception {
+    public void listSourcesShouldHandleDomainSource() throws Exception {
         Mapping mapping = Mapping.domain(Domain.of("domain"));
 
         MappingSource source = MappingSource.fromDomain(Domain.of("source.org"));
@@ -451,6 +451,19 @@ public abstract class AbstractRecipientRewriteTableTest {
 
         assertThat(virtualUserTable.listSources(mapping))
             .containsExactly(source);
+    }
+
+    @Test
+    public void listSourcesShouldHandleDomainSources() throws Exception {
+        Mapping mapping = Mapping.domain(Domain.of("domain"));
+
+        MappingSource source1 = MappingSource.fromDomain(Domain.of("source1.org"));
+        MappingSource source2 = MappingSource.fromDomain(Domain.of("source2.org"));
+        virtualUserTable.addMapping(source1, mapping);
+        virtualUserTable.addMapping(source2, mapping);
+
+        assertThat(virtualUserTable.listSources(mapping))
+            .containsExactlyInAnyOrder(source1, source2);
     }
 
     @Test
