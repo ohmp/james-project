@@ -61,6 +61,7 @@ public class DomainsRoutesTest {
     private static final String DOMAIN = "domain";
     private static final String ALIAS_DOMAIN = "alias.domain";
     private static final String ALIAS_DOMAIN_2 = "alias.domain.bis";
+    public static final String EXTERNAL_DOMAIN = "external.domain.tld";
 
     private WebAdminServer webAdminServer;
 
@@ -272,7 +273,7 @@ public class DomainsRoutesTest {
                     .statusCode(HttpStatus.NOT_FOUND_404)
                     .body("statusCode", is(HttpStatus.NOT_FOUND_404))
                     .body("type", is("InvalidArgument"))
-                    .body("message", is("The domain list does not contain: domain"));
+                    .body("message", is("The following domain is not in the domain list and has no registered local aliases: domain"));
             }
 
             @Test
@@ -350,20 +351,6 @@ public class DomainsRoutesTest {
             }
 
             @Test
-            void deleteShouldReturnNotFoundWhenDestinationDomainDomainDoesNotExist() {
-                with().put(ALIAS_DOMAIN);
-
-                when()
-                    .delete(DOMAIN + "/aliases/" + ALIAS_DOMAIN)
-                .then()
-                    .contentType(ContentType.JSON)
-                    .statusCode(HttpStatus.NOT_FOUND_404)
-                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
-                    .body("type", is("InvalidArgument"))
-                    .body("message", is("The domain list does not contain: " + DOMAIN));
-            }
-
-            @Test
             void putShouldReturnNotFoundWhenAliasDomainDoesNotExist() {
                 with().put(DOMAIN);
 
@@ -378,17 +365,55 @@ public class DomainsRoutesTest {
             }
 
             @Test
-            void putShouldReturnNotFoundWhenDestinationDomainDomainDoesNotExist() {
-                with().put(ALIAS_DOMAIN);
+            void putShouldNotFailOnExternalDomainAlias() {
+                with().put(DOMAIN);
 
                 when()
-                    .put(DOMAIN + "/aliases/" + ALIAS_DOMAIN)
+                    .put(EXTERNAL_DOMAIN + "/aliases/" + DOMAIN).prettyPeek()
                 .then()
                     .contentType(ContentType.JSON)
-                    .statusCode(HttpStatus.NOT_FOUND_404)
-                    .body("statusCode", is(HttpStatus.NOT_FOUND_404))
-                    .body("type", is("InvalidArgument"))
-                    .body("message", is("The domain list does not contain: " + DOMAIN));
+                    .statusCode(HttpStatus.NO_CONTENT_204);
+            }
+
+            @Test
+            void deleteShouldNotFailOnExternalDomainDestinationForAnAlias() {
+                with().put(DOMAIN);
+
+                when()
+                    .delete(EXTERNAL_DOMAIN + "/aliases/" + DOMAIN)
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.NO_CONTENT_204);
+            }
+
+            @Test
+            void getAliasesShouldListAliasesForExternalDomains() {
+                with().put(DOMAIN);
+
+                with().put(EXTERNAL_DOMAIN + "/aliases/" + DOMAIN);
+
+                when()
+                    .get(EXTERNAL_DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body("source", containsInAnyOrder(DOMAIN));
+            }
+
+            @Test
+            void deleteShouldRemoveExternalDomainAlias() {
+                with().put(DOMAIN);
+
+                with().put(EXTERNAL_DOMAIN + "/aliases/" + DOMAIN);
+
+                with().delete(EXTERNAL_DOMAIN + "/aliases/" + DOMAIN);
+
+                when()
+                    .get(DOMAIN + "/aliases")
+                .then()
+                    .contentType(ContentType.JSON)
+                    .statusCode(HttpStatus.OK_200)
+                    .body("source", hasSize(0));
             }
 
             @Test

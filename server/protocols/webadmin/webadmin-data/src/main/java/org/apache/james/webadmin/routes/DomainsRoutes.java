@@ -195,7 +195,7 @@ public class DomainsRoutes implements Routes {
     }
 
     @DELETE
-    @Path("/{sourceDomain}/aliases/{destinationDomain}")
+    @Path("/{destinationDomain}/aliases/{sourceDomain}")
     @ApiOperation(value = "Remove an alias for a specific domain")
     @ApiImplicitParams({
         @ApiImplicitParam(required = true, dataType = "string", name = "sourceDomain", paramType = "path"),
@@ -212,7 +212,7 @@ public class DomainsRoutes implements Routes {
     }
 
     @PUT
-    @Path("/{sourceDomain}/aliases/{destinationDomain}")
+    @Path("/{destinationDomain}/aliases/{sourceDomain}")
     @ApiOperation(value = "Add an alias for a specific domain")
     @ApiImplicitParams({
         @ApiImplicitParam(required = true, dataType = "string", name = "sourceDomain", paramType = "path"),
@@ -296,8 +296,8 @@ public class DomainsRoutes implements Routes {
     private ImmutableSet<DomainAliasResponse> listDomainAliases(Request request, Response response) throws DomainListException, RecipientRewriteTableException {
         Domain domain = checkValidDomain(request.params(DOMAIN_NAME));
 
-        if (!domainList.containsDomain(domain)) {
-            throw domainNotFound(domain);
+        if (!hasAliases(domain)) {
+            throw domainHasNoAliases(domain);
         } else {
             return recipientRewriteTable.listSources(Mapping.domain(domain))
                 .sorted(Comparator.comparing(MappingSource::asMailAddressString))
@@ -321,13 +321,15 @@ public class DomainsRoutes implements Routes {
         if (!domainList.containsDomain(sourceDomain)) {
             throw domainNotFound(sourceDomain);
         }
-        if (!domainList.containsDomain(destinationDomain)) {
-            throw domainNotFound(destinationDomain);
-        }
 
         operation.perform(MappingSource.fromDomain(sourceDomain), Mapping.domain(destinationDomain));
         response.status(HttpStatus.NO_CONTENT_204);
         return Constants.EMPTY_BODY;
+    }
+
+    private boolean hasAliases(Domain domain) throws DomainListException, RecipientRewriteTableException {
+        return domainList.containsDomain(domain)
+            || recipientRewriteTable.listSources(Mapping.domain(domain)).findFirst().isPresent();
     }
 
     private HaltException domainNotFound(Domain domain) {
@@ -335,6 +337,14 @@ public class DomainsRoutes implements Routes {
             .statusCode(HttpStatus.NOT_FOUND_404)
             .type(ErrorType.INVALID_ARGUMENT)
             .message("The domain list does not contain: " + domain.name())
+            .haltError();
+    }
+
+    private HaltException domainHasNoAliases(Domain domain) {
+        return ErrorResponder.builder()
+            .statusCode(HttpStatus.NOT_FOUND_404)
+            .type(ErrorType.INVALID_ARGUMENT)
+            .message("The following domain is not in the domain list and has no registered local aliases: " + domain.name())
             .haltError();
     }
 }
