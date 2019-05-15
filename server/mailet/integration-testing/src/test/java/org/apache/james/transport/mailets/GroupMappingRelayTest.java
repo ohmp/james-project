@@ -30,9 +30,11 @@ import javax.mail.internet.MimeMessage;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.CommonProcessors;
+import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.probe.DataProbe;
+import org.apache.james.transport.matchers.All;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.FakeSmtp;
 import org.apache.james.utils.IMAPMessageReader;
@@ -81,7 +83,10 @@ public class GroupMappingRelayTest {
     @Before
     public void setup() throws Exception {
         MailetContainer.Builder mailetContainer = TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION
-            .putProcessor(CommonProcessors.rrtErrorEnabledTransport())
+            .putProcessor(CommonProcessors.rrtErrorEnabledTransport()
+                .addMailet(MailetConfiguration.remoteDeliveryBuilder()
+                    .matcher(All.class)
+                    .addProperty("gateway", fakeSmtp.getContainer().getContainerIp())))
             .putProcessor(CommonProcessors.rrtErrorProcessor());
 
         jamesServer = TemporaryJamesServer.builder()
