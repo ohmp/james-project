@@ -19,6 +19,8 @@
 
 package org.apache.james.webadmin.service;
 
+import javax.inject.Inject;
+
 import org.apache.james.core.Domain;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
@@ -53,6 +55,7 @@ public class DomainAliasService {
     private final RecipientRewriteTable recipientRewriteTable;
     private final DomainList domainList;
 
+    @Inject
     public DomainAliasService(RecipientRewriteTable recipientRewriteTable, DomainList domainList) {
         this.recipientRewriteTable = recipientRewriteTable;
         this.domainList = domainList;
