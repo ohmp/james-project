@@ -52,6 +52,7 @@ import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -302,7 +303,7 @@ public class DomainsRoutes implements Routes {
         }
     }
 
-    private ImmutableList<DomainAliasResponse> listDomainAliases(Request request, Response response) throws DomainListException, RecipientRewriteTableException {
+    private ImmutableSet<DomainAliasResponse> listDomainAliases(Request request, Response response) throws DomainListException, RecipientRewriteTableException {
         Domain domain = checkValidDomain(request.params(DOMAIN_NAME));
 
         if (!hasAliases(domain)) {
@@ -310,7 +311,7 @@ public class DomainsRoutes implements Routes {
         } else {
             return recipientRewriteTable.listSources(Mapping.domain(domain))
                 .map(DomainAliasResponse::new)
-                .collect(Guavate.toImmutableList());
+                .collect(Guavate.toImmutableSet());
         }
     }
 

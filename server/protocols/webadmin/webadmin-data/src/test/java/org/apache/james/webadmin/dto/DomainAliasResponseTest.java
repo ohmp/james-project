@@ -19,33 +19,13 @@
 
 package org.apache.james.webadmin.dto;
 
-import java.util.Objects;
+import org.junit.jupiter.api.Test;
 
-import org.apache.james.rrt.lib.MappingSource;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class DomainAliasResponse {
-    private final MappingSource source;
-
-    public DomainAliasResponse(MappingSource source) {
-        this.source = source;
-    }
-
-    public String getSource() {
-        return source.getFixedDomain();
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof DomainAliasResponse) {
-            DomainAliasResponse that = (DomainAliasResponse) o;
-
-            return Objects.equals(this.source, that.source);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(source);
+class DomainAliasResponseTest {
+    @Test
+    void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(DomainAliasResponse.class).verify();
     }
 }
