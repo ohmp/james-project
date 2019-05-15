@@ -212,7 +212,8 @@ public class DomainQuotaRoutes implements Routes {
             Optional<QuotaSize> maxSizeQuota = domainQuotaService.getMaxSizeQuota(domain);
             if (maxSizeQuota.isPresent()) {
                 return maxSizeQuota;
-            }return Responses.returnNoContent(response);
+            }
+            return Responses.returnNoContent(response);
         }, jsonTransformer);
     }
 
@@ -271,7 +272,8 @@ public class DomainQuotaRoutes implements Routes {
             Optional<QuotaCount> maxCountQuota = domainQuotaService.getMaxCountQuota(domain);
             if (maxCountQuota.isPresent()) {
                 return maxCountQuota;
-            }return Responses.returnNoContent(response);
+            }
+            return Responses.returnNoContent(response);
         }, jsonTransformer);
     }
 
