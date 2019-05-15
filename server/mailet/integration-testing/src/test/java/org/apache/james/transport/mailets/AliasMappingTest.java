@@ -371,7 +371,7 @@ public class AliasMappingTest {
     }
 
     @Test
-    public void userSHouldNotReceiveDuplicatesWhenUserAndAliasRegisteredToAGroup() throws Exception {
+    public void userShouldNotReceiveDuplicatesWhenUserAndAliasRegisteredToAGroup() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
         webAdminApi.put(GroupsRoutes.ROOT_PATH + "/" + GROUP_ADDRESS + "/" + BOB_ADDRESS);
         webAdminApi.put(GroupsRoutes.ROOT_PATH + "/" + GROUP_ADDRESS + "/" + BOB_ALIAS);
