@@ -63,14 +63,10 @@ class ReIndexingExecutionFailuresTest {
         assertThatJson(objectMapper.writeValueAsString(failures))
             .when(Option.IGNORING_ARRAY_ORDER)
             .isEqualTo("{" +
-                "  \"45\":[" +
-                "    {\"mailboxId\":\"45\",\"uid\":34}," +
-                "    {\"mailboxId\":\"45\",\"uid\":33}]," +
-                "  \"44\":[" +
-                "    {\"mailboxId\":\"44\",\"uid\":31}," +
-                "    {\"mailboxId\":\"44\",\"uid\":34}]," +
-                "  \"41\":[{\"mailboxId\":\"41\",\"uid\":18}]," +
-                "  \"16\":[{\"mailboxId\":\"16\",\"uid\":24}]" +
+                "  \"45\":[{\"uid\":34}, {\"uid\":33}]," +
+                "  \"44\":[{\"uid\":31}, {\"uid\":34}]," +
+                "  \"41\":[{\"uid\":18}]," +
+                "  \"16\":[{\"uid\":24}]" +
                 "}");
     }
 

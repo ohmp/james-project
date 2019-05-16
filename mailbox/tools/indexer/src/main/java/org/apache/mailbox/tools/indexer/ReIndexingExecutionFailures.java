@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.model.MailboxId;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.Multimap;
@@ -38,6 +39,7 @@ public class ReIndexingExecutionFailures {
             this.uid = uid;
         }
 
+        @JsonIgnore
         public String getMailboxId() {
             return mailboxId.serialize();
         }
