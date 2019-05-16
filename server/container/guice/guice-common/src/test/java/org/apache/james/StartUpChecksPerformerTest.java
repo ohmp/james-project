@@ -23,15 +23,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.james.StartUpChecksPerformer.StartUpCheck.CheckResult;
-import org.apache.james.StartUpChecksPerformer.StartUpCheck.ResultType;
+import org.apache.james.lifecycle.api.StartUpCheck;
+import org.apache.james.lifecycle.api.StartUpCheck.CheckResult;
+import org.apache.james.lifecycle.api.StartUpCheck.ResultType;
 import org.junit.jupiter.api.Test;
 
 class StartUpChecksPerformerTest {
 
     private static final CheckResult GOOD_CHECK_1 = CheckResult.builder()
         .checkName("good 1")
-        .resultType(ResultType.GOOD)
+        .resultType(StartUpCheck.ResultType.GOOD)
         .build();
     private static final CheckResult GOOD_CHECK_2 = CheckResult.builder()
         .checkName("good 2")
