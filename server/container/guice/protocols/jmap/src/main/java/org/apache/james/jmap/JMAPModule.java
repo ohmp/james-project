@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
@@ -37,7 +36,7 @@ import org.apache.james.jmap.send.PostDequeueDecoratorFactory;
 import org.apache.james.jmap.utils.HtmlTextExtractor;
 import org.apache.james.jmap.utils.JsoupHtmlTextExtractor;
 import org.apache.james.jwt.JwtConfiguration;
-import org.apache.james.lifecycle.api.Startable;
+import org.apache.james.lifecycle.api.StartUpCheck;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.events.MailboxListener;
@@ -45,14 +44,12 @@ import org.apache.james.modules.server.CamelMailetContainerModule;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.server.core.configuration.FileConfigurationProvider;
 import org.apache.james.transport.matchers.RecipientIsLocal;
-import org.apache.james.utils.ConfigurationPerformer;
 import org.apache.james.utils.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
@@ -94,7 +91,7 @@ public class JMAPModule extends AbstractModule {
         bind(JsoupHtmlTextExtractor.class).in(Scopes.SINGLETON);
 
         bind(HtmlTextExtractor.class).to(JsoupHtmlTextExtractor.class);
-        Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(RequiredCapabilitiesPrecondition.class);
+        Multibinder.newSetBinder(binder(), StartUpCheck.class).addBinding().to(RequiredCapabilitiesPrecondition.class);
 
         Multibinder<CamelMailetContainerModule.TransportProcessorCheck> transportProcessorChecks = Multibinder.newSetBinder(binder(), CamelMailetContainerModule.TransportProcessorCheck.class);
         transportProcessorChecks.addBinding().toInstance(VACATION_MAILET_CHECK);
@@ -136,8 +133,7 @@ public class JMAPModule extends AbstractModule {
     }
 
     @Singleton
-    public static class RequiredCapabilitiesPrecondition implements ConfigurationPerformer {
-
+    public static class RequiredCapabilitiesPrecondition implements StartUpCheck {
         private final MailboxManager mailboxManager;
 
         @Inject
@@ -146,29 +142,28 @@ public class JMAPModule extends AbstractModule {
         }
 
         @Override
-        public void initModule() {
+        public CheckResult check() {
             Preconditions.checkArgument(mailboxManager.hasCapability(MailboxManager.MailboxCapabilities.Move),
-                    "MOVE support in MailboxManager is required by JMAP Module");
+                "MOVE support in MailboxManager is required by JMAP Module");
             Preconditions.checkArgument(mailboxManager.hasCapability(MailboxManager.MailboxCapabilities.ACL),
-                    "ACL support in MailboxManager is required by JMAP Module");
+                "ACL support in MailboxManager is required by JMAP Module");
 
             EnumSet<MailboxManager.MessageCapabilities> messageCapabilities = mailboxManager.getSupportedMessageCapabilities();
             Preconditions.checkArgument(messageCapabilities.contains(MailboxManager.MessageCapabilities.UniqueID),
-                    "MessageIdManager is not defined by this Mailbox implementation");
+                "MessageIdManager is not defined by this Mailbox implementation");
 
             EnumSet<SearchCapabilities> searchCapabilities = mailboxManager.getSupportedSearchCapabilities();
             Preconditions.checkArgument(searchCapabilities.contains(MailboxManager.SearchCapabilities.MultimailboxSearch),
-                    "Multimailbox search in MailboxManager is required by JMAP Module");
+                "Multimailbox search in MailboxManager is required by JMAP Module");
             Preconditions.checkArgument(searchCapabilities.contains(MailboxManager.SearchCapabilities.Attachment),
-                    "Attachment Search support in MailboxManager is required by JMAP Module");
+                "Attachment Search support in MailboxManager is required by JMAP Module");
             Preconditions.checkArgument(searchCapabilities.contains(SearchCapabilities.AttachmentFileName),
-                    "Attachment file name Search support in MailboxManager is required by JMAP Module");
-        }
+                "Attachment file name Search support in MailboxManager is required by JMAP Module");
 
-        @Override
-        public List<Class<? extends Startable>> forClasses() {
-            return ImmutableList.of();
+            return CheckResult.builder()
+                .checkName("mailboxCapabilitiesForJMAP")
+                .resultType(ResultType.GOOD)
+                .build();
         }
     }
-
 }
