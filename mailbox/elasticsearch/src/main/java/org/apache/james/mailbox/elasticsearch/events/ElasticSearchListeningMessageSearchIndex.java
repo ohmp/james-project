@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -115,13 +116,15 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             return ImmutableList.of();
         }
 
-        return searcher.search(mailboxIds, searchQuery, Optional.empty())
-            .peek(this::logIfNoMessageId)
-            .map(SearchResult::getMessageId)
-            .map(Optional::get)
-            .distinct()
-            .limit(limit)
-            .collect(Guavate.toImmutableList());
+        try (Stream<SearchResult> searchResults = searcher.search(mailboxIds, searchQuery, Optional.empty())) {
+            return searchResults
+                .peek(this::logIfNoMessageId)
+                .map(SearchResult::getMessageId)
+                .map(Optional::get)
+                .distinct()
+                .limit(limit)
+                .collect(Guavate.toImmutableList());
+        }
     }
 
     @Override

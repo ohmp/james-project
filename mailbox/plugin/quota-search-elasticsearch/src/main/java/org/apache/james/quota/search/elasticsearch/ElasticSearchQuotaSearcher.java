@@ -59,10 +59,12 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
     @Override
     public List<User> search(QuotaQuery query) {
         try {
-            return searchHits(query)
-                .map(SearchHit::getId)
-                .map(User::fromUsername)
-                .collect(Guavate.toImmutableList());
+            try (Stream<SearchHit> searchHits = searchHits(query)) {
+                return searchHits
+                    .map(SearchHit::getId)
+                    .map(User::fromUsername)
+                    .collect(Guavate.toImmutableList());
+            }
         } catch (IOException e) {
             throw new RuntimeException("Unexpected exception while executing " + query, e);
         }
@@ -97,8 +99,7 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
                 .types(NodeMappingFactory.DEFAULT_MAPPING_NAME)
                 .source(searchSourceBuilder(query))
                 .scroll(TIMEOUT))
-            .stream()
-            .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()))
+            .searchHits()
             .skip(query.getOffset().getValue());
     }
 

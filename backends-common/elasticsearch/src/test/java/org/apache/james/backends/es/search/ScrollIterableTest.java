@@ -48,7 +48,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class ScrollIterableTest {
-
     private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
     private static final int SIZE = 2;
     private static final String MESSAGE = "message";
@@ -103,7 +102,8 @@ public class ScrollIterableTest {
                     .query(QueryBuilders.matchAllQuery())
                     .size(SIZE));
 
-            assertThat(convertToIdList(new ScrollIterable(client, searchRequest)))
+            assertThat(new ScrollIterable(client, searchRequest).searchHits())
+                .extracting(SearchHit::getId)
                 .containsOnly(id);
         }
     }
@@ -132,7 +132,8 @@ public class ScrollIterableTest {
                     .query(QueryBuilders.matchAllQuery())
                     .size(SIZE));
 
-            assertThat(convertToIdList(new ScrollIterable(client, searchRequest)))
+            assertThat(new ScrollIterable(client, searchRequest).searchHits())
+                .extracting(SearchHit::getId)
                 .containsOnly(id1, id2);
         }
     }
@@ -167,16 +168,10 @@ public class ScrollIterableTest {
                     .query(QueryBuilders.matchAllQuery())
                     .size(SIZE));
 
-            assertThat(convertToIdList(new ScrollIterable(client, searchRequest)))
+            assertThat(new ScrollIterable(client, searchRequest).searchHits())
+                .extracting(SearchHit::getId)
                 .containsOnly(id1, id2, id3);
         }
-    }
-
-    private List<String> convertToIdList(ScrollIterable scrollIterable) {
-        return scrollIterable.stream()
-            .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()))
-            .map(SearchHit::getId)
-            .collect(Collectors.toList());
     }
 
     private void hasIdsInIndex(RestHighLevelClient client, String... ids) throws IOException {
