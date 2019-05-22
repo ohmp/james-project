@@ -19,15 +19,13 @@
 
 package org.apache.james.backends.es.search;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import org.apache.james.backends.es.ListenerToFuture;
-import org.apache.james.util.streams.Iterators;
+import org.apache.james.util.CloseableIterator;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -35,8 +33,6 @@ import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
-
-import com.github.fge.lambdas.Throwing;
 
 public class ScrollIterable implements Iterable<SearchResponse> {
     private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
@@ -55,9 +51,8 @@ public class ScrollIterable implements Iterable<SearchResponse> {
     }
 
     public Stream<SearchResponse> stream() {
-        ScrollIterator iterator = new ScrollIterator(client, searchRequest);
-        return Iterators.toStream(iterator)
-            .onClose(Throwing.runnable(iterator::close));
+        return new ScrollIterator(client, searchRequest)
+            .stream();
     }
 
     public Stream<SearchHit> searchHits() {
@@ -65,7 +60,7 @@ public class ScrollIterable implements Iterable<SearchResponse> {
             .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()));
     }
 
-    public static class ScrollIterator implements Iterator<SearchResponse>, Closeable {
+    public static class ScrollIterator implements CloseableIterator<SearchResponse> {
         private final RestHighLevelClient client;
         private CompletableFuture<SearchResponse> searchResponseFuture;
 

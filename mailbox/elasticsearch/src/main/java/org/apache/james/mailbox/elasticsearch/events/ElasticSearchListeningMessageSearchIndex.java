@@ -23,7 +23,6 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -51,6 +50,8 @@ import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.SessionProvider;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
+import org.apache.james.util.CloseableIterator;
+import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,13 +100,13 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     }
     
     @Override
-    public Iterator<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) {
+    public CloseableIterator<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
         Optional<Integer> noLimit = Optional.empty();
-        return searcher
-                .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
-                .map(SearchResult::getMessageUid)
-                .iterator();
+
+        return CloseableIterator.Impl.fromStream(searcher
+            .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
+            .map(SearchResult::getMessageUid));
     }
     
     @Override
@@ -120,7 +121,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             return searchResults
                 .peek(this::logIfNoMessageId)
                 .map(SearchResult::getMessageId)
-                .map(Optional::get)
+                .flatMap(OptionalUtils::toStream)
                 .distinct()
                 .limit(limit)
                 .collect(Guavate.toImmutableList());

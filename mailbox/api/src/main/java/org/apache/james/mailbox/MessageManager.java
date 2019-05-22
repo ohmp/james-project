@@ -49,6 +49,7 @@ import org.apache.james.mailbox.model.MessageResultIterator;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.message.DefaultMessageWriter;
+import org.apache.james.util.CloseableIterator;
 
 /**
  * Interface which represent a Mailbox
@@ -103,7 +104,7 @@ public interface MessageManager {
      * @throws MailboxException
      *             when search fails for other reasons
      */
-    Iterator<MessageUid> search(SearchQuery searchQuery, MailboxSession mailboxSession) throws MailboxException;
+    CloseableIterator<MessageUid> search(SearchQuery searchQuery, MailboxSession mailboxSession) throws MailboxException;
 
     /**
      * Expunges messages in the given range from this mailbox by first retrieving the messages to be deleted

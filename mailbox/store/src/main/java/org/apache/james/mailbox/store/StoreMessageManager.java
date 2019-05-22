@@ -92,6 +92,7 @@ import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.james.mime4j.stream.MimeTokenStream;
 import org.apache.james.mime4j.stream.RecursionMode;
 import org.apache.james.util.BodyOffsetInputStream;
+import org.apache.james.util.CloseableIterator;
 import org.apache.james.util.IteratorWrapper;
 import org.apache.james.util.streams.Iterators;
 import org.slf4j.Logger;
@@ -745,7 +746,7 @@ public class StoreMessageManager implements MessageManager {
     }
 
     @Override
-    public Iterator<MessageUid> search(SearchQuery query, MailboxSession mailboxSession) throws MailboxException {
+    public CloseableIterator<MessageUid> search(SearchQuery query, MailboxSession mailboxSession) throws MailboxException {
         if (query.equals(new SearchQuery(SearchQuery.all()))) {
             return listAllMessageUids(mailboxSession);
         }
@@ -900,11 +901,11 @@ public class StoreMessageManager implements MessageManager {
             .getApplicableFlag(mailbox);
     }
 
-    private Iterator<MessageUid> listAllMessageUids(MailboxSession session) throws MailboxException {
+    private CloseableIterator<MessageUid> listAllMessageUids(MailboxSession session) throws MailboxException {
         final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
 
         return messageMapper.execute(
-            () -> messageMapper.listAllMessageUids(mailbox));
+            () -> CloseableIterator.Impl.from(messageMapper.listAllMessageUids(mailbox)));
     }
 
     @Override

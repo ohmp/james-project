@@ -53,6 +53,7 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.metrics.api.NoopMetricFactory;
+import org.apache.james.util.CloseableIterator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -152,7 +153,7 @@ public class MailboxEventAnalyserTest {
         when(messageManager.getApplicableFlags(any())).thenReturn(new Flags());
         when(messageManager.getId()).thenReturn(MAILBOX_ID);
         when(messageManager.search(any(), any()))
-            .thenReturn(ImmutableList.of(MESSAGE_UID).iterator());
+            .thenReturn(CloseableIterator.Impl.from(ImmutableList.of(MESSAGE_UID).iterator()));
         when(messageManager.getMessages(any(), any(), any()))
             .thenReturn(new SingleMessageResultIterator(messageResult));
 

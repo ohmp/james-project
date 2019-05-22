@@ -23,7 +23,6 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -64,6 +63,7 @@ import org.apache.james.mailbox.model.SearchQuery.AddressType;
 import org.apache.james.mailbox.model.SearchQuery.Criterion;
 import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.util.CloseableIterator;
 import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,25 +94,26 @@ public class SearchProcessor extends AbstractMailboxProcessor<SearchRequest> imp
 
             final SearchQuery query = toQuery(searchKey, session);
             MailboxSession msession = ImapSessionUtils.getMailboxSession(session);
-            final Iterator<MessageUid> it = mailbox.search(query, msession);
             
             final Collection<Long> results = new TreeSet<>();
             final Collection<MessageUid> uids = new TreeSet<>();
-            
-            while (it.hasNext()) {
-                final MessageUid uid = it.next();
-                final Long number;
-                if (useUids) {
-                    uids.add(uid);
-                    results.add(uid.asLong());
-                } else {
-                    final int msn = session.getSelected().msn(uid);
-                    number = (long) msn;
-                    if (number == SelectedMailbox.NO_SUCH_MESSAGE == false) {
-                        results.add(number);
+
+            try (CloseableIterator.PropagateException<MessageUid> it = mailbox.search(query, msession).propagateException()) {
+                while (it.hasNext()) {
+                    final MessageUid uid = it.next();
+                    final Long number;
+                    if (useUids) {
+                        uids.add(uid);
+                        results.add(uid.asLong());
+                    } else {
+                        final int msn = session.getSelected().msn(uid);
+                        number = (long) msn;
+                        if (number == SelectedMailbox.NO_SUCH_MESSAGE == false) {
+                            results.add(number);
+                        }
                     }
+
                 }
-                
             }
             
             // Check if the search did contain the MODSEQ searchkey. If so we need to include the highest mod in the response.

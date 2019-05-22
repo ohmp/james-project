@@ -89,6 +89,7 @@ import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.BodyDescriptor;
 import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.james.mime4j.util.MimeUtil;
+import org.apache.james.util.CloseableIterator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
@@ -463,13 +464,13 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     
     
     @Override
-    public Iterator<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) throws MailboxException {
+    public CloseableIterator<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) throws MailboxException {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
 
-        return searchMultimap(ImmutableList.of(mailbox.getMailboxId()), searchQuery)
+        return CloseableIterator.Impl.from(searchMultimap(ImmutableList.of(mailbox.getMailboxId()), searchQuery)
             .stream()
             .map(SearchResult::getMessageUid)
-            .iterator();
+            .iterator());
     }
 
     @Override

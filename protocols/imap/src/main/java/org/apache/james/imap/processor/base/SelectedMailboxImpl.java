@@ -48,6 +48,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.UpdatedFlags;
+import org.apache.james.util.CloseableIterator;
 
 import com.google.common.collect.ImmutableList;
 
@@ -92,8 +93,9 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
         registration = eventBus.register(this, new MailboxIdRegistrationKey(mailboxId));
 
         applicableFlags = messageManager.getApplicableFlags(mailboxSession);
-        uidMsnConverter.addAll(ImmutableList.copyOf(
-            messageManager.search(new SearchQuery(SearchQuery.all()), mailboxSession)));
+        try (CloseableIterator.PropagateException<MessageUid> iterator = messageManager.search(new SearchQuery(SearchQuery.all()), mailboxSession).propagateException()) {
+            uidMsnConverter.addAll(ImmutableList.copyOf(iterator));
+        }
     }
 
     @Override

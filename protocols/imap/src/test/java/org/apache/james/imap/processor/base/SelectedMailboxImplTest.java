@@ -53,6 +53,7 @@ import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
+import org.apache.james.util.CloseableIterator;
 import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -146,10 +147,10 @@ public class SelectedMailboxImplTest {
             .isEqualTo(1);
     }
 
-    private Answer<Iterator<MessageUid>> delayedSearchAnswer() {
+    private Answer<CloseableIterator<MessageUid>> delayedSearchAnswer() {
         return invocation -> {
             Thread.sleep(1000);
-            return ImmutableList.of(MessageUid.of(1), MessageUid.of(3)).iterator();
+            return CloseableIterator.Impl.from(ImmutableList.of(MessageUid.of(1), MessageUid.of(3)).iterator());
         };
     }
 

@@ -65,6 +65,7 @@ import org.apache.james.mailbox.model.MessageResultIterator;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
+import org.apache.james.util.CloseableIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -584,9 +585,10 @@ public abstract class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
             }
             searchQuery.andCriteria(SearchQuery.uid(nRanges));
             searchQuery.andCriteria(SearchQuery.modSeqGreaterThan(changedSince));
-            Iterator<MessageUid> uids = mailbox.search(searchQuery, session);
-            while (uids.hasNext()) {
-                vanishedUids.remove(uids.next());
+            try (CloseableIterator.PropagateException<MessageUid> uids = mailbox.search(searchQuery, session).propagateException()) {
+                while (uids.hasNext()) {
+                    vanishedUids.remove(uids.next());
+                }
             }
             UidRange[] vanishedIdRanges = uidRanges(MessageRange.toRanges(vanishedUids));
             responder.respond(new VanishedResponse(vanishedIdRanges, true));

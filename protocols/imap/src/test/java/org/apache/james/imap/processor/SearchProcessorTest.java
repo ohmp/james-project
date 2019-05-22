@@ -66,6 +66,7 @@ import org.apache.james.mailbox.model.SearchQuery.Criterion;
 import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.metrics.api.NoopMetricFactory;
+import org.apache.james.util.CloseableIterator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -469,7 +470,7 @@ public class SearchProcessorTest {
     private void check(SearchKey key, final SearchQuery query) throws Exception {
         when(session.getAttribute(SearchProcessor.SEARCH_MODSEQ)).thenReturn(null);
         when(session.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mailboxSession);
-        when(mailbox.search(query, mailboxSession)).thenReturn(new ArrayList<MessageUid>().iterator());
+        when(mailbox.search(query, mailboxSession)).thenReturn(CloseableIterator.Impl.from(new ArrayList<MessageUid>().iterator()));
         when(selectedMailbox.getApplicableFlags()).thenReturn(new Flags());
         when(selectedMailbox.hasNewApplicableFlags()).thenReturn(false);
 
