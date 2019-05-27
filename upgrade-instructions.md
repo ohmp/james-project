@@ -20,6 +20,12 @@ Change list:
 
 #### Upgrade to ElasticSearch 6.7
 
+Date: 27/05/2019
+
+SHA-1: XXXXXX
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-2766
+
 In version 3.3.0 indexing for the Cassandra product was handled using ElasticSearch 2.2 released on the 31 march 2016. Some major upgrades had been included in recent ElasticSearch version.
 
 Note that ElasticSearch APIs had been undergoing some major changes, making a smooth migration hard to provide. We proposed 2 migration strategy. A
