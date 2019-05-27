@@ -26,9 +26,11 @@ SHA-1: XXXXXX
 
 JIRA: https://issues.apache.org/jira/browse/JAMES-2766
 
+Concerned products: (experimental) Cassandra-guice products.
+
 In version 3.3.0 indexing for the Cassandra product was handled using ElasticSearch 2.2 released on the 31 march 2016. Some major upgrades had been included in recent ElasticSearch version.
 
-Note that ElasticSearch APIs had been undergoing some major changes, making a smooth migration hard to provide. We proposed 2 migration strategy. A
+Note that ElasticSearch APIs had been undergoing some major changes, making a smooth migration hard to provide. We proposed 2 migration strategies. A
 simple one leading to major search inconsistencies in the process, and another one mitigating these inconsistencies (but getting rid of them).
 
 ##### Simple strategy
@@ -40,11 +42,13 @@ Procedure:
  - Search result will then be empty and thus innacurate
  - Thus trigger a [Full ReIndexing](https://james.apache.org/server/manage-webadmin.html#ReIndexing_all_mails) to restore search consistency.
 
-Obviously this approach trades search consistency against ease of use.
+Keep in mind that full reIndexing needs to process all users email and thus can be slow.
 
-If search consistency is important for you, consider the next approach
+Obviously this approach trades search consistency against ease of migration.
 
-##### Strategy for minimizing search inconsistency
+If search consistency during the migration is important for you, consider the next approach
+
+##### Strategy for minimizing search inconsistency during the migration
 
 Procedure:
  - From a running James 3.3.0 cluster connected to a running ElacticSearch 2.2 cluster
@@ -54,6 +58,8 @@ Procedure:
  - Once done, direct the traffic to the James 3.4.0 cluster, and dispose the James 3.3.0 cluster as well as the ElasticSearch 2.2 cluster
  - Search result will omit changes that took place during the switching process (starting from the reIndexing start)
  - Thus trigger a [Full ReIndexing](https://james.apache.org/server/manage-webadmin.html#ReIndexing_all_mails) to restore search consistency.
+
+Keep in mind that full reIndexing needs to process all users email and thus can be slow.
 
 ## 3.3.0 version
 
