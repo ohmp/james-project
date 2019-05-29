@@ -60,7 +60,6 @@ class RabbitMQJamesServerWithRetryConnectionTest {
     @Test
     void serverShouldRetryToConnectToCassandraWhenStartService(GuiceJamesServer server) throws Exception {
         rabbitMQExtension.dockerRabbitMQ().pause();
-        Thread.sleep(Duration.ofMillis(500).toMillis());
         waitBeforeExecution(WAITING_TIME, () -> rabbitMQExtension.dockerRabbitMQ().unpause());
 
         server.start();
