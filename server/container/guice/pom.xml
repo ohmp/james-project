@@ -38,6 +38,7 @@
         <module>blob-memory-guice</module>
         <module>blob-objectstorage-guice</module>
         <module>cassandra-guice</module>
+        <module>cassandra-guice-common</module>
         <module>cassandra-ldap-guice</module>
         <module>cassandra-rabbitmq-guice</module>
         <module>cassandra-rabbitmq-ldap-guice</module>

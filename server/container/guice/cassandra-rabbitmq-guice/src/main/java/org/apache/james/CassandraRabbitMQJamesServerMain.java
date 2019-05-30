@@ -19,7 +19,7 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.CassandraModules.ALL_BUT_JMX_CASSANDRA_MODULE;
 
 import org.apache.james.modules.blobstore.BlobStoreChoosingModule;
 import org.apache.james.modules.event.RabbitMQEventBusModule;

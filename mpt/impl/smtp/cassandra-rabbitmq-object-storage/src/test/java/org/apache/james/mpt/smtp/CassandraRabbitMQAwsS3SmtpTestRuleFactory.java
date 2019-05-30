@@ -19,7 +19,7 @@
 package org.apache.james.mpt.smtp;
 
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
-import org.apache.james.CassandraJamesServerMain;
+import org.apache.james.CassandraModules;
 import org.apache.james.CleanupTasksPerformer;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.backend.rabbitmq.DockerRabbitMQSingleton;
@@ -52,7 +52,7 @@ public final class CassandraRabbitMQAwsS3SmtpTestRuleFactory {
             .build();
 
         return GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraJamesServerMain.CASSANDRA_SERVER_CORE_MODULE,
+            .combineWith(CassandraModules.CASSANDRA_SERVER_CORE_MODULE,
                 SmtpTestRule.SMTP_PROTOCOL_MODULE,
                 binder -> binder.bind(MailQueueItemDecoratorFactory.class).to(RawMailQueueItemDecoratorFactory.class),
                 binder -> binder.bind(CamelMailetContainerModule.DefaultProcessorsConfigurationSupplier.class)

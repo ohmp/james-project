@@ -107,7 +107,7 @@
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>james-server-cassandra-guice</artifactId>
+            <artifactId>james-server-cassandra-guice-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>

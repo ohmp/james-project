@@ -19,8 +19,6 @@
 
 package org.apache.james.modules.mailbox;
 
-import static org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher.DEFAULT_SEARCH_SIZE;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -154,7 +152,7 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         return new ElasticSearchSearcher(
             client,
             queryConverter,
-            DEFAULT_SEARCH_SIZE,
+            ElasticSearchSearcher.DEFAULT_SEARCH_SIZE,
             mailboxIdFactory,
             messageIdFactory,
             configuration.getReadAliasMailboxName());
