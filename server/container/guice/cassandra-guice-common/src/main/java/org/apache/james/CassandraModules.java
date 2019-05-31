@@ -67,41 +67,41 @@ import com.google.inject.util.Modules;
 
 public class CassandraModules {
     public static final Module WEBADMIN = Modules.combine(
-        new CassandraRoutesModule(),
         new CassandraDataRoutesModules(),
+        new CassandraRoutesModule(),
         new DataRoutesModules(),
         new DeletedMessageVaultRoutesModule(),
+        new DLPRoutesModule(),
         new MailboxRoutesModule(),
         new MailQueueRoutesModule(),
         new MailRepositoriesRoutesModule(),
-        new SwaggerRoutesModule(),
-        new WebAdminServerModule(),
-        new DLPRoutesModule(),
-        new SieveRoutesModule(),
+        new MessageIdReIndexingModule(),
         new ReIndexingModule(),
-        new MessageIdReIndexingModule());
+        new SieveRoutesModule(),
+        new SwaggerRoutesModule(),
+        new WebAdminServerModule());
 
     public static final Module PROTOCOLS = Modules.combine(
         new CassandraJmapModule(),
         new IMAPServerModule(),
+        new JMAPServerModule(),
         new LMTPServerModule(),
         new ManageSieveServerModule(),
         new POP3ServerModule(),
         new ProtocolHandlerModule(),
         new SMTPServerModule(),
-        new JMAPServerModule(),
         WEBADMIN);
 
     public static final Module PLUGINS = Modules.combine(
         new CassandraQuotaMailingModule());
 
     public static final Module BLOB_MODULE = Modules.combine(
-        new BlobStoreAPIModule(),
-        new BlobExportMechanismModule());
+        new BlobExportMechanismModule(),
+        new BlobStoreAPIModule());
 
     public static final Module CASSANDRA_SERVER_CORE_MODULE = Modules.combine(
-        new CassandraDomainListModule(),
         new CassandraDLPConfigurationStoreModule(),
+        new CassandraDomainListModule(),
         new CassandraEventStoreModule(),
         new CassandraMailRepositoryModule(),
         new CassandraMetricsModule(),
@@ -119,8 +119,8 @@ public class CassandraModules {
         new ElasticSearchMailboxModule(),
         new ElasticSearchMetricReporterModule(),
         new MailboxModule(),
-        new TikaMailboxModule(),
-        new SpamAssassinListenerModule());
+        new SpamAssassinListenerModule(),
+        new TikaMailboxModule());
 
     public static Module ALL_BUT_JMX_CASSANDRA_MODULE = Modules.combine(
         CASSANDRA_SERVER_CORE_MODULE,
