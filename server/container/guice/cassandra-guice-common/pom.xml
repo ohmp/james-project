@@ -49,10 +49,6 @@
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>james-server-mailbox-plugin-deleted-messages-vault-guice</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${james.groupId}</groupId>
             <artifactId>apache-james-mailbox-quota-search-elasticsearch</artifactId>
         </dependency>
         <dependency>
@@ -168,6 +164,10 @@
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
+            <artifactId>james-server-mailbox-plugin-deleted-messages-vault-guice</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${james.groupId}</groupId>
             <artifactId>james-server-mailrepository-cassandra</artifactId>
         </dependency>
         <dependency>
@@ -184,6 +184,5 @@
             <artifactId>quota-mailing-cassandra</artifactId>
         </dependency>
     </dependencies>
-
 
 </project>
