@@ -196,7 +196,6 @@ public class SearchProcessorTest {
 
     @SuppressWarnings("unchecked")
     private void expectsGetSelectedMailbox() throws Exception {
-        when(mailboxManager.getMailbox(mailboxPath, mailboxSession)).thenReturn(mailbox, mailbox);
         when(mailboxManager.getMailbox(mailboxId, mailboxSession)).thenReturn(mailbox, mailbox);
         when(session.getSelected()).thenReturn(selectedMailbox);
         when(selectedMailbox.isRecentUidRemoved()).thenReturn(false);
