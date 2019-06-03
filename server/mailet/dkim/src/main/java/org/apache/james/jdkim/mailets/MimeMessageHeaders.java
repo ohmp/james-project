@@ -19,18 +19,16 @@
 
 package org.apache.james.jdkim.mailets;
 
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 
-import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import com.github.fge.lambdas.Throwing;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.jdkim.api.Headers;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
