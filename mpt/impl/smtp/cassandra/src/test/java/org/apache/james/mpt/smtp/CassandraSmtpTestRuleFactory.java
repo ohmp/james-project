@@ -23,6 +23,7 @@ import org.apache.james.CassandraModules;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.backends.cassandra.init.configuration.ClusterConfiguration;
 import org.apache.james.dnsservice.api.DNSService;
+import org.apache.james.modules.activemq.ActiveMQQueueModule;
 import org.apache.james.modules.protocols.SmtpGuiceProbe.SmtpServerConnectedType;
 import org.apache.james.modules.server.CamelMailetContainerModule;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
@@ -49,7 +50,8 @@ public final class CassandraSmtpTestRuleFactory {
                 SmtpTestRule.SMTP_PROTOCOL_MODULE,
                 binder -> binder.bind(MailQueueItemDecoratorFactory.class).to(RawMailQueueItemDecoratorFactory.class),
                 binder -> binder.bind(CamelMailetContainerModule.DefaultProcessorsConfigurationSupplier.class)
-                    .toInstance(DefaultConfigurationBuilder::new))
+                    .toInstance(DefaultConfigurationBuilder::new),
+                new ActiveMQQueueModule())
             .overrideWith(
                 binder -> binder.bind(ClusterConfiguration.class).toInstance(
                     ClusterConfiguration.builder()
