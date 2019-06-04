@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -53,7 +54,6 @@ import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
-import org.apache.james.util.CloseableIterator;
 import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -61,8 +61,6 @@ import org.junit.Test;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 
 public class SelectedMailboxImplTest {
@@ -147,10 +145,10 @@ public class SelectedMailboxImplTest {
             .isEqualTo(1);
     }
 
-    private Answer<CloseableIterator<MessageUid>> delayedSearchAnswer() {
+    private Answer<Stream<MessageUid>> delayedSearchAnswer() {
         return invocation -> {
             Thread.sleep(1000);
-            return CloseableIterator.Impl.from(ImmutableList.of(MessageUid.of(1), MessageUid.of(3)).iterator());
+            return Stream.of(MessageUid.of(1), MessageUid.of(3));
         };
     }
 

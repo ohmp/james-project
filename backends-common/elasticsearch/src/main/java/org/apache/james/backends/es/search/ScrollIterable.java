@@ -19,13 +19,15 @@
 
 package org.apache.james.backends.es.search;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import org.apache.james.backends.es.ListenerToFuture;
-import org.apache.james.util.CloseableIterator;
+import org.apache.james.util.streams.Iterators;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -34,33 +36,10 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 
+import com.github.fge.lambdas.Throwing;
+
 public class ScrollIterable implements Iterable<SearchResponse> {
-    private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
-
-    private final RestHighLevelClient client;
-    private final SearchRequest searchRequest;
-
-    public ScrollIterable(RestHighLevelClient client, SearchRequest searchRequest) {
-        this.client = client;
-        this.searchRequest = searchRequest;
-    }
-
-    @Override
-    public ScrollIterator iterator() {
-        return new ScrollIterator(client, searchRequest);
-    }
-
-    public Stream<SearchResponse> stream() {
-        return new ScrollIterator(client, searchRequest)
-            .stream();
-    }
-
-    public Stream<SearchHit> searchHits() {
-        return stream()
-            .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()));
-    }
-
-    public static class ScrollIterator implements CloseableIterator<SearchResponse> {
+    private static class ScrollIterator implements Iterator<SearchResponse>, Closeable {
         private final RestHighLevelClient client;
         private CompletableFuture<SearchResponse> searchResponseFuture;
 
@@ -98,9 +77,38 @@ public class ScrollIterable implements Iterable<SearchResponse> {
             return result;
         }
 
+        public Stream<SearchResponse> stream() {
+            return Iterators.toStream(this)
+                .onClose(Throwing.runnable(this::close));
+        }
+
         private boolean allSearchResponsesConsumed(SearchResponse searchResponse) {
             return searchResponse.getHits().getHits().length == 0;
         }
+    }
+
+    private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
+
+    private final RestHighLevelClient client;
+    private final SearchRequest searchRequest;
+
+    public ScrollIterable(RestHighLevelClient client, SearchRequest searchRequest) {
+        this.client = client;
+        this.searchRequest = searchRequest;
+    }
+
+    @Override
+    public ScrollIterator iterator() {
+        return new ScrollIterator(client, searchRequest);
+    }
+
+    public Stream<SearchResponse> stream() {
+        return iterator().stream();
+    }
+
+    public Stream<SearchHit> searchHits() {
+        return stream()
+            .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()));
     }
 
 }
