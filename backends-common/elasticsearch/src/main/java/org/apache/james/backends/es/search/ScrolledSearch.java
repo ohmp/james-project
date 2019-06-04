@@ -38,7 +38,7 @@ import org.elasticsearch.search.SearchHit;
 
 import com.github.fge.lambdas.Throwing;
 
-public class ScrollIterable implements Iterable<SearchResponse> {
+public class ScrolledSearch {
     private static class ScrollIterator implements Iterator<SearchResponse>, Closeable {
         private final RestHighLevelClient client;
         private CompletableFuture<SearchResponse> searchResponseFuture;
@@ -92,23 +92,14 @@ public class ScrollIterable implements Iterable<SearchResponse> {
     private final RestHighLevelClient client;
     private final SearchRequest searchRequest;
 
-    public ScrollIterable(RestHighLevelClient client, SearchRequest searchRequest) {
+    public ScrolledSearch(RestHighLevelClient client, SearchRequest searchRequest) {
         this.client = client;
         this.searchRequest = searchRequest;
     }
 
-    @Override
-    public ScrollIterator iterator() {
-        return new ScrollIterator(client, searchRequest);
-    }
-
-    public Stream<SearchResponse> stream() {
-        return iterator().stream();
-    }
-
     public Stream<SearchHit> searchHits() {
-        return stream()
+        return new ScrollIterator(client, searchRequest)
+            .stream()
             .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()));
     }
-
 }

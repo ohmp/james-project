@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import org.apache.james.backends.es.AliasName;
 import org.apache.james.backends.es.NodeMappingFactory;
 import org.apache.james.backends.es.ReadAliasName;
-import org.apache.james.backends.es.search.ScrollIterable;
+import org.apache.james.backends.es.search.ScrolledSearch;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants;
 import org.apache.james.mailbox.elasticsearch.query.QueryConverter;
@@ -47,11 +47,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 public class ElasticSearchSearcher {
+    public static final int DEFAULT_SEARCH_SIZE = 100;
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchSearcher.class);
     private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
     private static final ImmutableList<String> STORED_FIELDS = ImmutableList.of(JsonMessageConstants.MAILBOX_ID,
         JsonMessageConstants.UID, JsonMessageConstants.MESSAGE_ID);
-    public static final int DEFAULT_SEARCH_SIZE = 100;
 
     private final RestHighLevelClient client;
     private final QueryConverter queryConverter;
@@ -74,7 +74,7 @@ public class ElasticSearchSearcher {
     public Stream<MessageSearchIndex.SearchResult> search(Collection<MailboxId> mailboxIds, SearchQuery query,
                                                           Optional<Integer> limit) {
         SearchRequest searchRequest = prepareSearch(mailboxIds, query, limit);
-        Stream<MessageSearchIndex.SearchResult> pairStream = new ScrollIterable(client, searchRequest)
+        Stream<MessageSearchIndex.SearchResult> pairStream = new ScrolledSearch(client, searchRequest)
             .searchHits()
             .flatMap(this::extractContentFromHit);
 
