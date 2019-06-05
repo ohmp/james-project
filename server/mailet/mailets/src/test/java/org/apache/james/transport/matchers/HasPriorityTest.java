@@ -21,38 +21,24 @@ package org.apache.james.transport.matchers;
 import java.util.Collection;
 import javax.mail.MessagingException;
 import org.apache.james.core.MailAddress;
-import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.InMemoryDNSService;
-import org.apache.james.queue.api.MailPrioritySupport;
 import org.apache.mailet.base.test.FakeMail;
-import org.apache.mailet.base.test.FakeMatcherConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HasPriorityTest {
-    private HasPriority matcher;
-    private FakeMail fakeMail;
-    private MailAddress testRecipient;
+public class HasPriorityTest extends PriorityTest {
+    public HasPriorityTest() {
+        super("5", new HasPriority());
+    }
 
     @Before
     public void setup() throws Exception {
-        matcher = new HasPriority();
-        FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-                .matcherName(matcher.getPriorityMatcherName())
-                .condition("5")
-                .build();
-
-        matcher.init(matcherConfig);
-        testRecipient = new MailAddress("test@james.apache.org");
+        super.setup();
     }
 
     @Test
     public void shouldMatchWhenPriorityMatch() throws MessagingException {
-        fakeMail = FakeMail.builder()
-                .recipient(testRecipient)
-                .attribute(MailPrioritySupport.MAIL_PRIORITY, 5)
-                .build();
+        FakeMail fakeMail = this.getFakeMail(5);
 
         Collection<MailAddress> actual = matcher.match(fakeMail);
 
@@ -61,10 +47,7 @@ public class HasPriorityTest {
 
     @Test
     public void shouldNotMatchWhenPriorityDoesNotMatch() throws MessagingException {
-        fakeMail = FakeMail.builder()
-                .recipient(testRecipient)
-                .attribute(MailPrioritySupport.MAIL_PRIORITY, 7)
-                .build();
+        FakeMail fakeMail = this.getFakeMail(7);
 
         Collection<MailAddress> actual = matcher.match(fakeMail);
 

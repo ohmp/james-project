@@ -21,36 +21,24 @@ package org.apache.james.transport.matchers;
 import java.util.Collection;
 import javax.mail.MessagingException;
 import org.apache.james.core.MailAddress;
-import org.apache.james.queue.api.MailPrioritySupport;
 import org.apache.mailet.base.test.FakeMail;
-import org.apache.mailet.base.test.FakeMatcherConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-public class AtMostPriorityTest {
-    private AtMostPriority matcher;
-    private FakeMail fakeMail;
-    private MailAddress testRecipient;
+public class AtMostPriorityTest extends PriorityTest {
+    public AtMostPriorityTest() {
+        super("5", new AtMostPriority());
+    }
 
     @Before
     public void setup() throws Exception {
-        matcher = new AtMostPriority();
-        FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-                .matcherName(matcher.getPriorityMatcherName())
-                .condition("5")
-                .build();
-
-        matcher.init(matcherConfig);
-        testRecipient = new MailAddress("test@james.apache.org");
+        super.setup();
     }
 
     @Test
-    public void shouldMatchWhenPriorityMatch() throws MessagingException {
-        fakeMail = FakeMail.builder()
-                .recipient(testRecipient)
-                .attribute(MailPrioritySupport.MAIL_PRIORITY, 5)
-                .build();
+    public void shouldMatchWhenMailHasLowerPriority() throws MessagingException {
+        FakeMail fakeMail = this.getFakeMail(3);
 
         Collection<MailAddress> actual = matcher.match(fakeMail);
 
@@ -58,11 +46,8 @@ public class AtMostPriorityTest {
     }
 
     @Test
-    public void shouldMatchWhenMailHasLowerPriority() throws MessagingException {
-        fakeMail = FakeMail.builder()
-                .recipient(testRecipient)
-                .attribute(MailPrioritySupport.MAIL_PRIORITY, 3)
-                .build();
+    public void shouldMatchWhenPriorityMatch() throws MessagingException {
+        FakeMail fakeMail = this.getFakeMail(5);
 
         Collection<MailAddress> actual = matcher.match(fakeMail);
 
@@ -71,10 +56,7 @@ public class AtMostPriorityTest {
 
     @Test
     public void shouldNotMatchWhenPriorityDoesNotMatch() throws MessagingException {
-        fakeMail = FakeMail.builder()
-                .recipient(testRecipient)
-                .attribute(MailPrioritySupport.MAIL_PRIORITY, 7)
-                .build();
+        FakeMail fakeMail = this.getFakeMail(7);
 
         Collection<MailAddress> actual = matcher.match(fakeMail);
 
