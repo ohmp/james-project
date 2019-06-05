@@ -22,9 +22,10 @@ package org.apache.james;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.util.concurrent.NamedThreadFactory;
@@ -36,7 +37,7 @@ class RabbitMQJamesServerWithRetryConnectionTest {
     private static final long WAITING_TIME = Duration.ofSeconds(10).toMillis();
 
     private RabbitMQExtension rabbitMQExtension = new RabbitMQExtension();
-    private ExecutorService executorService;
+    private ScheduledExecutorService executorService;
 
     @RegisterExtension
     JamesServerExtension jamesServerExtension = CassandraRabbitMQJamesServerFixture
@@ -47,7 +48,7 @@ class RabbitMQJamesServerWithRetryConnectionTest {
     @BeforeEach
     void setUp() {
         ThreadFactory threadFactory = NamedThreadFactory.withClassName(getClass());
-        executorService = Executors.newFixedThreadPool(1, threadFactory);
+        executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
     @Test
@@ -58,23 +59,12 @@ class RabbitMQJamesServerWithRetryConnectionTest {
     }
 
     @Test
-    void serverShouldRetryToConnectToCassandraWhenStartService(GuiceJamesServer server) throws Exception {
+    void serverShouldRetryToConnectToRabbitMQWhenStartService(GuiceJamesServer server) throws Exception {
         rabbitMQExtension.dockerRabbitMQ().pause();
-        waitBeforeExecution(WAITING_TIME, () -> rabbitMQExtension.dockerRabbitMQ().unpause());
+        executorService.schedule(() -> rabbitMQExtension.dockerRabbitMQ().unpause(), WAITING_TIME, TimeUnit.MILLISECONDS);
 
         server.start();
 
         assertThat(server.isStarted()).isTrue();
-    }
-
-    private void waitBeforeExecution(long waitingTime, Runnable action) {
-        executorService.submit(() -> {
-            try {
-                Thread.sleep(waitingTime);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            action.run();
-        });
     }
 }
