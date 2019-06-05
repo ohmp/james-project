@@ -55,7 +55,7 @@ public class ScrolledSearch {
         public void close() throws IOException {
             ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
             clearScrollRequest.addScrollId(searchResponseFuture.join().getScrollId());
-            client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+            client.clearScroll(clearScrollRequest);
         }
 
         @Override
@@ -98,8 +98,12 @@ public class ScrolledSearch {
     }
 
     public Stream<SearchHit> searchHits() {
-        return new ScrollIterator(client, searchRequest)
-            .stream()
+        return searchResponses()
             .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()));
+    }
+
+    public Stream<SearchResponse> searchResponses() {
+        return new ScrollIterator(client, searchRequest)
+            .stream();
     }
 }
