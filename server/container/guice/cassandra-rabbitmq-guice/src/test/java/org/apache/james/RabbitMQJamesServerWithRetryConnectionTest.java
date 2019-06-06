@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.util.concurrent.NamedThreadFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -49,6 +50,11 @@ class RabbitMQJamesServerWithRetryConnectionTest {
     void setUp() {
         ThreadFactory threadFactory = NamedThreadFactory.withClassName(getClass());
         executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+    }
+
+    @AfterEach
+    void tearDown() {
+        executorService.shutdownNow();
     }
 
     @Test
