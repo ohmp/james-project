@@ -21,6 +21,9 @@ package org.apache.james.webadmin.integration;
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.james.CleanupTasksPerformer;
 import org.apache.james.DockerCassandraRule;
@@ -43,19 +46,71 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.rules.TemporaryFolder;
 
+import com.github.fge.lambdas.Throwing;
+
 public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
+    public interface JamesLifeCyclePolicy {
+        JamesLifeCyclePolicy EACH = serverSupplier -> new JamesLifecycleHandler(
+            Optional::empty,
+            () -> Optional.of(serverSupplier.get()),
+            GuiceJamesServer::stop,
+            guiceJamesServer -> { });
+        JamesLifeCyclePolicy ALL = serverSupplier -> new JamesLifecycleHandler(
+            () -> Optional.of(serverSupplier.get()),
+            Optional::empty,
+            guiceJamesServer -> { },
+            GuiceJamesServer::stop);
+
+        JamesLifecycleHandler createHandler(Supplier<GuiceJamesServer> serverSupplier);
+    }
+
+    public static class JamesLifecycleHandler {
+        private final Supplier<Optional<GuiceJamesServer>> beforeAll;
+        private final Supplier<Optional<GuiceJamesServer>> beforeEach;
+        private final Consumer<GuiceJamesServer> afterEach;
+        private final Consumer<GuiceJamesServer>  afterAll;
+
+        JamesLifecycleHandler(Supplier<Optional<GuiceJamesServer>> beforeAll, Supplier<Optional<GuiceJamesServer>> beforeEach, Consumer<GuiceJamesServer> afterEach, Consumer<GuiceJamesServer> afterAll) {
+            this.beforeAll = beforeAll;
+            this.beforeEach = beforeEach;
+            this.afterEach = afterEach;
+            this.afterAll = afterAll;
+        }
+
+        Optional<GuiceJamesServer> beforeAll() {
+            return beforeAll.get();
+        }
+
+        Optional<GuiceJamesServer> beforeEach() {
+            return beforeEach.get();
+        }
+
+        void afterEach(GuiceJamesServer guiceJamesServer) {
+            afterEach.accept(guiceJamesServer);
+        }
+
+        void afterAll(GuiceJamesServer guiceJamesServer) {
+            afterAll.accept(guiceJamesServer);
+        }
+    }
 
     private static final int LIMIT_TO_20_MESSAGES = 20;
 
     private final TemporaryFolder temporaryFolder;
     private final DockerCassandraRule cassandra;
     private final DockerElasticSearchRule elasticSearchRule;
+    private final JamesLifecycleHandler jamesLifecycleHandler;
     private GuiceJamesServer james;
 
     public CassandraJmapExtension() {
+        this(JamesLifeCyclePolicy.EACH);
+    }
+
+    public CassandraJmapExtension(JamesLifeCyclePolicy jamesLifeCyclePolicy) {
         this.temporaryFolder = new TemporaryFolder();
         this.cassandra = new DockerCassandraRule();
         this.elasticSearchRule = new DockerElasticSearchRule();
+        this.jamesLifecycleHandler = jamesLifeCyclePolicy.createHandler(jamesSupplier());
     }
 
     private GuiceJamesServer james() throws IOException {
@@ -75,32 +130,40 @@ public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallba
                 .overrideWith((binder -> binder.bind(CleanupTasksPerformer.class).asEagerSingleton()));
     }
 
+    private Supplier<GuiceJamesServer> jamesSupplier() {
+        return Throwing.supplier(this::james);
+    }
+
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         temporaryFolder.create();
-
         Runnables.runParallel(cassandra::start, elasticSearchRule::start);
+        james = jamesLifecycleHandler.beforeAll().orElse(james);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
+        jamesLifecycleHandler.afterAll(james);
         Runnables.runParallel(cassandra::stop, elasticSearchRule.getDockerEs()::cleanUpData);
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
-        james = james();
-        james.start();
+    public void beforeEach(ExtensionContext context) {
+        james = jamesLifecycleHandler.beforeEach().orElse(james);
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        james.stop();
+        jamesLifecycleHandler.afterEach(james);
     }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return parameterContext.getParameter().getType() == GuiceJamesServer.class;
+    }
+
+    public GuiceJamesServer getJames() {
+        return james;
     }
 
     @Override
