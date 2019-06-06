@@ -61,8 +61,8 @@ class UsersRoutesTest {
 
     private void createServer(UsersRepository usersRepository) {
         webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            new UserRoutes(new UserService(usersRepository), new JsonTransformer()))
+                new DefaultMetricFactory(),
+                new UserRoutes(new UserService(usersRepository), new JsonTransformer()))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)

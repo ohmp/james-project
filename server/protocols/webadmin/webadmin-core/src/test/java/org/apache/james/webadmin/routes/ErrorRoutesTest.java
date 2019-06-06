@@ -48,9 +48,7 @@ public class ErrorRoutesTest {
 
     @Before
     public void setUp() throws Exception {
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-                new NoopMetricFactory(),
-                new ErrorRoutes())
+        webAdminServer = WebAdminUtils.createWebAdminServer(new NoopMetricFactory(), new ErrorRoutes())
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)

@@ -82,10 +82,10 @@ public class CassandraMigrationRoutesTest {
         taskManager = new MemoryTaskManager();
         JsonTransformer jsonTransformer = new JsonTransformer();
         webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            new CassandraMigrationRoutes(new CassandraMigrationService(schemaVersionDAO, allMigrationClazz, LATEST_VERSION),
-                taskManager, jsonTransformer),
-            new TasksRoutes(taskManager, jsonTransformer))
+                new DefaultMetricFactory(),
+                new CassandraMigrationRoutes(new CassandraMigrationService(schemaVersionDAO, allMigrationClazz, LATEST_VERSION),
+                    taskManager, jsonTransformer),
+                new TasksRoutes(taskManager, jsonTransformer))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)

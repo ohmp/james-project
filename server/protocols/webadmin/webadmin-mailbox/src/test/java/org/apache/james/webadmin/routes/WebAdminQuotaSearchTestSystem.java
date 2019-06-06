@@ -62,10 +62,10 @@ public class WebAdminQuotaSearchTestSystem {
             jsonTransformer);
 
         this.webAdminServer = WebAdminUtils.createWebAdminServer(
-            new NoopMetricFactory(),
-            userQuotaRoutes,
-            domainQuotaRoutes,
-            globalQuotaRoutes)
+                new NoopMetricFactory(),
+                userQuotaRoutes,
+                domainQuotaRoutes,
+                globalQuotaRoutes)
             .start();
 
         this.requestSpecBuilder = WebAdminUtils.buildRequestSpecification(webAdminServer)

@@ -79,9 +79,7 @@ class GroupsRoutesTest {
     private WebAdminServer webAdminServer;
 
     private void createServer(GroupsRoutes groupsRoutes) {
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            groupsRoutes)
+        webAdminServer = WebAdminUtils.createWebAdminServer(new DefaultMetricFactory(), groupsRoutes)
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)

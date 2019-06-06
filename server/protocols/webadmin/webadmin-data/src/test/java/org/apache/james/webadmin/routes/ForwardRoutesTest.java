@@ -81,9 +81,7 @@ class ForwardRoutesTest {
     private WebAdminServer webAdminServer;
 
     private void createServer(ForwardRoutes forwardRoutes) {
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            forwardRoutes)
+        webAdminServer = WebAdminUtils.createWebAdminServer(new DefaultMetricFactory(), forwardRoutes)
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)

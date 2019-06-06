@@ -67,9 +67,8 @@ class DomainsRoutesTest {
 
     private void createServer(DomainList domainList) {
         DomainAliasService domainAliasService = new DomainAliasService(new MemoryRecipientRewriteTable(), domainList);
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            new DomainsRoutes(domainList, domainAliasService, new JsonTransformer()))
+        webAdminServer = WebAdminUtils.createWebAdminServer(new DefaultMetricFactory(),
+                new DomainsRoutes(domainList, domainAliasService, new JsonTransformer()))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)

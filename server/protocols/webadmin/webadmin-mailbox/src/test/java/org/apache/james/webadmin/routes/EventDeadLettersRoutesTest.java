@@ -122,10 +122,9 @@ class EventDeadLettersRoutesTest {
         EventDeadLettersService service = new EventDeadLettersService(redeliverService, deadLetters);
 
         taskManager = new MemoryTaskManager();
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            new EventDeadLettersRoutes(service, eventSerializer, taskManager, jsonTransformer),
-            new TasksRoutes(taskManager, jsonTransformer))
+        webAdminServer = WebAdminUtils.createWebAdminServer(new DefaultMetricFactory(),
+                new EventDeadLettersRoutes(service, eventSerializer, taskManager, jsonTransformer),
+                new TasksRoutes(taskManager, jsonTransformer))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer).build();

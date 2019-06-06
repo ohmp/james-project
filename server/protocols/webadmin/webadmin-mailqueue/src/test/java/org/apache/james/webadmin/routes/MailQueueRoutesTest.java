@@ -90,9 +90,9 @@ class MailQueueRoutesTest {
         JsonTransformer jsonTransformer = new JsonTransformer();
 
         return WebAdminUtils.createWebAdminServer(
-            new NoopMetricFactory(),
-            new MailQueueRoutes(mailQueueFactory, jsonTransformer, taskManager),
-            new TasksRoutes(taskManager, jsonTransformer))
+                new NoopMetricFactory(),
+                new MailQueueRoutes(mailQueueFactory, jsonTransformer, taskManager),
+                new TasksRoutes(taskManager, jsonTransformer))
             .start();
     }
 

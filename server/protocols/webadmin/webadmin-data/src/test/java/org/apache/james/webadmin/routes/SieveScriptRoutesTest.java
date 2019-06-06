@@ -87,9 +87,7 @@ class SieveScriptRoutesTest {
         URL sieveResource = ClassLoader.getSystemResource("sieve/my_sieve");
         sieveContent = IOUtils.toString(sieveResource, StandardCharsets.UTF_8);
 
-        webAdminServer = WebAdminUtils.createWebAdminServer(
-            new DefaultMetricFactory(),
-            new SieveScriptRoutes(sieveRepository, usersRepository))
+        webAdminServer = WebAdminUtils.createWebAdminServer(new DefaultMetricFactory(), new SieveScriptRoutes(sieveRepository, usersRepository))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils
