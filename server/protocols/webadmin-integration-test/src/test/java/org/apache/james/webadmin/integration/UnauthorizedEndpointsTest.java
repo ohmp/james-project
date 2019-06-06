@@ -51,9 +51,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import io.restassured.RestAssured;
 
 class UnauthorizedEndpointsTest {
-
     @RegisterExtension
-    CassandraJmapExtension cassandraJmapExtension = new CassandraJmapExtension(CassandraJmapExtension.JamesLifeCyclePolicy.ALL);
+    CassandraJmapExtension cassandraJmapExtension = new CassandraJmapExtension(CassandraJmapExtension.JamesLifeCyclePolicy.COMMON_TO_ALL_TESTS);
 
     @BeforeEach
     void setup() {

@@ -50,21 +50,48 @@ import com.github.fge.lambdas.Throwing;
 
 public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
     public interface JamesLifeCyclePolicy {
-        JamesLifeCyclePolicy EACH = serverSupplier -> new JamesLifecycleHandler(
-            Optional::empty,
-            () -> Optional.of(serverSupplier.get()),
-            GuiceJamesServer::stop,
-            guiceJamesServer -> { });
-        JamesLifeCyclePolicy ALL = serverSupplier -> new JamesLifecycleHandler(
-            () -> Optional.of(serverSupplier.get()),
-            Optional::empty,
-            guiceJamesServer -> { },
-            GuiceJamesServer::stop);
+        JamesLifeCyclePolicy FOR_EACH_TEST = serverSupplier -> JamesLifecycleHandler.builder()
+            .beforeAll(Optional::empty)
+            .beforeEach(() -> Optional.of(serverSupplier.get()))
+            .afterEach(GuiceJamesServer::stop)
+            .afterAll(guiceJamesServer -> { });
+        JamesLifeCyclePolicy COMMON_TO_ALL_TESTS = serverSupplier -> JamesLifecycleHandler.builder()
+            .beforeAll(() -> Optional.of(serverSupplier.get()))
+            .beforeEach(Optional::empty)
+            .afterEach(guiceJamesServer -> { })
+            .afterAll(GuiceJamesServer::stop);
 
         JamesLifecycleHandler createHandler(Supplier<GuiceJamesServer> serverSupplier);
     }
 
     public static class JamesLifecycleHandler {
+        public interface Builder {
+            @FunctionalInterface
+            interface RequiresBeforeAll {
+                RequiresBeforeEach beforeAll(Supplier<Optional<GuiceJamesServer>> beforeAll);
+
+            }
+
+            @FunctionalInterface
+            interface RequiresBeforeEach {
+                RequiresAfterEach beforeEach(Supplier<Optional<GuiceJamesServer>> beforeEach);
+            }
+
+            @FunctionalInterface
+            interface RequiresAfterEach {
+                RequiresAfterAll afterEach(Consumer<GuiceJamesServer> afterAll);
+            }
+
+            @FunctionalInterface
+            interface RequiresAfterAll {
+                JamesLifecycleHandler afterAll(Consumer<GuiceJamesServer> afterAll);
+            }
+        }
+
+        public static Builder.RequiresBeforeAll builder() {
+            return beforeAll -> beforeEach -> afterEach -> afterAll -> new JamesLifecycleHandler(beforeAll, beforeEach, afterEach, afterAll);
+        }
+
         private final Supplier<Optional<GuiceJamesServer>> beforeAll;
         private final Supplier<Optional<GuiceJamesServer>> beforeEach;
         private final Consumer<GuiceJamesServer> afterEach;
@@ -103,7 +130,7 @@ public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallba
     private GuiceJamesServer james;
 
     public CassandraJmapExtension() {
-        this(JamesLifeCyclePolicy.EACH);
+        this(JamesLifeCyclePolicy.FOR_EACH_TEST);
     }
 
     public CassandraJmapExtension(JamesLifeCyclePolicy jamesLifeCyclePolicy) {
