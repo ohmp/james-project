@@ -18,15 +18,18 @@
  ****************************************************************/
 package org.apache.james.transport.matchers;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import javax.mail.MessagingException;
+
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailPrioritySupport;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 import org.apache.mailet.base.MailetUtil;
+
+import com.google.common.collect.ImmutableList;
+
 
 public abstract class AbstractPriorityMatcher extends GenericMatcher {
     private final String priorityMatcherName;
