@@ -185,9 +185,8 @@ class DeletedMessagesVaultRoutesTest {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
             new TasksRoutes(taskManager, jsonTransformer),
-            new DeletedMessagesVaultRoutes(vault, vaultRestore, exportService, jsonTransformer, taskManager, queryTranslator, usersRepository, messageIdFactory));
-
-        webAdminServer.start();
+            new DeletedMessagesVaultRoutes(vault, vaultRestore, exportService, jsonTransformer, taskManager, queryTranslator, usersRepository, messageIdFactory))
+            .start();
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
             .setBasePath(DeletedMessagesVaultRoutes.ROOT_PATH)
             .log(LogDetail.METHOD)

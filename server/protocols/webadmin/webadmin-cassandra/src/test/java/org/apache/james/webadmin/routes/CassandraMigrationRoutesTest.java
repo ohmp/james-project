@@ -85,9 +85,8 @@ public class CassandraMigrationRoutesTest {
             new DefaultMetricFactory(),
             new CassandraMigrationRoutes(new CassandraMigrationService(schemaVersionDAO, allMigrationClazz, LATEST_VERSION),
                 taskManager, jsonTransformer),
-            new TasksRoutes(taskManager, jsonTransformer));
-
-        webAdminServer.start();
+            new TasksRoutes(taskManager, jsonTransformer))
+            .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
             .setBasePath(CassandraMigrationRoutes.VERSION_BASE)

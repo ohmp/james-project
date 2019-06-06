@@ -65,8 +65,8 @@ public class WebAdminQuotaSearchTestSystem {
             new NoopMetricFactory(),
             userQuotaRoutes,
             domainQuotaRoutes,
-            globalQuotaRoutes);
-        this.webAdminServer.start();
+            globalQuotaRoutes)
+            .start();
 
         this.requestSpecBuilder = WebAdminUtils.buildRequestSpecification(webAdminServer)
             .build();

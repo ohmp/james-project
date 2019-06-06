@@ -104,8 +104,8 @@ class ReindexingRoutesTest {
             new MessageIdReindexingRoutes(taskManager,
                 new InMemoryMessageId.Factory(),
                 new MessageIdReIndexerImpl(mailboxManager, mailboxManager.getMapperFactory(), searchIndex),
-                jsonTransformer));
-        webAdminServer.start();
+                jsonTransformer))
+            .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer).build();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();

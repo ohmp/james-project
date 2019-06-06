@@ -76,7 +76,7 @@ public class WebAdminServer implements Startable {
         this.service = Service.ignite();
     }
 
-    public void start() {
+    public WebAdminServer start() {
         if (configuration.isEnabled()) {
             service.port(configuration.getPort().get().getValue());
             configureExceptionHanding();
@@ -95,6 +95,7 @@ public class WebAdminServer implements Startable {
             port = new Port(service.port());
             LOGGER.info("Web admin server started");
         }
+        return this;
     }
 
     private void configureMDC() {

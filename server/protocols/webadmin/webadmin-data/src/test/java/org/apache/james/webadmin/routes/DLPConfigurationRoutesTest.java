@@ -69,8 +69,8 @@ class DLPConfigurationRoutesTest {
     private void createServer(DLPConfigurationStore dlpConfigurationStore, DomainList domainList) {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
-            new DLPConfigurationRoutes(dlpConfigurationStore, domainList, new JsonTransformer()));
-        webAdminServer.start();
+            new DLPConfigurationRoutes(dlpConfigurationStore, domainList, new JsonTransformer()))
+            .start();
 
         requestSpecification = buildRequestSpecification(webAdminServer);
     }

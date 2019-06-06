@@ -50,8 +50,8 @@ class SieveQuotaRoutesTest {
         sieveRepository = new InMemorySieveQuotaRepository();
         webAdminServer = WebAdminUtils.createWebAdminServer(
                 new DefaultMetricFactory(),
-                new SieveQuotaRoutes(sieveRepository, new JsonTransformer()));
-        webAdminServer.start();
+                new SieveQuotaRoutes(sieveRepository, new JsonTransformer()))
+            .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
             .build();
