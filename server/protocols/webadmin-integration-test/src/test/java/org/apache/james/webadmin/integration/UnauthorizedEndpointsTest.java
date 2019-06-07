@@ -52,7 +52,7 @@ import io.restassured.RestAssured;
 
 class UnauthorizedEndpointsTest {
     @RegisterExtension
-    CassandraJmapExtension cassandraJmapExtension = new CassandraJmapExtension(CassandraJmapExtension.JamesLifeCyclePolicy.COMMON_TO_ALL_TESTS);
+    static CassandraJmapExtension cassandraJmapExtension = new CassandraJmapExtension(CassandraJmapExtension.JamesLifeCyclePolicy.COMMON_TO_ALL_TESTS);
 
     @BeforeEach
     void setup() {

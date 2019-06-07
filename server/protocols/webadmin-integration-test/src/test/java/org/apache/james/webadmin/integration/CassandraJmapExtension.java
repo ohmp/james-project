@@ -34,6 +34,7 @@ import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.modules.TestDockerESMetricReporterModule;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.server.core.configuration.Configuration;
+import org.apache.james.util.FunctionalUtils;
 import org.apache.james.util.Runnables;
 import org.apache.james.webadmin.WebAdminConfiguration;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -105,11 +106,13 @@ public class CassandraJmapExtension implements BeforeAllCallback, AfterAllCallba
         }
 
         Optional<GuiceJamesServer> beforeAll() {
-            return beforeAll.get();
+            return beforeAll.get()
+                .map(FunctionalUtils.toFunction(Throwing.consumer(GuiceJamesServer::start)));
         }
 
         Optional<GuiceJamesServer> beforeEach() {
-            return beforeEach.get();
+            return beforeEach.get()
+                .map(FunctionalUtils.toFunction(Throwing.consumer(GuiceJamesServer::start)));
         }
 
         void afterEach(GuiceJamesServer guiceJamesServer) {
