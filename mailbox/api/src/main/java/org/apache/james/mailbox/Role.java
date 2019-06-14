@@ -42,15 +42,18 @@ public class Role {
     public static final Role ARCHIVE = new Role("archive", DefaultMailboxes.ARCHIVE, CASE_SENSITIVE_COMPARATOR);
     public static final Role SPAM = new Role("spam", DefaultMailboxes.SPAM, CASE_SENSITIVE_COMPARATOR);
     public static final Role TEMPLATES = new Role("templates", DefaultMailboxes.TEMPLATES, CASE_SENSITIVE_COMPARATOR);
-    
+
+    public static final Role RESTORED_MESSAGES = new Role("restored-messages", DefaultMailboxes.RESTORE_MAILBOX_NAME, CASE_SENSITIVE_COMPARATOR);
+
     private static final List<Role> ROLES = 
-            ImmutableList.<Role>of(INBOX, DRAFTS, OUTBOX, SENT, TRASH, ARCHIVE, SPAM, TEMPLATES);
+            ImmutableList.of(INBOX, DRAFTS, OUTBOX, SENT, TRASH, ARCHIVE, SPAM, TEMPLATES, RESTORED_MESSAGES);
     
     private final String name;
     private final String defaultMailbox;
     private final BiFunction<String, String, Boolean> comparator;
 
-    @VisibleForTesting Role(String name, String defaultMailbox, BiFunction<String, String, Boolean> comparator) {
+    @VisibleForTesting
+    private Role(String name, String defaultMailbox, BiFunction<String, String, Boolean> comparator) {
         this.name = name;
         this.defaultMailbox = defaultMailbox;
         this.comparator = comparator;

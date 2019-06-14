@@ -49,13 +49,17 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.jmap.ExportRequest;
+import org.apache.james.jmap.JmapCommonRequests;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
 import org.apache.james.mailbox.DefaultMailboxes;
+import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.backup.ZipAssert;
 import org.apache.james.mailbox.backup.ZipAssert.EntryChecks;
 import org.apache.james.mailbox.model.MailboxId;
@@ -121,12 +125,11 @@ public abstract class DeletedMessagesVaultTest {
     private GuiceJamesServer jmapServer;
     private RequestSpecification webAdminApi;
     private UpdatableTickingClock clock;
-    private FileSystem fileSystem;
 
     @Before
     public void setup() throws Throwable {
         clock = new UpdatableTickingClock(NOW);
-        fileSystem = new FileSystemImpl(new JamesServerResourceLoader(tempFolder.getRoot().getPath()));
+        FileSystem fileSystem = new FileSystemImpl(new JamesServerResourceLoader(tempFolder.getRoot().getPath()));
         jmapServer = createJmapServer(fileSystem, clock);
         jmapServer.start();
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
@@ -151,7 +154,7 @@ public abstract class DeletedMessagesVaultTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         jmapServer.stop();
     }
 
@@ -177,6 +180,28 @@ public abstract class DeletedMessagesVaultTest {
             .statusCode(200)
             .log().ifValidationFails()
             .body(ARGUMENTS + ".list.subject", hasItem(SUBJECT));
+    }
+
+    @Test
+    public void restoredMessagesMailboxShouldHaveARole() {
+        bartSendMessageToHomer();
+        WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
+
+        homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
+        WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
+
+        restoreAllMessagesOfHomer();
+        WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
+
+        Optional<Map<String, String>> maybeRestoredMessagesMailboxAsMap = JmapCommonRequests.getAllMailboxesIds(homerAccessToken)
+            .stream()
+            .filter(mailboxAsMap -> Role.RESTORED_MESSAGES.serialize().equals(mailboxAsMap.get("role")))
+            .findAny();
+
+        assertThat(maybeRestoredMessagesMailboxAsMap).isPresent();
+        Map<String, String> restoredMessagesAsMap = maybeRestoredMessagesMailboxAsMap.get();
+        assertThat(restoredMessagesAsMap.get("name")).isEqualTo(DefaultMailboxes.RESTORE_MAILBOX_NAME);
+        assertThat(restoredMessagesAsMap.get("role")).isEqualTo(Role.RESTORED_MESSAGES.serialize());
     }
 
     @Category(BasicFeature.class)

@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin.vault.routes;
 
+import static org.apache.james.mailbox.DefaultMailboxes.RESTORE_MAILBOX_NAME;
 import static org.apache.james.mailbox.MessageManager.AppendCommand;
 import static org.apache.james.webadmin.vault.routes.RestoreService.RestoreResult.RESTORE_FAILED;
 import static org.apache.james.webadmin.vault.routes.RestoreService.RestoreResult.RESTORE_SUCCEED;
@@ -53,8 +54,6 @@ class RestoreService {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestoreService.class);
-
-    static final String RESTORE_MAILBOX_NAME = "Restored-Messages";
 
     private final DeletedMessageVault deletedMessageVault;
     private final MailboxManager mailboxManager;
