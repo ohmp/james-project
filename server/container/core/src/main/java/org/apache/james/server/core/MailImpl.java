@@ -132,6 +132,10 @@ public class MailImpl implements Disposable, Mail {
 
     public interface RequireName {
         Builder name(String name);
+
+        default Builder derivatedName(String name) throws MessagingException {
+            return name(deriveNewName(name));
+        }
     }
 
     public static class Builder {

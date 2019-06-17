@@ -132,7 +132,7 @@ public class RecipientRewriteTableProcessor {
 
         if (!executionResults.recipientWithError.isEmpty()) {
             MailImpl newMail = MailImpl.builder()
-                .name(mail.getName())
+                .derivatedName(mail.getName())
                 .sender(mail.getMaybeSender())
                 .addRecipients(executionResults.recipientWithError)
                 .mimeMessage(mail.getMessage())
@@ -195,7 +195,7 @@ public class RecipientRewriteTableProcessor {
             try {
                 mailetContext.sendMail(
                     MailImpl.builder()
-                        .name(mail.getName())
+                        .derivatedName(mail.getName())
                         .sender(mail.getMaybeSender())
                         .addRecipients(ImmutableList.copyOf(remoteRecipients))
                         .mimeMessage(mail.getMessage())
