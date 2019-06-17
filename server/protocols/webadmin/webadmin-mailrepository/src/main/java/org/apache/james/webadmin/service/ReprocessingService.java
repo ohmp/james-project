@@ -56,9 +56,11 @@ public class ReprocessingService {
 
         private void reprocess(MailRepository repository, Mail mail) {
             try {
+                String originalName = mail.getName();
+                mail.setName(originalName + "-reprocess");
                 targetProcessor.ifPresent(mail::setState);
                 mailQueue.enQueue(mail);
-                repository.remove(mail);
+                repository.remove(new MailKey(originalName));
             } catch (Exception e) {
                 throw new RuntimeException("Error encountered while reprocessing mail " + mail.getName(), e);
             }

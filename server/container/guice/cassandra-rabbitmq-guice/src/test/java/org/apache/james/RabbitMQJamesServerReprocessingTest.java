@@ -35,7 +35,6 @@ import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -69,8 +68,6 @@ class RabbitMQJamesServerReprocessingTest {
                 .paramConfig(new ParamConfig(REPLACE, REPLACE, REPLACE)));
     }
 
-    @Disabled("JAMES-2733 Reprocessing is broken for RabbitMQ mailQueue - the reprocessed mail name is preserved and" +
-        " is thus considered deleted.")
     @Test
     void reprocessingADeniedMailShouldNotLooseIt(GuiceJamesServer server) throws Exception {
         new SMTPMessageSender("other.com")
