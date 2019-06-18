@@ -29,6 +29,7 @@ import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfiguration;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class CassandraMailQueueMailDelete {
 
@@ -61,7 +62,8 @@ public class CassandraMailQueueMailDelete {
     void updateBrowseStart(MailQueueName mailQueueName) {
         findNewBrowseStart(mailQueueName)
             .flatMap(newBrowseStart -> updateNewBrowseStart(mailQueueName, newBrowseStart))
-            .block();
+            .subscribeOn(Schedulers.elastic())
+            .subscribe();
     }
 
     private void maybeUpdateBrowseStart(MailQueueName mailQueueName) {
@@ -77,7 +79,7 @@ public class CassandraMailQueueMailDelete {
     }
 
     private Mono<Void> updateNewBrowseStart(MailQueueName mailQueueName, Instant newBrowseStartInstant) {
-        return browseStartDao.updateBrowseStart(mailQueueName, newBrowseStartInstant);
+        return browseStartDao.updateBrowseStart(mailQueueName, newBrowseStartInstant).doOnSuccess(any -> System.out.println("updated"));
     }
 
     private boolean shouldUpdateBrowseStart() {
