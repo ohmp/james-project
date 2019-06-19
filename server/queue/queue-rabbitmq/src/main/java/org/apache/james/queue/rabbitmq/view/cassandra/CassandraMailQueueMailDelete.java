@@ -79,7 +79,7 @@ public class CassandraMailQueueMailDelete {
     }
 
     private Mono<Void> updateNewBrowseStart(MailQueueName mailQueueName, Instant newBrowseStartInstant) {
-        return browseStartDao.updateBrowseStart(mailQueueName, newBrowseStartInstant).doOnSuccess(any -> System.out.println("updated"));
+        return browseStartDao.updateBrowseStart(mailQueueName, newBrowseStartInstant);
     }
 
     private boolean shouldUpdateBrowseStart() {
