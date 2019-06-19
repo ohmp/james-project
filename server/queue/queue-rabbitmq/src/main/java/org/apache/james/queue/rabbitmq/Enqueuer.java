@@ -61,7 +61,7 @@ class Enqueuer {
     }
 
     void enQueue(Mail mail) throws MailQueue.MailQueueException {
-        EnQueueId enQueueId = EnQueueId.generate();
+        EnqueueId enQueueId = EnqueueId.generate();
         saveMail(mail)
             .map(partIds -> new MailReference(enQueueId, mail, partIds))
             .map(Throwing.function(this::publishReferenceToRabbit).sneakyThrow())

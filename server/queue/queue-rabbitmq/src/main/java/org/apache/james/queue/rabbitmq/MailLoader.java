@@ -39,7 +39,7 @@ class MailLoader {
         this.blobIdFactory = blobIdFactory;
     }
 
-    Pair<EnQueueId, Mail> load(MailReferenceDTO dto) throws MailQueue.MailQueueException {
+    Pair<EnqueueId, Mail> load(MailReferenceDTO dto) throws MailQueue.MailQueueException {
         try {
             MailReference mailReference = dto.toMailReference(blobIdFactory);
 

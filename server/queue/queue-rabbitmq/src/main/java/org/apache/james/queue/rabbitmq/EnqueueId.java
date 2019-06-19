@@ -25,25 +25,25 @@ import java.util.UUID;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.Preconditions;
 
-public class EnQueueId {
+public class EnqueueId {
 
-    public static EnQueueId generate() {
+    public static EnqueueId generate() {
         return of(UUIDs.timeBased());
     }
 
-    public static EnQueueId of(UUID uuid) {
+    public static EnqueueId of(UUID uuid) {
         Preconditions.checkNotNull(uuid);
-        return new EnQueueId(uuid);
+        return new EnqueueId(uuid);
     }
 
-    public static EnQueueId ofSerialized(String serialized) {
+    public static EnqueueId ofSerialized(String serialized) {
         Preconditions.checkNotNull(serialized);
         return of(UUID.fromString(serialized));
     }
 
     private final UUID id;
 
-    private EnQueueId(UUID id) {
+    private EnqueueId(UUID id) {
         this.id = id;
     }
 
@@ -57,8 +57,8 @@ public class EnQueueId {
 
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof EnQueueId) {
-            EnQueueId enQueueId = (EnQueueId) o;
+        if (o instanceof EnqueueId) {
+            EnqueueId enQueueId = (EnqueueId) o;
 
             return Objects.equals(this.id, enQueueId.id);
         }

@@ -22,7 +22,7 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 import javax.inject.Inject;
 
 import org.apache.james.queue.api.ManageableMailQueue;
-import org.apache.james.queue.rabbitmq.EnQueueId;
+import org.apache.james.queue.rabbitmq.EnqueueId;
 import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.api.DeleteCondition;
@@ -118,12 +118,12 @@ public class CassandraMailQueueView implements MailQueueView {
             .block();
     }
 
-    private Mono<Void> delete(EnQueueId enQueueId) {
+    private Mono<Void> delete(EnqueueId enQueueId) {
         return cassandraMailQueueMailDelete.considerDeleted(enQueueId, mailQueueName);
     }
 
     @Override
-    public Mono<Boolean> isPresent(EnQueueId id) {
+    public Mono<Boolean> isPresent(EnqueueId id) {
         return cassandraMailQueueMailDelete.isDeleted(id, mailQueueName)
                 .map(bool -> !bool);
     }

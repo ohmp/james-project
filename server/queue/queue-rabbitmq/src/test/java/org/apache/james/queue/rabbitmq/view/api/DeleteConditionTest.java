@@ -28,7 +28,7 @@ import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.ManageableMailQueue;
-import org.apache.james.queue.rabbitmq.EnQueueId;
+import org.apache.james.queue.rabbitmq.EnqueueId;
 import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.mailet.base.test.FakeMail;
@@ -42,8 +42,8 @@ class DeleteConditionTest {
     private static final String ADDRESS_2 = "any2@toto.com";
     private static final String NAME = "name";
     private static final String VALUE = "value";
-    private static final EnQueueId EN_QUEUE_ID_1 = EnQueueId.ofSerialized("110e8400-e29b-11d4-a716-446655440000");
-    private static final EnQueueId EN_QUEUE_ID_2 = EnQueueId.ofSerialized("464765a0-e4e7-11e4-aba4-710c1de3782b");
+    private static final EnqueueId EN_QUEUE_ID_1 = EnqueueId.ofSerialized("110e8400-e29b-11d4-a716-446655440000");
+    private static final EnqueueId EN_QUEUE_ID_2 = EnqueueId.ofSerialized("464765a0-e4e7-11e4-aba4-710c1de3782b");
     private static final MailQueueName OUT_GOING_1 = MailQueueName.fromString("OUT_GOING_1");
     private static final Instant ENQUEUE_TIME = Instant.now();
     private static final MimeMessagePartsId MESSAGE_PARTS_ID = MimeMessagePartsId.builder()
@@ -76,7 +76,7 @@ class DeleteConditionTest {
     }
 
     @Nested
-    class WithEnQueueIdTest {
+    class WithEnqueueIdTest {
         @Test
         void withSenderShouldThrowOnNullCondition() {
             assertThatThrownBy(() ->

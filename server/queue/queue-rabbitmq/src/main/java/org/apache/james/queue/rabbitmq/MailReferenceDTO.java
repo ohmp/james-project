@@ -199,8 +199,8 @@ class MailReferenceDTO {
         return bodyBlobId;
     }
 
-    EnQueueId retrieveEnqueueId() {
-        return EnQueueId.ofSerialized(enQueueId);
+    EnqueueId retrieveEnqueueId() {
+        return EnqueueId.ofSerialized(enQueueId);
     }
 
     MailReference toMailReference(BlobId.Factory blobIdFactory) {
@@ -209,7 +209,7 @@ class MailReferenceDTO {
             .bodyBlobId(blobIdFactory.from(bodyBlobId))
             .build();
 
-        return new MailReference(EnQueueId.ofSerialized(enQueueId), mailMetadata(), messagePartsId);
+        return new MailReference(EnqueueId.ofSerialized(enQueueId), mailMetadata(), messagePartsId);
     }
 
     private MailImpl mailMetadata() {

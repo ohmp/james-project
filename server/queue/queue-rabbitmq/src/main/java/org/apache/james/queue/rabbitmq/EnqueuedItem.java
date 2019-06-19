@@ -33,7 +33,7 @@ public class EnqueuedItem {
 
         @FunctionalInterface
         interface RequireEnqueueId {
-            RequireMailQueueName enQueueId(EnQueueId id);
+            RequireMailQueueName enQueueId(EnqueueId id);
         }
 
         @FunctionalInterface
@@ -57,13 +57,13 @@ public class EnqueuedItem {
         }
 
         class ReadyToBuild {
-            private final EnQueueId enQueueId;
+            private final EnqueueId enQueueId;
             private final MailQueueName mailQueueName;
             private final Mail mail;
             private final Instant enqueuedTime;
             private final MimeMessagePartsId partsId;
 
-            ReadyToBuild(EnQueueId enQueueId, MailQueueName mailQueueName, Mail mail, Instant enqueuedTime, MimeMessagePartsId partsId) {
+            ReadyToBuild(EnqueueId enQueueId, MailQueueName mailQueueName, Mail mail, Instant enqueuedTime, MimeMessagePartsId partsId) {
                 Preconditions.checkNotNull(enQueueId, "'enQueueId' is mandatory");
                 Preconditions.checkNotNull(mailQueueName, "'mailQueueName' is mandatory");
                 Preconditions.checkNotNull(mail, "'mail' is mandatory");
@@ -87,13 +87,13 @@ public class EnqueuedItem {
         return enQueueId -> queueName -> mail -> enqueuedTime -> partsId -> new Builder.ReadyToBuild(enQueueId, queueName, mail, enqueuedTime, partsId);
     }
 
-    private final EnQueueId enQueueId;
+    private final EnqueueId enQueueId;
     private final MailQueueName mailQueueName;
     private final Mail mail;
     private final Instant enqueuedTime;
     private final MimeMessagePartsId partsId;
 
-    EnqueuedItem(EnQueueId enQueueId, MailQueueName mailQueueName, Mail mail, Instant enqueuedTime, MimeMessagePartsId partsId) {
+    EnqueuedItem(EnqueueId enQueueId, MailQueueName mailQueueName, Mail mail, Instant enqueuedTime, MimeMessagePartsId partsId) {
         this.enQueueId = enQueueId;
         this.mailQueueName = mailQueueName;
         this.mail = mail;
@@ -101,7 +101,7 @@ public class EnqueuedItem {
         this.partsId = partsId;
     }
 
-    public EnQueueId getEnQueueId() {
+    public EnqueueId getEnQueueId() {
         return enQueueId;
     }
 
