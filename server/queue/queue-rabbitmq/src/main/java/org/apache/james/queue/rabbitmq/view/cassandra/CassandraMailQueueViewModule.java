@@ -25,7 +25,7 @@ import static com.datastax.driver.core.DataType.list;
 import static com.datastax.driver.core.DataType.map;
 import static com.datastax.driver.core.DataType.text;
 import static com.datastax.driver.core.DataType.timestamp;
-import static com.datastax.driver.core.DataType.timeuuid;
+import static com.datastax.driver.core.DataType.uuid;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
@@ -88,7 +88,7 @@ public interface CassandraMailQueueViewModule {
             .addPartitionKey(EnqueuedMailsTable.QUEUE_NAME, text())
             .addPartitionKey(EnqueuedMailsTable.TIME_RANGE_START, timestamp())
             .addPartitionKey(EnqueuedMailsTable.BUCKET_ID, cint())
-            .addClusteringColumn(EnqueuedMailsTable.ENQUEUE_ID, timeuuid())
+            .addClusteringColumn(EnqueuedMailsTable.ENQUEUE_ID, uuid())
             .addColumn(EnqueuedMailsTable.ENQUEUED_TIME, timestamp())
             .addColumn(EnqueuedMailsTable.NAME, text())
             .addColumn(EnqueuedMailsTable.STATE, text())
@@ -118,7 +118,7 @@ public interface CassandraMailQueueViewModule {
         .options(options -> options)
         .statement(statement -> statement
             .addPartitionKey(DeletedMailTable.QUEUE_NAME, text())
-            .addPartitionKey(DeletedMailTable.ENQUEUE_ID, timeuuid()))
+            .addPartitionKey(DeletedMailTable.ENQUEUE_ID, uuid()))
 
         .build();
 }
