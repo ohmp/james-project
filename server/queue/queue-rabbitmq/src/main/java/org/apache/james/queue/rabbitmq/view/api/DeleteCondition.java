@@ -29,12 +29,12 @@ import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import com.google.common.base.Preconditions;
 
 public interface DeleteCondition {
-    boolean shouldBeDeleted(EnqueuedItem mail);
+    boolean shouldBeDeleted(EnqueuedItem enqueuedItem);
 
     class All implements DeleteCondition {
         @Override
-        public boolean shouldBeDeleted(EnqueuedItem mail) {
-            Preconditions.checkNotNull(mail);
+        public boolean shouldBeDeleted(EnqueuedItem enqueuedItem) {
+            Preconditions.checkNotNull(enqueuedItem);
             return true;
         }
 
