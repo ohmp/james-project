@@ -18,7 +18,7 @@ Change list:
 
  - [Upgrade to ElasticSearch 6.3](#upgrade-to-elasticsearch-6.3)
  
-#### Enqueuing several time a mail with the same name
+#### Enqueuing several times a mail with the same name
 
 Date: XX/06/2019
 
