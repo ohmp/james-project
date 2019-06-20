@@ -39,6 +39,7 @@ public class Linshare {
     private static final String WAIT_FOR_BACKEND_INIT_LOG = ".*Server startup.*";
     private static final String WAIT_FOR_LDAP_INIT_LOG = ".*The following user provider for domain '.*' was successfully created.*";
     private static final int LINSHARE_BACKEND_PORT = 8080;
+    private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(5);
 
     private final GenericContainer<?> linshareBackend;
     private final GenericContainer<?> linshareDatabase;
@@ -92,6 +93,7 @@ public class Linshare {
     @SuppressWarnings("resource")
     private GenericContainer<?> createDockerDatabase() {
         return new GenericContainer<>("linagora/linshare-database:2.2")
+            .withStartupTimeout(STARTUP_TIMEOUT)
             .withNetworkAliases("database", "linshare_database")
             .withEnv("PGDATA", "/var/lib/postgresql/data/pgdata")
             .withEnv("POSTGRES_USER", "linshare")
@@ -102,6 +104,7 @@ public class Linshare {
     @SuppressWarnings("resource")
     private GenericContainer<?> createDockerMongodb() {
         return new GenericContainer<>("mongo:3.2")
+            .withStartupTimeout(STARTUP_TIMEOUT)
             .withNetworkAliases("mongodb", "linshare_mongodb")
             .withCommand("mongod --smallfiles")
             .withNetwork(network);
@@ -110,6 +113,7 @@ public class Linshare {
     @SuppressWarnings("resource")
     private GenericContainer<?> createDockerLdap() {
         return new GenericContainer<>("linagora/linshare-ldap-for-tests:1.0")
+            .withStartupTimeout(STARTUP_TIMEOUT)
             .withNetworkAliases("ldap")
             .withNetwork(network);
     }
@@ -117,6 +121,7 @@ public class Linshare {
     @SuppressWarnings("resource")
     private GenericContainer<?> createDockerSmtp() {
         return new GenericContainer<>(Images.FAKE_SMTP)
+            .withStartupTimeout(STARTUP_TIMEOUT)
             .withNetworkAliases("smtp", "linshare_smtp")
             .withNetwork(network);
     }
@@ -130,6 +135,7 @@ public class Linshare {
                 .withFileFromClasspath("conf/id_rsa", "backend/conf/id_rsa.pri")
                 .withFileFromClasspath("conf/id_rsa.pub", "backend/conf/id_rsa.pub")
                 .withFileFromClasspath("Dockerfile", "backend/Dockerfile"))
+            .withStartupTimeout(STARTUP_TIMEOUT)
             .withNetworkAliases("backend")
             .withEnv("SMTP_HOST", "linshare_smtp")
             .withEnv("SMTP_PORT", "25")
@@ -149,6 +155,7 @@ public class Linshare {
     @SuppressWarnings("resource")
     private GenericContainer<?> createLinshareBackendInit() {
         return new GenericContainer<>("linagora/linshare-init:2.2")
+            .withStartupTimeout(STARTUP_TIMEOUT)
             .withNetworkAliases("init")
             .withEnv("LS_HOST", "backend")
             .withEnv("LS_PORT", "8080")
