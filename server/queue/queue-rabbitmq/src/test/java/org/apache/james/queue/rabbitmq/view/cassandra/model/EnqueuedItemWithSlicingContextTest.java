@@ -42,7 +42,7 @@ class EnqueuedItemWithSlicingContextTest {
 
     private EnqueuedItemWithSlicingContextTest() throws MessagingException {
         enqueuedItem = EnqueuedItem.builder()
-            .enQueueId(EnqueueId.generate())
+            .enqueueId(EnqueueId.generate())
             .mailQueueName(MailQueueName.fromString("mailQueueName"))
                 .mail(FakeMail.builder()
                         .name("name")

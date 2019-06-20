@@ -49,14 +49,14 @@ public class CassandraMailQueueMailDelete {
         this.configuration = configuration;
     }
 
-    Mono<Void> considerDeleted(EnqueueId enQueueId, MailQueueName mailQueueName) {
+    Mono<Void> considerDeleted(EnqueueId enqueueId, MailQueueName mailQueueName) {
         return deletedMailsDao
-            .markAsDeleted(mailQueueName, enQueueId)
+            .markAsDeleted(mailQueueName, enqueueId)
             .doOnNext(ignored -> maybeUpdateBrowseStart(mailQueueName));
     }
 
-    Mono<Boolean> isDeleted(EnqueueId enQueueId, MailQueueName mailQueueName) {
-        return deletedMailsDao.isDeleted(mailQueueName, enQueueId);
+    Mono<Boolean> isDeleted(EnqueueId enqueueId, MailQueueName mailQueueName) {
+        return deletedMailsDao.isDeleted(mailQueueName, enqueueId);
     }
 
     void updateBrowseStart(MailQueueName mailQueueName) {

@@ -76,7 +76,7 @@ class EnqueuedMailsDaoTest {
     void insertShouldWork() throws Exception {
         testee.insert(EnqueuedItemWithSlicingContext.builder()
                 .enqueuedItem(EnqueuedItem.builder()
-                    .enQueueId(ENQUEUE_ID)
+                    .enqueueId(ENQUEUE_ID)
                     .mailQueueName(OUT_GOING_1)
                     .mail(FakeMail.builder()
                         .name(NAME)
@@ -99,7 +99,7 @@ class EnqueuedMailsDaoTest {
     void selectEnqueuedMailsShouldWork() throws Exception {
         testee.insert(EnqueuedItemWithSlicingContext.builder()
                 .enqueuedItem(EnqueuedItem.builder()
-                    .enQueueId(ENQUEUE_ID)
+                    .enqueueId(ENQUEUE_ID)
                     .mailQueueName(OUT_GOING_1)
                     .mail(FakeMail.builder()
                         .name(NAME)
@@ -113,7 +113,7 @@ class EnqueuedMailsDaoTest {
 
         testee.insert(EnqueuedItemWithSlicingContext.builder()
                 .enqueuedItem(EnqueuedItem.builder()
-                    .enQueueId(ENQUEUE_ID)
+                    .enqueueId(ENQUEUE_ID)
                     .mailQueueName(OUT_GOING_1)
                     .mail(FakeMail.builder()
                         .name(NAME)
@@ -138,7 +138,7 @@ class EnqueuedMailsDaoTest {
                     softly.assertThat(slicingContext.getTimeRangeStart()).isEqualTo(NOW);
                     softly.assertThat(enqueuedItem.getMailQueueName()).isEqualTo(OUT_GOING_1);
                     softly.assertThat(enqueuedItem.getEnqueuedTime()).isEqualTo(NOW);
-                    softly.assertThat(enqueuedItem.getEnQueueId()).isEqualTo(ENQUEUE_ID);
+                    softly.assertThat(enqueuedItem.getEnqueueId()).isEqualTo(ENQUEUE_ID);
                     softly.assertThat(enqueuedItem.getMail().getName()).isEqualTo(NAME);
                     softly.assertThat(enqueuedItem.getPartsId()).isEqualTo(MIME_MESSAGE_PARTS_ID);
                 });

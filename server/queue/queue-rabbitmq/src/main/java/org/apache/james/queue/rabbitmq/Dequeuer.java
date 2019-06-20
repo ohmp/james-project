@@ -47,12 +47,12 @@ class Dequeuer {
 
     private static class RabbitMQMailQueueItem implements MailQueue.MailQueueItem {
         private final Consumer<Boolean> ack;
-        private final EnqueueId enQueueId;
+        private final EnqueueId enqueueId;
         private final Mail mail;
 
-        private RabbitMQMailQueueItem(Consumer<Boolean> ack, EnqueueId enQueueId, Mail mail) {
+        private RabbitMQMailQueueItem(Consumer<Boolean> ack, EnqueueId enqueueId, Mail mail) {
             this.ack = ack;
-            this.enQueueId = enQueueId;
+            this.enqueueId = enqueueId;
             this.mail = mail;
         }
 
@@ -61,8 +61,8 @@ class Dequeuer {
             return mail;
         }
 
-        public EnqueueId getEnQueueId() {
-            return enQueueId;
+        public EnqueueId getEnqueueId() {
+            return enqueueId;
         }
 
         @Override
@@ -94,7 +94,7 @@ class Dequeuer {
     }
 
     private Mono<RabbitMQMailQueueItem> filterIfDeleted(RabbitMQMailQueueItem item) {
-        return mailQueueView.isPresent(item.getEnQueueId())
+        return mailQueueView.isPresent(item.getEnqueueId())
             .flatMap(isPresent -> {
                 if (isPresent) {
                     return Mono.just(item);

@@ -81,7 +81,7 @@ public class EnqueuedMailsDaoUtil {
 
     static EnqueuedItemWithSlicingContext toEnqueuedMail(Row row, BlobId.Factory blobFactory) {
         MailQueueName queueName = MailQueueName.fromString(row.getString(QUEUE_NAME));
-        EnqueueId enQueueId = EnqueueId.of(row.getUUID(ENQUEUE_ID));
+        EnqueueId enqueueId = EnqueueId.of(row.getUUID(ENQUEUE_ID));
         Instant timeRangeStart = row.getTimestamp(TIME_RANGE_START).toInstant();
         BucketedSlices.BucketId bucketId = BucketedSlices.BucketId.of(row.getInt(BUCKET_ID));
         Instant enqueuedTime = row.getTimestamp(ENQUEUED_TIME).toInstant();
@@ -122,7 +122,7 @@ public class EnqueuedMailsDaoUtil {
             .addAttributes(toAttributes(rawAttributes))
             .build();
         EnqueuedItem enqueuedItem = EnqueuedItem.builder()
-            .enQueueId(enQueueId)
+            .enqueueId(enqueueId)
             .mailQueueName(queueName)
             .mail(mail)
             .enqueuedTime(enqueuedTime)

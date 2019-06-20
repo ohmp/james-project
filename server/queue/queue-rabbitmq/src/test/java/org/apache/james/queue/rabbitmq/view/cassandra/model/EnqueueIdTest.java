@@ -45,17 +45,17 @@ class EnqueueIdTest {
 
     @Test
     void serializeShouldReturnAStringRepresentation() {
-        EnqueueId enQueueId = EnqueueId.of(UUID_1);
+        EnqueueId enqueueId = EnqueueId.of(UUID_1);
 
-        assertThat(enQueueId.serialize())
+        assertThat(enqueueId.serialize())
             .isEqualTo(UUID_1.toString());
     }
 
     @Test
     void ofSerializedShouldRevertSerialize() {
-        EnqueueId enQueueId = EnqueueId.of(UUID_1);
+        EnqueueId enqueueId = EnqueueId.of(UUID_1);
 
-        assertThat(EnqueueId.ofSerialized(enQueueId.serialize()))
-            .isEqualTo(enQueueId);
+        assertThat(EnqueueId.ofSerialized(enqueueId.serialize()))
+            .isEqualTo(enqueueId);
     }
 }

@@ -113,20 +113,20 @@ public interface DeleteCondition {
     }
 
     class WithEnqueueId implements DeleteCondition {
-        private final EnqueueId enQueueId;
+        private final EnqueueId enqueueId;
 
-        WithEnqueueId(EnqueueId enQueueId) {
-            this.enQueueId = enQueueId;
+        WithEnqueueId(EnqueueId enqueueId) {
+            this.enqueueId = enqueueId;
         }
 
-        public EnqueueId getEnQueueId() {
-            return enQueueId;
+        public EnqueueId getEnqueueId() {
+            return enqueueId;
         }
 
         @Override
         public boolean shouldBeDeleted(EnqueuedItem enqueuedItem) {
             Preconditions.checkNotNull(enqueuedItem);
-            return enqueuedItem.getEnQueueId().equals(enQueueId);
+            return enqueuedItem.getEnqueueId().equals(enqueueId);
         }
     }
 

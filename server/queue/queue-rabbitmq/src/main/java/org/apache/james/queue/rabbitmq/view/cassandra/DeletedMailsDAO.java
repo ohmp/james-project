@@ -64,21 +64,21 @@ public class DeletedMailsDAO {
             .and(eq(ENQUEUE_ID, bindMarker(ENQUEUE_ID))));
     }
 
-    Mono<Void> markAsDeleted(MailQueueName mailQueueName, EnqueueId enQueueId) {
+    Mono<Void> markAsDeleted(MailQueueName mailQueueName, EnqueueId enqueueId) {
         return executor.executeVoid(insertOne.bind()
             .setString(QUEUE_NAME, mailQueueName.asString())
-            .setUUID(ENQUEUE_ID, enQueueId.asUUID()));
+            .setUUID(ENQUEUE_ID, enqueueId.asUUID()));
     }
 
-    Mono<Boolean> isDeleted(MailQueueName mailQueueName, EnqueueId enQueueId) {
+    Mono<Boolean> isDeleted(MailQueueName mailQueueName, EnqueueId enqueueId) {
         return executor.executeReturnExists(
             selectOne.bind()
                 .setString(QUEUE_NAME, mailQueueName.asString())
-                .setUUID(ENQUEUE_ID, enQueueId.asUUID()));
+                .setUUID(ENQUEUE_ID, enqueueId.asUUID()));
     }
 
-    Mono<Boolean> isStillEnqueued(MailQueueName mailQueueName, EnqueueId enQueueId) {
-        return isDeleted(mailQueueName, enQueueId)
+    Mono<Boolean> isStillEnqueued(MailQueueName mailQueueName, EnqueueId enqueueId) {
+        return isDeleted(mailQueueName, enqueueId)
             .map(b -> !b);
     }
 }
