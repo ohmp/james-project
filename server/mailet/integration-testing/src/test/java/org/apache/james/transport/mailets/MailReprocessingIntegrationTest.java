@@ -146,7 +146,7 @@ public class MailReprocessingIntegrationTest {
     }
 
     @Test
-    public void reprocessingkShouldPreserveStateWhenProcessorIsNotSpecified() throws Exception {
+    public void reprocessingShouldPreserveStateWhenProcessorIsNotSpecified() throws Exception {
         // Given an incoming email
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(FakeMail.builder()
