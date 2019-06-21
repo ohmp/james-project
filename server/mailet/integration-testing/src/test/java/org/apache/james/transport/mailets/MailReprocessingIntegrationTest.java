@@ -20,6 +20,7 @@
 package org.apache.james.transport.mailets;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.james.mailets.TemporaryJamesServer.WEBADMIN_IMAP_SMTP_MEMORY_SERVER;
 import static org.apache.james.mailets.configuration.CommonProcessors.ERROR_REPOSITORY;
 import static org.apache.james.mailets.configuration.Constants.DEFAULT_DOMAIN;
 import static org.apache.james.mailets.configuration.Constants.FROM;
@@ -33,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.jwt.JwtConfiguration;
 import org.apache.james.mailets.TemporaryJamesServer;
@@ -47,18 +47,13 @@ import org.apache.james.transport.matchers.All;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
 import org.apache.james.utils.WebAdminGuiceProbe;
-import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
-import org.apache.james.webadmin.authentication.AuthenticationFilter;
-import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.google.inject.util.Modules;
 
 import io.restassured.specification.RequestSpecification;
 
@@ -92,13 +87,7 @@ public class MailReprocessingIntegrationTest {
                         .addProperty("repositoryPath", REPOSITORY_B.asString())));
 
         jamesServer = TemporaryJamesServer.builder()
-            .withBase(Modules.override(
-                    MemoryJamesServerMain.SMTP_AND_IMAP_MODULE,
-                    MemoryJamesServerMain.WEBADMIN)
-                .with(
-                    binder -> binder.bind(JwtConfiguration.class).toInstance(NO_JWT_CONFIGURATION),
-                    binder -> binder.bind(AuthenticationFilter.class).to(NoAuthenticationFilter.class),
-                    binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION)))
+            .withBase(WEBADMIN_IMAP_SMTP_MEMORY_SERVER)
             .withMailetContainer(mailets)
             .build(folder);
 

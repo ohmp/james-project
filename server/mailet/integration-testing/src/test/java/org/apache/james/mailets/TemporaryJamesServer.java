@@ -19,6 +19,8 @@
 
 package org.apache.james.mailets;
 
+import static org.apache.james.transport.mailets.DlpIntegrationTest.NO_JWT_CONFIGURATION;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -37,6 +39,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.MemoryJamesServerMain;
+import org.apache.james.jwt.JwtConfiguration;
 import org.apache.james.mailets.configuration.CommonProcessors;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.SmtpConfiguration;
@@ -44,10 +47,13 @@ import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.utils.GuiceProbe;
 import org.apache.james.webadmin.WebAdminConfiguration;
+import org.apache.james.webadmin.authentication.AuthenticationFilter;
+import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 public class TemporaryJamesServer {
 
@@ -60,6 +66,13 @@ public class TemporaryJamesServer {
         .putProcessor(CommonProcessors.simpleRoot())
         .putProcessor(CommonProcessors.error())
         .putProcessor(CommonProcessors.transport());
+
+    public static final Module WEBADMIN_IMAP_SMTP_MEMORY_SERVER = Modules.override(
+        MemoryJamesServerMain.SMTP_AND_IMAP_MODULE,
+        MemoryJamesServerMain.WEBADMIN)
+        .with(binder -> binder.bind(JwtConfiguration.class).toInstance(NO_JWT_CONFIGURATION),
+            binder -> binder.bind(AuthenticationFilter.class).to(NoAuthenticationFilter.class),
+            binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION));
 
     public static class Builder {
         private ImmutableList.Builder<Module> overrideModules;
