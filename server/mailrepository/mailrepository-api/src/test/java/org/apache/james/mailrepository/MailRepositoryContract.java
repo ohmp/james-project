@@ -435,7 +435,7 @@ public interface MailRepositoryContract {
         assertThat(testee.retrieve(MAIL_1)).satisfies(actual -> checkMailEquality(actual, mail));
     }
 
-    @RepeatedTest(100)
+    @RepeatedTest(1000)
     default void storingAndRemovingMessagesConcurrentlyShouldLeadToConsistentResult() throws Exception {
         MailRepository testee = retrieveRepository();
         int nbKeys = 20;
