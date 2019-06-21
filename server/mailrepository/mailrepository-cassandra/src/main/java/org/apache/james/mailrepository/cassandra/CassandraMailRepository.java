@@ -19,6 +19,7 @@
 
 package org.apache.james.mailrepository.cassandra;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -36,6 +37,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CassandraMailRepository implements MailRepository {
+
+    private static final int MAX_RETRY = 3;
+    private static final Duration FIRST_BACKOFF = Duration.ofSeconds(1);
+    private static final Duration MAX_BACKOFF = Duration.ofSeconds(10);
+    private static final double JITTER_FACTOR = 0.5;
 
     private final MailRepositoryUrl url;
     private final CassandraMailRepositoryKeysDAO keysDAO;
@@ -64,6 +70,7 @@ public class CassandraMailRepository implements MailRepository {
             .then(keysDAO.store(url, mailKey))
             .flatMap(this::increaseSizeIfStored)
             .thenReturn(mailKey)
+            .retryBackoff(MAX_RETRY, FIRST_BACKOFF, MAX_BACKOFF, JITTER_FACTOR)
             .block();
     }
 
