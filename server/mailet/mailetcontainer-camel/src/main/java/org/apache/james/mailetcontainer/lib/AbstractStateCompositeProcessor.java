@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -74,20 +75,20 @@ public abstract class AbstractStateCompositeProcessor implements MailProcessor, 
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        MailProcessor processor = getProcessor(mail.getState());
-
-        if (processor != null) {
-            doService(mail, processor);
-        } else {
-            MailProcessor errorProcessor = getProcessor(Mail.ERROR);
-            mail.setErrorMessage("MailProcessor '" + mail.getState() + "' could not be found. Processing to 'error' instead");
-            LOGGER.error("MailProcessor '{}' could not be found. Processing {} to 'error' instead", mail.getState(), mail.getName());
-            mail.setState(Mail.ERROR);
-            doService(mail, errorProcessor);
-        }
+        handleWithProcessor(mail, getProcessorOrFallBackToError(mail));
     }
 
-    private void doService(Mail mail, MailProcessor processor) throws MessagingException {
+    private MailProcessor getProcessorOrFallBackToError(Mail mail) {
+        return Optional.ofNullable(getProcessor(mail.getState()))
+            .orElseGet(() -> {
+                mail.setErrorMessage("MailProcessor '" + mail.getState() + "' could not be found. Processing to 'error' instead");
+                LOGGER.error("MailProcessor '{}' could not be found. Processing {} to 'error' instead", mail.getState(), mail.getName());
+                mail.setState(Mail.ERROR);
+                return getProcessor(Mail.ERROR);
+            });
+    }
+
+    private void handleWithProcessor(Mail mail, MailProcessor processor) throws MessagingException {
         MessagingException ex = null;
         long start = System.currentTimeMillis();
         LOGGER.debug("Call MailProcessor {}", mail.getState());
