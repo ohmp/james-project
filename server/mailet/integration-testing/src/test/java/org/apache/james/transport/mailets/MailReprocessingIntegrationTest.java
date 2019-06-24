@@ -197,7 +197,7 @@ public class MailReprocessingIntegrationTest {
             .param("action", "reprocess")
             .param("queue", MailQueueFactory.SPOOL)
             .param("processor", "unknown")
-            .patch("/mailRepositories/" + REPOSITORY_B.getPath().urlEncoded() + "/mails").prettyPeek();
+            .patch("/mailRepositories/" + REPOSITORY_B.getPath().urlEncoded() + "/mails");
 
         // Then I can move it to repository A
         awaitAtMostOneMinute.until(() -> containsExactlyOneMail(ERROR_REPOSITORY));
