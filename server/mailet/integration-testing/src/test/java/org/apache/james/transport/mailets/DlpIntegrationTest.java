@@ -20,7 +20,6 @@
 package org.apache.james.transport.mailets;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.james.mailets.TemporaryJamesServer.WEBADMIN_IMAP_SMTP_MEMORY_SERVER;
 import static org.apache.james.mailets.configuration.Constants.DEFAULT_DOMAIN;
 import static org.apache.james.mailets.configuration.Constants.FROM;
 import static org.apache.james.mailets.configuration.Constants.LOCALHOST_IP;
@@ -29,10 +28,8 @@ import static org.apache.james.mailets.configuration.Constants.RECIPIENT;
 import static org.apache.james.mailets.configuration.Constants.RECIPIENT2;
 import static org.apache.james.mailets.configuration.Constants.awaitAtMostOneMinute;
 
-import java.util.Optional;
-
+import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
-import org.apache.james.jwt.JwtConfiguration;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
@@ -53,11 +50,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.google.inject.util.Modules;
+
 import io.restassured.specification.RequestSpecification;
 
 public class DlpIntegrationTest {
     public static final String REPOSITORY_PREFIX = "file://var/mail/dlp/quarantine/";
-    public static final JwtConfiguration NO_JWT_CONFIGURATION = new JwtConfiguration(Optional.empty());
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -81,7 +79,7 @@ public class DlpIntegrationTest {
                         .mailet(Null.class)));
 
         jamesServer = TemporaryJamesServer.builder()
-            .withBase(WEBADMIN_IMAP_SMTP_MEMORY_SERVER)
+            .withBase(Modules.combine(MemoryJamesServerMain.SMTP_AND_IMAP_MODULE, MemoryJamesServerMain.WEBADMIN_TESTING))
             .withMailetContainer(mailets)
             .build(folder);
 

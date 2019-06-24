@@ -20,7 +20,6 @@
 package org.apache.james.transport.mailets;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.james.mailets.TemporaryJamesServer.WEBADMIN_IMAP_SMTP_MEMORY_SERVER;
 import static org.apache.james.mailets.configuration.CommonProcessors.ERROR_REPOSITORY;
 import static org.apache.james.mailets.configuration.Constants.DEFAULT_DOMAIN;
 import static org.apache.james.mailets.configuration.Constants.FROM;
@@ -32,10 +31,8 @@ import static org.apache.james.mailets.configuration.Constants.awaitAtMostOneMin
 import static org.apache.james.mailets.configuration.ProcessorConfiguration.TRANSPORT_PROCESSOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
-
+import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
-import org.apache.james.jwt.JwtConfiguration;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
@@ -55,12 +52,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.google.inject.util.Modules;
+
 import io.restassured.specification.RequestSpecification;
 
 public class MailReprocessingIntegrationTest {
     private static final MailRepositoryUrl REPOSITORY_A = MailRepositoryUrl.from("file://var/mail/a");
     private static final MailRepositoryUrl REPOSITORY_B = MailRepositoryUrl.from("file://var/mail/b");
-    private static final JwtConfiguration NO_JWT_CONFIGURATION = new JwtConfiguration(Optional.empty());
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -87,7 +85,7 @@ public class MailReprocessingIntegrationTest {
                         .addProperty("repositoryPath", REPOSITORY_B.asString())));
 
         jamesServer = TemporaryJamesServer.builder()
-            .withBase(WEBADMIN_IMAP_SMTP_MEMORY_SERVER)
+            .withBase(Modules.combine(MemoryJamesServerMain.SMTP_AND_IMAP_MODULE, MemoryJamesServerMain.WEBADMIN_TESTING))
             .withMailetContainer(mailets)
             .build(folder);
 
