@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.mail.internet.MimeMessage;
 
@@ -124,12 +125,13 @@ public interface MailQueueContract {
         enQueue(mail);
         enQueue(mail);
 
-        Flux<String> dequeuedItemNames = Flux.from(getMailQueue().deQueue())
+        Stream<String> dequeuedItemNames = Flux.from(getMailQueue().deQueue())
             .take(2)
             .map(MailQueue.MailQueueItem::getMail)
-            .map(Mail::getName);
+            .map(Mail::getName)
+            .toStream();
 
-        assertThat(dequeuedItemNames.toStream()).hasSize(2).containsOnly(name);
+        assertThat(dequeuedItemNames).hasSize(2).containsOnly(name);
     }
 
     @Test
