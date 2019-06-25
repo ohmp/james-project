@@ -83,8 +83,10 @@ class RabbitMQJamesServerReprocessingTest {
             .jsonPath()
             .get("taskId");
 
+        // Awaiting the task ensure the reprocessdid start and that the repository was emptied
         webAdminApi.get("/tasks/" + taskId + "/await");
 
+        // Awaiting that an other mail is present in the mail repository ensures that the reprocessing successfully finished
         AWAIT.until(() -> mailRepositoryProbe.listMailKeys(SENDER_DENIED).size() == 1);
         assertThat(mailRepositoryProbe.listMailKeys(SENDER_DENIED)).hasSize(1);
     }
