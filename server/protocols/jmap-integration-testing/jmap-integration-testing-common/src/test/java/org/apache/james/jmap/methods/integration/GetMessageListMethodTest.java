@@ -254,7 +254,115 @@ public abstract class GetMessageListMethodTest {
             .isEqualTo(messageId);
     }
 
+    @Test
+    public void getMessagesShouldSendOneRequestWithBatchedCommands() throws Exception {
+        provisionTwoMail();
+
+        Thread.sleep(1000);
+        await();
+
+
+        String body =
+            "[" +
+            "  [" +
+            "    \"getMessageList\"," +
+            "    {" +
+            "      \"filter\": {}," +
+            "      \"sort\": [" +
+            "        \"date desc\"" +
+            "      ]," +
+            "      \"collapseThreads\": false," +
+            "      \"fetchMessages\": false," +
+            "      \"position\": 0," +
+            "      \"limit\": 10" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]," +
+            "  [" +
+            "    \"getMessages\"," +
+            "    {\"#ids\": {" +
+            "      \"resultOf\":\"#0\"," +
+            "      \"name\":\"getMessageList\"," +
+            "      \"path\":\"/messageIds\"" +
+            "    }}," +
+            "    \"#1\"" +
+            "  ]" +
+            "]";
+
+        System.out.println(body);
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body(body)
+        .when()
+            .post("/jmap").prettyPeek()
+        .then()
+            .statusCode(200)
+            .body("[0][1].messageIds", hasSize(2))
+            .body("[1][1].list", hasSize(2));
+
+        /*
+
+        [[""
+
+         */
+    }
+
+    public void provisionTwoMail() throws Exception {
+        String toUsername = "username1@" + DOMAIN;
+        String password = "password";
+        dataProbe.addUser(toUsername, password);
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, toUsername, DefaultMailboxes.INBOX);
+
+        sendOneEmail();
+        sendOneEmail();
+    }
+
+    public void sendOneEmail() {
+        String messageCreationId = "creationId1337";
+        String fromName = "Üsteliğhan Maşrapa";
+        String requestBody = "[" +
+            "  [" +
+            "    \"setMessages\"," +
+            "    {" +
+            "      \"create\": { \"" + messageCreationId  + "\" : {" +
+            "        \"from\": { \"name\": \"" + fromName + "\", \"email\": \"" + ALICE + "\"}," +
+            "        \"to\": [{ \"name\": \"BOB\", \"email\": \"" + BOB + "\"}]," +
+            "        \"subject\": \"Thank you for joining example.com!\"," +
+            "        \"textBody\": \"Hello someone, and thank you for joining example.com!\"," +
+            "        \"mailboxIds\": [\"" + getOutboxId(aliceAccessToken) + "\"]" +
+            "      }}" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]" +
+            "]";
+
+        String messageId = with()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body(requestBody)
+            .post("/jmap").prettyPeek()
+        .then()
+            .extract()
+            .body()
+            .path(ARGUMENTS + ".created." + messageCreationId + ".id");
+    }
+
     private String searchFirstMessageByFromField(String from) {
+        /*
+
+        // Then
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessages\", {\"ids\": [\"" + message.getMessageId().serialize() + "\"]}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body(NAME, equalTo("messages"))
+            .body(ARGUMENTS + ".list", empty());
+         */
+
         String searchRequest = "[" +
             "  [" +
             "    \"getMessageList\"," +
