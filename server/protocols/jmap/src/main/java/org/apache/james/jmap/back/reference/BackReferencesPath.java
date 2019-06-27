@@ -19,24 +19,24 @@
 
 package org.apache.james.jmap.back.reference;
 
-import org.apache.james.jmap.methods.Method;
+import org.apache.james.jmap.model.ClientId;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BackReferencesPath {
-    private final Method.Request.Name methodCallId;
+    private final ClientId methodCallId;
     private final String path;
 
     @JsonCreator
     public BackReferencesPath(
-        @JsonProperty("resultOf") Method.Request.Name methodCallId,
+        @JsonProperty("resultOf") ClientId methodCallId,
         @JsonProperty("fieldName") String path) {
         this.methodCallId = methodCallId;
         this.path = path;
     }
 
-    public Method.Request.Name getMethodCallId() {
+    public ClientId getMethodCallId() {
         return methodCallId;
     }
 

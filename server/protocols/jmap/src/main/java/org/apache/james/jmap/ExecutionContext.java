@@ -20,23 +20,36 @@
 package org.apache.james.jmap;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
+import org.apache.james.jmap.back.reference.BackReference;
+import org.apache.james.jmap.back.reference.BackReferencesPath;
 import org.apache.james.jmap.methods.Method;
+import org.apache.james.jmap.model.ClientId;
+
+import com.google.common.collect.ImmutableSet;
 
 public class ExecutionContext {
-    private final HashMap<Method.Request.Name, Method.Response> previousResponses;
+    private final HashMap<ClientId, Method.Response> previousResponses;
 
     public ExecutionContext() {
         previousResponses = new HashMap<>();
     }
 
-    public void addResponse(Method.Request.Name methodName, Method.Response response) {
-        previousResponses.put(methodName, response);
+    public void addResponse(ClientId clientId, Method.Response response) {
+        System.out.println("Adding " + clientId.getId());
+        previousResponses.put(clientId, response);
     }
 
 
-    public Method.Response retrieveRestonse(Method.Request.Name methodName) {
-        return Optional.ofNullable(previousResponses.get(methodName)).get();
+    public Method.Response retrieveResponse(ClientId clientId) {
+        System.out.println(ImmutableSet.copyOf(previousResponses.keySet()));
+        return Optional.ofNullable(previousResponses.get(clientId)).get();
+    }
+
+    public List<BackReference> retreiveBackReferences(BackReferencesPath path) {
+        Method.Response response = retrieveResponse(path.getMethodCallId());
+        return response.resolve(path);
     }
 }

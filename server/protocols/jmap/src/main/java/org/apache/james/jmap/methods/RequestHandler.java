@@ -76,8 +76,9 @@ public class RequestHandler {
         return (Method method) -> {
                     try {
                         JmapRequest jmapRequest = jmapRequestParser.extractJmapRequest(request, method.requestType());
-                        Stream<JmapResponse> responses = method.process(jmapRequest, request.getClientId(), mailboxSession);
-                        return responses.peek(res -> executionContext.addResponse(request.getMethodName(), res.getResponse()));
+
+                        return method.process(jmapRequest, request.getClientId(), mailboxSession, executionContext)
+                            .peek(res -> executionContext.addResponse(request.getClientId(), res.getResponse()));
                     } catch (IOException e) {
                         LOGGER.error("Error occured while parsing the request.", e);
                         if (e.getCause() instanceof JmapFieldNotSupportedException) {
