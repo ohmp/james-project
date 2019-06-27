@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.core.User;
+import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.JmapFieldNotSupportedException;
 import org.apache.james.jmap.model.AuthenticatedProtocolRequest;
 import org.apache.james.jmap.model.ProtocolResponse;
@@ -55,7 +56,7 @@ public class RequestHandler {
                 .collect(Collectors.toMap(Method::requestHandled, Function.identity()));
     }
 
-    public Stream<ProtocolResponse> handle(AuthenticatedProtocolRequest request) throws IOException {
+    public Stream<ProtocolResponse> handle(AuthenticatedProtocolRequest request, ExecutionContext executionContext) throws IOException {
         Optional<MailboxSession> mailboxSession = Optional.ofNullable(request.getMailboxSession());
         try (Closeable closeable =
                  MDCBuilder.create()
@@ -64,18 +65,19 @@ public class RequestHandler {
                      .addContext(MDCBuilder.ACTION, request.getMethodName().getName())
                      .build()) {
             return Optional.ofNullable(methods.get(request.getMethodName()))
-                .map(extractAndProcess(request))
+                .map(extractAndProcess(request, executionContext))
                 .map(jmapResponseWriter::formatMethodResponse)
                 .orElseThrow(() -> new IllegalStateException("unknown method " + request.getMethodName()));
         }
     }
     
-    private Function<Method, Stream<JmapResponse>> extractAndProcess(AuthenticatedProtocolRequest request) {
+    private Function<Method, Stream<JmapResponse>> extractAndProcess(AuthenticatedProtocolRequest request, ExecutionContext executionContext) {
         MailboxSession mailboxSession = request.getMailboxSession();
         return (Method method) -> {
                     try {
                         JmapRequest jmapRequest = jmapRequestParser.extractJmapRequest(request, method.requestType());
-                        return method.process(jmapRequest, request.getClientId(), mailboxSession);
+                        Stream<JmapResponse> responses = method.process(jmapRequest, request.getClientId(), mailboxSession);
+                        return responses.peek(res -> executionContext.addResponse(request.getMethodName(), res.getResponse()));
                     } catch (IOException e) {
                         LOGGER.error("Error occured while parsing the request.", e);
                         if (e.getCause() instanceof JmapFieldNotSupportedException) {

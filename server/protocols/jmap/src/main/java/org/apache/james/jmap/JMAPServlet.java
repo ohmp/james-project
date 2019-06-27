@@ -70,11 +70,12 @@ public class JMAPServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         TimeMetric timeMetric = metricFactory.timer("JMAP-request");
         try {
+            ExecutionContext executionContext = new ExecutionContext();
             List<Object[]> responses =
                 requestAsJsonStream(req)
                     .map(ProtocolRequest::deserialize)
                     .map(x -> AuthenticatedProtocolRequest.decorate(x, req))
-                    .flatMap(this::handle)
+                    .flatMap(r -> handle(r, executionContext))
                     .map(ProtocolResponse::asProtocolSpecification)
                     .collect(Collectors.toList());
 
@@ -100,9 +101,9 @@ public class JMAPServlet extends HttpServlet {
         }
     }
 
-    private Stream<? extends ProtocolResponse> handle(AuthenticatedProtocolRequest request) {
+    private Stream<? extends ProtocolResponse> handle(AuthenticatedProtocolRequest request, ExecutionContext executionContext) {
         try {
-            return requestHandler.handle(request);
+            return requestHandler.handle(request, executionContext);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

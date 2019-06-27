@@ -21,12 +21,18 @@ package org.apache.james.jmap.methods;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.james.jmap.ExecutionContext;
+import org.apache.james.jmap.back.reference.BackReference;
+import org.apache.james.jmap.back.reference.BackReferencesPath;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.mailbox.MailboxSession;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 
@@ -117,6 +123,11 @@ public interface Method {
                 return toStringHelper(this).add("name", name).toString();
             }
         }
+
+        @JsonIgnore
+        default List<BackReference> resolve(BackReferencesPath path) {
+            throw new NotImplementedException("only some methods supports this");
+        }
     }
 
 
@@ -124,6 +135,12 @@ public interface Method {
 
     Class<? extends JmapRequest> requestType();
     
-    Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession);
+    default Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession) {
+        return process(request, clientId, mailboxSession, new ExecutionContext());
+    }
+
+    default Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession, ExecutionContext executionContext) {
+        return process(request, clientId, mailboxSession);
+    }
 
 }

@@ -98,7 +98,7 @@ public class JMAPServletTest {
         ObjectNode json = new ObjectNode(new JsonNodeFactory(false));
         json.put("type", "invalidArgument");
 
-        when(requestHandler.handle(any()))
+        when(requestHandler.handle(any(), any()))
             .thenReturn(Stream.of(new ProtocolResponse(ErrorResponse.ERROR_METHOD, json, ClientId.of("#0"))));
 
         given()
@@ -120,7 +120,7 @@ public class JMAPServletTest {
         list.put("name", "roger@barcamp");
         arrayNode.add(list);
 
-        when(requestHandler.handle(any()))
+        when(requestHandler.handle(any(), any()))
             .thenReturn(Stream.of(new ProtocolResponse(Method.Response.name("accounts"), json, ClientId.of("#0"))));
 
         given()
