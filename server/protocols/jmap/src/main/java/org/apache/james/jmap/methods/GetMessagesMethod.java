@@ -27,7 +27,11 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.JmapFieldNotSupportedException;
+import org.apache.james.jmap.back.reference.BackReference;
+import org.apache.james.jmap.back.reference.BackReferencesPath;
+import org.apache.james.jmap.back.reference.MessageIdBackReferenceDeserializer;
 import org.apache.james.jmap.json.FieldNamePropertyFilter;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMessagesRequest;
@@ -44,6 +48,7 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
@@ -69,15 +74,17 @@ public class GetMessagesMethod implements Method {
     private final MessageIdManager messageIdManager;
     private final MetricFactory metricFactory;
     private final Keywords.KeywordsFactory keywordsFactory;
+    private final MessageIdBackReferenceDeserializer messageIdBackReferenceDeserializer;
 
     @Inject
     @VisibleForTesting GetMessagesMethod(
-            MessageFactory messageFactory,
-            MessageIdManager messageIdManager,
-            MetricFactory metricFactory) {
+        MessageFactory messageFactory,
+        MessageIdManager messageIdManager,
+        MetricFactory metricFactory, MessageIdBackReferenceDeserializer messageIdBackReferenceDeserializer) {
         this.messageFactory = messageFactory;
         this.messageIdManager = messageIdManager;
         this.metricFactory = metricFactory;
+        this.messageIdBackReferenceDeserializer = messageIdBackReferenceDeserializer;
         this.keywordsFactory = Keywords.lenientFactory();
     }
     
@@ -92,7 +99,7 @@ public class GetMessagesMethod implements Method {
     }
     
     @Override
-    public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession) {
+    public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession, ExecutionContext executionContext) {
         Preconditions.checkNotNull(request);
         Preconditions.checkNotNull(mailboxSession);
         Preconditions.checkArgument(request instanceof GetMessagesRequest);
@@ -108,7 +115,7 @@ public class GetMessagesMethod implements Method {
                 .addContext("properties", getMessagesRequest.getProperties())
                 .wrapArround(
                     () -> Stream.of(JmapResponse.builder().clientId(clientId)
-                        .response(getMessagesResponse(mailboxSession, getMessagesRequest))
+                        .response(getMessagesResponse(mailboxSession, getMessagesRequest, executionContext))
                         .responseName(RESPONSE_NAME)
                         .properties(outputProperties.getOptionalMessageProperties())
                         .filterProvider(buildOptionalHeadersFilteringFilterProvider(outputProperties))
@@ -126,13 +133,14 @@ public class GetMessagesMethod implements Method {
         return new FieldNamePropertyFilter((fieldName) -> headerProperties.contains(HeaderProperty.fromFieldName(fieldName)));
     }
 
-    private GetMessagesResponse getMessagesResponse(MailboxSession mailboxSession, GetMessagesRequest getMessagesRequest) {
+    private GetMessagesResponse getMessagesResponse(MailboxSession mailboxSession, GetMessagesRequest getMessagesRequest, ExecutionContext executionContext) {
         getMessagesRequest.getAccountId().ifPresent((input) -> notImplemented("accountId"));
 
         try {
+            List<MessageId> ids = resolveMessagesIds(getMessagesRequest, executionContext);
             return GetMessagesResponse.builder()
                 .messages(
-                    messageIdManager.getMessages(getMessagesRequest.getIds(), FetchGroupImpl.FULL_CONTENT, mailboxSession)
+                    messageIdManager.getMessages(ids, FetchGroupImpl.FULL_CONTENT, mailboxSession)
                         .stream()
                         .collect(Guavate.toImmutableListMultimap(MessageResult::getMessageId))
                         .asMap()
@@ -142,11 +150,21 @@ public class GetMessagesMethod implements Method {
                         .flatMap(toMetaDataWithContent())
                         .flatMap(toMessage())
                         .collect(Guavate.toImmutableList()))
-                .expectedMessageIds(getMessagesRequest.getIds())
+                .expectedMessageIds(ids)
                 .build();
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<MessageId> resolveMessagesIds(GetMessagesRequest getMessagesRequest, ExecutionContext executionContext) {
+        if (getMessagesRequest.getIdsBackReferencesPath().isPresent()) {
+            BackReferencesPath backReferencesPath = getMessagesRequest.getIdsBackReferencesPath().get();
+            Response response = executionContext.retrieveRestonse(backReferencesPath.getMethodCallId());
+            List<BackReference> backReferences = response.resolve(backReferencesPath);
+            return messageIdBackReferenceDeserializer.deserializeMany(backReferences);
+        }
+        return getMessagesRequest.getIds();
     }
 
     private Function<MetaDataWithContent, Stream<Message>> toMessage() {

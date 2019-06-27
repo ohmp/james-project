@@ -23,10 +23,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.james.jmap.back.reference.BackReference;
+import org.apache.james.jmap.back.reference.BackReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.mailbox.model.MessageId;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class GetMessageListResponse implements Method.Response {
@@ -174,5 +179,16 @@ public class GetMessageListResponse implements Method.Response {
 
     public List<MessageId> getMessageIds() {
         return messageIds;
+    }
+
+    @JsonIgnore
+    @Override
+    public List<BackReference> resolve(BackReferencesPath path) {
+        Preconditions.checkArgument(path.getPath().equals("/messageIds"), "only messageIds is supported");
+        return getMessageIds()
+            .stream()
+            .map(MessageId::serialize)
+            .map(BackReference::new)
+            .collect(Guavate.toImmutableList());
     }
 }
