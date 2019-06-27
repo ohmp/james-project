@@ -159,9 +159,8 @@ public class GetMessagesMethod implements Method {
 
     private List<MessageId> resolveMessagesIds(GetMessagesRequest getMessagesRequest, ExecutionContext executionContext) {
         if (getMessagesRequest.getIdsBackReferencesPath().isPresent()) {
-            BackReferencesPath backReferencesPath = getMessagesRequest.getIdsBackReferencesPath().get();
-            Response response = executionContext.retrieveRestonse(backReferencesPath.getMethodCallId());
-            List<BackReference> backReferences = response.resolve(backReferencesPath);
+            BackReferencesPath path = getMessagesRequest.getIdsBackReferencesPath().get();
+            List<BackReference> backReferences = executionContext.retreiveBackReferences(path);
             return messageIdBackReferenceDeserializer.deserializeMany(backReferences);
         }
         return getMessagesRequest.getIds();
