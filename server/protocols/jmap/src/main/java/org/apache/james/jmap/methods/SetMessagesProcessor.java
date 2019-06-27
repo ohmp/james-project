@@ -19,10 +19,17 @@
 
 package org.apache.james.jmap.methods;
 
+import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
 import org.apache.james.mailbox.MailboxSession;
 
 public interface SetMessagesProcessor {
-    SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession);
+    default SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession) {
+        return process(request, mailboxSession, new ExecutionContext());
+    }
+
+    default SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession, ExecutionContext executionContext) {
+        return process(request, mailboxSession);
+    }
 }

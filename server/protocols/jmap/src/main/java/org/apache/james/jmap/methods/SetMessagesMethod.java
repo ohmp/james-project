@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
@@ -59,7 +60,7 @@ public class SetMessagesMethod implements Method {
     }
 
     @Override
-    public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession) {
+    public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession, ExecutionContext executionContext) {
         Preconditions.checkArgument(request instanceof SetMessagesRequest);
         SetMessagesRequest setMessagesRequest = (SetMessagesRequest) request;
 
@@ -73,14 +74,14 @@ public class SetMessagesMethod implements Method {
                 .wrapArround(
                     () ->  Stream.of(
                         JmapResponse.builder().clientId(clientId)
-                            .response(setMessagesResponse(setMessagesRequest, mailboxSession))
+                            .response(setMessagesResponse(setMessagesRequest, mailboxSession, executionContext))
                             .responseName(RESPONSE_NAME)
                             .build())));
     }
 
-    private SetMessagesResponse setMessagesResponse(SetMessagesRequest request, MailboxSession mailboxSession) {
+    private SetMessagesResponse setMessagesResponse(SetMessagesRequest request, MailboxSession mailboxSession, ExecutionContext executionContext) {
         return messagesProcessors.stream()
-                .map(processor -> processor.process(request, mailboxSession))
+                .map(processor -> processor.process(request, mailboxSession, executionContext))
                 .reduce(SetMessagesResponse.builder(),
                         (builder, resp) -> resp.mergeInto(builder),
                         (builder1, builder2) -> builder2.build().mergeInto(builder1)

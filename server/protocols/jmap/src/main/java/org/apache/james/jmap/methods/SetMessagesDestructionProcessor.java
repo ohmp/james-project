@@ -26,6 +26,10 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.james.jmap.ExecutionContext;
+import org.apache.james.jmap.back.reference.BackReference;
+import org.apache.james.jmap.back.reference.BackReferencesPath;
+import org.apache.james.jmap.back.reference.MessageIdBackReferenceDeserializer;
 import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
@@ -45,25 +49,35 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetMessagesCreationProcessor.class);
 
     private final MessageIdManager messageIdManager;
+    private final MessageIdBackReferenceDeserializer messageIdBackReferenceDeserializer;
     private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting
-    SetMessagesDestructionProcessor(MessageIdManager messageIdManager, MetricFactory metricFactory) {
+    SetMessagesDestructionProcessor(MessageIdManager messageIdManager, MessageIdBackReferenceDeserializer messageIdBackReferenceDeserializer, MetricFactory metricFactory) {
         this.messageIdManager = messageIdManager;
+        this.messageIdBackReferenceDeserializer = messageIdBackReferenceDeserializer;
         this.metricFactory = metricFactory;
     }
 
     @Override
-    public SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession) {
+    public SetMessagesResponse process(SetMessagesRequest request, MailboxSession mailboxSession, ExecutionContext executionContext) {
         return metricFactory.runPublishingTimerMetric(JMAP_PREFIX + "SetMessageDestructionProcessor",
-            () -> delete(request.getDestroy(), mailboxSession)
+            () -> delete(resolveDestroyed(request, executionContext), mailboxSession)
                 .reduce(SetMessagesResponse.builder(),
                     SetMessagesResponse.Builder::accumulator,
                     SetMessagesResponse.Builder::combiner)
                 .build());
     }
 
+    private List<MessageId> resolveDestroyed(SetMessagesRequest request, ExecutionContext executionContext) {
+        if (request.getDestroyBackReference().isPresent()) {
+            BackReferencesPath backReferencesPath = request.getDestroyBackReference().get();
+            List<BackReference> backReferences = executionContext.retreiveBackReferences(backReferencesPath);
+            return messageIdBackReferenceDeserializer.deserializeMany(backReferences);
+        }
+        return request.getDestroy();
+    }
 
     private Stream<SetMessagesResponse> delete(List<MessageId> toBeDestroyed, MailboxSession mailboxSession) {
         try {

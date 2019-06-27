@@ -26,12 +26,14 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.james.jmap.JmapFieldNotSupportedException;
+import org.apache.james.jmap.back.reference.BackReferencesPath;
 import org.apache.james.jmap.methods.JmapRequest;
 import org.apache.james.jmap.methods.UpdateMessagePatchConverter;
 import org.apache.james.jmap.methods.ValueWithId.CreationMessageEntry;
 import org.apache.james.jmap.methods.ValueWithId.MDNCreationEntry;
 import org.apache.james.mailbox.model.MessageId;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -59,12 +61,14 @@ public class SetMessagesRequest implements JmapRequest {
         private ImmutableMap.Builder<MessageId, Function<UpdateMessagePatchConverter, UpdateMessagePatch>> updatesProvider;
 
         private ImmutableList.Builder<MessageId> destroy;
+        private Optional<BackReferencesPath> destroyBackReference;
 
         private Builder() {
             create = new HashMap<>();
             sendMDN = new HashMap<>();
             updatesProvider = ImmutableMap.builder();
             destroy = ImmutableList.builder();
+            destroyBackReference = Optional.empty();
         }
 
         public Builder accountId(String accountId) {
@@ -111,9 +115,15 @@ public class SetMessagesRequest implements JmapRequest {
             return this;
         }
 
+        @JsonProperty("#destroy")
+        public Builder destroyBackReference(BackReferencesPath backReferencesPath) {
+            this.destroyBackReference = Optional.ofNullable(backReferencesPath);
+            return this;
+        }
+
         public SetMessagesRequest build() {
             return new SetMessagesRequest(Optional.ofNullable(accountId), Optional.ofNullable(ifInState), 
-                    messageCreations(), mdnSendings(), updatesProvider.build(), destroy.build());
+                    messageCreations(), mdnSendings(), updatesProvider.build(), destroy.build(), destroyBackReference);
         }
 
         private ImmutableList<CreationMessageEntry> messageCreations() {
@@ -135,17 +145,19 @@ public class SetMessagesRequest implements JmapRequest {
     private final List<MDNCreationEntry> sendMDN;
     private final Map<MessageId, Function<UpdateMessagePatchConverter, UpdateMessagePatch>> update;
     private final List<MessageId> destroy;
+    private final Optional<BackReferencesPath> destroyBackReference;
 
     @VisibleForTesting SetMessagesRequest(Optional<String> accountId, Optional<String> ifInState,
                                           List<CreationMessageEntry> create, List<MDNCreationEntry> sendMDN,
                                           Map<MessageId, Function<UpdateMessagePatchConverter, UpdateMessagePatch>> update,
-                                          List<MessageId> destroy) {
+                                          List<MessageId> destroy, Optional<BackReferencesPath> destroyBackReference) {
         this.accountId = accountId;
         this.ifInState = ifInState;
         this.create = create;
         this.sendMDN = sendMDN;
         this.update = update;
         this.destroy = destroy;
+        this.destroyBackReference = destroyBackReference;
     }
 
     public Optional<String> getAccountId() {
@@ -162,6 +174,10 @@ public class SetMessagesRequest implements JmapRequest {
 
     public List<MDNCreationEntry> getSendMDN() {
         return sendMDN;
+    }
+
+    public Optional<BackReferencesPath> getDestroyBackReference() {
+        return destroyBackReference;
     }
 
     public Map<MessageId, UpdateMessagePatch> buildUpdatePatches(UpdateMessagePatchConverter converter) {
