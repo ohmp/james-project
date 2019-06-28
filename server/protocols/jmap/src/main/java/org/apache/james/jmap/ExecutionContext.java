@@ -28,8 +28,6 @@ import org.apache.james.jmap.back.reference.BackReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.jmap.model.ClientId;
 
-import com.google.common.collect.ImmutableSet;
-
 public class ExecutionContext {
     private final HashMap<ClientId, Method.Response> previousResponses;
 
@@ -38,18 +36,12 @@ public class ExecutionContext {
     }
 
     public void addResponse(ClientId clientId, Method.Response response) {
-        System.out.println("Adding " + clientId.getId());
         previousResponses.put(clientId, response);
     }
 
-
-    public Method.Response retrieveResponse(ClientId clientId) {
-        System.out.println(ImmutableSet.copyOf(previousResponses.keySet()));
-        return Optional.ofNullable(previousResponses.get(clientId)).get();
-    }
-
     public List<BackReference> retreiveBackReferences(BackReferencesPath path) {
-        Method.Response response = retrieveResponse(path.getMethodCallId());
+        ClientId callId = path.getMethodCallId();
+        Method.Response response = Optional.ofNullable(previousResponses.get(callId)).get();
         return response.resolve(path);
     }
 }
