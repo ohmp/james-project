@@ -403,6 +403,58 @@ public abstract class GetMessageListMethodTest {
             .body("[1][1].destroyed", hasSize(2));
     }
 
+    @Test
+    public void deleteByQuery2() throws Exception {
+        provisionTwoMail();
+
+        Thread.sleep(1000);
+        await();
+
+        String body =
+            "[" +
+            "  [" +
+            "    \"getMessageList\"," +
+            "    {" +
+            "      \"filter\": {}," +
+            "      \"sort\": [" +
+            "        \"date desc\"" +
+            "      ]," +
+            "      \"collapseThreads\": false," +
+            "      \"fetchMessages\": false," +
+            "      \"position\": 0," +
+            "      \"limit\": 10" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]," +
+            "  [" +
+            "    \"getMessages\"," +
+            "    {\"#ids\": {" +
+            "      \"resultOf\":\"#0\"," +
+            "      \"name\":\"getMessageList\"," +
+            "      \"path\":\"/messageIds\"" +
+            "    }}," +
+            "    \"#1\"" +
+            "  ]," +
+            "  [\"setMessages\", {\"#destroy\": {" +
+            "      \"resultOf\":\"#1\"," +
+            "      \"name\":\"getMessageList\"," +
+            "      \"path\":\"/list/*/id\"" +
+            "    }}, \"#2\"]" +
+            "]";
+
+        System.out.println(body);
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body(body)
+        .when()
+            .post("/jmap").prettyPeek()
+        .then()
+            .statusCode(200)
+            .body("[0][1].messageIds", hasSize(2))
+            .body("[2][1].destroyed", hasSize(2));
+    }
+
     public void provisionTwoMail() throws Exception {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";

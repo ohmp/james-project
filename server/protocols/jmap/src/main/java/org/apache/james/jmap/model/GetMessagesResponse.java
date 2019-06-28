@@ -103,13 +103,24 @@ public class GetMessagesResponse implements Method.Response {
 
     @Override
     public <T> List<T> resolve(ResultReferencesPath path, Class<T> clazz) {
-        Preconditions.checkArgument(path.getPath().equals("/list/*/mailboxIds"));
-        Preconditions.checkArgument(MailboxId.class.isAssignableFrom(clazz));
+        if (path.getPath().equals("/list/*/mailboxIds")) {
+            Preconditions.checkArgument(MailboxId.class.isAssignableFrom(clazz));
 
-        return (List<T>) list()
-            .stream()
-            .flatMap(message -> message.getMailboxIds().stream())
-            .distinct()
-            .collect(Guavate.toImmutableList());
+            return (List<T>) list()
+                .stream()
+                .flatMap(message -> message.getMailboxIds().stream())
+                .distinct()
+                .collect(Guavate.toImmutableList());
+        }
+        if (path.getPath().equals("/list/*/id")) {
+            Preconditions.checkArgument(MessageId.class.isAssignableFrom(clazz));
+
+            return (List<T>) list()
+                .stream()
+                .map(Message::getId)
+                .distinct()
+                .collect(Guavate.toImmutableList());
+        }
+        throw new IllegalArgumentException(path.getPath() + " is not a supported resultReference");
     }
 }
