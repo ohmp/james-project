@@ -27,9 +27,9 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
-import org.apache.james.jmap.back.reference.BackReference;
-import org.apache.james.jmap.back.reference.BackReferencesPath;
-import org.apache.james.jmap.back.reference.MessageIdBackReferenceDeserializer;
+import org.apache.james.jmap.back.reference.MessageIdResultReferenceDeserializer;
+import org.apache.james.jmap.back.reference.ResultReference;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
@@ -49,14 +49,14 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetMessagesCreationProcessor.class);
 
     private final MessageIdManager messageIdManager;
-    private final MessageIdBackReferenceDeserializer messageIdBackReferenceDeserializer;
+    private final MessageIdResultReferenceDeserializer messageIdResultReferenceDeserializer;
     private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting
-    SetMessagesDestructionProcessor(MessageIdManager messageIdManager, MessageIdBackReferenceDeserializer messageIdBackReferenceDeserializer, MetricFactory metricFactory) {
+    SetMessagesDestructionProcessor(MessageIdManager messageIdManager, MessageIdResultReferenceDeserializer messageIdResultReferenceDeserializer, MetricFactory metricFactory) {
         this.messageIdManager = messageIdManager;
-        this.messageIdBackReferenceDeserializer = messageIdBackReferenceDeserializer;
+        this.messageIdResultReferenceDeserializer = messageIdResultReferenceDeserializer;
         this.metricFactory = metricFactory;
     }
 
@@ -71,10 +71,10 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
     }
 
     private List<MessageId> resolveDestroyed(SetMessagesRequest request, ExecutionContext executionContext) {
-        if (request.getDestroyBackReference().isPresent()) {
-            BackReferencesPath backReferencesPath = request.getDestroyBackReference().get();
-            List<BackReference> backReferences = executionContext.retreiveBackReferences(backReferencesPath);
-            return messageIdBackReferenceDeserializer.deserializeMany(backReferences);
+        if (request.getDestroyResultReference().isPresent()) {
+            ResultReferencesPath resultReferencesPath = request.getDestroyResultReference().get();
+            List<ResultReference> resultReferences = executionContext.retrieveResultReferences(resultReferencesPath);
+            return messageIdResultReferenceDeserializer.deserializeMany(resultReferences);
         }
         return request.getDestroy();
     }

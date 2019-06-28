@@ -23,11 +23,11 @@ import java.util.List;
 
 import com.github.steveash.guavate.Guavate;
 
-public interface BackReferenceDeserializer<T> {
-    T deserialize(BackReference backReference);
+public interface ResultReferenceDeserializer<T> {
+    T deserialize(ResultReference resultReference);
 
-    default List<T> deserializeMany(List<BackReference> backReferences) {
-        return backReferences.stream()
+    default List<T> deserializeMany(List<ResultReference> resultReferences) {
+        return resultReferences.stream()
             .map(this::deserialize)
             .collect(Guavate.toImmutableList());
     }

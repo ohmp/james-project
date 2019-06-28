@@ -19,20 +19,28 @@
 
 package org.apache.james.jmap.back.reference;
 
-import javax.inject.Inject;
+import org.apache.james.jmap.model.ClientId;
 
-import org.apache.james.mailbox.model.MessageId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MessageIdBackReferenceDeserializer implements BackReferenceDeserializer<MessageId> {
-    private final MessageId.Factory messageIdFactory;
+public class ResultReferencesPath {
+    private final ClientId methodCallId;
+    private final String path;
 
-    @Inject
-    public MessageIdBackReferenceDeserializer(MessageId.Factory messageIdFactory) {
-        this.messageIdFactory = messageIdFactory;
+    @JsonCreator
+    public ResultReferencesPath(
+        @JsonProperty("resultOf") ClientId methodCallId,
+        @JsonProperty("fieldName") String path) {
+        this.methodCallId = methodCallId;
+        this.path = path;
     }
 
-    @Override
-    public MessageId deserialize(BackReference backReference) {
-        return messageIdFactory.fromString(backReference.getValue());
+    public ClientId getMethodCallId() {
+        return methodCallId;
+    }
+
+    public String getPath() {
+        return path;
     }
 }

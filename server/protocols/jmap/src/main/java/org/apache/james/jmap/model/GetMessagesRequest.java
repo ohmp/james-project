@@ -21,7 +21,7 @@ package org.apache.james.jmap.model;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.james.jmap.back.reference.BackReferencesPath;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.JmapRequest;
 import org.apache.james.mailbox.model.MessageId;
 
@@ -42,7 +42,7 @@ public class GetMessagesRequest implements JmapRequest {
     public static class Builder {
         
         private Optional<String> accountId;
-        private Optional<BackReferencesPath> idsBackReferencesPath;
+        private Optional<ResultReferencesPath> idsResultReferencesPath;
         private final ImmutableList.Builder<MessageId> ids;
         private Optional<ImmutableSet<String>> properties;
 
@@ -50,7 +50,7 @@ public class GetMessagesRequest implements JmapRequest {
             accountId = Optional.empty();
             ids = ImmutableList.builder();
             properties = Optional.empty();
-            idsBackReferencesPath = Optional.empty();
+            idsResultReferencesPath = Optional.empty();
         }
         
         public Builder accountId(String accountId) {
@@ -64,8 +64,8 @@ public class GetMessagesRequest implements JmapRequest {
         }
 
         @JsonProperty("#ids")
-        public Builder idsBackReference(BackReferencesPath backReferencesPath) {
-            this.idsBackReferencesPath = Optional.of(backReferencesPath);
+        public Builder idsResultReference(ResultReferencesPath resultReferencesPath) {
+            this.idsResultReferencesPath = Optional.of(resultReferencesPath);
             return this;
         }
 
@@ -75,24 +75,24 @@ public class GetMessagesRequest implements JmapRequest {
         }
         
         public GetMessagesRequest build() {
-            return new GetMessagesRequest(accountId, ids.build(), new MessageProperties(properties), idsBackReferencesPath);
+            return new GetMessagesRequest(accountId, ids.build(), new MessageProperties(properties), idsResultReferencesPath);
         }
     }
     
     private final Optional<String> accountId;
     private final ImmutableList<MessageId> ids;
     private final MessageProperties properties;
-    private Optional<BackReferencesPath> idsBackReferencesPath;
+    private Optional<ResultReferencesPath> idsResultReferencesPath;
 
-    public GetMessagesRequest(Optional<String> accountId, ImmutableList<MessageId> ids, MessageProperties properties, Optional<BackReferencesPath> idsBackReferencesPath) {
+    public GetMessagesRequest(Optional<String> accountId, ImmutableList<MessageId> ids, MessageProperties properties, Optional<ResultReferencesPath> idsResultReferencesPath) {
         this.accountId = accountId;
         this.ids = ids;
         this.properties = properties;
-        this.idsBackReferencesPath = idsBackReferencesPath;
+        this.idsResultReferencesPath = idsResultReferencesPath;
     }
 
-    public Optional<BackReferencesPath> getIdsBackReferencesPath() {
-        return idsBackReferencesPath;
+    public Optional<ResultReferencesPath> getIdsResultReferencesPath() {
+        return idsResultReferencesPath;
     }
     
     public Optional<String> getAccountId() {

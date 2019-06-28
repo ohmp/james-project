@@ -21,10 +21,10 @@ package org.apache.james.jmap.back.reference;
 
 import java.util.Objects;
 
-public class BackReference {
+public class ResultReference {
     private final String value;
 
-    public BackReference(String value) {
+    public ResultReference(String value) {
         this.value = value;
     }
 
@@ -34,8 +34,8 @@ public class BackReference {
 
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof BackReference) {
-            BackReference that = (BackReference) o;
+        if (o instanceof ResultReference) {
+            ResultReference that = (ResultReference) o;
 
             return Objects.equals(this.value, that.value)
                 ;

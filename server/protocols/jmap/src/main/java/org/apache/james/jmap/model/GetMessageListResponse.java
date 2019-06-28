@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.james.jmap.back.reference.BackReference;
-import org.apache.james.jmap.back.reference.BackReferencesPath;
+import org.apache.james.jmap.back.reference.ResultReference;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.mailbox.model.MessageId;
 
@@ -183,12 +183,12 @@ public class GetMessageListResponse implements Method.Response {
 
     @JsonIgnore
     @Override
-    public List<BackReference> resolve(BackReferencesPath path) {
+    public List<ResultReference> resolve(ResultReferencesPath path) {
         Preconditions.checkArgument(path.getPath().equals("/messageIds"), "only messageIds is supported");
         return getMessageIds()
             .stream()
             .map(MessageId::serialize)
-            .map(BackReference::new)
+            .map(ResultReference::new)
             .collect(Guavate.toImmutableList());
     }
 }

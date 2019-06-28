@@ -27,8 +27,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.jmap.ExecutionContext;
-import org.apache.james.jmap.back.reference.BackReference;
-import org.apache.james.jmap.back.reference.BackReferencesPath;
+import org.apache.james.jmap.back.reference.ResultReference;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -125,7 +125,7 @@ public interface Method {
         }
 
         @JsonIgnore
-        default List<BackReference> resolve(BackReferencesPath path) {
+        default List<ResultReference> resolve(ResultReferencesPath path) {
             throw new NotImplementedException("only some methods supports this");
         }
     }
