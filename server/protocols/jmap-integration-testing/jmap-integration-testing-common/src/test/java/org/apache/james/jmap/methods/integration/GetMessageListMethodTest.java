@@ -347,7 +347,9 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body("[0][1].messageIds", hasSize(2))
-            .body("[1][1].list", hasSize(2));
+            .body("[1][0]", equalTo("error"))
+            .body("[1][1].type", equalTo("invalidArguments"))
+            .body("[1][1].description", equalTo("#bad used as 'resultOf' Result Reference is not found"));
     }
 
     @Test

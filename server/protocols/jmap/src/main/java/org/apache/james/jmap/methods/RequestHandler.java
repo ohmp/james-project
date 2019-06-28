@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import org.apache.james.core.User;
 import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.JmapFieldNotSupportedException;
+import org.apache.james.jmap.back.reference.ResultOfNotFoundException;
 import org.apache.james.jmap.back.reference.ResultReferenceTypeMismatchException;
 import org.apache.james.jmap.model.AuthenticatedProtocolRequest;
 import org.apache.james.jmap.model.ProtocolResponse;
@@ -90,6 +91,8 @@ public class RequestHandler {
                         return errorNotImplemented(e, request);
                     } catch (ResultReferenceTypeMismatchException e) {
                         return errorResultReferenceTypeMismatch(e, request);
+                    } catch (ResultOfNotFoundException e) {
+                        return errorCallIdNotFound(e, request);
                     }
                 };
     }
@@ -110,6 +113,15 @@ public class RequestHandler {
     }
 
     private Stream<JmapResponse> errorResultReferenceTypeMismatch(ResultReferenceTypeMismatchException error, AuthenticatedProtocolRequest request) {
+        return Stream.of(
+                JmapResponse.builder()
+                    .clientId(request.getClientId())
+                    .error(generateInvalidArgumentError(error.getMessage()))
+                    .build());
+    }
+
+
+    private Stream<JmapResponse> errorCallIdNotFound(ResultOfNotFoundException error, AuthenticatedProtocolRequest request) {
         return Stream.of(
                 JmapResponse.builder()
                     .clientId(request.getClientId())

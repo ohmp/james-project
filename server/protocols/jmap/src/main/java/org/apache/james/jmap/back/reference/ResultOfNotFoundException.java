@@ -17,31 +17,16 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap;
+package org.apache.james.jmap.back.reference;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.james.jmap.back.reference.ResultOfNotFoundException;
-import org.apache.james.jmap.back.reference.ResultReferencesPath;
-import org.apache.james.jmap.methods.Method;
 import org.apache.james.jmap.model.ClientId;
 
-public class ExecutionContext {
-    private final HashMap<ClientId, Method.Response> previousResponses;
-
-    public ExecutionContext() {
-        previousResponses = new HashMap<>();
+public class ResultOfNotFoundException extends RuntimeException {
+    public ResultOfNotFoundException(ClientId clientId) {
+        super(clientId.getId() + " used as 'resultOf' Result Reference is not found");
+        this.clientId = clientId;
     }
 
-    public void addResponse(ClientId clientId, Method.Response response) {
-        previousResponses.put(clientId, response);
-    }
 
-    public <T> List<T> retrieveResultReferences(ResultReferencesPath path, Class<T> clazz) {
-        ClientId callId = path.getMethodCallId();
-        Method.Response response = Optional.ofNullable(previousResponses.get(callId)).orElseThrow(() -> new ResultOfNotFoundException(callId));
-        return response.resolve(path, clazz);
-    }
+    private final ClientId clientId;
 }
