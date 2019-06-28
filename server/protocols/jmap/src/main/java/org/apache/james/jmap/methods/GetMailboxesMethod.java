@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
-import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMailboxesRequest;
 import org.apache.james.jmap.model.GetMailboxesResponse;
@@ -129,12 +128,11 @@ public class GetMailboxesMethod implements Method {
     }
 
     private Optional<ImmutableList<MailboxId>> resolveMailboxIds(GetMailboxesRequest mailboxesRequest, ExecutionContext executionContext) {
-        if (mailboxesRequest.getIdsResultReferencesPath().isPresent()) {
-            ResultReferencesPath referencesPath = mailboxesRequest.getIdsResultReferencesPath().get();
-            List<MailboxId> resultReferences = executionContext.retrieveResultReferences(referencesPath, MailboxId.class);
-            return Optional.of(ImmutableList.copyOf(resultReferences));
-        }
-        return mailboxesRequest.getIds();
+        return mailboxesRequest.getIdsResultReferencesPath()
+            .map(path -> executionContext.retrieveResultReferences(path, MailboxId.class))
+            .map(ImmutableList::copyOf)
+            .map(Optional::of)
+            .orElse(mailboxesRequest.getIds());
     }
 
     private Stream<Mailbox> retrieveMailboxes(Optional<ImmutableList<MailboxId>> mailboxIds, MailboxSession mailboxSession) throws MailboxException {

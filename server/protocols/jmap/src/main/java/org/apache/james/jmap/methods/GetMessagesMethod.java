@@ -29,7 +29,6 @@ import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.JmapFieldNotSupportedException;
-import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.json.FieldNamePropertyFilter;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMessagesRequest;
@@ -154,11 +153,9 @@ public class GetMessagesMethod implements Method {
     }
 
     private List<MessageId> resolveMessagesIds(GetMessagesRequest getMessagesRequest, ExecutionContext executionContext) {
-        if (getMessagesRequest.getIdsResultReferencesPath().isPresent()) {
-            ResultReferencesPath path = getMessagesRequest.getIdsResultReferencesPath().get();
-            return executionContext.retrieveResultReferences(path, MessageId.class);
-        }
-        return getMessagesRequest.getIds();
+        return getMessagesRequest.getIdsResultReferencesPath()
+            .map(path -> executionContext.retrieveResultReferences(path, MessageId.class))
+            .orElse(getMessagesRequest.getIds());
     }
 
     private Function<MetaDataWithContent, Stream<Message>> toMessage() {

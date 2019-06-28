@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
-import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMessagesRequest;
 import org.apache.james.jmap.model.SetMessagesResponse;
@@ -67,11 +66,9 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
     }
 
     private List<MessageId> resolveDestroyed(SetMessagesRequest request, ExecutionContext executionContext) {
-        if (request.getDestroyResultReference().isPresent()) {
-            ResultReferencesPath resultReferencesPath = request.getDestroyResultReference().get();
-            return executionContext.retrieveResultReferences(resultReferencesPath, MessageId.class);
-        }
-        return request.getDestroy();
+        return request.getDestroyResultReference()
+            .map(path -> executionContext.retrieveResultReferences(path, MessageId.class))
+            .orElse(request.getDestroy());
     }
 
     private Stream<SetMessagesResponse> delete(List<MessageId> toBeDestroyed, MailboxSession mailboxSession) {
