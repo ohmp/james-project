@@ -303,6 +303,54 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
+    public void usingInvalidResultOfShouldFail() throws Exception {
+        provisionTwoMail();
+
+        Thread.sleep(1000);
+        await();
+
+
+        String body =
+            "[" +
+            "  [" +
+            "    \"getMessageList\"," +
+            "    {" +
+            "      \"filter\": {}," +
+            "      \"sort\": [" +
+            "        \"date desc\"" +
+            "      ]," +
+            "      \"collapseThreads\": false," +
+            "      \"fetchMessages\": false," +
+            "      \"position\": 0," +
+            "      \"limit\": 10" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]," +
+            "  [" +
+            "    \"getMessages\"," +
+            "    {\"#ids\": {" +
+            "      \"resultOf\":\"#bad\"," +
+            "      \"name\":\"getMessageList\"," +
+            "      \"path\":\"/messageIds\"" +
+            "    }}," +
+            "    \"#1\"" +
+            "  ]" +
+            "]";
+
+        System.out.println(body);
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body(body)
+        .when()
+            .post("/jmap").prettyPeek()
+        .then()
+            .statusCode(200)
+            .body("[0][1].messageIds", hasSize(2))
+            .body("[1][1].list", hasSize(2));
+    }
+
+    @Test
     public void gettingMailboxesOfAMessageList() throws Exception {
         provisionTwoMail();
 
@@ -405,7 +453,9 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body("[0][1].messageIds", hasSize(2))
-            .body("[1][1].list", hasSize(2));
+            .body("[1][0]", equalTo("error"))
+            .body("[1][1].type", equalTo("invalidArguments"))
+            .body("[1][1].description", equalTo("Invalid type interface org.apache.james.mailbox.model.MailboxId requested as a resultReference for interface org.apache.james.mailbox.model.MessageId"));
     }
 
     @Test
