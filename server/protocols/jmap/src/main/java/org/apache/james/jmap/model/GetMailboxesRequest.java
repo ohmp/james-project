@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.james.jmap.JmapFieldNotSupportedException;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.JmapRequest;
 import org.apache.james.mailbox.model.MailboxId;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.github.steveash.guavate.Guavate;
@@ -45,10 +47,12 @@ public class GetMailboxesRequest implements JmapRequest {
         private String accountId;
         private Optional<ImmutableSet<MailboxProperty>> properties;
         private Optional<ImmutableList<MailboxId>> ids;
+        private Optional<ResultReferencesPath> idsResultReferencesPath;
 
         private Builder() {
             ids = Optional.empty();
             properties = Optional.empty();
+            idsResultReferencesPath = Optional.empty();
         }
 
         public Builder accountId(String accountId) {
@@ -65,6 +69,12 @@ public class GetMailboxesRequest implements JmapRequest {
             return this;
         }
 
+        @JsonProperty("#ids")
+        public Builder idsResultReference(ResultReferencesPath resultReferencesPath) {
+            this.idsResultReferencesPath = Optional.of(resultReferencesPath);
+            return this;
+        }
+
         public Builder properties(List<String> properties) {
             this.properties = Optional.of(
                 properties.stream()
@@ -76,18 +86,20 @@ public class GetMailboxesRequest implements JmapRequest {
         }
         
         public GetMailboxesRequest build() {
-            return new GetMailboxesRequest(Optional.ofNullable(accountId), ids, properties);
+            return new GetMailboxesRequest(Optional.ofNullable(accountId), ids, properties, idsResultReferencesPath);
         }
     }
 
     private final Optional<String> accountId;
     private final Optional<ImmutableList<MailboxId>> ids;
     private final Optional<ImmutableSet<MailboxProperty>> properties;
+    private Optional<ResultReferencesPath> idsResultReferencesPath;
 
-    private GetMailboxesRequest(Optional<String> accountId, Optional<ImmutableList<MailboxId>> ids, Optional<ImmutableSet<MailboxProperty>> properties) {
+    private GetMailboxesRequest(Optional<String> accountId, Optional<ImmutableList<MailboxId>> ids, Optional<ImmutableSet<MailboxProperty>> properties, Optional<ResultReferencesPath> idsResultReferencesPath) {
         this.accountId = accountId;
         this.ids = ids;
         this.properties = properties;
+        this.idsResultReferencesPath = idsResultReferencesPath;
     }
 
     public Optional<String> getAccountId() {
@@ -100,5 +112,9 @@ public class GetMailboxesRequest implements JmapRequest {
 
     public Optional<ImmutableSet<MailboxProperty>> getProperties() {
         return properties;
+    }
+
+    public Optional<ResultReferencesPath> getIdsResultReferencesPath() {
+        return idsResultReferencesPath;
     }
 }

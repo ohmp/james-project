@@ -22,13 +22,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.james.jmap.back.reference.ResultReference;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -98,4 +102,16 @@ public class GetMessagesResponse implements Method.Response {
         return messagesNotFound;
     }
 
+    @Override
+    public List<ResultReference> resolve(ResultReferencesPath path) {
+        Preconditions.checkArgument(path.getPath().equals("/list/*/mailboxIds"));
+
+        return list()
+            .stream()
+            .flatMap(message -> message.getMailboxIds().stream())
+            .distinct()
+            .map(MailboxId::serialize)
+            .map(ResultReference::new)
+            .collect(Guavate.toImmutableList());
+    }
 }

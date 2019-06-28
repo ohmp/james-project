@@ -303,6 +303,64 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
+    public void gettingMailboxesOfAMessageList() throws Exception {
+        provisionTwoMail();
+
+        Thread.sleep(1000);
+        await();
+
+
+        String body =
+            "[" +
+            "  [" +
+            "    \"getMessageList\"," +
+            "    {" +
+            "      \"filter\": {}," +
+            "      \"sort\": [" +
+            "        \"date desc\"" +
+            "      ]," +
+            "      \"collapseThreads\": false," +
+            "      \"fetchMessages\": false," +
+            "      \"position\": 0," +
+            "      \"limit\": 10" +
+            "    }," +
+            "    \"#0\"" +
+            "  ]," +
+            "  [" +
+            "    \"getMessages\"," +
+            "    {\"#ids\": {" +
+            "      \"resultOf\":\"#0\"," +
+            "      \"name\":\"getMessageList\"," +
+            "      \"path\":\"/messageIds\"" +
+            "    }}," +
+            "    \"#1\"" +
+            "  ]," +
+            "  [" +
+            "    \"getMailboxes\"," +
+            "    {\"#ids\": {" +
+            "      \"resultOf\":\"#1\"," +
+            "      \"name\":\"getMessages\"," +
+            "      \"path\":\"/list/*/mailboxIds\"" +
+            "    }}," +
+            "    \"#2\"" +
+            "  ]" +
+            "]";
+
+        System.out.println(body);
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body(body)
+        .when()
+            .post("/jmap").prettyPeek()
+        .then()
+            .statusCode(200)
+            .body("[0][1].messageIds", hasSize(2))
+            .body("[1][1].list", hasSize(2))
+            .body("[2][1].list", hasSize(1));
+    }
+
+    @Test
     public void deleteByQuery() throws Exception {
         provisionTwoMail();
 

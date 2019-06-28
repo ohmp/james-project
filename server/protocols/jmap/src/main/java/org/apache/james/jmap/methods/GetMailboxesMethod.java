@@ -27,6 +27,10 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.james.jmap.ExecutionContext;
+import org.apache.james.jmap.back.reference.MailboxIdResultReferenceDeserializer;
+import org.apache.james.jmap.back.reference.ResultReference;
+import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMailboxesRequest;
 import org.apache.james.jmap.model.GetMailboxesResponse;
@@ -66,15 +70,17 @@ public class GetMailboxesMethod implements Method {
     private final MetricFactory metricFactory;
     private final QuotaRootResolver quotaRootResolver;
     private final QuotaManager quotaManager;
+    private final MailboxIdResultReferenceDeserializer mailboxIdResultReferenceDeserializer;
 
     @Inject
     @VisibleForTesting
-    public GetMailboxesMethod(MailboxManager mailboxManager, QuotaRootResolver quotaRootResolver, QuotaManager quotaManager, MailboxFactory mailboxFactory, MetricFactory metricFactory) {
+    public GetMailboxesMethod(MailboxManager mailboxManager, QuotaRootResolver quotaRootResolver, QuotaManager quotaManager, MailboxFactory mailboxFactory, MetricFactory metricFactory, MailboxIdResultReferenceDeserializer mailboxIdResultReferenceDeserializer) {
         this.mailboxManager = mailboxManager;
         this.mailboxFactory = mailboxFactory;
         this.metricFactory = metricFactory;
         this.quotaRootResolver = quotaRootResolver;
         this.quotaManager = quotaManager;
+        this.mailboxIdResultReferenceDeserializer = mailboxIdResultReferenceDeserializer;
     }
 
     @Override
@@ -88,7 +94,7 @@ public class GetMailboxesMethod implements Method {
     }
 
     @Override
-    public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession) {
+    public Stream<JmapResponse> process(JmapRequest request, ClientId clientId, MailboxSession mailboxSession, ExecutionContext executionContext) {
         Preconditions.checkArgument(request instanceof GetMailboxesRequest);
         GetMailboxesRequest mailboxesRequest = (GetMailboxesRequest) request;
         return metricFactory.runPublishingTimerMetric(JMAP_PREFIX + METHOD_NAME.getName(),
@@ -97,13 +103,13 @@ public class GetMailboxesMethod implements Method {
                 .addContext("accountId", mailboxesRequest.getAccountId())
                 .addContext("mailboxIds", mailboxesRequest.getIds())
                 .addContext("properties", mailboxesRequest.getProperties())
-                .wrapArround(() -> process(clientId, mailboxSession, mailboxesRequest)));
+                .wrapArround(() -> process(clientId, mailboxSession, mailboxesRequest, executionContext)));
     }
 
-    private Stream<JmapResponse> process(ClientId clientId, MailboxSession mailboxSession, GetMailboxesRequest mailboxesRequest) {
+    private Stream<JmapResponse> process(ClientId clientId, MailboxSession mailboxSession, GetMailboxesRequest mailboxesRequest, ExecutionContext executionContext) {
         return Stream.of(
             JmapResponse.builder().clientId(clientId)
-                .response(getMailboxesResponse(mailboxesRequest, mailboxSession))
+                .response(getMailboxesResponse(mailboxesRequest, mailboxSession, executionContext))
                 .properties(mailboxesRequest.getProperties().map(this::ensureContainsId))
                 .responseName(RESPONSE_NAME)
                 .build());
@@ -113,10 +119,10 @@ public class GetMailboxesMethod implements Method {
         return Sets.union(input, ImmutableSet.of(MailboxProperty.ID)).immutableCopy();
     }
 
-    private GetMailboxesResponse getMailboxesResponse(GetMailboxesRequest mailboxesRequest, MailboxSession mailboxSession) {
+    private GetMailboxesResponse getMailboxesResponse(GetMailboxesRequest mailboxesRequest, MailboxSession mailboxSession, ExecutionContext executionContext) {
         GetMailboxesResponse.Builder builder = GetMailboxesResponse.builder();
         try {
-            Optional<ImmutableList<MailboxId>> mailboxIds = mailboxesRequest.getIds();
+            Optional<ImmutableList<MailboxId>> mailboxIds = resolveMailboxIds(mailboxesRequest, executionContext);
             List<Mailbox> mailboxes = retrieveMailboxes(mailboxIds, mailboxSession)
                 .sorted(Comparator.comparing(Mailbox::getSortOrder))
                 .collect(Guavate.toImmutableList());
@@ -124,6 +130,15 @@ public class GetMailboxesMethod implements Method {
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Optional<ImmutableList<MailboxId>> resolveMailboxIds(GetMailboxesRequest mailboxesRequest, ExecutionContext executionContext) {
+        if (mailboxesRequest.getIdsResultReferencesPath().isPresent()) {
+            ResultReferencesPath referencesPath = mailboxesRequest.getIdsResultReferencesPath().get();
+            List<ResultReference> resultReferences = executionContext.retrieveResultReferences(referencesPath);
+            return Optional.of(ImmutableList.copyOf(mailboxIdResultReferenceDeserializer.deserializeMany(resultReferences)));
+        }
+        return mailboxesRequest.getIds();
     }
 
     private Stream<Mailbox> retrieveMailboxes(Optional<ImmutableList<MailboxId>> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
