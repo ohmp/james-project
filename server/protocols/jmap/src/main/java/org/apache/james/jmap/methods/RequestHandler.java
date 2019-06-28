@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import org.apache.james.core.User;
 import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.JmapFieldNotSupportedException;
+import org.apache.james.jmap.back.reference.ResultReferenceTypeMismatchException;
 import org.apache.james.jmap.model.AuthenticatedProtocolRequest;
 import org.apache.james.jmap.model.ProtocolResponse;
 import org.apache.james.mailbox.MailboxSession;
@@ -87,6 +88,8 @@ public class RequestHandler {
                         return error(request, generateInvalidArgumentError(e.getMessage()));
                     } catch (JmapFieldNotSupportedException e) {
                         return errorNotImplemented(e, request);
+                    } catch (ResultReferenceTypeMismatchException e) {
+                        return errorResultReferenceTypeMismatch(e, request);
                     }
                 };
     }
@@ -103,6 +106,14 @@ public class RequestHandler {
                 JmapResponse.builder()
                     .clientId(request.getClientId())
                     .error(generateInvalidArgumentError("The field '" + error.getField() + "' of '" + error.getIssuer() + "' is not supported"))
+                    .build());
+    }
+
+    private Stream<JmapResponse> errorResultReferenceTypeMismatch(ResultReferenceTypeMismatchException error, AuthenticatedProtocolRequest request) {
+        return Stream.of(
+                JmapResponse.builder()
+                    .clientId(request.getClientId())
+                    .error(generateInvalidArgumentError(error.getMessage()))
                     .build());
     }
 

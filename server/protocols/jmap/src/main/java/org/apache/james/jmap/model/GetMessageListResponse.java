@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.james.jmap.back.reference.ResultReferenceTypeMismatchException;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.mailbox.model.MessageId;
@@ -183,7 +184,7 @@ public class GetMessageListResponse implements Method.Response {
     @Override
     public <T> List<T> resolve(ResultReferencesPath path, Class<T> clazz) {
         Preconditions.checkArgument(path.getPath().equals("/messageIds"), "only messageIds is supported");
-        Preconditions.checkArgument(MessageId.class.isAssignableFrom(clazz));
+        ResultReferenceTypeMismatchException.assertValidTypes(MessageId.class, clazz);
 
         return (List<T>) getMessageIds();
     }

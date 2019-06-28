@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.james.jmap.back.reference.ResultReferenceTypeMismatchException;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.mailbox.model.MailboxId;
@@ -80,8 +81,8 @@ public class GetMessagesResponse implements Method.Response {
                 .collect(Collectors.toList()));
         }
     }
-    
-    
+
+
     
     private final List<Message> messages;
     private final List<MessageId> messagesNotFound;
@@ -104,7 +105,7 @@ public class GetMessagesResponse implements Method.Response {
     @Override
     public <T> List<T> resolve(ResultReferencesPath path, Class<T> clazz) {
         if (path.getPath().equals("/list/*/mailboxIds")) {
-            Preconditions.checkArgument(MailboxId.class.isAssignableFrom(clazz));
+            ResultReferenceTypeMismatchException.assertValidTypes(MailboxId.class, clazz);
 
             return (List<T>) list()
                 .stream()
@@ -113,7 +114,7 @@ public class GetMessagesResponse implements Method.Response {
                 .collect(Guavate.toImmutableList());
         }
         if (path.getPath().equals("/list/*/id")) {
-            Preconditions.checkArgument(MessageId.class.isAssignableFrom(clazz));
+            ResultReferenceTypeMismatchException.assertValidTypes(MessageId.class, clazz);
 
             return (List<T>) list()
                 .stream()
