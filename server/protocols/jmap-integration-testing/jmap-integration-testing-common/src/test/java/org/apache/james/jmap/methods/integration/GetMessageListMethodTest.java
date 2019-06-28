@@ -437,7 +437,7 @@ public abstract class GetMessageListMethodTest {
             "  ]," +
             "  [\"setMessages\", {\"#destroy\": {" +
             "      \"resultOf\":\"#1\"," +
-            "      \"name\":\"getMessageList\"," +
+            "      \"name\":\"getMessages\"," +
             "      \"path\":\"/list/*/id\"" +
             "    }}, \"#2\"]" +
             "]";
