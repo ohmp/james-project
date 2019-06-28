@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.james.jmap.back.reference.ResultReference;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.mailbox.model.MailboxId;
@@ -103,15 +102,14 @@ public class GetMessagesResponse implements Method.Response {
     }
 
     @Override
-    public List<ResultReference> resolve(ResultReferencesPath path) {
+    public <T> List<T> resolve(ResultReferencesPath path, Class<T> clazz) {
         Preconditions.checkArgument(path.getPath().equals("/list/*/mailboxIds"));
+        Preconditions.checkArgument(MailboxId.class.isAssignableFrom(clazz));
 
-        return list()
+        return (List<T>) list()
             .stream()
             .flatMap(message -> message.getMailboxIds().stream())
             .distinct()
-            .map(MailboxId::serialize)
-            .map(ResultReference::new)
             .collect(Guavate.toImmutableList());
     }
 }

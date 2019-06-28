@@ -29,8 +29,6 @@ import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
 import org.apache.james.jmap.JmapFieldNotSupportedException;
-import org.apache.james.jmap.back.reference.MessageIdResultReferenceDeserializer;
-import org.apache.james.jmap.back.reference.ResultReference;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.json.FieldNamePropertyFilter;
 import org.apache.james.jmap.model.ClientId;
@@ -74,17 +72,15 @@ public class GetMessagesMethod implements Method {
     private final MessageIdManager messageIdManager;
     private final MetricFactory metricFactory;
     private final Keywords.KeywordsFactory keywordsFactory;
-    private final MessageIdResultReferenceDeserializer messageIdResultReferenceDeserializer;
 
     @Inject
     @VisibleForTesting GetMessagesMethod(
         MessageFactory messageFactory,
         MessageIdManager messageIdManager,
-        MetricFactory metricFactory, MessageIdResultReferenceDeserializer messageIdResultReferenceDeserializer) {
+        MetricFactory metricFactory) {
         this.messageFactory = messageFactory;
         this.messageIdManager = messageIdManager;
         this.metricFactory = metricFactory;
-        this.messageIdResultReferenceDeserializer = messageIdResultReferenceDeserializer;
         this.keywordsFactory = Keywords.lenientFactory();
     }
     
@@ -160,8 +156,7 @@ public class GetMessagesMethod implements Method {
     private List<MessageId> resolveMessagesIds(GetMessagesRequest getMessagesRequest, ExecutionContext executionContext) {
         if (getMessagesRequest.getIdsResultReferencesPath().isPresent()) {
             ResultReferencesPath path = getMessagesRequest.getIdsResultReferencesPath().get();
-            List<ResultReference> resultReferences = executionContext.retrieveResultReferences(path);
-            return messageIdResultReferenceDeserializer.deserializeMany(resultReferences);
+            return executionContext.retrieveResultReferences(path, MessageId.class);
         }
         return getMessagesRequest.getIds();
     }

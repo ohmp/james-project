@@ -28,8 +28,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
-import org.apache.james.jmap.back.reference.MailboxIdResultReferenceDeserializer;
-import org.apache.james.jmap.back.reference.ResultReference;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMailboxesRequest;
@@ -70,17 +68,15 @@ public class GetMailboxesMethod implements Method {
     private final MetricFactory metricFactory;
     private final QuotaRootResolver quotaRootResolver;
     private final QuotaManager quotaManager;
-    private final MailboxIdResultReferenceDeserializer mailboxIdResultReferenceDeserializer;
 
     @Inject
     @VisibleForTesting
-    public GetMailboxesMethod(MailboxManager mailboxManager, QuotaRootResolver quotaRootResolver, QuotaManager quotaManager, MailboxFactory mailboxFactory, MetricFactory metricFactory, MailboxIdResultReferenceDeserializer mailboxIdResultReferenceDeserializer) {
+    public GetMailboxesMethod(MailboxManager mailboxManager, QuotaRootResolver quotaRootResolver, QuotaManager quotaManager, MailboxFactory mailboxFactory, MetricFactory metricFactory) {
         this.mailboxManager = mailboxManager;
         this.mailboxFactory = mailboxFactory;
         this.metricFactory = metricFactory;
         this.quotaRootResolver = quotaRootResolver;
         this.quotaManager = quotaManager;
-        this.mailboxIdResultReferenceDeserializer = mailboxIdResultReferenceDeserializer;
     }
 
     @Override
@@ -135,8 +131,8 @@ public class GetMailboxesMethod implements Method {
     private Optional<ImmutableList<MailboxId>> resolveMailboxIds(GetMailboxesRequest mailboxesRequest, ExecutionContext executionContext) {
         if (mailboxesRequest.getIdsResultReferencesPath().isPresent()) {
             ResultReferencesPath referencesPath = mailboxesRequest.getIdsResultReferencesPath().get();
-            List<ResultReference> resultReferences = executionContext.retrieveResultReferences(referencesPath);
-            return Optional.of(ImmutableList.copyOf(mailboxIdResultReferenceDeserializer.deserializeMany(resultReferences)));
+            List<MailboxId> resultReferences = executionContext.retrieveResultReferences(referencesPath, MailboxId.class);
+            return Optional.of(ImmutableList.copyOf(resultReferences));
         }
         return mailboxesRequest.getIds();
     }

@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import javax.mail.Flags;
 
-import org.apache.james.jmap.back.reference.MailboxIdResultReferenceDeserializer;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMailboxesRequest;
 import org.apache.james.jmap.model.GetMailboxesResponse;
@@ -78,7 +77,7 @@ public class GetMailboxesMethodTest {
         quotaManager = mailboxManager.getQuotaComponents().getQuotaManager();
         mailboxFactory = new MailboxFactory(mailboxManager, quotaManager, quotaRootResolver);
 
-        getMailboxesMethod = new GetMailboxesMethod(mailboxManager, quotaRootResolver, quotaManager,  mailboxFactory, new DefaultMetricFactory(), new MailboxIdResultReferenceDeserializer(new InMemoryId.Factory()));
+        getMailboxesMethod = new GetMailboxesMethod(mailboxManager, quotaRootResolver, quotaManager,  mailboxFactory, new DefaultMetricFactory());
     }
 
     @Test
@@ -106,7 +105,7 @@ public class GetMailboxesMethodTest {
             .thenReturn(ImmutableList.of(new MailboxPath("namespace", "user", "name")));
         when(mockedMailboxManager.getMailbox(any(MailboxPath.class), any()))
             .thenThrow(new MailboxException());
-        GetMailboxesMethod testee = new GetMailboxesMethod(mockedMailboxManager, quotaRootResolver, quotaManager, mailboxFactory, new DefaultMetricFactory(), new MailboxIdResultReferenceDeserializer(new InMemoryId.Factory()));
+        GetMailboxesMethod testee = new GetMailboxesMethod(mockedMailboxManager, quotaRootResolver, quotaManager, mailboxFactory, new DefaultMetricFactory());
 
         GetMailboxesRequest getMailboxesRequest = GetMailboxesRequest.builder()
                 .build();

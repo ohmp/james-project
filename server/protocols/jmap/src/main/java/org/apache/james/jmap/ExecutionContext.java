@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.james.jmap.back.reference.ResultReference;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.jmap.model.ClientId;
@@ -39,9 +38,9 @@ public class ExecutionContext {
         previousResponses.put(clientId, response);
     }
 
-    public List<ResultReference> retrieveResultReferences(ResultReferencesPath path) {
+    public <T> List<T> retrieveResultReferences(ResultReferencesPath path, Class<T> clazz) {
         ClientId callId = path.getMethodCallId();
         Method.Response response = Optional.ofNullable(previousResponses.get(callId)).get();
-        return response.resolve(path);
+        return response.resolve(path, clazz);
     }
 }

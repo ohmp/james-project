@@ -23,13 +23,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.james.jmap.back.reference.ResultReference;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.methods.Method;
 import org.apache.james.mailbox.model.MessageId;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -183,12 +181,10 @@ public class GetMessageListResponse implements Method.Response {
 
     @JsonIgnore
     @Override
-    public List<ResultReference> resolve(ResultReferencesPath path) {
+    public <T> List<T> resolve(ResultReferencesPath path, Class<T> clazz) {
         Preconditions.checkArgument(path.getPath().equals("/messageIds"), "only messageIds is supported");
-        return getMessageIds()
-            .stream()
-            .map(MessageId::serialize)
-            .map(ResultReference::new)
-            .collect(Guavate.toImmutableList());
+        Preconditions.checkArgument(MessageId.class.isAssignableFrom(clazz));
+
+        return (List<T>) getMessageIds();
     }
 }

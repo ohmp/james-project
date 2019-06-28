@@ -27,8 +27,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.ExecutionContext;
-import org.apache.james.jmap.back.reference.MessageIdResultReferenceDeserializer;
-import org.apache.james.jmap.back.reference.ResultReference;
 import org.apache.james.jmap.back.reference.ResultReferencesPath;
 import org.apache.james.jmap.model.SetError;
 import org.apache.james.jmap.model.SetMessagesRequest;
@@ -49,14 +47,12 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetMessagesCreationProcessor.class);
 
     private final MessageIdManager messageIdManager;
-    private final MessageIdResultReferenceDeserializer messageIdResultReferenceDeserializer;
     private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting
-    SetMessagesDestructionProcessor(MessageIdManager messageIdManager, MessageIdResultReferenceDeserializer messageIdResultReferenceDeserializer, MetricFactory metricFactory) {
+    SetMessagesDestructionProcessor(MessageIdManager messageIdManager, MetricFactory metricFactory) {
         this.messageIdManager = messageIdManager;
-        this.messageIdResultReferenceDeserializer = messageIdResultReferenceDeserializer;
         this.metricFactory = metricFactory;
     }
 
@@ -73,8 +69,7 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
     private List<MessageId> resolveDestroyed(SetMessagesRequest request, ExecutionContext executionContext) {
         if (request.getDestroyResultReference().isPresent()) {
             ResultReferencesPath resultReferencesPath = request.getDestroyResultReference().get();
-            List<ResultReference> resultReferences = executionContext.retrieveResultReferences(resultReferencesPath);
-            return messageIdResultReferenceDeserializer.deserializeMany(resultReferences);
+            return executionContext.retrieveResultReferences(resultReferencesPath, MessageId.class);
         }
         return request.getDestroy();
     }

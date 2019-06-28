@@ -36,7 +36,6 @@ import javax.mail.Flags.Flag;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.core.User;
-import org.apache.james.jmap.back.reference.MessageIdResultReferenceDeserializer;
 import org.apache.james.jmap.model.ClientId;
 import org.apache.james.jmap.model.GetMessagesRequest;
 import org.apache.james.jmap.model.GetMessagesResponse;
@@ -114,8 +113,7 @@ public class GetMessagesMethodTest {
         mailboxManager.createMailbox(inboxPath, session);
         mailboxManager.createMailbox(customMailboxPath, session);
         messageIdManager = resources.getMessageIdManager();
-        testee = new GetMessagesMethod(messageFactory, messageIdManager, new DefaultMetricFactory(),
-            new MessageIdResultReferenceDeserializer(mailboxManager.getMessageIdFactory()));
+        testee = new GetMessagesMethod(messageFactory, messageIdManager, new DefaultMetricFactory());
 
         messageContent1 = org.apache.james.mime4j.dom.Message.Builder.of()
             .setSubject("message 1 subject")
@@ -465,8 +463,7 @@ public class GetMessagesMethodTest {
     @Test
     public void processShouldNotFailOnSingleMessageFailure() throws Exception {
         MessageFactory messageFactory = mock(MessageFactory.class);
-        testee = new GetMessagesMethod(messageFactory, messageIdManager, new DefaultMetricFactory(),
-            new MessageIdResultReferenceDeserializer(mailboxManager.getMessageIdFactory()));
+        testee = new GetMessagesMethod(messageFactory, messageIdManager, new DefaultMetricFactory());
         MessageManager inbox = mailboxManager.getMailbox(inboxPath, session);
 
         org.apache.james.mime4j.dom.Message messageContent = org.apache.james.mime4j.dom.Message.Builder.of()
