@@ -30,8 +30,9 @@ import org.junit.jupiter.api.Test;
 
 class BucketNameGeneratorTest {
     private static final Instant NOW = Instant.parse("2007-12-03T10:15:30.00Z");
-    private static final Instant DATE2 = Instant.parse("2007-07-03T10:15:30.00Z");
+    private static final Instant DATE_2 = Instant.parse("2007-07-03T10:15:30.00Z");
     private static final Clock CLOCK = Clock.fixed(NOW, ZoneId.of("UTC"));
+    private static final Clock CLOCK_2 = Clock.fixed(DATE_2, ZoneId.of("UTC"));
 
     @Test
     void currentBucketShouldReturnBucketFormattedOnFirstDayOfMonth() {
@@ -41,7 +42,7 @@ class BucketNameGeneratorTest {
 
     @Test
     void monthShouldBeFormattedWithTwoDigits() {
-        assertThat(new BucketNameGenerator(CLOCK).currentBucket())
-            .isEqualTo(BucketName.of("deletedMessages-2007-12-01"));
+        assertThat(new BucketNameGenerator(CLOCK_2).currentBucket())
+            .isEqualTo(BucketName.of("deletedMessages-2007-07-01"));
     }
 }
