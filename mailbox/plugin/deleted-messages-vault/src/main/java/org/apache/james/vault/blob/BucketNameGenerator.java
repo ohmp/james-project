@@ -21,7 +21,6 @@ package org.apache.james.vault.blob;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 
 import org.apache.james.blob.api.BucketName;
 
