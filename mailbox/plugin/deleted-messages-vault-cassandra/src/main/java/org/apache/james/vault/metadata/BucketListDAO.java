@@ -71,7 +71,8 @@ class BucketListDAO {
 
     Mono<Void> removeBucket(BucketName bucketName) {
         return cassandraAsyncExecutor.executeVoid(removeStatement.bind()
-            .setString(BUCKET_NAME, bucketName.asString()));    }
+            .setString(BUCKET_NAME, bucketName.asString()));
+    }
 
     Flux<BucketName> listBuckets() {
         return cassandraAsyncExecutor.executeRows(listStatement.bind())
