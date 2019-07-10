@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.ByteArrayInputStream;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
+import java.time.Period;
 
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.task.Task;
@@ -282,7 +282,7 @@ public interface DeletedMessageVaultContract {
     default void deleteExpiredMessagesTaskShouldDeleteOldMails() throws InterruptedException {
         Mono.from(getVault().append(USER, OLD_DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
 
-        getClock().setInstant(NOW.toInstant().plus(365 * 2, ChronoUnit.DAYS));
+        getClock().setInstant(NOW.plusYears(2).toInstant());
         getVault().deleteExpiredMessagesTask().run();
 
         assertThat(Flux.from(getVault().search(USER, ALL)).collectList().block())
@@ -292,11 +292,11 @@ public interface DeletedMessageVaultContract {
     @Test
     default void deleteExpiredMessagesTaskShouldDeleteOldMailsWhenRunSeveralTime() throws InterruptedException {
         Mono.from(getVault().append(USER, OLD_DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
-        getClock().setInstant(NOW.toInstant().plus(365 * 2, ChronoUnit.DAYS));
+        getClock().setInstant(NOW.plusYears(4).toInstant());
         getVault().deleteExpiredMessagesTask().run();
 
         Mono.from(getVault().append(USER_2, OLD_DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
-        getClock().setInstant(NOW.toInstant().plus(365 * 4, ChronoUnit.DAYS));
+        getClock().setInstant(NOW.plusYears(4).toInstant());
         getVault().deleteExpiredMessagesTask().run();
 
         assertThat(Flux.from(getVault().search(USER, ALL)).collectList().block())
