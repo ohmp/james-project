@@ -129,6 +129,6 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
 
     private Mono<Void> deleteBucketData(BucketName bucketName) {
         return blobStore.deleteBucket(bucketName)
-            .then(Mono.defer(() -> Mono.from(messageMetadataVault.removeMetadataRelatedToBucket(bucketName))));
+            .then(Mono.from(messageMetadataVault.removeMetadataRelatedToBucket(bucketName)));
     }
 }
