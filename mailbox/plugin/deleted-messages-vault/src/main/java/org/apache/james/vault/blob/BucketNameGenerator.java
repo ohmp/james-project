@@ -20,8 +20,8 @@
 package org.apache.james.vault.blob;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,10 +56,11 @@ public class BucketNameGenerator {
             .map(matcher -> {
                 int year = Integer.parseInt(matcher.group(1));
                 int month = Integer.parseInt(matcher.group(2));
-                ZonedDateTime firstDayOfMonth = ZonedDateTime.of(year, month, FIRST_DAY_OF_MONTH, ZERO_HOUR, ZERO_MINUTE,
-                    ZERO_SECOND, ZERO_NANOSECOND, clock.getZone());
-                ZonedDateTime lastInstantOfMonth = firstDayOfMonth.plusMonths(1).minusNanos(1);
-                return lastInstantOfMonth;
+                return firstDayOfNextMonth(year, month);
             });
+    }
+
+    private ZonedDateTime firstDayOfNextMonth(int year, int month) {
+        return LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay(clock.getZone());
     }
 }
