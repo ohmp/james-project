@@ -46,7 +46,7 @@ public interface DeletedMessageMetadataModule {
         String TABLE = "userPerBucket";
 
         String BUCKET_NAME = "bucketName";
-        String USER = "users";
+        String USER = "user";
     }
 
     interface DeletedMessageMetadataTable {

@@ -84,7 +84,7 @@ class UserPerBucketDAOTest {
     }
 
     @Test
-    void retrieveUsersShouldReturnEmptyWHenDeletedBucket() {
+    void retrieveUsersShouldReturnEmptyWhenDeletedBucket() {
         testee.addUser(BUCKET_NAME, OWNER).block();
 
         testee.deleteBucket(BUCKET_NAME).block();
