@@ -40,9 +40,9 @@ public class CassandraDeletedMessageMetadataVault implements DeletedMessageMetad
         BucketName bucketName = deletedMessage.getStorageInformation().getBucketName();
         User owner = deletedMessage.getDeletedMessage().getOwner();
         MessageId messageId = deletedMessage.getDeletedMessage().getMessageId();
-        return metadataDAO.store(deletedMessage)
-            .then(userPerBucketDAO.addUser(bucketName, owner))
-            .then(storageInformationDAO.referenceStorageInformation(owner, messageId, deletedMessage.getStorageInformation()));
+        return storageInformationDAO.referenceStorageInformation(owner, messageId, deletedMessage.getStorageInformation())
+            .then(metadataDAO.store(deletedMessage))
+            .then(userPerBucketDAO.addUser(bucketName, owner));
     }
 
     @Override
