@@ -19,7 +19,7 @@
 
 package org.apache.james.vault;
 
-import java.time.Instant;
+import static org.apache.james.vault.DeletedMessageFixture.NOW;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.mailbox.inmemory.InMemoryId;
@@ -70,6 +70,6 @@ public class MailRepositoryDeletedMessageVaultTest implements DeletedMessageVaul
 
     @Override
     public UpdatableTickingClock getClock() {
-        return new UpdatableTickingClock(Instant.now());
+        return new UpdatableTickingClock(NOW.toInstant());
     }
 }

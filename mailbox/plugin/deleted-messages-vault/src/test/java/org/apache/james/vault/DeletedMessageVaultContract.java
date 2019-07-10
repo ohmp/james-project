@@ -37,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.ByteArrayInputStream;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.Period;
 
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.task.Task;
