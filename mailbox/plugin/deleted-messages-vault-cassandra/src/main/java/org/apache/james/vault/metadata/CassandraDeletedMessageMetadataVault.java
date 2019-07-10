@@ -26,13 +26,11 @@ import org.reactivestreams.Publisher;
 
 public class CassandraDeletedMessageMetadataVault implements DeletedMessageMetadataVault {
     private final MetadataDAO metadataDAO;
-    private final BucketListDAO bucketListDAO;
     private final StorageInformationDAO storageInformationDAO;
     private final UserPerBucketDAO userPerBucketDAO;
 
-    CassandraDeletedMessageMetadataVault(MetadataDAO metadataDAO, BucketListDAO bucketListDAO, StorageInformationDAO storageInformationDAO, UserPerBucketDAO userPerBucketDAO) {
+    CassandraDeletedMessageMetadataVault(MetadataDAO metadataDAO, StorageInformationDAO storageInformationDAO, UserPerBucketDAO userPerBucketDAO) {
         this.metadataDAO = metadataDAO;
-        this.bucketListDAO = bucketListDAO;
         this.storageInformationDAO = storageInformationDAO;
         this.userPerBucketDAO = userPerBucketDAO;
     }
@@ -44,8 +42,7 @@ public class CassandraDeletedMessageMetadataVault implements DeletedMessageMetad
         MessageId messageId = deletedMessage.getDeletedMessage().getMessageId();
         return metadataDAO.store(deletedMessage)
             .then(userPerBucketDAO.addUser(bucketName, owner))
-            .then(storageInformationDAO.referenceStorageInformation(owner, messageId, deletedMessage.getStorageInformation()))
-            .then(bucketListDAO.addBucket(bucketName));
+            .then(storageInformationDAO.referenceStorageInformation(owner, messageId, deletedMessage.getStorageInformation()));
     }
 
     @Override
@@ -57,8 +54,7 @@ public class CassandraDeletedMessageMetadataVault implements DeletedMessageMetad
                     deletedMessageIdentifier.getOwner(),
                     deletedMessageIdentifier.getMessageId()))
                 .then(metadataDAO.deleteInBucket(bucketName, user)))
-            .then(userPerBucketDAO.deleteBucket(bucketName))
-            .then(bucketListDAO.removeBucket(bucketName));
+            .then(userPerBucketDAO.deleteBucket(bucketName));
     }
 
     @Override
@@ -79,6 +75,6 @@ public class CassandraDeletedMessageMetadataVault implements DeletedMessageMetad
 
     @Override
     public Publisher<BucketName> listRelatedBuckets() {
-        return bucketListDAO.listBuckets();
+        return userPerBucketDAO.retrieveBuckets();
     }
 }

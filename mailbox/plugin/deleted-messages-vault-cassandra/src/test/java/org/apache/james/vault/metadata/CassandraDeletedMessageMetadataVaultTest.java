@@ -44,7 +44,6 @@ public class CassandraDeletedMessageMetadataVaultTest implements DeletedMessageM
 
         testee = new CassandraDeletedMessageMetadataVault(
             new MetadataDAO(cassandra.getConf(), messageIdFactory, dtoConverter),
-            new BucketListDAO(cassandra.getConf()),
             new StorageInformationDAO(cassandra.getConf(), blobIdFactory),
             new UserPerBucketDAO(cassandra.getConf()));
     }
