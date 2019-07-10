@@ -45,7 +45,7 @@ public class BucketNameGenerator {
 
     BucketName currentBucket() {
         ZonedDateTime now = ZonedDateTime.now(clock);
-        int month = now.getMonth().get(ChronoField.MONTH_OF_YEAR);
+        int month = now.getMonthValue();
         int year = now.getYear();
         return BucketName.of(String.format(BUCKET_NAME_GENRATING_FORMAT, year, month));
     }
