@@ -33,6 +33,15 @@ public interface DeletedMessageMetadataModule {
         String BUCKET_NAME = "bucketName";
     }
 
+    interface StorageInformationTable {
+        String TABLE = "storageInformation";
+
+        String OWNER = "owner";
+        String MESSAGE_ID = "messageId";
+        String BUCKET_NAME = "bucketName";
+        String BLOB_ID = "blobId";
+    }
+
     CassandraModule MODULE = CassandraModule
         .builder()
 
@@ -42,6 +51,16 @@ public interface DeletedMessageMetadataModule {
             .caching(SchemaBuilder.KeyCaching.ALL, SchemaBuilder.noRows()))
         .statement(statement -> statement
             .addPartitionKey(BucketListTable.BUCKET_NAME, text()))
+
+        .table(StorageInformationTable.TABLE)
+        .comment("Holds storage information for deleted messages in the BlobStore based DeletedMessages vault")
+        .options(options -> options
+            .caching(SchemaBuilder.KeyCaching.ALL, SchemaBuilder.noRows()))
+        .statement(statement -> statement
+            .addPartitionKey(StorageInformationTable.OWNER, text())
+            .addPartitionKey(StorageInformationTable.MESSAGE_ID, text())
+            .addColumn(StorageInformationTable.BUCKET_NAME, text())
+            .addColumn(StorageInformationTable.BLOB_ID, text()))
 
         .build();
 }
