@@ -91,7 +91,7 @@ public class CassandraDeletedMessageMetadataVaultTest implements DeletedMessageM
     }
 
     @Test
-    void listShouldNotReturnMessagesWhenMetadataDAODAOFailed() {
+    void listShouldNotReturnMessagesWhenMetadataDAOFailed() {
         when(metadataDAO.store(DELETED_MESSAGE))
             .thenReturn(Mono.error(new RuntimeException()));
 
@@ -106,7 +106,7 @@ public class CassandraDeletedMessageMetadataVaultTest implements DeletedMessageM
     }
 
     @Test
-    void listShouldReturnMessagesWhenUserPerBucketDAODAOFailed() {
+    void listShouldReturnMessagesWhenUserPerBucketDAOFailed() {
         when(userPerBucketDAO.addUser(BUCKET_NAME, USER))
             .thenReturn(Mono.error(new RuntimeException()));
 
