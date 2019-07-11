@@ -30,7 +30,7 @@ import org.apache.james.blob.api.BucketName;
 
 public class BucketNameGenerator {
     private static final Pattern BUCKET_NAME_PATTERN = Pattern.compile("deleted-messages-([0-9]{4})-([0-9]{2})-(01)");
-    private static final String BUCKET_NAME_GENRATING_FORMAT = "deleted-messages-%d-%02d-01";
+    private static final String BUCKET_NAME_GENERATING_FORMAT = "deleted-messages-%d-%02d-01";
 
     private final Clock clock;
 
@@ -42,7 +42,7 @@ public class BucketNameGenerator {
         ZonedDateTime now = ZonedDateTime.now(clock);
         int month = now.getMonthValue();
         int year = now.getYear();
-        return BucketName.of(String.format(BUCKET_NAME_GENRATING_FORMAT, year, month));
+        return BucketName.of(String.format(BUCKET_NAME_GENERATING_FORMAT, year, month));
     }
 
     Optional<ZonedDateTime> bucketEndTime(BucketName bucketName) {
