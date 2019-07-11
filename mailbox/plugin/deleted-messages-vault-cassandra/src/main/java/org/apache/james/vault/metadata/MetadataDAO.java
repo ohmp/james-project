@@ -36,6 +36,8 @@ import org.apache.james.core.User;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.vault.dto.DeletedMessageWithStorageInformationConverter;
 import org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -48,6 +50,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 class MetadataDAO {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetadataDAO.class);
+
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement addStatement;
     private final PreparedStatement removeStatement;
@@ -103,7 +107,7 @@ class MetadataDAO {
 
     Mono<Void> store(DeletedMessageWithStorageInformation metadata) {
         return Mono.just(metadata)
-            .map(DeletedMessageWithStorageInformationDTO::from)
+            .map(DeletedMessageWithStorageInformationDTO::toDTO)
             .map(Throwing.function(objectMapper::writeValueAsString))
             .flatMap(payload -> cassandraAsyncExecutor.executeVoid(addStatement.bind()
                 .setString(BUCKET_NAME, metadata.getStorageInformation().getBucketName().asString())
@@ -118,8 +122,10 @@ class MetadataDAO {
                 .setString(BUCKET_NAME, bucketName.asString())
                 .setString(OWNER, user.asString()))
             .map(row -> row.getString(PAYLOAD))
-            .map(Throwing.function(string -> objectMapper.readValue(string, DeletedMessageWithStorageInformationDTO.class)))
-            .map(dtoConverter::toDeletedMessageWithStorageInformation);
+            .flatMap(string -> Mono.fromCallable(() -> objectMapper.readValue(string, DeletedMessageWithStorageInformationDTO.class))
+                .onErrorResume(e -> Mono.fromRunnable(() -> LOGGER.error("Error deserializing JSON metadata", e))))
+            .flatMap(dto -> Mono.fromCallable(() -> dtoConverter.toDomainObject(dto))
+                .onErrorResume(e -> Mono.fromRunnable(() -> LOGGER.error("Error deserializing DTO", e))));
     }
 
     Flux<MessageId> retrieveMessageIds(BucketName bucketName, User user) {
