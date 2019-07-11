@@ -31,11 +31,6 @@ import org.apache.james.blob.api.BucketName;
 public class BucketNameGenerator {
     private static final Pattern BUCKET_NAME_PATTERN = Pattern.compile("deleted-messages-([0-9]{4})-([0-9]{2})-(01)");
     private static final String BUCKET_NAME_GENRATING_FORMAT = "deleted-messages-%d-%02d-01";
-    private static final int FIRST_DAY_OF_MONTH = 1;
-    private static final int ZERO_HOUR = 0;
-    private static final int ZERO_MINUTE = 0;
-    private static final int ZERO_SECOND = 0;
-    private static final int ZERO_NANOSECOND = 0;
 
     private final Clock clock;
 
