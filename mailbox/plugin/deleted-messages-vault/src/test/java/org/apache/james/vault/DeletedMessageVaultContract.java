@@ -291,7 +291,7 @@ public interface DeletedMessageVaultContract {
     @Test
     default void deleteExpiredMessagesTaskShouldDeleteOldMailsWhenRunSeveralTime() throws InterruptedException {
         Mono.from(getVault().append(USER, OLD_DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
-        getClock().setInstant(NOW.plusYears(4).toInstant());
+        getClock().setInstant(NOW.plusYears(2).toInstant());
         getVault().deleteExpiredMessagesTask().run();
 
         Mono.from(getVault().append(USER_2, OLD_DELETED_MESSAGE, new ByteArrayInputStream(CONTENT))).block();
