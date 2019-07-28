@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PipedInputStreamHandlingError extends PipedInputStream {
-    private AtomicReference<RuntimeException> error;
+    private final AtomicReference<RuntimeException> error;
 
     public PipedInputStreamHandlingError() {
         super();
