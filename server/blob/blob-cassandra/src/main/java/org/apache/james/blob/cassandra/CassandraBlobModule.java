@@ -20,14 +20,12 @@
 package org.apache.james.blob.cassandra;
 
 import static org.apache.james.blob.cassandra.BlobTables.DefaultBucketBlobParts.DATA;
-import static org.apache.james.blob.cassandra.BlobTables.DefaultBucketBlobTable.ID;
-import static org.apache.james.blob.cassandra.BlobTables.DefaultBucketBlobTable.NUMBER_OF_CHUNK;
-import static org.apache.james.blob.cassandra.BlobTables.DefaultBucketBlobTable.TABLE_NAME;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.blob.cassandra.BlobTables.BucketBlobParts;
 import org.apache.james.blob.cassandra.BlobTables.BucketBlobTable;
 import org.apache.james.blob.cassandra.BlobTables.DefaultBucketBlobParts;
+import org.apache.james.blob.cassandra.BlobTables.DefaultBucketBlobTable;
 
 import com.datastax.driver.core.DataType;
 
@@ -43,12 +41,12 @@ public interface CassandraBlobModule {
             .addClusteringColumn(DefaultBucketBlobParts.CHUNK_NUMBER, DataType.cint())
             .addColumn(DefaultBucketBlobParts.DATA, DataType.blob()))
 
-        .table(TABLE_NAME)
+        .table(DefaultBucketBlobTable.TABLE_NAME)
         .comment("Holds information for retrieving all blob parts composing this blob within the default bucket. " +
             "Messages` headers and bodies are stored as blobparts.")
         .statement(statement -> statement
-            .addPartitionKey(ID, DataType.text())
-            .addClusteringColumn(NUMBER_OF_CHUNK, DataType.cint()))
+            .addPartitionKey(DefaultBucketBlobTable.ID, DataType.text())
+            .addClusteringColumn(DefaultBucketBlobTable.NUMBER_OF_CHUNK, DataType.cint()))
 
         .table(BucketBlobParts.TABLE_NAME)
         .comment("Holds blob parts composing blobs in a non-default bucket." +
