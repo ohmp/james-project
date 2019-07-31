@@ -29,7 +29,6 @@ import org.apache.james.queue.rabbitmq.view.api.DeleteCondition;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfiguration;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.EventsourcingConfigurationManagement;
-import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedItemWithSlicingContext;
 
 import reactor.core.publisher.Mono;
 
@@ -112,9 +111,8 @@ public class CassandraMailQueueView implements MailQueueView {
 
     private long browseThenDelete(DeleteCondition deleteCondition) {
         return cassandraMailQueueBrowser.browseReferences(mailQueueName)
-            .map(EnqueuedItemWithSlicingContext::getEnqueuedItem)
-            .filter(deleteCondition::shouldBeDeleted)
-            .flatMap(mailReference -> cassandraMailQueueMailDelete.considerDeleted(mailReference.getEnqueueId(), mailQueueName))
+            .filter(item -> deleteCondition.shouldBeDeleted(item.getEnqueuedItem()))
+            .flatMap(item -> cassandraMailQueueMailDelete.considerDeleted(item))
             .count()
             .doOnNext(ignored -> cassandraMailQueueMailDelete.updateBrowseStart(mailQueueName))
             .block();

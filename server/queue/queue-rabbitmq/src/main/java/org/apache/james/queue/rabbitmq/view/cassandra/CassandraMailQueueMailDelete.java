@@ -24,9 +24,12 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.queue.rabbitmq.EnqueueId;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfiguration;
+import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices;
+import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedItemWithSlicingContext;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -55,18 +58,34 @@ public class CassandraMailQueueMailDelete {
     }
 
     Mono<Void> considerDeleted(EnqueueId enqueueId, MailQueueName mailQueueName) {
-        return deletedMailsDao
-            .markAsDeleted(mailQueueName, enqueueId)
-            .then(decrementBucketSize(enqueueId, mailQueueName))
-            .doOnNext(ignored -> maybeUpdateBrowseStart(mailQueueName));
+        Mono<Pair<BucketedSlices.Slice, BucketedSlices.BucketId>> slicingContext = enqueueIdToBucketDAO.retrieveBucket(mailQueueName, enqueueId);
+
+        return considerDeleted(enqueueId, mailQueueName, slicingContext);
+    }
+
+    Mono<Void> considerDeleted(EnqueuedItemWithSlicingContext enqueuedItem) {
+        MailQueueName mailQueueName = enqueuedItem.getEnqueuedItem().getMailQueueName();
+        EnqueueId enqueueId = enqueuedItem.getEnqueuedItem().getEnqueueId();
+        BucketedSlices.Slice slice = BucketedSlices.Slice.of(enqueuedItem.getSlicingContext().getTimeRangeStart());
+        BucketedSlices.BucketId bucketId = enqueuedItem.getSlicingContext().getBucketId();
+
+        Mono<Pair<BucketedSlices.Slice, BucketedSlices.BucketId>> slicingContext = Mono.just(Pair.of(slice, bucketId));
+
+        return considerDeleted(enqueueId, mailQueueName, slicingContext);
     }
 
     Mono<Boolean> isDeleted(EnqueueId enqueueId, MailQueueName mailQueueName) {
         return deletedMailsDao.isDeleted(mailQueueName, enqueueId);
     }
 
-    private Mono<Void> decrementBucketSize(EnqueueId enqueueId, MailQueueName mailQueueName) {
-        return enqueueIdToBucketDAO.retrieveBucket(mailQueueName, enqueueId)
+    private Mono<Void> considerDeleted(EnqueueId enqueueId, MailQueueName mailQueueName, Mono<Pair<BucketedSlices.Slice, BucketedSlices.BucketId>> slicingContext) {
+        return deletedMailsDao.markAsDeleted(mailQueueName, enqueueId)
+            .then(decrementBucketSize(mailQueueName, slicingContext))
+            .doOnNext(ignored -> maybeUpdateBrowseStart(mailQueueName));
+    }
+
+    private Mono<Void> decrementBucketSize(MailQueueName mailQueueName, Mono<Pair<BucketedSlices.Slice, BucketedSlices.BucketId>> slicingContext) {
+        return slicingContext
             .flatMap(sliceContext -> bucketSizeDAO.decrement(mailQueueName, sliceContext.getKey(), sliceContext.getValue()));
     }
 
