@@ -36,7 +36,6 @@ import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.ObjectNotFoundException;
-import org.apache.james.blob.api.ObjectStoreException;
 import org.apache.james.blob.cassandra.utils.DataChunker;
 import org.apache.james.blob.cassandra.utils.PipedInputStreamHandlingError;
 import org.apache.james.blob.cassandra.utils.PipedStreamSubscriber;
