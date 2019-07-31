@@ -19,13 +19,14 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra;
 
+import static org.apache.james.queue.rabbitmq.view.cassandra.MailQueueViewFixture.ENQUEUE_ID_1;
+import static org.apache.james.queue.rabbitmq.view.cassandra.MailQueueViewFixture.ENQUEUE_ID_2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
-import org.apache.james.queue.rabbitmq.EnqueueId;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,8 +36,6 @@ class DeletedMailsDAOTest {
 
     private static final MailQueueName OUT_GOING_1 = MailQueueName.fromString("OUT_GOING_1");
     private static final MailQueueName OUT_GOING_2 = MailQueueName.fromString("OUT_GOING_2");
-    private static final EnqueueId ENQUEUE_ID_1 = EnqueueId.ofSerialized("110e8400-e29b-11d4-a716-446655440000");
-    private static final EnqueueId ENQUEUE_ID_2 = EnqueueId.ofSerialized("464765a0-e4e7-11e4-aba4-710c1de3782b");
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
