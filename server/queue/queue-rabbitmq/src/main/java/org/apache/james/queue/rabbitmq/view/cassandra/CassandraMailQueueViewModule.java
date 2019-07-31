@@ -84,11 +84,11 @@ public interface CassandraMailQueueViewModule {
         String MAIL_COUNT = "mailCount";
     }
 
-    interface MailKeyToBucketTable {
-        String TABLE_NAME = "bucketSize";
+    interface EnqueueIdToBucketTable {
+        String TABLE_NAME = "mailKeyToBucket";
 
         String QUEUE_NAME = "queueName";
-        String MAIL_KEY = "mailKey";
+        String ENQUEUE_ID = "enqueueId";
 
         String TIME_RANGE_START = "timeRangeStart";
         String BUCKET_ID = "bucketId";
@@ -149,13 +149,13 @@ public interface CassandraMailQueueViewModule {
             .addPartitionKey(BucketSizeTable.BUCKET_ID, cint())
             .addColumn(BucketSizeTable.MAIL_COUNT, counter()))
 
-        .table(MailKeyToBucketTable.TABLE_NAME)
+        .table(EnqueueIdToBucketTable.TABLE_NAME)
         .comment("Given a mailKey, resolve the bucket it belongs to")
         .statement(statement -> statement
-            .addPartitionKey(MailKeyToBucketTable.QUEUE_NAME, text())
-            .addPartitionKey(MailKeyToBucketTable.MAIL_KEY, text())
-            .addColumn(MailKeyToBucketTable.TIME_RANGE_START, timestamp())
-            .addColumn(MailKeyToBucketTable.BUCKET_ID, cint()))
+            .addPartitionKey(EnqueueIdToBucketTable.QUEUE_NAME, text())
+            .addPartitionKey(EnqueueIdToBucketTable.ENQUEUE_ID, uuid())
+            .addColumn(EnqueueIdToBucketTable.TIME_RANGE_START, timestamp())
+            .addColumn(EnqueueIdToBucketTable.BUCKET_ID, cint()))
 
         .build();
 }

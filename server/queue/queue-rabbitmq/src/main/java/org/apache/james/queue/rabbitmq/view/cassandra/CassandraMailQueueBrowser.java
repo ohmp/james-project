@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.blob.api.Store;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.blob.mail.MimeMessageStore;
@@ -80,6 +81,7 @@ public class CassandraMailQueueBrowser {
     private final BrowseStartDAO browseStartDao;
     private final DeletedMailsDAO deletedMailsDao;
     private final EnqueuedMailsDAO enqueuedMailsDao;
+    private final BucketSizeDAO bucketSizeDAO;
     private final Store<MimeMessage, MimeMessagePartsId> mimeMessageStore;
     private final CassandraMailQueueViewConfiguration configuration;
     private final Clock clock;
@@ -88,12 +90,13 @@ public class CassandraMailQueueBrowser {
     CassandraMailQueueBrowser(BrowseStartDAO browseStartDao,
                               DeletedMailsDAO deletedMailsDao,
                               EnqueuedMailsDAO enqueuedMailsDao,
-                              MimeMessageStore.Factory mimeMessageStoreFactory,
+                              BucketSizeDAO bucketSizeDAO, MimeMessageStore.Factory mimeMessageStoreFactory,
                               CassandraMailQueueViewConfiguration configuration,
                               Clock clock) {
         this.browseStartDao = browseStartDao;
         this.deletedMailsDao = deletedMailsDao;
         this.enqueuedMailsDao = enqueuedMailsDao;
+        this.bucketSizeDAO = bucketSizeDAO;
         this.mimeMessageStore = mimeMessageStoreFactory.mimeMessageStore();
         this.configuration = configuration;
         this.clock = clock;
@@ -110,6 +113,18 @@ public class CassandraMailQueueBrowser {
             .flatMapMany(this::allSlicesStartingAt)
             .flatMapSequential(slice -> browseSlice(queueName, slice))
             .subscribeOn(Schedulers.parallel());
+    }
+
+    Mono<Long> getSize(MailQueueName queueName) {
+        return allBuckets(queueName)
+            .flatMap(pair -> bucketSizeDAO.getMailCount(queueName, pair.getKey(), pair.getValue()))
+            .reduce(Long::sum);
+    }
+
+    private Flux<Pair<Slice, BucketId>> allBuckets(MailQueueName queueName) {
+        return browseStartDao.findBrowseStart(queueName)
+            .flatMapMany(this::allSlicesStartingAt)
+            .flatMap(slice -> allBucketIds().map(bucketId -> Pair.of(slice, bucketId)));
     }
 
     private Mono<Mail> toMailFuture(EnqueuedItemWithSlicingContext enqueuedItemWithSlicingContext) {

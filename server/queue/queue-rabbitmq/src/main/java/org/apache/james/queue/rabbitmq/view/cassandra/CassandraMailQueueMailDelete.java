@@ -35,16 +35,21 @@ public class CassandraMailQueueMailDelete {
 
     private final DeletedMailsDAO deletedMailsDao;
     private final BrowseStartDAO browseStartDao;
+    private final BucketSizeDAO bucketSizeDAO;
+    private final EnqueueIdToBucketDAO enqueueIdToBucketDAO;
     private final CassandraMailQueueBrowser cassandraMailQueueBrowser;
     private final CassandraMailQueueViewConfiguration configuration;
 
     @Inject
     CassandraMailQueueMailDelete(DeletedMailsDAO deletedMailsDao,
                                  BrowseStartDAO browseStartDao,
+                                 BucketSizeDAO bucketSizeDAO, EnqueueIdToBucketDAO enqueueIdToBucketDAO,
                                  CassandraMailQueueBrowser cassandraMailQueueBrowser,
                                  CassandraMailQueueViewConfiguration configuration) {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
+        this.bucketSizeDAO = bucketSizeDAO;
+        this.enqueueIdToBucketDAO = enqueueIdToBucketDAO;
         this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
         this.configuration = configuration;
     }
@@ -52,11 +57,17 @@ public class CassandraMailQueueMailDelete {
     Mono<Void> considerDeleted(EnqueueId enqueueId, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, enqueueId)
+            .then(decrementBucketSize(enqueueId, mailQueueName))
             .doOnNext(ignored -> maybeUpdateBrowseStart(mailQueueName));
     }
 
     Mono<Boolean> isDeleted(EnqueueId enqueueId, MailQueueName mailQueueName) {
         return deletedMailsDao.isDeleted(mailQueueName, enqueueId);
+    }
+
+    private Mono<Void> decrementBucketSize(EnqueueId enqueueId, MailQueueName mailQueueName) {
+        return enqueueIdToBucketDAO.retrieveBucket(mailQueueName, enqueueId)
+            .flatMap(sliceContext -> bucketSizeDAO.decrement(mailQueueName, sliceContext.getKey(), sliceContext.getValue()));
     }
 
     void updateBrowseStart(MailQueueName mailQueueName) {
