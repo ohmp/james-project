@@ -70,7 +70,7 @@ class EnqueueIdToBucketDAOTest {
     }
 
     @Test
-    void registerBucketShouldOverridePrviouslyStoredData() {
+    void registerBucketShouldOverridePreviouslyStoredData() {
         testee.registerBucket(QUEUE_NAME, ENQUEUE_ID_1, SLICE, BUCKET_ID).block();
         testee.registerBucket(QUEUE_NAME, ENQUEUE_ID_1, SLICE_2, BUCKET_ID_2).block();
 
