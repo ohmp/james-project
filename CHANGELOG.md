@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 - Add in-memory docker image
 - Support of AWS S3 as blobstore
+- WebAdmin routes for CLI capabilities on mapping management (AddAddressMapping, AddRegexMapping, ListMappings)
+
+### Changed
+- (experimental) Native implementation of the deleted message vault on top of an object store. This avoids exposing messages via webAdmin. Messages previously stored in the vault will be lost.
 
 ### Changed
 - Migration to ElasticSearch 6.3
