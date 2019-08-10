@@ -153,12 +153,8 @@ public class CamelMailetContainerModule extends AbstractModule {
         }
 
         @Override
-        public void initModule() {
-            try {
-                mailetContext.configure(getMailetContextConfiguration());
-            } catch (ConfigurationException e) {
-                throw new RuntimeException(e);
-            }
+        public void initModule() throws Exception {
+            mailetContext.configure(getMailetContextConfiguration());
         }
 
         private HierarchicalConfiguration getMailetContextConfiguration() {
@@ -198,13 +194,9 @@ public class CamelMailetContainerModule extends AbstractModule {
         }
 
         @Override
-        public void initModule() {
-            try {
-                configureProcessors(camelContext);
-                checkProcessors();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        public void initModule() throws Exception {
+            configureProcessors(camelContext);
+            checkProcessors();
         }
 
         private void configureProcessors(DefaultCamelContext camelContext) throws Exception {
