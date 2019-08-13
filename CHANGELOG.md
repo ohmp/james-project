@@ -11,8 +11,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 - (experimental) Native implementation of the deleted message vault on top of an object store. This avoids exposing messages via webAdmin. Messages previously stored in the vault will be lost.
-
-### Changed
 - Migration to ElasticSearch 6.3
 - Blob export to LinShare
 - Native DKIM support for outgoing mails. The mailets from james-jdkim have been included in main James project.
