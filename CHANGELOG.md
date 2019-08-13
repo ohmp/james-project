@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Add in-memory docker image
 - Support of AWS S3 as blobstore
 - WebAdmin routes for CLI capabilities on mapping management (AddAddressMapping, AddRegexMapping, ListMappings)
+- Metrics for Deleted Message Vault
+- More metrics for BlobStore (new delete & deleteBucket configuration)
 
 ### Changed
 - (experimental) Native implementation of the deleted message vault on top of an object store. This avoids exposing messages via webAdmin. Messages previously stored in the vault will be lost.
