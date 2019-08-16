@@ -32,6 +32,7 @@ import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.QuotaRoot;
+import org.apache.james.mailbox.quota.QuotaRootDeserializer;
 import org.apache.james.mailbox.quota.UserQuotaRootResolver;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.SessionProvider;
@@ -42,15 +43,35 @@ import com.google.common.collect.Lists;
 
 public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
 
+    public static class DefaultQuotaRootDeserializer implements QuotaRootDeserializer {
+        @Override
+        public QuotaRoot fromString(String serializedQuotaRoot) throws MailboxException {
+            List<String> parts = toParts(serializedQuotaRoot);
+            User user = User.fromUsername(parts.get(1));
+
+            return QuotaRoot.quotaRoot(serializedQuotaRoot, user.getDomainPart());
+        }
+
+        private List<String> toParts(String serializedQuotaRoot) throws MailboxException {
+            List<String> parts = Splitter.on(SEPARATOR).splitToList(serializedQuotaRoot);
+            if (parts.size() != 2) {
+                throw new MailboxException(serializedQuotaRoot + " used as QuotaRoot should contain exactly one \"" + SEPARATOR + "\"");
+            }
+            return parts;
+        }
+    }
+
     public static final String SEPARATOR = "&"; // Character illegal for mailbox naming in regard of RFC 3501 section 5.1
 
     private final SessionProvider sessionProvider;
     private final MailboxSessionMapperFactory factory;
+    private final DefaultQuotaRootDeserializer quotaRootDeserializer;
 
     @Inject
     public DefaultUserQuotaRootResolver(SessionProvider sessionProvider, MailboxSessionMapperFactory factory) {
         this.sessionProvider = sessionProvider;
         this.factory = factory;
+        quotaRootDeserializer = new DefaultQuotaRootDeserializer();
     }
 
     @Override
@@ -85,27 +106,16 @@ public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
 
     @Override
     public QuotaRoot fromString(String serializedQuotaRoot) throws MailboxException {
-        List<String> parts = toParts(serializedQuotaRoot);
-        User user = User.fromUsername(parts.get(1));
-
-        return QuotaRoot.quotaRoot(serializedQuotaRoot, user.getDomainPart());
+        return quotaRootDeserializer.fromString(serializedQuotaRoot);
     }
 
     @Override
     public List<MailboxPath> retrieveAssociatedMailboxes(QuotaRoot quotaRoot, MailboxSession mailboxSession) throws MailboxException {
-        List<String> parts = toParts(quotaRoot.getValue());
+        List<String> parts = quotaRootDeserializer.toParts(quotaRoot.getValue());
         String namespace = parts.get(0);
         String user = parts.get(1);
         return Lists.transform(factory.getMailboxMapper(mailboxSession)
             .findMailboxWithPathLike(new MailboxPath(namespace, user, "%")),
             Mailbox::generateAssociatedPath);
-    }
-
-    public List<String> toParts(String serializedQuotaRoot) throws MailboxException {
-        List<String> parts = Splitter.on(SEPARATOR).splitToList(serializedQuotaRoot);
-        if (parts.size() != 2) {
-            throw new MailboxException(serializedQuotaRoot + " used as QuotaRoot should contain exactly one \"" + SEPARATOR + "\"");
-        }
-        return parts;
     }
 }
