@@ -62,16 +62,15 @@ public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
     }
 
     public static final String SEPARATOR = "&"; // Character illegal for mailbox naming in regard of RFC 3501 section 5.1
+    private static final DefaultQuotaRootDeserializer QUOTA_ROOT_DESERIALIZER = new DefaultQuotaRootDeserializer();
 
     private final SessionProvider sessionProvider;
     private final MailboxSessionMapperFactory factory;
-    private final DefaultQuotaRootDeserializer quotaRootDeserializer;
 
     @Inject
     public DefaultUserQuotaRootResolver(SessionProvider sessionProvider, MailboxSessionMapperFactory factory) {
         this.sessionProvider = sessionProvider;
         this.factory = factory;
-        quotaRootDeserializer = new DefaultQuotaRootDeserializer();
     }
 
     @Override
@@ -106,12 +105,12 @@ public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
 
     @Override
     public QuotaRoot fromString(String serializedQuotaRoot) throws MailboxException {
-        return quotaRootDeserializer.fromString(serializedQuotaRoot);
+        return QUOTA_ROOT_DESERIALIZER.fromString(serializedQuotaRoot);
     }
 
     @Override
     public List<MailboxPath> retrieveAssociatedMailboxes(QuotaRoot quotaRoot, MailboxSession mailboxSession) throws MailboxException {
-        List<String> parts = quotaRootDeserializer.toParts(quotaRoot.getValue());
+        List<String> parts = QUOTA_ROOT_DESERIALIZER.toParts(quotaRoot.getValue());
         String namespace = parts.get(0);
         String user = parts.get(1);
         return Lists.transform(factory.getMailboxMapper(mailboxSession)
