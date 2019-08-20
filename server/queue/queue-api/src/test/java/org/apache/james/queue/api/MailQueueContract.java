@@ -285,7 +285,8 @@ public interface MailQueueContract {
         PerRecipientHeaders.Header header = PerRecipientHeaders.Header.builder()
             .name("any")
             .value("any")
-            .build(); PerRecipientHeaders.Header header2 = PerRecipientHeaders.Header.builder()
+            .build();
+        PerRecipientHeaders.Header header2 = PerRecipientHeaders.Header.builder()
             .name("any2")
             .value("any")
             .build();
