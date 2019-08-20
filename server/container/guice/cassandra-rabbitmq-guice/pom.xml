@@ -108,6 +108,12 @@
         <dependency>
             <groupId>${james.groupId}</groupId>
             <artifactId>james-server-cassandra-guice</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>${james.groupId}</groupId>
+                    <artifactId>james-server-guice-activemq</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
