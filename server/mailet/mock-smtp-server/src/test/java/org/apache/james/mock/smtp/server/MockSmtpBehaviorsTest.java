@@ -38,7 +38,7 @@ class MockSmtpBehaviorsTest {
         .registerModule(new Jdk8Module())
         .registerModule(new GuavaModule());
 
-    private static final String JSON = "[" + MockSMTPBehaviorTest.JSON_ALL_FIELDS + ", "
+    static final String JSON = "[" + MockSMTPBehaviorTest.JSON_ALL_FIELDS + ", "
         + MockSMTPBehaviorTest.JSON_COMPULSORY_FIELDS + "]";
 
     static final MockSmtpBehaviors POJO = new MockSmtpBehaviors(ImmutableList.of(
