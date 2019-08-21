@@ -19,6 +19,7 @@
 
 package org.apache.james.modules.server;
 
+import org.apache.james.spark.utils.JsonTransformerModule;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.MappingSourceModule;
 import org.apache.james.webadmin.routes.AddressMappingRoutes;
@@ -30,7 +31,6 @@ import org.apache.james.webadmin.routes.GroupsRoutes;
 import org.apache.james.webadmin.routes.MappingRoutes;
 import org.apache.james.webadmin.routes.RegexMappingRoutes;
 import org.apache.james.webadmin.routes.UserRoutes;
-import org.apache.james.webadmin.utils.JsonTransformerModule;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;

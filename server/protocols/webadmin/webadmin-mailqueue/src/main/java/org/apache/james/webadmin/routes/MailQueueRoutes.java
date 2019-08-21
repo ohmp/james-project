@@ -19,7 +19,7 @@
 
 package org.apache.james.webadmin.routes;
 
-import static org.apache.james.webadmin.Constants.SEPARATOR;
+import static org.apache.james.spark.Constants.SEPARATOR;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -35,6 +35,8 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueue.MailQueueException;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
+import org.apache.james.spark.utils.JsonTransformer;
+import org.apache.james.spark.utils.Responses;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
@@ -51,9 +53,7 @@ import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
 import org.apache.james.webadmin.utils.JsonExtractException;
 import org.apache.james.webadmin.utils.JsonExtractor;
-import org.apache.james.webadmin.utils.JsonTransformer;
 import org.apache.james.webadmin.utils.ParametersExtractor;
-import org.apache.james.webadmin.utils.Responses;
 import org.eclipse.jetty.http.HttpStatus;
 
 import com.github.fge.lambdas.Throwing;

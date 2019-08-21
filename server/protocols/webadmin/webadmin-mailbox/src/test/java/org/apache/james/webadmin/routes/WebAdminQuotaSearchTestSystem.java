@@ -20,13 +20,13 @@
 package org.apache.james.webadmin.routes;
 
 import org.apache.james.quota.search.QuotaSearchTestSystem;
+import org.apache.james.spark.utils.JsonTransformer;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.jackson.QuotaModule;
 import org.apache.james.webadmin.service.DomainQuotaService;
 import org.apache.james.webadmin.service.GlobalQuotaService;
 import org.apache.james.webadmin.service.UserQuotaService;
-import org.apache.james.webadmin.utils.JsonTransformer;
 
 import com.google.common.collect.ImmutableSet;
 

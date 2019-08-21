@@ -52,6 +52,7 @@
         <module>container/mailbox-adapter</module>
         <module>container/mailbox-jmx</module>
         <module>container/metrics/metrics-es-reporter</module>
+        <module>container/spark</module>
         <module>container/spring</module>
         <module>container/util</module>
 

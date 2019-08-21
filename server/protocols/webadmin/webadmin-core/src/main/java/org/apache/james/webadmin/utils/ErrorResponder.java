@@ -24,6 +24,7 @@ import static spark.Spark.halt;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.spark.utils.JsonTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

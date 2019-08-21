@@ -21,6 +21,7 @@ package org.apache.james.webadmin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.james.spark.FixedPortSupplier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

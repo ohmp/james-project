@@ -22,7 +22,7 @@ package org.apache.james.webadmin.dto;
 import java.io.IOException;
 
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.webadmin.utils.JsonTransformerModule;
+import org.apache.james.spark.utils.JsonTransformerModule;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

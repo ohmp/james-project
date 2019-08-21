@@ -20,9 +20,9 @@ package org.apache.james.webadmin.jackson;
 
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
+import org.apache.james.spark.utils.JsonTransformerModule;
 import org.apache.james.webadmin.dto.QuotaValueDeserializer;
 import org.apache.james.webadmin.dto.QuotaValueSerializer;
-import org.apache.james.webadmin.utils.JsonTransformerModule;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleModule;

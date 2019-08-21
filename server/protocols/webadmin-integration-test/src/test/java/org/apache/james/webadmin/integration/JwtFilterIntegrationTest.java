@@ -20,7 +20,7 @@
 package org.apache.james.webadmin.integration;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.james.webadmin.Constants.SEPARATOR;
+import static org.apache.james.spark.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;

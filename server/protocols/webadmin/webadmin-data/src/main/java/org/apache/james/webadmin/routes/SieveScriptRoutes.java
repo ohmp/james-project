@@ -19,7 +19,7 @@
 
 package org.apache.james.webadmin.routes;
 
-import static org.apache.james.webadmin.Constants.SEPARATOR;
+import static org.apache.james.spark.Constants.SEPARATOR;
 import static spark.Spark.halt;
 
 import java.util.Optional;

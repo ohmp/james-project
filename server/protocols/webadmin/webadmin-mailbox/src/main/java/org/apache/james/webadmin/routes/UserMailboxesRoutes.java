@@ -26,14 +26,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import org.apache.james.webadmin.Constants;
+import org.apache.james.spark.Constants;
+import org.apache.james.spark.utils.JsonTransformer;
+import org.apache.james.spark.utils.Responses;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.service.UserMailboxesService;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
-import org.apache.james.webadmin.utils.JsonTransformer;
 import org.apache.james.webadmin.utils.MailboxHaveChildrenException;
-import org.apache.james.webadmin.utils.Responses;
 import org.apache.james.webadmin.validation.MailboxName;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;

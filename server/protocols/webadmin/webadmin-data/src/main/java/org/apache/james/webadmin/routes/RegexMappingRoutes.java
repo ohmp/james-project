@@ -19,7 +19,7 @@
 
 package org.apache.james.webadmin.routes;
 
-import static org.apache.james.webadmin.Constants.SEPARATOR;
+import static org.apache.james.spark.Constants.SEPARATOR;
 import static spark.Spark.halt;
 
 import java.net.URLDecoder;
@@ -36,7 +36,7 @@ import org.apache.james.rrt.api.InvalidRegexException;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.webadmin.Constants;
+import org.apache.james.spark.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.eclipse.jetty.http.HttpStatus;

@@ -31,11 +31,11 @@ import org.apache.james.core.User;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.webadmin.Constants;
+import org.apache.james.spark.Constants;
+import org.apache.james.spark.utils.JsonTransformer;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.MappingValueDTO;
 import org.apache.james.webadmin.utils.ErrorResponder;
-import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
 
 import com.github.steveash.guavate.Guavate;

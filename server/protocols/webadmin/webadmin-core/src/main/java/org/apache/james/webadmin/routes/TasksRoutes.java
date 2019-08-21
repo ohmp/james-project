@@ -29,6 +29,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.apache.james.spark.utils.JsonTransformer;
+import org.apache.james.spark.utils.Responses;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
@@ -36,8 +38,6 @@ import org.apache.james.task.TaskNotFoundException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.ExecutionDetailsDto;
 import org.apache.james.webadmin.utils.ErrorResponder;
-import org.apache.james.webadmin.utils.JsonTransformer;
-import org.apache.james.webadmin.utils.Responses;
 import org.eclipse.jetty.http.HttpStatus;
 
 import io.swagger.annotations.Api;

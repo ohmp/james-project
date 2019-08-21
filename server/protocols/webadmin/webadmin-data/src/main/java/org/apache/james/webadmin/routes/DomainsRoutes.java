@@ -19,7 +19,7 @@
 
 package org.apache.james.webadmin.routes;
 
-import static org.apache.james.webadmin.Constants.SEPARATOR;
+import static org.apache.james.spark.Constants.SEPARATOR;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,13 +36,13 @@ import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.api.SameSourceAndDestinationException;
+import org.apache.james.spark.utils.JsonTransformer;
+import org.apache.james.spark.utils.Responses;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.DomainAliasResponse;
 import org.apache.james.webadmin.service.DomainAliasService;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
-import org.apache.james.webadmin.utils.JsonTransformer;
-import org.apache.james.webadmin.utils.Responses;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

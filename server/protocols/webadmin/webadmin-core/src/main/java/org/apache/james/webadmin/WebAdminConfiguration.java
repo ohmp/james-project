@@ -23,6 +23,9 @@ package org.apache.james.webadmin;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.spark.PortSupplier;
+import org.apache.james.spark.RandomPortSupplier;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 

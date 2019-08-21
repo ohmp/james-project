@@ -33,6 +33,8 @@ import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventDeadLetters;
 import org.apache.james.mailbox.events.Group;
+import org.apache.james.spark.utils.JsonTransformer;
+import org.apache.james.spark.utils.Responses;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
@@ -41,8 +43,6 @@ import org.apache.james.webadmin.dto.ActionEvents;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.EventDeadLettersService;
 import org.apache.james.webadmin.utils.ErrorResponder;
-import org.apache.james.webadmin.utils.JsonTransformer;
-import org.apache.james.webadmin.utils.Responses;
 import org.eclipse.jetty.http.HttpStatus;
 
 import io.swagger.annotations.Api;

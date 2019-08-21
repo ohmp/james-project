@@ -24,15 +24,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.apache.james.spark.Constants;
+import org.apache.james.spark.utils.JsonTransformer;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
-import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.ActionMappings;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.CassandraMappingsService;
-import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
 
 import io.swagger.annotations.Api;

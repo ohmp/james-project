@@ -20,8 +20,8 @@
 package org.apache.james.webadmin.routes;
 
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
-import static org.apache.james.webadmin.Constants.JSON_CONTENT_TYPE;
-import static org.apache.james.webadmin.Constants.SEPARATOR;
+import static org.apache.james.spark.Constants.JSON_CONTENT_TYPE;
+import static org.apache.james.spark.Constants.SEPARATOR;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
@@ -38,14 +38,14 @@ import org.apache.james.dlp.api.DLPRules;
 import org.apache.james.dlp.api.DLPRules.DuplicateRulesIdsException;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.spark.utils.JsonTransformer;
+import org.apache.james.spark.utils.Responses;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.DLPConfigurationDTO;
 import org.apache.james.webadmin.dto.DLPConfigurationItemDTO;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
 import org.apache.james.webadmin.utils.JsonExtractor;
-import org.apache.james.webadmin.utils.JsonTransformer;
-import org.apache.james.webadmin.utils.Responses;
 import org.eclipse.jetty.http.HttpStatus;
 
 import io.swagger.annotations.Api;

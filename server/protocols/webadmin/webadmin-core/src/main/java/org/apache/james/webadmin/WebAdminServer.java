@@ -33,6 +33,7 @@ import javax.inject.Inject;
 
 import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.spark.Constants;
 import org.apache.james.util.Port;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.mdc.LoggingRequestFilter;
