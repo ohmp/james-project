@@ -21,9 +21,37 @@ package org.apache.james.mock.smtp.server;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Preconditions;
 
+@JsonDeserialize(builder = Condition.Builder.class)
 class Condition {
+    @JsonPOJOBuilder(withPrefix = "")
+    static class Builder {
+        private Operator operator;
+        private String matchingValue;
+
+        public Builder operator(String operator) {
+            Preconditions.checkArgument(operator.equals("contains"));
+
+            this.operator = Operator.CONTAINS;
+            return this;
+        }
+
+        public Builder matchingValue(String matchingValue) {
+            this.matchingValue = matchingValue;
+            return this;
+        }
+
+        public Condition build() {
+            Preconditions.checkState(operator != null, "You need to specify an operator");
+            Preconditions.checkState(matchingValue != null, "You need to specify a matchingValue");
+
+            return new Condition(operator, matchingValue);
+        }
+    }
+
     private final Operator operator;
     private final String matchingValue;
 
@@ -33,6 +61,14 @@ class Condition {
 
         this.operator = operator;
         this.matchingValue = matchingValue;
+    }
+
+    public Operator getOperator() {
+        return operator;
+    }
+
+    public String getMatchingValue() {
+        return matchingValue;
     }
 
     boolean matches(String line) {

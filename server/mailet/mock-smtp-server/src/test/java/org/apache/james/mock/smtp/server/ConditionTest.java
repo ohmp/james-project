@@ -19,14 +19,20 @@
 
 package org.apache.james.mock.smtp.server;
 
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class ConditionTest {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Test
     void shouldMatchBeanContract() {
         EqualsVerifier.forClass(Condition.class)
@@ -67,5 +73,24 @@ class ConditionTest {
 
         assertThatThrownBy(() -> condition.matches(null))
             .isInstanceOf(NullPointerException.class);
+    }
+
+    @Nested
+    class JSONTest {
+        @Test
+        void jacksonShouldDeserializeCondition() throws Exception {
+            Condition condition = OBJECT_MAPPER.readValue(
+                "{\"operator\":\"contains\", \"matchingValue\":\"matchme\"}",
+                Condition.class);
+
+            assertThat(condition).isEqualTo(new Condition(Operator.CONTAINS, "matchme"));
+        }
+
+        @Test
+        void jacksonShouldSerializeCondition() throws Exception {
+            String json = OBJECT_MAPPER.writeValueAsString(new Condition(Operator.CONTAINS, "matchme"));
+
+            assertThatJson(json).isEqualTo("{\"operator\":\"contains\", \"matchingValue\":\"matchme\"}");
+        }
     }
 }

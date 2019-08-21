@@ -19,8 +19,23 @@
 
 package org.apache.james.mock.smtp.server;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public interface Operator {
-    Operator CONTAINS = String::contains;
+    Operator CONTAINS = new Operator() {
+        @Override
+        public boolean matches(String testedValue, String referenceValue) {
+            return testedValue.contains(referenceValue);
+        }
+
+        @JsonValue
+        @Override
+        public String getName() {
+            return "contains";
+        }
+    };
 
     boolean matches(String testedValue, String referenceValue);
+
+    String getName();
 }
