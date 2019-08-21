@@ -17,12 +17,25 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin;
-
-import java.util.function.Supplier;
+package org.apache.james.spark;
 
 import org.apache.james.util.Port;
 
-public interface PortSupplier extends Supplier<Port> {
+public class RandomPortSupplier implements PortSupplier {
 
+    @Override
+    public Port get() {
+        return new RandomPort();
+    }
+
+    private static class RandomPort extends Port {
+
+        public RandomPort() {
+            super(0);
+        }
+
+        @Override
+        protected void validate(int port) {
+        }
+    }
 }

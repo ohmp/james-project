@@ -17,25 +17,41 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin;
+package org.apache.james.spark;
 
-import org.apache.james.util.Port;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class RandomPortSupplier implements PortSupplier {
+import org.junit.jupiter.api.Test;
 
-    @Override
-    public Port get() {
-        return new RandomPort();
+import nl.jqno.equalsverifier.EqualsVerifier;
+
+class FixedPortSupplierTest {
+
+    @Test
+    void toIntShouldThrowOnNegativePort() {
+        assertThatThrownBy(() -> new FixedPortSupplier(-1)).isInstanceOf(IllegalArgumentException.class);
     }
 
-    private static class RandomPort extends Port {
-
-        public RandomPort() {
-            super(0);
-        }
-
-        @Override
-        protected void validate(int port) {
-        }
+    @Test
+    void toIntShouldThrowOnNullPort() {
+        assertThatThrownBy(() -> new FixedPortSupplier(0)).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void toIntShouldThrowOnTooBigNumbers() {
+        assertThatThrownBy(() -> new FixedPortSupplier(65536)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void toIntShouldReturnedDesiredPort() {
+        int expectedPort = 452;
+        assertThat(new FixedPortSupplier(expectedPort).get().getValue()).isEqualTo(expectedPort);
+    }
+
+    @Test
+    void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(FixedPortSupplier.class).verify();
+    }
+
 }

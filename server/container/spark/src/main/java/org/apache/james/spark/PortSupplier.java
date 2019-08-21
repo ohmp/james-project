@@ -17,12 +17,12 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.utils;
+package org.apache.james.spark;
 
-import com.fasterxml.jackson.databind.Module;
+import java.util.function.Supplier;
 
-public interface JsonTransformerModule {
+import org.apache.james.util.Port;
 
-    Module asJacksonModule();
+public interface PortSupplier extends Supplier<Port> {
 
 }

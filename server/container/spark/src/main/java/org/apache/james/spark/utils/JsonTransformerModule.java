@@ -17,13 +17,12 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin;
+package org.apache.james.spark.utils;
 
-public interface Constants {
+import com.fasterxml.jackson.databind.Module;
 
-    String SEPARATOR = "/";
-    String EMPTY_BODY = "";
-    String JSON_CONTENT_TYPE = "application/json";
-    String RFC822_CONTENT_TYPE = "message/rfc822";
+public interface JsonTransformerModule {
+
+    Module asJacksonModule();
 
 }

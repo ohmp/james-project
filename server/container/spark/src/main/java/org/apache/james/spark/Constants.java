@@ -17,16 +17,13 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.utils;
+package org.apache.james.spark;
 
-import org.apache.james.webadmin.Constants;
-import org.eclipse.jetty.http.HttpStatus;
+public interface Constants {
 
-import spark.Response;
+    String SEPARATOR = "/";
+    String EMPTY_BODY = "";
+    String JSON_CONTENT_TYPE = "application/json";
+    String RFC822_CONTENT_TYPE = "message/rfc822";
 
-public class Responses {
-    public static String returnNoContent(Response response) {
-        response.status(HttpStatus.NO_CONTENT_204);
-        return Constants.EMPTY_BODY;
-    }
 }
