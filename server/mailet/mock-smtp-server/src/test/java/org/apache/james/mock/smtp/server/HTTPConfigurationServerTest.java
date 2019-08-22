@@ -25,6 +25,7 @@ import static io.restassured.RestAssured.with;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.apache.james.mock.smtp.server.Fixture.JSON_BEHAVIORS;
 import static org.hamcrest.Matchers.hasSize;
 
 import java.nio.charset.StandardCharsets;
@@ -76,7 +77,7 @@ class HTTPConfigurationServerTest {
 
     @Test
     void getShouldReturnPreviouslyStoredData() {
-        with().body(MockSmtpBehaviorsTest.JSON).put();
+        with().body(JSON_BEHAVIORS).put();
 
         String response = when()
             .get()
@@ -85,12 +86,12 @@ class HTTPConfigurationServerTest {
 
         assertThatJson(response)
             .withOptions(new Options(Option.TREATING_NULL_AS_ABSENT, Option.IGNORING_ARRAY_ORDER))
-            .isEqualTo(MockSmtpBehaviorsTest.JSON);
+            .isEqualTo(JSON_BEHAVIORS);
     }
 
     @Test
     void getShouldReturnEmptyAfterDelete() {
-        with().body(MockSmtpBehaviorsTest.JSON).put();
+        with().body(JSON_BEHAVIORS).put();
 
         with().delete();
 
@@ -103,7 +104,7 @@ class HTTPConfigurationServerTest {
     @Test
     void putShouldReturnNoContent() {
         given()
-            .body(MockSmtpBehaviorsTest.JSON)
+            .body(JSON_BEHAVIORS)
         .when()
             .put()
         .then()
@@ -112,10 +113,10 @@ class HTTPConfigurationServerTest {
 
     @Test
     void putShouldBeIdempotent() {
-        with().body(MockSmtpBehaviorsTest.JSON).put();
+        with().body(JSON_BEHAVIORS).put();
 
         given()
-            .body(MockSmtpBehaviorsTest.JSON)
+            .body(JSON_BEHAVIORS)
         .when()
             .put()
         .then()
