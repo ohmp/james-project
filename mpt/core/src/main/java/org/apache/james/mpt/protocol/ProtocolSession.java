@@ -41,7 +41,7 @@ import com.google.common.base.Stopwatch;
  * itself be a permissible ProtocolElement, so that we can nest and reuse
  * sessions.
  * 
- * @author Darrell DeBoer <darrell@apache.org>
+ * @author Darrell DeBoer &lt;darrell@apache.org&gt;
  */
 public class ProtocolSession implements ProtocolInteractor {
 
