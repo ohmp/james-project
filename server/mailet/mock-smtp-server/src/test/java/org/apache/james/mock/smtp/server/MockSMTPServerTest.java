@@ -32,8 +32,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.mail.MessagingException;
@@ -417,6 +420,42 @@ class MockSMTPServerTest {
 
             assertThat(remainedAnswersOf(matched) + remainedAnswersOf(qualifiedButNotMatched))
                 .isEqualTo(matchedOriginalCount + qualifiedButNotMatchedOriginalCount - 1);
+        }
+    }
+
+    @Nested
+    class AcceptFilteringTest {
+        @Test
+        void serverShouldBehaveOnMatchedFromBehavior() throws Exception {
+            behaviorRepository.setBehaviors(new MockSMTPBehavior(
+                RCPT_TO,
+                new Condition.OperatorCondition(Operator.CONTAINS, JACK),
+                Response.serverAccept(SERVICE_NOT_AVAILABLE_421, "sender bob should match"),
+                MockSMTPBehavior.NumberOfAnswersPolicy.anytime()));
+
+            try (Socket clientSocket = new Socket("localhost", mockServer.getPort().getValue())) {
+                DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+                outToServer.write(("EHLO domain.tld\r\n" +
+                    "MAIL FROM:<" + BOB + ">\r\n" +
+                    "RCPT TO: <" + ALICE + ">\r\n" +
+                    "RCPT TO: <" + JACK + ">\r\n" +
+                    "DATA\r\n" +
+                    "Subject: test message\r\n" +
+                    "\r\n" +
+                    "This is the body of the message!\r\n" +
+                    ".\r\n" +
+                    "quit\r\n").getBytes(StandardCharsets.UTF_8));
+                outToServer.flush();
+            }
+
+            Awaitility.await().atMost(Duration.TEN_SECONDS)
+                .untilAsserted(() ->
+                    assertThat(mockServer.listReceivedMails()).hasSize(1)
+                        .allSatisfy(Throwing.consumer(mail -> assertThat(mail.getEnvelope())
+                            .isEqualTo(new Mail.Envelope.Builder()
+                                .from(new MailAddress(BOB))
+                                .addRecipient(new MailAddress(ALICE))
+                                .build()))));
         }
     }
 

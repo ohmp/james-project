@@ -19,6 +19,8 @@
 
 package org.apache.james.mock.smtp.server;
 
+import static org.apache.james.mock.smtp.server.model.Response.SMTPStatusCode.REQUESTED_MAIL_ACTION_ABORTED_552;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +29,6 @@ import java.util.Optional;
 import javax.mail.internet.AddressException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.core.MailAddress;
 import org.apache.james.mock.smtp.server.model.Mail;
 import org.apache.james.mock.smtp.server.model.MockSMTPBehavior;
@@ -38,6 +39,7 @@ import org.apache.james.mock.smtp.server.model.SMTPCommand;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
+import org.subethamail.smtp.server.Session;
 
 public class MockMessageHandler implements MessageHandler {
 
@@ -47,9 +49,11 @@ public class MockMessageHandler implements MessageHandler {
     }
 
     static class MockBehavior<T> implements Behavior<T> {
+        private final Session session;
         private final MockSMTPBehavior behavior;
 
-        MockBehavior(MockSMTPBehavior behavior) {
+        MockBehavior(Session session, MockSMTPBehavior behavior) {
+            this.session = session;
             this.behavior = behavior;
         }
 
@@ -58,8 +62,13 @@ public class MockMessageHandler implements MessageHandler {
             Response response = behavior.getResponse();
             if (response.isServerRejected()) {
                 throw new RejectException(response.getCode().getRawCode(), response.getMessage());
+            } else {
+                try {
+                    session.sendResponse(behavior.getResponse().asReplyString());
+                } catch (IOException e) {
+                    throw new RejectException(REQUESTED_MAIL_ACTION_ABORTED_552.getRawCode(), response.getMessage());
+                }
             }
-            throw new NotImplementedException("Not rejecting commands in mock behaviours is not supported yet");
         }
     }
 
@@ -86,10 +95,12 @@ public class MockMessageHandler implements MessageHandler {
     private final Mail.Builder mailBuilder;
     private final ReceivedMailRepository mailRepository;
     private final SMTPBehaviorRepository behaviorRepository;
+    private final Session session;
 
-    MockMessageHandler(ReceivedMailRepository mailRepository, SMTPBehaviorRepository behaviorRepository) {
+    MockMessageHandler(ReceivedMailRepository mailRepository, SMTPBehaviorRepository behaviorRepository, Session session) {
         this.mailRepository = mailRepository;
         this.behaviorRepository = behaviorRepository;
+        this.session = session;
         this.envelopeBuilder = new Mail.Envelope.Builder();
         this.mailBuilder = new Mail.Builder();
     }
@@ -128,7 +139,7 @@ public class MockMessageHandler implements MessageHandler {
             .filter(behavior -> behavior.getCommand().equals(data))
             .filter(behavior -> behavior.getCondition().matches(dataLine))
             .findFirst()
-            .map(behavior -> new BehaviorDecorator<>(new MockBehavior<>(behavior),
+            .map(behavior -> new BehaviorDecorator<>(new MockBehavior<>(session, behavior),
                 () -> behaviorRepository.decreaseRemainingAnswers(behavior)));
     }
 
