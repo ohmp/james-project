@@ -449,13 +449,14 @@ class MockSMTPServerTest {
             }
 
             Awaitility.await().atMost(Duration.TEN_SECONDS)
-                .untilAsserted(() ->
-                    assertThat(mockServer.listReceivedMails()).hasSize(1)
-                        .allSatisfy(Throwing.consumer(mail -> assertThat(mail.getEnvelope())
-                            .isEqualTo(new Mail.Envelope.Builder()
-                                .from(new MailAddress(BOB))
-                                .addRecipient(new MailAddress(ALICE))
-                                .build()))));
+                .until(() -> mockServer.listReceivedMails().size() == 1);
+
+            assertThat(mockServer.listReceivedMails()).hasSize(1)
+                .allSatisfy(Throwing.consumer(mail -> assertThat(mail.getEnvelope())
+                    .isEqualTo(new Mail.Envelope.Builder()
+                        .from(new MailAddress(BOB))
+                        .addRecipient(new MailAddress(ALICE))
+                        .build())));
         }
     }
 
