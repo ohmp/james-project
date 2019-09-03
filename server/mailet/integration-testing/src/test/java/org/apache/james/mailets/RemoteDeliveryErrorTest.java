@@ -424,6 +424,7 @@ public class RemoteDeliveryErrorTest {
             .body("[0].recipients", hasSize(1))
             .body("[0].recipients[0]", is(RECIPIENT2))
             .body("[0].message", containsString("subject: test"));
+        
         given(requestSpecification(mockSmtp2.getContainerIp()), RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
