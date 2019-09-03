@@ -69,7 +69,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
+
+import com.google.common.collect.ImmutableList;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -120,6 +121,8 @@ public class RemoteDeliveryErrorTest {
         "your message.";
     private static final ResponseSpecification RESPONSE_SPECIFICATION = new ResponseSpecBuilder().build();
     private InMemoryDNSService inMemoryDNSService;
+    private RequestSpecification requestSpecificationForMockSMTP1;
+    private RequestSpecification requestSpecificationForMockSMTP2;
 
     private static MockSmtpBehaviors reject421Behavior(SMTPCommand smtpCommand) {
         return reject421Behavior(smtpCommand, MockSMTPBehavior.NumberOfAnswersPolicy.anytime());
@@ -148,12 +151,11 @@ public class RemoteDeliveryErrorTest {
     @Rule
     public SMTPMessageSender messageSender = new SMTPMessageSender(DEFAULT_DOMAIN);
     @ClassRule
-
     public static DockerContainer mockSmtp = DockerContainer.fromName("linagora/mock-smtp-server")
-        .withLogConsumer(outputFrame -> LOGGER.debug("1: " + outputFrame.getUtf8String()));
+        .withLogConsumer(outputFrame -> LOGGER.debug("MockSMTP 1: " + outputFrame.getUtf8String()));
     @ClassRule
     public static DockerContainer mockSmtp2 = DockerContainer.fromName("linagora/mock-smtp-server")
-        .withLogConsumer(outputFrame -> LOGGER.debug("2: " + outputFrame.getUtf8String()));
+        .withLogConsumer(outputFrame -> LOGGER.debug("MockSMTP 2: " + outputFrame.getUtf8String()));
 
     private TemporaryJamesServer jamesServer;
 
@@ -178,8 +180,10 @@ public class RemoteDeliveryErrorTest {
             .addDomain(DEFAULT_DOMAIN)
             .addUser(FROM, PASSWORD);
 
-        RestAssured.requestSpecification = requestSpecification(mockSmtp.getContainerIp());
-        //RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        requestSpecificationForMockSMTP1 = requestSpecification(mockSmtp);
+        requestSpecificationForMockSMTP2 = requestSpecification(mockSmtp2);
+        RestAssured.requestSpecification = requestSpecificationForMockSMTP1;
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
     @After
@@ -345,7 +349,7 @@ public class RemoteDeliveryErrorTest {
     public void remoteDeliveryShouldNotDuplicateContentWhenSendPartial() throws Exception {
         with()
             .body(SINGLE_PARTIAL_RCPT_421_BEHAVIOR)
-            .put("/smtpBehaviors").prettyPeek();
+            .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(MailImpl.builder()
@@ -394,7 +398,7 @@ public class RemoteDeliveryErrorTest {
             .registerMxRecord(mockSmtp.getContainerIp(), mockSmtp.getContainerIp())
             .registerMxRecord(mockSmtp2.getContainerIp(), mockSmtp2.getContainerIp());
 
-        with()
+        given(requestSpecificationForMockSMTP1)
             .body(ALWAYS_PARTIAL_RCPT_421_BEHAVIOR)
             .put("/smtpBehaviors");
 
@@ -407,16 +411,16 @@ public class RemoteDeliveryErrorTest {
                 .mimeMessage(MimeMessageUtil.mimeMessageFromString(MIME_MESSAGE))
                 .build());
 
-        awaitAtMostOneMinute.untilAsserted(() -> given()
+        awaitAtMostOneMinute.untilAsserted(() -> given(requestSpecificationForMockSMTP1, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
             .body("", hasSize(1)));
-        awaitAtMostOneMinute.untilAsserted(() -> given(requestSpecification(mockSmtp2.getContainerIp()), RESPONSE_SPECIFICATION)
+        awaitAtMostOneMinute.untilAsserted(() -> given(requestSpecificationForMockSMTP2, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
             .body("", hasSize(1)));
 
-        given()
+        given(requestSpecificationForMockSMTP1, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
             .body("", hasSize(1))
@@ -425,7 +429,7 @@ public class RemoteDeliveryErrorTest {
             .body("[0].recipients[0]", is(RECIPIENT2))
             .body("[0].message", containsString("subject: test"));
         
-        given(requestSpecification(mockSmtp2.getContainerIp()), RESPONSE_SPECIFICATION)
+        given(requestSpecificationForMockSMTP2, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
             .body("", hasSize(1))
@@ -450,13 +454,13 @@ public class RemoteDeliveryErrorTest {
                 .addProperty("sendpartial", "true"));
     }
 
-    private RequestSpecification requestSpecification(String ip) {
+    private RequestSpecification requestSpecification(DockerContainer container) {
         return new RequestSpecBuilder()
             .setContentType(ContentType.JSON)
             .setAccept(ContentType.JSON)
             .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
             .setPort(8000)
-            .setBaseUri("http://" + ip)
+            .setBaseUri("http://" + container.getContainerIp())
             .build();
     }
 }
