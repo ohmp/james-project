@@ -61,7 +61,6 @@ import org.apache.james.utils.SMTPMessageSender;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -431,7 +430,6 @@ public class RemoteDeliveryErrorTest {
                 "]");
     }
 
-    @Ignore("JAMES-2097 Using full recipients for following MX iteration when partial fails on delivering")
     @Test
     public void remoteDeliveryShouldNotDuplicateContentWhenSendPartialWhenFailover() throws Exception {
         ImmutableList<InetAddress> addresses = ImmutableList.of(InetAddress.getByName(mockSmtp.getContainerIp()));
