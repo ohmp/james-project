@@ -231,7 +231,8 @@ class HTTPConfigurationServerTest {
             mailRepository.store(mail1);
             mailRepository.store(mail2);
 
-            with().delete();
+            with()
+                .delete();
 
             when()
                 .get()
