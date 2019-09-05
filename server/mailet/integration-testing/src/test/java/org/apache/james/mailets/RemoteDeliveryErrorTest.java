@@ -36,6 +36,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.dnsservice.api.DNSService;
@@ -360,10 +361,13 @@ public class RemoteDeliveryErrorTest {
                 .mimeMessage(MimeMessageUtil.mimeMessageFromString(MIME_MESSAGE))
                 .build());
 
-        awaitAtMostOneMinute.untilAsserted(() -> given()
+        awaitAtMostOneMinute.until(() -> given()
             .get("/smtpMails")
         .then()
-            .body("", hasSize(2)));
+            .extract()
+            .body()
+            .as(List.class)
+            .size() == 2);
 
         String mailsAsJson = given()
             .get("/smtpMails")
@@ -411,14 +415,20 @@ public class RemoteDeliveryErrorTest {
                 .mimeMessage(MimeMessageUtil.mimeMessageFromString(MIME_MESSAGE))
                 .build());
 
-        awaitAtMostOneMinute.untilAsserted(() -> given(requestSpecificationForMockSMTP1, RESPONSE_SPECIFICATION)
+        awaitAtMostOneMinute.until(() -> given(requestSpecificationForMockSMTP1, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
-            .body("", hasSize(1)));
-        awaitAtMostOneMinute.untilAsserted(() -> given(requestSpecificationForMockSMTP2, RESPONSE_SPECIFICATION)
+            .extract()
+            .body()
+            .as(List.class)
+            .size() == 1);
+        awaitAtMostOneMinute.until(() -> given(requestSpecificationForMockSMTP2, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
         .then()
-            .body("", hasSize(1)));
+            .extract()
+            .body()
+            .as(List.class)
+            .size() == 1);
 
         given(requestSpecificationForMockSMTP1, RESPONSE_SPECIFICATION)
             .get("/smtpMails")
