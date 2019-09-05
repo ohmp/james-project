@@ -20,9 +20,13 @@
 package org.apache.james.transport.mailets.remote.delivery;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
@@ -33,7 +37,6 @@ import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.api.TemporaryResolutionException;
-import org.apache.james.util.StreamUtils;
 import org.apache.mailet.HostAddress;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
@@ -42,9 +45,7 @@ import org.slf4j.LoggerFactory;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 @SuppressWarnings("deprecation")
 public class MailDelivrer {
@@ -123,23 +124,19 @@ public class MailDelivrer {
         return rcpt.getDomain();
     }
 
-    private ExecutionResult doDeliver(Mail mail, ImmutableSet<InternetAddress> addr, Iterator<HostAddress> targetServers) throws MessagingException {
+    private ExecutionResult doDeliver(Mail mail, Set<InternetAddress> addr, Iterator<HostAddress> targetServers) throws MessagingException {
         MessagingException lastError = null;
 
-        ImmutableSet<InternetAddress> targetAddresses = ImmutableSet.copyOf(addr);
-        ImmutableSet.Builder<InternetAddress> deliverySuccess = ImmutableSet.builder();
+        Set<InternetAddress> targetAddresses = new HashSet<>(addr);
 
         while (targetServers.hasNext()) {
             try {
-                Collection<InternetAddress> remainingAddresses = Sets.difference(targetAddresses, deliverySuccess.build());
-                return mailDelivrerToHost.tryDeliveryToHost(mail, remainingAddresses, targetServers.next());
+                return mailDelivrerToHost.tryDeliveryToHost(mail, targetAddresses, targetServers.next());
             } catch (SendFailedException sfe) {
                 lastError = handleSendFailExceptionOnMxIteration(mail, sfe);
 
-                ImmutableSet<InternetAddress> validSentAddresses = StreamUtils.ofNullable(sfe.getValidSentAddresses())
-                    .map(address -> (InternetAddress) address)
-                    .collect(Guavate.toImmutableSet());
-                deliverySuccess.addAll(validSentAddresses);
+                listDeliveredAddresses(sfe)
+                    .ifPresent(targetAddresses::removeAll);
             } catch (MessagingException me) {
                 lastError = handleMessagingException(mail, me);
                 if (configuration.isDebug()) {
@@ -159,6 +156,14 @@ public class MailDelivrer {
             throw lastError;
         }
         return ExecutionResult.temporaryFailure();
+    }
+
+    private Optional<Collection<InternetAddress>> listDeliveredAddresses(SendFailedException sfe) {
+        return Optional.ofNullable(sfe.getValidSentAddresses())
+            .map(addresses ->
+                Arrays.stream(addresses)
+                    .map(InternetAddress.class::cast)
+                    .collect(Guavate.toImmutableList()));
     }
 
     private MessagingException handleMessagingException(Mail mail, MessagingException me) throws MessagingException {
