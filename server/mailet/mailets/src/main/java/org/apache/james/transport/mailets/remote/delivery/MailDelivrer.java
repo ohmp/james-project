@@ -136,10 +136,10 @@ public class MailDelivrer {
             } catch (SendFailedException sfe) {
                 lastError = handleSendFailExceptionOnMxIteration(mail, sfe);
 
-                ImmutableSet<InternetAddress> es = StreamUtils.ofNullable(sfe.getValidSentAddresses())
+                ImmutableSet<InternetAddress> validSentAddresses = StreamUtils.ofNullable(sfe.getValidSentAddresses())
                     .map(address -> (InternetAddress) address)
                     .collect(Guavate.toImmutableSet());
-                deliverySuccess.addAll(es);
+                deliverySuccess.addAll(validSentAddresses);
             } catch (MessagingException me) {
                 lastError = handleMessagingException(mail, me);
                 if (configuration.isDebug()) {
