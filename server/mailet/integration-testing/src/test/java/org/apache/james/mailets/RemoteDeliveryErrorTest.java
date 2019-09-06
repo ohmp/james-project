@@ -83,8 +83,8 @@ import net.javacrumbs.jsonunit.core.Option;
 
 public class RemoteDeliveryErrorTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDeliveryErrorTest.class);
-    private static final String ANOTHER_DOMAIN = "other.com";
 
+    private static final String ANOTHER_DOMAIN = "other.com";
     private static final String FROM = "from@" + DEFAULT_DOMAIN;
     private static final String MIME_MESSAGE = "FROM: " + FROM + "\r\n" +
         "subject: test\r\n" +
@@ -94,90 +94,13 @@ public class RemoteDeliveryErrorTest {
     private static final String RECIPIENT = "touser@" + ANOTHER_DOMAIN;
     private static final String RECIPIENT1 = "touser1@" + ANOTHER_DOMAIN;
     private static final String RECIPIENT2 = "touser2@" + ANOTHER_DOMAIN;
-
-    private static final MockSmtpBehaviors ALWAYS_421_RCPT_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.RCPT_TO)
-        .matching(anyInput())
-        .thenRespond(serviceNotAvailable("mock response"))
-        .anyTimes()
-        .build();
-    private static final MockSmtpBehaviors ALWAYS_421_FROM_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.MAIL_FROM)
-        .matching(anyInput())
-        .thenRespond(serviceNotAvailable("mock response"))
-        .anyTimes()
-        .build();
-    private static final MockSmtpBehaviors ALWAYS_421_DATA_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.DATA)
-        .matching(anyInput())
-        .thenRespond(serviceNotAvailable("mock response"))
-        .anyTimes()
-        .build();
-    private static final MockSmtpBehaviors TWICE_421_RCPT_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.RCPT_TO)
-        .matching(anyInput())
-        .thenRespond(serviceNotAvailable("mock response"))
-        .onlySomeTimes(2)
-        .build();
-    private static final MockSmtpBehaviors TWICE_421_FROM_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.MAIL_FROM)
-        .matching(anyInput())
-        .thenRespond(serviceNotAvailable("mock response"))
-        .onlySomeTimes(2)
-        .build();
-    private static final MockSmtpBehaviors TWICE_421_DATA_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.DATA)
-        .matching(anyInput())
-        .thenRespond(serviceNotAvailable("mock response"))
-        .onlySomeTimes(2)
-        .build();
-    private static final MockSmtpBehaviors SINGLE_500_RCPT_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.RCPT_TO)
-        .matching(anyInput())
-        .thenRespond(doesNotAcceptAnyMail("mock message"))
-        .onlySomeTimes(1)
-        .build();
-    private static final MockSmtpBehaviors SINGLE_500_FROM_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.MAIL_FROM)
-        .matching(anyInput())
-        .thenRespond(doesNotAcceptAnyMail("mock message"))
-        .onlySomeTimes(1)
-        .build();
-    private static final MockSmtpBehaviors SINGLE_500_DATA_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.DATA)
-        .matching(anyInput())
-        .thenRespond(doesNotAcceptAnyMail("mock message"))
-        .onlySomeTimes(1)
-        .build();
-    private static final MockSmtpBehaviors SINGLE_PARTIAL_RCPT_421_BEHAVIOR = MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.RCPT_TO)
-        .matching(inputContaining(RECIPIENT1))
-        .thenRespond(serviceNotAvailable("mock response"))
-        .onlySomeTimes(1)
-        .build();
-    private static final MockSmtpBehaviors ALWAYS_PARTIAL_RCPT_421_BEHAVIOR =  MockSmtpBehaviors.builder()
-        .addNewBehavior()
-        .expect(SMTPCommand.RCPT_TO)
-        .matching(inputContaining(RECIPIENT2))
-        .thenRespond(serviceNotAvailable("mock response"))
-        .anyTimes()
-        .build();
     private static final String BOUNCE_MESSAGE = "Hi. This is the James mail server at localhost.\n" +
         "I'm afraid I wasn't able to deliver your message to the following addresses.\n" +
         "This is a permanent error; I've given up. Sorry it didn't work out. Below\n" +
         "I include the list of recipients and the reason why I was unable to deliver\n" +
         "your message.";
     private static final ResponseSpecification RESPONSE_SPECIFICATION = new ResponseSpecBuilder().build();
+
     private InMemoryDNSService inMemoryDNSService;
     private RequestSpecification requestSpecificationForMockSMTP1;
     private RequestSpecification requestSpecificationForMockSMTP2;
@@ -233,7 +156,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldBounceWhenAlwaysRCPT421() throws Exception {
         with()
-            .body(ALWAYS_421_RCPT_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.RCPT_TO)
+                .matching(anyInput())
+                .thenRespond(serviceNotAvailable("mock response"))
+                .anyTimes()
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -250,7 +179,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldBounceWhenAlwaysFROM421() throws Exception {
         with()
-            .body(ALWAYS_421_FROM_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.MAIL_FROM)
+                .matching(anyInput())
+                .thenRespond(serviceNotAvailable("mock response"))
+                .anyTimes()
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -267,7 +202,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldBounceWhenAlwaysDATA421() throws Exception {
         with()
-            .body(ALWAYS_421_DATA_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.DATA)
+                .matching(anyInput())
+                .thenRespond(serviceNotAvailable("mock response"))
+                .anyTimes()
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -284,7 +225,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldNotRetryWhenRCPT500() throws Exception {
         with()
-            .body(SINGLE_500_RCPT_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.RCPT_TO)
+                .matching(anyInput())
+                .thenRespond(doesNotAcceptAnyMail("mock message"))
+                .onlySomeTimes(1)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -301,7 +248,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldNotRetryWhenFROM500() throws Exception {
         with()
-            .body(SINGLE_500_FROM_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.MAIL_FROM)
+                .matching(anyInput())
+                .thenRespond(doesNotAcceptAnyMail("mock message"))
+                .onlySomeTimes(1)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -318,7 +271,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldNotRetryWhenDATA500() throws Exception {
         with()
-            .body(SINGLE_500_DATA_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.DATA)
+                .matching(anyInput())
+                .thenRespond(doesNotAcceptAnyMail("mock message"))
+                .onlySomeTimes(1)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -335,7 +294,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldRetryWhenRCPT421() throws Exception {
         with()
-            .body(TWICE_421_RCPT_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.RCPT_TO)
+                .matching(anyInput())
+                .thenRespond(serviceNotAvailable("mock response"))
+                .onlySomeTimes(2)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -354,7 +319,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldRetryWhenFROM421() throws Exception {
         with()
-            .body(TWICE_421_FROM_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.MAIL_FROM)
+                .matching(anyInput())
+                .thenRespond(serviceNotAvailable("mock response"))
+                .onlySomeTimes(2)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -373,7 +344,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldRetryWhenDATA421() throws Exception {
         with()
-            .body(TWICE_421_DATA_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.DATA)
+                .matching(anyInput())
+                .thenRespond(serviceNotAvailable("mock response"))
+                .onlySomeTimes(2)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -392,7 +369,13 @@ public class RemoteDeliveryErrorTest {
     @Test
     public void remoteDeliveryShouldNotDuplicateContentWhenSendPartial() throws Exception {
         with()
-            .body(SINGLE_PARTIAL_RCPT_421_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.RCPT_TO)
+                .matching(inputContaining(RECIPIENT1))
+                .thenRespond(serviceNotAvailable("mock response"))
+                .onlySomeTimes(1)
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
@@ -446,7 +429,13 @@ public class RemoteDeliveryErrorTest {
             .registerMxRecord(mockSmtp2.getContainerIp(), mockSmtp2.getContainerIp());
 
         given(requestSpecificationForMockSMTP1)
-            .body(ALWAYS_PARTIAL_RCPT_421_BEHAVIOR)
+            .body(MockSmtpBehaviors.builder()
+                .addNewBehavior()
+                .expect(SMTPCommand.RCPT_TO)
+                .matching(inputContaining(RECIPIENT2))
+                .thenRespond(serviceNotAvailable("mock response"))
+                .anyTimes()
+                .build())
             .put("/smtpBehaviors");
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
