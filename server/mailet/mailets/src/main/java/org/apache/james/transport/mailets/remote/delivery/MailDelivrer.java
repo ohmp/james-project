@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 @SuppressWarnings("deprecation")
@@ -135,8 +136,7 @@ public class MailDelivrer {
             } catch (SendFailedException sfe) {
                 lastError = handleSendFailExceptionOnMxIteration(mail, sfe);
 
-                listDeliveredAddresses(sfe)
-                    .ifPresent(targetAddresses::removeAll);
+                targetAddresses.removeAll(listDeliveredAddresses(sfe));
             } catch (MessagingException me) {
                 lastError = handleMessagingException(mail, me);
                 if (configuration.isDebug()) {
@@ -158,12 +158,13 @@ public class MailDelivrer {
         return ExecutionResult.temporaryFailure();
     }
 
-    private Optional<Collection<InternetAddress>> listDeliveredAddresses(SendFailedException sfe) {
+    private Collection<InternetAddress> listDeliveredAddresses(SendFailedException sfe) {
         return Optional.ofNullable(sfe.getValidSentAddresses())
             .map(addresses ->
                 Arrays.stream(addresses)
                     .map(InternetAddress.class::cast)
-                    .collect(Guavate.toImmutableList()));
+                    .collect(Guavate.toImmutableList()))
+            .orElse(ImmutableList.of());
     }
 
     private MessagingException handleMessagingException(Mail mail, MessagingException me) throws MessagingException {
