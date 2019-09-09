@@ -474,7 +474,7 @@ public class RemoteDeliveryErrorTest {
             .body("", hasSize(1))
             .body("[0].from", is(FROM))
             .body("[0].recipients", hasSize(1))
-            .body("[0].recipients[0]", is(RECIPIENT2))
+            .body("[0].recipients[0]", is(RECIPIENT1))
             .body("[0].message", containsString("subject: test"));
         
         given(requestSpecificationForMockSMTP2, RESPONSE_SPECIFICATION)
@@ -483,7 +483,7 @@ public class RemoteDeliveryErrorTest {
             .body("", hasSize(1))
             .body("[0].from", is(FROM))
             .body("[0].recipients", hasSize(1))
-            .body("[0].recipients[0]", is(RECIPIENT1))
+            .body("[0].recipients[0]", is(RECIPIENT2))
             .body("[0].message", containsString("subject: test"));
     }
 
