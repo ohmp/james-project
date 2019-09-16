@@ -20,23 +20,29 @@
 package org.apache.james.task;
 
 import java.io.IOException;
-import java.util.concurrent.LinkedBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
 
 public class MemoryWorkQueue implements WorkQueue {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(MemoryWorkQueue.class);
     private final TaskManagerWorker worker;
     private final Disposable subscription;
-    private final LinkedBlockingQueue<TaskWithId> tasks;
+    private final UnicastProcessor<TaskWithId> tasks;
+    private final FluxSink<TaskWithId> sink;
 
     public MemoryWorkQueue(TaskManagerWorker worker) {
         this.worker = worker;
-        this.tasks = new LinkedBlockingQueue<>();
-        this.subscription = Mono.fromCallable(tasks::take)
-            .repeat()
+        this.tasks = UnicastProcessor.create();
+        this.sink = tasks.sink(FluxSink.OverflowStrategy.ERROR);
+        this.subscription = tasks.limitRate(1)
             .subscribeOn(Schedulers.elastic())
             .flatMapSequential(this::dispatchTaskToWorker)
             .subscribe();
@@ -47,11 +53,7 @@ public class MemoryWorkQueue implements WorkQueue {
     }
 
     public void submit(TaskWithId taskWithId) {
-        try {
-            tasks.put(taskWithId);
-        } catch (InterruptedException e) {
-            worker.cancelTask(taskWithId.getId());
-        }
+        sink.next(taskWithId);
     }
 
     public void cancel(TaskId taskId) {
@@ -60,6 +62,7 @@ public class MemoryWorkQueue implements WorkQueue {
 
     @Override
     public void close() throws IOException {
+        sink.complete();
         try {
             subscription.dispose();
         } catch (Throwable ignore) {
