@@ -31,7 +31,7 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public class GuiceGenericLoader {
-    private static final Module NO_CHILD_MODULE = binder -> {};
+    private static final Module NO_CHILD_MODULE = binder -> { };
 
     @VisibleForTesting
     public static GuiceGenericLoader forTesting(ExtendedClassLoader extendedClassLoader) {
