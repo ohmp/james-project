@@ -30,9 +30,8 @@ import org.apache.james.utils.ClassName;
 import org.apache.james.utils.GuiceGenericLoader;
 
 import com.google.common.base.Preconditions;
-import com.google.inject.Injector;
-import com.google.inject.TypeLiteral;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
 import com.google.inject.util.Modules;
 
 public class MailboxListenerFactory {
