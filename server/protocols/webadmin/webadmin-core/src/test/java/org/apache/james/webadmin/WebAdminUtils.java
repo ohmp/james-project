@@ -30,6 +30,8 @@ import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.util.Port;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 
+import com.google.common.collect.ImmutableList;
+
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
@@ -39,7 +41,7 @@ public class WebAdminUtils {
 
     public static WebAdminServer createWebAdminServer(Routes... routes) {
         return new WebAdminServer(WebAdminConfiguration.TEST_CONFIGURATION,
-            Arrays.asList(routes),
+            ImmutableList.copyOf(routes),
             new NoAuthenticationFilter(),
             new NoopMetricFactory());
     }
