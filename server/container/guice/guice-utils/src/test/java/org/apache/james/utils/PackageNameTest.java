@@ -53,9 +53,9 @@ class PackageNameTest {
     }
 
     @Test
-    void ofShouldSanitizeStartingDot() {
-        assertThat(PackageName.of(".org.apache.MyClass").getName())
-            .isEqualTo("org.apache.MyClass");
+    void ofShouldThrowWhenStartingDot() {
+        assertThatThrownBy(() -> PackageName.of(".org.apache.MyClass"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -65,8 +65,8 @@ class PackageNameTest {
     }
 
     @Test
-    void ofShouldSanitizeDoubleDot() {
-        assertThat(PackageName.of("org.apache..MyClass").getName())
-            .isEqualTo("org.apache.MyClass");
+    void ofShouldThrowWHenDoubleDot() {
+        assertThatThrownBy(() -> PackageName.of("org.apache..MyClass"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

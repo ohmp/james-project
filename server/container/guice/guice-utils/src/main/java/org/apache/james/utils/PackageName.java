@@ -21,7 +21,6 @@ package org.apache.james.utils;
 
 import java.util.Objects;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
@@ -30,13 +29,25 @@ public class PackageName {
 
     public static PackageName of(String value) {
         Preconditions.checkNotNull(value);
+        String sanitizedValue = sanitize(value);
+        Preconditions.checkArgument(!hasEmptyParts(sanitizedValue),
+            "PackageName can not contain empty parts: " + sanitizedValue);
 
-        Iterable<String> packageParts = Splitter.on(PART_SEPARATOR)
-            .omitEmptyStrings()
-            .split(value);
+        return new PackageName(sanitizedValue);
+    }
 
-        return new PackageName(Joiner.on(PART_SEPARATOR)
-            .join(packageParts));
+    private static boolean hasEmptyParts(String sanitizedValue) {
+        return Splitter.on(PART_SEPARATOR)
+            .splitToList(sanitizedValue)
+            .stream()
+            .anyMatch(String::isEmpty);
+    }
+
+    private static String sanitize(String value) {
+        if (value.endsWith(String.valueOf(PART_SEPARATOR))) {
+            return value.substring(0, value.length() - 1);
+        }
+        return value;
     }
 
     private final String name;
