@@ -51,4 +51,11 @@ class FullyQualifiedClassNameTest {
         assertThat(new FullyQualifiedClassName(name).getName())
             .isEqualTo(name);
     }
+
+    @Test
+    void getNameShouldReturnSuppliedValueWhenOnlyAClassName() {
+        String name = "MyClass";
+        assertThat(new FullyQualifiedClassName(name).getName())
+            .isEqualTo(name);
+    }
 }

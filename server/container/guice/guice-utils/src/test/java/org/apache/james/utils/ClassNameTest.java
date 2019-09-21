@@ -93,7 +93,7 @@ class ClassNameTest {
     }
 
     @Test
-    void appendPackageShouldAddPackageInFullyQualifiedClassNameWhenAPackagePartAlreadyExist() {
+    void appendPackageShouldAddPackageInFullyQualifiedClassNameWhenAPackagePartAlreadyExists() {
         String name = "part.MyClass";
         String packageName = "org.apache";
         assertThat(new ClassName(name).appendPackage(PackageName.of(packageName)))
