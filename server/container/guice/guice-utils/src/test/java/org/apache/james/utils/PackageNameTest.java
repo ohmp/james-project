@@ -65,7 +65,7 @@ class PackageNameTest {
     }
 
     @Test
-    void ofShouldThrowWHenDoubleDot() {
+    void ofShouldThrowWhenDoubleDot() {
         assertThatThrownBy(() -> PackageName.of("org.apache..MyClass"))
             .isInstanceOf(IllegalArgumentException.class);
     }
