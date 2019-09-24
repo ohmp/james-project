@@ -111,7 +111,7 @@ public class WebAdminServerModule extends AbstractModule {
             Configuration configurationFile = propertiesProvider.getConfiguration("webadmin");
 
             List<String> additionalRoutes = Optional.ofNullable(configurationFile.getStringArray("extensions.routes"))
-                .map(Arrays::asList)
+                .map(ImmutableList::copyOf)
                 .orElse(ImmutableList.of());
 
             return WebAdminConfiguration.builder()
