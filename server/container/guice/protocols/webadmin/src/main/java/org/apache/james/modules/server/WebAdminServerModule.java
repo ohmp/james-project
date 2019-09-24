@@ -22,7 +22,6 @@ package org.apache.james.modules.server;
 import static org.apache.james.webadmin.WebAdminConfiguration.DISABLED_CONFIGURATION;
 
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
