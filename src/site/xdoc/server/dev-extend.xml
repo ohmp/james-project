@@ -111,9 +111,9 @@
         <p>Also, it is possible to register additional Guice bindings, that are applied as a Guice child injector
         for creating extensions.</p>
 
-        <p>Note: James injector is not altered nor overloaded in any way.</p>
+        <p>Note: Extensions are loaded in their own classpath to avoid breaking James server but they can retrieve James services to implement their business logic.</p>
 
-        <p>To do so, write an <a href="https://google.github.io/guice/api-docs/latest/javadoc/index.html?com/google/inject/AbstractModule.html">
+        <p>To do so, write an <a href="https://google.github.io/guice/api-docs/latest/javadoc/index.html?com/google/inject/Module.html">
         AbstractModule</a> with the additional guice bindings you need. Then package it as a <b>jar-with-dependencies</b>, and copy the
         jar-with-dependencies within the <b>extensions-jars</b> folder of your James installation, as you will do for any other extension.</p>
 
