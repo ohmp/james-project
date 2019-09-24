@@ -74,9 +74,9 @@
 
     <subsection name="Extension and Guice wiring">
 
-        <p>This section do not concern the Spring / server/app wiring.</p>
+        <p>This section does not concern the Spring / server/app wiring.</p>
 
-        <p>Guice applications let you load several type of user defined components. These components includes:</p>
+        <p>Guice applications let you load several type of user defined components. These components include:</p>
 
         <ul>
             <li><a href="https://github.com/apache/james-project/blob/master/mailet/api/src/main/java/org/apache/mailet/Mailet.java">Mailets</a></li>
@@ -87,7 +87,8 @@
             <li><a href="https://github.com/apache/james-project/blob/master/server/protocols/webadmin/webadmin-core/src/main/java/org/apache/james/webadmin/Routes.java">Additional webAdmin routes</a></li>
         </ul>
 
-        <p>Given a custom maven module implementing one or more of the following APIs, first create a <b>jar-with-dependencies</b>
+        <p>Given a custom maven module implementing one or more of the following APIs, first create a
+        <a href="https://maven.apache.org/plugins/maven-assembly-plugin/descriptor-refs.html#jar-with-dependencies">jar-with-dependencies</a>
         of your module. Then copy the jar-with-dependencies into the <code>./extensions-jars</code> folder of your guice
         James server installation.</p>
 
