@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import reactor.core.Disposable;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
@@ -36,15 +35,14 @@ public class MemoryWorkQueue implements WorkQueue {
     private final TaskManagerWorker worker;
     private final Disposable subscription;
     private final UnicastProcessor<TaskWithId> tasks;
-    private final FluxSink<TaskWithId> sink;
 
     public MemoryWorkQueue(TaskManagerWorker worker) {
         this.worker = worker;
         this.tasks = UnicastProcessor.create();
-        this.sink = tasks.sink(FluxSink.OverflowStrategy.ERROR);
-        this.subscription = tasks.limitRate(1)
+        this.subscription = tasks
             .subscribeOn(Schedulers.elastic())
-            .flatMapSequential(this::dispatchTaskToWorker)
+            .limitRate(1)
+            .concatMap(this::dispatchTaskToWorker)
             .subscribe();
     }
 
@@ -53,7 +51,7 @@ public class MemoryWorkQueue implements WorkQueue {
     }
 
     public void submit(TaskWithId taskWithId) {
-        sink.next(taskWithId);
+        tasks.onNext(taskWithId);
     }
 
     public void cancel(TaskId taskId) {
@@ -62,7 +60,6 @@ public class MemoryWorkQueue implements WorkQueue {
 
     @Override
     public void close() throws IOException {
-        sink.complete();
         try {
             subscription.dispose();
         } catch (Throwable ignore) {
