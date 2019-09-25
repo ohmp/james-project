@@ -19,39 +19,37 @@
 
 package org.apache.james.backends.es;
 
+import java.io.IOException;
 import java.util.Set;
+
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.core.healthcheck.ComponentName;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.core.healthcheck.Result;
-
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Requests;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 
-/**
- * Health check for Elasticsearch
- */
+
 public class ElasticSearchHealthCheck implements HealthCheck {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchHealthCheck.class);
-    private static final ComponentName COMPONENT_NAME = new ComponentName("Elasticsearch backend");
+    private static final ComponentName COMPONENT_NAME = new ComponentName("ElasticSearch Backend");
+
     private final Set<IndexName> indexNames;
-
-    private final Client client;
-
-    private final long requestTimeout;
+    private final RestHighLevelClient client;
 
     @Inject
-    public ElasticSearchHealthCheck(Client client, Set<IndexName> indexNames, long requestTimeout) {
+    ElasticSearchHealthCheck(RestHighLevelClient client, Set<IndexName> indexNames) {
         this.client = client;
         this.indexNames = indexNames;
-        this.requestTimeout = requestTimeout;
     }
 
     @Override
@@ -61,19 +59,30 @@ public class ElasticSearchHealthCheck implements HealthCheck {
 
     @Override
     public Result check() {
-        ClusterHealthRequest request =
-                Requests.clusterHealthRequest(indexNames.stream().map(IndexName::getValue).toArray(String[]::new));
-        ClusterHealthResponse response =
-                this.client.admin().cluster().health(request).actionGet(requestTimeout);
+        ClusterHealthRequest request = Requests.clusterHealthRequest(indexNames.stream().map(IndexName::getValue).toArray(String[]::new));
 
+        try {
+            ClusterHealthResponse response = client.cluster()
+                .health(request, RequestOptions.DEFAULT);
+
+            return toHealthCheckResult(response);
+        } catch (IOException e) {
+            LOGGER.error("Error while contacting cluster", e);
+            return Result.unhealthy(COMPONENT_NAME, "Error while contacting cluster. Check James server logs.");
+        }
+    }
+
+    @VisibleForTesting
+    Result toHealthCheckResult(ClusterHealthResponse response) {
         switch (response.getStatus()) {
             case GREEN:
-            case YELLOW:
                 return Result.healthy(COMPONENT_NAME);
+            case YELLOW:
+                return Result.degraded(COMPONENT_NAME, response.getClusterName() + " status is YELLOW");
             case RED:
+                return Result.unhealthy(COMPONENT_NAME, response.getClusterName() + " status is RED");
             default:
-                return Result.unhealthy(COMPONENT_NAME);
+                throw new NotImplementedException("Un-handled ElasticSearch cluster status");
         }
-
     }
 }

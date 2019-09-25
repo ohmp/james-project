@@ -18,52 +18,45 @@
  ****************************************************************/
 package org.apache.james.backends.es;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.james.util.docker.Images;
-import org.apache.james.util.docker.RateLimiters;
-import org.apache.james.util.docker.SwarmGenericContainer;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.Client;
-import org.junit.Rule;
-import org.junit.Test;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+
+import org.elasticsearch.client.RestHighLevelClient;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableSet;
+
 public class ElasticSearchHealthCheckConnectionTest {
-
-    private static final int ES_APPLICATIVE_PORT = 9300;
-    private static final Set<IndexName> indices = new HashSet<>();
-
-    private static final WaitStrategy WAIT_STRATEGY = Wait.forHttp("/").forPort(ES_APPLICATIVE_PORT).withRateLimiter(RateLimiters.TWENTIES_PER_SECOND);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(5);
 
     @Rule
-    public SwarmGenericContainer elasticSearchContainer = new SwarmGenericContainer(Images.ELASTICSEARCH)
-        .withAffinityToContainer().withExposedPorts(ES_APPLICATIVE_PORT).waitingFor(WAIT_STRATEGY);
+    public DockerElasticSearchRule elasticSearch = new DockerElasticSearchRule();
+    private ElasticSearchHealthCheck elasticSearchHealthCheck;
 
-    @Test
-    public void testHealthCheckValidation() {
-        ClientProviderImpl clientProvider = ClientProviderImpl.forHost(elasticSearchContainer.getContainerIp(), ES_APPLICATIVE_PORT);
-        Client client = clientProvider.get();
-        indices.add(new IndexName("healthcheck"));
-        ElasticSearchHealthCheck elasticSearchHealthCheck = new ElasticSearchHealthCheck(client, indices, 1000);
+    @Before
+    public void setUp() {
+        RestHighLevelClient client = elasticSearch.getDockerElasticSearch().clientProvider(REQUEST_TIMEOUT).get();
 
-        String content = "{\"message\": \"trying out Elasticsearch Healthcheck\"}";
-
-        IndexRequest testHealthCheckIndexRequest = new IndexRequest("healthcheck");
-        testHealthCheckIndexRequest.source(content);
-        client.index(testHealthCheckIndexRequest);
-
-        assertThat(elasticSearchHealthCheck.check().isHealthy()).isTrue();
-
-        elasticSearchContainer.pause();
-
-        assertThat(elasticSearchHealthCheck.check().isUnHealthy()).isTrue();
-
+        elasticSearchHealthCheck = new ElasticSearchHealthCheck(client, ImmutableSet.of());
     }
 
+    @Test
+    public void checkShouldSucceedWhenElasticSearchIsRunning() {
+        assertThat(elasticSearchHealthCheck.check().isHealthy()).isTrue();
+    }
 
+    @Test
+    public void checkShouldFailWhenElasticSearchIsPaused() {
+
+        elasticSearch.getDockerElasticSearch().pause();
+
+        try {
+            assertThat(elasticSearchHealthCheck.check().isUnHealthy()).isTrue();
+        } finally {
+            elasticSearch.getDockerElasticSearch().unpause();
+        }
+    }
 }

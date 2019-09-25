@@ -19,6 +19,8 @@
 
 package org.apache.james.backends.es;
 
+import java.time.Duration;
+
 public class DockerElasticSearchSingleton {
     public static DockerElasticSearch INSTANCE = new DockerElasticSearch();
 
