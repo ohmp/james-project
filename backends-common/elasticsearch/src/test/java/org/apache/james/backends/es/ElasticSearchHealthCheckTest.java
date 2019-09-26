@@ -57,7 +57,7 @@ public class ElasticSearchHealthCheckTest {
     public void checkShouldReturnHealthyWhenElasticSearchClusterHealthStatusIsYellow() {
         FakeClusterHealthResponse response = new FakeClusterHealthResponse(ClusterHealthStatus.YELLOW);
 
-        assertThat(healthCheck.toHealthCheckResult(response).isDegraded()).isTrue();
+        assertThat(healthCheck.toHealthCheckResult(response).isHealthy()).isTrue();
     }
 
     private static class FakeClusterHealthResponse extends ClusterHealthResponse {
