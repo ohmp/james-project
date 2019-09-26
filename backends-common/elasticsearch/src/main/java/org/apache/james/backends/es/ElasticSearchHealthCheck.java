@@ -76,9 +76,8 @@ public class ElasticSearchHealthCheck implements HealthCheck {
     Result toHealthCheckResult(ClusterHealthResponse response) {
         switch (response.getStatus()) {
             case GREEN:
-                return Result.healthy(COMPONENT_NAME);
             case YELLOW:
-                return Result.degraded(COMPONENT_NAME, response.getClusterName() + " status is YELLOW");
+                return Result.healthy(COMPONENT_NAME);
             case RED:
                 return Result.unhealthy(COMPONENT_NAME, response.getClusterName() + " status is RED");
             default:
