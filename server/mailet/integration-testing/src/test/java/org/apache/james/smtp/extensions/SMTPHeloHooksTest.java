@@ -157,7 +157,7 @@ public class SMTPHeloHooksTest {
     }
 
     @Test
-    public void smtpSessionShouldBeAbortedUponSMTPDeclineHeloHook() throws Exception {
+    public void smtpSessionShouldBeAbortedUponDenyHeloHook() throws Exception {
         createJamesServer(SmtpConfiguration.builder()
             .addHook(DenyHeloHook.class.getCanonicalName()));
 
@@ -169,7 +169,7 @@ public class SMTPHeloHooksTest {
     }
 
     @Test
-    public void smtpSessionShouldBeAbortedUponSMTPDeclineSoftHeloHook() throws Exception {
+    public void smtpSessionShouldBeAbortedUponDenySoftHeloHook() throws Exception {
         createJamesServer(SmtpConfiguration.builder()
             .addHook(DenySoftHeloHook.class.getCanonicalName()));
 
