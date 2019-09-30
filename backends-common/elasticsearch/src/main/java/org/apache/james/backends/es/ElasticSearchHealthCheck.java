@@ -59,7 +59,10 @@ public class ElasticSearchHealthCheck implements HealthCheck {
 
     @Override
     public Result check() {
-        ClusterHealthRequest request = Requests.clusterHealthRequest(indexNames.stream().map(IndexName::getValue).toArray(String[]::new));
+        String[] indices = indexNames.stream()
+            .map(IndexName::getValue)
+            .toArray(String[]::new);
+        ClusterHealthRequest request = Requests.clusterHealthRequest(indices);
 
         try {
             ClusterHealthResponse response = client.cluster()
