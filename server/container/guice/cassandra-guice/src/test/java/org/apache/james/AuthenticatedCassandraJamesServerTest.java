@@ -1,0 +1,55 @@
+/****************************************************************
+ * Licensed to the Apache Software Foundation (ASF) under one   *
+ * or more contributor license agreements.  See the NOTICE file *
+ * distributed with this work for additional information        *
+ * regarding copyright ownership.  The ASF licenses this file   *
+ * to you under the Apache License, Version 2.0 (the            *
+ * "License"); you may not use this file except in compliance   *
+ * with the License.  You may obtain a copy of the License at   *
+ *                                                              *
+ *   http://www.apache.org/licenses/LICENSE-2.0                 *
+ *                                                              *
+ * Unless required by applicable law or agreed to in writing,   *
+ * software distributed under the License is distributed on an  *
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
+ * KIND, either express or implied.  See the License for the    *
+ * specific language governing permissions and limitations      *
+ * under the License.                                           *
+ ****************************************************************/
+
+package org.apache.james;
+
+import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+
+import org.apache.james.backends.cassandra.init.configuration.ClusterConfiguration;
+import org.apache.james.mailbox.extractor.TextExtractor;
+import org.apache.james.mailbox.store.search.PDFTextExtractor;
+import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+class AuthenticatedCassandraJamesServerTest implements JamesServerContract {
+    private static final int LIMIT_TO_10_MESSAGES = 10;
+
+    private static final CassandraExtension CASSANDRA_EXTENSION = new CassandraExtension();
+
+    @RegisterExtension
+    static JamesServerExtension testExtension = new JamesServerBuilder()
+        .extension(new DockerElasticSearchExtension())
+        .extension(CASSANDRA_EXTENSION)
+        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
+            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+            .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
+        .overrideServerModule(binder -> binder.bind(ClusterConfiguration.class)
+            .toInstance(ClusterConfiguration.builder()
+                .host(CASSANDRA_EXTENSION.getCassandra().getHost())
+                .username("cassandra")
+                .password("cassandra")
+                .keyspace("testing")
+                .replicationFactor(1)
+                .maxRetry(20)
+                .minDelay(5000)
+                .build()))
+        .build();
+}

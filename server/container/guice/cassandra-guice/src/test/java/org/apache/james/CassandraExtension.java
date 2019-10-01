@@ -49,4 +49,8 @@ public class CassandraExtension implements GuiceModuleTestExtension {
     public Module getModule() {
         return cassandra.getModule();
     }
+
+    public DockerCassandraRule getCassandra() {
+        return cassandra;
+    }
 }
