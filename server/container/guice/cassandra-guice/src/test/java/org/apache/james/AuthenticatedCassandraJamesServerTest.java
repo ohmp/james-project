@@ -20,36 +20,90 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.james.backends.cassandra.DockerCassandraAuthenticatedSingleton;
 import org.apache.james.backends.cassandra.init.configuration.ClusterConfiguration;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.modules.TestJMAPServerModule;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class AuthenticatedCassandraJamesServerTest implements JamesServerContract {
+import com.datastax.driver.core.exceptions.AuthenticationException;
+import com.google.inject.CreationException;
+
+class AuthenticatedCassandraJamesServerTest {
     private static final int LIMIT_TO_10_MESSAGES = 10;
 
-    private static final CassandraExtension CASSANDRA_EXTENSION = new CassandraExtension();
+    @Nested
+    class AuthenticationTest implements JamesServerContract {
+        @RegisterExtension
+        JamesServerExtension testExtension = new JamesServerBuilder()
+            .extension(new DockerElasticSearchExtension())
+            .extension(new CassandraAuthenticationExtension())
+            .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+                .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
+                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+                .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
+            .build();
+    }
 
-    @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
-        .extension(new DockerElasticSearchExtension())
-        .extension(CASSANDRA_EXTENSION)
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-            .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
-        .overrideServerModule(binder -> binder.bind(ClusterConfiguration.class)
-            .toInstance(ClusterConfiguration.builder()
-                .host(CASSANDRA_EXTENSION.getCassandra().getHost())
-                .username("cassandra")
-                .password("cassandra")
-                .keyspace("testing")
-                .replicationFactor(1)
-                .maxRetry(20)
-                .minDelay(5000)
-                .build()))
-        .build();
+    @Nested
+    class SslTest {
+        @RegisterExtension
+        JamesServerExtension testExtension = new JamesServerBuilder()
+            .extension(new DockerElasticSearchExtension())
+            .extension(new CassandraExtension())
+            .disableAutoStart()
+            .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+                .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
+                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+                .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
+            .overrideServerModule(binder -> binder.bind(ClusterConfiguration.class)
+                .toInstance(ClusterConfiguration.builder()
+                    .host(DockerCassandraAuthenticatedSingleton.singleton.getHost())
+                    .keyspace("testing")
+                    .replicationFactor(1)
+                    .maxRetry(1)
+                    .minDelay(100)
+                    .useSsl()
+                    .build()))
+            .build();
+
+        @Test
+        void startShouldFailWhenSslUsedAndNotSupportedByServer(GuiceJamesServer jamesServer) {
+            assertThatThrownBy(jamesServer::start)
+                .isInstanceOf(CreationException.class)
+                .hasStackTraceContaining("Caused by: com.datastax.driver.core.exceptions.NoHostAvailableException: All host(s) tried for query failed");
+        }
+    }
+
+    @Nested
+    class AuthenticationFailureTest {
+        @RegisterExtension
+        JamesServerExtension testExtension = new JamesServerBuilder()
+            .extension(new DockerElasticSearchExtension())
+            .extension(new CassandraBadAuthenticationExtension())
+            .disableAutoStart()
+            .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
+                .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+                .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
+                .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
+                .overrideWith(DOMAIN_LIST_CONFIGURATION_MODULE))
+            .build();
+
+        @Test
+        void startShouldFailOnBadPassword(GuiceJamesServer jamesServer) {
+            assertThatThrownBy(jamesServer::start)
+                .isInstanceOf(CreationException.class)
+                .hasStackTraceContaining("Caused by: com.datastax.driver.core.exceptions.AuthenticationException: Authentication error");
+        }
+    }
 }
