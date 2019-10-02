@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.james.backends.cassandra.init.ClusterFactory;
 import org.apache.james.util.Host;
 
 import com.datastax.driver.core.HostDistance;
