@@ -60,19 +60,8 @@ public class ResilientClusterProvider implements Provider<Cluster> {
             ImmutableList.copyOf(configuration.getHosts()).toString());
 
         return () -> {
-            Cluster cluster = ClusterBuilder.builder()
-                    .servers(configuration.getHosts())
-                    .username(configuration.getUsername())
-                    .password(configuration.getPassword())
-                    .useSsl(configuration.isUseSsl())
-                    .poolingOptions(configuration.getPoolingOptions())
-                    .queryLoggerConfiguration(configuration.getQueryLoggerConfiguration())
-                    .readTimeoutMillis(configuration.getReadTimeoutMillis())
-                    .connectTimeoutMillis(configuration.getConnectTimeoutMillis())
-                    .build();
             try {
-                ClusterWithKeyspaceCreatedFactory.createKeyspace(cluster, configuration);
-                return cluster;
+                return ClusterFactory.createWithKeyspace(configuration);
             } catch (Exception e) {
                 cluster.close();
                 throw e;
