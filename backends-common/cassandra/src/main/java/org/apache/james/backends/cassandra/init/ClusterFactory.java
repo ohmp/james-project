@@ -67,13 +67,17 @@ public class ClusterFactory {
 
     public static Cluster createWithKeyspace(ClusterConfiguration clusterConfiguration) {
         Cluster cluster = create(clusterConfiguration);
+        createKeyspace(clusterConfiguration, cluster);
+        return cluster;
+    }
+
+    public static void createKeyspace(ClusterConfiguration clusterConfiguration, Cluster cluster) {
         try (Session session = cluster.connect()) {
             session.execute("CREATE KEYSPACE IF NOT EXISTS " + clusterConfiguration.getKeyspace()
                 + " WITH replication = {'class':'SimpleStrategy', 'replication_factor':" + clusterConfiguration.getReplicationFactor() + "}"
                 + " AND durable_writes = " + clusterConfiguration.isDurableWrites()
                 + ";");
         }
-        return cluster;
     }
 
     private static QueryOptions queryOptions() {
