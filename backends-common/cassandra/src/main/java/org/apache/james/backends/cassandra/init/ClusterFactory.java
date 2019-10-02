@@ -38,8 +38,8 @@ public class ClusterFactory {
             .addContactPoint(server.getHostName())
             .withPort(server.getPort()));
 
-        configuration.getUsername().map(username ->
-            configuration.getPassword().map(password ->
+        configuration.getUsername().ifPresent(username ->
+            configuration.getPassword().ifPresent(password ->
                 clusterBuilder.withCredentials(username, password)));
 
         clusterBuilder.withQueryOptions(queryOptions());
