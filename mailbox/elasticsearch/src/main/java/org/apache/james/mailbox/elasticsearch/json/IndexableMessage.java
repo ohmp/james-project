@@ -45,6 +45,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 public class IndexableMessage {
@@ -323,9 +324,7 @@ public class IndexableMessage {
 
     @JsonProperty(JsonMessageConstants.BCC + JsonMessageConstants.EMailer.NAME)
     public Set<String> getBcName() {
-        return bcc.getEmailers().stream()
-            .map(EMailer::getName)
-            .collect(Guavate.toImmutableSet());
+        return asStringSet(bcc.getEmailers());
     }
 
     @JsonProperty(JsonMessageConstants.BCC + JsonMessageConstants.EMailer.ADDRESS)
@@ -347,9 +346,7 @@ public class IndexableMessage {
 
     @JsonProperty(JsonMessageConstants.CC + JsonMessageConstants.EMailer.NAME)
     public Set<String> getCcName() {
-        return cc.getEmailers().stream()
-            .map(EMailer::getName)
-            .collect(Guavate.toImmutableSet());
+        return asStringSet(cc.getEmailers());
     }
 
     @JsonProperty(JsonMessageConstants.CC + JsonMessageConstants.EMailer.ADDRESS)
@@ -366,9 +363,7 @@ public class IndexableMessage {
 
     @JsonProperty(JsonMessageConstants.FROM + JsonMessageConstants.EMailer.NAME)
     public Set<String> getFromName() {
-        return from.getEmailers().stream()
-            .map(EMailer::getName)
-            .collect(Guavate.toImmutableSet());
+        return asStringSet(from.getEmailers());
     }
 
     @JsonProperty(JsonMessageConstants.FROM + JsonMessageConstants.EMailer.ADDRESS)
@@ -445,9 +440,7 @@ public class IndexableMessage {
 
     @JsonProperty(JsonMessageConstants.TO + JsonMessageConstants.EMailer.NAME)
     public Set<String> getToName() {
-        return to.getEmailers().stream()
-            .map(EMailer::getName)
-            .collect(Guavate.toImmutableSet());
+        return asStringSet(to.getEmailers());
     }
 
     @JsonProperty(JsonMessageConstants.TO + JsonMessageConstants.EMailer.ADDRESS)
@@ -505,5 +498,11 @@ public class IndexableMessage {
     @JsonProperty(JsonMessageConstants.MIME_MESSAGE_ID)
     public Optional<String> getMimeMessageID() {
         return mimeMessageID;
+    }
+
+    private ImmutableSet<String> asStringSet(Set<EMailer> emailers) {
+        return emailers.stream()
+            .map(EMailer::getName)
+            .collect(Guavate.toImmutableSet());
     }
 }
