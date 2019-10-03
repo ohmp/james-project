@@ -27,7 +27,6 @@ import javax.inject.Singleton;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.store.extractor.DefaultTextExtractor;
 import org.apache.james.mailbox.store.extractor.JsoupTextExtractor;
 import org.apache.james.mailbox.tika.CachingTextExtractor;
 import org.apache.james.mailbox.tika.ContentTypeFilteringTextExtractor;
