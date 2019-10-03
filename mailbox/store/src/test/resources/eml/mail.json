@@ -120,24 +120,14 @@
    "General Discussion about Arch Linux <arch-general.archlinux.org>"
   ]
  },
- "from": [
-  {
-   "name": "Murari",
-   "address": "murari.ksr@gmail.com"
-  }
- ],
- "to": [
-  {
-   "name": "General Discussion about Arch Linux",
-   "address": "arch-general@archlinux.org"
-  },
-  {
-   "name": "Üsteliğhan Maşrapa",
-   "address": "ustelighanmasrapa@domain.tld"
-  }
- ],
- "cc": [],
- "bcc": [],
+ "fromname": ["Murari"],
+ "fromaddress": ["murari.ksr@gmail.com"],
+ "toname": ["General Discussion about Arch Linux","Üsteliğhan Maşrapa"],
+ "toaddress": ["arch-general@archlinux.org", "ustelighanmasrapa@domain.tld"],
+ "ccname": [],
+ "ccaddress": [],
+ "bccname": [],
+ "bccaddress": [],
  "replyTo": [{"name":"General Discussion about Arch Linux","address":"arch-general@archlinux.org"}],
  "subject": [
   "[arch-general] Inkscape fails to open svg files"

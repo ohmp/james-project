@@ -81,20 +81,14 @@
       "v=1; a=rsa-sha1; c=relaxed; d=email.airbnb.com;\th=from:to:subject:mime-version:content-type:content-transfer-encoding;\ts=s20150428; bh=2mhWUwzjtQTC0KljgpaEsuvrqok=; b=EhC2QHKb5+63egDD\tqDCAepUELCeUZXCkw8+31kGT+O1va3iAKvQSAvzXJ3qJlIL9FgdeFk8sR78Vszn/\tA73vp6NGjAW60M4gUZjxEOIPzGKIS95KfmHxg10fXUOFW0uePojNEg4ZPCcuitrZ\tHuWvzHK5I2siGnqupiivwxDgs5c=","v=1; a=rsa-sha1; c=relaxed; d=sendgrid.info;\th=from:to:subject:mime-version:content-type:content-transfer-encoding:x-feedback-id;\ts=smtpapi; bh=2mhWUwzjtQTC0KljgpaEsuvrqok=; b=FPiYMmNJLCrL2e8v/0\tDQC4voofe8nuuE7rhXZ25oqNAhAQja4oKIysJ1qAME2aEaqh+N5aJlCEuHrSG/7+\tNAQ0OY8KaJ2zlnxAbmgJETOjnf4oGdAa+nU/nVVEPfN2NRcBCNLGQZ80U4T5k8Xi\tPakIuZvKDTRq7PiosSCSHT/FQ="
     ]
   },
-  "from":[
-    {
-      "name":"Airbnb",
-      "address":"discover@airbnb.com"
-    }
-  ],
-  "to":[
-    {
-      "name":"mister@james.org",
-      "address":"mister@james.org"
-    }
-  ],
-  "cc":[],
-  "bcc":[],
+  "fromname":["Airbnb"],
+  "fromaddress":["discover@airbnb.com"],
+  "toname":["mister@james.org"],
+  "toaddress":["mister@james.org"],
+  "ccname": [],
+  "ccaddress": [],
+  "bccname": [],
+  "bccaddress": [],
   "replyTo":[],
   "subject":[
     "Text and Html not similar"

@@ -57,20 +57,14 @@
       "Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Icedove/31.7.0"
     ]
   },
-  "from": [
-    {
-      "name": "Matthieu Baechler",
-      "address": "mbaechler@linagora.com"
-    }
-  ],
-  "to": [
-    {
-      "name": "btellier@linagora.com",
-      "address": "btellier@linagora.com"
-    }
-  ],
-  "cc": [],
-  "bcc": [],
+  "fromname": ["Matthieu Baechler"],
+  "fromaddress": ["mbaechler@linagora.com"],
+  "toname": ["btellier@linagora.com"],
+  "toaddress": ["btellier@linagora.com"],
+  "ccname": [],
+  "ccaddress": [],
+  "bccname": [],
+  "bccaddress": [],
   "replyTo": [],
   "subject": [
     "Fwd: Courbe Sprint"

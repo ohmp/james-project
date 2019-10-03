@@ -88,20 +88,14 @@
 	  "v=1; a=rsa-sha256; c=simple/simple; d=minet.net; s=mail;\tt=1433322348; bh=8OtmVRMX7IWWyQo8WQIi5rKeDEQFghSX2r1WN9/pqUk=;\th=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Post:List-Help:\t List-Subscribe:From;\tb=UkthSFXn5mtPnn7sYvDJIxgCk1O36L0p+hTOnI/xTF2WRMGJyXtLyCdFdE5jQ5gE4\t EGNdhwmfjaKsoE7IDtc/4GrPvbnM8i9ojpSOBW1hXJPOeYnRgah/4gsXsMJWvmmq/A\t 4oTnw8ZswFXiShDmBMyaSEZuVrWTdaPBgUhVhGw8="
 	]
   },
-  "from": [
-	{
-	  "name": "Content-filter at spam.minet.net",
-	  "address": "postmaster@minet.net"
-	}
-  ],
-  "to": [
-	{
-	  "name": "root@listes.minet.net",
-	  "address": "root@listes.minet.net"
-	}
-  ],
-  "cc": [],
-  "bcc": [],
+  "fromname": ["Content-filter at spam.minet.net"],
+  "fromaddress": ["postmaster@minet.net"],
+  "toname": ["root@listes.minet.net"],
+  "toaddress": ["root@listes.minet.net"],
+  "ccname": [],
+  "ccaddress": [],
+  "bccname": [],
+  "bccaddress": [],
   "replyTo": [],
   "subject": [
 	"[root] UNCHECKED contents in mail FROM <quentin.h@riseup.net>"

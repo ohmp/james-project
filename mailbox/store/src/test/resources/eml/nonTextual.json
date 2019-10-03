@@ -25,12 +25,15 @@
       "textContent":"Awesome document provided for text extraction !\n"
     }
   ],
-  "bcc":[],
+  "bccname":[],
+  "bccaddress":[],
   "htmlBody":null,
   "textBody":"This mail have a non textual attachment !\r\n",
-  "cc":[],
+  "ccname":[],
+  "ccaddress":[],
   "date":"2015-06-07T00:00:00+0200",
-  "from":[{"name":"Benoit Tellier","address":"btellier@linagora.com"}],
+  "fromname":["Benoit Tellier"],
+  "fromaddress":["btellier@linagora.com"],
   "hasAttachment":false,
   "headers":{
     "date":["Thu, 18 Jun 2015 12:43:26 +0200"],
@@ -57,7 +60,8 @@
   "size":25,"subject":["Test message"],
   "subtype":"text",
   "text":"Benoit Tellier btellier@linagora.com btellier@linagora.com btellier@linagora.com Test message This mail have a non textual attachment !\r\n",
-  "to":[{"name":"btellier@linagora.com","address":"btellier@linagora.com"}],
+  "toname":["btellier@linagora.com"],
+  "toaddress":["btellier@linagora.com"],
   "uid":25,
   "userFlags":[],
   "users":["username"],

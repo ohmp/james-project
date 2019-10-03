@@ -127,20 +127,14 @@
 	  "<carnil@master.debian.org>"
 	]
   },
-  "from": [
-	{
-	  "name": "Markus Koschany",
-	  "address": "apo@gambaru.de"
-	}
-  ],
-  "to": [
-	{
-	  "name": "debian-security-announce@lists.debian.org",
-	  "address": "debian-security-announce@lists.debian.org"
-	}
-  ],
-  "cc": [],
-  "bcc": [],
+  "fromname": ["Markus Koschany"],
+  "fromaddress": ["apo@gambaru.de"],
+  "toname": ["debian-security-announce@lists.debian.org"],
+  "toaddress": ["debian-security-announce@lists.debian.org"],
+  "ccname": [],
+  "ccaddress": [],
+  "bccname": [],
+  "bccaddress": [],
   "replyTo": [{"name":"debian-security@lists.debian.org","address":"debian-security@lists.debian.org"}],
   "subject": [
 	"[SECURITY] [DSA 3278-1] libapache-mod-jk security update"
