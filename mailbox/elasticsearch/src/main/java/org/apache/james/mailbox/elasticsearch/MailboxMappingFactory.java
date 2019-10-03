@@ -42,6 +42,7 @@ import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.C
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.DATE;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.FROM;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.HAS_ATTACHMENT;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.HEADERS;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.HTML_BODY;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_ANSWERED;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_DELETED;
@@ -66,7 +67,9 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import java.io.IOException;
 
 import org.apache.james.backends.es.NodeMappingFactory;
+import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants;
 import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.EMailer;
+import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.HEADER;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 public class MailboxMappingFactory {
@@ -161,6 +164,20 @@ public class MailboxMappingFactory {
                                             .field(NORMALIZER, CASE_INSENSITIVE)
                                         .endObject()
                                     .endObject()
+                                .endObject()
+                            .endObject()
+                        .endObject()
+
+                        .startObject(HEADERS)
+                            .field(TYPE, NESTED)
+                            .startObject(PROPERTIES)
+                                .startObject(HEADER.NAME)
+                                    .field(TYPE, TEXT)
+                                    .field(ANALYZER, KEYWORD)
+                                .endObject()
+                                .startObject(HEADER.VALUE)
+                                    .field(TYPE, TEXT)
+                                    .field(ANALYZER, KEEP_MAIL_AND_URL)
                                 .endObject()
                             .endObject()
                         .endObject()

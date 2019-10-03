@@ -117,7 +117,7 @@ public class IndexableMessage {
             HeaderCollection headerCollection = parsingResult.getHeaderCollection();
             ZonedDateTime internalDate = getSanitizedInternalDate(message, zoneId);
 
-            Multimap<String, String> headers = headerCollection.getHeaders();
+            List<HeaderCollection.Header> headers = headerCollection.getHeaders();
             Subjects subjects = Subjects.from(headerCollection.getSubjectSet());
             EMailers from = EMailers.from(headerCollection.getFromAddressSet());
             EMailers to = EMailers.from(headerCollection.getToAddressSet());
@@ -206,7 +206,7 @@ public class IndexableMessage {
     private final String date;
     private final EMailers from;
     private final boolean hasAttachment;
-    private final Multimap<String, String> headers;
+    private final List<HeaderCollection.Header> headers;
     private final boolean isAnswered;
     private final boolean isDeleted;
     private final boolean isDraft;
@@ -235,7 +235,7 @@ public class IndexableMessage {
                              String date,
                              EMailers from,
                              boolean hasAttachment,
-                             Multimap<String, String> headers,
+                             List<HeaderCollection.Header> headers,
                              boolean isAnswered,
                              boolean isDeleted,
                              boolean isDraft,
@@ -324,7 +324,7 @@ public class IndexableMessage {
     }
 
     @JsonProperty(JsonMessageConstants.HEADERS)
-    public Multimap<String, String> getHeaders() {
+    public List<HeaderCollection.Header> getHeaders() {
         return headers;
     }
 

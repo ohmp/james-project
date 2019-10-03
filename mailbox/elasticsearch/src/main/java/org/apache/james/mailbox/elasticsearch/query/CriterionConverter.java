@@ -97,7 +97,9 @@ public class CriterionConverter {
         registerHeaderOperatorConverter(
             SearchQuery.ExistsOperator.class,
             (headerName, operator) ->
-                existsQuery(JsonMessageConstants.HEADERS + "." + headerName));
+                nestedQuery(JsonMessageConstants.HEADERS,
+                    termQuery(JsonMessageConstants.HEADERS + "." + JsonMessageConstants.HEADER.NAME, headerName),
+                    ScoreMode.Avg));
         
         registerHeaderOperatorConverter(
             SearchQuery.AddressOperator.class,
@@ -109,8 +111,12 @@ public class CriterionConverter {
         
         registerHeaderOperatorConverter(
             SearchQuery.ContainsOperator.class,
-            (headerName, operator) -> matchQuery(JsonMessageConstants.HEADERS + "." + headerName,
-                    operator.getValue()));
+            (headerName, operator) ->
+                nestedQuery(JsonMessageConstants.HEADERS,
+                    boolQuery()
+                        .must(termQuery(JsonMessageConstants.HEADERS + "." + JsonMessageConstants.HEADER.NAME, headerName))
+                        .must(matchQuery(JsonMessageConstants.HEADERS + "." + JsonMessageConstants.HEADER.VALUE, operator.getValue())),
+                    ScoreMode.Avg));
     }
 
     @SuppressWarnings("unchecked")
