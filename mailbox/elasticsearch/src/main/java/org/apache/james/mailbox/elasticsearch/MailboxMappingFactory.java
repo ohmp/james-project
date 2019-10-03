@@ -37,6 +37,7 @@ import static org.apache.james.backends.es.NodeMappingFactory.SEARCH_ANALYZER;
 import static org.apache.james.backends.es.NodeMappingFactory.SNOWBALL;
 import static org.apache.james.backends.es.NodeMappingFactory.SPLIT_EMAIL;
 import static org.apache.james.backends.es.NodeMappingFactory.TYPE;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.ATTACHMENTS;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.BCC;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.CC;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.DATE;
@@ -68,6 +69,7 @@ import java.io.IOException;
 
 import org.apache.james.backends.es.NodeMappingFactory;
 import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants;
+import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.Attachment;
 import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.EMailer;
 import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.HEADER;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -332,6 +334,20 @@ public class MailboxMappingFactory {
                                 .endObject()
                             .endObject()
                         .endObject()
+
+                        .startObject(ATTACHMENTS)
+                            .startObject(PROPERTIES)
+                                .startObject(Attachment.FILENAME)
+                                    .field(TYPE, TEXT)
+                                    .field(ANALYZER, STANDARD)
+                                .endObject()
+                                .startObject(Attachment.TEXT_CONTENT)
+                                    .field(TYPE, TEXT)
+                                    .field(ANALYZER, STANDARD)
+                                .endObject()
+                            .endObject()
+                        .endObject()
+
                     .endObject()
                 .endObject();
         } catch (IOException e) {
