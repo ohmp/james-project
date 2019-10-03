@@ -25,6 +25,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -318,10 +319,20 @@ public class IndexableMessage {
     public List<MimePart> getAttachments() {
         return attachments;
     }
-    
-    @JsonProperty(JsonMessageConstants.BCC)
-    public EMailers getBcc() {
-        return bcc;
+
+
+    @JsonProperty(JsonMessageConstants.BCC + JsonMessageConstants.EMailer.NAME)
+    public Set<String> getBcName() {
+        return bcc.getEmailers().stream()
+            .map(EMailer::getName)
+            .collect(Guavate.toImmutableSet());
+    }
+
+    @JsonProperty(JsonMessageConstants.BCC + JsonMessageConstants.EMailer.ADDRESS)
+    public Set<String> getBccAddress() {
+        return bcc.getEmailers().stream()
+            .map(EMailer::getAddress)
+            .collect(Guavate.toImmutableSet());
     }
     
     @JsonProperty(JsonMessageConstants.HTML_BODY)
@@ -334,9 +345,18 @@ public class IndexableMessage {
         return bodyText;
     }
 
-    @JsonProperty(JsonMessageConstants.CC)
-    public EMailers getCc() {
-        return cc;
+    @JsonProperty(JsonMessageConstants.CC + JsonMessageConstants.EMailer.NAME)
+    public Set<String> getCcName() {
+        return cc.getEmailers().stream()
+            .map(EMailer::getName)
+            .collect(Guavate.toImmutableSet());
+    }
+
+    @JsonProperty(JsonMessageConstants.CC + JsonMessageConstants.EMailer.ADDRESS)
+    public Set<String> getCcAddress() {
+        return cc.getEmailers().stream()
+            .map(EMailer::getAddress)
+            .collect(Guavate.toImmutableSet());
     }
 
     @JsonProperty(JsonMessageConstants.DATE)
@@ -344,9 +364,18 @@ public class IndexableMessage {
         return date;
     }
 
-    @JsonProperty(JsonMessageConstants.FROM)
-    public EMailers getFrom() {
-        return from;
+    @JsonProperty(JsonMessageConstants.FROM + JsonMessageConstants.EMailer.NAME)
+    public Set<String> getFromName() {
+        return from.getEmailers().stream()
+            .map(EMailer::getName)
+            .collect(Guavate.toImmutableSet());
+    }
+
+    @JsonProperty(JsonMessageConstants.FROM + JsonMessageConstants.EMailer.ADDRESS)
+    public Set<String> getFromAddress() {
+        return from.getEmailers().stream()
+            .map(EMailer::getAddress)
+            .collect(Guavate.toImmutableSet());
     }
 
     @JsonProperty(JsonMessageConstants.HAS_ATTACHMENT)
@@ -414,9 +443,18 @@ public class IndexableMessage {
         return text;
     }
 
-    @JsonProperty(JsonMessageConstants.TO)
-    public EMailers getTo() {
-        return to;
+    @JsonProperty(JsonMessageConstants.TO + JsonMessageConstants.EMailer.NAME)
+    public Set<String> getToName() {
+        return to.getEmailers().stream()
+            .map(EMailer::getName)
+            .collect(Guavate.toImmutableSet());
+    }
+
+    @JsonProperty(JsonMessageConstants.TO + JsonMessageConstants.EMailer.ADDRESS)
+    public Set<String> getToAddress() {
+        return to.getEmailers().stream()
+            .map(EMailer::getAddress)
+            .collect(Guavate.toImmutableSet());
     }
 
     @JsonProperty(JsonMessageConstants.UID)
