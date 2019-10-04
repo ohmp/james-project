@@ -19,7 +19,6 @@
 
 package org.apache.james.blob.objectstorage;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -52,15 +51,13 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class ObjectStorageBlobsDAO implements BlobStore {
-    private static final int BUFFERED_SIZE = 256 * 1024;
-
     private final BlobId.Factory blobIdFactory;
-
     private final BucketName defaultBucketName;
     private final org.jclouds.blobstore.BlobStore blobStore;
     private final BlobPutter blobPutter;
     private final PayloadCodec payloadCodec;
     private final ObjectStorageBucketNameResolver bucketNameResolver;
+    private final BufferPool bufferPool;
 
     ObjectStorageBlobsDAO(BucketName defaultBucketName, BlobId.Factory blobIdFactory,
                           org.jclouds.blobstore.BlobStore blobStore,
@@ -72,6 +69,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         this.blobPutter = blobPutter;
         this.payloadCodec = payloadCodec;
         this.bucketNameResolver = bucketNameResolver;
+        this.bufferPool = new BufferPool();
     }
 
     public static ObjectStorageBlobsDAOBuilder.RequireBlobIdFactory builder(SwiftTempAuthObjectStorage.Configuration testConfig) {
@@ -120,7 +118,8 @@ public class ObjectStorageBlobsDAO implements BlobStore {
     }
 
     private Mono<BlobId> savingStrategySelection(BucketName bucketName, InputStream data) {
-        InputStream bufferedData = new BufferedInputStream(data, BUFFERED_SIZE + 1);
+        byte[] buffer = bufferPool.borrowBuffer();
+        InputStream bufferedData = new ReusableBufferedInputStream(data, buffer);
         try {
             if (isItABigStream(bufferedData)) {
                 return saveBigStream(bucketName, bufferedData);
@@ -129,12 +128,14 @@ public class ObjectStorageBlobsDAO implements BlobStore {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            bufferPool.returnBuffer(buffer);
         }
     }
 
     private boolean isItABigStream(InputStream bufferedData) throws IOException {
         bufferedData.mark(0);
-        bufferedData.skip(BUFFERED_SIZE);
+        bufferedData.skip(BufferPool.BUFFERED_SIZE);
         boolean isItABigStream = bufferedData.read() != -1;
         bufferedData.reset();
         return isItABigStream;
