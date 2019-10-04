@@ -94,7 +94,7 @@ public class TikaMailboxModule extends AbstractModule {
             return new ContentTypeFilteringTextExtractor(textExtractor, configuration.getContentTypeBlacklist());
         }
         LOGGER.info("Tika text extraction has been disabled." +
-            " Using DefaultTextExtractor instead. " +
+            " Using JsoupTextExtractor instead. " +
             "No complex extraction will be done.");
         return new JsoupTextExtractor();
     }
