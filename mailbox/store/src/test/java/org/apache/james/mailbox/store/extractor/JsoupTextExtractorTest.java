@@ -50,16 +50,16 @@ public class JsoupTextExtractorTest {
     public void extractContentShouldHandlePlainText() throws Exception {
         InputStream inputStream = new ByteArrayInputStream("myText".getBytes(StandardCharsets.UTF_8));
 
-        assertThat(textExtractor.extractContent(inputStream, "text/plain").getTextualContent().get())
-                .isEqualTo("myText");
+        assertThat(textExtractor.extractContent(inputStream, "text/plain").getTextualContent())
+                .contains("myText");
     }
 
     @Test
     public void extractContentShouldHandleArbitraryTextMediaType() throws Exception {
         InputStream inputStream = new ByteArrayInputStream("myText".getBytes(StandardCharsets.UTF_8));
 
-        assertThat(textExtractor.extractContent(inputStream, "text/arbitrary").getTextualContent().get())
-                .isEqualTo("myText");
+        assertThat(textExtractor.extractContent(inputStream, "text/arbitrary").getTextualContent())
+                .isEmpty();
     }
 
     @Test

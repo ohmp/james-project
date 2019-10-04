@@ -49,7 +49,7 @@ public class JsoupTextExtractor implements TextExtractor {
                 doc.select(TITLE_HTML_TAG).remove();
                 return new ParsedContent(Optional.ofNullable(doc.text()), emptyMetadata);
             }
-            if (contentType.startsWith("text/")) {
+            if (contentType.equals("text/plain")) {
                 return new ParsedContent(Optional.ofNullable(IOUtils.toString(inputStream, StandardCharsets.UTF_8)), emptyMetadata);
             }
         }
