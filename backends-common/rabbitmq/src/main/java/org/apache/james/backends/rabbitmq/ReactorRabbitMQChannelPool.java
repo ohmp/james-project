@@ -24,16 +24,20 @@ import java.util.Comparator;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.BiConsumer;
 
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
+import org.apache.james.lifecycle.api.Startable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.base.Preconditions;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
@@ -42,10 +46,13 @@ import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.ChannelPool;
 import reactor.rabbitmq.RabbitFlux;
+import reactor.rabbitmq.Receiver;
+import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
-public class ReactorRabbitMQChannelPool implements ChannelPool {
+public class ReactorRabbitMQChannelPool implements ChannelPool, Startable {
+    private static final int MAX_CHANNELS_NUMBER = 5;
 
     static class ChannelFactory extends BasePooledObjectFactory<Channel> {
 
@@ -95,6 +102,12 @@ public class ReactorRabbitMQChannelPool implements ChannelPool {
     private final Mono<Connection> connectionMono;
     private final GenericObjectPool<Channel> pool;
     private final ConcurrentSkipListSet<Channel> borrowedChannels;
+    private Sender sender;
+
+    @Inject
+    public ReactorRabbitMQChannelPool(SimpleConnectionPool simpleConnectionPool) {
+        this(simpleConnectionPool.getResilientConnection(), MAX_CHANNELS_NUMBER);
+    }
 
     public ReactorRabbitMQChannelPool(Mono<Connection> connectionMono, int poolSize) {
         this.connectionMono = connectionMono;
@@ -106,11 +119,28 @@ public class ReactorRabbitMQChannelPool implements ChannelPool {
         this.borrowedChannels = new ConcurrentSkipListSet<>(Comparator.comparingInt(System::identityHashCode));
     }
 
+    public void start() {
+        sender = createSender();
+    }
+
+    public Sender getSender() {
+        return sender;
+    }
+
+    public Receiver createReceiver() {
+        return RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
+    }
+
+    public Mono<Connection> getConnectionMono() {
+        return connectionMono;
+    }
+
     @Override
     public Mono<? extends Channel> getChannelMono() {
         return Mono.fromCallable(() -> {
             Channel channel = pool.borrowObject(MAXIMUM_BORROW_TIMEOUT_IN_MS);
             borrowedChannels.add(channel);
+            Preconditions.checkArgument(channel.isOpen());
             return channel;
         });
     }
@@ -127,7 +157,7 @@ public class ReactorRabbitMQChannelPool implements ChannelPool {
         };
     }
 
-    public Sender createSender() {
+    private Sender createSender() {
        return RabbitFlux.createSender(new SenderOptions()
            .connectionMono(connectionMono)
            .channelPool(this)
@@ -146,10 +176,20 @@ public class ReactorRabbitMQChannelPool implements ChannelPool {
         }
     }
 
+    @PreDestroy
     @Override
     public void close() {
+        sender.close();
         borrowedChannels.forEach(channel -> getChannelCloseHandler().accept(SignalType.ON_NEXT, channel));
         borrowedChannels.clear();
         pool.close();
+    }
+
+    public boolean tryChannel() {
+        try {
+            return getChannelMono().block().isOpen();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 }

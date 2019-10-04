@@ -29,7 +29,6 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.james.backends.rabbitmq.ReactorRabbitMQChannelPool;
-import org.apache.james.backends.rabbitmq.SimpleConnectionPool;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
 import org.apache.james.lifecycle.api.Startable;
@@ -40,8 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Delivery;
+
 import reactor.core.Disposable;
 import reactor.core.publisher.DirectProcessor;
 import reactor.core.publisher.Mono;
@@ -51,9 +50,7 @@ import reactor.rabbitmq.BindingSpecification;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
 import reactor.rabbitmq.QueueSpecification;
-import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Receiver;
-import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 
 public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Startable, Closeable {
@@ -64,7 +61,6 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
     private static final String ROUTING_KEY = "terminationSubscriberRoutingKey";
 
     private final JsonEventSerializer serializer;
-    private final Mono<Connection> connectionMono;
     private final ReactorRabbitMQChannelPool channelPool;
     private final String queueName;
     private UnicastProcessor<OutboundMessage> sendQueue;
@@ -75,15 +71,14 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
     private Sender sender;
 
     @Inject
-    public RabbitMQTerminationSubscriber(SimpleConnectionPool simpleConnectionPool, JsonEventSerializer serializer) {
+    RabbitMQTerminationSubscriber(ReactorRabbitMQChannelPool channelPool, JsonEventSerializer serializer) {
         this.serializer = serializer;
-        this.connectionMono = simpleConnectionPool.getResilientConnection();
-        this.channelPool = new ReactorRabbitMQChannelPool(connectionMono, MAX_CHANNELS_NUMBER);
+        this.channelPool = channelPool;
         this.queueName = QUEUE_NAME_PREFIX + UUID.randomUUID().toString();
     }
 
     public void start() {
-        sender = channelPool.createSender();
+        sender = channelPool.getSender();
 
         sender.declareExchange(ExchangeSpecification.exchange(EXCHANGE_NAME)).block();
         sender.declare(QueueSpecification.queue(queueName).durable(false).autoDelete(true)).block();
@@ -94,7 +89,7 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe();
 
-        listenerReceiver = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
+        listenerReceiver = channelPool.createReceiver();
         listener = DirectProcessor.create();
         listenQueueHandle = listenerReceiver
             .consumeAutoAck(queueName)
@@ -139,6 +134,5 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
         Optional.ofNullable(listenQueueHandle).ifPresent(Disposable::dispose);
         Optional.ofNullable(listenerReceiver).ifPresent(Receiver::close);
         Optional.ofNullable(sender).ifPresent(Sender::close);
-        channelPool.close();
     }
 }

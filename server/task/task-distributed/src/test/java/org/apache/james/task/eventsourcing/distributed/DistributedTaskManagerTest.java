@@ -34,7 +34,7 @@ import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.init.CassandraZonedDateTimeModule;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.backends.rabbitmq.RabbitMQExtension;
-import org.apache.james.backends.rabbitmq.SimpleConnectionPool;
+import org.apache.james.backends.rabbitmq.ReactorRabbitMQChannelPool;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.eventsourcing.eventstore.cassandra.CassandraEventStoreExtension;
@@ -73,12 +73,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.steveash.guavate.Guavate;
 
 class DistributedTaskManagerTest implements TaskManagerContract {
-
     private static class TrackedRabbitMQWorkQueueSupplier implements WorkQueueSupplier {
         private final List<RabbitMQWorkQueue> workQueues;
         private final RabbitMQWorkQueueSupplier supplier;
 
-        TrackedRabbitMQWorkQueueSupplier(SimpleConnectionPool rabbitConnectionPool, JsonTaskSerializer taskSerializer) {
+        TrackedRabbitMQWorkQueueSupplier(ReactorRabbitMQChannelPool rabbitConnectionPool, JsonTaskSerializer taskSerializer) {
             workQueues = new ArrayList<>();
             supplier = new RabbitMQWorkQueueSupplier(rabbitConnectionPool, taskSerializer);
         }
@@ -86,6 +85,7 @@ class DistributedTaskManagerTest implements TaskManagerContract {
         @Override
         public WorkQueue apply(EventSourcingSystem eventSourcingSystem) {
             RabbitMQWorkQueue workQueue = supplier.apply(eventSourcingSystem, UPDATE_INFORMATION_POLLING_INTERVAL);
+            workQueue.start();
             workQueues.add(workQueue);
             return workQueue;
         }
@@ -138,7 +138,7 @@ class DistributedTaskManagerTest implements TaskManagerContract {
 
     @BeforeEach
     void setUp(EventStore eventStore) {
-        workQueueSupplier = new TrackedRabbitMQWorkQueueSupplier(rabbitMQExtension.getRabbitConnectionPool(), TASK_SERIALIZER);
+        workQueueSupplier = new TrackedRabbitMQWorkQueueSupplier(rabbitMQExtension.getRabbitChannelPool(), TASK_SERIALIZER);
         this.eventStore = eventStore;
         terminationSubscribers = new ArrayList<>();
     }
@@ -154,7 +154,7 @@ class DistributedTaskManagerTest implements TaskManagerContract {
     }
 
     private EventSourcingTaskManager taskManager(Hostname hostname) {
-        RabbitMQTerminationSubscriber terminationSubscriber = new RabbitMQTerminationSubscriber(rabbitMQExtension.getRabbitConnectionPool(), EVENT_SERIALIZER);
+        RabbitMQTerminationSubscriber terminationSubscriber = new RabbitMQTerminationSubscriber(rabbitMQExtension.getRabbitChannelPool(), EVENT_SERIALIZER);
         terminationSubscribers.add(terminationSubscriber);
         terminationSubscriber.start();
         return new EventSourcingTaskManager(workQueueSupplier, eventStore, executionDetailsProjection, hostname, terminationSubscriber);
