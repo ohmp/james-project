@@ -354,7 +354,7 @@ public class ClusterConfiguration {
         return connectTimeoutMillis;
     }
 
-    public boolean isUseSsl() {
+    public boolean useSsl() {
         return useSsl;
     }
 

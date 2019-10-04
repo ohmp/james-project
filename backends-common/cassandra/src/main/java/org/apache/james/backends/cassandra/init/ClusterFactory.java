@@ -50,7 +50,7 @@ public class ClusterFactory {
         clusterBuilder.withSocketOptions(socketOptions);
         configuration.getPoolingOptions().ifPresent(clusterBuilder::withPoolingOptions);
 
-        if (configuration.isUseSsl()) {
+        if (configuration.useSsl()) {
             clusterBuilder.withSSL();
         }
 
