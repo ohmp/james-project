@@ -67,7 +67,7 @@ public class TikaTextExtractor implements TextExtractor {
         this.metricFactory = metricFactory;
         this.tikaHttpClient = tikaHttpClient;
         this.objectMapper = initializeObjectMapper();
-        jsoupTextExtractor = new JsoupTextExtractor();
+        this.jsoupTextExtractor = new JsoupTextExtractor();
     }
 
     private ObjectMapper initializeObjectMapper() {
