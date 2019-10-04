@@ -28,7 +28,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class BufferPool {
-    static final int BUFFERED_SIZE = 256 * 1024;
+    static final int BUFFERED_SIZE = 1024 * 1024;
     private static final int POOL_SIZE = 128;
 
     private static class BufferFactory extends BasePooledObjectFactory<byte[]> {
