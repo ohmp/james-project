@@ -114,7 +114,8 @@ public class TikaTextExtractorTest {
         assertThat(textExtractor.extractContent(inputStream, "application/vnd.openxmlformats-officedocument.presentationml.presentation").getTextualContent())
             .isPresent()
             .asString()
-            .contains("James is awesome\nIt manages attachments so well !");
+            .contains("James is awesome")
+            .contains("It manages attachments so well !");
     }
 
     @Test
@@ -124,7 +125,8 @@ public class TikaTextExtractorTest {
         assertThat(textExtractor.extractContent(inputStream, "application/vnd.oasis.opendocument.presentation").getTextualContent())
             .isPresent()
             .asString()
-            .contains("James is awesome\n\nIt manages attachments so well !");
+            .contains("James is awesome")
+            .contains("It manages attachments so well !");
     }
     
     @Test
@@ -154,8 +156,8 @@ public class TikaTextExtractorTest {
         assertThat(textExtractor.extractContent(inputStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").getTextualContent())
             .isPresent()
             .asString()
-            .contains("Feuille1\n" +
-                "\tThis is an aesome LibreOffice document !");
+            .contains("Feuille1")
+            .contains("This is an aesome LibreOffice document !");
     }
 
     @Test
