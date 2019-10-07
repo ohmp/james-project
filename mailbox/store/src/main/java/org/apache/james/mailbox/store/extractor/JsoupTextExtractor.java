@@ -41,10 +41,7 @@ public class JsoupTextExtractor implements TextExtractor {
 
     @Override
     public ParsedContent extractContent(InputStream inputStream, String contentType) throws Exception {
-        if (inputStream == null) {
-            return ParsedContent.empty();
-        }
-        if (contentType == null) {
+        if (inputStream == null || contentType == null) {
             return ParsedContent.empty();
         }
         if (contentType.equals("text/html")) {
