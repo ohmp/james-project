@@ -23,11 +23,8 @@ import static org.apache.james.modules.Names.MAILBOXMANAGER_NAME;
 import javax.inject.Singleton;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.mailbox.AttachmentManager;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxPathLocker;
-import org.apache.james.mailbox.MessageIdManager;
-import org.apache.james.mailbox.RightManager;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.cassandra.CassandraMailboxManager;
 import org.apache.james.mailbox.cassandra.CassandraMailboxSessionMapperFactory;
@@ -70,10 +67,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.NoMailboxPathLocker;
-import org.apache.james.mailbox.store.StoreAttachmentManager;
 import org.apache.james.mailbox.store.StoreMailboxManager;
-import org.apache.james.mailbox.store.StoreMessageIdManager;
-import org.apache.james.mailbox.store.StoreRightManager;
 import org.apache.james.mailbox.store.mail.AttachmentMapperFactory;
 import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
@@ -95,6 +89,7 @@ public class CassandraMailboxModule extends AbstractModule {
         install(new CassandraQuotaModule());
         install(new AnnotationListenerModule());
         install(new JamesMailboxAuthorizationModule());
+        install(new MailboxStoreModule());
 
         bind(CassandraApplicableFlagDAO.class).in(Scopes.SINGLETON);
         bind(CassandraAttachmentDAO.class).in(Scopes.SINGLETON);
@@ -139,9 +134,6 @@ public class CassandraMailboxModule extends AbstractModule {
         bind(StoreMailboxManager.class).to(CassandraMailboxManager.class);
         bind(MailboxId.Factory.class).to(CassandraId.Factory.class);
         bind(MessageId.Factory.class).to(CassandraMessageId.Factory.class);
-        bind(MessageIdManager.class).to(StoreMessageIdManager.class);
-        bind(AttachmentManager.class).to(StoreAttachmentManager.class);
-        bind(RightManager.class).to(StoreRightManager.class);
 
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
         cassandraDataDefinitions.addBinding().toInstance(CassandraAclModule.MODULE);
