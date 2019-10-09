@@ -73,6 +73,7 @@ import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.UidProvider;
+import org.apache.james.mailbox.store.user.SubscriptionMapperFactory;
 import org.apache.james.utils.MailboxManagerDefinition;
 
 import com.google.inject.AbstractModule;
@@ -120,6 +121,7 @@ public class CassandraMailboxModule extends AbstractModule {
         bind(CassandraUidProvider.class).in(Scopes.SINGLETON);
         bind(NoMailboxPathLocker.class).in(Scopes.SINGLETON);
 
+        bind(SubscriptionMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
         bind(MessageMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
         bind(MailboxMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
         bind(AttachmentMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
