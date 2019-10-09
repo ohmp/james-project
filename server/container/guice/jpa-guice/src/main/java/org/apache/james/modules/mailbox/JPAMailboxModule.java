@@ -22,8 +22,6 @@ import static org.apache.james.modules.Names.MAILBOXMANAGER_NAME;
 
 import javax.inject.Singleton;
 
-import org.apache.james.adapter.mailbox.store.UserRepositoryAuthenticator;
-import org.apache.james.adapter.mailbox.store.UserRepositoryAuthorizator;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.SubscriptionManager;
@@ -40,8 +38,6 @@ import org.apache.james.mailbox.jpa.mail.JPAUidProvider;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
 import org.apache.james.mailbox.store.MailboxManagerConfiguration;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -69,6 +65,7 @@ public class JPAMailboxModule extends AbstractModule {
         install(new JPAQuotaSearchModule());
         install(new JPAEntityManagerModule());
         install(new AnnotationListenerModule());
+        install(new JamesMailboxAuthorizationModule());
 
         bind(JPAMailboxSessionMapperFactory.class).in(Scopes.SINGLETON);
         bind(OpenJPAMailboxManager.class).in(Scopes.SINGLETON);
@@ -76,8 +73,6 @@ public class JPAMailboxModule extends AbstractModule {
         bind(JPASubscriptionManager.class).in(Scopes.SINGLETON);
         bind(JPAModSeqProvider.class).in(Scopes.SINGLETON);
         bind(JPAUidProvider.class).in(Scopes.SINGLETON);
-        bind(UserRepositoryAuthenticator.class).in(Scopes.SINGLETON);
-        bind(UserRepositoryAuthorizator.class).in(Scopes.SINGLETON);
         bind(JPAId.Factory.class).in(Scopes.SINGLETON);
         bind(SimpleGroupMembershipResolver.class).in(Scopes.SINGLETON);
         bind(UnionMailboxACLResolver.class).in(Scopes.SINGLETON);
@@ -93,10 +88,8 @@ public class JPAMailboxModule extends AbstractModule {
         bind(UidProvider.class).to(JPAUidProvider.class);
         bind(SubscriptionManager.class).to(JPASubscriptionManager.class);
         bind(MailboxPathLocker.class).to(JVMMailboxPathLocker.class);
-        bind(Authenticator.class).to(UserRepositoryAuthenticator.class);
         bind(MailboxManager.class).to(OpenJPAMailboxManager.class);
         bind(StoreMailboxManager.class).to(OpenJPAMailboxManager.class);
-        bind(Authorizator.class).to(UserRepositoryAuthorizator.class);
         bind(MailboxId.Factory.class).to(JPAId.Factory.class);
         bind(GroupMembershipResolver.class).to(SimpleGroupMembershipResolver.class);
         bind(MailboxACLResolver.class).to(UnionMailboxACLResolver.class);

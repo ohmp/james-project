@@ -23,8 +23,6 @@ import static org.apache.james.modules.Names.MAILBOXMANAGER_NAME;
 
 import javax.inject.Singleton;
 
-import org.apache.james.adapter.mailbox.store.UserRepositoryAuthenticator;
-import org.apache.james.adapter.mailbox.store.UserRepositoryAuthorizator;
 import org.apache.james.mailbox.AttachmentManager;
 import org.apache.james.mailbox.BlobManager;
 import org.apache.james.mailbox.MailboxManager;
@@ -42,8 +40,6 @@ import org.apache.james.mailbox.inmemory.mail.InMemoryModSeqProvider;
 import org.apache.james.mailbox.inmemory.mail.InMemoryUidProvider;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
 import org.apache.james.mailbox.store.MailboxManagerConfiguration;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -79,6 +75,7 @@ public class MemoryMailboxModule extends AbstractModule {
         install(new MemoryQuotaModule());
         install(new MemoryQuotaSearchModule());
         install(new AnnotationListenerModule());
+        install(new JamesMailboxAuthorizationModule());
 
         bind(MessageMapperFactory.class).to(InMemoryMailboxSessionMapperFactory.class);
         bind(MailboxMapperFactory.class).to(InMemoryMailboxSessionMapperFactory.class);
@@ -94,8 +91,6 @@ public class MemoryMailboxModule extends AbstractModule {
         bind(SubscriptionMapperFactory.class).to(InMemoryMailboxSessionMapperFactory.class);
         bind(MailboxSessionMapperFactory.class).to(InMemoryMailboxSessionMapperFactory.class);
         bind(MailboxPathLocker.class).to(JVMMailboxPathLocker.class);
-        bind(Authenticator.class).to(UserRepositoryAuthenticator.class);
-        bind(Authorizator.class).to(UserRepositoryAuthorizator.class);
         bind(MailboxManager.class).to(InMemoryMailboxManager.class);
         bind(StoreMailboxManager.class).to(InMemoryMailboxManager.class);
         bind(MessageIdManager.class).to(StoreMessageIdManager.class);
@@ -113,8 +108,6 @@ public class MemoryMailboxModule extends AbstractModule {
         bind(InMemoryUidProvider.class).in(Scopes.SINGLETON);
         bind(StoreSubscriptionManager.class).in(Scopes.SINGLETON);
         bind(JVMMailboxPathLocker.class).in(Scopes.SINGLETON);
-        bind(UserRepositoryAuthenticator.class).in(Scopes.SINGLETON);
-        bind(UserRepositoryAuthorizator.class).in(Scopes.SINGLETON);
         bind(InMemoryMailboxManager.class).in(Scopes.SINGLETON);
         bind(InMemoryMessageId.Factory.class).in(Scopes.SINGLETON);
         bind(StoreMessageIdManager.class).in(Scopes.SINGLETON);

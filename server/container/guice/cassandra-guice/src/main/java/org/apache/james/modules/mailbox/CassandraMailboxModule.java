@@ -22,8 +22,6 @@ import static org.apache.james.modules.Names.MAILBOXMANAGER_NAME;
 
 import javax.inject.Singleton;
 
-import org.apache.james.adapter.mailbox.store.UserRepositoryAuthenticator;
-import org.apache.james.adapter.mailbox.store.UserRepositoryAuthorizator;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.mailbox.AttachmentManager;
 import org.apache.james.mailbox.BlobManager;
@@ -73,8 +71,6 @@ import org.apache.james.mailbox.indexer.MessageIdReIndexer;
 import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.store.Authenticator;
-import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.NoMailboxPathLocker;
 import org.apache.james.mailbox.store.StoreAttachmentManager;
@@ -104,6 +100,7 @@ public class CassandraMailboxModule extends AbstractModule {
         install(new DefaultEventModule());
         install(new CassandraQuotaModule());
         install(new AnnotationListenerModule());
+        install(new JamesMailboxAuthorizationModule());
 
         bind(CassandraApplicableFlagDAO.class).in(Scopes.SINGLETON);
         bind(CassandraAttachmentDAO.class).in(Scopes.SINGLETON);
@@ -138,8 +135,6 @@ public class CassandraMailboxModule extends AbstractModule {
         bind(CassandraModSeqProvider.class).in(Scopes.SINGLETON);
         bind(CassandraUidProvider.class).in(Scopes.SINGLETON);
         bind(NoMailboxPathLocker.class).in(Scopes.SINGLETON);
-        bind(UserRepositoryAuthenticator.class).in(Scopes.SINGLETON);
-        bind(UserRepositoryAuthorizator.class).in(Scopes.SINGLETON);
 
         bind(ReIndexerImpl.class).in(Scopes.SINGLETON);
         bind(MessageIdReIndexerImpl.class).in(Scopes.SINGLETON);
@@ -154,8 +149,6 @@ public class CassandraMailboxModule extends AbstractModule {
         bind(UidProvider.class).to(CassandraUidProvider.class);
         bind(SubscriptionManager.class).to(CassandraSubscriptionManager.class);
         bind(MailboxPathLocker.class).to(NoMailboxPathLocker.class);
-        bind(Authenticator.class).to(UserRepositoryAuthenticator.class);
-        bind(Authorizator.class).to(UserRepositoryAuthorizator.class);
         bind(MailboxManager.class).to(CassandraMailboxManager.class);
         bind(StoreMailboxManager.class).to(CassandraMailboxManager.class);
         bind(MailboxId.Factory.class).to(CassandraId.Factory.class);
@@ -183,8 +176,6 @@ public class CassandraMailboxModule extends AbstractModule {
         cassandraDataDefinitions.addBinding().toInstance(CassandraUidModule.MODULE);
 
         Multibinder.newSetBinder(binder(), MailboxManagerDefinition.class).addBinding().to(CassandraMailboxManagerDefinition.class);
-
-
 
         bind(MailboxManager.class).annotatedWith(Names.named(MAILBOXMANAGER_NAME)).to(MailboxManager.class);
     }
