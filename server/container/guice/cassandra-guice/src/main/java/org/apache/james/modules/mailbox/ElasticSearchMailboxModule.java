@@ -109,6 +109,8 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Override
     protected void configure() {
         install(new ElasticSearchQuotaSearcherModule());
+        install(ReIndexerModules.REINDEXER_MODULE);
+        install(ReIndexerModules.MESSAGEID_REINDEXER_MODULE);
 
         bind(ElasticSearchListeningMessageSearchIndex.class).in(Scopes.SINGLETON);
         bind(MessageSearchIndex.class).to(ElasticSearchListeningMessageSearchIndex.class);
