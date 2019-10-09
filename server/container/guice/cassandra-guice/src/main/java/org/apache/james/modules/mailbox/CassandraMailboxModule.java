@@ -85,7 +85,6 @@ public class CassandraMailboxModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new DefaultEventModule());
         install(new CassandraQuotaModule());
         install(new AnnotationListenerModule());
         install(new JamesMailboxAuthorizationModule());
@@ -162,6 +161,4 @@ public class CassandraMailboxModule extends AbstractModule {
             super("cassandra-mailboxmanager", manager);
         }
     }
-    
-
 }

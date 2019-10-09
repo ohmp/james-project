@@ -64,6 +64,7 @@ public class MemoryMailboxModule extends AbstractModule {
     @Override
     protected void configure() {
         install(new DefaultEventModule());
+        install(new MemoryDeadLetterModule());
         install(new MemoryQuotaModule());
         install(new MemoryQuotaSearchModule());
         install(new AnnotationListenerModule());
