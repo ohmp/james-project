@@ -36,7 +36,7 @@ We significantly improved our usage of ElasticSearch. Underlying changes include
  level synchronisation, and thus enhance throughput, latencies and scalability.
 
 The downside of these changes is that a reindex is needed:
- - Delete the indexes use by James
+ - Delete the indexes used by James
  - Start James in order to create the missing indexes
  - Trigger a [Full ReIndexing](https://james.apache.org/server/manage-webadmin.html#ReIndexing_all_mails)
  

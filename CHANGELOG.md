@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
-- Multiple changes had been made to enhance ElasticSearch performance:
+- Multiple changes have been made to enhance ElasticSearch performance:
   - Use of routing keys to collocate documents per mailbox
   - Read related [upgrade instructions](upgrade-instructions.md)
 
