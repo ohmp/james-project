@@ -40,11 +40,11 @@ class QuotaRatioMappingFactory {
         try {
             return jsonBuilder()
                 .startObject()
-                .startObject(ROUTING)
-                    .field(REQUIRED, true)
-                .endObject()
+                    .startObject(ROUTING)
+                        .field(REQUIRED, true)
+                    .endObject()
 
-                .startObject(PROPERTIES)
+                    .startObject(PROPERTIES)
 
                         .startObject(USER)
                             .field(TYPE, KEYWORD)
