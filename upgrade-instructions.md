@@ -35,10 +35,11 @@ We significantly improved our usage of ElasticSearch. Underlying changes include
  - The use of routing to collocate emails of a same mailbox within a same shard. This enables search queries to avoid cluster
  level synchronisation, and thus enhance throughput, latencies and scalability.
 
-The downside of these changes is that a reindex is needed:
+The downside of these changes is that a reindex is needed, implying a downtime on search:
  - Delete the indexes used by James
  - Start James in order to create the missing indexes
- - Trigger a [Full ReIndexing](https://james.apache.org/server/manage-webadmin.html#ReIndexing_all_mails)
+ - Trigger a [Full ReIndexing](https://james.apache.org/server/manage-webadmin.html#ReIndexing_all_mails), which can take
+  time to complete.
  
 #### JAMES-2703 Post 3.4.0 release removals
 
