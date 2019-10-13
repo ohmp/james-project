@@ -61,13 +61,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSearchIndex {
-    public static class ElasticSearchListeningMessageSearchIndexGroup extends Group {
+    public static class ElasticSearchListeningMessageSearchIndexGroupV2 extends Group {
 
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchListeningMessageSearchIndex.class);
     private static final String ID_SEPARATOR = ":";
-    private static final Group GROUP = new ElasticSearchListeningMessageSearchIndexGroup();
+    private static final Group GROUP = new ElasticSearchListeningMessageSearchIndexGroupV2();
 
     private final ElasticSearchIndexer elasticSearchIndexer;
     private final ElasticSearchSearcher searcher;

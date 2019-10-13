@@ -98,8 +98,8 @@ public class ElasticSearchListeningMessageSearchIndexTest {
 
     @Test
     public void deserializeElasticSearchListeningMessageSearchIndexGroup() throws Exception {
-        assertThat(Group.deserialize("org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex$ElasticSearchListeningMessageSearchIndexGroup"))
-            .isEqualTo(new ElasticSearchListeningMessageSearchIndex.ElasticSearchListeningMessageSearchIndexGroup());
+        assertThat(Group.deserialize("org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex$ElasticSearchListeningMessageSearchIndexGroupV2"))
+            .isEqualTo(new ElasticSearchListeningMessageSearchIndex.ElasticSearchListeningMessageSearchIndexGroupV2());
     }
     
     @Test
