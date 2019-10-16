@@ -132,7 +132,11 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public MailboxCounters getMailboxCounters(Mailbox mailbox) throws MailboxException {
         return mailboxCounterDAO.retrieveMailboxCounters(mailbox)
-                .defaultIfEmpty(INITIAL_COUNTERS)
+                .defaultIfEmpty(MailboxCounters.builder()
+                    .mailboxId(mailbox.getMailboxId())
+                    .count(0)
+                    .unseen(0)
+                    .build())
                 .block();
     }
 

@@ -54,6 +54,7 @@ public class TransactionalMessageMapper implements MessageMapper {
     @Override
     public MailboxCounters getMailboxCounters(Mailbox mailbox) throws MailboxException {
         return MailboxCounters.builder()
+            .mailboxId(mailbox.getMailboxId())
             .count(countMessagesInMailbox(mailbox))
             .unseen(countUnseenMessagesInMailbox(mailbox))
             .build();

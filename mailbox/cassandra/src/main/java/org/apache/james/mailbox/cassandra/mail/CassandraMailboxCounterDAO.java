@@ -39,6 +39,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Assignment;
+
 import reactor.core.publisher.Mono;
 
 public class CassandraMailboxCounterDAO {
@@ -79,6 +80,7 @@ public class CassandraMailboxCounterDAO {
 
         return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(mailboxId, readStatement))
             .map(row ->  MailboxCounters.builder()
+                .mailboxId(mailboxId)
                 .count(row.getLong(CassandraMailboxCountersTable.COUNT))
                 .unseen(row.getLong(CassandraMailboxCountersTable.UNSEEN))
                 .build());
