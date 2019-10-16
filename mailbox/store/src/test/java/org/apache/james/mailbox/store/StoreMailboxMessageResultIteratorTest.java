@@ -22,6 +22,7 @@ package org.apache.james.mailbox.store;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxCounters;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MessageResult.FetchGroup;
@@ -97,6 +99,11 @@ public class StoreMailboxMessageResultIteratorTest {
                 .count(countMessagesInMailbox(mailbox))
                 .unseen(countUnseenMessagesInMailbox(mailbox))
                 .build();
+        }
+
+        @Override
+        public List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds) throws MailboxException {
+            throw new NotImplementedException("sorry");
         }
 
         @Override
