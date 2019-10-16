@@ -60,6 +60,7 @@ public class MailboxFactory {
         private MailboxSession session;
         private MailboxId id;
         private Optional<MessageManager> messageManager = Optional.empty();
+        private Optional<MailboxCounters> preLoadedMailboxCounter = Optional.empty();
         private Optional<List<MailboxMetaData>> userMailboxesMetadata = Optional.empty();
 
         private MailboxBuilder(MailboxFactory mailboxFactory, QuotaLoader quotaLoader) {
@@ -69,6 +70,11 @@ public class MailboxFactory {
 
         public MailboxBuilder id(MailboxId id) {
             this.id = id;
+            return this;
+        }
+
+        public MailboxBuilder usingPreLoadedMailboxCounter(MailboxCounters preLoadedMailboxCounter) {
+            this.preLoadedMailboxCounter = Optional.of(preLoadedMailboxCounter);
             return this;
         }
 
@@ -101,7 +107,7 @@ public class MailboxFactory {
                 MessageManager mailbox = messageManager.orElseGet(Throwing.supplier(
                     () -> mailboxFactory.mailboxManager.getMailbox(id, session))
                     .sneakyThrow());
-                return Optional.of(mailboxFactory.fromMessageManager(mailbox, userMailboxesMetadata, quotaLoader, session));
+                return Optional.of(mailboxFactory.fromMessageManager(mailbox, userMailboxesMetadata, preLoadedMailboxCounter, quotaLoader, session));
             } catch (MailboxNotFoundException e) {
                 return Optional.empty();
             } catch (MailboxException e) {
@@ -124,12 +130,14 @@ public class MailboxFactory {
 
     private Mailbox fromMessageManager(MessageManager messageManager,
                                        Optional<List<MailboxMetaData>> userMailboxesMetadata,
+                                       Optional<MailboxCounters> preLoadedMailboxCounters,
                                        QuotaLoader quotaLoader,
                                        MailboxSession mailboxSession) throws MailboxException {
         MailboxPath mailboxPath = messageManager.getMailboxPath();
         boolean isOwner = mailboxPath.belongsTo(mailboxSession);
         Optional<Role> role = Role.from(mailboxPath.getName());
-        MailboxCounters mailboxCounters = messageManager.getMailboxCounters(mailboxSession);
+        MailboxCounters mailboxCounters = preLoadedMailboxCounters
+            .orElseGet(Throwing.supplier(() -> messageManager.getMailboxCounters(mailboxSession)).sneakyThrow());
 
         Rights rights = Rights.fromACL(messageManager.getResolvedAcl(mailboxSession))
             .removeEntriesFor(Username.forMailboxPath(mailboxPath));
