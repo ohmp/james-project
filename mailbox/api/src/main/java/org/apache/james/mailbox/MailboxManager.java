@@ -28,6 +28,7 @@ import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -145,6 +146,8 @@ public interface MailboxManager extends RequestAware, RightManager, MailboxAnnot
     MessageManager getMailbox(MailboxId mailboxId, MailboxSession session) throws MailboxException;
 
     List<MessageManager> getMailboxes(Collection<MailboxId> mailboxIds, MailboxSession session) throws MailboxException;
+
+    List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds, MailboxSession session) throws MailboxException;
 
     /**
      * Creates a new mailbox. Any intermediary mailboxes missing from the

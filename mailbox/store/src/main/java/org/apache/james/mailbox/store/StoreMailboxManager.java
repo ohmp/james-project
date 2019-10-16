@@ -57,6 +57,7 @@ import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
 import org.apache.james.mailbox.model.MailboxConstants;
+import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxMetaData.Selectability;
@@ -759,5 +760,11 @@ public class StoreMailboxManager implements MailboxManager {
         MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
         return mapper.hasChildren(mailbox, session.getPathDelimiter());
+    }
+
+    @Override
+    public List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds, MailboxSession session) throws MailboxException {
+        MessageMapper messageMapper = mailboxSessionMapperFactory.getMessageMapper(session);
+        return messageMapper.getMailboxCounters(mailboxIds);
     }
 }

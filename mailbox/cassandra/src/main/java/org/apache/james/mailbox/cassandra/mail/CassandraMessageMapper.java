@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxCounters;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
@@ -131,13 +133,28 @@ public class CassandraMessageMapper implements MessageMapper {
 
     @Override
     public MailboxCounters getMailboxCounters(Mailbox mailbox) throws MailboxException {
-        return mailboxCounterDAO.retrieveMailboxCounters(mailbox)
+        CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+        return getMailboxCounters(mailboxId)
+                .block();
+    }
+
+    private Mono<MailboxCounters> getMailboxCounters(CassandraId mailboxId) {
+        return mailboxCounterDAO.retrieveMailboxCounters(mailboxId)
                 .defaultIfEmpty(MailboxCounters.builder()
-                    .mailboxId(mailbox.getMailboxId())
+                    .mailboxId(mailboxId)
                     .count(0)
                     .unseen(0)
-                    .build())
-                .block();
+                    .build());
+    }
+
+    @Override
+    public List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds) {
+        return Flux.fromIterable(mailboxIds)
+            .map(id -> (CassandraId) id)
+            .flatMap(this::getMailboxCounters)
+            .collectList()
+            .block();
+
     }
 
     @Override
