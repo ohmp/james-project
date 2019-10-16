@@ -21,8 +21,10 @@ package org.apache.james.jmap.draft.methods;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -39,6 +41,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.search.MailboxQuery;
@@ -53,6 +56,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -136,6 +140,7 @@ public class GetMailboxesMethod implements Method {
 
     private Stream<Mailbox> retrieveSpecificMailboxes(MailboxSession mailboxSession, ImmutableList<MailboxId> mailboxIds) throws MailboxException {
         List<MessageManager> mailboxes = mailboxManager.getMailboxes(mailboxIds, mailboxSession);
+        Map<MailboxId, MailboxCounters> mailboxCounters = retrieveMailboxCounters(mailboxSession, mailboxes.stream().map(MessageManager::getId).collect(Guavate.toImmutableList()));
 
         return mailboxes
             .stream()
@@ -152,6 +157,7 @@ public class GetMailboxesMethod implements Method {
         QuotaLoader quotaLoader = new QuotaLoaderWithDefaultPreloaded(quotaRootResolver, quotaManager, mailboxSession);
         ImmutableList<MailboxId> mailboxIds = userMailboxes.stream().map(MailboxMetaData::getId).collect(Guavate.toImmutableList());
         List<MessageManager> messageManagers = mailboxManager.getMailboxes(mailboxIds, mailboxSession);
+        Map<MailboxId, MailboxCounters> mailboxCounters = retrieveMailboxCounters(mailboxSession, mailboxIds);
 
         return messageManagers
             .stream()
@@ -162,6 +168,14 @@ public class GetMailboxesMethod implements Method {
                 .quotaLoader(quotaLoader)
                 .build())
             .flatMap(OptionalUtils::toStream);
+    }
+
+    private ImmutableMap<MailboxId, MailboxCounters> retrieveMailboxCounters(MailboxSession mailboxSession, ImmutableList<MailboxId> mailboxIds) throws MailboxException {
+        return mailboxManager.getMailboxCounters(mailboxIds, mailboxSession)
+            .stream()
+            .collect(Guavate.toImmutableMap(
+                MailboxCounters::getMailboxId,
+                Function.identity()));
     }
 
     private List<MailboxMetaData> getAllMailboxesMetaData(MailboxSession mailboxSession) throws MailboxException {
