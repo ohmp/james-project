@@ -963,7 +963,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
             MailboxPath inbox1 = MailboxPath.inbox(session1);
-            mailboxManager.createMailbox(inbox1, session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
             mailboxManager.setRights(inbox1,
                 MailboxACL.EMPTY.apply(MailboxACL.command()
                     .forUser(USER_2)
@@ -1269,7 +1269,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
             MailboxPath inbox1 = MailboxPath.inbox(session1);
-            mailboxManager.createMailbox(inbox1, session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
             mailboxManager.setRights(inbox1,
                 MailboxACL.EMPTY.apply(MailboxACL.command()
                     .forUser(USER_2)
@@ -1301,7 +1301,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
             MailboxPath inbox1 = MailboxPath.inbox(session1);
-            mailboxManager.createMailbox(inbox1, session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
             mailboxManager.setRights(inbox1,
                 MailboxACL.EMPTY.apply(MailboxACL.command()
                     .forUser(USER_2)
@@ -1316,6 +1316,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
             assertThat(mailboxCounters)
                 .isEqualTo(MailboxCounters.builder()
+                    .mailboxId(mailboxIdInbox1.get())
                     .count(0)
                     .unseen(0)
                     .build());
@@ -1327,7 +1328,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
             MailboxPath inbox1 = MailboxPath.inbox(session1);
-            mailboxManager.createMailbox(inbox1, session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
             mailboxManager.setRights(inbox1,
                 MailboxACL.EMPTY.apply(MailboxACL.command()
                     .forUser(USER_2)
@@ -1345,6 +1346,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
             assertThat(mailboxCounters)
                 .isEqualTo(MailboxCounters.builder()
+                    .mailboxId(mailboxIdInbox1.get())
                     .count(1)
                     .unseen(1)
                     .build());
