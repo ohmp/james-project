@@ -37,6 +37,7 @@ import org.apache.james.jmap.draft.utils.quotas.QuotaLoader;
 import org.apache.james.jmap.draft.utils.quotas.QuotaLoaderWithDefaultPreloaded;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
@@ -128,32 +129,34 @@ public class GetMailboxesMethod implements Method {
 
     private Stream<Mailbox> retrieveMailboxes(Optional<ImmutableList<MailboxId>> mailboxIds, MailboxSession mailboxSession) throws MailboxException {
         return mailboxIds
-            .map(ids -> retrieveSpecificMailboxes(mailboxSession, ids))
+            .map(Throwing.<ImmutableList<MailboxId>, Stream<Mailbox>>function(ids -> retrieveSpecificMailboxes(mailboxSession, ids)).sneakyThrow())
             .orElseGet(Throwing.supplier(() -> retrieveAllMailboxes(mailboxSession)).sneakyThrow());
     }
 
 
-    private Stream<Mailbox> retrieveSpecificMailboxes(MailboxSession mailboxSession, ImmutableList<MailboxId> mailboxIds) {
-        return mailboxIds
+    private Stream<Mailbox> retrieveSpecificMailboxes(MailboxSession mailboxSession, ImmutableList<MailboxId> mailboxIds) throws MailboxException {
+        List<MessageManager> mailboxes = mailboxManager.getMailboxes(mailboxIds, mailboxSession);
+
+        return mailboxes
             .stream()
-            .map(mailboxId -> mailboxFactory.builder()
-                .id(mailboxId)
+            .map(messageManager -> mailboxFactory.builder()
+                .messageManager(messageManager)
                 .session(mailboxSession)
                 .usingPreloadedMailboxesMetadata(NO_PRELOADED_METADATA)
-                .build()
-            )
+                .build())
             .flatMap(OptionalUtils::toStream);
     }
 
     private Stream<Mailbox> retrieveAllMailboxes(MailboxSession mailboxSession) throws MailboxException {
         List<MailboxMetaData> userMailboxes = getAllMailboxesMetaData(mailboxSession);
         QuotaLoader quotaLoader = new QuotaLoaderWithDefaultPreloaded(quotaRootResolver, quotaManager, mailboxSession);
+        ImmutableList<MailboxId> mailboxIds = userMailboxes.stream().map(MailboxMetaData::getId).collect(Guavate.toImmutableList());
+        List<MessageManager> messageManagers = mailboxManager.getMailboxes(mailboxIds, mailboxSession);
 
-        return userMailboxes
+        return messageManagers
             .stream()
-            .map(MailboxMetaData::getId)
-            .map(mailboxId -> mailboxFactory.builder()
-                .id(mailboxId)
+            .map(messageManager -> mailboxFactory.builder()
+                .messageManager(messageManager)
                 .session(mailboxSession)
                 .usingPreloadedMailboxesMetadata(Optional.of(userMailboxes))
                 .quotaLoader(quotaLoader)

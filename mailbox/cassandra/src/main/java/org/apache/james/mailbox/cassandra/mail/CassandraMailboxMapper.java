@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -119,6 +120,15 @@ public class CassandraMailboxMapper implements MailboxMapper {
         return retrieveMailbox(mailboxId)
             .blockOptional()
             .orElseThrow(() -> new MailboxNotFoundException(id));
+    }
+
+    @Override
+    public List<Mailbox> findMailboxesById(Collection<MailboxId> mailboxIds) throws MailboxException, MailboxNotFoundException {
+        return Flux.fromIterable(mailboxIds)
+            .map(id -> (CassandraId) id)
+            .flatMap(this::retrieveMailbox)
+            .collectList()
+            .block();
     }
 
     private Mono<Mailbox> retrieveMailbox(CassandraId mailboxId) {

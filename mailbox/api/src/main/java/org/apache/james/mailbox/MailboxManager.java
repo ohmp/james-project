@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -142,6 +143,8 @@ public interface MailboxManager extends RequestAware, RightManager, MailboxAnnot
      *             when the given mailbox does not exist
      */
     MessageManager getMailbox(MailboxId mailboxId, MailboxSession session) throws MailboxException;
+
+    List<MessageManager> getMailboxes(Collection<MailboxId> mailboxIds, MailboxSession session) throws MailboxException;
 
     /**
      * Creates a new mailbox. Any intermediary mailboxes missing from the

@@ -44,6 +44,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -58,6 +59,7 @@ public class MailboxFactory {
         private QuotaLoader quotaLoader;
         private MailboxSession session;
         private MailboxId id;
+        private Optional<MessageManager> messageManager;
         private Optional<List<MailboxMetaData>> userMailboxesMetadata = Optional.empty();
 
         private MailboxBuilder(MailboxFactory mailboxFactory, QuotaLoader quotaLoader) {
@@ -67,6 +69,12 @@ public class MailboxFactory {
 
         public MailboxBuilder id(MailboxId id) {
             this.id = id;
+            return this;
+        }
+
+        public MailboxBuilder messageManager(MessageManager messageManager) {
+            this.id = messageManager.getId();
+            this.messageManager = Optional.of(messageManager);
             return this;
         }
 
@@ -90,7 +98,9 @@ public class MailboxFactory {
             Preconditions.checkNotNull(session);
 
             try {
-                MessageManager mailbox = mailboxFactory.mailboxManager.getMailbox(id, session);
+                MessageManager mailbox = messageManager.orElseGet(Throwing.supplier(
+                    () -> mailboxFactory.mailboxManager.getMailbox(id, session))
+                    .sneakyThrow());
                 return Optional.of(mailboxFactory.fromMessageManager(mailbox, userMailboxesMetadata, quotaLoader, session));
             } catch (MailboxNotFoundException e) {
                 return Optional.empty();
