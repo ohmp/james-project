@@ -47,6 +47,7 @@ import org.apache.james.mailbox.exception.InsufficientRightsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxACL;
@@ -574,7 +575,7 @@ public class StoreMailboxManager implements MailboxManager {
         return mailboxes
             .stream()
             .filter(mailboxQuery::matches)
-            .map(mailbox -> toMailboxMetadata(session, mailboxes, mailbox))
+            .map(Throwing.<Mailbox, MailboxMetaData>function(mailbox -> toMailboxMetadata(session, mailboxes, mailbox)).sneakyThrow())
             .sorted(MailboxMetaData.COMPARATOR)
             .collect(Guavate.toImmutableList());
     }
@@ -597,13 +598,14 @@ public class StoreMailboxManager implements MailboxManager {
         return mailboxMapper.findNonPersonalMailboxes(session.getUser().asString(), right).stream();
     }
 
-    private MailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox) {
+    private MailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox) throws UnsupportedRightException {
         return new MailboxMetaData(
             mailbox.generateAssociatedPath(),
             mailbox.getMailboxId(),
             getDelimiter(),
             computeChildren(session, mailboxes, mailbox),
-            Selectability.NONE);
+            Selectability.NONE,
+            storeRightManager.getResolvedMailboxACL(mailbox, session));
     }
 
     private MailboxMetaData.Children computeChildren(MailboxSession session, List<Mailbox> potentialChildren, Mailbox mailbox) {
