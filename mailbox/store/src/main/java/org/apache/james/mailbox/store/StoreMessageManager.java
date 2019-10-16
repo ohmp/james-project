@@ -104,6 +104,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -120,11 +121,6 @@ import reactor.core.scheduler.Schedulers;
  * 
  */
 public class StoreMessageManager implements MessageManager {
-    private static final MailboxCounters ZERO_MAILBOX_COUNTERS = MailboxCounters.builder()
-        .count(0)
-        .unseen(0)
-        .build();
-
     /**
      * The minimal Permanent flags the {@link MessageManager} must support. <br>
      * 
@@ -243,7 +239,11 @@ public class StoreMessageManager implements MessageManager {
         if (storeRightManager.hasRight(mailbox, MailboxACL.Right.Read, mailboxSession)) {
             return mapperFactory.createMessageMapper(mailboxSession).getMailboxCounters(mailbox);
         }
-        return ZERO_MAILBOX_COUNTERS;
+        return MailboxCounters.builder()
+            .mailboxId(mailbox.getMailboxId())
+            .unseen(0)
+            .count(0)
+            .build();
     }
 
     /**

@@ -62,10 +62,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CassandraMessageMapper implements MessageMapper {
-    public static final MailboxCounters INITIAL_COUNTERS =  MailboxCounters.builder()
-        .count(0L)
-        .unseen(0L)
-        .build();
     public static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageMapper.class);
 
     private final CassandraModSeqProvider modSeqProvider;
@@ -132,7 +128,11 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public MailboxCounters getMailboxCounters(Mailbox mailbox) throws MailboxException {
         return mailboxCounterDAO.retrieveMailboxCounters(mailbox)
-                .defaultIfEmpty(INITIAL_COUNTERS)
+                .defaultIfEmpty(MailboxCounters.builder()
+                    .mailboxId(mailbox.getMailboxId())
+                    .count(0)
+                    .unseen(0)
+                    .build())
                 .block();
     }
 
