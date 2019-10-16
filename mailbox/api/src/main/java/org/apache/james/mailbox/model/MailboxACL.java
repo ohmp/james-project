@@ -539,6 +539,11 @@ public class MailboxACL {
                 return this;
             }
 
+            public Builder forOwner() {
+                key = OWNER_KEY;
+                return this;
+            }
+
             public Builder key(EntryKey key) {
                 this.key = key;
                 return this;

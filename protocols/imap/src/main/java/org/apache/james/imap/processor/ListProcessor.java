@@ -40,6 +40,7 @@ import org.apache.james.imap.message.response.ListResponse;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
@@ -123,7 +124,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                 MailboxId mailboxId = null;
                 results = new ArrayList<>(1);
                 results.add(new MailboxMetaData(rootPath, mailboxId, mailboxSession.getPathDelimiter(),
-                    MailboxMetaData.Children.CHILDREN_ALLOWED_BUT_UNKNOWN, MailboxMetaData.Selectability.NOSELECT));
+                    MailboxMetaData.Children.CHILDREN_ALLOWED_BUT_UNKNOWN, MailboxMetaData.Selectability.NOSELECT, new MailboxACL()));
             } else {
                 // If the mailboxPattern is fully qualified, ignore the
                 // reference name.
