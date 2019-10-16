@@ -157,15 +157,14 @@ public class GetMailboxesMethod implements Method {
         List<MailboxMetaData> userMailboxes = getAllMailboxesMetaData(mailboxSession);
         QuotaLoader quotaLoader = new QuotaLoaderWithDefaultPreloaded(quotaRootResolver, quotaManager, mailboxSession);
         ImmutableList<MailboxId> mailboxIds = userMailboxes.stream().map(MailboxMetaData::getId).collect(Guavate.toImmutableList());
-        Set<MessageManager> messageManagers = mailboxManager.getMailboxes(mailboxIds, mailboxSession);
         Map<MailboxId, MailboxCounters> mailboxCounters = retrieveMailboxCounters(mailboxSession, mailboxIds);
 
-        return messageManagers
+        return userMailboxes
             .stream()
-            .map(messageManager -> mailboxFactory.builder()
-                .messageManager(messageManager)
+            .map(mailbox -> mailboxFactory.builder()
+                .mailboxMetadata(mailbox)
                 .session(mailboxSession)
-                .usingPreLoadedMailboxCounter(mailboxCounters.get(messageManager.getId()))
+                .usingPreLoadedMailboxCounter(mailboxCounters.get(mailbox.getId()))
                 .usingPreloadedMailboxesMetadata(Optional.of(userMailboxes))
                 .quotaLoader(quotaLoader)
                 .build())

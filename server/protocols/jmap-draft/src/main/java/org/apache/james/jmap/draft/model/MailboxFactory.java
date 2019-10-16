@@ -37,17 +37,22 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
+import org.apache.james.util.OptionalUtils;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.primitives.Booleans;
+
+import reactor.core.publisher.Mono;
 
 public class MailboxFactory {
     private final MailboxManager mailboxManager;
@@ -58,7 +63,8 @@ public class MailboxFactory {
         private final MailboxFactory mailboxFactory;
         private QuotaLoader quotaLoader;
         private MailboxSession session;
-        private MailboxId id;
+        private Optional<MailboxId> id = Optional.empty();
+        private Optional<MailboxMetaData> mailboxMetaData = Optional.empty();
         private Optional<MessageManager> messageManager = Optional.empty();
         private Optional<MailboxCounters> preLoadedMailboxCounter = Optional.empty();
         private Optional<List<MailboxMetaData>> userMailboxesMetadata = Optional.empty();
@@ -69,7 +75,7 @@ public class MailboxFactory {
         }
 
         public MailboxBuilder id(MailboxId id) {
-            this.id = id;
+            this.id = Optional.of(id);
             return this;
         }
 
@@ -79,8 +85,12 @@ public class MailboxFactory {
         }
 
         public MailboxBuilder messageManager(MessageManager messageManager) {
-            this.id = messageManager.getId();
             this.messageManager = Optional.of(messageManager);
+            return this;
+        }
+
+        public MailboxBuilder mailboxMetadata(MailboxMetaData mailboxMetaData) {
+            this.mailboxMetaData = Optional.of(mailboxMetaData);
             return this;
         }
 
@@ -100,19 +110,56 @@ public class MailboxFactory {
         }
 
         public Optional<Mailbox> build() {
-            Preconditions.checkNotNull(id);
             Preconditions.checkNotNull(session);
 
             try {
-                MessageManager mailbox = messageManager.orElseGet(Throwing.supplier(
-                    () -> mailboxFactory.mailboxManager.getMailbox(id, session))
-                    .sneakyThrow());
-                return Optional.of(mailboxFactory.fromMessageManager(mailbox, userMailboxesMetadata, preLoadedMailboxCounter, quotaLoader, session));
+                MailboxId mailboxId = computeMailboxId();
+                Mono<MessageManager> mailbox = mailbox(mailboxId).cache();
+
+                MailboxACL mailboxACL = mailboxMetaData.map(MailboxMetaData::getResolvedAcls)
+                    .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getResolvedAcl(session)).sneakyThrow());
+
+                MailboxPath mailboxPath = mailboxMetaData.map(MailboxMetaData::getPath)
+                    .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxPath()).sneakyThrow());
+
+                MailboxCounters mailboxCounters = preLoadedMailboxCounter
+                    .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxCounters(session)).sneakyThrow());
+
+                return Optional.of(mailboxFactory.from(
+                    mailboxId,
+                    mailboxPath,
+                    mailboxCounters,
+                    mailboxACL,
+                    userMailboxesMetadata,
+                    quotaLoader,
+                    session));
             } catch (MailboxNotFoundException e) {
                 return Optional.empty();
             } catch (MailboxException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        private MailboxId computeMailboxId() {
+            int idCount = Booleans.countTrue(id.isPresent(), mailboxMetaData.isPresent(), messageManager.isPresent());
+            Preconditions.checkState(idCount == 1, "You need exectly one 'id', 'messageManager' and 'mailboxMetaData'");
+            return OptionalUtils.or(
+                id,
+                messageManager.map(MessageManager::getId),
+                mailboxMetaData.map(MailboxMetaData::getId))
+                .get();
+        }
+
+        private Mono<MessageManager> mailbox(MailboxId mailboxId) {
+            return Mono.justOrEmpty(messageManager)
+                .switchIfEmpty(Mono.fromCallable(() -> mailboxFactory.mailboxManager.getMailbox(mailboxId, session)));
+        }
+
+        private MessageManager retrieveCachedMailbox(MailboxId mailboxId, Mono<MessageManager> mailbox) throws MailboxNotFoundException {
+            return mailbox
+                .onErrorResume(MailboxNotFoundException.class, any -> Mono.empty())
+                .blockOptional()
+                .orElseThrow(() -> new MailboxNotFoundException(mailboxId));
         }
     }
 
@@ -128,25 +175,24 @@ public class MailboxFactory {
         return new MailboxBuilder(this, defaultQuotaLoader);
     }
 
-    private Mailbox fromMessageManager(MessageManager messageManager,
-                                       Optional<List<MailboxMetaData>> userMailboxesMetadata,
-                                       Optional<MailboxCounters> preLoadedMailboxCounters,
-                                       QuotaLoader quotaLoader,
-                                       MailboxSession mailboxSession) throws MailboxException {
-        MailboxPath mailboxPath = messageManager.getMailboxPath();
+    private Mailbox from(MailboxId mailboxId,
+                         MailboxPath mailboxPath,
+                         MailboxCounters mailboxCounters,
+                         MailboxACL resolvedAcl,
+                         Optional<List<MailboxMetaData>> userMailboxesMetadata,
+                         QuotaLoader quotaLoader,
+                         MailboxSession mailboxSession) throws MailboxException {
         boolean isOwner = mailboxPath.belongsTo(mailboxSession);
         Optional<Role> role = Role.from(mailboxPath.getName());
-        MailboxCounters mailboxCounters = preLoadedMailboxCounters
-            .orElseGet(Throwing.supplier(() -> messageManager.getMailboxCounters(mailboxSession)).sneakyThrow());
 
-        Rights rights = Rights.fromACL(messageManager.getResolvedAcl(mailboxSession))
+        Rights rights = Rights.fromACL(resolvedAcl)
             .removeEntriesFor(Username.forMailboxPath(mailboxPath));
         Username username = Username.fromSession(mailboxSession);
 
         Quotas quotas = quotaLoader.getQuotas(mailboxPath);
 
         return Mailbox.builder()
-            .id(messageManager.getId())
+            .id(mailboxId)
             .name(getName(mailboxPath, mailboxSession))
             .parentId(getParentIdFromMailboxPath(mailboxPath, userMailboxesMetadata, mailboxSession).orElse(null))
             .role(role)

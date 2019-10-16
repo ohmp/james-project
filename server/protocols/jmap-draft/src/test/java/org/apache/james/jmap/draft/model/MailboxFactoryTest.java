@@ -18,21 +18,28 @@
  ****************************************************************/
 package org.apache.james.jmap.draft.model;
 
+import static org.apache.james.mailbox.manager.ManagerTestProvisionner.OTHER_USER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 
 import org.apache.james.jmap.draft.model.mailbox.Mailbox;
 import org.apache.james.jmap.draft.model.mailbox.MailboxNamespace;
+import org.apache.james.jmap.draft.model.mailbox.Rights;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.manager.ManagerTestProvisionner;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxConstants;
+import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.StoreMailboxManager;
@@ -42,6 +49,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class MailboxFactoryTest {
     public static final char DELIMITER = '.';
@@ -63,7 +71,7 @@ public class MailboxFactoryTest {
         QuotaManager quotaManager = mailboxManager.getQuotaComponents().getQuotaManager();
 
         user = ManagerTestProvisionner.USER;
-        otherUser = ManagerTestProvisionner.OTHER_USER;
+        otherUser = OTHER_USER;
         mailboxSession = mailboxManager.login(user, ManagerTestProvisionner.USER_PASS);
         otherMailboxSession = mailboxManager.login(otherUser, ManagerTestProvisionner.OTHER_USER_PASS);
         sut = new MailboxFactory(mailboxManager, quotaManager, quotaRootResolver);
@@ -93,6 +101,215 @@ public class MailboxFactoryTest {
 
         assertThat(mailbox).isPresent();
         assertThat(mailbox.get().getId()).isEqualTo(mailboxId);
+    }
+
+    @Test
+    public void mailboxFromMessageManagerShouldReturnStoredValue() throws Exception {
+        String name = "myBox";
+        MailboxPath mailboxPath = MailboxPath.forUser(user, name);
+        mailboxManager.createMailbox(mailboxPath, mailboxSession);
+        mailboxManager.setRights(mailboxPath, MailboxACL.EMPTY.apply(MailboxACL.command()
+            .forUser(OTHER_USER)
+            .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read)
+            .asAddition()),
+            mailboxSession);
+        MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
+
+        Optional<Mailbox> mailbox = sut.builder()
+                .messageManager(messageManager)
+                .session(mailboxSession)
+                .build();
+
+        softly.assertThat(mailbox).isPresent();
+        softly.assertThat(mailbox).map(Mailbox::getId).contains(messageManager.getId());
+        softly.assertThat(mailbox).map(Mailbox::getName).contains(name);
+        softly.assertThat(mailbox).map(Mailbox::getTotalMessages).contains(Number.ZERO);
+        softly.assertThat(mailbox).map(Mailbox::getUnreadMessages).contains(Number.ZERO);
+        softly.assertThat(mailbox).map(Mailbox::getSharedWith).contains(new Rights(ImmutableMap.of(
+            new Rights.Username(OTHER_USER), ImmutableList.of(Rights.Right.Lookup, Rights.Right.Read))));
+    }
+
+    @Test
+    public void mailboxFromMetaDataShouldReturnPresentStoredValue() throws Exception {
+        String name = "myBox";
+        MailboxPath mailboxPath = MailboxPath.forUser(user, name);
+        mailboxManager.createMailbox(mailboxPath, mailboxSession);
+        mailboxManager.setRights(mailboxPath, MailboxACL.EMPTY.apply(MailboxACL.command()
+            .forUser(OTHER_USER)
+            .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read)
+            .asAddition()),
+            mailboxSession);
+        MailboxMetaData metaData = mailboxManager.search(MailboxQuery.privateMailboxesBuilder(mailboxSession).build(), mailboxSession)
+            .stream()
+            .filter(metadata -> metadata.getPath().equals(mailboxPath))
+            .findFirst()
+            .get();
+
+        Optional<Mailbox> mailbox = sut.builder()
+                .mailboxMetadata(metaData)
+                .session(mailboxSession)
+                .build();
+
+        softly.assertThat(mailbox).isPresent();
+        softly.assertThat(mailbox).map(Mailbox::getId).contains(metaData.getId());
+        softly.assertThat(mailbox).map(Mailbox::getName).contains(name);
+        softly.assertThat(mailbox).map(Mailbox::getTotalMessages).contains(Number.ZERO);
+        softly.assertThat(mailbox).map(Mailbox::getUnreadMessages).contains(Number.ZERO);
+        softly.assertThat(mailbox).map(Mailbox::getSharedWith).contains(new Rights(ImmutableMap.of(
+            new Rights.Username(OTHER_USER), ImmutableList.of(Rights.Right.Lookup, Rights.Right.Read))));
+    }
+
+    @Test
+    public void mailboxFromMessageManagerAndPreLoadedCountersShouldReturnPresentStoredValue() throws Exception {
+        String name = "myBox";
+        MailboxPath mailboxPath = MailboxPath.forUser(user, name);
+        mailboxManager.createMailbox(mailboxPath, mailboxSession);
+        mailboxManager.setRights(mailboxPath, MailboxACL.EMPTY.apply(MailboxACL.command()
+            .forUser(OTHER_USER)
+            .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read)
+            .asAddition()),
+            mailboxSession);
+        MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
+        MailboxCounters counters = MailboxCounters.builder()
+            .mailboxId(messageManager.getId())
+            .unseen(36)
+            .count(42)
+            .build();
+
+        Optional<Mailbox> mailbox = sut.builder()
+                .messageManager(messageManager)
+                .session(mailboxSession)
+                .usingPreLoadedMailboxCounter(counters)
+                .build();
+
+        softly.assertThat(mailbox).isPresent();
+        softly.assertThat(mailbox).map(Mailbox::getId).contains(messageManager.getId());
+        softly.assertThat(mailbox).map(Mailbox::getName).contains(name);
+        softly.assertThat(mailbox).map(Mailbox::getTotalMessages).contains(Number.fromLong(42));
+        softly.assertThat(mailbox).map(Mailbox::getUnreadMessages).contains(Number.fromLong(36));
+        softly.assertThat(mailbox).map(Mailbox::getSharedWith).contains(new Rights(ImmutableMap.of(
+            new Rights.Username(OTHER_USER), ImmutableList.of(Rights.Right.Lookup, Rights.Right.Read))));
+    }
+
+    @Test
+    public void mailboxFromMetaDataAndPreLoadedCountersShouldReturnPresentStoredValue() throws Exception {
+        String name = "myBox";
+        MailboxPath mailboxPath = MailboxPath.forUser(user, name);
+        mailboxManager.createMailbox(mailboxPath, mailboxSession);
+        mailboxManager.setRights(mailboxPath, MailboxACL.EMPTY.apply(MailboxACL.command()
+            .forUser(OTHER_USER)
+            .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read)
+            .asAddition()),
+            mailboxSession);
+        MailboxMetaData metaData = mailboxManager.search(MailboxQuery.privateMailboxesBuilder(mailboxSession).build(), mailboxSession)
+            .stream()
+            .filter(metadata -> metadata.getPath().equals(mailboxPath))
+            .findFirst()
+            .get();
+        MailboxCounters counters = MailboxCounters.builder()
+            .mailboxId(metaData.getId())
+            .unseen(36)
+            .count(42)
+            .build();
+
+        Optional<Mailbox> mailbox = sut.builder()
+                .mailboxMetadata(metaData)
+                .session(mailboxSession)
+                .usingPreLoadedMailboxCounter(counters)
+                .build();
+
+        softly.assertThat(mailbox).isPresent();
+        softly.assertThat(mailbox).map(Mailbox::getId).contains(metaData.getId());
+        softly.assertThat(mailbox).map(Mailbox::getName).contains(name);
+        softly.assertThat(mailbox).map(Mailbox::getTotalMessages).contains(Number.fromLong(42));
+        softly.assertThat(mailbox).map(Mailbox::getUnreadMessages).contains(Number.fromLong(36));
+        softly.assertThat(mailbox).map(Mailbox::getSharedWith).contains(new Rights(ImmutableMap.of(
+            new Rights.Username(OTHER_USER), ImmutableList.of(Rights.Right.Lookup, Rights.Right.Read))));
+    }
+
+    @Test
+    public void mailboxFromIdAndPreLoadedCountersShouldReturnPresentStoredValue() throws Exception {
+        String name = "myBox";
+        MailboxPath mailboxPath = MailboxPath.forUser(user, name);
+        MailboxId mailboxId = mailboxManager.createMailbox(mailboxPath, mailboxSession).get();
+        mailboxManager.setRights(mailboxPath, MailboxACL.EMPTY.apply(MailboxACL.command()
+            .forUser(OTHER_USER)
+            .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read)
+            .asAddition()),
+            mailboxSession);
+        MailboxCounters counters = MailboxCounters.builder()
+            .mailboxId(mailboxId)
+            .unseen(36)
+            .count(42)
+            .build();
+
+        Optional<Mailbox> mailbox = sut.builder()
+                .id(mailboxId)
+                .session(mailboxSession)
+                .usingPreLoadedMailboxCounter(counters)
+                .build();
+
+        softly.assertThat(mailbox).isPresent();
+        softly.assertThat(mailbox).map(Mailbox::getId).contains(mailboxId);
+        softly.assertThat(mailbox).map(Mailbox::getName).contains(name);
+        softly.assertThat(mailbox).map(Mailbox::getTotalMessages).contains(Number.fromLong(42));
+        softly.assertThat(mailbox).map(Mailbox::getUnreadMessages).contains(Number.fromLong(36));
+        softly.assertThat(mailbox).map(Mailbox::getSharedWith).contains(new Rights(ImmutableMap.of(
+            new Rights.Username(OTHER_USER), ImmutableList.of(Rights.Right.Lookup, Rights.Right.Read))));
+    }
+
+    @Test
+    public void buildShouldThrowWhenBothMetadataAndId() {
+        assertThatThrownBy(() ->
+            sut.builder()
+                .session(mailboxSession)
+                .id(mock(MailboxId.class))
+                .mailboxMetadata(mock(MailboxMetaData.class))
+                .build())
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void buildShouldThrowWhenBothMessageManagerAndId() {
+        assertThatThrownBy(() ->
+            sut.builder()
+                .session(mailboxSession)
+                .id(mock(MailboxId.class))
+                .messageManager(mock(MessageManager.class))
+                .build())
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void buildShouldThrowWhenBothMessageManagerMetadataAndId() {
+        assertThatThrownBy(() ->
+            sut.builder()
+                .session(mailboxSession)
+                .id(mock(MailboxId.class))
+                .messageManager(mock(MessageManager.class))
+                .mailboxMetadata(mock(MailboxMetaData.class))
+                .build())
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void buildShouldThrowWhenBothMessageManagerAndMetadata() {
+        assertThatThrownBy(() ->
+            sut.builder()
+                .session(mailboxSession)
+                .messageManager(mock(MessageManager.class))
+                .mailboxMetadata(mock(MailboxMetaData.class))
+                .build())
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void buildShouldThrowWhenNoId() {
+        assertThatThrownBy(() ->
+            sut.builder()
+                .session(mailboxSession)
+                .build())
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
