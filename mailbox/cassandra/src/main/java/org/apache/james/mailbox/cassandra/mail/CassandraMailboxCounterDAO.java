@@ -75,9 +75,7 @@ public class CassandraMailboxCounterDAO {
                 .where(eq(CassandraMailboxCountersTable.MAILBOX_ID, bindMarker(CassandraMailboxCountersTable.MAILBOX_ID))));
     }
 
-    public Mono<MailboxCounters> retrieveMailboxCounters(Mailbox mailbox) throws MailboxException {
-        CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-
+    public Mono<MailboxCounters> retrieveMailboxCounters(CassandraId mailboxId) {
         return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(mailboxId, readStatement))
             .map(row ->  MailboxCounters.builder()
                 .mailboxId(mailboxId)

@@ -1326,6 +1326,75 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
+        void getMailboxCountersShouldReturnStoredValue() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+            MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+            MailboxPath inbox1 = MailboxPath.inbox(session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
+
+            mailboxManager.getMailbox(inbox1, session1)
+                .appendMessage(AppendCommand.builder()
+                    .recent()
+                    .build(message), session1);
+
+            List<MailboxCounters> mailboxCounters = mailboxManager.getMailboxCounters(ImmutableList.of(mailboxIdInbox1.get()), session1);
+
+            assertThat(mailboxCounters)
+                .containsExactlyInAnyOrder(MailboxCounters.builder()
+                    .mailboxId(mailboxIdInbox1.get())
+                    .count(1)
+                    .unseen(1)
+                    .build());
+        }
+
+        @Test
+        void getMailboxCountersShouldReturnStoredValues() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+            MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+            MailboxPath inbox1 = MailboxPath.inbox(session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
+            MailboxPath mailbox = MailboxPath.forUser(session1.getUser().asString(), "mailbox");
+            Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailbox, session1);
+
+            mailboxManager.getMailbox(inbox1, session1)
+                .appendMessage(AppendCommand.builder()
+                    .recent()
+                    .build(message), session1);
+
+            List<MailboxCounters> mailboxCounters = mailboxManager.getMailboxCounters(ImmutableList.of(mailboxIdInbox1.get(), mailboxId.get()), session1);
+
+            assertThat(mailboxCounters)
+                .containsExactlyInAnyOrder(
+                    MailboxCounters.builder()
+                        .mailboxId(mailboxIdInbox1.get())
+                        .count(1)
+                        .unseen(1)
+                        .build(),
+                    MailboxCounters.builder()
+                        .mailboxId(mailboxId.get())
+                        .count(0)
+                        .unseen(0)
+                        .build());
+        }
+
+        @Test
+        void getMailboxCountersShouldReturnEmptyWhenNoIdRequested() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+            MailboxSession session1 = mailboxManager.createSystemSession(USER_1);
+            MailboxPath inbox1 = MailboxPath.inbox(session1);
+            Optional<MailboxId> mailboxIdInbox1 = mailboxManager.createMailbox(inbox1, session1);
+
+            mailboxManager.getMailbox(inbox1, session1)
+                .appendMessage(AppendCommand.builder()
+                    .recent()
+                    .build(message), session1);
+
+            List<MailboxCounters> mailboxCounters = mailboxManager.getMailboxCounters(ImmutableList.of(), session1);
+
+            assertThat(mailboxCounters).isEmpty();
+        }
+
+        @Test
         @SuppressWarnings("unchecked")
         void getMetaDataShouldReturnDefaultValueWhenNoReadRight() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
