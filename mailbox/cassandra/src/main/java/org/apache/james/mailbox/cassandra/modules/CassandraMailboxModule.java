@@ -40,6 +40,7 @@ public interface CassandraMailboxModule {
         .table(CassandraMailboxTable.TABLE_NAME)
         .comment("Holds the mailboxes information.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
@@ -51,6 +52,7 @@ public interface CassandraMailboxModule {
         .comment("Denormalisation table. Allow to retrieve mailboxes belonging to a certain user. This is a " +
             "LIST optimisation.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
@@ -61,6 +63,7 @@ public interface CassandraMailboxModule {
         .comment("Denormalisation table. Allow to retrieve mailboxes belonging to a certain user. This is a " +
             "LIST optimisation.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement

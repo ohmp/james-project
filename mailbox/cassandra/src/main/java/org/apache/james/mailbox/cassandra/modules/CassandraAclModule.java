@@ -36,6 +36,7 @@ public interface CassandraAclModule {
         .table(CassandraACLTable.TABLE_NAME)
         .comment("Holds mailbox ACLs")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
@@ -46,6 +47,7 @@ public interface CassandraAclModule {
         .comment("Denormalisation table. Allow to retrieve non personal mailboxIds a user has right on")
         .options(options -> options
             .compactionOptions(SchemaBuilder.leveledStrategy())
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement

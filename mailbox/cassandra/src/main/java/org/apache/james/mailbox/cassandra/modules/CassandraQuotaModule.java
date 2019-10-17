@@ -37,6 +37,7 @@ public interface CassandraQuotaModule {
         .table(CassandraCurrentQuota.TABLE_NAME)
         .comment("Holds per quota-root current values. Quota-roots defines groups of mailboxes which shares quotas limitations.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
@@ -46,6 +47,7 @@ public interface CassandraQuotaModule {
         .table(CassandraMaxQuota.TABLE_NAME)
         .comment("Holds per quota-root limitations. Limitations can concern the number of messages in a quota-root or the total size of a quota-root.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
@@ -55,6 +57,7 @@ public interface CassandraQuotaModule {
         .table(CassandraDomainMaxQuota.TABLE_NAME)
         .comment("Holds per domain limitations. Limitations can concern the number of messages in a quota-root or the total size of a quota-root.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
@@ -64,6 +67,7 @@ public interface CassandraQuotaModule {
         .table(CassandraGlobalMaxQuota.TABLE_NAME)
         .comment("Holds defaults limitations definition.")
         .options(options -> options
+            .compressionOptions(SchemaBuilder.lz4().withChunkLengthInKb(4))
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
