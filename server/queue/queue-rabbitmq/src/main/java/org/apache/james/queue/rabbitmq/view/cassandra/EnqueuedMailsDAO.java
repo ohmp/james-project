@@ -60,6 +60,7 @@ import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.Slice
 import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedItemWithSlicingContext;
 import org.apache.mailet.Mail;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TupleType;
@@ -72,6 +73,8 @@ public class EnqueuedMailsDAO {
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement selectFrom;
     private final PreparedStatement insert;
+    private final PreparedStatement insertErrorMessage;
+    private final PreparedStatement insertSender;
     private final BlobId.Factory blobFactory;
     private final TupleType userHeaderNameHeaderValueTriple;
 
@@ -81,6 +84,8 @@ public class EnqueuedMailsDAO {
 
         this.selectFrom = prepareSelectFrom(session);
         this.insert = prepareInsert(session);
+        this.insertSender = prepareInsertSender(session);
+        this.insertErrorMessage = prepareInsertErrorMessage(session);
         this.blobFactory = blobIdFactory;
         this.userHeaderNameHeaderValueTriple = session.getCluster().getMetadata().newTupleType(text(), text(), text());
     }
@@ -104,14 +109,30 @@ public class EnqueuedMailsDAO {
             .value(BODY_BLOB_ID, bindMarker(BODY_BLOB_ID))
             .value(ENQUEUED_TIME, bindMarker(ENQUEUED_TIME))
             .value(STATE, bindMarker(STATE))
-            .value(SENDER, bindMarker(SENDER))
             .value(RECIPIENTS, bindMarker(RECIPIENTS))
             .value(ATTRIBUTES, bindMarker(ATTRIBUTES))
-            .value(ERROR_MESSAGE, bindMarker(ERROR_MESSAGE))
             .value(REMOTE_ADDR, bindMarker(REMOTE_ADDR))
             .value(REMOTE_HOST, bindMarker(REMOTE_HOST))
             .value(LAST_UPDATED, bindMarker(LAST_UPDATED))
             .value(PER_RECIPIENT_SPECIFIC_HEADERS, bindMarker(PER_RECIPIENT_SPECIFIC_HEADERS)));
+    }
+
+    private PreparedStatement prepareInsertErrorMessage(Session session) {
+        return session.prepare(insertInto(TABLE_NAME)
+            .value(QUEUE_NAME, bindMarker(QUEUE_NAME))
+            .value(TIME_RANGE_START, bindMarker(TIME_RANGE_START))
+            .value(BUCKET_ID, bindMarker(BUCKET_ID))
+            .value(ENQUEUE_ID, bindMarker(ENQUEUE_ID))
+            .value(ERROR_MESSAGE, bindMarker(ERROR_MESSAGE)));
+    }
+
+    private PreparedStatement prepareInsertSender(Session session) {
+        return session.prepare(insertInto(TABLE_NAME)
+            .value(QUEUE_NAME, bindMarker(QUEUE_NAME))
+            .value(TIME_RANGE_START, bindMarker(TIME_RANGE_START))
+            .value(BUCKET_ID, bindMarker(BUCKET_ID))
+            .value(ENQUEUE_ID, bindMarker(ENQUEUE_ID))
+            .value(SENDER, bindMarker(SENDER)));
     }
 
     Mono<Void> insert(EnqueuedItemWithSlicingContext enqueuedItemWithSlicing) {
@@ -120,7 +141,9 @@ public class EnqueuedMailsDAO {
         Mail mail = enqueuedItem.getMail();
         MimeMessagePartsId mimeMessagePartsId = enqueuedItem.getPartsId();
 
-        return executor.executeVoid(insert.bind()
+        BatchStatement batchStatement = new BatchStatement();
+
+        batchStatement.add(insert.bind()
             .setString(QUEUE_NAME, enqueuedItem.getMailQueueName().asString())
             .setTimestamp(TIME_RANGE_START, Date.from(slicingContext.getTimeRangeStart()))
             .setInt(BUCKET_ID, slicingContext.getBucketId().getValue())
@@ -130,14 +153,31 @@ public class EnqueuedMailsDAO {
             .setString(HEADER_BLOB_ID, mimeMessagePartsId.getHeaderBlobId().asString())
             .setString(BODY_BLOB_ID, mimeMessagePartsId.getBodyBlobId().asString())
             .setString(STATE, mail.getState())
-            .setString(SENDER, mail.getMaybeSender().asString(null))
             .setList(RECIPIENTS, asStringList(mail.getRecipients()))
-            .setString(ERROR_MESSAGE, mail.getErrorMessage())
             .setString(REMOTE_ADDR, mail.getRemoteAddr())
             .setString(REMOTE_HOST, mail.getRemoteHost())
             .setTimestamp(LAST_UPDATED, mail.getLastUpdated())
             .setMap(ATTRIBUTES, toRawAttributeMap(mail))
             .setList(PER_RECIPIENT_SPECIFIC_HEADERS, toTupleList(userHeaderNameHeaderValueTriple, mail.getPerRecipientSpecificHeaders())));
+
+        if (mail.getErrorMessage() != null) {
+            batchStatement.add(insertErrorMessage.bind()
+                    .setString(QUEUE_NAME, enqueuedItem.getMailQueueName().asString())
+                    .setTimestamp(TIME_RANGE_START, Date.from(slicingContext.getTimeRangeStart()))
+                    .setInt(BUCKET_ID, slicingContext.getBucketId().getValue())
+                    .setUUID(ENQUEUE_ID, enqueuedItem.getEnqueueId().asUUID())
+                    .setString(ERROR_MESSAGE, mail.getErrorMessage()));
+        }
+        mail.getMaybeSender().asOptional()
+            .map(sender -> insertSender.bind()
+                .setString(QUEUE_NAME, enqueuedItem.getMailQueueName().asString())
+                .setTimestamp(TIME_RANGE_START, Date.from(slicingContext.getTimeRangeStart()))
+                .setInt(BUCKET_ID, slicingContext.getBucketId().getValue())
+                .setUUID(ENQUEUE_ID, enqueuedItem.getEnqueueId().asUUID())
+                .setString(SENDER, sender.asString()))
+            .ifPresent(batchStatement::add);
+
+        return executor.executeVoid(batchStatement);
     }
 
     Flux<EnqueuedItemWithSlicingContext> selectEnqueuedMails(
