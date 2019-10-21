@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -75,6 +76,7 @@ import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -84,12 +86,15 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
 import reactor.core.publisher.Mono;
 
 public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMailDaoAPI {
 
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement insertMail;
+    private final PreparedStatement insertErrorMessage;
+    private final PreparedStatement insertSender;
     private final PreparedStatement deleteMail;
     private final PreparedStatement selectMail;
     private final BlobId.Factory blobIdFactory;
@@ -102,6 +107,8 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
         this.executor = new CassandraAsyncExecutor(session);
 
         this.insertMail = prepareInsert(session);
+        this.insertSender = prepareInsertSender(session);
+        this.insertErrorMessage = prepareInsertErrorMessage(session);
         this.deleteMail = prepareDelete(session);
         this.selectMail = prepareSelect(session);
         this.blobIdFactory = blobIdFactory;
@@ -121,16 +128,28 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
             .value(MAIL_KEY, bindMarker(MAIL_KEY))
             .value(MESSAGE_SIZE, bindMarker(MESSAGE_SIZE))
             .value(STATE, bindMarker(STATE))
-            .value(SENDER, bindMarker(SENDER))
             .value(RECIPIENTS, bindMarker(RECIPIENTS))
             .value(ATTRIBUTES, bindMarker(ATTRIBUTES))
-            .value(ERROR_MESSAGE, bindMarker(ERROR_MESSAGE))
             .value(REMOTE_ADDR, bindMarker(REMOTE_ADDR))
             .value(REMOTE_HOST, bindMarker(REMOTE_HOST))
             .value(LAST_UPDATED, bindMarker(LAST_UPDATED))
             .value(HEADER_BLOB_ID, bindMarker(HEADER_BLOB_ID))
             .value(BODY_BLOB_ID, bindMarker(BODY_BLOB_ID))
             .value(PER_RECIPIENT_SPECIFIC_HEADERS, bindMarker(PER_RECIPIENT_SPECIFIC_HEADERS)));
+    }
+
+    private PreparedStatement prepareInsertSender(Session session) {
+        return session.prepare(insertInto(CONTENT_TABLE_NAME)
+            .value(REPOSITORY_NAME, bindMarker(REPOSITORY_NAME))
+            .value(MAIL_KEY, bindMarker(MAIL_KEY))
+            .value(SENDER, bindMarker(SENDER)));
+    }
+
+    private PreparedStatement prepareInsertErrorMessage(Session session) {
+        return session.prepare(insertInto(CONTENT_TABLE_NAME)
+            .value(REPOSITORY_NAME, bindMarker(REPOSITORY_NAME))
+            .value(MAIL_KEY, bindMarker(MAIL_KEY))
+            .value(ERROR_MESSAGE, bindMarker(ERROR_MESSAGE)));
     }
 
     private PreparedStatement prepareSelect(Session session) {
@@ -143,22 +162,40 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
 
     @Override
     public Mono<Void> store(MailRepositoryUrl url, Mail mail, BlobId headerId, BlobId bodyId) {
-        return Mono.fromCallable(() -> insertMail.bind()
+        BatchStatement batchStatement = new BatchStatement();
+
+        try {
+            batchStatement.add(insertMail.bind()
                 .setString(REPOSITORY_NAME, url.asString())
                 .setString(MAIL_KEY, mail.getName())
                 .setString(HEADER_BLOB_ID, headerId.asString())
                 .setString(BODY_BLOB_ID, bodyId.asString())
                 .setString(STATE, mail.getState())
-                .setString(SENDER, mail.getMaybeSender().asString(null))
                 .setList(RECIPIENTS, asStringList(mail.getRecipients()))
-                .setString(ERROR_MESSAGE, mail.getErrorMessage())
                 .setString(REMOTE_ADDR, mail.getRemoteAddr())
                 .setString(REMOTE_HOST, mail.getRemoteHost())
                 .setLong(MESSAGE_SIZE, mail.getMessageSize())
                 .setTimestamp(LAST_UPDATED, mail.getLastUpdated())
                 .setMap(ATTRIBUTES, toRawAttributeMap(mail))
-                .setMap(PER_RECIPIENT_SPECIFIC_HEADERS, toHeaderMap(mail.getPerRecipientSpecificHeaders())))
-            .flatMap(executor::executeVoid);
+                .setMap(PER_RECIPIENT_SPECIFIC_HEADERS, toHeaderMap(mail.getPerRecipientSpecificHeaders())));
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error computing message size for mail " + mail.getName(), e);
+        }
+
+        if (mail.getErrorMessage() != null) {
+            batchStatement.add(insertErrorMessage.bind()
+                .setString(REPOSITORY_NAME, url.asString())
+                .setString(MAIL_KEY, mail.getName())
+                .setString(ERROR_MESSAGE, mail.getErrorMessage()));
+        }
+        mail.getMaybeSender().asOptional()
+            .map(sender -> insertSender.bind()
+                .setString(REPOSITORY_NAME, url.asString())
+                .setString(MAIL_KEY, mail.getName())
+                .setString(SENDER, sender.asString()))
+            .ifPresent(batchStatement::add);
+
+        return executor.executeVoid(batchStatement);
     }
 
     @Override
