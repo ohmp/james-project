@@ -22,7 +22,7 @@ import java.util.Optional
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{bindMarker, insertInto, select}
-import com.datastax.driver.core.{Row, Session}
+import com.datastax.driver.core.{BatchStatement, Row, Session}
 import javax.inject.Inject
 import org.apache.james.backends.cassandra.init.{CassandraTypesProvider, CassandraZonedDateTimeModule}
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor
@@ -40,39 +40,96 @@ class CassandraTaskExecutionDetailsProjectionDAO @Inject()(session: Session, typ
     .value(TYPE, bindMarker(TYPE))
     .value(STATUS, bindMarker(STATUS))
     .value(SUBMITTED_DATE, bindMarker(SUBMITTED_DATE))
-    .value(SUBMITTED_NODE, bindMarker(SUBMITTED_NODE))
-    .value(STARTED_DATE, bindMarker(STARTED_DATE))
-    .value(RAN_NODE, bindMarker(RAN_NODE))
-    .value(COMPLETED_DATE, bindMarker(COMPLETED_DATE))
-    .value(CANCELED_DATE, bindMarker(CANCELED_DATE))
-    .value(CANCEL_REQUESTED_NODE, bindMarker(CANCEL_REQUESTED_NODE))
-    .value(FAILED_DATE, bindMarker(FAILED_DATE))
-    .value(ADDITIONAL_INFORMATION, bindMarker(ADDITIONAL_INFORMATION))
-  )
+    .value(SUBMITTED_NODE, bindMarker(SUBMITTED_NODE)))
+
+  private val insertFailedDateStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(FAILED_DATE, bindMarker(FAILED_DATE)))
+
+  private val insertCancelRequestedNodeStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(CANCEL_REQUESTED_NODE, bindMarker(CANCEL_REQUESTED_NODE)))
+
+  private val insertCanceledDateStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(CANCELED_DATE, bindMarker(CANCELED_DATE)))
+
+  private val insertCompletedDateStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(COMPLETED_DATE, bindMarker(COMPLETED_DATE)))
+
+  private val insertStartedDateStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(STARTED_DATE, bindMarker(STARTED_DATE)))
+
+  private val insertRanNodeStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(RAN_NODE, bindMarker(RAN_NODE)))
+
+  private val insertAdditionalInformationStatement = session.prepare(insertInto(TABLE_NAME)
+    .value(TASK_ID, bindMarker(TASK_ID))
+    .value(ADDITIONAL_INFORMATION, bindMarker(ADDITIONAL_INFORMATION)))
 
   private val selectStatement = session.prepare(select().from(TABLE_NAME)
     .where(QueryBuilder.eq(TASK_ID, bindMarker(TASK_ID))))
 
   private val listStatement = session.prepare(select().from(TABLE_NAME))
 
-  def saveDetails(details: TaskExecutionDetails): Mono[Void] = cassandraAsyncExecutor.executeVoid(
-    insertStatement.bind
+  def saveDetails(details: TaskExecutionDetails): Mono[Void] = {
+    val batchStatement = new BatchStatement()
+    val boundInsertStatement = insertStatement.bind()
       .setUUID(TASK_ID, details.getTaskId.getValue)
       .setString(TYPE, details.getType.asString())
       .setString(STATUS, details.getStatus.getValue)
       .setUDTValue(SUBMITTED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getSubmittedDate))
       .setString(SUBMITTED_NODE, details.getSubmittedNode.asString)
-      .setUDTValue(STARTED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getStartedDate).orElse(null))
-      .setString(RAN_NODE, details.getRanNode.map[String](_.asString).orElse(null))
-      .setUDTValue(COMPLETED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getCompletedDate).orElse(null))
-      .setUDTValue(CANCELED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getCanceledDate).orElse(null))
-      .setString(CANCEL_REQUESTED_NODE, details.getCancelRequestedNode.map[String](_.asString).orElse(null))
-      .setUDTValue(FAILED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getStartedDate).orElse(null))
-      .setString(ADDITIONAL_INFORMATION, serializeAdditionalInformation(details).orElse(null)))
 
-  private def serializeAdditionalInformation(details: TaskExecutionDetails): Optional[String] = details
-    .getAdditionalInformation
-    .map(jsonTaskAdditionalInformationSerializer.serialize)
+    batchStatement.add(boundInsertStatement)
+
+    details.getAdditionalInformation
+        .ifPresent(information => batchStatement.add(
+          insertAdditionalInformationStatement.bind()
+            .setUUID(TASK_ID, details.getTaskId.getValue)
+            .setString(ADDITIONAL_INFORMATION, jsonTaskAdditionalInformationSerializer.serialize(information))))
+
+    details.getStartedDate
+      .ifPresent(startedDate => batchStatement.add(
+        insertStartedDateStatement.bind()
+          .setUUID(TASK_ID, details.getTaskId.getValue)
+          .setUDTValue(STARTED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, startedDate))))
+
+    details.getFailedDate
+        .ifPresent(failedDate => batchStatement.add(
+          insertFailedDateStatement.bind()
+            .setUUID(TASK_ID, details.getTaskId.getValue)
+            .setUDTValue(FAILED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, failedDate))))
+
+    details.getCanceledDate
+        .ifPresent(canceledDate => batchStatement.add(
+          insertCanceledDateStatement.bind()
+            .setUUID(TASK_ID, details.getTaskId.getValue)
+            .setUDTValue(CANCELED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, canceledDate))))
+
+    details.getCompletedDate
+        .ifPresent(completedDate => batchStatement.add(
+          insertCompletedDateStatement.bind()
+            .setUUID(TASK_ID, details.getTaskId.getValue)
+            .setUDTValue(COMPLETED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, completedDate))))
+
+    details.getRanNode
+      .ifPresent(ranNode => batchStatement.add(
+        insertRanNodeStatement.bind()
+        .setUUID(TASK_ID, details.getTaskId.getValue)
+        .setString(RAN_NODE, ranNode.asString)))
+
+    details.getCancelRequestedNode
+      .ifPresent(cancelRequestNode => batchStatement.add(
+        insertCancelRequestedNodeStatement.bind()
+        .setUUID(TASK_ID, details.getTaskId.getValue)
+        .setString(CANCEL_REQUESTED_NODE, cancelRequestNode.asString)))
+
+    cassandraAsyncExecutor.executeVoid(batchStatement);
+  }
 
   def readDetails(taskId: TaskId): Mono[TaskExecutionDetails] = cassandraAsyncExecutor
     .executeSingleRow(selectStatement.bind().setUUID(TASK_ID, taskId.getValue))
@@ -96,8 +153,7 @@ class CassandraTaskExecutionDetailsProjectionDAO @Inject()(session: Session, typ
       canceledDate = CassandraZonedDateTimeModule.fromUDTOptional(row.getUDTValue(CANCELED_DATE)),
       cancelRequestedNode = Optional.ofNullable(row.getString(CANCEL_REQUESTED_NODE)).map(Hostname(_)),
       failedDate = CassandraZonedDateTimeModule.fromUDTOptional(row.getUDTValue(FAILED_DATE)),
-      additionalInformation = () => deserializeAdditionalInformation(taskType, row),
-    )
+      additionalInformation = () => deserializeAdditionalInformation(taskType, row))
   }
 
   private def deserializeAdditionalInformation(taskType: TaskType, row: Row): Optional[TaskExecutionDetails.AdditionalInformation] = {
