@@ -270,32 +270,19 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
-    public MessageManager getMailbox(MailboxPath mailboxPath, MailboxSession session)
-            throws MailboxException {
-        final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+    public MessageManager getMailbox(MailboxPath mailboxPath, MailboxSession session) throws MailboxException {
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
         Mailbox mailboxRow = mapper.findMailboxByPath(mailboxPath);
 
-        if (mailboxRow == null) {
-            LOGGER.info("Mailbox '{}' not found.", mailboxPath);
-            throw new MailboxNotFoundException(mailboxPath);
+        LOGGER.debug("Loaded mailbox {}", mailboxPath);
 
-        } else {
-            LOGGER.debug("Loaded mailbox {}", mailboxPath);
-
-            return createMessageManager(mailboxRow, session);
-        }
+        return createMessageManager(mailboxRow, session);
     }
 
     @Override
-    public MessageManager getMailbox(MailboxId mailboxId, MailboxSession session)
-            throws MailboxException {
+    public MessageManager getMailbox(MailboxId mailboxId, MailboxSession session) throws MailboxException {
         MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
         Mailbox mailboxRow = mapper.findMailboxById(mailboxId);
-
-        if (mailboxRow == null) {
-            LOGGER.info("Mailbox '{}' not found.", mailboxId.serialize());
-            throw new MailboxNotFoundException(mailboxId);
-        }
 
         if (! assertUserHasAccessTo(mailboxRow, session)) {
             LOGGER.info("Mailbox '{}' does not belong to user '{}' but to '{}'", mailboxId.serialize(), session.getUser(), mailboxRow.getUser());
