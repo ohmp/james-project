@@ -18,7 +18,10 @@
  ****************************************************************/
 package org.apache.james.mailbox.store.mail;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.james.mailbox.acl.ACLDiff;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -29,6 +32,9 @@ import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.transaction.Mapper;
+
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 
 /**
  * Mapper for {@link Mailbox} actions. A {@link MailboxMapper} has a lifecycle from the start of a request 
@@ -75,6 +81,14 @@ public interface MailboxMapper extends Mapper {
      */
     Mailbox findMailboxById(MailboxId mailboxId)
             throws MailboxException, MailboxNotFoundException;
+
+    default Set<Mailbox> findMailboxesById(Collection<MailboxId> mailboxIds) throws MailboxException {
+        return mailboxIds.stream()
+            .flatMap(Throwing.<MailboxId, Stream<Mailbox>>function(
+                id -> Stream.of(findMailboxById(id)))
+                .orReturn(Stream.of()))
+            .collect(Guavate.toImmutableSet());
+    }
 
     /**
      * Return a List of {@link Mailbox} for the given userName and matching the right
