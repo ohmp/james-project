@@ -23,6 +23,7 @@ import static org.apache.james.mailbox.store.mail.AbstractMessageMapper.UNLIMITE
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -299,14 +300,33 @@ public class StoreMailboxManager implements MailboxManager {
             throw new MailboxNotFoundException(mailboxId);
         }
 
-        if (! assertUserHasAccessTo(mailboxRow, session)) {
-            LOGGER.info("Mailbox '{}' does not belong to user '{}' but to '{}'", mailboxId.serialize(), session.getUser(), mailboxRow.getUser());
-            throw new MailboxNotFoundException(mailboxId);
-        }
-
-        LOGGER.debug("Loaded mailbox {}", mailboxId.serialize());
+        assertUserHasAccessToMailbox(mailboxRow, session);
+        logLoadedMailbox(mailboxRow);
 
         return createMessageManager(mailboxRow, session);
+    }
+
+    private void logLoadedMailbox(Mailbox mailbox) {
+        LOGGER.debug("Loaded mailbox {}", mailbox.getMailboxId().serialize());
+    }
+
+    private void assertUserHasAccessToMailbox(Mailbox mailboxRow, MailboxSession session) throws MailboxException {
+        if (! assertUserHasAccessTo(mailboxRow, session)) {
+            LOGGER.info("Mailbox '{}' does not belong to user '{}' but to '{}'", mailboxRow.getMailboxId().serialize(), session.getUser(), mailboxRow.getUser());
+            throw new MailboxNotFoundException(mailboxRow.getMailboxId());
+        }
+    }
+
+    @Override
+    public Set<MessageManager> getMailboxes(Collection<MailboxId> mailboxIds, MailboxSession session) throws MailboxException {
+        MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+
+        return mapper.findMailboxesById(mailboxIds)
+            .stream()
+            .peek(Throwing.<Mailbox>consumer(mailbox -> assertUserHasAccessToMailbox(mailbox, session)).sneakyThrow())
+            .peek(this::logLoadedMailbox)
+            .map(Throwing.<Mailbox, MessageManager>function(mailbox -> createMessageManager(mailbox, session)).sneakyThrow())
+            .collect(Guavate.toImmutableSet());
     }
 
     private boolean assertUserHasAccessTo(Mailbox mailbox, MailboxSession session) throws MailboxException {

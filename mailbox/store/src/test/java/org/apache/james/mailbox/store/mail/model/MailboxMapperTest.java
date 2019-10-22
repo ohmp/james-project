@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
@@ -34,6 +35,8 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Generic purpose tests for your implementation MailboxMapper.
@@ -236,6 +239,17 @@ public abstract class MailboxMapperTest {
         saveAll();
         Mailbox actual = mailboxMapper.findMailboxById(benwaInboxMailbox.getMailboxId());
         MailboxAssert.assertThat(actual).isEqualTo(benwaInboxMailbox);
+    }
+
+    @Test
+    public void findMailboxesByIdShouldReturnExistingMailbox() throws MailboxException {
+        saveAll();
+
+        Set<Mailbox> mailboxes = mailboxMapper.findMailboxesById(ImmutableList.of(benwaInboxMailbox.getMailboxId(), benwaWorkMailbox.getMailboxId()));
+
+        assertThat(mailboxes)
+            .extracting(Mailbox::getMailboxId)
+            .containsExactlyInAnyOrder(benwaInboxMailbox.getMailboxId(), benwaWorkMailbox.getMailboxId());
     }
     
     @Test

@@ -1408,6 +1408,42 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
+        void getMailboxesShouldReturnRequestedMailboxes() throws Exception {
+            MailboxSession session = mailboxManager.createSystemSession(USER_1);
+
+            MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
+            MailboxPath mailboxPath2 = MailboxPath.forUser(USER_1, "mbx2");
+            Optional<MailboxId> mailboxId1 = mailboxManager.createMailbox(mailboxPath1, session);
+            Optional<MailboxId> mailboxId2 = mailboxManager.createMailbox(mailboxPath2, session);
+
+            assertThat(mailboxManager.getMailboxes(ImmutableList.of(mailboxId1.get(), mailboxId2.get()), session))
+                .extracting(MessageManager::getId)
+                .containsExactlyInAnyOrder(mailboxId1.get(), mailboxId2.get());
+        }
+
+        @Test
+        void getMailboxesShouldReturnOnlyRequestedMailbox() throws Exception {
+            MailboxSession session = mailboxManager.createSystemSession(USER_1);
+
+            MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
+            MailboxPath mailboxPath2 = MailboxPath.forUser(USER_1, "mbx2");
+            Optional<MailboxId> mailboxId1 = mailboxManager.createMailbox(mailboxPath1, session);
+            Optional<MailboxId> mailboxId2 = mailboxManager.createMailbox(mailboxPath2, session);
+
+            assertThat(mailboxManager.getMailboxes(ImmutableList.of(mailboxId1.get()), session))
+                .extracting(MessageManager::getId)
+                .containsExactlyInAnyOrder(mailboxId1.get());
+        }
+
+        @Test
+        void getMailboxesShouldEmptyWhenNoMailboxIds() throws Exception {
+            MailboxSession session = mailboxManager.createSystemSession(USER_1);
+
+            assertThat(mailboxManager.getMailboxes(ImmutableList.of(), session))
+                .isEmpty();
+        }
+
+        @Test
         void user1ShouldNotBeAbleToCreateInboxTwice() throws Exception {
             session = mailboxManager.createSystemSession(USER_1);
             mailboxManager.startProcessingRequest(session);
