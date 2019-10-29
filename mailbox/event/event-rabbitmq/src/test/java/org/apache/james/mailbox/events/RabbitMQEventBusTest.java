@@ -140,7 +140,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
     }
 
     private RabbitMQEventBus newEventBus(ReactorRabbitMQChannelPool rabbitMQChannelPool) {
-        return new RabbitMQEventBus(reactorRabbitMQChannelPool, eventSerializer, RetryBackoffConfiguration.DEFAULT, routingKeyConverter, memoryEventDeadLetters, new NoopMetricFactory());
+        return new RabbitMQEventBus(rabbitMQChannelPool, eventSerializer, RetryBackoffConfiguration.DEFAULT, routingKeyConverter, memoryEventDeadLetters, new NoopMetricFactory());
     }
 
     @Override
@@ -341,10 +341,18 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                     .restartPolicy(DockerRestartPolicy.PER_TEST);
 
                 private RabbitMQEventBus rabbitMQEventBusWithNetWorkIssue;
+                private ReactorRabbitMQChannelPool reactorRabbitMQChannelPoolWithNetWorkIssue;
 
                 @BeforeEach
                 void beforeEach() {
-                    rabbitMQEventBusWithNetWorkIssue = newEventBus(reactorRabbitMQChannelPool);
+                    reactorRabbitMQChannelPoolWithNetWorkIssue = new ReactorRabbitMQChannelPool(rabbitMQNetWorkIssueExtension.getRabbitConnectionPool());
+                    reactorRabbitMQChannelPoolWithNetWorkIssue.start();
+                    rabbitMQEventBusWithNetWorkIssue = newEventBus(reactorRabbitMQChannelPoolWithNetWorkIssue);
+                }
+
+                @AfterEach
+                void afterEach() {
+                    reactorRabbitMQChannelPoolWithNetWorkIssue.close();
                 }
 
                 @Test
