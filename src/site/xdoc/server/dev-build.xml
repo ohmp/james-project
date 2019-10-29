@@ -65,7 +65,7 @@
 
     <p>To run the build you need two third-party tools.</p>
     <ol>
-      <li>Java Development Kit - You must have a JDK of Java version 1.11 or higher installed to build the
+      <li>Java Development Kit - You must have a JDK of Java version 11 or higher installed to build the
           James distribution.  The exact JDKs available depend on the platform. A JDK must be downloaded and
           installed before the build can run.</li>
       <li>Maven 3.3.9 - This is a Java-tailored, XML-configured, extensible build or make system. You need maven (3.3.9+) in order
@@ -177,8 +177,9 @@
           <subsection name="Building the project">
               <p> To build the project, you must open the <strong>Maven Projects</strong> panel. Then double click on the install goal to run this goal.<br/></p>
               <img src="./images/intellij-idea/intellij-mvn.png"/>
-              <p>Then you will find the James server zip in the <strong>app/target</strong> folder.<br/></p>
+              <p>Then you will find the James server zip in the <strong>server/app/target</strong> folder.<br/></p>
               <img src="./images/intellij-idea/intellij-james-zip.png"/>
+              <p>Note that tests can be long and can be skept by toggling <i>skip test</i></p>
           </subsection>
     </section>
 
