@@ -27,7 +27,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 class RoutingKeyTest {
     @Test
-    void documentIdShouldRespectBeanContract() {
+    void routingKeyShouldRespectBeanContract() {
         EqualsVerifier.forClass(RoutingKey.class)
             .verify();
     }
