@@ -41,7 +41,6 @@ class RabbitMQWorkQueueSupplier @Inject()(private val rabbitMQConnectionPool: Re
     val listener = WorkerStatusListener(eventSourcingSystem)
     val worker = new SerialTaskManagerWorker(listener, additionalInformationPollingInterval)
     val rabbitMQWorkQueue = new RabbitMQWorkQueue(worker, rabbitMQConnectionPool, jsonTaskSerializer)
-    rabbitMQWorkQueue.start()
     rabbitMQWorkQueue
   }
 }

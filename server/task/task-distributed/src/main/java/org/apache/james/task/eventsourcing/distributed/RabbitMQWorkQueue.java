@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.james.backends.rabbitmq.ReactorRabbitMQChannelPool;
-import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.server.task.json.JsonTaskSerializer;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
@@ -54,7 +53,7 @@ import reactor.rabbitmq.Receiver;
 import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 
-public class RabbitMQWorkQueue implements WorkQueue, Startable {
+public class RabbitMQWorkQueue implements WorkQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQWorkQueue.class);
 
     // Need at least one by receivers plus a shared one for senders
@@ -85,13 +84,13 @@ public class RabbitMQWorkQueue implements WorkQueue, Startable {
         this.taskSerializer = taskSerializer;
     }
 
+    @Override
     public void start() {
         startWorkqueue();
         listenToCancelRequests();
     }
 
     private void startWorkqueue() {
-        channelPool.start();
         channelPool.getSender().declareExchange(ExchangeSpecification.exchange(EXCHANGE_NAME)).block();
         channelPool.getSender().declare(QueueSpecification.queue(QUEUE_NAME).durable(true)).block();
         channelPool.getSender().bind(BindingSpecification.binding(EXCHANGE_NAME, ROUTING_KEY, QUEUE_NAME)).block();

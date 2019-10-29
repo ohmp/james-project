@@ -88,6 +88,7 @@ class DistributedTaskManagerTest implements TaskManagerContract {
         @Override
         public WorkQueue apply(EventSourcingSystem eventSourcingSystem) {
             RabbitMQWorkQueue workQueue = supplier.apply(eventSourcingSystem, UPDATE_INFORMATION_POLLING_INTERVAL);
+            workQueue.start();
             workQueues.add(workQueue);
             return workQueue;
         }
