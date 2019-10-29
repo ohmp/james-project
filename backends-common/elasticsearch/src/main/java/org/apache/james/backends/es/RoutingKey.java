@@ -34,9 +34,6 @@ public class RoutingKey {
         return new RoutingKey(value);
     }
 
-    public static RoutingKey useDocumentId(DocumentId documentId) {
-        return fromString(documentId.asString());
-    }
 
     private final String value;
 

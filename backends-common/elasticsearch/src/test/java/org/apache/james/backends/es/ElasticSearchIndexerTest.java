@@ -44,6 +44,9 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 public class ElasticSearchIndexerTest {
+    public static RoutingKey useDocumentId(DocumentId documentId) {
+        return RoutingKey.fromString(documentId.asString());
+    }
 
     private static final int MINIMUM_BATCH_SIZE = 1;
     private static final IndexName INDEX_NAME = new IndexName("index_name");
@@ -81,7 +84,7 @@ public class ElasticSearchIndexerTest {
         DocumentId documentId = DocumentId.fromString("1");
         String content = "{\"message\": \"trying out Elasticsearch\"}";
         
-        testee.index(documentId, content, RoutingKey.useDocumentId(documentId));
+        testee.index(documentId, content, useDocumentId(documentId));
         elasticSearch.awaitForElasticSearch();
         
         SearchResponse searchResponse = client.search(
@@ -101,10 +104,10 @@ public class ElasticSearchIndexerTest {
     public void updateMessages() throws Exception {
         String content = "{\"message\": \"trying out Elasticsearch\",\"field\":\"Should be unchanged\"}";
 
-        testee.index(DOCUMENT_ID, content, RoutingKey.useDocumentId(DOCUMENT_ID));
+        testee.index(DOCUMENT_ID, content, useDocumentId(DOCUMENT_ID));
         elasticSearch.awaitForElasticSearch();
 
-        testee.update(ImmutableList.of(new UpdatedRepresentation(DOCUMENT_ID, "{\"message\": \"mastering out Elasticsearch\"}")), RoutingKey.useDocumentId(DOCUMENT_ID));
+        testee.update(ImmutableList.of(new UpdatedRepresentation(DOCUMENT_ID, "{\"message\": \"mastering out Elasticsearch\"}")), useDocumentId(DOCUMENT_ID));
         elasticSearch.awaitForElasticSearch();
 
 
@@ -153,7 +156,7 @@ public class ElasticSearchIndexerTest {
     public void deleteByQueryShouldWorkOnSingleMessage() throws Exception {
         DocumentId documentId =  DocumentId.fromString("1:2");
         String content = "{\"message\": \"trying out Elasticsearch\", \"property\":\"1\"}";
-        RoutingKey routingKey = RoutingKey.useDocumentId(documentId);
+        RoutingKey routingKey = useDocumentId(documentId);
 
         testee.index(documentId, content, routingKey);
         elasticSearch.awaitForElasticSearch();
@@ -203,10 +206,10 @@ public class ElasticSearchIndexerTest {
         DocumentId documentId = DocumentId.fromString("1:2");
         String content = "{\"message\": \"trying out Elasticsearch\"}";
 
-        testee.index(documentId, content, RoutingKey.useDocumentId(documentId));
+        testee.index(documentId, content, useDocumentId(documentId));
         elasticSearch.awaitForElasticSearch();
 
-        testee.delete(ImmutableList.of(documentId), RoutingKey.useDocumentId(documentId));
+        testee.delete(ImmutableList.of(documentId), useDocumentId(documentId));
         elasticSearch.awaitForElasticSearch();
         
         SearchResponse searchResponse = client.search(
