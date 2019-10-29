@@ -30,7 +30,7 @@ JIRAS:
 
 Concerned product: Guice product relying on ElasticSearch
 
-We significantly improved our usage of ElasticSearch. Underlying changes includes:
+We significantly improved our usage of ElasticSearch. Underlying changes include:
 
  - The use of routing to collocate emails of a same mailbox within a same shard. This enables search queries to avoid cluster
  level synchronisation, and thus enhance throughput, latencies and scalability.
