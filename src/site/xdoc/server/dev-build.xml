@@ -90,7 +90,7 @@
     </ul>
     </p>
     <p>For example, invoke <code>mvn package</code> to get a zip/tar of James distribution.</p>
-    <p>All built products are output in the <code>server/app/target</code>
+    <p>Spring product is output in the <code>server/app/target</code>
       subdirectory of the James source directory.
       This directory will be deleted if you run build with the clean argument.</p>
     <p><strong>Warning!</strong> Any changes you've made in the 'dist' directory
@@ -100,6 +100,9 @@
   </section>
 
   <section name="Build James Source from Eclipse">
+
+    <p>Warning: due to bad scala support in eclipse, we are not able to compile James with Eclipse. Contributions to
+    enhance the current situation are more than welcome.</p>
 
     <p>Upon the following documentation, an interesting resource
        <a href="http://blog.bonnydoonmedia.com/post.cfm/walkthrough-tutorials-compiling-apache-james-v3-with-eclipse">
