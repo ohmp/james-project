@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
@@ -42,20 +42,20 @@ public class DeletedMessagesVaultExportTask implements Task {
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
 
-        private final User userExportFrom;
+        private final Username usernameExportFrom;
         private final MailAddress exportTo;
         private final long totalExportedMessages;
         private final Instant timestamp;
 
-        public AdditionalInformation(User userExportFrom, MailAddress exportTo, long totalExportedMessages, Instant timestamp) {
-            this.userExportFrom = userExportFrom;
+        public AdditionalInformation(Username usernameExportFrom, MailAddress exportTo, long totalExportedMessages, Instant timestamp) {
+            this.usernameExportFrom = usernameExportFrom;
             this.exportTo = exportTo;
             this.totalExportedMessages = totalExportedMessages;
             this.timestamp = timestamp;
         }
 
-        public String getUserExportFrom() {
-            return userExportFrom.asString();
+        public String getUsernameExportFrom() {
+            return usernameExportFrom.asString();
         }
 
         public String getExportTo() {
@@ -75,15 +75,15 @@ public class DeletedMessagesVaultExportTask implements Task {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletedMessagesVaultExportTask.class);
 
     private final ExportService exportService;
-    private final User userExportFrom;
+    private final Username usernameExportFrom;
     @VisibleForTesting
     final Query exportQuery;
     private final MailAddress exportTo;
     private final AtomicLong totalExportedMessages;
 
-    DeletedMessagesVaultExportTask(ExportService exportService, User userExportFrom, Query exportQuery, MailAddress exportTo) {
+    DeletedMessagesVaultExportTask(ExportService exportService, Username usernameExportFrom, Query exportQuery, MailAddress exportTo) {
         this.exportService = exportService;
-        this.userExportFrom = userExportFrom;
+        this.usernameExportFrom = usernameExportFrom;
         this.exportQuery = exportQuery;
         this.exportTo = exportTo;
         this.totalExportedMessages = new AtomicLong();
@@ -93,10 +93,10 @@ public class DeletedMessagesVaultExportTask implements Task {
     public Result run() {
         try {
             Runnable messageToShareCallback = totalExportedMessages::incrementAndGet;
-            exportService.export(userExportFrom, exportQuery, exportTo, messageToShareCallback);
+            exportService.export(usernameExportFrom, exportQuery, exportTo, messageToShareCallback);
             return Result.COMPLETED;
         } catch (IOException e) {
-            LOGGER.error("Error happens when exporting deleted messages from {} to {}", userExportFrom.asString(), exportTo.asString());
+            LOGGER.error("Error happens when exporting deleted messages from {} to {}", usernameExportFrom.asString(), exportTo.asString());
             return Result.PARTIAL;
         }
     }
@@ -108,11 +108,11 @@ public class DeletedMessagesVaultExportTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(userExportFrom, exportTo, totalExportedMessages.get(), Clock.systemUTC().instant()));
+        return Optional.of(new AdditionalInformation(usernameExportFrom, exportTo, totalExportedMessages.get(), Clock.systemUTC().instant()));
     }
 
-    User getUserExportFrom() {
-        return userExportFrom;
+    Username getUsernameExportFrom() {
+        return usernameExportFrom;
     }
 
     MailAddress getExportTo() {

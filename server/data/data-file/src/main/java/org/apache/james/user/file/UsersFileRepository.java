@@ -29,11 +29,14 @@ import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.james.core.Username;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.repository.file.FilePersistentObjectRepository;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.user.lib.AbstractJamesUsersRepository;
+import org.apache.james.util.streams.Iterators;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,8 +108,10 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
     }
 
     @Override
-    public Iterator<String> list() {
-        return objectRepository.list();
+    public Iterator<Username> list() {
+        return Iterators.toStream(objectRepository.list())
+            .map(Username::of)
+            .iterator();
     }
 
     @Override
@@ -115,14 +120,14 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
             throw new UsersRepositoryException(user.getUserName() + " already exists.");
         }
         try {
-            objectRepository.put(user.getUserName(), user);
+            objectRepository.put(user.getUserName().asString(), user);
         } catch (Exception e) {
             throw new UsersRepositoryException("Exception caught while storing user", e);
         }
     }
 
     @Override
-    public synchronized User getUserByName(String name) throws UsersRepositoryException {
+    public synchronized User getUserByName(Username name) throws UsersRepositoryException {
         if (ignoreCase) {
             name = getRealName(name);
             if (name == null) {
@@ -131,7 +136,7 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
         }
         if (contains(name)) {
             try {
-                return (User) objectRepository.get(name);
+                return (User) objectRepository.get(name.asString());
             } catch (Exception e) {
                 throw new UsersRepositoryException("Exception while retrieving user", e);
             }
@@ -148,18 +153,18 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
      * @return The real name
      * @throws UsersRepositoryException
      */
-    private String getRealName(String name, boolean ignoreCase) {
+    private Username getRealName(Username name, boolean ignoreCase) {
         if (ignoreCase) {
-            Iterator<String> it = list();
+            Iterator<Username> it = list();
             while (it.hasNext()) {
-                String temp = it.next();
-                if (name.equalsIgnoreCase(temp)) {
+                Username temp = it.next();
+                if (name.asString().equalsIgnoreCase(temp.asString())) {
                     return temp;
                 }
             }
             return null;
         } else {
-            return objectRepository.containsKey(name) ? name : null;
+            return objectRepository.containsKey(name.asString()) ? name : null;
         }
     }
 
@@ -170,40 +175,40 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
      * @return The real name
      * @throws UsersRepositoryException
      */
-    private String getRealName(String name) throws UsersRepositoryException {
+    private Username getRealName(Username name) throws UsersRepositoryException {
         return getRealName(name, ignoreCase);
     }
 
     @Override
     protected void doUpdateUser(User user) throws UsersRepositoryException {
         try {
-            objectRepository.put(user.getUserName(), user);
+            objectRepository.put(user.getUserName().asString(), user);
         } catch (Exception e) {
             throw new UsersRepositoryException("Exception caught while storing user", e);
         }
     }
 
     @Override
-    public synchronized void removeUser(String name) throws UsersRepositoryException {
-        if (!objectRepository.remove(name)) {
+    public synchronized void removeUser(Username name) throws UsersRepositoryException {
+        if (!objectRepository.remove(name.asString())) {
             throw new UsersRepositoryException("User " + name + " does not exist");
         }
     }
 
     @Override
-    public boolean contains(String name) throws UsersRepositoryException {
+    public boolean contains(Username name) throws UsersRepositoryException {
         if (ignoreCase) {
-            return containsCaseInsensitive(name);
+            return containsCaseInsensitive(name.asString());
         } else {
-            return objectRepository.containsKey(name);
+            return objectRepository.containsKey(name.asString());
         }
     }
 
     @Deprecated
     private boolean containsCaseInsensitive(String name) {
-        Iterator<String> it = list();
+        Iterator<Username> it = list();
         while (it.hasNext()) {
-            if (name.equalsIgnoreCase(it.next())) {
+            if (name.equalsIgnoreCase(it.next().asString())) {
                 return true;
             }
         }
@@ -211,7 +216,7 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
     }
 
     @Override
-    public boolean test(String name, String password) throws UsersRepositoryException {
+    public boolean test(Username name, String password) throws UsersRepositoryException {
         User user;
         try {
             user = getUserByName(name);
@@ -227,7 +232,7 @@ public class UsersFileRepository extends AbstractJamesUsersRepository {
     @Override
     public int countUsers() throws UsersRepositoryException {
         int count = 0;
-        for (Iterator<String> it = list(); it.hasNext(); it.next()) {
+        for (Iterator<Username> it = list(); it.hasNext(); it.next()) {
             count++;
         }
         return count;

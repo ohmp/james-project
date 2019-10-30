@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.james.core.Username;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.ImapSessionUtils;
@@ -90,7 +91,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
      * @param responder
      */
     protected final void doProcess(String referenceName, String mailboxName, ImapSession session, String tag, ImapCommand command, Responder responder, MailboxTyper mailboxTyper) {
-        String user = ImapSessionUtils.getUserName(session);
+        Username user = ImapSessionUtils.getUserName(session);
         final MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
         try {
             // Should the namespace section be returned or not?
@@ -119,7 +120,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                     isRelative = true;
                 }
                 // Get the mailbox for the reference name.
-                MailboxPath rootPath = new MailboxPath(referenceRoot, "", "");
+                MailboxPath rootPath = new MailboxPath(referenceRoot, null, "");//FIXME-USERNAME
                 MailboxId mailboxId = null;
                 results = new ArrayList<>(1);
                 results.add(new MailboxMetaData(rootPath, mailboxId, mailboxSession.getPathDelimiter(),

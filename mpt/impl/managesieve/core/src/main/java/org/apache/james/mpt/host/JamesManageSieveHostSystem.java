@@ -19,7 +19,7 @@
 
 package org.apache.james.mpt.host;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.managesieve.core.CoreProcessor;
 import org.apache.james.managesieve.jsieve.Parser;
@@ -53,14 +53,14 @@ public abstract class JamesManageSieveHostSystem implements ManageSieveHostSyste
     protected abstract UsersRepository createUsersRepository();
 
     @Override
-    public boolean addUser(String user, String password) throws Exception {
-        usersRepository.addUser(user, password);
+    public boolean addUser(Username username, String password) throws Exception {
+        usersRepository.addUser(username, password);
         return true;
     }
 
     @Override
     public void setMaxQuota(String user, long value) throws Exception {
-        sieveRepository.setQuota(User.fromUsername(user), QuotaSize.size(value));
+        sieveRepository.setQuota(Username.of(user), QuotaSize.size(value));
     }
 
     @Override

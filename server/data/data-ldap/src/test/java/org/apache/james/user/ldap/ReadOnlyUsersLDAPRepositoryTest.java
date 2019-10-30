@@ -32,6 +32,7 @@ import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.commons.configuration2.plist.PropertyListConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -43,8 +44,8 @@ import org.slf4j.LoggerFactory;
 public class ReadOnlyUsersLDAPRepositoryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReadOnlyUsersLDAPRepositoryTest.class);
-    private static final String JAMES_USER_MAIL = JAMES_USER + "@" + DOMAIN;
-    private static final String UNKNOWN = "unknown";
+    private static final Username JAMES_USER_MAIL = Username.of(JAMES_USER + "@" + DOMAIN);
+    private static final Username UNKNOWN = Username.of("unknown");
     private static final String BAD_PASSWORD = "badpassword";
 
     private DomainList domainList;
@@ -169,7 +170,7 @@ public class ReadOnlyUsersLDAPRepositoryTest {
 
         @Test
         public void specialCharacterInUserInputShouldBeSanitized() throws Exception {
-            String patternMatchingMultipleUsers = "j*";
+            Username patternMatchingMultipleUsers = Username.of("j*");
 
             ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
             assertThat(ldapRepository.test(patternMatchingMultipleUsers, PASSWORD)).isFalse();
@@ -178,13 +179,13 @@ public class ReadOnlyUsersLDAPRepositoryTest {
         @Test
         public void containsWithGetUserShouldBeTrue() throws Exception {
             ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfiguration());
-            assertThat(ldapRepository.contains(ldapRepository.getUser(new MailAddress(JAMES_USER_MAIL)))).isTrue();
+            assertThat(ldapRepository.contains(ldapRepository.getUser(new MailAddress(JAMES_USER_MAIL.asString())))).isTrue();
         }
 
         @Test
         public void containsWithGetUserShouldBeTrueWithVirtualHosting() throws Exception {
             ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
-            assertThat(ldapRepository.contains(ldapRepository.getUser(new MailAddress(JAMES_USER_MAIL)))).isTrue();
+            assertThat(ldapRepository.contains(ldapRepository.getUser(new MailAddress(JAMES_USER_MAIL.asString())))).isTrue();
         }
 
         private ReadOnlyUsersLDAPRepository startUsersRepository(HierarchicalConfiguration<ImmutableNode> ldapRepositoryConfiguration) throws Exception {

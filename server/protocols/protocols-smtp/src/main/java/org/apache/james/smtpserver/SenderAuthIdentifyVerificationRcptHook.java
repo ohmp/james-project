@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
+import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.protocols.smtp.SMTPSession;
@@ -69,7 +70,7 @@ public class SenderAuthIdentifyVerificationRcptHook extends AbstractSenderAuthId
     }
 
     @Override
-    protected String getUser(MailAddress mailAddress) {
+    protected Username getUser(MailAddress mailAddress) {
         try {
             return users.getUser(mailAddress);
         } catch (UsersRepositoryException e) {

@@ -25,7 +25,7 @@ import java.time.Instant;
 import javax.mail.internet.AddressException;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.json.DTOModule;
 import org.apache.james.server.task.json.dto.AdditionalInformationDTO;
 import org.apache.james.server.task.json.dto.AdditionalInformationDTOModule;
@@ -37,7 +37,7 @@ public class DeletedMessagesVaultExportTaskAdditionalInformationDTO implements A
     private static DeletedMessagesVaultExportTaskAdditionalInformationDTO fromDomainObject(DeletedMessagesVaultExportTask.AdditionalInformation additionalInformation, String type) {
         return new DeletedMessagesVaultExportTaskAdditionalInformationDTO(
             type,
-            additionalInformation.getUserExportFrom(),
+            additionalInformation.getUsernameExportFrom(),
             additionalInformation.getExportTo(),
             additionalInformation.getTotalExportedMessages(),
             additionalInformation.timestamp()
@@ -86,7 +86,7 @@ public class DeletedMessagesVaultExportTaskAdditionalInformationDTO implements A
     DeletedMessagesVaultExportTask.AdditionalInformation toDomainObject() {
         try {
             return new DeletedMessagesVaultExportTask.AdditionalInformation(
-                User.fromUsername(userExportFrom),
+                Username.of(userExportFrom),
                 new MailAddress(exportTo),
                 totalExportedMessages,
                 timestamp

@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSessionUtil;
 import org.apache.james.mailbox.MessageManager;
@@ -56,12 +57,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class StoreMailboxManagerTest {
-    private static final String CURRENT_USER = "user";
+    private static final Username CURRENT_USER = Username.of("user");
     private static final String CURRENT_USER_PASSWORD = "secret";
-    private static final String ADMIN = "admin";
+    private static final Username ADMIN = Username.of("admin");
     private static final String ADMIN_PASSWORD = "adminsecret";
     private static final MailboxId MAILBOX_ID = TestId.of(123);
-    private static final String UNKNOWN_USER = "otheruser";
+    private static final Username UNKNOWN_USER = Username.of("otheruser");
     private static final String BAD_PASSWORD = "badpassword";
     private static final String EMPTY_PREFIX = "";
 
@@ -121,7 +122,7 @@ public class StoreMailboxManagerTest {
     public void getMailboxShouldReturnMailboxManagerWhenKnownIdAndDifferentCaseUser() throws Exception {
         Mailbox mockedMailbox = mock(Mailbox.class);
         when(mockedMailbox.generateAssociatedPath())
-            .thenReturn(MailboxPath.forUser("uSEr", "mailboxName"));
+            .thenReturn(MailboxPath.forUser(Username.of("uSEr"), "mailboxName"));
         when(mockedMailbox.getMailboxId()).thenReturn(MAILBOX_ID);
         when(mockedMailboxMapper.findMailboxById(MAILBOX_ID)).thenReturn(mockedMailbox);
 
@@ -135,7 +136,7 @@ public class StoreMailboxManagerTest {
         Mailbox mockedMailbox = mock(Mailbox.class);
         when(mockedMailbox.getACL()).thenReturn(new MailboxACL());
         when(mockedMailbox.generateAssociatedPath())
-            .thenReturn(MailboxPath.forUser("other.user", "mailboxName"));
+            .thenReturn(MailboxPath.forUser(Username.of("other.user"), "mailboxName"));
         when(mockedMailbox.getMailboxId()).thenReturn(MAILBOX_ID);
         when(mockedMailboxMapper.findMailboxById(MAILBOX_ID)).thenReturn(mockedMailbox);
         when(mockedMailboxMapper.findMailboxByPath(any())).thenReturn(mockedMailbox);
@@ -197,20 +198,20 @@ public class StoreMailboxManagerTest {
     @Test
     public void getPathLikeShouldReturnUserPathLikeWhenNoPrefixDefined() throws Exception {
         //Given
-        MailboxSession session = MailboxSessionUtil.create("user");
+        MailboxSession session = MailboxSessionUtil.create(CURRENT_USER);
         MailboxQuery.Builder testee = MailboxQuery.builder()
             .expression(new PrefixedRegex(EMPTY_PREFIX, "abc", session.getPathDelimiter()));
         //When
         MailboxQuery mailboxQuery = testee.build();
 
         assertThat(StoreMailboxManager.getPathLike(mailboxQuery, session))
-            .isEqualTo(MailboxPath.forUser("user", "abc%"));
+            .isEqualTo(MailboxPath.forUser(CURRENT_USER, "abc%"));
     }
 
     @Test
     public void getPathLikeShouldReturnUserPathLikeWhenPrefixDefined() throws Exception {
         //Given
-        MailboxSession session = MailboxSessionUtil.create("user");
+        MailboxSession session = MailboxSessionUtil.create(CURRENT_USER);
         MailboxQuery.Builder testee = MailboxQuery.builder()
             .expression(new PrefixedRegex("prefix.", "abc", session.getPathDelimiter()));
 
@@ -218,7 +219,7 @@ public class StoreMailboxManagerTest {
         MailboxQuery mailboxQuery = testee.build();
 
         assertThat(StoreMailboxManager.getPathLike(mailboxQuery, session))
-            .isEqualTo(MailboxPath.forUser("user", "prefix.abc%"));
+            .isEqualTo(MailboxPath.forUser(CURRENT_USER, "prefix.abc%"));
     }
 }
 

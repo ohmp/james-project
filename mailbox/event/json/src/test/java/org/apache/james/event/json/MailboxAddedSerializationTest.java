@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.NoSuchElementException;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -37,11 +37,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class MailboxAddedSerializationTest {
-    private static final User USER = User.fromUsername("user");
+    private static final Username USERNAME = Username.of("user");
     private static final MailboxListener.MailboxAdded EVENT_1 = new MailboxListener.MailboxAdded(
         MailboxSession.SessionId.of(42),
-        USER,
-        new MailboxPath(MailboxConstants.USER_NAMESPACE, "bob", "mailboxName"),
+        USERNAME,
+        new MailboxPath(MailboxConstants.USER_NAMESPACE, Username.of("bob"), "mailboxName"),
         TestId.of(18),
         EVENT_ID);
     private static final String JSON_1 = "{" +

@@ -28,6 +28,7 @@ import java.util.Iterator;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.apache.james.core.Username;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -104,7 +105,7 @@ public class UsersFileRepositoryTest extends AbstractUsersRepositoryTest {
     @Override
     protected void disposeUsersRepository() throws UsersRepositoryException {
         if (this.usersRepository != null) {
-            Iterator<String> i = this.usersRepository.list();
+            Iterator<Username> i = this.usersRepository.list();
             while (i.hasNext()) {
                 this.usersRepository.removeUser(i.next());
             }

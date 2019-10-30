@@ -32,7 +32,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.jmap.draft.exceptions.MailboxNotOwnedException;
 import org.apache.james.jmap.draft.model.CreationMessage;
 import org.apache.james.jmap.draft.model.CreationMessage.DraftEmailer;
@@ -78,7 +78,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class SetMessagesCreationProcessorTest {
     
-    private static final String USER = "user@example.com";
+    private static final Username USER = Username.of("user@example.com");
     private static final String OUTBOX = "outbox";
     private static final InMemoryId OUTBOX_ID = InMemoryId.of(12345);
     private static final String DRAFTS = "drafts";
@@ -349,7 +349,7 @@ public class SetMessagesCreationProcessorTest {
         when(mockedMailboxIdFactory.fromString(mailboxId.serialize()))
             .thenReturn(mailboxId);
         when(mailbox.getMailboxPath())
-            .thenReturn(MailboxPath.forUser("otheruser@example.com", mailboxId.serialize()));
+            .thenReturn(MailboxPath.forUser(Username.of("otheruser@example.com"), mailboxId.serialize()));
 
         assertThatThrownBy(() -> sut.assertIsUserOwnerOfMailboxes(ImmutableList.of(mailboxId), session))
             .isInstanceOf(MailboxNotOwnedException.class);
@@ -381,7 +381,7 @@ public class SetMessagesCreationProcessorTest {
         }
 
         @Override
-        public Stream<MessageManager> getMailboxByRole(Role aRole, User user) {
+        public Stream<MessageManager> getMailboxByRole(Role aRole, Username username) {
             if (aRole.equals(Role.OUTBOX)) {
                 return OptionalUtils.toStream(outboxSupplier.get());
             } else if (aRole.equals(Role.DRAFTS)) {

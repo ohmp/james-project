@@ -20,6 +20,7 @@ package org.apache.james.imap.processor;
 
 import java.util.Optional;
 
+import org.apache.james.core.Username;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
@@ -68,7 +69,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             if (!authFailure) {
                 final MailboxManager mailboxManager = getMailboxManager();
                 try {
-                    final MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId(),
+                    final MailboxSession mailboxSession = mailboxManager.login(Username.of(authenticationAttempt.getAuthenticationId()),
                         authenticationAttempt.getPassword());
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
@@ -97,9 +98,9 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             if (!authFailure) {
                 final MailboxManager mailboxManager = getMailboxManager();
                 try {
-                    final MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
+                    final MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(Username.of(authenticationAttempt.getAuthenticationId()),
                         authenticationAttempt.getPassword(),
-                        authenticationAttempt.getDelegateUserName().get());
+                        Username.of(authenticationAttempt.getDelegateUserName().get()));
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
                     provisionInbox(session, mailboxManager, mailboxSession);

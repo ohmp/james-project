@@ -19,6 +19,8 @@
 
 package org.apache.james.user.api;
 
+import org.apache.james.core.Username;
+
 /**
  * Expose user account management functionality through JMX.
  */
@@ -33,7 +35,7 @@ public interface UsersRepositoryManagementMBean {
      * @param password
      *            The password of the user being added
      */
-    void addUser(String userName, String password) throws Exception;
+    void addUser(Username userName, String password) throws Exception;
 
     /**
      * Deletes a user from this mail server.
@@ -44,7 +46,7 @@ public interface UsersRepositoryManagementMBean {
      * @throws UsersRepositoryException
      *             if error
      */
-    void deleteUser(String userName) throws Exception;
+    void deleteUser(Username userName) throws Exception;
 
     /**
      * Check if a user exists with the given name.
@@ -56,7 +58,7 @@ public interface UsersRepositoryManagementMBean {
      * @throws UsersRepositoryException
      *             if error
      */
-    boolean verifyExists(String userName) throws Exception;
+    boolean verifyExists(Username userName) throws Exception;
 
     /**
      * Total count of existing users
@@ -74,7 +76,7 @@ public interface UsersRepositoryManagementMBean {
      * @throws UsersRepositoryException
      *             if error
      */
-    String[] listAllUsers() throws Exception;
+    Username[] listAllUsers() throws Exception;
 
     /**
      * Set a user's password
@@ -87,7 +89,7 @@ public interface UsersRepositoryManagementMBean {
      * @throws UsersRepositoryException
      *             if error
      */
-    void setPassword(String userName, String password) throws Exception;
+    void setPassword(Username userName, String password) throws Exception;
 
     /**
      * Removes a user's alias which terminates local mail forwarding
@@ -99,7 +101,7 @@ public interface UsersRepositoryManagementMBean {
      *             if error
      */
     @Deprecated
-    void unsetAlias(String userName) throws Exception;
+    void unsetAlias(Username userName) throws Exception;
 
     /**
      * Retrieves the user's alias, if set
@@ -110,7 +112,7 @@ public interface UsersRepositoryManagementMBean {
      *             if error
      */
     @Deprecated
-    String getAlias(String userName) throws Exception;
+    String getAlias(Username userName) throws Exception;
 
     /**
      * Removes a user's forward email address which terminates remote mail
@@ -123,7 +125,7 @@ public interface UsersRepositoryManagementMBean {
      *             if error
      */
     @Deprecated
-    void unsetForwardAddress(String userName) throws Exception;
+    void unsetForwardAddress(Username userName) throws Exception;
 
     /**
      * Retrieves the user's forward, if set
@@ -136,7 +138,7 @@ public interface UsersRepositoryManagementMBean {
      *             if error
      */
     @Deprecated
-    String getForwardAddress(String userName) throws Exception;
+    String getForwardAddress(Username userName) throws Exception;
 
     /**
      * Return true if the UserRepository has VirtualHosting enabled

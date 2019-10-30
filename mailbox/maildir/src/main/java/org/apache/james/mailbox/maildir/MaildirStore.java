@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
@@ -97,7 +98,7 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
      * @return The Mailbox object populated with data from the file system
      * @throws MailboxException If the mailbox folder doesn't exist or can't be read
      */
-    public Mailbox loadMailbox(MailboxSession session, File root, String namespace, String user, String folderName) throws MailboxException {
+    public Mailbox loadMailbox(MailboxSession session, File root, String namespace, Username user, String folderName) throws MailboxException {
         String mailboxName = getMailboxNameFromFolderName(folderName);
         return loadMailbox(session, new File(root, folderName), new MailboxPath(namespace, user, mailboxName));
     }
@@ -236,7 +237,7 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
      * @return The absolute path to the folder containing the mailbox
      */
     public String getFolderName(Mailbox mailbox) {
-        return getFolderName(mailbox.getNamespace(), mailbox.getUser(), mailbox.getName());
+        return getFolderName(mailbox.getNamespace(), mailbox.getUser().asString(), mailbox.getName());
     }
     
     /**
@@ -245,7 +246,7 @@ public class MaildirStore implements UidProvider, ModSeqProvider {
      * @return The absolute path to the folder containing the mailbox
      */
     public String getFolderName(MailboxPath mailboxPath) {
-        return getFolderName(mailboxPath.getNamespace(), mailboxPath.getUser(), mailboxPath.getName());
+        return getFolderName(mailboxPath.getNamespace(), mailboxPath.getUser().asString(), mailboxPath.getName());
     }
 
     @Override

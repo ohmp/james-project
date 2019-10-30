@@ -33,7 +33,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.junit.TemporaryFolderExtension;
 import org.apache.james.sieverepository.api.ScriptContent;
@@ -81,7 +81,7 @@ class SieveScriptRoutesTest {
 
         sieveRepository = new SieveFileRepository(fileSystem);
         UsersRepository usersRepository = MemoryUsersRepository.withoutVirtualHosting();
-        usersRepository.addUser("userA", "password");
+        usersRepository.addUser(Username.of("userA"), "password");
 
         URL sieveResource = ClassLoader.getSystemResource("sieve/my_sieve");
         sieveContent = IOUtils.toString(sieveResource, StandardCharsets.UTF_8);
@@ -178,7 +178,7 @@ class SieveScriptRoutesTest {
             .statusCode(HttpStatus.NO_CONTENT_204);
 
         assertThat(getScriptContent(sieveRepository
-            .getScript(User.fromUsername("userA"), new ScriptName("scriptA"))))
+            .getScript(Username.of("userA"), new ScriptName("scriptA"))))
             .isEqualTo(new ScriptContent(" "));
     }
 
@@ -194,7 +194,7 @@ class SieveScriptRoutesTest {
             .statusCode(HttpStatus.NO_CONTENT_204);
 
         assertThat(getScriptContent(sieveRepository
-            .getScript(User.fromUsername("userA"), new ScriptName("scriptA"))))
+            .getScript(Username.of("userA"), new ScriptName("scriptA"))))
             .isEqualTo(new ScriptContent(sieveContent));
     }
 
@@ -211,7 +211,7 @@ class SieveScriptRoutesTest {
             .statusCode(HttpStatus.NO_CONTENT_204);
 
         assertThat(getScriptContent(sieveRepository
-            .getActive(User.fromUsername("userA"))))
+            .getActive(Username.of("userA"))))
             .isEqualTo(new ScriptContent(sieveContent));
     }
 
@@ -227,7 +227,7 @@ class SieveScriptRoutesTest {
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThatThrownBy(() -> sieveRepository.getActive(User.fromUsername("userA")))
+        assertThatThrownBy(() -> sieveRepository.getActive(Username.of("userA")))
             .isInstanceOf(ScriptNotFoundException.class);
     }
 

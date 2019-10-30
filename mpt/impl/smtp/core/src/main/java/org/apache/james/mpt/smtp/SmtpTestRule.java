@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.core.Domain;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.api.InMemoryDNSService;
 import org.apache.james.modules.protocols.ProtocolHandlerModule;
@@ -82,11 +82,11 @@ public class SmtpTestRule implements TestRule, SmtpHostSystem {
     }
 
     @Override
-    public boolean addUser(String userAtDomain, String password) throws Exception {
-        Optional<Domain> domain = User.fromUsername(userAtDomain).getDomainPart();
+    public boolean addUser(Username userAtDomain, String password) throws Exception {
+        Optional<Domain> domain = userAtDomain.getDomainPart();
         Preconditions.checkArgument(domain.isPresent(), "The 'user' should contain the 'domain'");
         createDomainIfNeeded(domain.get().asString());
-        jamesServer.getProbe(DataProbeImpl.class).addUser(userAtDomain, password);
+        jamesServer.getProbe(DataProbeImpl.class).addUser(userAtDomain.asString(), password);
         return true;
     }
 

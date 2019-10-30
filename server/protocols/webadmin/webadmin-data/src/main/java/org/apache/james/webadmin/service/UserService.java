@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.Username;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
@@ -58,17 +59,19 @@ public class UserService {
         return  Optional.ofNullable(usersRepository.list())
             .map(Iterators::toStream)
             .orElse(Stream.of())
+            .map(Username::asString)
             .map(UserResponse::new)
             .collect(Guavate.toImmutableList());
     }
 
     public void removeUser(String username) throws UsersRepositoryException {
         usernamePreconditions(username);
-        usersRepository.removeUser(username);
+        usersRepository.removeUser(Username.of(username));
     }
 
-    public String upsertUser(String username, char[] password, Response response) throws UsersRepositoryException {
-        usernamePreconditions(username);
+    public String upsertUser(String rawUsername, char[] password, Response response) throws UsersRepositoryException {
+        usernamePreconditions(rawUsername);
+        Username username = Username.of(rawUsername);
         User user = usersRepository.getUserByName(username);
         try {
             upsert(user, username, password);
@@ -85,7 +88,7 @@ public class UserService {
         Preconditions.checkArgument(username.length() < MAXIMUM_MAIL_ADDRESS_LENGTH);
     }
 
-    private void upsert(User user, String username, char[] password) throws UsersRepositoryException {
+    private void upsert(User user, Username username, char[] password) throws UsersRepositoryException {
         if (user == null) {
             usersRepository.addUser(username, new String(password));
         } else {

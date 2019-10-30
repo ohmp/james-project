@@ -30,7 +30,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -78,8 +78,8 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
     void createMailboxesIfNeeded(MailboxSession session) {
         TimeMetric timeMetric = metricFactory.timer("JMAP-mailboxes-provisioning");
         try {
-            User user = session.getUser();
-            createDefaultMailboxes(user);
+            Username username = session.getUser();
+            createDefaultMailboxes(username);
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         } finally {
@@ -87,8 +87,8 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
         }
     }
 
-    private void createDefaultMailboxes(User user) throws MailboxException {
-        MailboxSession session = mailboxManager.createSystemSession(user.asString());
+    private void createDefaultMailboxes(Username username) throws MailboxException {
+        MailboxSession session = mailboxManager.createSystemSession(username);
         DefaultMailboxes.DEFAULT_MAILBOXES.stream()
             .map(toMailboxPath(session))
             .filter(mailboxPath -> mailboxDoesntExist(mailboxPath, session))
@@ -104,7 +104,7 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
     }
 
     private Function<String, MailboxPath> toMailboxPath(MailboxSession session) {
-        return mailbox -> MailboxPath.forUser(session.getUser().asString(), mailbox);
+        return mailbox -> MailboxPath.forUser(session.getUser(), mailbox);
     }
     
     private void createMailbox(MailboxPath mailboxPath, MailboxSession session) {

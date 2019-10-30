@@ -22,10 +22,13 @@ package org.apache.james.mailbox.acl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.james.core.Username;
+
 import org.junit.Before;
 import org.junit.Test;
 
 public class SimpleGroupMembershipResolverTest {
+    private static final Username USER = Username.of("user");
 
     private SimpleGroupMembershipResolver simpleGroupMembershipResolver;
 
@@ -37,7 +40,7 @@ public class SimpleGroupMembershipResolverTest {
     @Test
     public void isMemberShouldReturnFalseWhenEmptyResolver() throws Exception {
         //When
-        boolean actual = simpleGroupMembershipResolver.isMember("user", "group");
+        boolean actual = simpleGroupMembershipResolver.isMember(USER, "group");
         //Then
         assertThat(actual).isFalse();
     }
@@ -45,9 +48,9 @@ public class SimpleGroupMembershipResolverTest {
     @Test
     public void isMemberShouldReturnTrueWhenTheSearchedMembershipIsPresent() throws Exception {
         //Given
-        simpleGroupMembershipResolver.addMembership("group", "user");
+        simpleGroupMembershipResolver.addMembership("group", USER);
         //When
-        boolean actual = simpleGroupMembershipResolver.isMember("user", "group");
+        boolean actual = simpleGroupMembershipResolver.isMember(USER, "group");
         //Then
         assertThat(actual).isTrue();
     }
@@ -55,8 +58,8 @@ public class SimpleGroupMembershipResolverTest {
     @Test
     public void addMembershipShouldAddAMembershipWhenNonNullUser() throws Exception {
         //When
-        simpleGroupMembershipResolver.addMembership("group", "user");
-        boolean actual = simpleGroupMembershipResolver.isMember("user", "group");
+        simpleGroupMembershipResolver.addMembership("group", USER);
+        boolean actual = simpleGroupMembershipResolver.isMember(USER, "group");
         //Then
         assertThat(actual).isTrue();
     }
@@ -64,7 +67,7 @@ public class SimpleGroupMembershipResolverTest {
     @Test
     public void addMembershipShouldAddAMembershipWithANullUser() throws Exception {
         //Given
-        String userAdded = null;
+        Username userAdded = null;
         //When
         simpleGroupMembershipResolver.addMembership("group", userAdded);
         boolean actual = simpleGroupMembershipResolver.isMember(userAdded, "group");

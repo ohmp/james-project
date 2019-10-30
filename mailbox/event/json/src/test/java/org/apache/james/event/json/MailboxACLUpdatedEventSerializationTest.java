@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.NoSuchElementException;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.acl.ACLDiff;
 import org.apache.james.mailbox.events.MailboxListener;
@@ -40,18 +40,18 @@ import org.junit.jupiter.api.Test;
 
 class MailboxACLUpdatedEventSerializationTest {
 
-    private static final User USER = User.fromUsername("user");
+    private static final Username USERNAME = Username.of("user");
     private static final MailboxACL.EntryKey ENTRY_KEY = org.apache.james.mailbox.model.MailboxACL.EntryKey.createGroupEntryKey("any", false);
     private static final MailboxACL.Rfc4314Rights RIGHTS = new MailboxACL.Rfc4314Rights(MailboxACL.Right.Administer, MailboxACL.Right.Read);
     private static final MailboxACL MAILBOX_ACL = new MailboxACL(
         new MailboxACL.Entry(ENTRY_KEY, RIGHTS),
-        new MailboxACL.Entry(MailboxACL.EntryKey.createUserEntryKey("alice", true),
+        new MailboxACL.Entry(MailboxACL.EntryKey.createUserEntryKey(Username.of("alice"), true),
             new MailboxACL.Rfc4314Rights(MailboxACL.Right.Insert)));
 
     private static final MailboxListener.MailboxACLUpdated MAILBOX_ACL_UPDATED = new MailboxListener.MailboxACLUpdated(
                 MailboxSession.SessionId.of(6),
-                USER,
-                new MailboxPath(MailboxConstants.USER_NAMESPACE, "bob", "mailboxName"),
+        USERNAME,
+                new MailboxPath(MailboxConstants.USER_NAMESPACE, Username.of("bob"), "mailboxName"),
                 ACLDiff.computeDiff(MailboxACL.EMPTY, MAILBOX_ACL),
                 TestId.of(23),
                 EVENT_ID);

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -41,21 +42,21 @@ public class MailboxPath {
      * @return inbox
      */
     public static MailboxPath inbox(MailboxSession session) {
-        return MailboxPath.forUser(session.getUser().asString(), MailboxConstants.INBOX);
+        return MailboxPath.forUser(session.getUser(), MailboxConstants.INBOX);
     }
 
     /**
      * Create a {@link MailboxPath} in the prive namespace of the specified user
      */
-    public static MailboxPath forUser(String username, String mailboxName) {
+    public static MailboxPath forUser(Username username, String mailboxName) {
         return new MailboxPath(MailboxConstants.USER_NAMESPACE, username, mailboxName);
     }
 
     private final String namespace;
-    private final String user;
+    private final Username user;
     private final String name;
     
-    public MailboxPath(String namespace, String user, String name) {
+    public MailboxPath(String namespace, Username user, String name) {
         this.namespace = Optional.ofNullable(namespace)
             .filter(s -> !s.isEmpty())
             .orElse(MailboxConstants.USER_NAMESPACE);
@@ -86,7 +87,7 @@ public class MailboxPath {
      * 
      * @return The username
      */
-    public String getUser() {
+    public Username getUser() {
         return user;
     }
 
@@ -101,7 +102,7 @@ public class MailboxPath {
     }
 
     public boolean belongsTo(MailboxSession mailboxSession) {
-        return user.equalsIgnoreCase(mailboxSession.getUser().asString());
+        return user.asString().equalsIgnoreCase(mailboxSession.getUser().asString());//FIXME-USERNAME
     }
 
     /**

@@ -28,7 +28,7 @@ import javax.inject.Inject;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.sieverepository.api.ScriptContent;
 import org.apache.james.sieverepository.api.ScriptName;
 import org.apache.james.sieverepository.api.SieveRepository;
@@ -124,26 +124,27 @@ public class SieveScriptRoutes implements Routes {
     }
 
     private HaltException addActiveSieveScript(Request request, Response response) throws UsersRepositoryException, QuotaExceededException, StorageException, ScriptNotFoundException {
-        User user = extractUser(request);
+        Username username = extractUser(request);
         ScriptName script = extractScriptName(request);
         boolean isActivated = isActivated(request.queryParams(ACTIVATE_PARAMS));
-        sieveRepository.putScript(user, script, extractSieveScriptFromRequest(request));
+        sieveRepository.putScript(username, script, extractSieveScriptFromRequest(request));
         if (isActivated) {
-            sieveRepository.setActive(user, script);
+            sieveRepository.setActive(username, script);
         }
         return halt(HttpStatus.NO_CONTENT_204);
     }
 
-    private User extractUser(Request request) throws UsersRepositoryException {
-        String userName = Optional.ofNullable(request.params(USER_NAME))
+    private Username extractUser(Request request) throws UsersRepositoryException {
+        Username userName = Optional.ofNullable(request.params(USER_NAME))
             .map(String::trim)
             .filter(StringUtils::isNotEmpty)
+            .map(Username::of)
             .orElseThrow(() -> throw400withInvalidArgument("Invalid username"));
 
         if (!usersRepository.contains(userName)) {
             throw404("User not found");
         }
-        return User.fromUsername(userName);
+        return userName;
     }
 
     private ScriptName extractScriptName(Request request) {

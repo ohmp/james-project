@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import javax.mail.internet.AddressException;
 
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.json.DTOModule;
 import org.apache.james.server.task.json.dto.TaskDTO;
 import org.apache.james.server.task.json.dto.TaskDTOModule;
@@ -64,14 +64,14 @@ public class DeletedMessagesVaultExportTaskDTO implements TaskDTO {
         }
 
         public DeletedMessagesVaultExportTask create(DeletedMessagesVaultExportTaskDTO dto) throws AddressException {
-            User userExportFrom = User.fromUsername(dto.userExportFrom);
+            Username usernameExportFrom = Username.of(dto.userExportFrom);
             Query exportQuery = queryTranslator.translate(dto.exportQuery);
             MailAddress exportTo = new MailAddress(dto.exportTo);
-            return new DeletedMessagesVaultExportTask(exportService, userExportFrom, exportQuery, exportTo);
+            return new DeletedMessagesVaultExportTask(exportService, usernameExportFrom, exportQuery, exportTo);
         }
 
         DeletedMessagesVaultExportTaskDTO createDTO(DeletedMessagesVaultExportTask task, String type) {
-            return new DeletedMessagesVaultExportTaskDTO(type, task.getUserExportFrom().asString(), queryTranslator.toDTO(task.exportQuery), task.getExportTo().asString());
+            return new DeletedMessagesVaultExportTaskDTO(type, task.getUsernameExportFrom().asString(), queryTranslator.toDTO(task.exportQuery), task.getExportTo().asString());
         }
     }
 

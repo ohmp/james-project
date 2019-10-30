@@ -21,7 +21,7 @@ package org.apache.james.mailbox.model.search;
 
 import java.util.Optional;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -43,14 +43,14 @@ public final class MailboxQuery {
     public static Builder privateMailboxesBuilder(MailboxSession session) {
         return builder()
             .namespace(MailboxConstants.USER_NAMESPACE)
-            .username(session.getUser().asString())
+            .username(session.getUser())
             .matchesAllMailboxNames();
     }
 
     public static class Builder {
         private static final Wildcard DEFAULT_WILDCARD = Wildcard.INSTANCE;
 
-        Optional<String> username;
+        Optional<Username> username;
         Optional<String> namespace;
         Optional<MailboxNameExpression> mailboxNameExpression;
         
@@ -69,15 +69,15 @@ public final class MailboxQuery {
             return this;
         }
 
-        public Builder username(String username) {
+        public Builder username(Username username) {
             Preconditions.checkState(!this.username.isPresent());
 
             this.username = Optional.of(username);
             return this;
         }
 
-        public Builder user(User user) {
-            this.username(user.asString());
+        public Builder user(Username username) {
+            this.username(username);
             return this;
         }
 
@@ -111,7 +111,7 @@ public final class MailboxQuery {
     }
 
     private final Optional<String> namespace;
-    private final Optional<String> user;
+    private final Optional<Username> user;
     private final MailboxNameExpression mailboxNameExpression;
 
     /**
@@ -124,7 +124,7 @@ public final class MailboxQuery {
      * @param pathDelimiter
      *            path delimiter to use
      */
-    @VisibleForTesting MailboxQuery(Optional<String> namespace, Optional<String> user, MailboxNameExpression mailboxNameExpression) {
+    @VisibleForTesting MailboxQuery(Optional<String> namespace, Optional<Username> user, MailboxNameExpression mailboxNameExpression) {
         this.namespace = namespace;
         this.user = user;
         this.mailboxNameExpression = mailboxNameExpression;
@@ -134,7 +134,7 @@ public final class MailboxQuery {
         return namespace;
     }
 
-    public Optional<String> getUser() {
+    public Optional<Username> getUser() {
         return user;
     }
 
@@ -143,9 +143,9 @@ public final class MailboxQuery {
     }
 
     public boolean isPrivateMailboxes(MailboxSession session) {
-        User sessionUser = session.getUser();
+        Username sessionUsername = session.getUser();
         return namespace.map(MailboxConstants.USER_NAMESPACE::equals).orElse(false)
-            && user.map(User::fromUsername).map(sessionUser::equals).orElse(false);
+            && user.map(sessionUsername::equals).orElse(false);
     }
 
     @VisibleForTesting

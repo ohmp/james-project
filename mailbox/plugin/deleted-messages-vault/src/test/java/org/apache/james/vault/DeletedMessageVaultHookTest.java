@@ -33,7 +33,7 @@ import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.memory.MemoryBlobStore;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
@@ -67,12 +67,12 @@ class DeletedMessageVaultHookTest {
     private static final String ALICE_ADDRESS = "alice@james.com";
     private static final String BOB_ADDRESS = "bob@james.com";
     private static final String TEST_ADDRESS = "test@james.com";
-    private static final User ALICE = User.fromUsername(ALICE_ADDRESS);
-    private static final User BOB = User.fromUsername(BOB_ADDRESS);
+    private static final Username ALICE = Username.of(ALICE_ADDRESS);
+    private static final Username BOB = Username.of(BOB_ADDRESS);
     private static final String MESSAGE_BODY = "testmail";
 
-    private static final MailboxPath MAILBOX_ALICE_ONE = MailboxPath.forUser(ALICE_ADDRESS, "ALICE_ONE");
-    private static final MailboxPath MAILBOX_BOB_ONE = MailboxPath.forUser(BOB_ADDRESS, "BOB_ONE");
+    private static final MailboxPath MAILBOX_ALICE_ONE = MailboxPath.forUser(ALICE, "ALICE_ONE");
+    private static final MailboxPath MAILBOX_BOB_ONE = MailboxPath.forUser(BOB, "BOB_ONE");
 
     private MailboxManager mailboxManager;
     private MessageIdManager messageIdManager;
@@ -83,11 +83,11 @@ class DeletedMessageVaultHookTest {
     private MailboxSession bobSession;
     private SearchQuery searchQuery;
 
-    private DeletedMessage buildDeletedMessage(List<MailboxId> mailboxIds, MessageId messageId, User user, long messageSize) throws Exception {
+    private DeletedMessage buildDeletedMessage(List<MailboxId> mailboxIds, MessageId messageId, Username username, long messageSize) throws Exception {
         return DeletedMessage.builder()
             .messageId(messageId)
             .originMailboxes(mailboxIds)
-            .user(user)
+            .user(username)
             .deliveryDate(DELIVERY_DATE)
             .deletionDate(DELETION_DATE)
             .sender(MaybeSender.getMailSender(ALICE_ADDRESS))
@@ -138,8 +138,8 @@ class DeletedMessageVaultHookTest {
         searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.internalDateOn(INTERNAL_DATE, SearchQuery.DateResolution.Second));
 
-        aliceSession = mailboxManager.createSystemSession(ALICE_ADDRESS);
-        bobSession = mailboxManager.createSystemSession(BOB_ADDRESS);
+        aliceSession = mailboxManager.createSystemSession(ALICE);
+        bobSession = mailboxManager.createSystemSession(BOB);
     }
 
     @Test
@@ -164,7 +164,7 @@ class DeletedMessageVaultHookTest {
 
         mailboxManager.setRights(MAILBOX_ALICE_ONE,
             MailboxACL.EMPTY.apply(MailboxACL.command()
-                .forUser(BOB_ADDRESS)
+                .forUser(BOB)
                 .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.DeleteMessages, MailboxACL.Right.PerformExpunge)
                 .asAddition()),
             aliceSession);
@@ -188,7 +188,7 @@ class DeletedMessageVaultHookTest {
 
         mailboxManager.setRights(MAILBOX_ALICE_ONE,
             MailboxACL.EMPTY.apply(MailboxACL.command()
-                .forUser(BOB_ADDRESS)
+                .forUser(BOB)
                 .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.DeleteMessages, MailboxACL.Right.PerformExpunge)
                 .asAddition()),
             aliceSession);
@@ -213,7 +213,7 @@ class DeletedMessageVaultHookTest {
 
         mailboxManager.setRights(MAILBOX_ALICE_ONE,
             MailboxACL.EMPTY.apply(MailboxACL.command()
-                .forUser(BOB_ADDRESS)
+                .forUser(BOB)
                 .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.DeleteMessages, MailboxACL.Right.PerformExpunge)
                 .asAddition()),
             aliceSession);
@@ -239,7 +239,7 @@ class DeletedMessageVaultHookTest {
 
         mailboxManager.setRights(MAILBOX_ALICE_ONE,
             MailboxACL.EMPTY.apply(MailboxACL.command()
-                .forUser(BOB_ADDRESS)
+                .forUser(BOB)
                 .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.DeleteMessages, MailboxACL.Right.PerformExpunge)
                 .asAddition()),
             aliceSession);
@@ -263,7 +263,7 @@ class DeletedMessageVaultHookTest {
 
         mailboxManager.setRights(MAILBOX_ALICE_ONE,
             MailboxACL.EMPTY.apply(MailboxACL.command()
-                .forUser(BOB_ADDRESS)
+                .forUser(BOB)
                 .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.DeleteMessages, MailboxACL.Right.PerformExpunge)
                 .asAddition()),
             aliceSession);
@@ -289,7 +289,7 @@ class DeletedMessageVaultHookTest {
 
         mailboxManager.setRights(MAILBOX_ALICE_ONE,
             MailboxACL.EMPTY.apply(MailboxACL.command()
-                .forUser(BOB_ADDRESS)
+                .forUser(BOB)
                 .rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.DeleteMessages, MailboxACL.Right.PerformExpunge)
                 .asAddition()),
             aliceSession);

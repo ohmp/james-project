@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
@@ -53,8 +53,8 @@ public class ZipMailArchiveRestorer implements MailArchiveRestorer {
         this.archiveLoader = archiveLoader;
     }
 
-    public void restore(User user, InputStream source) throws MailboxException, IOException {
-        MailboxSession session = mailboxManager.createSystemSession(user.asString());
+    public void restore(Username username, InputStream source) throws MailboxException, IOException {
+        MailboxSession session = mailboxManager.createSystemSession(username);
         restoreEntries(source, session);
     }
 
@@ -95,7 +95,7 @@ public class ZipMailArchiveRestorer implements MailArchiveRestorer {
 
     private Optional<ImmutablePair<SerializedMailboxId, MessageManager>> restoreMailboxEntry(MailboxSession session,
                                                                                              MailboxWithAnnotationsArchiveEntry mailboxWithAnnotationsArchiveEntry) throws MailboxException {
-        MailboxPath mailboxPath = MailboxPath.forUser(session.getUser().asString(), mailboxWithAnnotationsArchiveEntry.getMailboxName());
+        MailboxPath mailboxPath = MailboxPath.forUser(session.getUser(), mailboxWithAnnotationsArchiveEntry.getMailboxName());
         Optional<MailboxId> newMailboxId = mailboxManager.createMailbox(mailboxPath, session);
         mailboxManager.updateAnnotations(mailboxPath, session, mailboxWithAnnotationsArchiveEntry.getAnnotations());
         return newMailboxId.map(Throwing.<MailboxId, ImmutablePair<SerializedMailboxId, MessageManager>>function(newId ->

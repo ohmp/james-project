@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.acl.ACLDiff;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -124,7 +125,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         final Pattern searchPattern = Pattern.compile("[" + MaildirStore.maildirDelimiter + "]"
                 + mailboxPath.getName().replace(".", "\\.").replace(MaildirStore.WILDCARD, ".*"));
         FilenameFilter filter = MaildirMessageName.createRegexFilter(searchPattern);
-        File root = maildirStore.getMailboxRootForUser(mailboxPath.getUser());
+        File root = maildirStore.getMailboxRootForUser(mailboxPath.getUser().asString());
         File[] folders = root.listFiles(filter);
         ArrayList<Mailbox> mailboxList = new ArrayList<>();
         for (File folder : folders) {
@@ -283,7 +284,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
             }
             
             // Special case for INBOX: Let's use the user's folder.
-            MailboxPath inboxMailboxPath = MailboxPath.forUser(userName, MailboxConstants.INBOX);
+            MailboxPath inboxMailboxPath = MailboxPath.forUser(Username.of(userName), MailboxConstants.INBOX);
             mailboxList.add(maildirStore.loadMailbox(session, inboxMailboxPath));
             
             // List all INBOX sub folders.
@@ -294,7 +295,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
                
                 
                 MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, 
-                        userName, 
+                        Username.of(userName),
                         mailbox.getName().substring(1));
                 mailboxList.add(maildirStore.loadMailbox(session, mailboxPath));
 
@@ -324,7 +325,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     }
 
     @Override
-    public List<Mailbox> findNonPersonalMailboxes(String userName, Right right) throws MailboxException {
+    public List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
         return ImmutableList.of();
     }
 }

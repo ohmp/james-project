@@ -26,7 +26,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
@@ -42,13 +42,13 @@ public class DeletedMessagesVaultRestoreTask implements Task {
     static final TaskType TYPE = TaskType.of("deleted-messages-restore");
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private final User user;
+        private final Username username;
         private final long successfulRestoreCount;
         private final long errorRestoreCount;
         private final Instant timestamp;
 
-        AdditionalInformation(User user, long successfulRestoreCount, long errorRestoreCount, Instant timestamp) {
-            this.user = user;
+        AdditionalInformation(Username username, long successfulRestoreCount, long errorRestoreCount, Instant timestamp) {
+            this.username = username;
             this.successfulRestoreCount = successfulRestoreCount;
             this.errorRestoreCount = errorRestoreCount;
             this.timestamp = timestamp;
@@ -62,8 +62,8 @@ public class DeletedMessagesVaultRestoreTask implements Task {
             return errorRestoreCount;
         }
 
-        public String getUser() {
-            return user.asString();
+        public String getUsername() {
+            return username.asString();
         }
 
         @Override
@@ -74,16 +74,16 @@ public class DeletedMessagesVaultRestoreTask implements Task {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletedMessagesVaultRestoreTask.class);
 
-    private final User userToRestore;
+    private final Username usernameToRestore;
     private final RestoreService vaultRestore;
     private final AtomicLong successfulRestoreCount;
     private final AtomicLong errorRestoreCount;
     @VisibleForTesting
     final Query query;
 
-    DeletedMessagesVaultRestoreTask(RestoreService vaultRestore, User userToRestore, Query query) {
+    DeletedMessagesVaultRestoreTask(RestoreService vaultRestore, Username usernameToRestore, Query query) {
         this.query = query;
-        this.userToRestore = userToRestore;
+        this.usernameToRestore = usernameToRestore;
         this.vaultRestore = vaultRestore;
         this.successfulRestoreCount = new AtomicLong();
         this.errorRestoreCount = new AtomicLong();
@@ -92,13 +92,13 @@ public class DeletedMessagesVaultRestoreTask implements Task {
     @Override
     public Result run() {
         try {
-            return vaultRestore.restore(userToRestore, query).toStream()
+            return vaultRestore.restore(usernameToRestore, query).toStream()
                 .peek(this::updateInformation)
                 .map(this::restoreResultToTaskResult)
                 .reduce(Task::combine)
                 .orElse(Result.COMPLETED);
         } catch (MailboxException e) {
-            LOGGER.error("Error happens while restoring user {}", userToRestore.asString(), e);
+            LOGGER.error("Error happens while restoring user {}", usernameToRestore.asString(), e);
             return Result.PARTIAL;
         }
     }
@@ -136,10 +136,10 @@ public class DeletedMessagesVaultRestoreTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(userToRestore, successfulRestoreCount.get(), errorRestoreCount.get(), Clock.systemUTC().instant()));
+        return Optional.of(new AdditionalInformation(usernameToRestore, successfulRestoreCount.get(), errorRestoreCount.get(), Clock.systemUTC().instant()));
     }
 
-    User getUserToRestore() {
-        return userToRestore;
+    Username getUsernameToRestore() {
+        return usernameToRestore;
     }
 }

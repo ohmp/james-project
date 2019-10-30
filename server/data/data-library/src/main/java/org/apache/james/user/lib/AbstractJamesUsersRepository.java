@@ -27,6 +27,7 @@ import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.james.core.Domain;
+import org.apache.james.core.Username;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
 import org.apache.james.rrt.lib.Mapping;
@@ -97,7 +98,7 @@ public abstract class AbstractJamesUsersRepository extends AbstractUsersReposito
     protected abstract void doUpdateUser(User user) throws UsersRepositoryException;
 
     @Override
-    protected void doAddUser(String username, String password) throws UsersRepositoryException {
+    protected void doAddUser(Username username, String password) throws UsersRepositoryException {
         User newbie = new DefaultJamesUser(username, "SHA");
         newbie.setPassword(password);
         doAddUser(newbie);
@@ -125,7 +126,7 @@ public abstract class AbstractJamesUsersRepository extends AbstractUsersReposito
     public Mappings getResolvedMappings(String username, Domain domain) throws ErrorMappingException, RecipientRewriteTableException {
         Builder mappingsBuilder = MappingsImpl.builder();
         try {
-            User user = getUserByName(username);
+            User user = getUserByName(Username.of(username));
 
             if (user instanceof JamesUser) {
                 JamesUser jUser = (JamesUser) user;
@@ -178,9 +179,9 @@ public abstract class AbstractJamesUsersRepository extends AbstractUsersReposito
         Map<MappingSource, Mappings> mappings = new HashMap<>();
         if (enableAliases || enableForwarding) {
             try {
-                Iterator<String> users = list();
+                Iterator<Username> users = list();
                 while (users.hasNext()) {
-                    String user = users.next();
+                    String user = users.next().asString();
                     int index = user.indexOf("@");
                     String username;
                     Domain domain;
@@ -192,7 +193,7 @@ public abstract class AbstractJamesUsersRepository extends AbstractUsersReposito
                         domain = Domain.LOCALHOST;
                     }
                     try {
-                        MappingSource source = MappingSource.fromUser(org.apache.james.core.User.fromUsername(user));
+                        MappingSource source = MappingSource.fromUser(Username.of(user));
                         mappings.put(source, getResolvedMappings(username, domain));
                     } catch (ErrorMappingException e) {
                         // shold never happen here

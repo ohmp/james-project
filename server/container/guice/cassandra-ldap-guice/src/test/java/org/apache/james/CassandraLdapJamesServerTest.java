@@ -68,7 +68,7 @@ class CassandraLdapJamesServerTest implements JamesServerContract {
     void userFromLdapShouldLoginViaImapProtocol(GuiceJamesServer server) throws Exception {
         imapClient.connect(JAMES_SERVER_HOST, server.getProbe(ImapGuiceProbe.class).getImapPort());
 
-        assertThat(imapClient.login(JAMES_USER, PASSWORD)).isTrue();
+        assertThat(imapClient.login(JAMES_USER.asString(), PASSWORD)).isTrue();
     }
 
     @Test

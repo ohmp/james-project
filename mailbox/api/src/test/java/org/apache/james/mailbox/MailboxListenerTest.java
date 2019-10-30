@@ -28,7 +28,7 @@ import java.util.Optional;
 import javax.mail.Flags;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.mailbox.acl.ACLDiff;
@@ -50,18 +50,18 @@ import com.google.common.collect.ImmutableSortedMap;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class MailboxListenerTest {
-    private static final MailboxPath PATH = MailboxPath.forUser("bob", "mailbox");
-    private static final MailboxPath OTHER_PATH = MailboxPath.forUser("bob", "mailbox.other");
-    private static final User BOB = User.fromUsername("bob");
+    private static final MailboxPath PATH = MailboxPath.forUser(Username.of("bob"), "mailbox");
+    private static final MailboxPath OTHER_PATH = MailboxPath.forUser(Username.of("bob"), "mailbox.other");
+    private static final Username BOB = Username.of("bob");
     private static final MailboxSession.SessionId SESSION_ID = MailboxSession.SessionId.of(42);
     private static final TestId MAILBOX_ID = TestId.of(18);
     private static final QuotaRoot QUOTA_ROOT = QuotaRoot.quotaRoot("bob", Optional.empty());
     private static final QuotaCount QUOTA_COUNT = QuotaCount.count(34);
     private static final QuotaSize QUOTA_SIZE = QuotaSize.size(48);
     private static final MailboxACL ACL_1 = new MailboxACL(
-        Pair.of(MailboxACL.EntryKey.createUserEntryKey("Bob"), new MailboxACL.Rfc4314Rights(MailboxACL.Right.Administer)));
+        Pair.of(MailboxACL.EntryKey.createUserEntryKey(Username.of("Bob")), new MailboxACL.Rfc4314Rights(MailboxACL.Right.Administer)));
     private static final MailboxACL ACL_2 = new MailboxACL(
-        Pair.of(MailboxACL.EntryKey.createUserEntryKey("Bob"), new MailboxACL.Rfc4314Rights(MailboxACL.Right.Read)));
+        Pair.of(MailboxACL.EntryKey.createUserEntryKey(Username.of("Bob")), new MailboxACL.Rfc4314Rights(MailboxACL.Right.Read)));
     private static final MessageUid UID = MessageUid.of(85);
     private static final MessageMetaData META_DATA = new MessageMetaData(UID, 45, new Flags(), 45, new Date(), TestMessageId.of(75));
 

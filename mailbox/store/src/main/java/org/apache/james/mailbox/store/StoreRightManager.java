@@ -26,7 +26,7 @@ import javax.inject.Inject;
 import javax.mail.Flags;
 
 import org.apache.james.core.Domain;
-import org.apache.james.core.User;
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.RightManager;
 import org.apache.james.mailbox.acl.ACLDiff;
@@ -101,15 +101,15 @@ public class StoreRightManager implements RightManager {
     }
 
     public Rfc4314Rights myRights(Mailbox mailbox, MailboxSession session) throws UnsupportedRightException {
-        User user = session.getUser();
+        Username username = session.getUser();
 
-        return Optional.ofNullable(user)
+        return Optional.ofNullable(username)
             .map(Throwing.function(value ->
                 aclResolver.resolveRights(
-                    user.asString(),
+                    username,
                     groupMembershipResolver,
                     mailbox.getACL(),
-                    mailbox.getUser(),
+                    mailbox.getUser().asString(),
                     !GROUP_FOLDER))
                 .sneakyThrow())
             .orElse(MailboxACL.NO_RIGHTS);
@@ -122,7 +122,7 @@ public class StoreRightManager implements RightManager {
 
         return aclResolver.listRights(key,
             groupMembershipResolver,
-            mailbox.getUser(),
+            mailbox.getUser().asString(),
             !GROUP_FOLDER);
     }
 
@@ -150,7 +150,7 @@ public class StoreRightManager implements RightManager {
             .block();
     }
 
-    private void assertSharesBelongsToUserDomain(String user, ACLCommand mailboxACLCommand) throws DifferentDomainException {
+    private void assertSharesBelongsToUserDomain(Username user, ACLCommand mailboxACLCommand) throws DifferentDomainException {
         assertSharesBelongsToUserDomain(user, ImmutableMap.of(mailboxACLCommand.getEntryKey(), mailboxACLCommand.getRights()));
     }
 
@@ -206,7 +206,7 @@ public class StoreRightManager implements RightManager {
     }
 
     @VisibleForTesting
-    void assertSharesBelongsToUserDomain(String user, Map<EntryKey, Rfc4314Rights> entries) throws DifferentDomainException {
+    void assertSharesBelongsToUserDomain(Username user, Map<EntryKey, Rfc4314Rights> entries) throws DifferentDomainException {
         if (entries.keySet().stream()
             .filter(entry -> !entry.getNameType().equals(NameType.special))
             .map(EntryKey::getName)
@@ -216,9 +216,9 @@ public class StoreRightManager implements RightManager {
     }
 
     @VisibleForTesting
-    boolean areDomainsDifferent(String user, String otherUser) {
-        Optional<Domain> domain = User.fromUsername(user).getDomainPart();
-        Optional<Domain> otherDomain = User.fromUsername(otherUser).getDomainPart();
+    boolean areDomainsDifferent(String user, Username otherUser) {
+        Optional<Domain> domain = Username.of(user).getDomainPart();
+        Optional<Domain> otherDomain = otherUser.getDomainPart();
         return !domain.equals(otherDomain);
     }
 
@@ -262,7 +262,7 @@ public class StoreRightManager implements RightManager {
             return acl;
         }
 
-        MailboxACL.EntryKey userAsKey = MailboxACL.EntryKey.createUserEntryKey(mailboxSession.getUser().asString());
+        MailboxACL.EntryKey userAsKey = MailboxACL.EntryKey.createUserEntryKey(mailboxSession.getUser());
         Rfc4314Rights rights = acl.getEntries().getOrDefault(userAsKey, new Rfc4314Rights());
         if (rights.contains(MailboxACL.Right.Administer)) {
             return acl;
