@@ -21,11 +21,13 @@ package org.apache.james.cli.probe.impl;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import javax.management.MalformedObjectNameException;
 
+import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainListManagementMBean;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.rrt.api.RecipientRewriteTableManagementMBean;
@@ -64,7 +66,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
                      .addContext(MDCBuilder.ACTION, "addUser")
                      .addContext("parameter", userName)
                      .build()) {
-            usersRepositoryProxy.addUser(userName, password);
+            usersRepositoryProxy.addUser(Username.of(userName), password);
         }
     }
 
@@ -76,7 +78,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
                      .addContext(MDCBuilder.ACTION, "removeUser")
                      .addContext("parameter", username)
                      .build()) {
-            usersRepositoryProxy.deleteUser(username);
+            usersRepositoryProxy.deleteUser(Username.of(username));
         }
     }
 
@@ -87,7 +89,9 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
                      .addContext(MDCBuilder.PROTOCOL, JMX)
                      .addContext(MDCBuilder.ACTION, "listUsers")
                      .build()) {
-            return usersRepositoryProxy.listAllUsers();
+            return Arrays.stream(usersRepositoryProxy.listAllUsers())
+                .map(Username::asString)
+                .toArray(String[]::new);
         }
     }
 
@@ -99,7 +103,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
                      .addContext(MDCBuilder.ACTION, "setPassword")
                      .addContext("parameter", userName)
                      .build()) {
-            usersRepositoryProxy.setPassword(userName, password);
+            usersRepositoryProxy.setPassword(Username.of(userName), password);
         }
     }
 

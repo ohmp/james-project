@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.james.core.Username;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.mailbox.MailboxSession;
@@ -37,7 +38,7 @@ import org.junit.rules.ExpectedException;
 
 public class PathConverterTest {
 
-    private static final String USERNAME = "username";
+    private static final Username USERNAME = Username.of("username");
     private static final char PATH_DELIMITER = '.';
 
     private ImapSession imapSession;
@@ -56,13 +57,13 @@ public class PathConverterTest {
     @Test
     public void buildFullPathShouldAcceptNull() {
         assertThat(pathConverter.buildFullPath(null))
-            .isEqualTo(new MailboxPath("", "", ""));
+            .isEqualTo(new MailboxPath("", null, ""));
     }
 
     @Test
     public void buildPathShouldAcceptEmpty() {
         assertThat(pathConverter.buildFullPath(""))
-            .isEqualTo(new MailboxPath("", "", ""));
+            .isEqualTo(new MailboxPath("", null, ""));
     }
 
     @Test

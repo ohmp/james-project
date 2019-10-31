@@ -22,7 +22,7 @@ package org.apache.james.jmap.draft.model.mailbox;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.james.core.Username;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
@@ -41,8 +41,9 @@ public class MailboxNamespace {
         }
     }
 
-    public static MailboxNamespace delegated(String owner) {
-        Preconditions.checkArgument(!StringUtils.isBlank(owner));
+    public static MailboxNamespace delegated(Username owner) {
+        Preconditions.checkArgument(owner != null);//FIXME-USERNAME
+        Preconditions.checkArgument(!owner.asString().trim().isEmpty());
         return new MailboxNamespace(Type.Delegated, Optional.of(owner));
     }
 
@@ -51,9 +52,9 @@ public class MailboxNamespace {
     }
 
     private final Type type;
-    private final Optional<String> owner;
+    private final Optional<Username> owner;
 
-    private MailboxNamespace(Type type, Optional<String> owner) {
+    private MailboxNamespace(Type type, Optional<Username> owner) {
         this.type = type;
         this.owner = owner;
     }
@@ -63,7 +64,7 @@ public class MailboxNamespace {
     }
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public Optional<String> getOwner() {
+    public Optional<Username> getOwner() {
         return owner;
     }
 

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.Username;
 import org.apache.james.jmap.draft.model.mailbox.Rights;
 import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.model.MailboxId;
@@ -75,7 +76,7 @@ public class ObjectMapperFactory {
         mailboxIdModule.addSerializer(MessageId.class, new MessageIdSerializer());
         mailboxIdModule.addKeyDeserializer(MessageId.class, new MessageIdKeyDeserializer(messageIdFactory));
         mailboxIdModule.addKeySerializer(MessageId.class, new MessageIdKeySerializer());
-        mailboxIdModule.addKeyDeserializer(Rights.Username.class, new UsernameKeyDeserializer());
+        mailboxIdModule.addKeyDeserializer(Username.class, new UsernameKeyDeserializer());
         mailboxIdModule.addDeserializer(Rights.Right.class, new RightDeserializer());
 
         SimpleModule mdnModule = new SimpleModule();
@@ -168,7 +169,7 @@ public class ObjectMapperFactory {
     public static class UsernameKeyDeserializer extends KeyDeserializer {
         @Override
         public Object deserializeKey(String key, DeserializationContext ctxt) {
-            return new Rights.Username(key);
+            return Username.of(key);
         }
     }
 

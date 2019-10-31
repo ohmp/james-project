@@ -104,7 +104,6 @@ public class RandomStoring extends GenericMailet {
 
     private List<ReroutingInfos> retrieveReroutingInfos() throws UsersRepositoryException {
         return Streams.stream(usersRepository.list())
-            .map(Username::of)
             .flatMap(this::buildReRoutingInfos)
             .collect(Guavate.toImmutableList());
     }
@@ -113,7 +112,7 @@ public class RandomStoring extends GenericMailet {
         try {
             MailAddress mailAddress = usersRepository.getMailAddressFor(username);
 
-            MailboxSession session = mailboxManager.createSystemSession(username.asString());
+            MailboxSession session = mailboxManager.createSystemSession(username);
             return mailboxManager
                 .list(session)
                 .stream()

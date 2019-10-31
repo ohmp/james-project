@@ -34,6 +34,7 @@ import javax.persistence.PersistenceUnit;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.james.core.Username;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.user.jpa.model.JPAUser;
@@ -81,7 +82,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
      * @since James 1.2.2
      */
     @Override
-    public User getUserByName(String name) throws UsersRepositoryException {
+    public User getUserByName(Username name) throws UsersRepositoryException {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         try {
@@ -105,7 +106,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
      * @return the case-correct name of the user, null if the user doesn't exist
      * @throws UsersRepositoryException
      */
-    public String getRealName(String name) throws UsersRepositoryException {
+    public String getRealName(Username name) throws UsersRepositoryException {
         User u = getUserByName(name);
         if (u != null) {
             u.getUserName();
@@ -138,7 +139,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new UsersRepositoryException("Failed to update user " + user.getUserName(), e);
+            throw new UsersRepositoryException("Failed to update user " + user.getUserName().asString(), e);
         } finally {
             entityManager.close();
         }
@@ -152,7 +153,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
      * @throws UsersRepositoryException
      */
     @Override
-    public void removeUser(String name) throws UsersRepositoryException {
+    public void removeUser(Username name) throws UsersRepositoryException {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         final EntityTransaction transaction = entityManager.getTransaction();
@@ -169,7 +170,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new UsersRepositoryException("Failed to remove user " + name, e);
+            throw new UsersRepositoryException("Failed to remove user " + name.asString(), e);
         } finally {
             entityManager.close();
         }
@@ -184,16 +185,16 @@ public class JPAUsersRepository extends AbstractUsersRepository {
      * @throws UsersRepositoryException
      */
     @Override
-    public boolean contains(String name) throws UsersRepositoryException {
+    public boolean contains(Username name) throws UsersRepositoryException {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         try {
             return (Long) entityManager.createNamedQuery("containsUser")
-                .setParameter("name", name.toLowerCase(Locale.US))
+                .setParameter("name", name.asString().toLowerCase(Locale.US))
                 .getSingleResult() > 0;
         } catch (PersistenceException e) {
             LOGGER.debug("Failed to find user", e);
-            throw new UsersRepositoryException("Failed to find user" + name, e);
+            throw new UsersRepositoryException("Failed to find user" + name.asString(), e);
         } finally {
             entityManager.close();
         }
@@ -213,7 +214,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
      * @since James 1.2.2
      */
     @Override
-    public boolean test(String name, String password) throws UsersRepositoryException {
+    public boolean test(Username name, String password) throws UsersRepositoryException {
         final User user = getUserByName(name);
         final boolean result;
         result = user != null && user.verifyPassword(password);
@@ -249,7 +250,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Iterator<String> list() throws UsersRepositoryException {
+    public Iterator<Username> list() throws UsersRepositoryException {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         try {
@@ -279,16 +280,16 @@ public class JPAUsersRepository extends AbstractUsersRepository {
     }
 
     @Override
-    protected void doAddUser(String username, String password) throws UsersRepositoryException {
-        String lowerCasedUsername = username.toLowerCase(Locale.US);
+    protected void doAddUser(Username username, String password) throws UsersRepositoryException {
+        Username lowerCasedUsername = Username.of(username.asString().toLowerCase(Locale.US));
         if (contains(lowerCasedUsername)) {
-            throw new UsersRepositoryException(lowerCasedUsername + " already exists.");
+            throw new UsersRepositoryException(lowerCasedUsername.asString() + " already exists.");
         }
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         final EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            JPAUser user = new JPAUser(lowerCasedUsername, password, algo);
+            JPAUser user = new JPAUser(lowerCasedUsername.asString(), password, algo);
             entityManager.persist(user);
             transaction.commit();
         } catch (PersistenceException e) {
@@ -296,7 +297,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new UsersRepositoryException("Failed to add user" + username, e);
+            throw new UsersRepositoryException("Failed to add user" + username.asString(), e);
         } finally {
             entityManager.close();
         }

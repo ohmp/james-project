@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
+import org.apache.james.core.Username;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.UsersRepositoryManagementMBean;
@@ -49,20 +50,20 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
         super(UsersRepositoryManagementMBean.class);
     }
 
-    private JamesUser getJamesUser(String userName) throws UsersRepositoryException {
+    private JamesUser getJamesUser(Username userName) throws UsersRepositoryException {
         User baseuser = usersRepository.getUserByName(userName);
         if (baseuser == null) {
-            throw new IllegalArgumentException("user not found: " + userName);
+            throw new IllegalArgumentException("user not found: " + userName.asString());
         }
         if (!(baseuser instanceof JamesUser)) {
-            throw new IllegalArgumentException("user is not of type JamesUser: " + userName);
+            throw new IllegalArgumentException("user is not of type JamesUser: " + userName.asString());
         }
 
         return (JamesUser) baseuser;
     }
 
     @Override
-    public void addUser(String userName, String password) throws Exception {
+    public void addUser(Username userName, String password) throws Exception {
         try {
             usersRepository.addUser(userName, password);
         } catch (UsersRepositoryException e) {
@@ -71,7 +72,7 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public void deleteUser(String userName) throws Exception {
+    public void deleteUser(Username userName) throws Exception {
         try {
             usersRepository.removeUser(userName);
         } catch (UsersRepositoryException e) {
@@ -80,7 +81,7 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public boolean verifyExists(String userName) throws Exception {
+    public boolean verifyExists(Username userName) throws Exception {
         try {
             return usersRepository.contains(userName);
         } catch (UsersRepositoryException e) {
@@ -98,25 +99,25 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public String[] listAllUsers() throws Exception {
-        List<String> userNames = new ArrayList<>();
+    public Username[] listAllUsers() throws Exception {
+        List<Username> userNames = new ArrayList<>();
         try {
-            for (Iterator<String> it = usersRepository.list(); it.hasNext(); ) {
+            for (Iterator<Username> it = usersRepository.list(); it.hasNext(); ) {
                 userNames.add(it.next());
             }
         } catch (UsersRepositoryException e) {
             throw new Exception(e.getMessage());
 
         }
-        return userNames.toArray(new String[userNames.size()]);
+        return userNames.toArray(new Username[userNames.size()]);
     }
 
     @Override
-    public void setPassword(String userName, String password) throws Exception {
+    public void setPassword(Username userName, String password) throws Exception {
         try {
             User user = usersRepository.getUserByName(userName);
             if (user == null) {
-                throw new UsersRepositoryException("user not found: " + userName);
+                throw new UsersRepositoryException("user not found: " + userName.asString());
             }
             if (!user.setPassword(password)) {
                 throw new UsersRepositoryException("Unable to update password for user " + user);
@@ -130,7 +131,7 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public void unsetAlias(String userName) throws Exception {
+    public void unsetAlias(Username userName) throws Exception {
         try {
             JamesUser user = getJamesUser(userName);
             if (!user.getAliasing()) {
@@ -144,7 +145,7 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public String getAlias(String userName) throws Exception {
+    public String getAlias(Username userName) throws Exception {
         try {
             JamesUser user = getJamesUser(userName);
             if (!user.getAliasing()) {
@@ -158,7 +159,7 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public void unsetForwardAddress(String userName) throws Exception {
+    public void unsetForwardAddress(Username userName) throws Exception {
         try {
             JamesUser user = getJamesUser(userName);
             if (!user.getForwarding()) {
@@ -172,7 +173,7 @@ public class UsersRepositoryManagement extends StandardMBean implements UsersRep
     }
 
     @Override
-    public String getForwardAddress(String userName) throws Exception {
+    public String getForwardAddress(Username userName) throws Exception {
         try {
             JamesUser user = getJamesUser(userName);
             if (!user.getForwarding()) {
