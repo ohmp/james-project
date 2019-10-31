@@ -214,7 +214,7 @@
 
     <subsection name="From V6 to V7">
 
-      <p>Goal is to populate mapping_sources projection table. This tables allows finding the source of a given redirection, which is
+      <p>Goal is to populate mapping_sources projection table. This table allows finding the source of a given redirection, which is
       handy for things like mail aliases (I want to list aliases rewritting things to bob). Without this projection table being available,
       (ie we rely on schema version 6 or less) such information is obtained through a full table scan, unoptimized. From schema version 7,
       the optimized projection can safely be used.</p>
