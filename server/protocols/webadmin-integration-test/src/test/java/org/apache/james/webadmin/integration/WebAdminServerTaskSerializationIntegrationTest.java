@@ -254,7 +254,7 @@ public class WebAdminServerTaskSerializationIntegrationTest {
 
     @Test
     public void singleMessageReindexingShouldCompleteWhenMail() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, MailboxConstants.INBOX);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(USERNAME, MailboxConstants.INBOX);
         ComposedMessageId composedMessageId = mailboxProbe.appendMessage(
                 USERNAME,
                 MailboxPath.forUser(Username.of(USERNAME), MailboxConstants.INBOX),
@@ -628,8 +628,8 @@ public class WebAdminServerTaskSerializationIntegrationTest {
 
     @Test
     public void mailboxMergingShouldComplete() {
-        MailboxId origin = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, MailboxConstants.INBOX);
-        MailboxId destination = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, MailboxConstants.INBOX + "2");
+        MailboxId origin = mailboxProbe.fluent().createUserMailboxGetId(USERNAME, MailboxConstants.INBOX);
+        MailboxId destination = mailboxProbe.fluent().createUserMailboxGetId(USERNAME, MailboxConstants.INBOX + "2");
 
         String taskId = given()
                 .body("{" +
@@ -657,7 +657,7 @@ public class WebAdminServerTaskSerializationIntegrationTest {
 
     @Test
     public void singleMailboxReindexingShouldComplete() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, MailboxConstants.INBOX);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(USERNAME, MailboxConstants.INBOX);
 
         String taskId = when()
             .post("/mailboxes/" + mailboxId.serialize() + "?task=reIndex")

@@ -70,7 +70,6 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
 import org.apache.james.mailbox.model.MailboxACL.Right;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
@@ -192,7 +191,7 @@ public abstract class GetMessageListMethodTest {
     @Test
     public void getMessageListShouldNotFilterMessagesWhenTextFilterMatchesBodyAfterTheMessageMailboxHasBeenChanged() throws Exception {
         mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
-        MailboxId otherMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "otherMailbox");
+        MailboxId otherMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "otherMailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/twoAttachments.eml"), new Date(), false, new Flags());
@@ -294,7 +293,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldListMessageThatHasBeenMovedInAMailboxWhereTheUserHasOnlyReadRight() throws Exception {
-        MailboxId delegatedMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), "delegated");
+        MailboxId delegatedMailboxId = mailboxProbe.fluent().createUserMailboxGetId(BOB, "delegated");
         mailboxProbe.fluent().createUserMailbox(BOB, "not_delegated");
 
         MailboxPath notDelegatedMailboxPath = MailboxPath.forUser(BOB, "not_delegated");
@@ -334,8 +333,8 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldNotDuplicateMessagesInSeveralMailboxes() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
-        MailboxId mailboxId2 = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
+        MailboxId mailboxId2 = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox2");
 
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -881,7 +880,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldExcludeMessagesWhenInMailboxesFilterMatches() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -900,7 +899,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldNotExcludeMessagesWhenInMailboxesFilterMatchesMailboxAndText() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
         List<String> messageIds = IntStream.range(0, 3)
             .boxed()
             .map(Throwing.function((ignored) -> mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -924,11 +923,11 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenMultipleInMailboxesFilterMatches() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
-        MailboxId mailboxId2 = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        MailboxId mailboxId2 = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox2");
         await();
 
         given()
@@ -944,7 +943,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenNotInMailboxesFilterMatches() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
@@ -963,11 +962,11 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenNotInMailboxesFilterMatchesTwice() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
-        MailboxId mailbox2Id = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        MailboxId mailbox2Id = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox2");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox2"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -985,7 +984,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenIdenticalNotInMailboxesAndInMailboxesFilterMatch() throws Exception {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -1007,7 +1006,7 @@ public abstract class GetMessageListMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
-        MailboxId mailbox2Id = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        MailboxId mailbox2Id = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "mailbox2");
         await();
 
         given()
@@ -1043,7 +1042,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenInMailboxesFilterDoesntMatches() throws Exception {
-        MailboxId emptyMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "emptyMailbox");
+        MailboxId emptyMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "emptyMailbox");
 
         mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -2290,7 +2289,7 @@ public abstract class GetMessageListMethodTest {
     @Test
     public void getMessageListShouldReturnTwoMessagesWhenCopiedAtOnceViaIMAP() throws Exception {
         mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
-        MailboxId otherMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "otherMailbox");
+        MailboxId otherMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "otherMailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             MessageManager.AppendCommand.builder()

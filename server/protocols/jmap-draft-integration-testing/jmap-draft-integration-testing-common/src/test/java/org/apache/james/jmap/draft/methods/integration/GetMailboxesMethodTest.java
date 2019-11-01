@@ -150,7 +150,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnEmptyWhenIdsDoesntMatch() {
         mailboxProbe.fluent().createUserMailbox(ALICE, "name");
-        String removedId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "quicklyRemoved").serialize();
+        String removedId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "quicklyRemoved").serialize();
         mailboxProbe.deleteMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "quicklyRemoved");
 
         given()
@@ -180,8 +180,8 @@ public abstract class GetMailboxesMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMailboxesShouldReturnMailboxesWhenIdsMatch() {
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
-        String mailboxId2 = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "myMailbox").serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
+        String mailboxId2 = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "myMailbox").serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -198,7 +198,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnOnlyMatchingMailboxesWhenIdsGiven() {
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
         mailboxProbe.fluent().createUserMailbox(ALICE, "myMailbox");
 
         given()
@@ -255,7 +255,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnSharedWithProperty() throws Exception {
         String mailboxName = "myMailbox";
-        String myMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), mailboxName).serialize();
+        String myMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, mailboxName).serialize();
         String targetUser1 = "toUser1@" + DOMAIN;
         String targetUser2 = "toUser2@" + DOMAIN;
 
@@ -278,7 +278,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldRemoveOwnerRight() throws Exception {
         String mailboxName = "myMailbox";
-        String myMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), mailboxName).serialize();
+        String myMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, mailboxName).serialize();
         String targetUser1 = "toUser1@" + DOMAIN;
 
         aclProbe.replaceRights(MailboxPath.forUser(ALICE, mailboxName), ALICE.asString(), new Rfc4314Rights(Right.Read, Right.Administer));
@@ -299,7 +299,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxShouldReturnEmptySharedWithWhenNoDelegation() {
         String mailboxName = "myMailbox";
-        String myMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), mailboxName).serialize();
+        String myMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, mailboxName).serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -316,7 +316,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void nonHandledRightsShouldBeFilteredOut() throws Exception {
         String mailboxName = "myMailbox";
-        String myMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), mailboxName).serialize();
+        String myMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, mailboxName).serialize();
         String targetUser1 = "toUser1@" + DOMAIN;
 
         aclProbe.replaceRights(MailboxPath.forUser(ALICE, mailboxName), targetUser1, new Rfc4314Rights(Right.Lookup, Right.Post));
@@ -406,7 +406,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnMailboxPropertiesWhenAvailable() throws Exception {
-        String myMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "name").serialize();
+        String myMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "name").serialize();
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "name"), AppendCommand.from(message));
 
@@ -436,7 +436,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnFilteredMailboxesPropertiesWhenRequestContainsFilterProperties() {
-        String myMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "name").serialize();
+        String myMailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, "name").serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -497,8 +497,8 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnMailboxesWithSortOrder() {
-        MailboxId inboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX);
-        MailboxId trashId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.TRASH);
+        MailboxId inboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX);
+        MailboxId trashId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.TRASH);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -517,7 +517,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnMailboxesWithRolesInLowerCase() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.OUTBOX);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.OUTBOX);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -535,7 +535,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnMailboxesWithFilteredSharedWithWhenShared() throws Exception {
         String mailboxName = "name";
-        MailboxId bobMailbox = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), mailboxName);
+        MailboxId bobMailbox = mailboxProbe.fluent().createUserMailboxGetId(BOB, mailboxName);
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, mailboxName);
         aclProbe.replaceRights(bobMailboxPath, ALICE.asString(), new Rfc4314Rights(Right.Lookup));
         aclProbe.replaceRights(bobMailboxPath, CEDRIC.asString(), new Rfc4314Rights(Right.Lookup));
@@ -559,7 +559,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnMailboxesWithFullSharedWithWhenHasAdminRight() throws Exception {
         String mailboxName = "name";
-        MailboxId bobMailbox = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), mailboxName);
+        MailboxId bobMailbox = mailboxProbe.fluent().createUserMailboxGetId(BOB, mailboxName);
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, mailboxName);
         aclProbe.replaceRights(bobMailboxPath, ALICE.asString(), new Rfc4314Rights(Right.Lookup, Right.Administer));
         aclProbe.replaceRights(bobMailboxPath, CEDRIC.asString(), new Rfc4314Rights(Right.Lookup));
@@ -645,7 +645,7 @@ public abstract class GetMailboxesMethodTest {
         String mailboxName = "BobShared";
         mailboxProbe.fluent().createUserMailbox(BOB, mailboxName);
         mailboxProbe.fluent().createUserMailbox(BOB, DefaultMailboxes.INBOX);
-        MailboxId aliceInboxMailbox = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX);
+        MailboxId aliceInboxMailbox = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX);
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, mailboxName);
         aclProbe.replaceRights(bobMailboxPath, ALICE.asString(), new Rfc4314Rights(Right.Lookup));
 
@@ -665,7 +665,7 @@ public abstract class GetMailboxesMethodTest {
     public void getMailboxesShouldReturnSharedMailboxesWithRead() throws Exception {
         String sharedMailboxName = "BobShared";
         mailboxProbe.fluent().createUserMailbox(BOB, DefaultMailboxes.INBOX);
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), sharedMailboxName);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(BOB, sharedMailboxName);
 
         mailboxProbe.fluent().createUserMailbox(ALICE, DefaultMailboxes.INBOX);
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, sharedMailboxName);
@@ -686,7 +686,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnDelegatedNamespaceWhenSharedMailbox() throws Exception {
         String sharedMailboxName = "BobShared";
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), sharedMailboxName);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(BOB, sharedMailboxName);
 
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, sharedMailboxName);
         aclProbe.replaceRights(bobMailboxPath, ALICE.asString(), new Rfc4314Rights(Right.Lookup));
@@ -706,7 +706,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnPersonalNamespaceWhenOwnerMailbox() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -724,7 +724,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnAllowedForAllMayPropertiesWhenOwner() {
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX);
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -746,7 +746,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnPartiallyAllowedMayPropertiesWhenDelegated() throws Exception {
         String sharedMailboxName = "BobShared";
-        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), sharedMailboxName);
+        MailboxId mailboxId = mailboxProbe.fluent().createUserMailboxGetId(BOB, sharedMailboxName);
 
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, sharedMailboxName);
         aclProbe.replaceRights(bobMailboxPath, ALICE.asString(), new Rfc4314Rights(Right.Lookup, Right.Read));
@@ -770,7 +770,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnUnlimitedQuotasForInboxByDefault() {
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -789,7 +789,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnMaxStorageQuotasForInboxWhenSet() throws Exception {
         quotaProbe.setGlobalMaxStorage(SerializableQuotaValue.valueOf(Optional.of(QuotaSize.size(42))));
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -806,7 +806,7 @@ public abstract class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnMaxMessageQuotasForInboxWhenSet() throws Exception {
         quotaProbe.setGlobalMaxMessageCount(SerializableQuotaValue.valueOf(Optional.of(QuotaCount.count(43))));
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -822,9 +822,9 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldDisplayDifferentMaxQuotaPerMailboxWhenSet() throws Exception {
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
         String sharedMailboxName = "BobShared";
-        MailboxId sharedMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), sharedMailboxName);
+        MailboxId sharedMailboxId = mailboxProbe.fluent().createUserMailboxGetId(BOB, sharedMailboxName);
 
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, sharedMailboxName);
         aclProbe.replaceRights(bobMailboxPath, ALICE.asString(), new Rfc4314Rights(Right.Lookup, Right.Read));
@@ -860,7 +860,7 @@ public abstract class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnEmptyQuotasForInboxWhenNoMail() {
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -878,7 +878,7 @@ public abstract class GetMailboxesMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMailboxesShouldReturnUpdatedQuotasForInboxWhenMailReceived() throws Exception {
-        String mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), DefaultMailboxes.INBOX).serialize();
+        String mailboxId = mailboxProbe.fluent().createUserMailboxGetId(ALICE, DefaultMailboxes.INBOX).serialize();
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, DefaultMailboxes.INBOX), AppendCommand.from(message));
 

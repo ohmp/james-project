@@ -147,10 +147,10 @@ public abstract class DeletedMessagesVaultTest {
             .addUser(HOMER, PASSWORD)
             .addUser(BART, BOB_PASSWORD)
             .addUser(JACK, PASSWORD);
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
+        MailboxProbe.Fluent mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class).fluent();
 
-        mailboxProbe.fluent().createUserMailbox(HOMER, DefaultMailboxes.INBOX);
-        otherMailboxId = mailboxProbe.createMailbox("#private", HOMER, MAILBOX_NAME);
+        mailboxProbe.createUserMailbox(HOMER, DefaultMailboxes.INBOX);
+        otherMailboxId = mailboxProbe.createUserMailboxGetId(HOMER, MAILBOX_NAME);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(HOMER), PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(BART), BOB_PASSWORD);
         jackAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(JACK), PASSWORD);

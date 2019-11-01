@@ -39,7 +39,7 @@ public interface MailboxProbe {
         Fluent(MailboxProbe probe) {
             this.probe = probe;
         }
-        
+
         public Fluent createUserMailbox(Username user, String name) {
             return createUserMailbox(user.asString(), name);
         }
@@ -47,6 +47,14 @@ public interface MailboxProbe {
         public Fluent createUserMailbox(String user, String name) {
             probe.createMailbox(MailboxConstants.USER_NAMESPACE, user, name);
             return this;
+        }
+
+        public MailboxId createUserMailboxGetId(Username user, String name) {
+            return createUserMailboxGetId(user.asString(), name);
+        }
+
+        public MailboxId createUserMailboxGetId(String user, String name) {
+            return probe.createMailbox(MailboxConstants.USER_NAMESPACE, user, name);
         }
     }
 
