@@ -56,7 +56,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.SerializableQuotaValue;
-import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.mailbox.probe.QuotaProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.QuotaProbesImpl;
@@ -85,7 +84,6 @@ public abstract class SendMDNMethodTest {
     @BeforeEach
     void setup(GuiceJamesServer jmapServer) throws Throwable {
         this.jmapServer = jmapServer;
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
@@ -97,7 +95,9 @@ public abstract class SendMDNMethodTest {
                 .build();
         RestAssured.defaultParser = Parser.JSON;
 
-        mailboxProbe.createMailbox("#private", HOMER.asString(), DefaultMailboxes.INBOX);
+        jmapServer.getProbe(MailboxProbeImpl.class)
+            .fluent()
+            .createUserMailbox(HOMER, DefaultMailboxes.INBOX);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);
     }

@@ -56,6 +56,7 @@ import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.jmap.ExportRequest;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.backup.ZipAssert;
@@ -64,12 +65,10 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.server.core.JamesServerResourceLoader;
 import org.apache.james.server.core.filesystem.FileSystemImpl;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.utils.UpdatableTickingClock;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
@@ -137,7 +136,6 @@ public abstract class DeletedMessagesVaultTest {
         fileSystem = new FileSystemImpl(new JamesServerResourceLoader(tempFolder.getRoot().getPath()));
         jmapServer = createJmapServer(fileSystem, clock);
         jmapServer.start();
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
@@ -149,7 +147,9 @@ public abstract class DeletedMessagesVaultTest {
             .addUser(HOMER, PASSWORD)
             .addUser(BART, BOB_PASSWORD)
             .addUser(JACK, PASSWORD);
-        mailboxProbe.createMailbox("#private", HOMER, DefaultMailboxes.INBOX);
+        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
+
+        mailboxProbe.fluent().createUserMailbox(HOMER, DefaultMailboxes.INBOX);
         otherMailboxId = mailboxProbe.createMailbox("#private", HOMER, MAILBOX_NAME);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(HOMER), PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(BART), BOB_PASSWORD);

@@ -33,15 +33,12 @@ import org.apache.james.dnsservice.api.InMemoryDNSService;
 import org.apache.james.jmap.api.vacation.AccountId;
 import org.apache.james.jmap.api.vacation.VacationPatch;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
-import org.apache.james.mailbox.model.MailboxConstants;
-import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.FakeSmtp;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -79,9 +76,10 @@ public abstract class VacationRelayIntegrationTest {
             .fluent()
             .addDomain(DOMAIN)
             .addUser(USER_WITH_DOMAIN, PASSWORD);
-        MailboxProbe mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_WITH_DOMAIN, DefaultMailboxes.SENT);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_WITH_DOMAIN, DefaultMailboxes.INBOX);
+        guiceJamesServer.getProbe(MailboxProbeImpl.class)
+            .fluent()
+            .createUserMailbox(USER_WITH_DOMAIN, DefaultMailboxes.SENT)
+            .createUserMailbox(USER_WITH_DOMAIN, DefaultMailboxes.INBOX);
         await();
 
         jmapGuiceProbe = guiceJamesServer.getProbe(JmapGuiceProbe.class);

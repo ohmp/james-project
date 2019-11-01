@@ -47,18 +47,16 @@ import org.apache.james.GuiceJamesServer;
 import org.apache.james.core.Username;
 import org.apache.james.jmap.ExportRequest;
 import org.apache.james.jmap.api.access.AccessToken;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.linshare.LinshareExtension;
 import org.apache.james.linshare.client.Document;
 import org.apache.james.linshare.client.LinshareAPI;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.backup.ZipAssert;
-import org.apache.james.mailbox.model.MailboxConstants;
-import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.awaitility.Duration;
@@ -112,8 +110,9 @@ public abstract class LinshareBlobExportMechanismIntegrationTest {
 
         webAdminApi = WebAdminUtils.spec(jmapServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
 
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, HOMER, DefaultMailboxes.INBOX);
+        jmapServer.getProbe(MailboxProbeImpl.class)
+            .fluent()
+            .createUserMailbox(HOMER, DefaultMailboxes.INBOX);
 
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(HOMER), HOMER_PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(BART), BART_PASSWORD);

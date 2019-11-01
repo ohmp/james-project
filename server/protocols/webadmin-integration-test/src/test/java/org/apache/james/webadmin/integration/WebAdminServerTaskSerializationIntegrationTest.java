@@ -75,15 +75,15 @@ import org.apache.james.webadmin.routes.MailRepositoriesRoutes;
 import org.apache.james.webadmin.routes.TasksRoutes;
 import org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes;
 import org.apache.mailet.base.test.FakeMail;
-
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import org.eclipse.jetty.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
 public class WebAdminServerTaskSerializationIntegrationTest {
 
@@ -283,7 +283,7 @@ public class WebAdminServerTaskSerializationIntegrationTest {
 
     @Test
     public void messageIdReIndexingShouldCompleteWhenMail() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, MailboxConstants.INBOX);
+        mailboxProbe.fluent().createUserMailbox(USERNAME, MailboxConstants.INBOX);
         ComposedMessageId composedMessageId = mailboxProbe.appendMessage(
             USERNAME,
             MailboxPath.forUser(Username.of(USERNAME), MailboxConstants.INBOX),
@@ -681,7 +681,7 @@ public class WebAdminServerTaskSerializationIntegrationTest {
     @Test
     public void deletedMessagesVaultDeleteShouldCompleteEvenNoDeletedMessageExisted() throws Exception {
         dataProbe.addUser(USERNAME, "password");
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, MailboxConstants.INBOX);
+        mailboxProbe.fluent().createUserMailbox(USERNAME, MailboxConstants.INBOX);
         ComposedMessageId composedMessageId = mailboxProbe.appendMessage(
             USERNAME,
             MailboxPath.forUser(Username.of(USERNAME), MailboxConstants.INBOX),

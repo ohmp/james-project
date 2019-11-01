@@ -142,7 +142,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldNotListMessageIfTheUserHasOnlyLookupRight() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), "delegated");
+        mailboxProbe.fluent().createUserMailbox(BOB, "delegated");
         MailboxPath delegatedMailboxPath = MailboxPath.forUser(BOB, "delegated");
         mailboxProbe.appendMessage(BOB.asString(), delegatedMailboxPath,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -167,7 +167,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessagesListShouldListMessageWhenTheUserHasOnlyReadRight() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), "delegated");
+        mailboxProbe.fluent().createUserMailbox(BOB, "delegated");
         MailboxPath delegatedMailboxPath = MailboxPath.forUser(BOB, "delegated");
         ComposedMessageId message = mailboxProbe.appendMessage(BOB.asString(), delegatedMailboxPath,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -191,7 +191,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldNotFilterMessagesWhenTextFilterMatchesBodyAfterTheMessageMailboxHasBeenChanged() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         MailboxId otherMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "otherMailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -225,7 +225,7 @@ public abstract class GetMessageListMethodTest {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, toUsername, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(toUsername, DefaultMailboxes.INBOX);
 
         String messageCreationId = "creationId1337";
         String fromName = "Üsteliğhan Maşrapa";
@@ -295,7 +295,7 @@ public abstract class GetMessageListMethodTest {
     @Test
     public void getMessageListShouldListMessageThatHasBeenMovedInAMailboxWhereTheUserHasOnlyReadRight() throws Exception {
         MailboxId delegatedMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), "delegated");
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, BOB.asString(), "not_delegated");
+        mailboxProbe.fluent().createUserMailbox(BOB, "not_delegated");
 
         MailboxPath notDelegatedMailboxPath = MailboxPath.forUser(BOB, "not_delegated");
         MailboxPath delegatedMailboxPath = MailboxPath.forUser(BOB, "delegated");
@@ -357,7 +357,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListSetFlaggedFilterShouldResultFlaggedMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -381,7 +381,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListUnsetFlaggedFilterShouldReturnNotFlaggedMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -405,7 +405,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListReadFilterShouldReturnOnlyReadMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotRead = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -429,7 +429,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListUnreadFilterShouldReturnOnlyUnreadMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotRead = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -453,7 +453,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListSetDraftFilterShouldReturnOnlyDraftMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotDraft = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -477,7 +477,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListUnsetDraftFilterShouldReturnOnlyNonDraftMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotDraft = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -501,7 +501,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListSetAnsweredFilterShouldReturnOnlyAnsweredMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotAnswered = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -525,7 +525,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListUnsetAnsweredFilterShouldReturnOnlyNotAnsweredMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotAnswered = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -549,7 +549,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListSetForwardedFilterShouldReturnOnlyForwardedMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotForwarded = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -573,7 +573,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListUnsetForwardedFilterShouldReturnOnlyNotForwardedMessages() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotForwarded = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -598,7 +598,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListANDOperatorShouldReturnMessagesWhichMatchAllConditions() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -628,7 +628,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListOROperatorShouldReturnMessagesWhichMatchOneOfAllConditions() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -658,7 +658,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNOTOperatorShouldReturnMessagesWhichNotMatchAnyCondition() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -688,7 +688,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNestedOperatorsShouldReturnMessagesWhichMatchConditions() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -747,7 +747,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSupportHasAttachmentSetToTrue() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -770,7 +770,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSupportHasAttachmentSetToFalse() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -805,7 +805,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnAllMessagesWhenSingleMailboxNoParameters() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -826,11 +826,11 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnAllMessagesWhenMultipleMailboxesAndNoParameters() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox2");
         ComposedMessageId message2 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox2"),
                 new ByteArrayInputStream("Subject: test2\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -853,16 +853,16 @@ public abstract class GetMessageListMethodTest {
         String password = "password";
         dataProbe.addUser(otherUser, password);
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox2");
         ComposedMessageId message2 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox2"),
                 new ByteArrayInputStream("Subject: test2\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, otherUser, "mailbox");
+        mailboxProbe.fluent().createUserMailbox(otherUser, "mailbox");
         mailboxProbe.appendMessage(otherUser, MailboxPath.forUser(Username.of(otherUser), "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -1003,7 +1003,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenNotInMailboxesFilterDoesNotMatch() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
@@ -1023,11 +1023,11 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenEmptyNotInMailboxesFilter() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox2");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox2");
         await();
 
         given()
@@ -1045,7 +1045,7 @@ public abstract class GetMessageListMethodTest {
     public void getMessageListShouldExcludeMessagesWhenInMailboxesFilterDoesntMatches() throws Exception {
         MailboxId emptyMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "emptyMailbox");
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -1062,7 +1062,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenTextFilterDoesntMatches() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
         await();
@@ -1080,7 +1080,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldIncludeMessagesWhenTextFilterMatchesBody() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 ClassLoader.getSystemResourceAsStream("eml/twoAttachments.eml"), new Date(), false, new Flags());
         await();
@@ -1098,7 +1098,7 @@ public abstract class GetMessageListMethodTest {
     @Test
     @Category(CassandraAndElasticSearchCategory.class)
     public void getMessageListShouldIncludeMessagesWhenTextFilterMatchesBodyWithStemming() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
                 ClassLoader.getSystemResourceAsStream("eml/htmlMail.eml"), new Date(), false, new Flags());
         await();
@@ -1116,7 +1116,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenSubjectFilterMatchesSubject() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/twoAttachments.eml"), new Date(), false, new Flags());
         await();
@@ -1133,7 +1133,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenFromFilterMatchesFrom() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1150,7 +1150,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenFromFilterDoesntMatchFrom() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1167,7 +1167,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenToFilterMatchesTo() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1184,7 +1184,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenToFilterDoesntMatchTo() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1201,7 +1201,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenCcFilterMatchesCc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1218,7 +1218,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenCcFilterDoesntMatchCc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1235,7 +1235,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldIncludeMessagesWhenBccFilterMatchesBcc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1252,7 +1252,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldExcludeMessagesWhenBccFilterDoesntMatchBcc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             ClassLoader.getSystemResourceAsStream("eml/mailWithRecipients.eml"), new Date(), false, new Flags());
         await();
@@ -1270,7 +1270,7 @@ public abstract class GetMessageListMethodTest {
     @Test
     @Category(CassandraAndElasticSearchCategory.class)
     public void getMessageListShouldExcludeMessagesWhenAttachmentFilterDoesntMatch() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         byte[] attachmentContent = ClassLoaderUtils.getSystemResourceAsByteArray("eml/attachment.pdf");
         Multipart multipart = MultipartBuilder.create("mixed")
                 .addBodyPart(BodyPartBuilder.create()
@@ -1299,7 +1299,7 @@ public abstract class GetMessageListMethodTest {
     @Test
     @Category(CassandraAndElasticSearchCategory.class)
     public void getMessageListShouldIncludeMessagesWhenAttachmentFilterMatches() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         byte[] attachmentContent = ClassLoaderUtils.getSystemResourceAsByteArray("eml/attachment.pdf");
         Multipart multipart = MultipartBuilder.create("mixed")
                 .addBodyPart(BodyPartBuilder.create()
@@ -1328,7 +1328,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByDateDefault() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1350,7 +1350,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenDateDoesntHaveCentury() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.parse("Wed, 28 Jun 17 09:23:01 +0200", ImapDateTimeFormatter.rfc5322());
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1373,7 +1373,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByDateAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1395,7 +1395,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedBySubjectAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1417,7 +1417,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedBySubjectDesc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1439,7 +1439,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByFromAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1461,7 +1461,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByFromDesc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1483,7 +1483,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByToAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1505,7 +1505,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByToDesc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1528,7 +1528,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedBySizeAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1550,7 +1550,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedBySizeDesc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1572,7 +1572,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedBySizeAndDateAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1597,7 +1597,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByDateAndSizeAsc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1623,7 +1623,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldSupportIdSorting() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1645,7 +1645,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortMessagesWhenSortedByDateDesc() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1691,7 +1691,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnAllMessagesWhenPositionIsNotGiven() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1713,7 +1713,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnSkipMessagesWhenPositionIsGiven() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1736,7 +1736,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldReturnSkipMessagesWhenPositionAndLimitGiven() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1760,7 +1760,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnAllMessagesWhenLimitIsNotGiven() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1782,7 +1782,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnLimitMessagesWhenLimitGiven() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1804,7 +1804,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnLimitMessagesWithDefaultValueWhenLimitIsNotGiven() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1831,7 +1831,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldChainFetchingMessagesWhenAskedFor() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -1856,7 +1856,7 @@ public abstract class GetMessageListMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldComputeTextBodyWhenNoTextBodyButHtmlBody() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         String mailContent = "Content-Type: text/html\r\n"
             + "Subject: message 1 subject\r\n"
@@ -1883,7 +1883,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListHasKeywordFilterShouldReturnMessagesWithKeywords() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -1907,7 +1907,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListHasKeywordFilterShouldReturnMessagesWithUserKeywords() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
             .add(Flags.Flag.FLAGGED)
@@ -1936,7 +1936,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNotKeywordFilterShouldReturnMessagesWithoutKeywords() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -1960,7 +1960,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNotKeywordFilterShouldReturnMessagesWithoutUserKeywords() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
             .add(Flags.Flag.FLAGGED)
@@ -1989,7 +1989,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNotKeywordFilterShouldReturnMessagesWithoutKeywordsWhenMultipleNotKeywordAndFilterOperator() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
             .add(FORWARDED)
@@ -2017,7 +2017,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListHasKeywordAndNotKeywordFilterShouldReturnMessagesWithAndWithoutKeywords() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -2041,7 +2041,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListHasKeywordShouldIgnoreDeleted() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -2064,7 +2064,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListHasKeywordShouldIgnoreRecent() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -2087,7 +2087,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNotKeywordShouldIgnoreDeleted() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -2110,7 +2110,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListNotKeywordShouldIgnoreRecent() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
@@ -2133,7 +2133,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldSortUsingInternalDateWhenNoDateHeader() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         LocalDate date = LocalDate.now();
         ComposedMessageId message1 = mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
@@ -2156,7 +2156,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListFileNameFilterShouldReturnOnlyMessagesWithMatchingAttachmentFileNames() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             MessageManager.AppendCommand.builder()
@@ -2192,7 +2192,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListFileNameFilterShouldNotReturnMessagesWithOnlyAttachmentContentMatching() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             MessageManager.AppendCommand.builder()
@@ -2223,7 +2223,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListTextFilterShouldReturnOnlyMessagesWithMatchingAttachmentFileNames() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),
             MessageManager.AppendCommand.builder()
@@ -2289,7 +2289,7 @@ public abstract class GetMessageListMethodTest {
 
     @Test
     public void getMessageListShouldReturnTwoMessagesWhenCopiedAtOnceViaIMAP() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(ALICE, "mailbox");
         MailboxId otherMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "otherMailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), MailboxPath.forUser(ALICE, "mailbox"),

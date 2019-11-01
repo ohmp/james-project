@@ -179,7 +179,7 @@ public abstract class SetMessagesMethodTest {
             .addDomain(DOMAIN)
             .addUser(USERNAME, PASSWORD)
             .addUser(BOB, BOB_PASSWORD);
-        mailboxProbe.createMailbox("#private", USERNAME.asString(), DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(USERNAME, DefaultMailboxes.INBOX);
         accessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), USERNAME, PASSWORD);
         bobAccessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD);
     }
@@ -242,7 +242,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldReturnNotDestroyedWhenNoMatchingMessage() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         String messageId = randomMessageId().serialize();
         given()
@@ -265,7 +265,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldReturnDestroyedWhenMatchingMessage() throws Exception {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -289,7 +289,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldDeleteMessageWhenMatchingMessage() throws Exception {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -320,7 +320,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldReturnDestroyedNotDestroyWhenMixed() throws Exception {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message1 = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -357,7 +357,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldDeleteMatchingMessagesWhenMixed() throws Exception {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message1 = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -397,7 +397,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsUnreadPassedToFalse() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -419,7 +419,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesWithUpdateShouldReturnAnErrorWhenBothIsFlagAndKeywordsArePassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -443,7 +443,7 @@ public abstract class SetMessagesMethodTest {
     @Category(BasicFeature.class)
     @Test
     public void setMessagesShouldUpdateKeywordsWhenKeywordsArePassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -475,7 +475,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldAddForwardedFlagWhenKeywordsWithForwardedIsPassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -507,7 +507,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldRemoveForwardedFlagWhenKeywordsWithoutForwardedIsPassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
                 .add(Flag.SEEN)
@@ -542,7 +542,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldReturnAnErrorWhenKeywordsWithDeletedArePassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.ANSWERED));
@@ -565,7 +565,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldReturnAnErrorWhenKeywordsWithRecentArePassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.ANSWERED));
@@ -588,7 +588,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldNotChangeOriginDeletedFlag() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.DELETED));
@@ -619,7 +619,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldNotChangeOriginRecentFlag() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
         Flags flags = FlagsBuilder.builder()
             .add(Flag.DELETED, Flag.RECENT)
             .build();
@@ -653,7 +653,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldReturnNewKeywordsWhenKeywordsArePassedToRemoveAndAddFlag() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         Flags currentFlags = FlagsBuilder.builder()
                 .add(Flag.DRAFT, Flag.ANSWERED)
@@ -689,7 +689,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldMarkAsReadWhenIsUnreadPassedToFalse() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -718,7 +718,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsUnreadPassed() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.SEEN));
@@ -740,7 +740,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldMarkAsUnreadWhenIsUnreadPassed() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.SEEN));
@@ -769,7 +769,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldReturnUpdatedIdAndNoErrorWhenIsFlaggedPassed() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -791,7 +791,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldMarkAsFlaggedWhenIsFlaggedPassed() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -818,7 +818,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldRejectUpdateWhenPropertyHasWrongType() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
         mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
 
@@ -846,7 +846,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     @Ignore("Jackson json deserializer stops after first error found")
     public void setMessagesShouldRejectUpdateWhenPropertiesHaveWrongTypes() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
         mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
 
@@ -874,7 +874,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldMarkMessageAsAnsweredWhenIsAnsweredPassed() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -896,7 +896,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldMarkAsAnsweredWhenIsAnsweredPassed() throws MailboxException {
         // Given
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -924,7 +924,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldMarkMessageAsForwardWhenIsForwardedPassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -944,7 +944,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldMarkAsForwardedWhenIsForwardedPassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -970,7 +970,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessagesShouldReturnNotFoundWhenUpdateUnknownMessage() {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         String nonExistingMessageId = randomMessageId().serialize();
 
@@ -2069,7 +2069,7 @@ public abstract class SetMessagesMethodTest {
     public void setMessagesShouldNotAllowDraftCreationInADelegatedMailbox() throws Exception {
         String messageCreationId = "creationId1337";
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), DefaultMailboxes.DRAFTS);
+        mailboxProbe.fluent().createUserMailbox(USERNAME, DefaultMailboxes.DRAFTS);
         aclProbe.addRights(
                 MailboxPath.forUser(USERNAME, DefaultMailboxes.DRAFTS),
                 BOB.asString(),
@@ -2734,7 +2734,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         AccessToken recipientToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), Username.of(recipientAddress), password);
         await();
 
@@ -2781,7 +2781,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), Username.of(recipientAddress), password);
         await();
 
@@ -2827,7 +2827,7 @@ public abstract class SetMessagesMethodTest {
         String bccRecipient = BOB.asString();
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         await();
         AccessToken recipientToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), Username.of(recipientAddress), password);
 
@@ -2883,7 +2883,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         await();
 
         String messageCreationId = "creationId1337";
@@ -2937,10 +2937,10 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
 
         String bccAddress = BOB.asString();
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, bccAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(bccAddress, DefaultMailboxes.INBOX);
         await();
 
         String messageCreationId = "creationId1337";
@@ -3011,7 +3011,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         await();
         AccessToken recipientToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), Username.of(recipientAddress), password);
 
@@ -3051,7 +3051,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String recipientPassword = "password";
         dataProbe.addUser(recipientAddress, recipientPassword);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         AccessToken recipientToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), Username.of(recipientAddress), recipientPassword);
         await();
 
@@ -3158,7 +3158,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         AccessToken recipientToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), Username.of(recipientAddress), password);
         await();
 
@@ -3419,7 +3419,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "any");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "any");
         String mailboxId = mailboxProbe.getMailboxId(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "any")
             .serialize();
         mailboxProbe.deleteMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "any");
@@ -3600,7 +3600,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void copyToTrashShouldWork() throws Exception {
         String newMailboxName = "heartFolder";
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), newMailboxName);
+        mailboxProbe.fluent().createUserMailbox(USERNAME, newMailboxName);
         String trashId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), DefaultMailboxes.TRASH).serialize();
 
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
@@ -4396,7 +4396,7 @@ public abstract class SetMessagesMethodTest {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, toUsername, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(toUsername, DefaultMailboxes.INBOX);
 
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME.asString();
@@ -4433,7 +4433,7 @@ public abstract class SetMessagesMethodTest {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, toUsername, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(toUsername, DefaultMailboxes.INBOX);
 
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME.asString();
@@ -4898,7 +4898,7 @@ public abstract class SetMessagesMethodTest {
         String toUsername = "username1@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, toUsername, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(toUsername, DefaultMailboxes.INBOX);
 
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME.asString();
@@ -5317,7 +5317,7 @@ public abstract class SetMessagesMethodTest {
 
     @Test
     public void setMessageWithUpdateShouldBeOKWhenKeywordsWithCustomFlagArePassed() throws MailboxException {
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), "mailbox");
+        mailboxProbe.fluent().createUserMailbox(USERNAME, "mailbox");
 
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME.asString(), USER_MAILBOX,
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
@@ -5456,7 +5456,7 @@ public abstract class SetMessagesMethodTest {
         String recipientAddress = "recipient" + "@" + DOMAIN;
         String password = "password";
         dataProbe.addUser(recipientAddress, password);
-        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, recipientAddress, DefaultMailboxes.INBOX);
+        mailboxProbe.fluent().createUserMailbox(recipientAddress, DefaultMailboxes.INBOX);
         await();
 
         String messageCreationId = "creationId1337";

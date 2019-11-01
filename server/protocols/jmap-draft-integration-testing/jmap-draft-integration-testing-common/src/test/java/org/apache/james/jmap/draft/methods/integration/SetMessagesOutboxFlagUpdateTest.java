@@ -44,7 +44,6 @@ import org.apache.james.jmap.HttpJmapAuthentication;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
-import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
@@ -109,7 +108,6 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
     public void setup() throws Throwable {
         jmapServer = createJmapServer();
         jmapServer.start();
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
 
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
@@ -126,7 +124,9 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         RestAssured.defaultParser = Parser.JSON;
 
-        mailboxProbe.createMailbox("#private", USERNAME.asString(), DefaultMailboxes.INBOX);
+        jmapServer.getProbe(MailboxProbeImpl.class)
+            .fluent()
+            .createUserMailbox(USERNAME, DefaultMailboxes.INBOX);
         accessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), USERNAME, PASSWORD);
     }
 

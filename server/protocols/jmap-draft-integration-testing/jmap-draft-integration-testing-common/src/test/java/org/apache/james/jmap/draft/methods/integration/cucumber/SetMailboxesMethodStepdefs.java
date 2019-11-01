@@ -36,7 +36,6 @@ import org.apache.james.core.Username;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.model.MailboxACL;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mime4j.dom.Message;
@@ -67,7 +66,7 @@ public class SetMailboxesMethodStepdefs {
 
     @Given("^mailbox \"([^\"]*)\" with (\\d+) messages$")
     public void mailboxWithMessages(String mailboxName, int messageCount) {
-        mainStepdefs.mailboxProbe.createMailbox("#private", userStepdefs.getConnectedUser(), mailboxName);
+        mainStepdefs.mailboxProbe.fluent().createUserMailbox(userStepdefs.getConnectedUser(), mailboxName);
         MailboxPath mailboxPath = MailboxPath.forUser(Username.of(userStepdefs.getConnectedUser()), mailboxName);
         IntStream
             .range(0, messageCount)
@@ -85,7 +84,7 @@ public class SetMailboxesMethodStepdefs {
 
     @Given("^\"([^\"]*)\" has a mailbox \"([^\"]*)\"$")
     public void createMailbox(String username, String mailbox) {
-        mainStepdefs.mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, mailbox);
+        mainStepdefs.mailboxProbe.fluent().createUserMailbox(username, mailbox);
     }
 
     @Given("^\"([^\"]*)\" shares its mailbox \"([^\"]*)\" with rights \"([^\"]*)\" with \"([^\"]*)\"$")

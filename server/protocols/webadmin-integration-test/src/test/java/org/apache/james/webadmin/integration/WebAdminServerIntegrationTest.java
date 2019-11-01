@@ -216,7 +216,8 @@ public class WebAdminServerIntegrationTest {
     @Test
     public void deleteMailboxShouldRemoveAMailbox() throws Exception {
         dataProbe.addUser(USERNAME, "anyPassword");
-        guiceJamesServer.getProbe(MailboxProbeImpl.class).createMailbox("#private", USERNAME, MAILBOX);
+        guiceJamesServer.getProbe(MailboxProbeImpl.class).fluent()
+            .createUserMailbox(USERNAME, MAILBOX);
 
         when()
             .delete(SPECIFIC_MAILBOX)

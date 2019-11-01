@@ -45,7 +45,6 @@ import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.SerializableQuotaValue;
-import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.QuotaProbesImpl;
 import org.apache.james.utils.DataProbeImpl;
@@ -78,7 +77,6 @@ public abstract class QuotaMailingTest {
     public void setup() throws Throwable {
         jmapServer = createJmapServer();
         jmapServer.start();
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
@@ -90,7 +88,9 @@ public abstract class QuotaMailingTest {
             .addDomain(DOMAIN)
             .addUser(HOMER, PASSWORD)
             .addUser(BART, BOB_PASSWORD);
-        mailboxProbe.createMailbox("#private", HOMER.asString(), DefaultMailboxes.INBOX);
+        jmapServer.getProbe(MailboxProbeImpl.class)
+            .fluent()
+            .createUserMailbox(HOMER, DefaultMailboxes.INBOX);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);
     }

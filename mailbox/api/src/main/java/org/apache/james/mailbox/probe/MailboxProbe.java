@@ -25,12 +25,34 @@ import java.util.Date;
 
 import javax.mail.Flags;
 
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 
 public interface MailboxProbe {
+    class Fluent {
+        private final MailboxProbe probe;
+
+        Fluent(MailboxProbe probe) {
+            this.probe = probe;
+        }
+        
+        public Fluent createUserMailbox(Username user, String name) {
+            return createUserMailbox(user.asString(), name);
+        }
+
+        public Fluent createUserMailbox(String user, String name) {
+            probe.createMailbox(MailboxConstants.USER_NAMESPACE, user, name);
+            return this;
+        }
+    }
+
+    default Fluent fluent() {
+        return new Fluent(this);
+    }
 
     MailboxId createMailbox(String namespace, String user, String name);
 
