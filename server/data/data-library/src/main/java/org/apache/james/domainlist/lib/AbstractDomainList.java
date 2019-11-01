@@ -193,7 +193,8 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
             .putAll(DomainType.Internal, domains)
             .putAll(DomainType.Detected, detectedDomains)
             .putAll(DomainType.DetectedIp, ips);
-        Optional.ofNullable(defaultDomain).ifPresent(domain -> result.put(DomainType.DefaultDomain, domain));
+        Optional.ofNullable(defaultDomain)
+            .ifPresent(domain -> result.put(DomainType.DefaultDomain, domain));
         return result.build();
     }
 
