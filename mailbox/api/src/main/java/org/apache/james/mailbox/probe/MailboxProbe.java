@@ -26,6 +26,7 @@ import java.util.Date;
 import javax.mail.Flags;
 
 import org.apache.james.core.Username;
+import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -55,6 +56,10 @@ public interface MailboxProbe {
 
         public MailboxId createUserMailboxGetId(String user, String name) {
             return probe.createMailbox(MailboxConstants.USER_NAMESPACE, user, name);
+        }
+
+        public ComposedMessageId appendMessage(MailboxPath mailboxPath, MessageManager.AppendCommand appendCommand) throws MailboxException {
+            return probe.appendMessage(mailboxPath.getUser().asString(), mailboxPath, appendCommand.getMsgIn(), appendCommand.getInternalDate(), appendCommand.isRecent(), appendCommand.getFlags());
         }
     }
 

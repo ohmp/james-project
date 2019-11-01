@@ -102,6 +102,7 @@ public abstract class GetMessageListMethodTest {
     public static final int LIMIT_TO_3_MESSAGES = 3;
     private static final String FORWARDED = "$Forwarded";
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Paris");
+    public static final MessageManager.AppendCommand DEFAULT_APPEND_COMMAND = MessageManager.AppendCommand.builder().build("Subject: test\r\n\r\ntestmail");
     private ACLProbeImpl aclProbe;
 
     protected abstract GuiceJamesServer createJmapServer() throws IOException;
@@ -143,8 +144,7 @@ public abstract class GetMessageListMethodTest {
     public void getMessageListShouldNotListMessageIfTheUserHasOnlyLookupRight() throws Exception {
         mailboxProbe.fluent().createUserMailbox(BOB, "delegated");
         MailboxPath delegatedMailboxPath = MailboxPath.forUser(BOB, "delegated");
-        mailboxProbe.appendMessage(BOB.asString(), delegatedMailboxPath,
-            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        mailboxProbe.fluent().appendMessage(delegatedMailboxPath, DEFAULT_APPEND_COMMAND);
 
         await();
 
@@ -168,8 +168,7 @@ public abstract class GetMessageListMethodTest {
     public void getMessagesListShouldListMessageWhenTheUserHasOnlyReadRight() throws Exception {
         mailboxProbe.fluent().createUserMailbox(BOB, "delegated");
         MailboxPath delegatedMailboxPath = MailboxPath.forUser(BOB, "delegated");
-        ComposedMessageId message = mailboxProbe.appendMessage(BOB.asString(), delegatedMailboxPath,
-            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId message = mailboxProbe.fluent().appendMessage(delegatedMailboxPath, DEFAULT_APPEND_COMMAND);
 
         await();
 

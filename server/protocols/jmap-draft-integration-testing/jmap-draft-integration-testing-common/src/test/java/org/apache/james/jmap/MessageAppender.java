@@ -19,14 +19,11 @@
 
 package org.apache.james.jmap;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 
-import javax.mail.Flags;
-
 import org.apache.james.core.Username;
+import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -43,9 +40,12 @@ public class MessageAppender {
         try {
             for (int i = 0; i < 1000; ++i) {
                 String mailContent = "Subject: test\r\n\r\ntestmail" + String.valueOf(i);
-                ByteArrayInputStream messagePayload = new ByteArrayInputStream(mailContent.getBytes(StandardCharsets.UTF_8));
                 insertedMessages.add(
-                    mailboxProbe.appendMessage(user, MailboxPath.forUser(Username.of(user), mailbox), messagePayload, new Date(), false, new Flags()));
+                    mailboxProbe.fluent().appendMessage(MailboxPath.forUser(Username.of(user), mailbox),
+                        MessageManager.AppendCommand.builder()
+                            .isRecent(false)
+                            .withInternalDate(new Date())
+                            .build(mailContent)));
             }
         } catch (MailboxException ignored) {
             //we expect an exception to be thrown because of quota reached
