@@ -169,7 +169,7 @@
 
               <p>First, in the Welcome page, click on <strong>Check out from Version Control</strong> and select <strong>Git</strong>.</p>
               <img src="./images/intellij-idea/intellij-new-project.png"/>
-              <p>In the pop-up window, press the <strong>+</strong> button to add the James code repository in the next pop-up.</p>
+              <p>In the pop-up window, fill the <strong>URL</strong> part to <i>http://git-wip-us.apache.org/repos/asf/james-project.git</i>.</p>
               <img src="./images/intellij-idea/intellij-git-repo.png"/>            <br/>
 
               <p>When this process is done, the project should look like this. <br/></p>
@@ -178,7 +178,7 @@
           </subsection>
 
           <subsection name="Building the project">
-              <p> To build the project, you must open the <strong>Maven Projects</strong> panel. Then double click on the install goal to run this goal.<br/></p>
+              <p> To build the project, you must open the <strong>Maven Projects</strong> panel (should be the maven option in the upper right). Then double click on the package goal to run this goal.<br/></p>
               <img src="./images/intellij-idea/intellij-mvn.png"/>
               <p>Then you will find the James server zip in the <strong>server/app/target</strong> folder.<br/></p>
               <img src="./images/intellij-idea/intellij-james-zip.png"/>
