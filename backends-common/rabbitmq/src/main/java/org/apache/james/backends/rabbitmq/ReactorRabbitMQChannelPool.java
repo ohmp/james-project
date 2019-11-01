@@ -139,8 +139,8 @@ public class ReactorRabbitMQChannelPool implements ChannelPool, Startable {
     public Mono<? extends Channel> getChannelMono() {
         return Mono.fromCallable(() -> {
             Channel channel = pool.borrowObject(MAXIMUM_BORROW_TIMEOUT_IN_MS);
-            borrowedChannels.add(channel);
             Preconditions.checkArgument(channel.isOpen());
+            borrowedChannels.add(channel);
             return channel;
         });
     }
