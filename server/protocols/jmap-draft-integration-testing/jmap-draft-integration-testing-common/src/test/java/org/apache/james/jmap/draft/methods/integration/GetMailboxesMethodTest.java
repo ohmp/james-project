@@ -118,8 +118,8 @@ public abstract class GetMailboxesMethodTest {
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(ALICE.asString(), ALICE_PASSWORD)
-            .addUser(BOB.asString(), BOB_PASSWORD);
+            .addUser(ALICE, ALICE_PASSWORD)
+            .addUser(BOB, BOB_PASSWORD);
         accessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
 
         message = Message.Builder.of()

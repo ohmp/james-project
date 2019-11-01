@@ -39,14 +39,14 @@ import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.jmap.api.access.AccessToken;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
+import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.objectstorage.PayloadCodecFactory;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.WebAdminUtils;
@@ -98,7 +98,7 @@ class ReindexingWithEventDeadLettersTest {
         jamesServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(ALICE.asString(), ALICE_PASSWORD);
+            .addUser(ALICE, ALICE_PASSWORD);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jamesServer.getProbe(JmapGuiceProbe.class).getJmapPort())

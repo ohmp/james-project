@@ -88,8 +88,8 @@ public abstract class QuotaMailingTest {
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(HOMER.asString(), PASSWORD)
-            .addUser(BART.asString(), BOB_PASSWORD);
+            .addUser(HOMER, PASSWORD)
+            .addUser(BART, BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", HOMER.asString(), DefaultMailboxes.INBOX);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);

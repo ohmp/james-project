@@ -44,13 +44,12 @@ import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.vacation.AccountId;
 import org.apache.james.jmap.api.vacation.VacationPatch;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,8 +81,8 @@ public abstract class VacationIntegrationTest {
         guiceJamesServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(USER_1.asString(), PASSWORD)
-            .addUser(USER_2.asString(), PASSWORD);
+            .addUser(USER_1, PASSWORD)
+            .addUser(USER_2, PASSWORD);
         MailboxProbe mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_2.asString(), DefaultMailboxes.OUTBOX);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_1.asString(), DefaultMailboxes.SENT);

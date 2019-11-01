@@ -177,8 +177,8 @@ public abstract class SetMessagesMethodTest {
 
         dataProbe.fluent()
             .addDomain(DOMAIN)
-            .addUser(USERNAME.asString(), PASSWORD)
-            .addUser(BOB.asString(), BOB_PASSWORD);
+            .addUser(USERNAME, PASSWORD)
+            .addUser(BOB, BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", USERNAME.asString(), DefaultMailboxes.INBOX);
         accessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), USERNAME, PASSWORD);
         bobAccessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD);

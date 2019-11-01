@@ -42,14 +42,13 @@ import org.apache.james.GuiceJamesServer;
 import org.apache.james.core.Username;
 import org.apache.james.jmap.HttpJmapAuthentication;
 import org.apache.james.jmap.api.access.AccessToken;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.mailet.Mail;
 import org.junit.After;
 import org.junit.Before;
@@ -115,8 +114,8 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(USERNAME.asString(), PASSWORD)
-            .addUser(BOB.asString(), BOB_PASSWORD);
+            .addUser(USERNAME, PASSWORD)
+            .addUser(BOB, BOB_PASSWORD);
 
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)

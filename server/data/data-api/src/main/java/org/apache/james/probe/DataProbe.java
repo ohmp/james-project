@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.james.core.Domain;
+import org.apache.james.core.Username;
 import org.apache.james.rrt.lib.Mappings;
 
 public interface DataProbe {
@@ -41,6 +42,11 @@ public interface DataProbe {
 
         public FluentDataProbe addUser(String userName, String password) throws Exception {
             dataProbe.addUser(userName, password);
+            return this;
+        }
+
+        public FluentDataProbe addUser(Username userName, String password) throws Exception {
+            dataProbe.addUser(userName.asString(), password);
             return this;
         }
 

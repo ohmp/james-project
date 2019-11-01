@@ -103,7 +103,7 @@ public abstract class SetMailboxesMethodTest {
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(username.asString(), password);
+            .addUser(username, password);
         
         RestAssured.requestSpecification = jmapRequestSpecBuilder
                 .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())

@@ -129,8 +129,8 @@ public abstract class GetMessageListMethodTest {
 
         dataProbe.fluent()
             .addDomain(DOMAIN)
-            .addUser(ALICE.asString(), ALICE_PASSWORD)
-            .addUser(BOB.asString(), BOB_PASSWORD);
+            .addUser(ALICE, ALICE_PASSWORD)
+            .addUser(BOB, BOB_PASSWORD);
         this.aliceAccessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
         this.bobAccessToken = authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD);
     }

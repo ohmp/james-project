@@ -89,8 +89,8 @@ public abstract class SendMDNMethodTest {
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(HOMER.asString(), PASSWORD)
-            .addUser(BART.asString(), BOB_PASSWORD);
+            .addUser(HOMER, PASSWORD)
+            .addUser(BART, BOB_PASSWORD);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
                 .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())

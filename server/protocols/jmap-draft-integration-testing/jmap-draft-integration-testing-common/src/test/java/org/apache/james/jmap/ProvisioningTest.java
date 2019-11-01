@@ -35,11 +35,11 @@ import java.time.Duration;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.core.Username;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public abstract class ProvisioningTest {
         jmapServer.getProbe(DataProbeImpl.class)
             .fluent()
             .addDomain(DOMAIN)
-            .addUser(USER.asString(), PASSWORD);
+            .addUser(USER, PASSWORD);
     }
 
     @After
