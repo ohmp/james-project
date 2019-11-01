@@ -120,7 +120,10 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         ALL_GROUPS.stream()
             .map(GroupRegistration.WorkQueueName::of)
             .forEach(queueName -> rabbitMQExtension.getRabbitChannelPool().getSender().delete(QueueSpecification.queue(queueName.asString())).block());
-        rabbitMQExtension.getRabbitChannelPool().getSender().delete(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME)).block();
+        rabbitMQExtension.getRabbitChannelPool()
+            .getSender()
+            .delete(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME))
+            .block();
     }
 
     private RabbitMQEventBus newEventBus() {
