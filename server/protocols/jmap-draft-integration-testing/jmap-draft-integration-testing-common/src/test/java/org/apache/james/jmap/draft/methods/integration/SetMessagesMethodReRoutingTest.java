@@ -94,10 +94,11 @@ public abstract class SetMessagesMethodReRoutingTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         RestAssured.defaultParser = Parser.JSON;
 
-        dataProbe.addDomain(DESTINATION_DOMAIN);
-        dataProbe.addDomain(ALIAS_DOMAIN);
-        dataProbe.addUser(RECEIVER_AT_DESTINATION_DOMAIN, PASSWORD);
-        dataProbe.addUser(SENDER_AT_DESTINATION_DOMAIN, PASSWORD);
+        dataProbe.fluent()
+            .addDomain(DESTINATION_DOMAIN)
+            .addDomain(ALIAS_DOMAIN)
+            .addUser(RECEIVER_AT_DESTINATION_DOMAIN, PASSWORD)
+            .addUser(SENDER_AT_DESTINATION_DOMAIN, PASSWORD);
         receiverAtDestinationDomainToken = authenticateJamesUser(baseUri(jmapServer), Username.of(RECEIVER_AT_DESTINATION_DOMAIN), PASSWORD);
         senderAtDestinationDomainToken = authenticateJamesUser(baseUri(jmapServer), Username.of(SENDER_AT_DESTINATION_DOMAIN), PASSWORD);
     }

@@ -36,6 +36,7 @@ import org.apache.james.CassandraRabbitMQAwsS3JmapTestRule;
 import org.apache.james.DockerCassandraRule;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionManager;
+import org.apache.james.core.Domain;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
@@ -95,7 +96,7 @@ public class WebAdminServerIntegrationTest {
         guiceJamesServer = jamesTestRule.jmapServer(cassandra.getModule());
         guiceJamesServer.start();
         dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
+        dataProbe.fluent().addDomain(DOMAIN);
         WebAdminGuiceProbe webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminGuiceProbe.getWebAdminPort())
@@ -114,7 +115,7 @@ public class WebAdminServerIntegrationTest {
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThat(dataProbe.listDomains()).contains(DOMAIN);
+        assertThat(dataProbe.listDomains()).contains(Domain.of(DOMAIN));
     }
 
     @Test
@@ -159,7 +160,7 @@ public class WebAdminServerIntegrationTest {
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThat(dataProbe.listDomains()).doesNotContain(DOMAIN);
+        assertThat(dataProbe.listDomains()).doesNotContain(Domain.of(DOMAIN));
     }
 
     @Test

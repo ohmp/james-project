@@ -74,10 +74,11 @@ public class SMTPHeloHooksTest {
             .withMailetContainer(mailetContainer)
             .build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
-        dataProbe.addUser(TO, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(FROM, PASSWORD)
+            .addUser(TO, PASSWORD);
     }
 
     @After

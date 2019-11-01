@@ -85,7 +85,7 @@ public class SmtpTestRule implements TestRule, SmtpHostSystem {
     public boolean addUser(Username userAtDomain, String password) throws Exception {
         Optional<Domain> domain = userAtDomain.getDomainPart();
         Preconditions.checkArgument(domain.isPresent(), "The 'user' should contain the 'domain'");
-        createDomainIfNeeded(domain.get().asString());
+        createDomainIfNeeded(domain.get());
         jamesServer.getProbe(DataProbeImpl.class).addUser(userAtDomain.asString(), password);
         return true;
     }
@@ -95,7 +95,7 @@ public class SmtpTestRule implements TestRule, SmtpHostSystem {
         return sessionFactory.newSession(continuation);
     }
 
-    private void createDomainIfNeeded(String domain) throws Exception {
+    private void createDomainIfNeeded(Domain domain) throws Exception {
         if (!jamesServer.getProbe(DataProbeImpl.class).containsDomain(domain)) {
             jamesServer.getProbe(DataProbeImpl.class).addDomain(domain);
         }

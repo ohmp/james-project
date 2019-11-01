@@ -41,15 +41,14 @@ import org.apache.james.core.Username;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.SerializableQuotaValue;
 import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.QuotaProbesImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
 import org.junit.After;
@@ -80,16 +79,17 @@ public abstract class QuotaMailingTest {
         jmapServer = createJmapServer();
         jmapServer.start();
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
             .build();
         RestAssured.defaultParser = Parser.JSON;
 
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(HOMER.asString(), PASSWORD);
-        dataProbe.addUser(BART.asString(), BOB_PASSWORD);
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(HOMER.asString(), PASSWORD)
+            .addUser(BART.asString(), BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", HOMER.asString(), DefaultMailboxes.INBOX);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);

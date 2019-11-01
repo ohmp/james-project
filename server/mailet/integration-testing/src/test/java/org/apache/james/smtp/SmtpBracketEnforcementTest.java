@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.SmtpConfiguration;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
 import org.apache.james.utils.SMTPSendingException;
@@ -52,9 +51,10 @@ public class SmtpBracketEnforcementTest {
             .withSmtpConfiguration(smtpConfiguration)
             .build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(USER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(USER, PASSWORD);
     }
 
     @After

@@ -106,9 +106,11 @@ public class SmtpRandomStoringTest {
 
     private static void createUsersAndMailboxes() throws Exception {
         MailboxProbeImpl mailboxes = jamesServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
+        DataProbe.FluentDataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class)
+            .fluent();
+        dataProbe
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(FROM, PASSWORD);
 
         USERS.forEach(user -> populateUser(mailboxes, dataProbe, user));
         awaitAtMostTenSeconds
@@ -122,7 +124,7 @@ public class SmtpRandomStoringTest {
         sendMails();
     }
 
-    private static void populateUser(MailboxProbeImpl mailboxProbe, DataProbe dataProbe, String user) {
+    private static void populateUser(MailboxProbeImpl mailboxProbe, DataProbe.FluentDataProbe dataProbe, String user) {
         try {
             dataProbe.addUser(user, PASSWORD);
             MAILBOXES.forEach(mailbox -> mailboxProbe.createMailbox(MailboxPath.forUser(Username.of(user), mailbox)));

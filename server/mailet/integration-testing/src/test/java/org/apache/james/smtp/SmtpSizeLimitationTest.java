@@ -54,9 +54,10 @@ public class SmtpSizeLimitationTest {
             .withSmtpConfiguration(smtpConfiguration)
             .build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(USER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(USER, PASSWORD);
     }
 
     @After

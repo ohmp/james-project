@@ -28,7 +28,6 @@ import static org.apache.james.mailets.configuration.Constants.awaitAtMostOneMin
 
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
@@ -52,9 +51,10 @@ public class CommonMailetConfigurationTest {
     public void setup() throws Exception {
         jamesServer = TemporaryJamesServer.builder().build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD);
     }
 
     @After

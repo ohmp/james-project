@@ -80,9 +80,10 @@ public class SmtpAuthorizedAddressesTest {
             .withMailetContainer(mailetContainer)
             .build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(FROM, PASSWORD);
     }
 
     @After

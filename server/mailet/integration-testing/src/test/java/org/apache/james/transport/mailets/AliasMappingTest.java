@@ -101,11 +101,11 @@ public class AliasMappingTest {
             .build(temporaryFolder.newFolder());
 
         dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-
-        dataProbe.addUser(BOB_ADDRESS, PASSWORD);
-        dataProbe.addUser(ALICE_ADDRESS, PASSWORD);
-        dataProbe.addUser(CEDRIC_ADDRESS, PASSWORD);
+        dataProbe.fluent()
+            .addDomain(DOMAIN)
+            .addUser(BOB_ADDRESS, PASSWORD)
+            .addUser(ALICE_ADDRESS, PASSWORD)
+            .addUser(CEDRIC_ADDRESS, PASSWORD);
 
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(Username.of(BOB_ADDRESS), MailboxConstants.INBOX));
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(Username.of(ALICE_ADDRESS), MailboxConstants.INBOX));

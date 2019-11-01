@@ -86,7 +86,7 @@ public class UserStepdefs {
 
     @Given("^a domain named \"([^\"]*)\"$")
     public void createDomain(String domain) throws Exception {
-        mainStepdefs.dataProbe.addDomain(domain);
+        mainStepdefs.dataProbe.fluent().addDomain(domain);
         domains.add(domain);
     }
 

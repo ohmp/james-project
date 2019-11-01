@@ -31,7 +31,6 @@ import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.transport.mailets.Bounce;
 import org.apache.james.transport.mailets.DSNBounce;
 import org.apache.james.transport.mailets.Forward;
@@ -62,7 +61,6 @@ public class BounceIntegrationTest {
     public SMTPMessageSender messageSender = new SMTPMessageSender(DEFAULT_DOMAIN);
 
     private TemporaryJamesServer jamesServer;
-    private DataProbe dataProbe;
 
     @After
     public void tearDown() {
@@ -80,10 +78,11 @@ public class BounceIntegrationTest {
                 .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_RECEIVER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_RECEIVER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(BOUNCE_RECEIVER, RECIPIENT);
@@ -105,10 +104,11 @@ public class BounceIntegrationTest {
                 .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_RECEIVER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_RECEIVER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(BOUNCE_RECEIVER, RECIPIENT);
@@ -130,10 +130,11 @@ public class BounceIntegrationTest {
                 .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_RECEIVER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_RECEIVER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage("any@" + DEFAULT_DOMAIN, RECIPIENT);
@@ -156,10 +157,11 @@ public class BounceIntegrationTest {
                     .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_RECEIVER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_RECEIVER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage("any@" + DEFAULT_DOMAIN, RECIPIENT);
@@ -182,10 +184,11 @@ public class BounceIntegrationTest {
                     .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_RECEIVER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_RECEIVER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage("any@" + DEFAULT_DOMAIN, RECIPIENT);
@@ -207,10 +210,11 @@ public class BounceIntegrationTest {
                     .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_RECEIVER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_RECEIVER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(BOUNCE_RECEIVER, RECIPIENT);
@@ -232,10 +236,11 @@ public class BounceIntegrationTest {
                     .addProperty("passThrough", "false")))
             .build(temporaryFolder.newFolder());
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(POSTMASTER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(POSTMASTER, PASSWORD);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage("any@" + DEFAULT_DOMAIN, RECIPIENT);

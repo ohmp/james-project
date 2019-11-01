@@ -50,6 +50,7 @@ import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.jmap.MessageAppender;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -59,14 +60,13 @@ import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.mailbox.probe.QuotaProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.QuotaProbesImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.Iterables;
+
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 
@@ -86,16 +86,17 @@ public abstract class SendMDNMethodTest {
     void setup(GuiceJamesServer jmapServer) throws Throwable {
         this.jmapServer = jmapServer;
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(HOMER.asString(), PASSWORD)
+            .addUser(BART.asString(), BOB_PASSWORD);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
                 .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
         RestAssured.defaultParser = Parser.JSON;
 
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(HOMER.asString(), PASSWORD);
-        dataProbe.addUser(BART.asString(), BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", HOMER.asString(), DefaultMailboxes.INBOX);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), HOMER, PASSWORD);
         bartAccessToken = authenticateJamesUser(baseUri(jmapServer), BART, BOB_PASSWORD);

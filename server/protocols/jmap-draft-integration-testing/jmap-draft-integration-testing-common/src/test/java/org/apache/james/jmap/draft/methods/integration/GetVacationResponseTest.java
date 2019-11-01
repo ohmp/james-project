@@ -81,9 +81,10 @@ public abstract class GetVacationResponseTest {
                 .setPort(jmapGuiceProbe.getJmapPort())
                 .build();
 
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(ALICE.asString(), ALICE_PASSWORD);
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(ALICE.asString(), ALICE_PASSWORD);
         accessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
     }
 

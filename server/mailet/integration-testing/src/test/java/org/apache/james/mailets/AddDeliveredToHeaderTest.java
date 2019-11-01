@@ -55,7 +55,7 @@ public class AddDeliveredToHeaderTest {
         jamesServer = TemporaryJamesServer.builder().build(temporaryFolder.newFolder());
 
         DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
+        dataProbe.fluent().addDomain(DEFAULT_DOMAIN);
         dataProbe.addUser(RECIPIENT, PASSWORD);
     }
 

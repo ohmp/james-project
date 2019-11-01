@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 
+import org.apache.james.core.Domain;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.LmtpGuiceProbe;
@@ -48,7 +49,7 @@ public interface JamesServerContract {
 
     @Test
     default void hostnameShouldBeUsedAsDefaultDomain(GuiceJamesServer jamesServer) throws Exception {
-        String expectedDefaultDomain = InetAddress.getLocalHost().getHostName();
+        Domain expectedDefaultDomain = Domain.of(InetAddress.getLocalHost().getHostName());
 
         assertThat(jamesServer.getProbe(DataProbeImpl.class).getDefaultDomain()).isEqualTo(expectedDefaultDomain);
     }
@@ -57,7 +58,7 @@ public interface JamesServerContract {
     default void hostnameShouldBeRetrievedWhenRestarting(GuiceJamesServer jamesServer) throws Exception {
         jamesServer.stop();
         jamesServer.start();
-        String expectedDefaultDomain = InetAddress.getLocalHost().getHostName();
+        Domain expectedDefaultDomain = Domain.of(InetAddress.getLocalHost().getHostName());
 
         assertThat(jamesServer.getProbe(DataProbeImpl.class).getDefaultDomain()).isEqualTo(expectedDefaultDomain);
     }

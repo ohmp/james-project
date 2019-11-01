@@ -57,9 +57,10 @@ public class SieveDelivery {
     public void setup() throws Exception {
         jamesServer = TemporaryJamesServer.builder().build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(RECIPIENT, PASSWORD);
 
         jamesServer.getProbe(MailboxProbeImpl.class)
             .createMailbox(MailboxConstants.USER_NAMESPACE, RECIPIENT, TARGETED_MAILBOX);

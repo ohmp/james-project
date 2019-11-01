@@ -87,10 +87,10 @@ public class GroupMappingRelayTest {
             .withMailetContainer(mailetContainer)
             .build(temporaryFolder.newFolder());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN1);
-
-        dataProbe.addUser(SENDER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN1)
+            .addUser(SENDER, PASSWORD);
 
         webAdminApi = WebAdminUtils.spec(jamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
 

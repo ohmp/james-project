@@ -51,6 +51,7 @@ import org.apache.james.core.Username;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
 import org.apache.james.jmap.categories.CassandraAndElasticSearchCategory;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.model.MailboxACL;
@@ -61,9 +62,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.ACLProbeImpl;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -98,17 +97,19 @@ public abstract class SetMailboxesMethodTest {
         jmapServer = createJmapServer();
         jmapServer.start();
         mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
+        username = Username.of("username@" + DOMAIN);
+        String password = "password";
+
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(username.asString(), password);
         
         RestAssured.requestSpecification = jmapRequestSpecBuilder
                 .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        username = Username.of("username@" + DOMAIN);
-        String password = "password";
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(username.asString(), password);
         inboxId = mailboxProbe.createMailbox("#private", username.asString(), DefaultMailboxes.INBOX);
         accessToken = authenticateJamesUser(baseUri(jmapServer), username, password);
     }

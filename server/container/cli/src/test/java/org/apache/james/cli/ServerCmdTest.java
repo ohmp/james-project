@@ -34,6 +34,7 @@ import org.apache.james.cli.exceptions.InvalidArgumentNumberException;
 import org.apache.james.cli.exceptions.MissingCommandException;
 import org.apache.james.cli.exceptions.UnrecognizedCommandException;
 import org.apache.james.cli.type.CmdType;
+import org.apache.james.core.Domain;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.mailbox.model.MailboxId;
@@ -59,6 +60,7 @@ public class ServerCmdTest {
     private SieveProbe sieveProbe;
 
     private ServerCmd testee;
+    public static final Domain DOMAIN = Domain.of("example.com");
 
     @Before
     public void setup() {
@@ -71,33 +73,30 @@ public class ServerCmdTest {
 
     @Test
     public void addDomainCommandShouldWork() throws Exception {
-        String domain = "example.com";
-        String[] arguments = { "-h", "127.0.0.1", "-p", "9999", CmdType.ADDDOMAIN.getCommand(), domain};
+        String[] arguments = { "-h", "127.0.0.1", "-p", "9999", CmdType.ADDDOMAIN.getCommand(), DOMAIN.asString()};
         CommandLine commandLine = ServerCmd.parseCommandLine(arguments);
 
         testee.executeCommandLine(commandLine);
 
-        verify(dataProbe).addDomain(domain);
+        verify(dataProbe).addDomain(DOMAIN);
     }
 
     @Test
     public void removeDomainCommandShouldWork() throws Exception {
-        String domain = "example.com";
-        String[] arguments = { "-h", "127.0.0.1", "-p", "9999", CmdType.REMOVEDOMAIN.getCommand(), domain};
+        String[] arguments = { "-h", "127.0.0.1", "-p", "9999", CmdType.REMOVEDOMAIN.getCommand(), DOMAIN.asString()};
         CommandLine commandLine = ServerCmd.parseCommandLine(arguments);
 
         testee.executeCommandLine(commandLine);
 
-        verify(dataProbe).removeDomain(domain);
+        verify(dataProbe).removeDomain(DOMAIN);
     }
 
     @Test
     public void containsDomainCommandShouldWork() throws Exception {
-        String domain = "example.com";
-        String[] arguments = { "-h", "127.0.0.1", "-p", "9999", CmdType.CONTAINSDOMAIN.getCommand(), domain};
+        String[] arguments = { "-h", "127.0.0.1", "-p", "9999", CmdType.CONTAINSDOMAIN.getCommand(), DOMAIN.asString()};
         CommandLine commandLine = ServerCmd.parseCommandLine(arguments);
 
-        when(dataProbe.containsDomain(domain)).thenReturn(true);
+        when(dataProbe.containsDomain(DOMAIN)).thenReturn(true);
 
         testee.executeCommandLine(commandLine);
     }

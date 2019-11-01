@@ -91,13 +91,12 @@ public class GroupMappingTest {
             .build(temporaryFolder.newFolder());
 
         dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN1);
-        dataProbe.addDomain(DOMAIN2);
-
-        dataProbe.addUser(SENDER, PASSWORD);
-
-        dataProbe.addUser(USER_DOMAIN1, PASSWORD);
-        dataProbe.addUser(USER_DOMAIN2, PASSWORD);
+        dataProbe.fluent()
+            .addDomain(DOMAIN1)
+            .addDomain(DOMAIN2)
+            .addUser(SENDER, PASSWORD)
+            .addUser(USER_DOMAIN1, PASSWORD)
+            .addUser(USER_DOMAIN2, PASSWORD);
 
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(Username.of(USER_DOMAIN1), MailboxConstants.INBOX));
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(Username.of(USER_DOMAIN2), MailboxConstants.INBOX));

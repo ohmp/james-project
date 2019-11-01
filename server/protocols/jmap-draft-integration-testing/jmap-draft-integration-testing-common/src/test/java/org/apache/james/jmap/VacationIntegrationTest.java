@@ -79,10 +79,11 @@ public abstract class VacationIntegrationTest {
         guiceJamesServer = createJmapServer();
         guiceJamesServer.start();
 
-        DataProbe dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(USER_1.asString(), PASSWORD);
-        dataProbe.addUser(USER_2.asString(), PASSWORD);
+        guiceJamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(USER_1.asString(), PASSWORD)
+            .addUser(USER_2.asString(), PASSWORD);
         MailboxProbe mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_2.asString(), DefaultMailboxes.OUTBOX);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_1.asString(), DefaultMailboxes.SENT);

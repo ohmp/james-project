@@ -111,7 +111,12 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
         jmapServer = createJmapServer();
         jmapServer.start();
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
+
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(USERNAME.asString(), PASSWORD)
+            .addUser(BOB.asString(), BOB_PASSWORD);
 
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
@@ -122,9 +127,6 @@ public abstract class SetMessagesOutboxFlagUpdateTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         RestAssured.defaultParser = Parser.JSON;
 
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(USERNAME.asString(), PASSWORD);
-        dataProbe.addUser(BOB.asString(), BOB_PASSWORD);
         mailboxProbe.createMailbox("#private", USERNAME.asString(), DefaultMailboxes.INBOX);
         accessToken = HttpJmapAuthentication.authenticateJamesUser(baseUri(jmapServer), USERNAME, PASSWORD);
     }

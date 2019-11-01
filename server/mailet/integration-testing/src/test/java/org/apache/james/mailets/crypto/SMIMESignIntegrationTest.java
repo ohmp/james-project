@@ -96,10 +96,11 @@ public class SMIMESignIntegrationTest {
             .withMailetContainer(mailetContainer)
             .build(workingDir);
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(FROM, PASSWORD)
+            .addUser(RECIPIENT, PASSWORD);
     }
 
     @After

@@ -92,12 +92,13 @@ public class IsOverQuotaMatcherTest {
 
         webAdminApi = WebAdminUtils.spec(jamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
 
-        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addDomain(OTHER_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
-        dataProbe.addUser(RECIPIENT, PASSWORD);
-        dataProbe.addUser(BOUNCE_SENDER, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addDomain(OTHER_DOMAIN)
+            .addUser(FROM, PASSWORD)
+            .addUser(RECIPIENT, PASSWORD)
+            .addUser(BOUNCE_SENDER, PASSWORD);
     }
 
     @After

@@ -75,9 +75,10 @@ public abstract class VacationRelayIntegrationTest {
         guiceJamesServer = getJmapServer();
         guiceJamesServer.start();
 
-        DataProbe dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(USER_WITH_DOMAIN, PASSWORD);
+        guiceJamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(USER_WITH_DOMAIN, PASSWORD);
         MailboxProbe mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_WITH_DOMAIN, DefaultMailboxes.SENT);
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USER_WITH_DOMAIN, DefaultMailboxes.INBOX);

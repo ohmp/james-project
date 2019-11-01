@@ -105,7 +105,7 @@ public class WebAdminServerTaskSerializationIntegrationTest {
         guiceJamesServer = jamesTestRule.jmapServer(cassandra.getModule());
         guiceJamesServer.start();
         dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
+        dataProbe.fluent().addDomain(DOMAIN);
         WebAdminGuiceProbe webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
 
         mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);

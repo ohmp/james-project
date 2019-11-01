@@ -44,6 +44,7 @@ import org.apache.james.cli.probe.impl.JmxMailboxProbe;
 import org.apache.james.cli.probe.impl.JmxQuotaProbe;
 import org.apache.james.cli.probe.impl.JmxSieveProbe;
 import org.apache.james.cli.type.CmdType;
+import org.apache.james.core.Domain;
 import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.core.quota.QuotaValue;
@@ -60,6 +61,7 @@ import org.apache.james.util.SizeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
@@ -211,20 +213,25 @@ public class ServerCmd {
             print(probe.listUsers(), printStream);
             break;
         case ADDDOMAIN:
-            probe.addDomain(arguments[1]);
+            probe.addDomain(Domain.of(arguments[1]));
             break;
         case REMOVEDOMAIN:
-            probe.removeDomain(arguments[1]);
+            probe.removeDomain(Domain.of(arguments[1]));
             break;
         case CONTAINSDOMAIN:
-            if (probe.containsDomain(arguments[1])) {
+            if (probe.containsDomain(Domain.of(arguments[1]))) {
                 printStream.println(arguments[1] + " exists");
             } else {
                 printStream.println(arguments[1] + " does not exists");
             }
             break;
         case LISTDOMAINS:
-            print(probe.listDomains(), printStream);
+            print(
+                probe.listDomains()
+                    .stream()
+                    .map(Domain::asString)
+                    .collect(Guavate.toImmutableList()),
+                printStream);
             break;
         case LISTMAPPINGS:
             print(probe.listMappings(), printStream);

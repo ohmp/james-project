@@ -20,6 +20,8 @@ package org.apache.james.domainlist.api;
 
 import java.util.List;
 
+import org.apache.james.core.Domain;
+
 /**
  * JMX MBean for DomainList
  */
@@ -31,7 +33,7 @@ public interface DomainListManagementMBean {
      * 
      * @return domains
      */
-    List<String> getDomains() throws Exception;
+    List<Domain> getDomains() throws Exception;
 
     /**
      * Return true if the domain exists in the service
@@ -40,7 +42,7 @@ public interface DomainListManagementMBean {
      *            the domain
      * @return true if the given domain exists in the service
      */
-    boolean containsDomain(String domain) throws Exception;
+    boolean containsDomain(Domain domain) throws Exception;
 
     /**
      * Add domain to the service
@@ -50,7 +52,7 @@ public interface DomainListManagementMBean {
      * @throws Exception
      *            If the domain could not be added
      */
-    void addDomain(String domain) throws Exception;
+    void addDomain(Domain domain) throws Exception;
 
     /**
      * Remove domain from the service
@@ -60,7 +62,7 @@ public interface DomainListManagementMBean {
      * @throws Exception
      *            If the domain could not be removed
      */
-    void removeDomain(String domain) throws Exception;
+    void removeDomain(Domain domain) throws Exception;
 
     /**
      * Return the default domain which will get used to deliver mail to if only
@@ -68,6 +70,6 @@ public interface DomainListManagementMBean {
      * 
      * @return the defaultdomain
      */
-    String getDefaultDomain() throws Exception;
+    Domain getDefaultDomain() throws Exception;
 
 }

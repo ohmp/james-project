@@ -28,6 +28,7 @@ import java.util.Optional;
 import org.apache.james.CassandraRabbitMQAwsS3JmapTestRule;
 import org.apache.james.DockerCassandraRule;
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.core.Domain;
 import org.apache.james.jwt.JwtConfiguration;
 import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.utils.DataProbeImpl;
@@ -99,7 +100,7 @@ public class JwtFilterIntegrationTest {
             .statusCode(HttpStatus.NO_CONTENT_204);
 
         assertThat(dataProbe.listDomains())
-            .contains(DOMAIN);
+            .contains(Domain.of(DOMAIN));
     }
 
     @Test
@@ -112,7 +113,7 @@ public class JwtFilterIntegrationTest {
             .statusCode(HttpStatus.UNAUTHORIZED_401);
 
         assertThat(dataProbe.listDomains())
-            .doesNotContain(DOMAIN);
+            .doesNotContain(Domain.of(DOMAIN));
     }
 
     @Test
@@ -125,7 +126,7 @@ public class JwtFilterIntegrationTest {
             .statusCode(HttpStatus.UNAUTHORIZED_401);
 
         assertThat(dataProbe.listDomains())
-            .doesNotContain(DOMAIN);
+            .doesNotContain(Domain.of(DOMAIN));
     }
 
 }

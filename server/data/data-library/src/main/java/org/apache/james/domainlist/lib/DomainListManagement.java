@@ -46,48 +46,45 @@ public class DomainListManagement extends StandardMBean implements DomainListMan
     }
 
     @Override
-    public void addDomain(String domain) throws Exception {
+    public void addDomain(Domain domain) throws Exception {
         try {
-            domainList.addDomain(Domain.of(domain));
+            domainList.addDomain(domain);
         } catch (DomainListException e) {
             throw new Exception(e.getMessage());
         }
     }
 
     @Override
-    public boolean containsDomain(String domain) throws Exception {
+    public boolean containsDomain(Domain domain) throws Exception {
         try {
-            return domainList.containsDomain(Domain.of(domain));
+            return domainList.containsDomain(domain);
         } catch (DomainListException e) {
             throw new Exception(e.getMessage());
         }
     }
 
     @Override
-    public List<String> getDomains() throws Exception {
+    public List<Domain> getDomains() throws Exception {
         try {
-            return domainList.getDomains()
-                .stream()
-                .map(Domain::name)
-                .collect(Guavate.toImmutableList());
+            return domainList.getDomains();
         } catch (DomainListException e) {
             throw new Exception(e.getMessage());
         }
     }
 
     @Override
-    public void removeDomain(String domain) throws Exception {
+    public void removeDomain(Domain domain) throws Exception {
         try {
-            domainList.removeDomain(Domain.of(domain));
+            domainList.removeDomain(domain);
         } catch (DomainListException e) {
             throw new Exception(e.getMessage());
         }
     }
 
     @Override
-    public String getDefaultDomain() throws Exception {
+    public Domain getDefaultDomain() throws Exception {
         try {
-            return Optional.ofNullable(domainList.getDefaultDomain()).map(Domain::name).orElse(null);
+            return domainList.getDefaultDomain();
         } catch (DomainListException e) {
             throw new Exception(e.getMessage());
         }

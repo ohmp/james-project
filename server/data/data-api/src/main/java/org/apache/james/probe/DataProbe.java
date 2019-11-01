@@ -22,6 +22,7 @@ package org.apache.james.probe;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.james.core.Domain;
 import org.apache.james.rrt.lib.Mappings;
 
 public interface DataProbe {
@@ -44,6 +45,11 @@ public interface DataProbe {
         }
 
         public FluentDataProbe addDomain(String domain) throws Exception {
+            dataProbe.addDomain(Domain.of(domain));
+            return this;
+        }
+
+        public FluentDataProbe addDomain(Domain domain) throws Exception {
             dataProbe.addDomain(domain);
             return this;
         }
@@ -61,15 +67,15 @@ public interface DataProbe {
 
     String[] listUsers() throws Exception;
 
-    void addDomain(String domain) throws Exception;
+    void addDomain(Domain domain) throws Exception;
 
-    boolean containsDomain(String domain) throws Exception;
+    boolean containsDomain(Domain domain) throws Exception;
 
-    String getDefaultDomain() throws Exception;
+    Domain getDefaultDomain() throws Exception;
 
-    void removeDomain(String domain) throws Exception;
+    void removeDomain(Domain domain) throws Exception;
 
-    List<String> listDomains() throws Exception;
+    List<Domain> listDomains() throws Exception;
 
     Map<String, Mappings> listMappings() throws Exception;
 

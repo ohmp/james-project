@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.management.MalformedObjectNameException;
 
+import org.apache.james.core.Domain;
 import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainListManagementMBean;
 import org.apache.james.probe.DataProbe;
@@ -108,7 +109,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
     }
 
     @Override
-    public boolean containsDomain(String domain) throws Exception {
+    public boolean containsDomain(Domain domain) throws Exception {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, JMX)
@@ -120,7 +121,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
     }
 
     @Override
-    public String getDefaultDomain() throws Exception {
+    public Domain getDefaultDomain() throws Exception {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, JMX)
@@ -131,7 +132,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
     }
 
     @Override
-    public void addDomain(String domain) throws Exception {
+    public void addDomain(Domain domain) throws Exception {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, JMX)
@@ -143,7 +144,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
     }
 
     @Override
-    public void removeDomain(String domain) throws Exception {
+    public void removeDomain(Domain domain) throws Exception {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, JMX)
@@ -155,7 +156,7 @@ public class JmxDataProbe implements DataProbe, JmxProbe {
     }
 
     @Override
-    public List<String> listDomains() throws Exception {
+    public List<Domain> listDomains() throws Exception {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, JMX)

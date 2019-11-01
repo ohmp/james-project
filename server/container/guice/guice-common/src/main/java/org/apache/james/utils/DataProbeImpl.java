@@ -76,28 +76,28 @@ public class DataProbeImpl implements GuiceProbe, DataProbe {
     }
 
     @Override
-    public void addDomain(String domain) throws Exception {
-        domainList.addDomain(Domain.of(domain));
+    public void addDomain(Domain domain) throws Exception {
+        domainList.addDomain(domain);
     }
 
     @Override
-    public boolean containsDomain(String domain) throws Exception {
-        return domainList.containsDomain(Domain.of(domain));
+    public boolean containsDomain(Domain domain) throws Exception {
+        return domainList.containsDomain(domain);
     }
 
     @Override
-    public String getDefaultDomain() throws Exception {
-        return domainList.getDefaultDomain().name();
+    public Domain getDefaultDomain() throws Exception {
+        return domainList.getDefaultDomain();
     }
 
     @Override
-    public void removeDomain(String domain) throws Exception {
-        domainList.removeDomain(Domain.of(domain));
+    public void removeDomain(Domain domain) throws Exception {
+        domainList.removeDomain(domain);
     }
 
     @Override
-    public List<String> listDomains() throws Exception {
-        return domainList.getDomains().stream().map(Domain::name).collect(Guavate.toImmutableList());
+    public List<Domain> listDomains() throws Exception {
+        return domainList.getDomains();
     }
 
     @Override

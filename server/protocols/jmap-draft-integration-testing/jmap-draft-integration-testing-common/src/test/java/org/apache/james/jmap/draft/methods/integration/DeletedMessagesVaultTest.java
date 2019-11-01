@@ -138,17 +138,17 @@ public abstract class DeletedMessagesVaultTest {
         jmapServer = createJmapServer(fileSystem, clock);
         jmapServer.start();
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
 
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
             .build();
         RestAssured.defaultParser = Parser.JSON;
 
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(HOMER, PASSWORD);
-        dataProbe.addUser(BART, BOB_PASSWORD);
-        dataProbe.addUser(JACK, PASSWORD);
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent().addDomain(DOMAIN)
+            .addUser(HOMER, PASSWORD)
+            .addUser(BART, BOB_PASSWORD)
+            .addUser(JACK, PASSWORD);
         mailboxProbe.createMailbox("#private", HOMER, DefaultMailboxes.INBOX);
         otherMailboxId = mailboxProbe.createMailbox("#private", HOMER, MAILBOX_NAME);
         homerAccessToken = authenticateJamesUser(baseUri(jmapServer), Username.of(HOMER), PASSWORD);

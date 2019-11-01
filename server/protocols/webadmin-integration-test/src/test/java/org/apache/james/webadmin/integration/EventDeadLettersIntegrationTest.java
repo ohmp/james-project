@@ -46,7 +46,6 @@ import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
@@ -63,6 +62,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.google.inject.multibindings.Multibinder;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -163,15 +163,16 @@ public class EventDeadLettersIntegrationTest {
             .overrideWith(binder -> Multibinder.newSetBinder(binder, MailboxListener.GroupMailboxListener.class).addBinding().toInstance(retryEventsListener));
         guiceJamesServer.start();
 
-        DataProbe dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
+        guiceJamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(BOB, BOB_PASSWORD);
+
         mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
         WebAdminGuiceProbe webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminGuiceProbe.getWebAdminPort())
             .build();
-
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(BOB, BOB_PASSWORD);
     }
 
     @After

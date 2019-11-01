@@ -59,6 +59,7 @@ import org.apache.james.core.quota.QuotaCount;
 import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
+import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.apache.james.jmap.draft.model.mailbox.MailboxNamespace;
 import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.MessageManager.AppendCommand;
@@ -74,10 +75,8 @@ import org.apache.james.mime4j.dom.Message;
 import org.apache.james.modules.ACLProbeImpl;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.QuotaProbesImpl;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.AllMatching;
 import org.apache.james.utils.DataProbeImpl;
-import org.apache.james.jmap.draft.JmapGuiceProbe;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,10 +115,11 @@ public abstract class GetMailboxesMethodTest {
                 .build();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        DataProbe dataProbe = jmapServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(ALICE.asString(), ALICE_PASSWORD);
-        dataProbe.addUser(BOB.asString(), BOB_PASSWORD);
+        jmapServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DOMAIN)
+            .addUser(ALICE.asString(), ALICE_PASSWORD)
+            .addUser(BOB.asString(), BOB_PASSWORD);
         accessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
 
         message = Message.Builder.of()

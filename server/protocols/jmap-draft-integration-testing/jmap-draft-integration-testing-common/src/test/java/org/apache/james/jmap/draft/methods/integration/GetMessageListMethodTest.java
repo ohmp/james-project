@@ -127,10 +127,11 @@ public abstract class GetMessageListMethodTest {
                 .setPort(jmapServer.getProbe(JmapGuiceProbe.class).getJmapPort())
                 .build();
 
-        dataProbe.addDomain(DOMAIN);
-        dataProbe.addUser(ALICE.asString(), ALICE_PASSWORD);
+        dataProbe.fluent()
+            .addDomain(DOMAIN)
+            .addUser(ALICE.asString(), ALICE_PASSWORD)
+            .addUser(BOB.asString(), BOB_PASSWORD);
         this.aliceAccessToken = authenticateJamesUser(baseUri(jmapServer), ALICE, ALICE_PASSWORD);
-        dataProbe.addUser(BOB.asString(), BOB_PASSWORD);
         this.bobAccessToken = authenticateJamesUser(baseUri(jmapServer), BOB, BOB_PASSWORD);
     }
 

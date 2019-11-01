@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.MemoryJmapTestRule;
 import org.apache.james.cli.util.OutputCapture;
+import org.apache.james.core.Domain;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.rrt.api.SourceDomainIsNotInDomainListException;
@@ -39,7 +40,7 @@ import org.junit.Test;
 
 public class DataCommandsIntegrationTest {
 
-    public static final String DOMAIN = "domain.com";
+    public static final Domain DOMAIN = Domain.of("domain.com");
     public static final String USER = "chibenwa";
     public static final String MAIL_ADDRESS = USER + "@" + DOMAIN;
     public static final String PASSWORD = "12345";
@@ -66,7 +67,7 @@ public class DataCommandsIntegrationTest {
 
     @Test
     public void addDomainShouldWork() throws Exception {
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "ADDDOMAIN", DOMAIN});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "ADDDOMAIN", DOMAIN.asString()});
 
         assertThat(dataProbe.containsDomain(DOMAIN)).isTrue();
     }
@@ -75,7 +76,7 @@ public class DataCommandsIntegrationTest {
     public void removeDomainShouldWork() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "REMOVEDOMAIN", DOMAIN});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "REMOVEDOMAIN", DOMAIN.asString()});
 
         assertThat(dataProbe.containsDomain(DOMAIN)).isFalse();
     }
@@ -86,14 +87,14 @@ public class DataCommandsIntegrationTest {
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "listdomains"}, outputCapture.getPrintStream());
 
-        assertThat(outputCapture.getContent()).contains(DOMAIN);
+        assertThat(outputCapture.getContent()).contains(DOMAIN.asString());
     }
 
     @Test
     public void containsDomainShouldWork() throws Exception {
         dataProbe.addDomain(DOMAIN);
 
-        ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "containsdomain", DOMAIN},
+        ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "containsdomain", DOMAIN.asString()},
             outputCapture.getPrintStream());
 
         assertThat(outputCapture.getContent())
@@ -137,7 +138,7 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         String redirectionAddress = "redirect@apache.org";
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN.asString(), redirectionAddress});
 
         assertThat(dataProbe.listMappings())
             .hasSize(1)
@@ -153,7 +154,7 @@ public class DataCommandsIntegrationTest {
         String redirectionAddress = "redirect@apache.org";
 
         assertThatThrownBy(() -> ServerCmd.executeAndOutputToStream(
-                new String[] {"-h", "127.0.0.1", "-p", "9999", "addAddressMapping", USER, DOMAIN, redirectionAddress},
+                new String[] {"-h", "127.0.0.1", "-p", "9999", "addAddressMapping", USER, DOMAIN.asString(), redirectionAddress},
                 outputCapture.getPrintStream()))
             .isInstanceOf(SourceDomainIsNotInDomainListException.class)
             .hasMessage("Source domain '" + DOMAIN + "' is not managed by the domainList");
@@ -164,7 +165,7 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         String redirectionAddress = "redirect@apache.org";
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN.asString(), redirectionAddress});
 
         ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "listmappings"},
             outputCapture.getPrintStream());
@@ -178,9 +179,9 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         String redirectionAddress = "redirect@apache.org";
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN.asString(), redirectionAddress});
 
-        ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "listuserdomainmappings", USER, DOMAIN},
+        ServerCmd.executeAndOutputToStream(new String[] {"-h", "127.0.0.1", "-p", "9999", "listuserdomainmappings", USER, DOMAIN.asString()},
             outputCapture.getPrintStream());
 
         assertThat(outputCapture.getContent())
@@ -192,9 +193,9 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         String redirectionAddress = "redirect@apache.org";
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN, redirectionAddress});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addaddressmapping", USER, DOMAIN.asString(), redirectionAddress});
 
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "removeaddressmapping", USER, DOMAIN, redirectionAddress});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "removeaddressmapping", USER, DOMAIN.asString(), redirectionAddress});
 
         assertThat(dataProbe.listMappings())
             .isEmpty();
@@ -206,7 +207,7 @@ public class DataCommandsIntegrationTest {
         String regexMapping = ".*@apache.org";
 
         assertThatThrownBy(() -> ServerCmd.executeAndOutputToStream(
-                new String[] {"-h", "127.0.0.1", "-p", "9999", "AddRegexMapping", USER, DOMAIN, regexMapping},
+                new String[] {"-h", "127.0.0.1", "-p", "9999", "AddRegexMapping", USER, DOMAIN.asString(), regexMapping},
                 outputCapture.getPrintStream()))
             .isInstanceOf(SourceDomainIsNotInDomainListException.class)
             .hasMessage("Source domain '" + DOMAIN + "' is not managed by the domainList");
@@ -217,7 +218,7 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         String regex = "regex";
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addregexmapping", USER, DOMAIN, regex});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addregexmapping", USER, DOMAIN.asString(), regex});
 
         assertThat(dataProbe.listMappings())
             .hasSize(1)
@@ -233,9 +234,9 @@ public class DataCommandsIntegrationTest {
         dataProbe.addDomain(DOMAIN);
 
         String regex = "regex";
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addregexmapping", USER, DOMAIN, regex});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "addregexmapping", USER, DOMAIN.asString(), regex});
 
-        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "removeregexmapping", USER, DOMAIN, regex});
+        ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "removeregexmapping", USER, DOMAIN.asString(), regex});
 
         assertThat(dataProbe.listMappings())
             .isEmpty();
