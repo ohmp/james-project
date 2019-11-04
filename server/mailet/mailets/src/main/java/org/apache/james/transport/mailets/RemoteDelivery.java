@@ -114,6 +114,15 @@ import com.google.common.collect.HashMultimap;
  * the ability to perform their own problem resolutions.</li>
  * <li><b>debug</b> (optional) - a Boolean (true/false) indicating whether debugging is on. Default is false.</li>
  * </ul>
+ * <br/>
+ * <b>Security:</b><br/>
+ * You can use the <i>mail.smtp.ssl.enable</i> javax property describe above to force SMTP outgoing delivery to default to SSL
+ * encrypted traffic. <br/>
+ * When enabling SSL, you might need to specify <i>mail.smtp.ssl.checkserveridentity</i> and <i>mail.smtp.ssl.trust</i>
+ * properties. You can also control ciphersuites and protocols via <i>mail.smtp.ssl.ciphersuites</i> and
+ * <i>mail.smtp.ssl.protocols</i> properties.<br/>
+ * Read <a href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html"><code>com.sun.mail.smtp</code></a>
+ * for full information.
  */
 public class RemoteDelivery extends GenericMailet {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDelivery.class);
