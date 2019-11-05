@@ -116,7 +116,7 @@ import com.google.common.collect.HashMultimap;
  * </ul>
  * <br/>
  * <b>Security:</b><br/>
- * You can use the <i>mail.smtp.ssl.enable</i> javax property describe above to force SMTP outgoing delivery to default to SSL
+ * You can use the <i>mail.smtp.ssl.enable</i> javax property described above to force SMTP outgoing delivery to default to SSL
  * encrypted traffic. <br/>
  * When enabling SSL, you might need to specify <i>mail.smtp.ssl.checkserveridentity</i> and <i>mail.smtp.ssl.trust</i>
  * properties. You can also control ciphersuites and protocols via <i>mail.smtp.ssl.ciphersuites</i> and
