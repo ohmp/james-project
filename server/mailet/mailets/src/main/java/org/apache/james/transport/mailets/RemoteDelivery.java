@@ -105,7 +105,7 @@ import com.google.common.collect.HashMultimap;
  * <li><b>heloName</b> (optional) - a String containing the name used in the SMTP HELO and EHLO commands. Default is the default domain,
  * which is typically <code>localhost</code>.</li>
  * <li><b>mail.*</b> (optional) - Any property beginning with <code>mail.</code> described in the Javadoc for package
- * <a href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html"><code>com.sun.mail.smtp</code></a>
+ * <a href="https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html"><code>com.sun.mail.smtp</code></a>
  * can be set with a parameter of the corresponding name. For example the parameter
  * <code>&lt;mail.smtp.ssl.enable&gt;true&lt;/mail.smtp.ssl.enable&gt;</code> is equivalent to the Java code
  * <code>props.put("mail.smtp.ssl.enable", "true");</code>. Properties set by this facility override settings made
@@ -121,7 +121,7 @@ import com.google.common.collect.HashMultimap;
  * When enabling SSL, you might need to specify <i>mail.smtp.ssl.checkserveridentity</i> and <i>mail.smtp.ssl.trust</i>
  * properties. You can also control ciphersuites and protocols via <i>mail.smtp.ssl.ciphersuites</i> and
  * <i>mail.smtp.ssl.protocols</i> properties.<br/>
- * Read <a href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html"><code>com.sun.mail.smtp</code></a>
+ * Read <a href="https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html"><code>com.sun.mail.smtp</code></a>
  * for full information.
  */
 public class RemoteDelivery extends GenericMailet {
