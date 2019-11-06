@@ -29,19 +29,17 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
-import org.apache.james.mailbox.model.MailboxConstants;
-import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailets.TemporaryJamesServer;
 import org.apache.james.mailets.configuration.CommonProcessors;
 import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
-import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.probe.DataProbe;
@@ -77,11 +75,12 @@ public class SmtpRandomStoringTest {
         .map(index -> "user" + index + "@" + DEFAULT_DOMAIN)
         .collect(Guavate.toImmutableList());
 
-    private static final ImmutableList<String> MAILBOXES = ImmutableList.of(MailboxConstants.INBOX, "arbitrary");
     private static final int NUMBER_OF_MAILS = 100;
+    private static final int PER_USER_MAILBOX_COUNT = 2;
     private static final MailetConfiguration RANDOM_STORING = MailetConfiguration.builder()
             .matcher(All.class)
             .mailet(RandomStoring.class)
+            .addProperty(RandomStoring.PER_USER_MAILBOX_COUNT, String.valueOf(PER_USER_MAILBOX_COUNT))
             .build();
 
     @Rule
@@ -98,33 +97,26 @@ public class SmtpRandomStoringTest {
     public static void setUp() throws Exception {
         createJamesServer();
 
-        createUsersAndMailboxes();
+        createUsers();
 
         imapProbe = jamesServer.getProbe(ImapGuiceProbe.class);
     }
 
-    private static void createUsersAndMailboxes() throws Exception {
-        MailboxProbeImpl mailboxes = jamesServer.getProbe(MailboxProbeImpl.class);
+    private static void createUsers() throws Exception {
         DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DEFAULT_DOMAIN);
         dataProbe.addUser(FROM, PASSWORD);
 
-        USERS.forEach(user -> populateUser(mailboxes, dataProbe, user));
-        awaitAtMostTenSeconds
-            .until(() -> USERS
-                .stream()
-                .map(mailboxes::listUserMailboxes)
-                .allMatch(userMailboxes -> userMailboxes.size() == MAILBOXES.size()));
+        USERS.forEach(user -> populateUser(dataProbe, user));
 
         Thread.sleep(500);
 
         sendMails();
     }
 
-    private static void populateUser(MailboxProbeImpl mailboxProbe, DataProbe dataProbe, String user) {
+    private static void populateUser(DataProbe dataProbe, String user) {
         try {
             dataProbe.addUser(user, PASSWORD);
-            MAILBOXES.forEach(mailbox -> mailboxProbe.createMailbox(MailboxPath.forUser(user, mailbox)));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -210,14 +202,17 @@ public class SmtpRandomStoringTest {
     }
 
     private LongStream numberOfAUserMessages(IMAPMessageReader imapMessageReader) {
-        return MAILBOXES
-            .stream()
+        return userMailboxesNames()
             .mapToLong(mailbox -> numberOfMessagesInMailbox(imapMessageReader, mailbox));
     }
 
+    private Stream<String> userMailboxesNames() {
+        return IntStream.range(0, PER_USER_MAILBOX_COUNT)
+            .mapToObj(i -> RandomStoring.PROVISIONNED_MAILBOX_PREFIX + i);
+    }
+
     private void checkUserMailboxes(IMAPMessageReader imapMessageReader) {
-        assertThat(MAILBOXES
-            .stream()
+        assertThat(userMailboxesNames()
             .map(mailbox -> numberOfMessagesInMailbox(imapMessageReader, mailbox)))
             .allMatch(numberOfMessages -> numberOfMessages > 0, "Some mailboxes are empty");
     }

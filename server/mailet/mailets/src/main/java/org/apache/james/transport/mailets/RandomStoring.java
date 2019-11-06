@@ -25,46 +25,47 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+
 import javax.inject.Inject;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.User;
-import org.apache.james.mailbox.MailboxManager;
-import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.transport.mailets.delivery.MailStore;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
+import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
+import org.apache.mailet.base.MailetUtil;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Streams;
+
 import reactor.core.publisher.Mono;
 
 /**
  * Process messages and randomly assign them to 4 to 8 mailboxes.
  */
 public class RandomStoring extends GenericMailet {
-
+    public static final String PER_USER_MAILBOX_COUNT = "perUserMailboxCount";
     private static final int MIN_NUMBER_OF_RECIPIENTS = 4;
     private static final int MAX_NUMBER_OF_RECIPIENTS = 8;
     private static final Duration CACHE_DURATION = Duration.ofMinutes(15);
+    public static final String PROVISIONNED_MAILBOX_PREFIX = "provisionnedMailbox";
 
-    private final Mono<List<ReroutingInfos>> reroutingInfos;
+    private final Mono<List<User>> cachedUsers;
     private final UsersRepository usersRepository;
-    private final MailboxManager mailboxManager;
     private final Supplier<Integer> randomRecipientsNumbers;
+    private int perUserMailboxCount;
 
     @Inject
-    public RandomStoring(UsersRepository usersRepository, MailboxManager mailboxManager) {
+    public RandomStoring(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
-        this.mailboxManager = mailboxManager;
         this.randomRecipientsNumbers = () -> ThreadLocalRandom.current().nextInt(MIN_NUMBER_OF_RECIPIENTS, MAX_NUMBER_OF_RECIPIENTS + 1);
-        this.reroutingInfos = Mono.fromCallable(this::retrieveReroutingInfos).cache(CACHE_DURATION);
+        this.cachedUsers = Mono.fromCallable(this::listUsers).cache(CACHE_DURATION);
     }
 
     @Override
@@ -72,12 +73,12 @@ public class RandomStoring extends GenericMailet {
         Collection<ReroutingInfos> reroutingInfos = generateRandomMailboxes();
         Collection<MailAddress> mailAddresses = reroutingInfos
             .stream()
-            .map(ReroutingInfos::getMailAddress)
+            .map(Throwing.function(reroutingInfo -> reroutingInfo.user.asMailAddress()))
             .collect(Guavate.toImmutableList());
 
         mail.setRecipients(mailAddresses);
         reroutingInfos.forEach(reroutingInfo ->
-            mail.setAttribute(Attribute.convertToAttribute(MailStore.DELIVERY_PATH_PREFIX + reroutingInfo.getUser(), reroutingInfo.getMailbox())));
+            mail.setAttribute(Attribute.convertToAttribute(MailStore.DELIVERY_PATH_PREFIX + reroutingInfo.getUser().asString(), reroutingInfo.getMailbox())));
     }
 
     @Override
@@ -87,62 +88,51 @@ public class RandomStoring extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
+        perUserMailboxCount = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getInitParameter(PER_USER_MAILBOX_COUNT), 10);
     }
 
     private Collection<ReroutingInfos> generateRandomMailboxes() {
-        List<ReroutingInfos> reroutingInfos = this.reroutingInfos.block();
+        List<User> users = cachedUsers.block();
 
         // Replaces Collections.shuffle() which has a too poor statistical distribution
         return ThreadLocalRandom
             .current()
-            .ints(0, reroutingInfos.size())
-            .mapToObj(reroutingInfos::get)
+            .ints(0, users.size())
+            .mapToObj(users::get)
             .distinct()
             .limit(randomRecipientsNumbers.get())
+            .map(user -> new ReroutingInfos(chooseRandomMailboxName(), user))
             .collect(Guavate.toImmutableSet());
     }
 
-    private List<ReroutingInfos> retrieveReroutingInfos() throws UsersRepositoryException {
-        return Streams.stream(usersRepository.list())
+    private String chooseRandomMailboxName() {
+        int mailboxNumber = ThreadLocalRandom
+            .current()
+            .nextInt(0, perUserMailboxCount);
+
+        return PROVISIONNED_MAILBOX_PREFIX + mailboxNumber;
+    }
+
+    private List<User> listUsers() throws UsersRepositoryException {
+        return Iterators.toStream(usersRepository.list())
             .map(User::fromUsername)
-            .flatMap(this::buildReRoutingInfos)
             .collect(Guavate.toImmutableList());
     }
 
-    private Stream<ReroutingInfos> buildReRoutingInfos(User user) {
-        try {
-            MailAddress mailAddress = usersRepository.getMailAddressFor(user);
-
-            MailboxSession session = mailboxManager.createSystemSession(user.asString());
-            return mailboxManager
-                .list(session)
-                .stream()
-                .map(mailboxPath -> new ReroutingInfos(mailAddress, mailboxPath.getName(), user.asString()));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private class ReroutingInfos {
-        private final MailAddress mailAddress;
+    private static class ReroutingInfos {
         private final String mailbox;
-        private final String user;
+        private final User user;
 
-        ReroutingInfos(MailAddress mailAddress, String mailbox, String user) {
-            this.mailAddress = mailAddress;
+        ReroutingInfos(String mailbox, User user) {
             this.mailbox = mailbox;
             this.user = user;
-        }
-
-        public MailAddress getMailAddress() {
-            return mailAddress;
         }
 
         public String getMailbox() {
             return mailbox;
         }
 
-        public String getUser() {
+        public User getUser() {
             return user;
         }
 
@@ -151,8 +141,7 @@ public class RandomStoring extends GenericMailet {
             if (o instanceof ReroutingInfos) {
                 ReroutingInfos that = (ReroutingInfos) o;
 
-                return Objects.equals(this.mailAddress, that.mailAddress)
-                    && Objects.equals(this.mailbox, that.mailbox)
+                return Objects.equals(this.mailbox, that.mailbox)
                     && Objects.equals(this.user, that.user);
             }
             return false;
@@ -160,13 +149,12 @@ public class RandomStoring extends GenericMailet {
 
         @Override
         public int hashCode() {
-            return Objects.hash(mailAddress, mailbox, user);
+            return Objects.hash(mailbox, user);
         }
 
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                .add("user", mailAddress.asString())
                 .add("mailbox", mailbox)
                 .add("user", user)
                 .toString();
