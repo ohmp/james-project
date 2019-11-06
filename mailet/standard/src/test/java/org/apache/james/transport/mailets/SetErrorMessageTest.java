@@ -70,7 +70,7 @@ class SetErrorMessageTest {
     }
 
     @Test
-    void serviceShouldOverWriteErrorMessage() throws Exception {
+    void serviceShouldOverwriteErrorMessage() throws Exception {
         testee.init(FakeMailetConfig.builder()
             .setProperty("errorMessage", MY_MESSAGE)
             .build());
