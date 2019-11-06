@@ -52,9 +52,8 @@ import org.apache.james.utils.SMTPMessageSender;
 import org.apache.mailet.Mail;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -84,25 +83,25 @@ public class SmtpRandomStoringTest {
             .build();
 
     @Rule
-    public IMAPMessageReader imapMessageReader = new IMAPMessageReader();
-    @ClassRule
-    public static SMTPMessageSender messageSender = new SMTPMessageSender(DEFAULT_DOMAIN);
-    @ClassRule
-    public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+    public SMTPMessageSender messageSender = new SMTPMessageSender(DEFAULT_DOMAIN);
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private static TemporaryJamesServer jamesServer;
-    private static ImapGuiceProbe imapProbe;
+    private TemporaryJamesServer jamesServer;
+    private ImapGuiceProbe imapProbe;
+    private Collection<IMAPMessageReader> connections;
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         createJamesServer();
 
         createUsers();
 
         imapProbe = jamesServer.getProbe(ImapGuiceProbe.class);
+        connections = ImmutableList.of();
     }
 
-    private static void createUsers() throws Exception {
+    private void createUsers() throws Exception {
         DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DEFAULT_DOMAIN);
         dataProbe.addUser(FROM, PASSWORD);
@@ -122,7 +121,7 @@ public class SmtpRandomStoringTest {
         }
     }
 
-    private static void createJamesServer() throws Exception {
+    private void createJamesServer() throws Exception {
         MailetContainer.Builder mailetContainer = TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION
             .putProcessor(ProcessorConfiguration.transport()
                 .addMailet(RANDOM_STORING)
@@ -134,7 +133,7 @@ public class SmtpRandomStoringTest {
             .build(temporaryFolder.newFolder());
     }
 
-    private static void sendMails() throws Exception {
+    private void sendMails() throws Exception {
         SMTPMessageSender authenticatedSmtpConnection = messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .authenticate(FROM, PASSWORD);
 
@@ -144,35 +143,32 @@ public class SmtpRandomStoringTest {
                     .sendMessage(buildMail("Message " + index))).sneakyThrow());
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void tearDown() {
+        connections.forEach(Throwing.consumer(IMAPMessageReader::close).sneakyThrow());
         jamesServer.shutdown();
     }
 
     @Test
     public void oneHundredMailsShouldHaveBeenStoredBetweenFourAndEightTimes() {
-        Collection<IMAPMessageReader> connections = USERS
+        connections = USERS
             .stream()
             .map(this::createIMAPConnection)
             .collect(Guavate.toImmutableList());
 
         awaitAtMostTenSeconds
             .untilAsserted(() -> checkNumberOfMessages(connections));
-
-        connections.forEach(Throwing.consumer(IMAPMessageReader::close).sneakyThrow());
     }
 
     @Test
     public void messagesShouldBeRandomlyAssignedToEveryMailboxesOfEveryUsers() {
-        Collection<IMAPMessageReader> connections = USERS
+        connections = USERS
             .stream()
             .map(this::createIMAPConnection)
             .collect(Guavate.toImmutableList());
 
         awaitAtMostTenSeconds
             .untilAsserted(() -> checkMailboxesHaveBeenFilled(connections));
-
-        connections.forEach(Throwing.consumer(IMAPMessageReader::close).sneakyThrow());
     }
 
     private IMAPMessageReader createIMAPConnection(String username) {
