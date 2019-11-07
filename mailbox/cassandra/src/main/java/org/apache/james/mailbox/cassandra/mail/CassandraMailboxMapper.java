@@ -154,7 +154,7 @@ public class CassandraMailboxMapper implements MailboxMapper {
     private List<Mailbox> toMailboxes(MailboxQuery.UserBound query, Flux<CassandraIdAndPath> listUserMailboxes) {
         return listUserMailboxes
                 .filter(idAndPath -> query.isPathMatch(idAndPath.getMailboxPath()))
-                .flatMap(this::retrieveMailbox)
+                .concatMap(this::retrieveMailbox)
                 .collectList()
                 .block();
     }
