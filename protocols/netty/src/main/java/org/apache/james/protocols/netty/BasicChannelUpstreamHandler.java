@@ -188,8 +188,6 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
 
     /**
      * Cleanup the channel
-     * 
-     * @param ctx
      */
     protected void cleanup(ChannelHandlerContext ctx) {
         ProtocolSession session = (ProtocolSession) ctx.getAttachment();
