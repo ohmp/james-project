@@ -1507,7 +1507,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void getMailboxesShouldReturnRequestedMailboxes() throws Exception {
+        protected void getMailboxesShouldReturnRequestedMailboxes() throws Exception {
             MailboxSession session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
@@ -1521,7 +1521,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void getMailboxesShouldReturnOnlyRequestedMailbox() throws Exception {
+        protected void getMailboxesShouldReturnOnlyRequestedMailbox() throws Exception {
             MailboxSession session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");

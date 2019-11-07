@@ -39,7 +39,22 @@ public class DomainUserMaildirMailboxManagerTest extends MailboxManagerTest<Stor
     class BasicFeaturesTests extends MailboxManagerTest<StoreMailboxManager>.BasicFeaturesTests {
         @Disabled("MAILBOX-389 Mailbox rename fails with Maildir")
         @Test
+        @Override
         protected void renameMailboxShouldChangeTheMailboxPathOfAMailbox() {
+        }
+
+        @Disabled("JAMES-2632 Not supported")
+        @Override
+        @Test
+        protected void getMailboxesShouldReturnRequestedMailboxes() {
+
+        }
+
+        @Disabled("JAMES-2632 Not supported")
+        @Override
+        @Test
+        protected void getMailboxesShouldReturnOnlyRequestedMailbox() {
+
         }
     }
 
