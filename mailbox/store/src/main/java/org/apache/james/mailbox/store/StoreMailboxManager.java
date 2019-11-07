@@ -85,7 +85,9 @@ import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -574,15 +576,23 @@ public class StoreMailboxManager implements MailboxManager {
             .filter(Throwing.predicate(mailbox -> storeRightManager.hasRight(mailbox, right, session)))
             .collect(Guavate.toImmutableList());
 
+        ImmutableMap<MailboxId, MailboxCounters> counters = getMailboxCounters(mailboxes, session)
+            .stream()
+            .collect(Guavate.toImmutableMap(
+                MailboxCounters::getMailboxId,
+                Functions.identity()));
+
         return mailboxes
             .stream()
             .filter(mailboxQuery::matches)
-            .map(Throwing.<Mailbox, MailboxMetaData>function(mailbox -> toMailboxMetadata(session, mailboxes, mailbox)).sneakyThrow())
+            .map(Throwing.<Mailbox, MailboxMetaData>function(
+                mailbox -> toMailboxMetadata(session, mailboxes, mailbox, retrieveCounters(counters, mailbox)))
+                .sneakyThrow())
             .sorted(MailboxMetaData.COMPARATOR)
             .collect(Guavate.toImmutableList());
     }
 
-    public static MailboxQuery.UserBound toSingleUserQuery(MailboxQuery mailboxQuery, MailboxSession mailboxSession) {
+    static MailboxQuery.UserBound toSingleUserQuery(MailboxQuery mailboxQuery, MailboxSession mailboxSession) {
         return MailboxQuery.builder()
             .namespace(mailboxQuery.getNamespace().orElse(MailboxConstants.USER_NAMESPACE))
             .username(mailboxQuery.getUser().orElse(mailboxSession.getUser().asString()))
@@ -590,6 +600,14 @@ public class StoreMailboxManager implements MailboxManager {
                 .includeChildren())
             .build()
             .asUserBound();
+    }
+
+    private MailboxCounters retrieveCounters(ImmutableMap<MailboxId, MailboxCounters> counters, Mailbox mailbox) {
+        return counters.getOrDefault(mailbox.getMailboxId(), MailboxCounters.builder()
+            .mailboxId(mailbox.getMailboxId())
+            .count(0)
+            .unseen(0)
+            .build());
     }
 
     private Stream<Mailbox> getDelegatedMailboxes(MailboxMapper mailboxMapper, MailboxQuery mailboxQuery,
@@ -600,14 +618,15 @@ public class StoreMailboxManager implements MailboxManager {
         return mailboxMapper.findNonPersonalMailboxes(session.getUser().asString(), right).stream();
     }
 
-    private MailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox) throws UnsupportedRightException {
+    private MailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox, MailboxCounters counters) throws UnsupportedRightException {
         return new MailboxMetaData(
             mailbox.generateAssociatedPath(),
             mailbox.getMailboxId(),
             getDelimiter(),
             computeChildren(session, mailboxes, mailbox),
             Selectability.NONE,
-            storeRightManager.getResolvedMailboxACL(mailbox, session));
+            storeRightManager.getResolvedMailboxACL(mailbox, session),
+            counters);
     }
 
     private MailboxMetaData.Children computeChildren(MailboxSession session, List<Mailbox> potentialChildren, Mailbox mailbox) {
