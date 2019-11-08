@@ -20,6 +20,7 @@
 package org.apache.james.user.jpa;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import javax.annotation.PostConstruct;
@@ -39,10 +40,10 @@ import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.user.jpa.model.JPAUser;
 import org.apache.james.user.lib.AbstractUsersRepository;
+
+import com.github.steveash.guavate.Guavate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * JPA based UserRepository
@@ -86,7 +87,7 @@ public class JPAUsersRepository extends AbstractUsersRepository {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         try {
-            return (JPAUser) entityManager.createNamedQuery("findUserByName").setParameter("name", name).getSingleResult();
+            return (JPAUser) entityManager.createNamedQuery("findUserByName").setParameter("name", name.asString()).getSingleResult();
         } catch (NoResultException e) {
             return null;
         } catch (PersistenceException e) {
@@ -159,9 +160,9 @@ public class JPAUsersRepository extends AbstractUsersRepository {
         final EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            if (entityManager.createNamedQuery("deleteUserByName").setParameter("name", name).executeUpdate() < 1) {
+            if (entityManager.createNamedQuery("deleteUserByName").setParameter("name", name.asString()).executeUpdate() < 1) {
                 transaction.commit();
-                throw new UsersRepositoryException("User " + name + " does not exist");
+                throw new UsersRepositoryException("User " + name.asString() + " does not exist");
             } else {
                 transaction.commit();
             }
@@ -254,7 +255,10 @@ public class JPAUsersRepository extends AbstractUsersRepository {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         try {
-            return ImmutableList.copyOf(entityManager.createNamedQuery("listUserNames").getResultList()).iterator();
+            return ((List<String>) entityManager.createNamedQuery("listUserNames").getResultList())
+                .stream()
+                .map(Username::of)
+                .collect(Guavate.toImmutableList()).iterator();
 
         } catch (PersistenceException e) {
             LOGGER.debug("Failed to find user", e);
