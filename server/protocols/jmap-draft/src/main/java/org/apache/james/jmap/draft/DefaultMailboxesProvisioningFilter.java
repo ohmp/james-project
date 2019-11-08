@@ -115,7 +115,7 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
                 subscriptionManager.subscribe(session, mailboxPath.getName());
             }
             LOGGER.info("Provisioning {}. {} created.", mailboxPath, mailboxId);
-        } catch (MailboxExistsException | InboxAlreadyCreated e) {
+        } catch (MailboxExistsException e) {
             LOGGER.info("Mailbox {} have been created concurrently", mailboxPath);
         } catch (MailboxException e) {
             throw new RuntimeException(e);
