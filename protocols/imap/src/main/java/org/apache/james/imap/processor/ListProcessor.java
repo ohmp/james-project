@@ -113,7 +113,7 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                     isRelative = true;
                 }
                 // Get the mailbox for the reference name.
-                MailboxPath rootPath = new MailboxPath(referenceRoot, null, "");//FIXME-USERNAME
+                MailboxPath rootPath = new MailboxPath(referenceRoot, mailboxSession.getUser(), "");
                 MailboxId mailboxId = null;
                 results = new ArrayList<>(1);
                 results.add(new MailboxMetaData(rootPath, mailboxId, mailboxSession.getPathDelimiter(),

@@ -49,17 +49,13 @@ public class PathConverter {
 
     public MailboxPath buildFullPath(String mailboxName) {
         if (Strings.isNullOrEmpty(mailboxName)) {
-            return buildDefaultPath();
+            return buildRelativePath("");
         }
         if (isAbsolute(mailboxName)) {
             return buildAbsolutePath(mailboxName);
         } else {
             return buildRelativePath(mailboxName);
         }
-    }
-
-    private MailboxPath buildDefaultPath() {
-        return new MailboxPath("", null, "");//FIXME-USERNAME
     }
 
     private boolean isAbsolute(String mailboxName) {
@@ -83,7 +79,7 @@ public class PathConverter {
         if (namespace.equals(MailboxConstants.USER_NAMESPACE)) {
             return ImapSessionUtils.getUserName(session);
         }
-        return null;
+        throw new DeniedAccessOnSharedMailboxException();
     }
 
     private MailboxPath buildMailboxPath(String namespace, Username user, String mailboxName) {

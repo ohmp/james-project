@@ -77,8 +77,7 @@ public class MailboxPath {
     }
 
     /**
-     * Get the name of the user who owns the mailbox. This can be null e.g. for
-     * shared mailboxes.
+     * Get the name of the user who owns the mailbox.
      */
     public Username getUser() {
         return user;
