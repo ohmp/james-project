@@ -165,7 +165,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Header</code> <code>Iterator</code>, or null when
      *         {@link FetchGroup#content()} does not include the index and
      *         when the mime part cannot be found
-     * @throws MailboxException
      */
     Iterator<Header> iterateHeaders(MimePath path) throws MailboxException;
 
@@ -177,7 +176,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Header</code> <code>Iterator</code>, or null when
      *         {@link FetchGroup#content()} does not include the index and
      *         when the mime part cannot be found
-     * @throws MailboxException
      */
     Iterator<Header> iterateMimeHeaders(MimePath path) throws MailboxException;
 
@@ -190,7 +188,6 @@ public interface MessageResult extends Comparable<MessageResult> {
          * Gets the name of this header.
          * 
          * @return name of this header
-         * @throws MessagingException
          */
         String getName();
 
@@ -198,7 +195,6 @@ public interface MessageResult extends Comparable<MessageResult> {
          * Gets the (unparsed) value of this header.
          * 
          * @return value of this header
-         * @throws MessagingException
          */
         String getValue();
     }
@@ -210,7 +206,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Content</code>, or or null if
      *         {@link FetchGroup#FULL_CONTENT} has not been included in the
      *         results
-     * @throws IOException 
      */
     Content getFullContent() throws MailboxException, IOException;
 
@@ -222,7 +217,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Content</code>, or null when
      *         {@link FetchGroup#content()} did not been include the given
      *         index and when the mime part cannot be found
-     * @throws MailboxException
      */
     Content getFullContent(MimePath path) throws MailboxException;
 
@@ -233,7 +227,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Content</code>, or or null if
      *         {@link FetchGroup#FULL_CONTENT} has not been included in the
      *         results
-     * @throws IOException 
      */
     Content getBody() throws MailboxException, IOException;
 
@@ -245,7 +238,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Content</code>, or null when
      *         {@link FetchGroup#content()} did not been include the given
      *         index and when the mime part cannot be found
-     * @throws MailboxException
      */
     Content getBody(MimePath path) throws MailboxException;
 
@@ -257,7 +249,6 @@ public interface MessageResult extends Comparable<MessageResult> {
      * @return <code>Content</code>, or null when
      *         {@link FetchGroup#content()} did not been include the given
      *         index and when the mime part cannot be found
-     * @throws MailboxException
      */
     Content getMimeBody(MimePath path) throws MailboxException;
 
