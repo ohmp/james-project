@@ -19,8 +19,6 @@
 
 package org.apache.james.core;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +31,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-public class Username implements Serializable {
+public class Username {
     public static final int MAXIMUM_MAIL_ADDRESS_LENGTH = 255;
 
     public static Username of(String username) {
@@ -148,25 +146,5 @@ public class Username implements Serializable {
             .add("localPart", localPart)
             .add("domainPart", domainPart)
             .toString();
-    }
-
-    private Object writeReplace() throws ObjectStreamException {
-        return new SerializedUsername(this);
-    }
-
-    private static final class SerializedUsername implements Serializable {
-        private final String localPart;
-        private final String domainPart;
-
-        private SerializedUsername(Username username) {
-            localPart = username.localPart;
-            domainPart = username.domainPart
-                .map(Domain::asString)
-                .orElse(null);
-        }
-
-        private Object readResolve() throws ObjectStreamException {
-            return Username.from(localPart, Optional.ofNullable(domainPart));
-        }
     }
 }
