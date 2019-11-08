@@ -46,19 +46,6 @@ public class ConnectionPerIpLimitUpstreamHandler extends SimpleChannelUpstreamHa
         this.maxConnectionsPerIp = maxConnectionsPerIp;
     }
     
-    public int getConnections(String ip) {
-        AtomicInteger count = connections.get(ip);
-        if (count == null) {
-            return 0;
-        } else {
-            return count.get();
-        }
-    }
-    
-    public void setMaxConnectionsPerIp(int maxConnectionsPerIp) {
-        this.maxConnectionsPerIp = maxConnectionsPerIp;
-    }
-    
     
     @Override
     public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
