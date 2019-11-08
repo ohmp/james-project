@@ -594,7 +594,7 @@ public class StoreMailboxManager implements MailboxManager {
             .stream()
             .filter(mailbox -> mailboxExpression.isPathMatch(mailbox.generateAssociatedPath()))
             .map(mailbox -> toMailboxMetadata(session, mailboxes, mailbox))
-            .sorted(MailboxMetaData.COMARATOR)
+            .sorted(MailboxMetaData.COMPARATOR)
             .collect(Guavate.toImmutableList());
     }
 

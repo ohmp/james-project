@@ -64,7 +64,7 @@ public class MailboxMetaData implements Comparable<MailboxMetaData> {
         return new MailboxMetaData(path, mailboxId, delimiter, Children.CHILDREN_ALLOWED_BUT_UNKNOWN, Selectability.NONE);
     }
 
-    public static  final Comparator<MailboxMetaData> COMARATOR = Comparator
+    public static  final Comparator<MailboxMetaData> COMPARATOR = Comparator
         .<MailboxMetaData, Boolean>comparing(metadata -> metadata.getPath().isInbox())
         .thenComparing(metadata -> metadata.getPath().getName());
 
@@ -148,6 +148,6 @@ public class MailboxMetaData implements Comparable<MailboxMetaData> {
 
     @Override
     public int compareTo(MailboxMetaData o) {
-        return COMARATOR.compare(this, o);
+        return COMPARATOR.compare(this, o);
     }
 }
