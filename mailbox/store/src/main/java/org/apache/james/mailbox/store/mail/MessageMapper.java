@@ -76,7 +76,7 @@ public interface MessageMapper extends Mapper {
 
     MailboxCounters getMailboxCounters(Mailbox mailbox) throws MailboxException;
 
-    List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds) throws MailboxException;
+    List<MailboxCounters> getMailboxCounters(Collection<Mailbox> mailboxes) throws MailboxException;
 
     /**
      * Delete the given {@link MailboxMessage}

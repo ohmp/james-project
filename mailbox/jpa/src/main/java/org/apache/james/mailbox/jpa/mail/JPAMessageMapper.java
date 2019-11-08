@@ -154,16 +154,9 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
     }
 
     @Override
-    public List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds) throws MailboxException {
-        return mailboxIds.stream()
-            .map(id -> (JPAId) id)
-            .map(Throwing.<JPAId, MailboxCounters>function(
-                id -> MailboxCounters.builder()
-                    .mailboxId(id)
-                    .count(countMessagesInMailbox(id))
-                    .unseen(countUnseenMessagesInMailbox(id))
-                    .build())
-                .sneakyThrow())
+    public List<MailboxCounters> getMailboxCounters(Collection<Mailbox> mailboxes) throws MailboxException {
+        return mailboxes.stream()
+            .map(Throwing.<Mailbox, MailboxCounters>function(this::getMailboxCounters).sneakyThrow())
             .collect(Guavate.toImmutableList());
     }
 

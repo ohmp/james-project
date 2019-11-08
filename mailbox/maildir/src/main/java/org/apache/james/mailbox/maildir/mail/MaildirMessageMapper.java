@@ -153,8 +153,10 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds) {
-        throw new NotImplementedException("Not available as maildir relies on mailboxPath");
+    public List<MailboxCounters> getMailboxCounters(Collection<Mailbox> mailboxes) throws MailboxException {
+        return mailboxes.stream()
+            .map(Throwing.<Mailbox, MailboxCounters>function(this::getMailboxCounters).sneakyThrow())
+            .collect(Guavate.toImmutableList());
     }
 
     @Override

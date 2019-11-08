@@ -42,7 +42,6 @@ import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxCounters;
-import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.UpdatedFlags;
@@ -145,10 +144,10 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public List<MailboxCounters> getMailboxCounters(Collection<MailboxId> mailboxIds) {
-        return Flux.fromIterable(mailboxIds)
+    public List<MailboxCounters> getMailboxCounters(Collection<Mailbox> mailboxes) {
+        return Flux.fromIterable(mailboxes)
             .publishOn(Schedulers.boundedElastic())
-            .map(id -> (CassandraId) id)
+            .map(mailbox -> (CassandraId) mailbox.getMailboxId())
             .concatMap(this::getMailboxCounters)
             .toStream()
             .collect(Guavate.toImmutableList());
