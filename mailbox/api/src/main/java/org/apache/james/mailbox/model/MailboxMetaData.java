@@ -19,9 +19,8 @@
 
 package org.apache.james.mailbox.model;
 
+import java.util.Comparator;
 import java.util.Objects;
-
-import org.apache.james.mailbox.StandardMailboxMetaDataComparator;
 
 import com.google.common.base.MoreObjects;
 
@@ -64,6 +63,10 @@ public class MailboxMetaData implements Comparable<MailboxMetaData> {
     public static MailboxMetaData unselectableMailbox(MailboxPath path, MailboxId mailboxId, char delimiter) {
         return new MailboxMetaData(path, mailboxId, delimiter, Children.CHILDREN_ALLOWED_BUT_UNKNOWN, Selectability.NONE);
     }
+
+    public static  final Comparator<MailboxMetaData> COMARATOR = Comparator
+        .<MailboxMetaData, Boolean>comparing(metadata -> metadata.getPath().isInbox())
+        .thenComparing(metadata -> metadata.getPath().getName());
 
     private final MailboxPath path;
     private final char delimiter;
@@ -145,6 +148,6 @@ public class MailboxMetaData implements Comparable<MailboxMetaData> {
 
     @Override
     public int compareTo(MailboxMetaData o) {
-        return StandardMailboxMetaDataComparator.order(this, o);
+        return COMARATOR.compare(this, o);
     }
 }
