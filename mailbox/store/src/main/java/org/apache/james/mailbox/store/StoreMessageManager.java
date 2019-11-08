@@ -194,8 +194,6 @@ public class StoreMessageManager implements MessageManager {
     
     /**
      * Return the {@link MailboxPathLocker}
-     * 
-     * @return locker
      */
     protected MailboxPathLocker getLocker() {
         return locker;
@@ -203,9 +201,6 @@ public class StoreMessageManager implements MessageManager {
 
     /**
      * Return the underlying {@link Mailbox}
-     * 
-     * @return mailbox
-     * @throws MailboxException
      */
 
     public Mailbox getMailboxEntity() throws MailboxException {
@@ -224,9 +219,6 @@ public class StoreMessageManager implements MessageManager {
      * override this method and add {@link Flag#USER} to the list of returned
      * {@link Flags}. If only a special set of user flags / keywords should be
      * allowed just add them directly.
-     * 
-     * @param session
-     * @return flags
      */
     protected Flags getPermanentFlags(MailboxSession session) {
 
@@ -253,11 +245,6 @@ public class StoreMessageManager implements MessageManager {
      * 
      * In this implementation, all permanent flags are shared, ergo we simply
      * return {@link #getPermanentFlags(MailboxSession)}
-     *
-     * @see UnionMailboxACLResolver#isReadWrite(MailboxACLRights, Flags)
-     * 
-     * @param session
-     * @return
      */
     protected Flags getSharedPermanentFlags(MailboxSession session) {
         return getPermanentFlags(session);
@@ -618,9 +605,6 @@ public class StoreMessageManager implements MessageManager {
      * {@link Flag#RECENT} flag.
      * 
      * This flag is never removed!
-     * 
-     * @param flags
-     * @param session
      */
     private void trimFlags(Flags flags, MailboxSession session) {
 
@@ -675,11 +659,6 @@ public class StoreMessageManager implements MessageManager {
 
     /**
      * Copy the {@link MessageRange} to the {@link StoreMessageManager}
-     * 
-     * @param set
-     * @param toMailbox
-     * @param session
-     * @throws MailboxException
      */
     public List<MessageRange> copyTo(final MessageRange set, final StoreMessageManager toMailbox, final MailboxSession session) throws MailboxException {
         if (!toMailbox.isWriteable(session)) {
@@ -694,11 +673,6 @@ public class StoreMessageManager implements MessageManager {
 
     /**
      * Move the {@link MessageRange} to the {@link StoreMessageManager}
-     * 
-     * @param set
-     * @param toMailbox
-     * @param session
-     * @throws MailboxException
      */
     public List<MessageRange> moveTo(final MessageRange set, final StoreMessageManager toMailbox, final MailboxSession session) throws MailboxException {
         if (!isWriteable(session)) {
