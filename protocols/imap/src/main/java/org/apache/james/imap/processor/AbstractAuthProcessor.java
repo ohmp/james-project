@@ -43,6 +43,8 @@ import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.predicates.PredicateChainer;
 import com.google.common.base.Preconditions;
 
 public abstract class AbstractAuthProcessor<M extends ImapRequest> extends AbstractMailboxProcessor<M> {
@@ -60,25 +62,10 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
 
     protected void doAuth(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         Preconditions.checkArgument(!authenticationAttempt.isDelegation());
+        PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> login(attempt, session, tag, command, responder));
         try {
-            boolean authFailure = authenticationAttempt.getAuthenticationId().isPresent();
-            if (!authFailure) {
-                MailboxManager mailboxManager = getMailboxManager();
-                try {
-                    MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId().get(),
-                        authenticationAttempt.getPassword());
-                    session.authenticated();
-                    session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
-                    provisionInbox(session, mailboxManager, mailboxSession);
-                    okComplete(command, tag, responder);
-                } catch (BadCredentialsException e) {
-                    authFailure = true;
-                }
-            }
-            if (authFailure) {
-                manageFailureCount(session, tag, command, responder, failed);
-            }
-        } catch (MailboxException e) {
+            authenticationProcess(authenticationAttempt, session, tag, command, responder, failed, (PredicateChainer<ValidatedAuthenticationAttempt>) authenticationMethod);
+        } catch (Exception e) {
             LOGGER.error("Error encountered while login", e);
             no(command, tag, responder, HumanReadableText.GENERIC_FAILURE_DURING_PROCESSING);
         }
@@ -86,25 +73,9 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
 
     protected void doAuthWithDelegation(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         Preconditions.checkArgument(authenticationAttempt.isDelegation());
+        PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> loginAsOtherUser(attempt, session, tag, command, responder));
         try {
-            boolean authFailure = authenticationAttempt.getAuthenticationId().isPresent();
-            if (!authFailure) {
-                MailboxManager mailboxManager = getMailboxManager();
-                try {
-                    MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId().get(),
-                        authenticationAttempt.getPassword(),
-                        authenticationAttempt.getDelegateUserName().get());
-                    session.authenticated();
-                    session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
-                    provisionInbox(session, mailboxManager, mailboxSession);
-                    okComplete(command, tag, responder);
-                } catch (BadCredentialsException e) {
-                    authFailure = true;
-                }
-            }
-            if (authFailure) {
-                manageFailureCount(session, tag, command, responder, failed);
-            }
+            authenticationProcess(authenticationAttempt, session, tag, command, responder, failed, authenticationMethod);
         } catch (UserDoesNotExistException e) {
             LOGGER.info("User {} does not exist", authenticationAttempt.getAuthenticationId(), e);
             no(command, tag, responder, HumanReadableText.USER_DOES_NOT_EXIST);
@@ -114,6 +85,47 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         } catch (MailboxException e) {
             LOGGER.info("Login failed", e);
             no(command, tag, responder, HumanReadableText.GENERIC_FAILURE_DURING_PROCESSING);
+        }
+    }
+
+    private void authenticationProcess(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed, PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod) throws MailboxException {
+        boolean authFailure = authenticationAttempt.validate()
+            .filter(authenticationMethod.sneakyThrow())
+            .isPresent();
+
+        if (authFailure) {
+            manageFailureCount(session, tag, command, responder, failed);
+        }
+    }
+
+    private boolean login(ValidatedAuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder) throws MailboxException {
+        MailboxManager mailboxManager = getMailboxManager();
+        try {
+            MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId(),
+                authenticationAttempt.getPassword());
+            session.authenticated();
+            session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
+            provisionInbox(session, mailboxManager, mailboxSession);
+            okComplete(command, tag, responder);
+            return false;
+        } catch (BadCredentialsException e) {
+            return true;
+        }
+    }
+
+    private boolean loginAsOtherUser(ValidatedAuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder) throws MailboxException {
+        MailboxManager mailboxManager = getMailboxManager();
+        try {
+            MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
+                authenticationAttempt.getPassword(),
+                authenticationAttempt.getDelegateUserName().get());
+            session.authenticated();
+            session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
+            provisionInbox(session, mailboxManager, mailboxSession);
+            okComplete(command, tag, responder);
+            return false;
+        } catch (BadCredentialsException e) {
+            return true;
         }
     }
 
@@ -173,6 +185,38 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         }
 
         public Optional<String> getAuthenticationId() {
+            return authenticationId;
+        }
+
+        public Optional<ValidatedAuthenticationAttempt> validate() {
+            return authenticationId.map(value -> new ValidatedAuthenticationAttempt(delegateUserName, value, password));
+        }
+
+        public String getPassword() {
+            return password;
+        }
+    }
+
+    protected static class ValidatedAuthenticationAttempt {
+        private final Optional<String> delegateUserName;
+        private final String authenticationId;
+        private final String password;
+
+        public ValidatedAuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
+            this.delegateUserName = delegateUserName;
+            this.authenticationId = authenticationId;
+            this.password = password;
+        }
+
+        public boolean isDelegation() {
+            return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId);
+        }
+
+        public Optional<String> getDelegateUserName() {
+            return delegateUserName;
+        }
+
+        public String getAuthenticationId() {
             return authenticationId;
         }
 
