@@ -114,41 +114,35 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public long countMessagesInMailbox(Mailbox mailbox) throws MailboxException {
-        return mailboxCounterDAO.countMessagesInMailbox(mailbox)
-                .defaultIfEmpty(0L)
-                .block();
+    public long countMessagesInMailbox(Mailbox mailbox) {
+        return getMailboxCounters(mailbox).getCount();
     }
 
     @Override
-    public long countUnseenMessagesInMailbox(Mailbox mailbox) throws MailboxException {
-        return mailboxCounterDAO.countUnseenMessagesInMailbox(mailbox)
-                .defaultIfEmpty(0L)
-                .block();
+    public long countUnseenMessagesInMailbox(Mailbox mailbox) {
+        return getMailboxCounters(mailbox).getUnseen();
     }
 
     @Override
-    public MailboxCounters getMailboxCounters(Mailbox mailbox) throws MailboxException {
+    public MailboxCounters getMailboxCounters(Mailbox mailbox) {
+        return getMailboxCountersAsMono(mailbox).block();
+    }
+
+    private Mono<MailboxCounters> getMailboxCountersAsMono(Mailbox mailbox) {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        return getMailboxCounters(mailboxId)
-                .block();
-    }
-
-    private Mono<MailboxCounters> getMailboxCounters(CassandraId mailboxId) {
         return mailboxCounterDAO.retrieveMailboxCounters(mailboxId)
-                .defaultIfEmpty(MailboxCounters.builder()
-                    .mailboxId(mailboxId)
-                    .count(0)
-                    .unseen(0)
-                    .build());
+            .defaultIfEmpty(MailboxCounters.builder()
+                .mailboxId(mailboxId)
+                .count(0)
+                .unseen(0)
+                .build());
     }
 
     @Override
     public List<MailboxCounters> getMailboxCounters(Collection<Mailbox> mailboxes) {
         return Flux.fromIterable(mailboxes)
             .publishOn(Schedulers.boundedElastic())
-            .map(mailbox -> (CassandraId) mailbox.getMailboxId())
-            .concatMap(this::getMailboxCounters)
+            .concatMap(this::getMailboxCountersAsMono)
             .toStream()
             .collect(Guavate.toImmutableList());
     }
