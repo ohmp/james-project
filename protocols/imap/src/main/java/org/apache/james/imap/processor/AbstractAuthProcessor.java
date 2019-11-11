@@ -142,7 +142,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         }
     }
 
-    protected void manageFailureCount(ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
+    private void manageFailureCount(ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         int failures = Optional.ofNullable((Integer) session.getAttribute(ATTRIBUTE_NUMBER_OF_FAILURES))
             .orElse(0) + 1;
         if (failures < MAX_FAILURES) {
@@ -168,7 +168,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         private final Optional<String> authenticationId;
         private final String password;
 
-        protected AuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
+        private AuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
             this.delegateUserName = delegateUserName;
             this.authenticationId = Optional.ofNullable(authenticationId);
             this.password = password;
