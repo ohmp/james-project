@@ -51,7 +51,6 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.MetadataWithMailboxId;
-import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.events.MailboxListener;
@@ -104,6 +103,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -115,9 +115,6 @@ import reactor.core.scheduler.Schedulers;
  * This base class take care of dispatching events to the registered
  * {@link MailboxListener} and so help with handling concurrent
  * {@link MailboxSession}'s.
- * 
- * 
- * 
  */
 public class StoreMessageManager implements MessageManager {
     private static final MailboxCounters ZERO_MAILBOX_COUNTERS = MailboxCounters.builder()
