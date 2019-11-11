@@ -61,14 +61,11 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
     protected void doAuth(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         Preconditions.checkArgument(!authenticationAttempt.isDelegation());
         try {
-            boolean authFailure = false;
-            if (authenticationAttempt.getAuthenticationId() == null) {
-                authFailure = true;
-            }
+            boolean authFailure = authenticationAttempt.getAuthenticationId().isPresent();
             if (!authFailure) {
                 MailboxManager mailboxManager = getMailboxManager();
                 try {
-                    MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId(),
+                    MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId().get(),
                         authenticationAttempt.getPassword());
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
@@ -90,14 +87,11 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
     protected void doAuthWithDelegation(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         Preconditions.checkArgument(authenticationAttempt.isDelegation());
         try {
-            boolean authFailure = false;
-            if (authenticationAttempt.getAuthenticationId() == null) {
-                authFailure = true;
-            }
+            boolean authFailure = authenticationAttempt.getAuthenticationId().isPresent();
             if (!authFailure) {
                 MailboxManager mailboxManager = getMailboxManager();
                 try {
-                    MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
+                    MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId().get(),
                         authenticationAttempt.getPassword(),
                         authenticationAttempt.getDelegateUserName().get());
                     session.authenticated();
@@ -161,12 +155,12 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
 
     protected static class AuthenticationAttempt {
         private final Optional<String> delegateUserName;
-        private final String authenticationId;
+        private final Optional<String> authenticationId;
         private final String password;
 
         public AuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
             this.delegateUserName = delegateUserName;
-            this.authenticationId = authenticationId;
+            this.authenticationId = Optional.ofNullable(authenticationId);
             this.password = password;
         }
 
@@ -178,7 +172,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             return delegateUserName;
         }
 
-        public String getAuthenticationId() {
+        public Optional<String> getAuthenticationId() {
             return authenticationId;
         }
 
