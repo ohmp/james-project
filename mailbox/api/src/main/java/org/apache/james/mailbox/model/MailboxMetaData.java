@@ -65,7 +65,7 @@ public class MailboxMetaData implements Comparable<MailboxMetaData> {
     }
 
     public static  final Comparator<MailboxMetaData> COMPARATOR = Comparator
-        .<MailboxMetaData, Boolean>comparing(metadata -> metadata.getPath().isInbox())
+        .<MailboxMetaData, Boolean>comparing(metadata -> metadata.getPath().isInbox()).reversed()
         .thenComparing(metadata -> metadata.getPath().getName());
 
     private final MailboxPath path;
