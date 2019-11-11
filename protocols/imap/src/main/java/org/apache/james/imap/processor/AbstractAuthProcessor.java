@@ -66,9 +66,9 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
                 authFailure = true;
             }
             if (!authFailure) {
-                final MailboxManager mailboxManager = getMailboxManager();
+                MailboxManager mailboxManager = getMailboxManager();
                 try {
-                    final MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId(),
+                    MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId(),
                         authenticationAttempt.getPassword());
                     session.authenticated();
                     session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
@@ -95,9 +95,9 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
                 authFailure = true;
             }
             if (!authFailure) {
-                final MailboxManager mailboxManager = getMailboxManager();
+                MailboxManager mailboxManager = getMailboxManager();
                 try {
-                    final MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
+                    MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
                         authenticationAttempt.getPassword(),
                         authenticationAttempt.getDelegateUserName().get());
                     session.authenticated();
@@ -124,7 +124,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
     }
 
     private void provisionInbox(ImapSession session, MailboxManager mailboxManager, MailboxSession mailboxSession) throws MailboxException {
-        final MailboxPath inboxPath = PathConverter.forSession(session).buildFullPath(MailboxConstants.INBOX);
+        MailboxPath inboxPath = PathConverter.forSession(session).buildFullPath(MailboxConstants.INBOX);
         if (mailboxManager.mailboxExists(inboxPath, mailboxSession)) {
             LOGGER.debug("INBOX exists. No need to create it.");
         } else {
@@ -139,8 +139,8 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
     }
 
     protected void manageFailureCount(ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
-        final Integer currentNumberOfFailures = (Integer) session.getAttribute(ATTRIBUTE_NUMBER_OF_FAILURES);
-        final int failures;
+        Integer currentNumberOfFailures = (Integer) session.getAttribute(ATTRIBUTE_NUMBER_OF_FAILURES);
+        int failures;
         if (currentNumberOfFailures == null) {
             failures = 1;
         } else {
