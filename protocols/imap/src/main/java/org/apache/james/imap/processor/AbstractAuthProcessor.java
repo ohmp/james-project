@@ -169,25 +169,25 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         private final Optional<String> authenticationId;
         private final String password;
 
-        public AuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
+        protected AuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
             this.delegateUserName = delegateUserName;
             this.authenticationId = Optional.ofNullable(authenticationId);
             this.password = password;
         }
 
-        public boolean isDelegation() {
+        boolean isDelegation() {
             return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId.orElse(null));
         }
 
-        public Optional<String> getDelegateUserName() {
+        Optional<String> getDelegateUserName() {
             return delegateUserName;
         }
 
-        public Optional<String> getAuthenticationId() {
+        Optional<String> getAuthenticationId() {
             return authenticationId;
         }
 
-        public Optional<ValidatedAuthenticationAttempt> validate() {
+        Optional<ValidatedAuthenticationAttempt> validate() {
             return authenticationId.map(value -> new ValidatedAuthenticationAttempt(delegateUserName, value, password));
         }
 
@@ -196,26 +196,26 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         }
     }
 
-    protected static class ValidatedAuthenticationAttempt {
+    private static class ValidatedAuthenticationAttempt {
         private final Optional<String> delegateUserName;
         private final String authenticationId;
         private final String password;
 
-        public ValidatedAuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
+        ValidatedAuthenticationAttempt(Optional<String> delegateUserName, String authenticationId, String password) {
             this.delegateUserName = delegateUserName;
             this.authenticationId = authenticationId;
             this.password = password;
         }
 
-        public Optional<String> getDelegateUserName() {
+        private Optional<String> getDelegateUserName() {
             return delegateUserName;
         }
 
-        public String getAuthenticationId() {
+        private String getAuthenticationId() {
             return authenticationId;
         }
 
-        public String getPassword() {
+        private String getPassword() {
             return password;
         }
     }
