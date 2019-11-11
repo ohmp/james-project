@@ -176,7 +176,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         }
 
         public boolean isDelegation() {
-            return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId);
+            return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId.orElse(null));
         }
 
         public Optional<String> getDelegateUserName() {
@@ -205,10 +205,6 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             this.delegateUserName = delegateUserName;
             this.authenticationId = authenticationId;
             this.password = password;
-        }
-
-        public boolean isDelegation() {
-            return delegateUserName.isPresent() && !delegateUserName.get().equals(authenticationId);
         }
 
         public Optional<String> getDelegateUserName() {
