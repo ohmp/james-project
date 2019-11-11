@@ -62,9 +62,10 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
 
     protected void doAuth(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         Preconditions.checkArgument(!authenticationAttempt.isDelegation());
-        PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> login(attempt, session, tag, command, responder));
+        PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> login(attempt, session));
         try {
             authenticationProcess(authenticationAttempt, session, tag, command, responder, failed, (PredicateChainer<ValidatedAuthenticationAttempt>) authenticationMethod);
+
         } catch (Exception e) {
             LOGGER.error("Error encountered while login", e);
             no(command, tag, responder, HumanReadableText.GENERIC_FAILURE_DURING_PROCESSING);
@@ -73,7 +74,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
 
     protected void doAuthWithDelegation(AuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
         Preconditions.checkArgument(authenticationAttempt.isDelegation());
-        PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> loginAsOtherUser(attempt, session, tag, command, responder));
+        PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> loginAsOtherUser(attempt, session));
         try {
             authenticationProcess(authenticationAttempt, session, tag, command, responder, failed, authenticationMethod);
         } catch (UserDoesNotExistException e) {
@@ -95,10 +96,12 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
 
         if (authFailure) {
             manageFailureCount(session, tag, command, responder, failed);
+        } else {
+            okComplete(command, tag, responder);
         }
     }
 
-    private boolean login(ValidatedAuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder) throws MailboxException {
+    private boolean login(ValidatedAuthenticationAttempt authenticationAttempt, ImapSession session) throws MailboxException {
         MailboxManager mailboxManager = getMailboxManager();
         try {
             MailboxSession mailboxSession = mailboxManager.login(authenticationAttempt.getAuthenticationId(),
@@ -106,14 +109,13 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             session.authenticated();
             session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
             provisionInbox(session, mailboxManager, mailboxSession);
-            okComplete(command, tag, responder);
             return false;
         } catch (BadCredentialsException e) {
             return true;
         }
     }
 
-    private boolean loginAsOtherUser(ValidatedAuthenticationAttempt authenticationAttempt, ImapSession session, String tag, ImapCommand command, Responder responder) throws MailboxException {
+    private boolean loginAsOtherUser(ValidatedAuthenticationAttempt authenticationAttempt, ImapSession session) throws MailboxException {
         MailboxManager mailboxManager = getMailboxManager();
         try {
             MailboxSession mailboxSession = mailboxManager.loginAsOtherUser(authenticationAttempt.getAuthenticationId(),
@@ -122,7 +124,6 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
             session.authenticated();
             session.setAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY, mailboxSession);
             provisionInbox(session, mailboxManager, mailboxSession);
-            okComplete(command, tag, responder);
             return false;
         } catch (BadCredentialsException e) {
             return true;
