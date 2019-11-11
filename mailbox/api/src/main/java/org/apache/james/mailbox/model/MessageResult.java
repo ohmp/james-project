@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.mail.Flags;
-import javax.mail.MessagingException;
 
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
