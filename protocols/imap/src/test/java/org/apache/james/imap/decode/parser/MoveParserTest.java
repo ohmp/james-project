@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.apache.james.imap.api.ImapCommand;
+import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.decode.DecodingException;
 import org.apache.james.imap.decode.ImapRequestStreamLineReader;
@@ -41,8 +42,8 @@ public class MoveParserTest {
 
         InputStream inputStream = new ByteArrayInputStream(commandString.getBytes());
         ImapRequestStreamLineReader lineReader = new ImapRequestStreamLineReader(inputStream, null);
-        MoveRequest request = (MoveRequest) parser.decode(command, lineReader, "A003", null);
-        MoveRequest expected = new MoveRequest(command, new IdRange[] {new IdRange(42, 69)}, "foo", false, "A003");
+        MoveRequest request = (MoveRequest) parser.decode(command, lineReader, new Tag("A003"), null);
+        MoveRequest expected = new MoveRequest(command, new IdRange[] {new IdRange(42, 69)}, "foo", false, new Tag("A003"));
 
         assertThat(request).isEqualTo(expected);
     }

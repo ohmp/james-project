@@ -17,36 +17,19 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.imap.message.request;
+package org.apache.james.imap.api;
 
-import org.apache.james.imap.api.ImapCommand;
-import org.apache.james.imap.api.Tag;
+import com.google.common.base.Preconditions;
 
-/**
- * SETACL Request.
- */
-public class SetACLRequest extends AbstractImapRequest {
-    private final String identifier;
-    private final String mailboxName;
-    private final String rights;
+public class Tag {
+    private final String value;
 
-    public SetACLRequest(Tag tag, ImapCommand command, String mailboxName, String identifier, String rights) {
-        super(tag, command);
-        this.mailboxName = mailboxName;
-        this.identifier = identifier;
-        this.rights = rights;
+    public Tag(String value) {
+        Preconditions.checkNotNull(value);
+        this.value = value;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getValue() {
+        return value;
     }
-
-    public String getMailboxName() {
-        return mailboxName;
-    }
-
-    public String getRights() {
-        return rights;
-    }
-
 }

@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapMessage;
+import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.api.display.HumanReadableText;
 import org.apache.james.imap.api.message.request.SearchKey;
 import org.apache.james.imap.api.message.response.StatusResponse;
@@ -48,7 +49,7 @@ import org.junit.Test;
 
 public class SearchCommandParserQuotedCharsetTest {
 
-    private static final String TAG = "A1";
+    private static final Tag TAG = new Tag("A1");
 
     private static final String ASCII_SEARCH_TERM = "A Search Term";
 

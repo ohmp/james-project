@@ -29,6 +29,7 @@ import javax.mail.Flags;
 
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapMessage;
+import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
@@ -58,7 +59,7 @@ public class StoreCommandParserTest {
         flags.add(Flags.Flag.DRAFT);
         flags.add(Flags.Flag.FLAGGED);
         check("1 FLAGS.SILENT (\\Draft \\Flagged)\r\n", ranges, true, null,
-                flags, false, "A01");
+                flags, false, new Tag("A01"));
     }
 
 
@@ -69,11 +70,11 @@ public class StoreCommandParserTest {
         flags.add(Flags.Flag.DRAFT);
         flags.add(Flags.Flag.FLAGGED);
         check("1 (UNCHANGEDSINCE 100) FLAGS.SILENT (\\Draft \\Flagged)\r\n", ranges, true, null,
-                flags, false, "A01");
+                flags, false, new Tag("A01"));
     }
     
     private void check(String input, IdRange[] idSet, boolean silent,
-            final Boolean sign, Flags flags, boolean useUids, String tag)
+            final Boolean sign, Flags flags, boolean useUids, Tag tag)
             throws Exception {
         ImapRequestLineReader reader = new ImapRequestStreamLineReader(
                 new ByteArrayInputStream(input.getBytes(StandardCharsets.US_ASCII)),

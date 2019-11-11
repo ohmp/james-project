@@ -26,6 +26,7 @@ import javax.mail.Flags;
 
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.display.ModifiedUtf7;
+import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.UidRange;
 import org.apache.james.imap.encode.ImapResponseComposer;
@@ -127,8 +128,8 @@ public class ImapResponseComposerImpl implements ImapConstants, ImapResponseComp
     }
 
     @Override
-    public ImapResponseComposer tag(String tag) throws IOException {
-        writeASCII(tag);
+    public ImapResponseComposer tag(Tag tag) throws IOException {
+        writeASCII(tag.getValue());
         return this;
     }
 
