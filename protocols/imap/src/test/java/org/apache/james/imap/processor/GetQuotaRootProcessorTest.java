@@ -19,6 +19,7 @@
 
 package org.apache.james.imap.processor;
 
+import static org.apache.james.imap.ImapFixture.TAG;
 import static org.apache.james.imap.api.message.response.StatusResponse.Type.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -35,7 +36,6 @@ import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapSessionState;
 import org.apache.james.imap.api.ImapSessionUtils;
-import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.api.message.response.ImapResponseMessage;
 import org.apache.james.imap.api.message.response.StatusResponse;
 import org.apache.james.imap.api.process.ImapProcessor;
@@ -91,7 +91,7 @@ public class GetQuotaRootProcessorTest {
 
     @Test
     public void processorShouldWorkOnValidRights() throws Exception {
-        GetQuotaRootRequest getQuotaRootRequest = new GetQuotaRootRequest(new Tag("A004"), ImapCommand.anyStateCommand("Name"), "INBOX");
+        GetQuotaRootRequest getQuotaRootRequest = new GetQuotaRootRequest(TAG, ImapCommand.anyStateCommand("Name"), "INBOX");
 
         when(mockedImapSession.getState()).thenReturn(ImapSessionState.AUTHENTICATED);
         when(mockedImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mailboxSession);
@@ -121,7 +121,7 @@ public class GetQuotaRootProcessorTest {
 
     @Test
     public void processorShouldWorkOnErrorThrown() throws Exception {
-        GetQuotaRootRequest getQuotaRootRequest = new GetQuotaRootRequest(new Tag("A004"), ImapCommand.anyStateCommand("Name"), "INBOX");
+        GetQuotaRootRequest getQuotaRootRequest = new GetQuotaRootRequest(TAG, ImapCommand.anyStateCommand("Name"), "INBOX");
 
         when(mockedImapSession.getState()).thenReturn(ImapSessionState.AUTHENTICATED);
         when(mockedImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mailboxSession);
@@ -142,7 +142,7 @@ public class GetQuotaRootProcessorTest {
 
     @Test
     public void processorShouldWorkOnNonValidRights() throws Exception {
-        GetQuotaRootRequest getQuotaRootRequest = new GetQuotaRootRequest(new Tag("A004"), ImapCommand.anyStateCommand("Name"), "INBOX");
+        GetQuotaRootRequest getQuotaRootRequest = new GetQuotaRootRequest(TAG, ImapCommand.anyStateCommand("Name"), "INBOX");
 
         when(mockedImapSession.getState()).thenReturn(ImapSessionState.AUTHENTICATED);
         when(mockedImapSession.getAttribute(ImapSessionUtils.MAILBOX_SESSION_ATTRIBUTE_SESSION_KEY)).thenReturn(mailboxSession);

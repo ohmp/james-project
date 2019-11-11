@@ -19,6 +19,7 @@
 
 package org.apache.james.imap.decode.parser;
 
+import static org.apache.james.imap.ImapFixture.TAG;
 import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
@@ -59,7 +60,7 @@ public class StoreCommandParserTest {
         flags.add(Flags.Flag.DRAFT);
         flags.add(Flags.Flag.FLAGGED);
         check("1 FLAGS.SILENT (\\Draft \\Flagged)\r\n", ranges, true, null,
-                flags, false, new Tag("A01"));
+                flags, false, TAG);
     }
 
 
@@ -70,7 +71,7 @@ public class StoreCommandParserTest {
         flags.add(Flags.Flag.DRAFT);
         flags.add(Flags.Flag.FLAGGED);
         check("1 (UNCHANGEDSINCE 100) FLAGS.SILENT (\\Draft \\Flagged)\r\n", ranges, true, null,
-                flags, false, new Tag("A01"));
+                flags, false, TAG);
     }
     
     private void check(String input, IdRange[] idSet, boolean silent,

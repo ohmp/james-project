@@ -19,13 +19,13 @@
 
 package org.apache.james.imap.decode.parser;
 
+import static org.apache.james.imap.ImapFixture.TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.apache.james.imap.api.ImapCommand;
-import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.decode.DecodingException;
 import org.apache.james.imap.decode.ImapRequestStreamLineReader;
 import org.apache.james.imap.message.request.GetQuotaRootRequest;
@@ -43,8 +43,8 @@ public class GetQuotaRootParserTest {
         String commandString = "INBOX\n";
         InputStream inputStream = new ByteArrayInputStream(commandString.getBytes());
         ImapRequestStreamLineReader lineReader = new ImapRequestStreamLineReader(inputStream, null);
-        GetQuotaRootRequest request = (GetQuotaRootRequest) parser.decode(command, lineReader, new Tag("A003"), null);
-        GetQuotaRootRequest expected = new GetQuotaRootRequest(new Tag("A003"), command, "INBOX");
+        GetQuotaRootRequest request = (GetQuotaRootRequest) parser.decode(command, lineReader, TAG, null);
+        GetQuotaRootRequest expected = new GetQuotaRootRequest(TAG, command, "INBOX");
         assertThat(request.getMailboxName()).isEqualTo(expected.getMailboxName());
     }
 
@@ -55,8 +55,8 @@ public class GetQuotaRootParserTest {
         String commandString = "\"INBOX\" \n";
         InputStream inputStream = new ByteArrayInputStream(commandString.getBytes());
         ImapRequestStreamLineReader lineReader = new ImapRequestStreamLineReader(inputStream, null);
-        GetQuotaRootRequest request = (GetQuotaRootRequest) parser.decode(command, lineReader, new Tag("A003"), null);
-        GetQuotaRootRequest expected = new GetQuotaRootRequest(new Tag("A003"), command, "INBOX");
+        GetQuotaRootRequest request = (GetQuotaRootRequest) parser.decode(command, lineReader, TAG, null);
+        GetQuotaRootRequest expected = new GetQuotaRootRequest(TAG, command, "INBOX");
         assertThat(request.getMailboxName()).isEqualTo(expected.getMailboxName());
     }
 

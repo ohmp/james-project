@@ -19,6 +19,7 @@
 
 package org.apache.james.imap.decode.parser;
 
+import static org.apache.james.imap.ImapFixture.TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -26,7 +27,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.apache.james.imap.api.ImapCommand;
-import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.decode.DecodingException;
 import org.apache.james.imap.decode.ImapRequestStreamLineReader;
 import org.apache.james.imap.message.request.SetQuotaRequest;
@@ -44,7 +44,7 @@ public class SetQuotaCommandParserTest {
         String commandString = "quotaRoot (STORAGE 512) ( MESSAGE  1024  ) \n";
         InputStream inputStream = new ByteArrayInputStream(commandString.getBytes());
         ImapRequestStreamLineReader lineReader = new ImapRequestStreamLineReader(inputStream, null);
-        SetQuotaRequest request = (SetQuotaRequest) parser.decode(command, lineReader, new Tag("A003"), null);
+        SetQuotaRequest request = (SetQuotaRequest) parser.decode(command, lineReader, TAG, null);
         assertThat(request.getQuotaRoot()).isEqualTo("quotaRoot");
         List<SetQuotaRequest.ResourceLimit> list = request.getResourceLimits();
         assertThat(list.get(0).getResource()).isEqualTo("STORAGE");
