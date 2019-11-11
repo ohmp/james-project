@@ -139,13 +139,8 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
     }
 
     protected void manageFailureCount(ImapSession session, String tag, ImapCommand command, Responder responder, HumanReadableText failed) {
-        Integer currentNumberOfFailures = (Integer) session.getAttribute(ATTRIBUTE_NUMBER_OF_FAILURES);
-        int failures;
-        if (currentNumberOfFailures == null) {
-            failures = 1;
-        } else {
-            failures = currentNumberOfFailures + 1;
-        }
+        int failures = Optional.ofNullable((Integer) session.getAttribute(ATTRIBUTE_NUMBER_OF_FAILURES))
+            .orElse(0) + 1;
         if (failures < MAX_FAILURES) {
             session.setAttribute(ATTRIBUTE_NUMBER_OF_FAILURES, failures);
             no(command, tag, responder, failed);
