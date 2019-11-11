@@ -62,8 +62,7 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         Preconditions.checkArgument(!authenticationAttempt.isDelegation());
         PredicateChainer<ValidatedAuthenticationAttempt> authenticationMethod = Throwing.predicate(attempt -> login(attempt, session));
         try {
-            authenticationProcess(authenticationAttempt, session, tag, command, responder, failed, (PredicateChainer<ValidatedAuthenticationAttempt>) authenticationMethod);
-
+            authenticationProcess(authenticationAttempt, session, tag, command, responder, failed, authenticationMethod);
         } catch (Exception e) {
             LOGGER.error("Error encountered while login", e);
             no(command, tag, responder, HumanReadableText.GENERIC_FAILURE_DURING_PROCESSING);
