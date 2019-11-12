@@ -21,9 +21,16 @@
 package org.apache.james.mailbox.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.mailbox.DefaultMailboxes;
+import org.apache.james.mailbox.exception.HasEmptyMailboxNameInHierarchyException;
+import org.apache.james.mailbox.exception.MailboxNameException;
+import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.junit.Test;
+
+import com.google.common.base.Strings;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -179,6 +186,55 @@ public class MailboxPathTest {
         assertThat(MailboxPath.forUser("user", "a..")
             .hasEmptyNameInHierarchy('.'))
             .isTrue();
+    }
+
+    @Test
+    public void assertAcceptable1() {
+        assertThatThrownBy(() -> MailboxPath.forUser("user", "a..b")
+                .assertAcceptable('.'))
+            .isInstanceOf(HasEmptyMailboxNameInHierarchyException.class);
+    }
+
+    @Test
+    public void assertAcceptableShouldThrowOnAnd() {
+        assertThatThrownBy(() -> MailboxPath.forUser("user", "a&b")
+                .assertAcceptable('.'))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void assertAcceptableShouldThrowOnSharp() {
+        assertThatThrownBy(() -> MailboxPath.forUser("user", "a#b")
+                .assertAcceptable('.'))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void assertAcceptableShouldThrowOnPercent() {
+        assertThatThrownBy(() -> MailboxPath.forUser("user", "a%b")
+                .assertAcceptable('.'))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void assertAcceptableShouldThrowOnWildcard() {
+        assertThatThrownBy(() -> MailboxPath.forUser("user", "a*b")
+                .assertAcceptable('.'))
+            .isInstanceOf(MailboxNameException.class);
+    }
+
+    @Test
+    public void assertAcceptableShouldThrowOnTooLongMailboxName() {
+        assertThatThrownBy(() -> MailboxPath.forUser("user", Strings.repeat("a", 201))
+                .assertAcceptable('.'))
+            .isInstanceOf(TooLongMailboxNameException.class);
+    }
+
+    @Test
+    public void assertAcceptableShouldNotThrowOnNotTooLongMailboxName() {
+        assertThatCode(() -> MailboxPath.forUser("user", Strings.repeat("a", 200))
+                .assertAcceptable('.'))
+            .doesNotThrowAnyException();
     }
 
     @Test
