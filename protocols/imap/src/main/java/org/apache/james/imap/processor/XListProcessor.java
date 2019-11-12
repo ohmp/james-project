@@ -72,14 +72,6 @@ public class XListProcessor extends ListProcessor implements CapabilityImplement
     }
 
     @Override
-    protected void doProcess(ListRequest message, ImapSession session, String tag, ImapCommand command, Responder responder) {
-        final XListRequest request = (XListRequest) message;
-        final String baseReferenceName = request.getBaseReferenceName();
-        final String mailboxPatternString = request.getMailboxPattern();
-        doProcess(baseReferenceName, mailboxPatternString, session, tag, command, responder);
-    }
-
-    @Override
     protected ImapResponseMessage createResponse(MailboxMetaData.Children children, MailboxMetaData.Selectability selectability, String name, char hierarchyDelimiter, MailboxType type) {
         return new XListResponse(children, selectability, name, hierarchyDelimiter, type);
     }
