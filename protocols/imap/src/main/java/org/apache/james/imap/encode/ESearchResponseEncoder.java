@@ -52,7 +52,7 @@ public class ESearchResponseEncoder extends AbstractChainedImapEncoder {
         Long highestModSeq = response.getHighestModSeq();
         List<SearchResultOption> options = response.getSearchResultOptions();
         
-        composer.untagged().message("ESEARCH").openParen().message("TAG").quote(tag.getValue()).closeParen();
+        composer.untagged().message("ESEARCH").openParen().message("TAG").quote(tag.asString()).closeParen();
         if (useUid) {
             composer.message("UID");
         }

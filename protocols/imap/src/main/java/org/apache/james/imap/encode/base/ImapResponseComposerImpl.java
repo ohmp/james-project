@@ -129,7 +129,7 @@ public class ImapResponseComposerImpl implements ImapConstants, ImapResponseComp
 
     @Override
     public ImapResponseComposer tag(Tag tag) throws IOException {
-        writeASCII(tag.getValue());
+        writeASCII(tag.asString());
         return this;
     }
 
