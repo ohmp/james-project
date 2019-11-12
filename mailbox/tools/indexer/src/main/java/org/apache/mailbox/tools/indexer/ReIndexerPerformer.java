@@ -123,7 +123,7 @@ public class ReIndexerPerformer {
     }
 
     Task.Result reIndex(Username username, ReprocessingContext reprocessingContext) throws MailboxException {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(RE_INDEXER_PERFORMER_USER);
+        MailboxSession mailboxSession = mailboxManager.createSystemSession(username);
         LOGGER.info("Starting a reindex for user {}", username.asString());
 
         Stream<MailboxId> mailboxIds = mailboxManager.search(MailboxQuery.privateMailboxesBuilder(mailboxSession).build(), mailboxSession)
