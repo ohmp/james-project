@@ -129,7 +129,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
             return getEntityManager().createNamedQuery("findMailboxByNameWithUser", JPAMailbox.class)
                 .setParameter("nameParam", mailboxPath.getName())
                 .setParameter("namespaceParam", mailboxPath.getNamespace())
-                .setParameter("userParam", mailboxPath.getUser().asId())
+                .setParameter("userParam", mailboxPath.getUser().asString())
                 .getSingleResult()
                 .toMailbox();
         } catch (NoResultException e) {
@@ -198,7 +198,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
         return getEntityManager().createNamedQuery("findMailboxWithNameLikeWithUser", JPAMailbox.class)
             .setParameter("nameParam", path.getName())
             .setParameter("namespaceParam", path.getNamespace())
-            .setParameter("userParam", path.getUser().asId());
+            .setParameter("userParam", path.getUser().asString());
     }
 
     public void deleteAllMemberships() throws MailboxException {
@@ -221,7 +221,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     public boolean hasChildren(Mailbox mailbox, char delimiter) throws MailboxException, MailboxNotFoundException {
         final String name = mailbox.getName() + delimiter + SQL_WILDCARD_CHAR; 
         final Long numberOfChildMailboxes;
-        numberOfChildMailboxes = (Long) getEntityManager().createNamedQuery("countMailboxesWithNameLikeWithUser").setParameter("nameParam", name).setParameter("namespaceParam", mailbox.getNamespace()).setParameter("userParam", mailbox.getUser().asId()).getSingleResult();
+        numberOfChildMailboxes = (Long) getEntityManager().createNamedQuery("countMailboxesWithNameLikeWithUser").setParameter("nameParam", name).setParameter("namespaceParam", mailbox.getNamespace()).setParameter("userParam", mailbox.getUser().asString()).getSingleResult();
         return numberOfChildMailboxes != null && numberOfChildMailboxes > 0;
     }
 

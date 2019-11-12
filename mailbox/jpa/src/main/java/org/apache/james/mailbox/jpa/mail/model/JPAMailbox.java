@@ -108,7 +108,7 @@ public class JPAMailbox {
     
     public JPAMailbox(MailboxPath path, long uidValidity) {
         this.name = path.getName();
-        this.user = path.getUser().asId();
+        this.user = path.getUser().asString();
         this.namespace = path.getNamespace();
         this.uidValidity = uidValidity;
     }
