@@ -19,42 +19,14 @@
 
 package org.apache.james.imap.api;
 
-import java.util.Objects;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class Tag {
-    private final String value;
-
-    public Tag(String value) {
-        Preconditions.checkNotNull(value);
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof Tag) {
-            Tag tag = (Tag) o;
-
-            return Objects.equals(this.value, tag.value);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("value", value)
-            .toString();
+class TagTest {
+    @Test
+    void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(Tag.class)
+            .verify();
     }
 }
