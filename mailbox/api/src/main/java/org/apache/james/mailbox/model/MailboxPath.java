@@ -153,7 +153,7 @@ public class MailboxPath {
             throw new MailboxNameException(asString() + " contains one of the forbidden characters " + INVALID_CHARS);
         }
         if (isMailboxNameTooLong()) {
-            throw new TooLongMailboxNameException("Mailbox name exceed maximum size of " + MAX_MAILBOX_NAME_LENGTH + " characters");
+            throw new TooLongMailboxNameException("Mailbox name exceeds maximum size of " + MAX_MAILBOX_NAME_LENGTH + " characters");
         }
     }
 
