@@ -83,8 +83,8 @@ public class StatusCommandParser extends AbstractImapCommandParser {
 
     @Override
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
-        final String mailboxName = request.mailbox();
-        final StatusDataItems statusDataItems = statusDataItems(request);
+        String mailboxName = request.mailbox();
+        StatusDataItems statusDataItems = statusDataItems(request);
         request.eol();
         return new StatusRequest(command, mailboxName, statusDataItems, tag);
     }
