@@ -895,6 +895,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         @Test
         void searchShouldReturnACL() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Namespace));
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
             session = mailboxManager.createSystemSession(USER_1);
             Optional<MailboxId> inboxId = mailboxManager.createMailbox(MailboxPath.inbox(session), session);
 
