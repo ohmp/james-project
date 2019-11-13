@@ -28,7 +28,6 @@ import org.apache.james.imap.api.message.StatusDataItems;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.DecodingException;
 import org.apache.james.imap.decode.ImapRequestLineReader;
-import org.apache.james.imap.decode.ImapRequestLineReader.CharacterValidator;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
 import org.apache.james.imap.message.request.StatusRequest;
 
@@ -40,6 +39,8 @@ import com.google.common.collect.ImmutableList;
  * Parse STATUS commands
  */
 public class StatusCommandParser extends AbstractImapCommandParser {
+    private static final ImapRequestLineReader.NoopCharValidator NOOP_CHAR_VALIDATOR = new ImapRequestLineReader.NoopCharValidator();
+
     public StatusCommandParser() {
         super(ImapCommand.authenticatedStateCommand(ImapConstants.STATUS_COMMAND_NAME));
     }
@@ -67,12 +68,11 @@ public class StatusCommandParser extends AbstractImapCommandParser {
 
         request.nextWordChar();
         request.consumeChar('(');
-        CharacterValidator validator = new ImapRequestLineReader.NoopCharValidator();
-        String nextWord = request.consumeWord(validator);
+        String nextWord = request.consumeWord(NOOP_CHAR_VALIDATOR);
 
         while (!nextWord.endsWith(")")) {
             words.add(nextWord);
-            nextWord = request.consumeWord(validator);
+            nextWord = request.consumeWord(NOOP_CHAR_VALIDATOR);
         }
         // Got the closing ")", may be attached to a word.
         if (nextWord.length() > 1) {
