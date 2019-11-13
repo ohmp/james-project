@@ -189,7 +189,7 @@ public class MailboxPathTest {
     }
 
     @Test
-    public void assertAcceptable1() {
+    public void assertAcceptableShouldThrowOnDoubleSeparator() {
         assertThatThrownBy(() -> MailboxPath.forUser("user", "a..b")
                 .assertAcceptable('.'))
             .isInstanceOf(HasEmptyMailboxNameInHierarchyException.class);
