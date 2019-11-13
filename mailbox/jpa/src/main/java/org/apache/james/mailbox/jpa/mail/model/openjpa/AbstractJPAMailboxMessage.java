@@ -96,8 +96,6 @@ import com.google.common.base.Objects;
         @NamedQuery(name = "deleteAllMemberships", query = "DELETE FROM MailboxMessage message") })
 @MappedSuperclass
 public abstract class AbstractJPAMailboxMessage implements MailboxMessage {
-
-    private static final Comparator<MailboxMessage> MESSAGE_UID_COMPARATOR = Comparator.comparing(MailboxMessage::getUid);
     private static final String TOSTRING_SEPARATOR = " ";
 
     /** Identifies composite key */
@@ -485,11 +483,6 @@ public abstract class AbstractJPAMailboxMessage implements MailboxMessage {
     @Override
     public MessageId getMessageId() {
         return new DefaultMessageId();
-    }
-
-    @Override
-    public int compareTo(MailboxMessage other) {
-        return MESSAGE_UID_COMPARATOR.compare(this, other);
     }
 
     public String toString() {

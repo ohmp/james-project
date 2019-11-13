@@ -36,8 +36,6 @@ public interface MailboxMessage extends Message, Comparable<MailboxMessage> {
 
     /**
      * Return the mailbox id of the linked mailbox
-     * 
-     * @return mailboxId
      */
     MailboxId getMailboxId();
 
@@ -45,77 +43,57 @@ public interface MailboxMessage extends Message, Comparable<MailboxMessage> {
      * Return the uid
      */
     MessageUid getUid();
-    
+
     /**
      * Set the uid for the message. This must be called before the message is added to the store
      * and must be unique / sequential.
      */
     void setUid(MessageUid uid);
 
-    
-    
     /**
-     * Set the mod-sequence for the message. This must be called before the message is added to the store 
+     * Set the mod-sequence for the message. This must be called before the message is added to the store
      * or any flags are changed. This must be unique / sequential.
-     * 
-     * @param modSeq
      */
     void setModSeq(long modSeq);
-    
+
     /**
      * Return the mod-sequence for the message
-     * 
-     * @return message
      */
     long getModSeq();
 
     /**
      * Return if it was marked as answered
-     * 
-     * @return answered
      */
     boolean isAnswered();
 
     /**
      * Return if it was mark as deleted
-     * 
-     * @return deleted
      */
     boolean isDeleted();
 
     /**
      * Return if it was mark as draft
-     * 
-     * @return draft
      */
     boolean isDraft();
 
     /**
      * Return if it was flagged
-     * 
-     * @return flagged
      */
     boolean isFlagged();
 
     /**
      * Return if it was marked as recent
-     * 
-     * @return recent
      */
     boolean isRecent();
 
     /**
      * Return if it was marked as seen
-     * 
-     * @return seen
      */
     boolean isSeen();
 
 
     /**
-     * Set the Flags 
-     * 
-     * @param flags
+     * Set the Flags
      */
     void setFlags(Flags flags);
 
@@ -131,4 +109,7 @@ public interface MailboxMessage extends Message, Comparable<MailboxMessage> {
         return new MessageMetaData(getUid(), getModSeq(), createFlags(), getFullContentOctets(), getInternalDate(), getMessageId());
     }
 
+    default int compareTo(MailboxMessage other) {
+        return this.getUid().compareTo(other.getUid());
+    }
 }
