@@ -81,7 +81,7 @@ public class RandomStoring extends GenericMailet {
 
         mail.setRecipients(mailAddresses);
         reroutingInfos.forEach(reroutingInfo ->
-            mail.setAttribute(Attribute.convertToAttribute(MailStore.DELIVERY_PATH_PREFIX + reroutingInfo.getUser(), reroutingInfo.getMailbox())));
+            mail.setAttribute(Attribute.convertToAttribute(MailStore.DELIVERY_PATH_PREFIX + reroutingInfo.getUser().asString(), reroutingInfo.getMailbox())));
     }
 
     @Override
