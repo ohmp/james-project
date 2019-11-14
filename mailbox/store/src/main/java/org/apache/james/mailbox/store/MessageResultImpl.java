@@ -312,18 +312,18 @@ public class MessageResultImpl implements MessageResult {
         return message.getAttachments();
     }
     
-    private final class HeadersImpl implements Headers {
+    private static final class HeadersImpl implements Headers {
 
-        private final Message msg;
+        private final MailboxMessage msg;
         private List<Header> headers;
         
-        private HeadersImpl(Message msg) {
+        private HeadersImpl(MailboxMessage msg) {
             this.msg = msg;
         }
 
         @Override
         public int hashCode() {
-            return 39 * 19 + message.hashCode();
+            return 39 * 19 + msg.hashCode();
         }
 
         @Override
@@ -358,6 +358,5 @@ public class MessageResultImpl implements MessageResult {
             }
             return headers.iterator();
         }
-        
     }
 }
