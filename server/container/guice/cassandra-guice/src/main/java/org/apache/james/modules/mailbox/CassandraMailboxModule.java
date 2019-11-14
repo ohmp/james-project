@@ -34,7 +34,6 @@ import org.apache.james.mailbox.RightManager;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.cassandra.CassandraMailboxManager;
 import org.apache.james.mailbox.cassandra.CassandraMailboxSessionMapperFactory;
-import org.apache.james.mailbox.cassandra.CassandraSubscriptionManager;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.mail.CassandraACLMapper;
@@ -83,6 +82,7 @@ import org.apache.james.mailbox.store.StoreBlobManager;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.apache.james.mailbox.store.StoreRightManager;
+import org.apache.james.mailbox.store.StoreSubscriptionManager;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
 import org.apache.james.mailbox.store.mail.AttachmentMapperFactory;
 import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
@@ -125,7 +125,7 @@ public class CassandraMailboxModule extends AbstractModule {
         bind(CassandraUserMailboxRightsDAO.class).in(Scopes.SINGLETON);
 
         bind(CassandraMailboxManager.class).in(Scopes.SINGLETON);
-        bind(CassandraSubscriptionManager.class).in(Scopes.SINGLETON);
+        bind(StoreSubscriptionManager.class).in(Scopes.SINGLETON);
         bind(StoreAttachmentManager.class).in(Scopes.SINGLETON);
         bind(StoreBlobManager.class).in(Scopes.SINGLETON);
         bind(StoreMessageIdManager.class).in(Scopes.SINGLETON);
@@ -154,7 +154,7 @@ public class CassandraMailboxModule extends AbstractModule {
 
         bind(ModSeqProvider.class).to(CassandraModSeqProvider.class);
         bind(UidProvider.class).to(CassandraUidProvider.class);
-        bind(SubscriptionManager.class).to(CassandraSubscriptionManager.class);
+        bind(SubscriptionManager.class).to(StoreSubscriptionManager.class);
         bind(MailboxPathLocker.class).to(NoMailboxPathLocker.class);
         bind(Authenticator.class).to(UserRepositoryAuthenticator.class);
         bind(Authorizator.class).to(UserRepositoryAuthorizator.class);
