@@ -304,7 +304,7 @@ public class MessageResultImpl implements MessageResult {
     }
     
     @Override
-    public Headers getHeaders() throws MailboxException {
+    public Headers getHeaders() {
         if (headers == null) {
             headers = new HeadersImpl(message);
         }
