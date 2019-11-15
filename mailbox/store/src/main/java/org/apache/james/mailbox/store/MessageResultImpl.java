@@ -355,7 +355,7 @@ public class MessageResultImpl implements MessageResult {
         public Iterator<Header> headers() throws MailboxException {
             if (headers == null) {
                 try {
-                    headers = ResultUtils.createHeaders(message);
+                    headers = ResultUtils.createHeaders(msg);
                 } catch (IOException e) {
                     throw new MailboxException("Unable to parse headers", e);
                 }
