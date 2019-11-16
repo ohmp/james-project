@@ -42,6 +42,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
