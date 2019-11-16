@@ -42,7 +42,6 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
-import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -211,7 +210,7 @@ public class SimpleMailboxMembership implements MailboxMessage {
     
     public byte[] body;
     public Map<String, String> headers;
-    public List<SimpleProperty> properties;
+    public List<Property> properties;
     public String subType = null;
     public String mediaType = null;
     public Long textualLineCount = null;
