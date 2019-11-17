@@ -84,8 +84,7 @@ class UsersRoutesTest {
             DomainList domainList = mock(DomainList.class);
             when(domainList.containsDomain(DOMAIN)).thenReturn(true);
 
-            MemoryUsersRepository usersRepository = MemoryUsersRepository.withVirtualHosting();
-            usersRepository.setDomainList(domainList);
+            MemoryUsersRepository usersRepository = MemoryUsersRepository.withVirtualHosting(domainList);
 
             createServer(usersRepository);
         }
