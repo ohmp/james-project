@@ -66,9 +66,7 @@ import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.protocols.api.utils.ProtocolServerUtils;
 import org.apache.james.protocols.lib.mock.MockProtocolHandlerLoader;
 import org.apache.james.protocols.netty.AbstractChannelPipelineFactory;
-import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
-import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 import org.apache.james.queue.memory.MemoryMailQueueFactory;
 import org.apache.james.rrt.api.RecipientRewriteTable;
@@ -89,9 +87,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
 public class SMTPServerTest {
