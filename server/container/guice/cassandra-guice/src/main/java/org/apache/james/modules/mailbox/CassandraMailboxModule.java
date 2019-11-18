@@ -89,6 +89,7 @@ import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.UidProvider;
+import org.apache.james.mailbox.store.user.SubscriptionMapperFactory;
 import org.apache.james.utils.MailboxManagerDefinition;
 import org.apache.mailbox.tools.indexer.MessageIdReIndexerImpl;
 import org.apache.mailbox.tools.indexer.ReIndexerImpl;
@@ -151,6 +152,7 @@ public class CassandraMailboxModule extends AbstractModule {
         bind(MailboxMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
         bind(AttachmentMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
         bind(MailboxSessionMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
+        bind(SubscriptionMapperFactory.class).to(CassandraMailboxSessionMapperFactory.class);
 
         bind(ModSeqProvider.class).to(CassandraModSeqProvider.class);
         bind(UidProvider.class).to(CassandraUidProvider.class);
