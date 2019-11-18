@@ -54,7 +54,7 @@ public class CassandraSubscriptionMapper extends NonTransactionalMapper implemen
     public synchronized void delete(Subscription subscription) {
         session.execute(QueryBuilder.delete()
             .from(TABLE_NAME)
-            .where(eq(USER, subscription.getUser()))
+            .where(eq(USER, subscription.getUser().asString()))
             .and(eq(MAILBOX, subscription.getMailbox())));
     }
 
