@@ -198,6 +198,26 @@ public abstract class AbstractUsersRepositoryTest {
         //Then
         assertThat(actual).isTrue();
     }
+
+    @Test
+    public void getUserShouldNormalizeCase() throws Exception {
+        Username expected = Username.of("username@" + DOMAIN.name());
+        usersRepository.addUser(expected, "password");
+
+        Username actual = usersRepository.getUser(new MailAddress("UsErNaMe@" + DOMAIN.name()));
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void getUserShouldNormalizeCaseWhenStoredUserIsNotLowerCase() throws Exception {
+        Username expected = Username.of("UsErNaMe@" + DOMAIN.name());
+        usersRepository.addUser(expected, "password");
+
+        Username actual = usersRepository.getUser(new MailAddress("uSeRnAmE@" + DOMAIN.name()));
+
+        assertThat(actual).isEqualTo(expected);
+    }
     
     @Test
     public void testShouldReturnTrueWhenAUserHasACorrectPasswordAndOtherCaseInDomain() throws Exception { 

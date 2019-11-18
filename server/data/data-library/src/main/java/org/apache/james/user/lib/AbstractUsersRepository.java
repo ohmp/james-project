@@ -123,6 +123,10 @@ public abstract class AbstractUsersRepository implements UsersRepository, Config
 
     @Override
     public Username getUser(MailAddress mailAddress) throws UsersRepositoryException {
+        return getUserByName(applyVirtualHosting(mailAddress)).getUserName();
+    }
+
+    private Username applyVirtualHosting(MailAddress mailAddress) {
         if (supportVirtualHosting()) {
             return Username.of(mailAddress.asString());
         } else {
