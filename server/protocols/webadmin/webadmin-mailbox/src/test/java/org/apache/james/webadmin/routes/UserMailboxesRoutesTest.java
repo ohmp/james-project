@@ -679,8 +679,12 @@ class UserMailboxesRoutesTest {
                     .jsonPath()
                     .getList(".");
 
-            assertThat(list).containsExactly(ImmutableMap.of("mailboxName", mailboxName,
-                "mailboxId", "1"));
+            assertThat(list)
+                .hasSize(1)
+                .first()
+                .satisfies(map -> assertThat(map).hasSize(2)
+                    .containsKeys("mailboxId")
+                    .containsEntry("mailboxName", mailboxName));
         }
 
         @Test
@@ -719,8 +723,12 @@ class UserMailboxesRoutesTest {
                     .jsonPath()
                     .getList(".");
 
-            assertThat(list).containsExactly(ImmutableMap.of("mailboxName", MAILBOX_NAME,
-                "mailboxId", "1"));
+            assertThat(list)
+                .hasSize(1)
+                .first()
+                .satisfies(map -> assertThat(map).hasSize(2)
+                    .containsKeys("mailboxId")
+                    .containsEntry("mailboxName", MAILBOX_NAME));
         }
     }
 
