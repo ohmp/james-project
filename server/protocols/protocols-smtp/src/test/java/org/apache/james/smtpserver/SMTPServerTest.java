@@ -66,7 +66,9 @@ import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.protocols.api.utils.ProtocolServerUtils;
 import org.apache.james.protocols.lib.mock.MockProtocolHandlerLoader;
 import org.apache.james.protocols.netty.AbstractChannelPipelineFactory;
+import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
+import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 import org.apache.james.queue.memory.MemoryMailQueueFactory;
 import org.apache.james.rrt.api.RecipientRewriteTable;
@@ -90,6 +92,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 
 public class SMTPServerTest {
 
@@ -258,13 +261,7 @@ public class SMTPServerTest {
 
         chain = MockProtocolHandlerLoader.builder()
             .put(binder -> binder.bind(DomainList.class).toInstance(domainList))
-            .put(new AbstractModule() {
-                @Provides
-                @Singleton
-                public MailQueueFactory<?> provideActiveMQMailQueueFactory() {
-                    return queueFactory;
-                }
-            })
+            .put(binder -> binder.bind(new TypeLiteral<MailQueueFactory<?>>() {}).toInstance(queueFactory))
             .put(binder -> binder.bind(RecipientRewriteTable.class).toInstance(rewriteTable))
             .put(binder -> binder.bind(FileSystem.class).toInstance(fileSystem))
             .put(binder -> binder.bind(MailRepositoryStore.class).toInstance(mailRepositoryStore))
