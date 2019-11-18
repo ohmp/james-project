@@ -348,8 +348,21 @@ public abstract class AbstractUsersRepositoryTest {
 
         // Some implementations do not support changing virtual hosting value
         Assume.assumeTrue(usersRepository.supportVirtualHosting());
+        Username username = Username.of("local@domain");
+        usersRepository.addUser(username, "anyPass");
 
-        assertThat(usersRepository.getUser(new MailAddress("local@domain"))).isEqualTo(Username.of("local@domain"));
+        assertThat(usersRepository.getUser(new MailAddress("local@domain"))).isEqualTo(username);
+    }
+
+    @Test
+    public void getUserShouldIgnoreCaseNormalizationOnNotFoundUsers() throws Exception {
+        usersRepository.setEnableVirtualHosting(true);
+
+        // Some implementations do not support changing virtual hosting value
+        Assume.assumeTrue(usersRepository.supportVirtualHosting());
+        Username username = Username.of("local@domain");
+
+        assertThat(usersRepository.getUser(new MailAddress("local@domain"))).isEqualTo(username);
     }
 
     @Test

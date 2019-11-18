@@ -35,6 +35,7 @@ import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.user.api.AlreadyExistInUsersRepositoryException;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
+import org.apache.james.user.api.model.User;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -123,7 +124,10 @@ public abstract class AbstractUsersRepository implements UsersRepository, Config
 
     @Override
     public Username getUser(MailAddress mailAddress) throws UsersRepositoryException {
-        return getUserByName(applyVirtualHosting(mailAddress)).getUserName();
+        Username virtualHostingNomralizedUsername = applyVirtualHosting(mailAddress);
+        return Optional.ofNullable(getUserByName(virtualHostingNomralizedUsername))
+            .map(User::getUserName)
+            .orElse(virtualHostingNomralizedUsername);
     }
 
     private Username applyVirtualHosting(MailAddress mailAddress) {
