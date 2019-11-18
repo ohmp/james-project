@@ -25,6 +25,7 @@ import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.routes.UserMailboxesRoutes.USERS_BASE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -495,7 +496,9 @@ class UserMailboxesRoutesTest {
                 .get()
             .then()
                 .statusCode(HttpStatus.OK_200)
-                .body(is("[{\"mailboxName\":\"myMailboxName\"}]"));
+                .body(".", hasSize(1))
+                .body("[0].mailboxName", is("myMailboxName"))
+                .body("[0].mailboxId", is("1"));
         }
 
         @Test
@@ -676,7 +679,8 @@ class UserMailboxesRoutesTest {
                     .jsonPath()
                     .getList(".");
 
-            assertThat(list).containsExactly(ImmutableMap.of("mailboxName", mailboxName));
+            assertThat(list).containsExactly(ImmutableMap.of("mailboxName", mailboxName,
+                "mailboxId", "1"));
         }
 
         @Test
@@ -715,7 +719,8 @@ class UserMailboxesRoutesTest {
                     .jsonPath()
                     .getList(".");
 
-            assertThat(list).containsExactly(ImmutableMap.of("mailboxName", MAILBOX_NAME));
+            assertThat(list).containsExactly(ImmutableMap.of("mailboxName", MAILBOX_NAME,
+                "mailboxId", "1"));
         }
     }
 
