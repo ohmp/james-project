@@ -25,7 +25,6 @@ import org.apache.james.mailbox.AbstractSubscriptionManagerTest;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.jpa.mail.JPAModSeqProvider;
 import org.apache.james.mailbox.jpa.mail.JPAUidProvider;
-import org.apache.james.mailbox.store.JVMMailboxPathLocker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -40,12 +39,10 @@ class JPASubscriptionManagerTest extends AbstractSubscriptionManagerTest {
     
     @Override
     protected SubscriptionManager createSubscriptionManager() {
-        JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
-
         EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
         JPAMailboxSessionMapperFactory mf = new JPAMailboxSessionMapperFactory(entityManagerFactory,
             new JPAUidProvider(entityManagerFactory),
-            new JPAModSeqProvider(locker, entityManagerFactory));
+            new JPAModSeqProvider(entityManagerFactory));
 
         return new JPASubscriptionManager(mf);
     }
