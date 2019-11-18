@@ -124,10 +124,10 @@ public abstract class AbstractUsersRepository implements UsersRepository, Config
 
     @Override
     public Username getUser(MailAddress mailAddress) throws UsersRepositoryException {
-        Username virtualHostingNomralizedUsername = applyVirtualHosting(mailAddress);
-        return Optional.ofNullable(getUserByName(virtualHostingNomralizedUsername))
+        Username virtualHostingNormalizedUsername = applyVirtualHosting(mailAddress);
+        return Optional.ofNullable(getUserByName(virtualHostingNormalizedUsername))
             .map(User::getUserName)
-            .orElse(virtualHostingNomralizedUsername);
+            .orElse(virtualHostingNormalizedUsername);
     }
 
     private Username applyVirtualHosting(MailAddress mailAddress) {
