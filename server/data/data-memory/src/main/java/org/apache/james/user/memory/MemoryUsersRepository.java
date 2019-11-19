@@ -115,9 +115,9 @@ public class MemoryUsersRepository extends AbstractUsersRepository {
 
     @Override
     public Iterator<Username> list() throws UsersRepositoryException {
-        return userByName.keySet()
+        return userByName.values()
             .stream()
-            .map(Username::of)
+            .map(User::getUserName)
             .iterator();
     }
 }

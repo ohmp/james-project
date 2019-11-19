@@ -18,13 +18,21 @@
  ****************************************************************/
 package org.apache.james.user.jpa;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.james.backends.jpa.JpaTestCluster;
+import org.apache.james.core.Username;
+import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.jpa.model.JPAUser;
 import org.apache.james.user.lib.AbstractUsersRepository;
 import org.apache.james.user.lib.AbstractUsersRepositoryTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 public class JpaUsersRepositoryTest extends AbstractUsersRepositoryTest {
 
@@ -41,6 +49,26 @@ public class JpaUsersRepositoryTest extends AbstractUsersRepositoryTest {
     public void tearDown() throws Exception {
         super.tearDown();
         JPA_TEST_CLUSTER.clear("JAMES_USER");
+    }
+
+    @Ignore("JPAUsersRepository enforces the stored user to be lowercased, and do not store the case variation")
+    @Test
+    public void getUserShouldNormalizeCaseWhenStoredUserIsNotLowerCase() {
+
+    }
+
+    @Ignore("JPAUsersRepository enforces the stored user to be lowercased, and do not store the case variation")
+    @Test
+    public void addUserShouldPreserveCase() {
+
+    }
+
+    @Test
+    public void addUserShouldStoreLowercase() throws UsersRepositoryException {
+        usersRepository.addUser(Username.of("UseR@" + DOMAIN.name()), "pass");
+
+        assertThat(ImmutableList.copyOf(usersRepository.list()))
+            .containsExactly(Username.of("user@" + DOMAIN.name()));
     }
 
     @Override

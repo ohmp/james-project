@@ -35,10 +35,12 @@ import org.apache.james.user.api.model.User;
 import org.junit.Assume;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 
 public abstract class AbstractUsersRepositoryTest {
 
-    private static final Domain DOMAIN = Domain.of("domain");
+    protected static final Domain DOMAIN = Domain.of("domain");
 
     protected AbstractUsersRepository usersRepository;
     private SimpleDomainList domainList;
@@ -423,5 +425,13 @@ public abstract class AbstractUsersRepositoryTest {
         String username = "user";
         assertThat(usersRepository.getMailAddressFor(Username.of(username)))
             .isEqualTo(new MailAddress(username, domainList.getDefaultDomain()));
+    }
+
+    @Test
+    public void addUserShouldPreserveCase() throws UsersRepositoryException {
+        usersRepository.addUser(Username.of("UseR@" + DOMAIN.name()), "pass");
+
+        assertThat(ImmutableList.copyOf(usersRepository.list()))
+            .containsExactly(Username.of("UseR@" + DOMAIN.name()));
     }
 }
