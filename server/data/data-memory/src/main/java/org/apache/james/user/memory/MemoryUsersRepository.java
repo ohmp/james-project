@@ -71,14 +71,14 @@ public class MemoryUsersRepository extends AbstractUsersRepository {
     }
 
     @Override
-    protected void doAddUser(Username username, String password) throws UsersRepositoryException {
-        DefaultUser user = new DefaultUser(username, algo);
+    protected void doAddUser(Username username, String password) {
+        DefaultUser user = new DefaultUser(username.toLowerCase(), algo);
         user.setPassword(password);
         userByName.put(username.asId(), user);
     }
 
     @Override
-    public User getUserByName(Username name) throws UsersRepositoryException {
+    public User getUserByName(Username name) {
         return userByName.get(name.asId());
     }
 
