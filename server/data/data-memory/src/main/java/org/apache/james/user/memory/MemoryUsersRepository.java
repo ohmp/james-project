@@ -78,7 +78,7 @@ public class MemoryUsersRepository extends AbstractUsersRepository {
     }
 
     @Override
-    public User getUserByName(Username name) {
+    public User getUserByName(Username name) throws UsersRepositoryException {
         return userByName.get(name.asId());
     }
 
