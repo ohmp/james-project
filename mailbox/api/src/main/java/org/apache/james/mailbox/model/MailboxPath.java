@@ -101,7 +101,7 @@ public class MailboxPath {
     }
 
     public boolean belongsTo(MailboxSession mailboxSession) {
-        return user.equalsAsId(mailboxSession.getUser());
+        return user.equals(mailboxSession.getUser());
     }
 
     /**
