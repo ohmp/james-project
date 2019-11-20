@@ -35,6 +35,7 @@ public interface MailboxPathLocker {
         Read,
         Write
     }
+
     /**
      * Execute the {@link LockAwareExecution} while holding a lock on the
      * {@link MailboxPath}. If writeLock is true the implementation need to make sure that no other threads can read and write while the lock
