@@ -75,7 +75,7 @@ public class JPAModSeqProvider implements ModSeqProvider {
             if (manager != null && manager.getTransaction().isActive()) {
                 manager.getTransaction().rollback();
             }
-            throw new MailboxException("Unable to save highest mod-sequence for mailbox " + mailboxId, e);
+            throw new MailboxException("Unable to save highest mod-sequence for mailbox " + mailboxId.serialize(), e);
         } finally {
             if (manager != null) {
                 manager.close();
@@ -92,7 +92,7 @@ public class JPAModSeqProvider implements ModSeqProvider {
                 .getSingleResult();
             return highest;
         } catch (PersistenceException e) {
-            throw new MailboxException("Unable to get highest mod-sequence for mailbox " + mailboxId, e);
+            throw new MailboxException("Unable to get highest mod-sequence for mailbox " + mailboxId.serialize(), e);
         } finally {
             if (manager != null) {
                 manager.close();
