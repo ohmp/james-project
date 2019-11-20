@@ -87,7 +87,7 @@ public class JPAUidProvider implements UidProvider {
             if (manager != null && manager.getTransaction().isActive()) {
                 manager.getTransaction().rollback();
             }
-            throw new MailboxException("Unable to save next uid for mailbox " + mailboxId, e);
+            throw new MailboxException("Unable to save next uid for mailbox " + mailboxId.serialize(), e);
         } finally {
             if (manager != null) {
                 manager.close();
