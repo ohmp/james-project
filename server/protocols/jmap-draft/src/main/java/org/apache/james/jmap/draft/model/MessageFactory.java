@@ -37,6 +37,7 @@ import javax.mail.internet.SharedInputStream;
 import org.apache.james.jmap.draft.utils.HtmlTextExtractor;
 import org.apache.james.mailbox.BlobManager;
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.ModSeq;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Cid;
 import org.apache.james.mailbox.model.MailboxId;
@@ -244,7 +245,7 @@ public class MessageFactory {
         
         public static class Builder {
             private MessageUid uid;
-            private Long modSeq;
+            private ModSeq modSeq;
             private Keywords keywords;
             private Long size;
             private Instant internalDate;
@@ -259,7 +260,7 @@ public class MessageFactory {
                 return this;
             }
             
-            public Builder modSeq(long modSeq) {
+            public Builder modSeq(ModSeq modSeq) {
                 this.modSeq = modSeq;
                 return this;
             }
@@ -311,9 +312,7 @@ public class MessageFactory {
             
             public MetaDataWithContent build() {
                 Preconditions.checkArgument(uid != null);
-                if (modSeq == null) {
-                    modSeq = -1L;
-                }
+                Preconditions.checkArgument(modSeq != null);
                 Preconditions.checkArgument(keywords != null);
                 Preconditions.checkArgument(size != null);
                 Preconditions.checkArgument(internalDate != null);
@@ -326,7 +325,7 @@ public class MessageFactory {
         }
 
         private final MessageUid uid;
-        private final long modSeq;
+        private final ModSeq modSeq;
         private final Keywords keywords;
         private final long size;
         private final Instant internalDate;
@@ -337,7 +336,7 @@ public class MessageFactory {
         private final MessageId messageId;
 
         private MetaDataWithContent(MessageUid uid,
-                                    long modSeq,
+                                    ModSeq modSeq,
                                     Keywords keywords,
                                     long size,
                                     Instant internalDate,
@@ -362,7 +361,7 @@ public class MessageFactory {
             return uid;
         }
 
-        public long getModSeq() {
+        public ModSeq getModSeq() {
             return modSeq;
         }
 
