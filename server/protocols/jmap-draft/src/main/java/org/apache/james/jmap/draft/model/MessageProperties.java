@@ -72,11 +72,25 @@ public class MessageProperties {
     }
 
     public ReadLevel computeReadLevel() {
-        return this.buildOutputMessageProperties()
-            .stream()
-            .map(MessageProperty::getReadLevel)
-            .reduce(ReadLevel::combine)
-            .get(); // Id is always part of returned properties
+        Stream<ReadLevel> readLevels = Stream.concat(this.buildOutputMessageProperties()
+                .stream()
+                .map(MessageProperty::getReadLevel),
+            headerPropertiesReadLevel());
+
+        // If `null`, all properties will be fetched (JMAP Draft)
+        // This defer from RFC-8621 behavior (not implemented here)
+        // If omitted, this defaults to: [ "partId", "blobId", "size", "name", "type", "charset", "disposition", "cid",
+        // "language", "location" ]
+        return readLevels.reduce(ReadLevel::combine)
+            .orElse(ReadLevel.Full);
+
+    }
+
+    private Stream<ReadLevel> headerPropertiesReadLevel() {
+        return headersProperties.map(collection ->
+            collection.stream()
+                .map(any -> ReadLevel.Header))
+            .orElse(Stream.of());
     }
 
     private ImmutableSet<MessageProperty> buildOutputMessageProperties() {
