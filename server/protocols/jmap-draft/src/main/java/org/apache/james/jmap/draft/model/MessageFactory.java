@@ -37,7 +37,6 @@ import javax.mail.internet.SharedInputStream;
 import org.apache.james.jmap.draft.utils.HtmlTextExtractor;
 import org.apache.james.mailbox.BlobManager;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.ModSeq;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Cid;
 import org.apache.james.mailbox.model.MailboxId;
@@ -231,7 +230,6 @@ public class MessageFactory {
         public static Builder builderFromMessageResult(MessageResult messageResult) throws MailboxException {
             Builder builder = builder()
                 .uid(messageResult.getUid())
-                .modSeq(messageResult.getModSeq())
                 .size(messageResult.getSize())
                 .internalDate(messageResult.getInternalDate().toInstant())
                 .attachments(messageResult.getLoadedAttachments())
@@ -245,7 +243,6 @@ public class MessageFactory {
         
         public static class Builder {
             private MessageUid uid;
-            private ModSeq modSeq;
             private Keywords keywords;
             private Long size;
             private Instant internalDate;
@@ -259,12 +256,7 @@ public class MessageFactory {
                 this.uid = uid;
                 return this;
             }
-            
-            public Builder modSeq(ModSeq modSeq) {
-                this.modSeq = modSeq;
-                return this;
-            }
-            
+
             public Builder keywords(Keywords keywords) {
                 this.keywords = keywords;
                 return this;
@@ -312,7 +304,6 @@ public class MessageFactory {
             
             public MetaDataWithContent build() {
                 Preconditions.checkArgument(uid != null);
-                Preconditions.checkArgument(modSeq != null);
                 Preconditions.checkArgument(keywords != null);
                 Preconditions.checkArgument(size != null);
                 Preconditions.checkArgument(internalDate != null);
@@ -320,12 +311,11 @@ public class MessageFactory {
                 Preconditions.checkArgument(attachments != null);
                 Preconditions.checkArgument(mailboxIds != null);
                 Preconditions.checkArgument(messageId != null);
-                return new MetaDataWithContent(uid, modSeq, keywords, size, internalDate, content, sharedContent, attachments, mailboxIds, messageId);
+                return new MetaDataWithContent(uid, keywords, size, internalDate, content, sharedContent, attachments, mailboxIds, messageId);
             }
         }
 
         private final MessageUid uid;
-        private final ModSeq modSeq;
         private final Keywords keywords;
         private final long size;
         private final Instant internalDate;
@@ -336,7 +326,6 @@ public class MessageFactory {
         private final MessageId messageId;
 
         private MetaDataWithContent(MessageUid uid,
-                                    ModSeq modSeq,
                                     Keywords keywords,
                                     long size,
                                     Instant internalDate,
@@ -346,7 +335,6 @@ public class MessageFactory {
                                     Set<MailboxId> mailboxIds,
                                     MessageId messageId) {
             this.uid = uid;
-            this.modSeq = modSeq;
             this.keywords = keywords;
             this.size = size;
             this.internalDate = internalDate;
@@ -359,10 +347,6 @@ public class MessageFactory {
 
         public MessageUid getUid() {
             return uid;
-        }
-
-        public ModSeq getModSeq() {
-            return modSeq;
         }
 
         public Keywords getKeywords() {
