@@ -168,7 +168,7 @@ class MessagePropertiesTest {
         }
 
         @Test
-        void combineShouldReturnHFullWhenFullAndHeader() {
+        void combineShouldReturnFullWhenFullAndHeader() {
             assertThat(MessageProperties.ReadLevel.combine(
                 MessageProperties.ReadLevel.Header,
                 MessageProperties.ReadLevel.Full))
