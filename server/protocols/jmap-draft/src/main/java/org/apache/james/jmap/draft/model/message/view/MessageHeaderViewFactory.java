@@ -22,6 +22,7 @@ package org.apache.james.jmap.draft.model.message.view;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -53,7 +54,7 @@ public class MessageHeaderViewFactory implements MessageViewFactory<MessageHeade
 
     @Override
     public List<MessageHeaderView> fromMessageIds(List<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
-        List<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.HEADERS, mailboxSession);
+        Stream<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.HEADERS, mailboxSession);
         return Helpers.toMessageViews(messages, this::fromMessageResults);
     }
 

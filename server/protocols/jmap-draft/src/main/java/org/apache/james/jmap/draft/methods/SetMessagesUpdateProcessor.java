@@ -127,7 +127,8 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     private void update(MessageId messageId, UpdateMessagePatch updateMessagePatch, MailboxSession mailboxSession,
                         SetMessagesResponse.Builder builder) {
         try {
-            List<MessageResult> messages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, mailboxSession);
+            List<MessageResult> messages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, mailboxSession)
+                .collect(Guavate.toImmutableList());
             assertValidUpdate(messages, updateMessagePatch, mailboxSession);
 
             if (messages.isEmpty()) {
@@ -173,9 +174,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
 
     private void sendMessageWhenOutboxInTargetMailboxIds(MessageId messageId, UpdateMessagePatch updateMessagePatch, MailboxSession mailboxSession, SetMessagesResponse.Builder builder) throws MailboxException, MessagingException, IOException {
         if (isTargetingOutbox(mailboxSession, listTargetMailboxIds(updateMessagePatch))) {
-            Optional<MessageResult> maybeMessageToSend =
-                messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession)
-                    .stream()
+            Optional<MessageResult> maybeMessageToSend = messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession)
                     .findFirst();
             if (maybeMessageToSend.isPresent()) {
                 MessageResult messageToSend = maybeMessageToSend.get();

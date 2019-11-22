@@ -20,6 +20,7 @@
 package org.apache.james.jmap.draft;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
@@ -54,7 +55,8 @@ public class MessageIdProbe implements GuiceProbe {
     public List<MessageResult> getMessages(MessageId messageId, Username user) throws MailboxException {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
 
-        return messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession);
+        return messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession)
+            .collect(Guavate.toImmutableList());
     }
 
     public void updateNewFlags(Username user, Flags newFlags, MessageId messageId, List<MailboxId> mailboxIds) throws MailboxException {
@@ -65,10 +67,9 @@ public class MessageIdProbe implements GuiceProbe {
 
     public List<AttachmentId> retrieveAttachmentIds(MessageId messageId, Username username) throws MailboxException {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(username);
-        List<MessageResult> messages = messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession);
+        Stream<MessageResult> messages = messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession);
 
-        return messages.stream()
-            .flatMap(Throwing.function(messageResult -> messageResult.getLoadedAttachments().stream()))
+        return messages.flatMap(Throwing.function(messageResult -> messageResult.getLoadedAttachments().stream()))
             .map(MessageAttachment::getAttachmentId)
             .collect(Guavate.toImmutableList());
     }

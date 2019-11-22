@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.internet.SharedInputStream;
@@ -87,7 +88,7 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
 
     @Override
     public List<MessageFullView> fromMessageIds(List<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
-        List<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.FULL_CONTENT, mailboxSession);
+        Stream<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.FULL_CONTENT, mailboxSession);
         return Helpers.toMessageViews(messages, this::fromMessageResults);
     }
 

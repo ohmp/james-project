@@ -21,6 +21,7 @@ package org.apache.james.jmap.draft.model.message.view;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -50,7 +51,7 @@ public class MessageMetadataViewFactory implements MessageViewFactory<MessageMet
 
     @Override
     public List<MessageMetadataView> fromMessageIds(List<MessageId> messageIds, MailboxSession session) throws MailboxException {
-        List<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.MINIMAL, session);
+        Stream<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.MINIMAL, session);
         return Helpers.toMessageViews(messages, this::fromMessageResults);
     }
 

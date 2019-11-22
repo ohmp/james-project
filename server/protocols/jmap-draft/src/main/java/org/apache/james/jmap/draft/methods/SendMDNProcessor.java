@@ -24,6 +24,7 @@ import static org.apache.james.jmap.draft.methods.Method.JMAP_PREFIX;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
@@ -161,16 +162,17 @@ public class SendMDNProcessor implements SetMessagesProcessor {
     }
 
     private Message retrieveOriginalMessage(JmapMDN mdn, MailboxSession mailboxSession) throws MailboxException, IOException, MessageNotFoundException {
-        List<MessageResult> messages = messageIdManager.getMessage(mdn.getMessageId(), FetchGroup.HEADERS, mailboxSession);
+        Optional<MessageResult> maybeMessage = messageIdManager.getMessage(mdn.getMessageId(), FetchGroup.HEADERS, mailboxSession)
+            .findFirst();
 
-        if (messages.size() == 0) {
+        if (!maybeMessage.isPresent()) {
             throw new MessageNotFoundException();
         }
 
         DefaultMessageBuilder messageBuilder = new DefaultMessageBuilder();
         messageBuilder.setMimeEntityConfig(MimeConfig.PERMISSIVE);
         messageBuilder.setDecodeMonitor(DecodeMonitor.SILENT);
-        return messageBuilder.parseMessage(messages.get(0).getHeaders().getInputStream());
+        return messageBuilder.parseMessage(maybeMessage.get().getHeaders().getInputStream());
     }
 
     private MessageAttachment convertReportToAttachment(MDNReport mdnReport) {

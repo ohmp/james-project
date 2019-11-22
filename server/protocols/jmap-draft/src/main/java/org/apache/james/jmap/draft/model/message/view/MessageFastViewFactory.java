@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -46,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -139,11 +139,11 @@ public class MessageFastViewFactory implements MessageViewFactory<MessageFastVie
             .flatMap(Flux::fromIterable);
     }
 
-    private Mono<List<MessageResult>> fetch(Collection<MessageId> messageIds, FetchGroup fetchGroup, MailboxSession mailboxSession) {
+    private Mono<Stream<MessageResult>> fetch(Collection<MessageId> messageIds, FetchGroup fetchGroup, MailboxSession mailboxSession) {
         return Mono.fromCallable(() -> messageIdManager.getMessages(messageIds, fetchGroup, mailboxSession))
             .onErrorResume(MailboxException.class, ex -> {
                 LOGGER.error("cannot read messages {}", messageIds, ex);
-                return Mono.just(ImmutableList.of());
+                return Mono.just(Stream.of());
             });
     }
 }

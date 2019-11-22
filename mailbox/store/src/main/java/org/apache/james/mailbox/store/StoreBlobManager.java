@@ -97,7 +97,6 @@ public class StoreBlobManager implements BlobManager {
     private Optional<InputStream> loadMessageAsBlob(MessageId messageId, MailboxSession mailboxSession)  {
         try {
             return messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession)
-                .stream()
                 .map(Throwing.function(message -> message.getFullContent().getInputStream()))
                 .findFirst();
         } catch (MailboxException e) {

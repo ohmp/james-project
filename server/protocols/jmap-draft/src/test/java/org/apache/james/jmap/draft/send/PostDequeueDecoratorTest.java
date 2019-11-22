@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -55,6 +56,7 @@ import org.apache.james.mailbox.store.SystemMailboxesProviderImpl;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
+import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
@@ -269,7 +271,7 @@ public class PostDequeueDecoratorTest {
         mail.setAttribute(messageIdAttribute(messageId.getMessageId().serialize()));
         mail.setAttribute(USERNAME_ATTRIBUTE);
 
-        ImmutableList<MessageResult> allMessages = ImmutableList.copyOf(messageManager.getMessages(MessageRange.all(), FetchGroup.MINIMAL, mailboxSession));
+        Stream<MessageResult> allMessages = Iterators.toStream(messageManager.getMessages(MessageRange.all(), FetchGroup.MINIMAL, mailboxSession));
 
         when(messageIdManager.getMessage(eq(messageId.getMessageId()), eq(FetchGroup.MINIMAL), any(MailboxSession.class))).thenReturn(allMessages);
 

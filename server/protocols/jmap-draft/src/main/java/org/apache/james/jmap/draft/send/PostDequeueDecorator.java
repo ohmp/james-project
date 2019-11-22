@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.jmap.draft.send;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.mail.Flags;
@@ -143,13 +142,13 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
 
     private void assertMessageBelongsToOutbox(MessageId messageId, MailboxSession mailboxSession) throws MailboxException, MailShouldBeInOutboxException {
         MailboxId outboxMailboxId = getOutboxMailboxId(mailboxSession);
-        List<MessageResult> messages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, mailboxSession);
-        for (MessageResult message: messages) {
-            if (message.getMailboxId().equals(outboxMailboxId)) {
-                return;
-            }
+        boolean anyInOutbox = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, mailboxSession)
+            .map(MessageResult::getMailboxId)
+            .anyMatch(outboxMailboxId::equals);
+
+        if (!anyInOutbox) {
+            throw new MailShouldBeInOutboxException(messageId);
         }
-        throw new MailShouldBeInOutboxException(messageId);
     }
 
     private MailboxId getSentMailboxId(MailboxSession session) throws MailboxRoleNotFoundException, MailboxException {

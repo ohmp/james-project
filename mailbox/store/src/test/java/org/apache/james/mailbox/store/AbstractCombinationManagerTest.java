@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -128,7 +129,7 @@ public abstract class AbstractCombinationManagerTest {
             ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
         MessageUid uidInMailbox2 = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session)
-            .get(0)
+            .findFirst().get()
             .getUid();
 
         assertThat(messageManager2.search(query, session)).hasSize(1)
@@ -220,7 +221,7 @@ public abstract class AbstractCombinationManagerTest {
 
         mailboxManager.copyMessages(MessageRange.all(), mailbox1.getMailboxId(), mailbox2.getMailboxId(), session);
 
-        List<MessageResult> listMessages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
+        Stream<MessageResult> listMessages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
 
         assertThat(listMessages).hasSize(2)
             .extractingResultOf("getMailboxId")
@@ -234,7 +235,7 @@ public abstract class AbstractCombinationManagerTest {
 
         mailboxManager.copyMessages(MessageRange.all(), MailboxFixture.INBOX_ALICE, MailboxFixture.OUTBOX_ALICE, session);
 
-        List<MessageResult> listMessages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
+        Stream<MessageResult> listMessages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
 
         assertThat(listMessages).hasSize(2)
             .extractingResultOf("getMailboxId")
@@ -248,7 +249,7 @@ public abstract class AbstractCombinationManagerTest {
 
         mailboxManager.moveMessages(MessageRange.all(), MailboxFixture.INBOX_ALICE, MailboxFixture.OUTBOX_ALICE, session);
 
-        List<MessageResult> listMessages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
+        Stream<MessageResult> listMessages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
 
         assertThat(listMessages).hasSize(1)
             .extractingResultOf("getMailboxId")
@@ -308,10 +309,9 @@ public abstract class AbstractCombinationManagerTest {
 
         messageIdManager.setInMailboxes(messageId.getMessageId(), ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
-        List<MessageResult> listMessages = messageIdManager.getMessage(messageId.getMessageId(), FetchGroup.MINIMAL, session);
+        Stream<MessageResult> listMessages = messageIdManager.getMessage(messageId.getMessageId(), FetchGroup.MINIMAL, session);
 
-        long uid2 = listMessages.stream()
-            .filter(messageInMailbox2())
+        long uid2 = listMessages.filter(messageInMailbox2())
             .findFirst()
             .get()
             .getUid()
@@ -502,7 +502,6 @@ public abstract class AbstractCombinationManagerTest {
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
         MessageUid uid2 = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session)
-            .stream()
             .filter(messageInMailbox2())
             .findFirst()
             .get()

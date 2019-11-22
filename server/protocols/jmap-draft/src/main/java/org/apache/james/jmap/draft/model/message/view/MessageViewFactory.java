@@ -128,8 +128,8 @@ public interface MessageViewFactory<T extends MessageView> {
             };
         }
 
-        static <T extends MessageView> List<T> toMessageViews(List<MessageResult> messageResults, FromMessageResult<T> converter) {
-            return messageResults.stream()
+        static <T extends MessageView> List<T> toMessageViews(Stream<MessageResult> messageResults, FromMessageResult<T> converter) {
+            return messageResults
                 .collect(Guavate.toImmutableListMultimap(MessageResult::getMessageId))
                 .asMap()
                 .values()

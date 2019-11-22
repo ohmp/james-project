@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.AttachmentManager;
@@ -95,7 +96,7 @@ class StoreBlobManagerTest {
         when(attachmentManager.getAttachment(ATTACHMENT_ID, session))
             .thenThrow(new AttachmentNotFoundException(ID));
         when(messageIdManager.getMessage(MESSAGE_ID, FetchGroup.FULL_CONTENT, session))
-            .thenReturn(ImmutableList.of());
+            .thenReturn(Stream.of());
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_ATTACHMENT, session))
             .isInstanceOf(BlobNotFoundException.class);
@@ -111,7 +112,7 @@ class StoreBlobManagerTest {
         when(content.getInputStream()).thenReturn(new ByteArrayInputStream(BYTES));
         when(messageResult.getFullContent()).thenReturn(content);
         when(messageIdManager.getMessage(MESSAGE_ID, FetchGroup.FULL_CONTENT, session))
-            .thenReturn(ImmutableList.of(messageResult));
+            .thenReturn(Stream.of(messageResult));
 
         assertThat(blobManager.retrieve(BLOB_ID_MESSAGE, session))
             .isEqualTo(Blob.builder()
@@ -171,7 +172,7 @@ class StoreBlobManagerTest {
         MessageResult messageResult = mock(MessageResult.class);
         when(messageResult.getFullContent()).thenThrow(new MailboxException());
         when(messageIdManager.getMessage(MESSAGE_ID, FetchGroup.FULL_CONTENT, session))
-            .thenReturn(ImmutableList.of(messageResult));
+            .thenReturn(Stream.of(messageResult));
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_MESSAGE, session))
             .isInstanceOf(RuntimeException.class);
@@ -185,7 +186,7 @@ class StoreBlobManagerTest {
         MessageResult messageResult = mock(MessageResult.class);
         when(messageResult.getFullContent()).thenThrow(new RuntimeException());
         when(messageIdManager.getMessage(MESSAGE_ID, FetchGroup.FULL_CONTENT, session))
-            .thenReturn(ImmutableList.of(messageResult));
+            .thenReturn(Stream.of(messageResult));
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_MESSAGE, session))
             .isInstanceOf(RuntimeException.class);
@@ -201,7 +202,7 @@ class StoreBlobManagerTest {
         when(content.getInputStream()).thenThrow(new IOException());
         when(messageResult.getFullContent()).thenReturn(content);
         when(messageIdManager.getMessage(MESSAGE_ID, FetchGroup.FULL_CONTENT, session))
-            .thenReturn(ImmutableList.of(messageResult));
+            .thenReturn(Stream.of(messageResult));
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_MESSAGE, session))
             .isInstanceOf(RuntimeException.class);
@@ -217,7 +218,7 @@ class StoreBlobManagerTest {
         when(content.getInputStream()).thenThrow(new RuntimeException());
         when(messageResult.getFullContent()).thenReturn(content);
         when(messageIdManager.getMessage(MESSAGE_ID, FetchGroup.FULL_CONTENT, session))
-            .thenReturn(ImmutableList.of(messageResult));
+            .thenReturn(Stream.of(messageResult));
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_MESSAGE, session))
             .isInstanceOf(RuntimeException.class);

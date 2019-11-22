@@ -93,7 +93,7 @@ public class ReferenceUpdater {
         List<MessageId> references = mailboxManager.search(searchByRFC822MessageId, session, limit);
         try {
             MessageId reference = Iterables.getOnlyElement(references);
-            List<MailboxId> mailboxIds = messageIdManager.getMessage(reference, FetchGroup.MINIMAL, session).stream()
+            List<MailboxId> mailboxIds = messageIdManager.getMessage(reference, FetchGroup.MINIMAL, session)
                 .map(MessageResult::getMailboxId)
                 .collect(Guavate.toImmutableList());
             messageIdManager.setFlags(flag, FlagsUpdateMode.ADD, reference, mailboxIds, session);
