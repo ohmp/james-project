@@ -17,54 +17,54 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.api.preview;
+package org.apache.james.jmap.draft.model;
 
 import java.util.Objects;
+import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.james.jmap.api.preview.Preview;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-public class Preview {
+public class PreviewDTO {
 
-    private static final int MAX_LENGTH = 256;
+    private static final String NO_BODY_AS_STRING = "(Empty)";
+    private static final PreviewDTO NO_BODY = PreviewDTO.of(NO_BODY_AS_STRING);
 
-    public static Preview from(String value) {
-        return new Preview(value);
+    public static PreviewDTO from(Optional<Preview> preview) {
+        return preview.map(Preview::getValue)
+            .map(PreviewDTO::of)
+            .orElse(NO_BODY);
     }
 
-    public static Preview compute(String textBody) {
-        return Preview.from(
-            truncateToMaxLength(
-                StringUtils.normalizeSpace(textBody)));
-    }
-
-    private static String truncateToMaxLength(String body) {
-        return StringUtils.left(body, MAX_LENGTH);
+    @VisibleForTesting
+    public static PreviewDTO of(String value) {
+        return new PreviewDTO(value);
     }
 
     private final String value;
 
-    @VisibleForTesting
-    Preview(String value) {
+    private PreviewDTO(String value) {
         Preconditions.checkNotNull(value);
-        Preconditions.checkArgument(value.length() <= MAX_LENGTH,
-            String.format("the preview value '%s' has length longer than %d", value, MAX_LENGTH));
 
-        this.value = value;
+        this.value = Optional.of(value)
+            .filter(previewValue -> !previewValue.isEmpty())
+            .orElse(NO_BODY_AS_STRING);
     }
 
+    @JsonValue
     public String getValue() {
         return value;
     }
 
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof Preview) {
-            Preview preview = (Preview) o;
+        if (o instanceof PreviewDTO) {
+            PreviewDTO that = (PreviewDTO) o;
 
-            return Objects.equals(this.value, preview.value);
+            return Objects.equals(this.value, that.value);
         }
         return false;
     }
