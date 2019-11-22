@@ -74,7 +74,6 @@ public class SystemMailboxesProviderImpl implements SystemMailboxesProvider {
             .expression(new PrefixedWildcard(aRole.getDefaultMailbox()))
             .build();
         return mailboxManager.search(mailboxQuery, session)
-            .stream()
             .map(MailboxMetaData::getPath)
             .filter(path -> hasRole(aRole, path))
             .map(Throwing.function(loadMailbox).sneakyThrow());

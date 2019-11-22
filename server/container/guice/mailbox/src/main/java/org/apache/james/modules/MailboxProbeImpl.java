@@ -23,8 +23,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
@@ -108,7 +108,6 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
             mailboxSession = mailboxManager.createSystemSession(Username.of(user));
             mailboxManager.startProcessingRequest(mailboxSession);
             return searchUserMailboxes(mailboxSession)
-                    .stream()
                     .map(MailboxMetaData::getPath)
                     .map(MailboxPath::getName)
                     .collect(Collectors.toList());
@@ -119,7 +118,7 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
         }
     }
 
-    private List<MailboxMetaData> searchUserMailboxes(MailboxSession session) throws MailboxException {
+    private Stream<MailboxMetaData> searchUserMailboxes(MailboxSession session) throws MailboxException {
         return mailboxManager.search(
             MailboxQuery.privateMailboxesBuilder(session)
                 .expression(Wildcard.INSTANCE)

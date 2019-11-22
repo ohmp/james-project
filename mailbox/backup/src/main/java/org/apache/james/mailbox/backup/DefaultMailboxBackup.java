@@ -143,7 +143,6 @@ public class DefaultMailboxBackup implements MailboxBackup {
             .user(session.getUser())
             .build();
         Stream<MailboxPath> paths = mailboxManager.search(queryUser, session)
-            .stream()
             .map(MailboxMetaData::getPath);
         List<MailAccountContent> mailboxes = paths
             .flatMap(path -> getMailboxWithAnnotationsFromPath(session, path))

@@ -125,7 +125,6 @@ public class ReIndexerPerformer {
         LOGGER.info("Starting a reindex for user {}", username.asString());
 
         Stream<MailboxId> mailboxIds = mailboxManager.search(MailboxQuery.privateMailboxesBuilder(mailboxSession).build(), mailboxSession)
-            .stream()
             .map(MailboxMetaData::getId);
 
         try {

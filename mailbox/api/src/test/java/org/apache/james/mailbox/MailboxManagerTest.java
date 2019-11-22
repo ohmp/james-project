@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -996,13 +997,15 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             session = mailboxManager.createSystemSession(USER_1);
             mailboxManager.createMailbox(new MailboxPath("other_namespace", USER_1, "Other"), session);
             mailboxManager.createMailbox(MailboxPath.inbox(session), session);
-            List<MailboxMetaData> metaDatas = mailboxManager.search(
+            Stream<MailboxMetaData> metaDatas = mailboxManager.search(
                 MailboxQuery.privateMailboxesBuilder(session)
                     .matchesAllMailboxNames()
                     .build(),
                 session);
-            assertThat(metaDatas).hasSize(1);
-            assertThat(metaDatas.get(0).getPath()).isEqualTo(MailboxPath.inbox(session));
+            assertThat(metaDatas)
+                .hasSize(1)
+                .first()
+                .satisfies(metaData -> assertThat(metaData.getPath()).isEqualTo(MailboxPath.inbox(session)));
         }
 
         @Test
@@ -1018,7 +1021,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .asAddition());
             mailboxManager.setRights(inboxId.get(), acl, session);
 
-            List<MailboxMetaData> metaDatas = mailboxManager.search(
+            Stream<MailboxMetaData> metaDatas = mailboxManager.search(
                 MailboxQuery.privateMailboxesBuilder(session)
                     .matchesAllMailboxNames()
                     .build(),
@@ -1039,13 +1042,15 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
             mailboxManager.createMailbox(MailboxPath.forUser(USER_2, "Other"), session2);
             mailboxManager.createMailbox(MailboxPath.inbox(session), session);
-            List<MailboxMetaData> metaDatas = mailboxManager.search(
+            Stream<MailboxMetaData> metaDatas = mailboxManager.search(
                 MailboxQuery.privateMailboxesBuilder(session)
                     .matchesAllMailboxNames()
                     .build(),
                 session);
-            assertThat(metaDatas).hasSize(1);
-            assertThat(metaDatas.get(0).getPath()).isEqualTo(MailboxPath.inbox(session));
+            assertThat(metaDatas)
+                .hasSize(1)
+                .first()
+                .satisfies(metaData -> assertThat(metaData.getPath()).isEqualTo(MailboxPath.inbox(session)));
         }
 
         @Test

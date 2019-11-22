@@ -201,11 +201,11 @@ public class MailboxManagerManagement extends StandardMBean implements MailboxMa
     }
 
     private List<MailboxMetaData> retrieveAllUserMailboxes(MailboxSession session) throws MailboxException {
-        return mailboxManager.search(
-            MailboxQuery.privateMailboxesBuilder(session)
-                .matchesAllMailboxNames()
-                .build(),
-            session);
+        MailboxQuery query = MailboxQuery.privateMailboxesBuilder(session)
+            .matchesAllMailboxNames()
+            .build();
+        return mailboxManager.search(query, session)
+            .collect(Guavate.toImmutableList());
     }
 
     private void checkMailboxArguments(String namespace, String user, String name) {

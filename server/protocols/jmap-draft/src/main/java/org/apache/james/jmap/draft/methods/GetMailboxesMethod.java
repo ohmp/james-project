@@ -161,11 +161,11 @@ public class GetMailboxesMethod implements Method {
     }
 
     private List<MailboxMetaData> getAllMailboxesMetaData(MailboxSession mailboxSession) throws MailboxException {
-        return mailboxManager.search(
-            MailboxQuery.builder()
-                .matchesAllMailboxNames()
-                .build(),
-            mailboxSession);
+        MailboxQuery query = MailboxQuery.builder()
+            .matchesAllMailboxNames()
+            .build();
+        return mailboxManager.search(query, mailboxSession)
+            .collect(Guavate.toImmutableList());
     }
 
 }

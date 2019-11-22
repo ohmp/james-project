@@ -599,11 +599,11 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
-    public List<MailboxMetaData> search(MailboxQuery mailboxExpression, MailboxSession session) throws MailboxException {
+    public Stream<MailboxMetaData> search(MailboxQuery mailboxExpression, MailboxSession session) throws MailboxException {
         return searchMailboxes(mailboxExpression, session, Right.Lookup);
     }
 
-    private List<MailboxMetaData> searchMailboxes(MailboxQuery mailboxQuery, MailboxSession session, Right right) throws MailboxException {
+    private Stream<MailboxMetaData> searchMailboxes(MailboxQuery mailboxQuery, MailboxSession session, Right right) throws MailboxException {
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(session);
 
         Stream<Mailbox> baseMailboxes = mailboxMapper.findMailboxWithPathLike(toSingleUserQuery(mailboxQuery, session));
@@ -620,14 +620,12 @@ public class StoreMailboxManager implements MailboxManager {
                 MailboxCounters::getMailboxId,
                 Functions.identity()));
 
-        return mailboxes
-            .stream()
+        return mailboxes.stream()
             .filter(mailboxQuery::matches)
             .map(Throwing.<Mailbox, MailboxMetaData>function(
                 mailbox -> toMailboxMetadata(session, mailboxes, mailbox, retrieveCounters(counters, mailbox)))
                 .sneakyThrow())
-            .sorted(MailboxMetaData.COMPARATOR)
-            .collect(Guavate.toImmutableList());
+            .sorted(MailboxMetaData.COMPARATOR);
     }
 
     static MailboxQuery.UserBound toSingleUserQuery(MailboxQuery mailboxQuery, MailboxSession mailboxSession) {
@@ -700,7 +698,6 @@ public class StoreMailboxManager implements MailboxManager {
 
     private Stream<MailboxId> getAllReadableMailbox(MailboxSession session) throws MailboxException {
         return searchMailboxes(MailboxQuery.builder().matchesAllMailboxNames().build(), session, Right.Read)
-            .stream()
             .map(MailboxMetaData::getId);
     }
 

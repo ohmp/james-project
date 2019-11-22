@@ -121,10 +121,8 @@ public class UserMailboxesService {
     }
 
     private Stream<MailboxMetaData> listUserMailboxes(MailboxSession mailboxSession) throws MailboxException {
-        return mailboxManager.search(
-            MailboxQuery.privateMailboxesBuilder(mailboxSession).build(),
-            mailboxSession)
-            .stream();
+        MailboxQuery query = MailboxQuery.privateMailboxesBuilder(mailboxSession).build();
+        return mailboxManager.search(query, mailboxSession);
     }
 
 }
