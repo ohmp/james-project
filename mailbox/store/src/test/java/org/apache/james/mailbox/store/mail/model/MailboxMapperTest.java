@@ -40,6 +40,8 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.github.steveash.guavate.Guavate;
+
 /**
  * Generic purpose tests for your implementation MailboxMapper.
  * 
@@ -107,7 +109,7 @@ public abstract class MailboxMapperTest {
     @Test
     void listShouldRetrieveAllMailbox() throws MailboxException {
         saveAll();
-        List<Mailbox> mailboxes = mailboxMapper.list();
+        List<Mailbox> mailboxes = mailboxMapper.list().collect(Guavate.toImmutableList());
 
         assertMailboxes(mailboxes)
             .containOnly(benwaInboxMailbox, benwaWorkMailbox, benwaWorkTodoMailbox, benwaPersoMailbox, benwaWorkDoneMailbox, 
@@ -141,7 +143,7 @@ public abstract class MailboxMapperTest {
             .build()
             .asUserBound();
 
-        List<Mailbox> mailboxes = mailboxMapper.findMailboxWithPathLike(mailboxQuery);
+        List<Mailbox> mailboxes = mailboxMapper.findMailboxWithPathLike(mailboxQuery).collect(Guavate.toImmutableList());
 
         assertMailboxes(mailboxes).containOnly(bobInboxMailbox);
     }
@@ -164,7 +166,7 @@ public abstract class MailboxMapperTest {
             .build()
             .asUserBound();
 
-        List<Mailbox> mailboxes = mailboxMapper.findMailboxWithPathLike(mailboxQuery);
+        List<Mailbox> mailboxes = mailboxMapper.findMailboxWithPathLike(mailboxQuery).collect(Guavate.toImmutableList());
 
         assertMailboxes(mailboxes).containOnly(benwaWorkMailbox, benwaWorkDoneMailbox, benwaWorkTodoMailbox);
     }
@@ -178,7 +180,7 @@ public abstract class MailboxMapperTest {
             .build()
             .asUserBound();
 
-        List<Mailbox> mailboxes = mailboxMapper.findMailboxWithPathLike(mailboxQuery);
+        List<Mailbox> mailboxes = mailboxMapper.findMailboxWithPathLike(mailboxQuery).collect(Guavate.toImmutableList());
 
         assertMailboxes(mailboxes).containOnly(benwaInboxMailbox);
     }

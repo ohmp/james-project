@@ -19,6 +19,7 @@
 package org.apache.james.mailbox.store.mail;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.acl.ACLDiff;
@@ -65,12 +66,12 @@ public interface MailboxMapper extends Mapper {
     /**
      * Return a List of {@link Mailbox} for the given userName and matching the right
      */
-    List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException;
+    Stream<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException;
 
     /**
      * Return a List of {@link Mailbox} which name is like the given name
      */
-    List<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query)
+    Stream<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query)
             throws MailboxException;
 
     /**
@@ -102,5 +103,5 @@ public interface MailboxMapper extends Mapper {
     /**
      * Return a unmodifable {@link List} of all {@link Mailbox}
      */
-    List<Mailbox> list() throws MailboxException;
+    Stream<Mailbox> list() throws MailboxException;
 }

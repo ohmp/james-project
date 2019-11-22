@@ -61,7 +61,6 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
     public Stream<MailboxMessage> find(Collection<MessageId> messageIds, MessageMapper.FetchType fetchType) {
         try {
             return mailboxMapper.list()
-                .stream()
                 .flatMap(Throwing.function(mailbox ->
                     ImmutableList.copyOf(
                         messageMapper.findInMailbox(mailbox, MessageRange.all(), fetchType, UNLIMITED))

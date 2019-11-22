@@ -18,11 +18,10 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory.mail;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.acl.ACLDiff;
@@ -39,8 +38,8 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 
 public class InMemoryMailboxMapper implements MailboxMapper {
     
@@ -83,12 +82,11 @@ public class InMemoryMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) {
-        return mailboxesByPath.values()
+    public Stream<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) {
+        return ImmutableList.copyOf(mailboxesByPath.values())
             .stream()
             .filter(query::matches)
-            .map(Mailbox::new)
-            .collect(Guavate.toImmutableList());
+            .map(Mailbox::new);
     }
 
     @Override
@@ -131,8 +129,8 @@ public class InMemoryMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> list() throws MailboxException {
-        return new ArrayList<>(mailboxesByPath.values());
+    public Stream<Mailbox> list() throws MailboxException {
+        return ImmutableList.copyOf(mailboxesByPath.values()).stream();
     }
 
     @Override
@@ -156,11 +154,10 @@ public class InMemoryMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
-        return mailboxesByPath.values()
+    public Stream<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
+        return ImmutableList.copyOf(mailboxesByPath.values())
             .stream()
-            .filter(mailbox -> hasRightOn(mailbox, userName, right))
-            .collect(Guavate.toImmutableList());
+            .filter(mailbox -> hasRightOn(mailbox, userName, right));
     }
 
     private Boolean hasRightOn(Mailbox mailbox, Username userName, Right right) {

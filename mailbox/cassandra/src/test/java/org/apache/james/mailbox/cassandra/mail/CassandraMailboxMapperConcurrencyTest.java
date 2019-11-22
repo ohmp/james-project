@@ -22,7 +22,7 @@ package org.apache.james.mailbox.cassandra.mail;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
@@ -85,8 +85,9 @@ class CassandraMailboxMapperConcurrencyTest {
             .operationCount(OPERATION_COUNT)
             .runAcceptingErrorsWithin(Duration.ofMinutes(1));
 
-        List<Mailbox> list = testee.list();
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0)).isEqualToComparingFieldByField(mailbox);
+        Stream<Mailbox> list = testee.list();
+        assertThat(list).hasSize(1)
+            .first()
+            .isEqualToComparingFieldByField(mailbox);
     }
 }

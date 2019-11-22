@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -136,7 +137,7 @@ public class CassandraMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) {
+    public Stream<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) {
         List<Mailbox> mailboxesV2 = toMailboxes(query, mailboxPathV2DAO.listUserMailboxes(query.getFixedNamespace(), query.getFixedUser()));
         List<Mailbox> mailboxesV1 = toMailboxes(query, mailboxPathDAO.listUserMailboxes(query.getFixedNamespace(), query.getFixedUser()));
 
@@ -149,7 +150,8 @@ public class CassandraMailboxMapper implements MailboxMapper {
         return ImmutableList.<Mailbox>builder()
             .addAll(mailboxesV2)
             .addAll(mailboxesV1NotInV2)
-            .build();
+            .build()
+            .stream();
     }
 
     private List<Mailbox> toMailboxes(MailboxQuery.UserBound query, Flux<CassandraIdAndPath> listUserMailboxes) {
@@ -205,12 +207,11 @@ public class CassandraMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> list() {
+    public Stream<Mailbox> list() {
         return mailboxDAO.retrieveAllMailboxes()
             .flatMap(this::toMailboxWithAcl)
-            .map(simpleMailboxes -> (Mailbox) simpleMailboxes)
-            .collectList()
-            .block();
+            .map(simpleMailboxes -> simpleMailboxes)
+            .toStream();
     }
 
     @Override
@@ -261,14 +262,13 @@ public class CassandraMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) {
+    public Stream<Mailbox> findNonPersonalMailboxes(Username userName, Right right) {
         return userMailboxRightsDAO.listRightsForUser(userName)
             .filter(mailboxId -> authorizedMailbox(mailboxId.getRight(), right))
             .map(Pair::getLeft)
             .flatMap(this::retrieveMailbox)
             .map(simpleMailboxes -> (Mailbox) simpleMailboxes)
-            .collectList()
-            .block();
+            .toStream();
     }
 
     private boolean authorizedMailbox(MailboxACL.Rfc4314Rights rights, Right right) {

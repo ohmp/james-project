@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.james.core.Username;
@@ -52,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ImmutableList;
 
 public class MaildirMailboxMapper extends NonTransactionalMapper implements MailboxMapper {
 
@@ -117,14 +117,14 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         if (id == null) {
             throw new MailboxNotFoundException("null");
         }
-        return list().stream()
+        return list()
             .filter(mailbox -> mailbox.getMailboxId().equals(id))
             .findAny()
             .orElseThrow(() -> new MailboxNotFoundException(id));
     }
     
     @Override
-    public List<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) throws MailboxException {
+    public Stream<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) throws MailboxException {
         String pathLike = MailboxExpressionBackwardCompatibility.getPathLike(query);
         final Pattern searchPattern = Pattern.compile("[" + MaildirStore.maildirDelimiter + "]"
                 + pathLike.replace(".", "\\.").replace(MaildirStore.WILDCARD, ".*"));
@@ -144,8 +144,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
             mailboxList.add(0, mailbox);
         }
         return mailboxList.stream()
-            .filter(query::matches)
-            .collect(Guavate.toImmutableList());
+            .filter(query::matches);
     }
 
     @Override
@@ -155,7 +154,8 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
             .userAndNamespaceFrom(mailbox.generateAssociatedPath())
             .expression(new PrefixedWildcard(mailbox.getName() + delimiter))
             .build()
-            .asUserBound());
+            .asUserBound())
+            .collect(Guavate.toImmutableList());
         return mailboxes.size() > 0;
     }
 
@@ -252,7 +252,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     }
 
     @Override
-    public List<Mailbox> list() throws MailboxException {
+    public Stream<Mailbox> list() throws MailboxException {
         
        File maildirRoot = maildirStore.getMaildirRoot();
        List<Mailbox> mailboxList = new ArrayList<>();
@@ -265,12 +265,12 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
                File[] users = domain.listFiles();
                visitUsersForMailboxList(domain, users, mailboxList);
            }
-           return mailboxList;
+           return mailboxList.stream();
        }
 
         File[] users = maildirRoot.listFiles();
         visitUsersForMailboxList(null, users, mailboxList);
-        return mailboxList;
+        return mailboxList.stream();
         
     }
 
@@ -334,7 +334,7 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
     }
 
     @Override
-    public List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
-        return ImmutableList.of();
+    public Stream<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
+        return Stream.of();
     }
 }

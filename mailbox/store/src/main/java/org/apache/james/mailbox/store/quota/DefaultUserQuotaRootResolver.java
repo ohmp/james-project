@@ -38,6 +38,7 @@ import org.apache.james.mailbox.quota.QuotaRootDeserializer;
 import org.apache.james.mailbox.quota.UserQuotaRootResolver;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
@@ -118,6 +119,7 @@ public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
                 .user(Username.of(user))
                 .matchesAllMailboxNames()
                 .build()
-                .asUserBound());
+                .asUserBound())
+            .collect(Guavate.toImmutableList());
     }
 }

@@ -543,7 +543,8 @@ public class StoreMailboxManager implements MailboxManager {
             .build()
             .asUserBound();
         locker.executeWithLock(from, (LockAwareExecution<Void>) () -> {
-            List<Mailbox> subMailboxes = mapper.findMailboxWithPathLike(query);
+            List<Mailbox> subMailboxes = mapper.findMailboxWithPathLike(query)
+                .collect(Guavate.toImmutableList());
             for (Mailbox sub : subMailboxes) {
                 String subOriginalName = sub.getName();
                 String subNewName = newMailboxPath.getName() + subOriginalName.substring(from.getName().length());
@@ -604,10 +605,10 @@ public class StoreMailboxManager implements MailboxManager {
 
     private List<MailboxMetaData> searchMailboxes(MailboxQuery mailboxQuery, MailboxSession session, Right right) throws MailboxException {
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(session);
-        Stream<Mailbox> baseMailboxes = mailboxMapper
-            .findMailboxWithPathLike(toSingleUserQuery(mailboxQuery, session))
-            .stream();
+
+        Stream<Mailbox> baseMailboxes = mailboxMapper.findMailboxWithPathLike(toSingleUserQuery(mailboxQuery, session));
         Stream<Mailbox> delegatedMailboxes = getDelegatedMailboxes(mailboxMapper, mailboxQuery, right, session);
+
         List<Mailbox> mailboxes = Stream.concat(baseMailboxes, delegatedMailboxes)
             .distinct()
             .filter(Throwing.predicate(mailbox -> storeRightManager.hasRight(mailbox, right, session)))
@@ -652,7 +653,7 @@ public class StoreMailboxManager implements MailboxManager {
         if (mailboxQuery.isPrivateMailboxes(session)) {
             return Stream.of();
         }
-        return mailboxMapper.findNonPersonalMailboxes(session.getUser(), right).stream();
+        return mailboxMapper.findNonPersonalMailboxes(session.getUser(), right);
     }
 
     private MailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox, MailboxCounters counters) throws UnsupportedRightException {
@@ -734,7 +735,6 @@ public class StoreMailboxManager implements MailboxManager {
     public List<MailboxPath> list(MailboxSession session) throws MailboxException {
         return mailboxSessionMapperFactory.getMailboxMapper(session)
             .list()
-            .stream()
             .map(Mailbox::generateAssociatedPath)
             .collect(Guavate.toImmutableList());
     }

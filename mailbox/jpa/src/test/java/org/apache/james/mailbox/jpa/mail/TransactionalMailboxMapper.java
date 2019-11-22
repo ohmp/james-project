@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.jpa.mail;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.core.Username;
@@ -73,7 +73,7 @@ public class TransactionalMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) throws MailboxException {
+    public Stream<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) throws MailboxException {
         return wrapped.findMailboxWithPathLike(query);
     }
 
@@ -93,12 +93,12 @@ public class TransactionalMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public List<Mailbox> list() throws MailboxException {
+    public Stream<Mailbox> list() throws MailboxException {
         return wrapped.list();
     }
 
     @Override
-    public List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
+    public Stream<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
         return wrapped.findNonPersonalMailboxes(userName, right);
     }
 

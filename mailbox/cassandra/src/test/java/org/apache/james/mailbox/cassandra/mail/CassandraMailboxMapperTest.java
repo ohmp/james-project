@@ -22,7 +22,7 @@ package org.apache.james.mailbox.cassandra.mail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.backends.cassandra.CassandraCluster;
@@ -227,7 +227,7 @@ class CassandraMailboxMapperTest {
         mailboxPathDAO.save(MAILBOX_PATH, MAILBOX_ID)
             .block();
     
-        List<Mailbox> mailboxes = testee.findMailboxWithPathLike(MailboxQuery.builder()
+        Stream<Mailbox> mailboxes = testee.findMailboxWithPathLike(MailboxQuery.builder()
             .privateNamespace()
             .username(USER)
             .expression(Wildcard.INSTANCE)
@@ -246,7 +246,7 @@ class CassandraMailboxMapperTest {
         mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
             .block();
 
-        List<Mailbox> mailboxes = testee.findMailboxWithPathLike(MailboxQuery.builder()
+        Stream<Mailbox> mailboxes = testee.findMailboxWithPathLike(MailboxQuery.builder()
             .privateNamespace()
             .username(USER)
             .expression(Wildcard.INSTANCE)
@@ -262,8 +262,8 @@ class CassandraMailboxMapperTest {
             .block();
         mailboxPathV2DAO.save(MAILBOX_PATH, MAILBOX_ID)
             .block();
-    
-        List<Mailbox> mailboxes = testee.findMailboxWithPathLike(MailboxQuery.builder()
+
+        Stream<Mailbox> mailboxes = testee.findMailboxWithPathLike(MailboxQuery.builder()
             .privateNamespace()
             .username(USER)
             .expression(Wildcard.INSTANCE)

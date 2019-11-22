@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.jpa.mail;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManagerFactory;
@@ -45,9 +45,7 @@ import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mailbox.store.MailboxExpressionBackwardCompatibility;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Data access management for mailbox.
@@ -175,15 +173,14 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     }
 
     @Override
-    public List<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) throws MailboxException {
+    public Stream<Mailbox> findMailboxWithPathLike(MailboxQuery.UserBound query) throws MailboxException {
         try {
             String pathLike = MailboxExpressionBackwardCompatibility.getPathLike(query);
             return findMailboxWithPathLikeTypedQuery(query.getFixedNamespace(), query.getFixedUser(), pathLike)
                 .getResultList()
                 .stream()
                 .map(JPAMailbox::toMailbox)
-                .filter(query::matches)
-                .collect(Guavate.toImmutableList());
+                .filter(query::matches);
         } catch (PersistenceException e) {
             throw new MailboxException("Search of mailbox " + query + " failed", e);
         }
@@ -212,12 +209,11 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     }
 
     @Override
-    public List<Mailbox> list() throws MailboxException {
+    public Stream<Mailbox> list() throws MailboxException {
         try {
             return getEntityManager().createNamedQuery("listMailboxes", JPAMailbox.class).getResultList()
                 .stream()
-                .map(JPAMailbox::toMailbox)
-                .collect(Guavate.toImmutableList());
+                .map(JPAMailbox::toMailbox);
         } catch (PersistenceException e) {
             throw new MailboxException("Delete of mailboxes failed", e);
         } 
@@ -239,7 +235,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     }
 
     @Override
-    public List<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
-        return ImmutableList.of();
+    public Stream<Mailbox> findNonPersonalMailboxes(Username userName, Right right) throws MailboxException {
+        return Stream.of();
     }
 }
