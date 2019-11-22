@@ -160,7 +160,7 @@ class MessagePropertiesTest {
         }
 
         @Test
-        void combineShouldReturnHeaderWhenFullAndMetadata() {
+        void combineShouldReturnFullWhenFullAndMetadata() {
             assertThat(MessageProperties.ReadLevel.combine(
                 MessageProperties.ReadLevel.Metadata,
                 MessageProperties.ReadLevel.Full))
