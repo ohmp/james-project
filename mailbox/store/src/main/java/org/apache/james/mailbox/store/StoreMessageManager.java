@@ -248,7 +248,7 @@ public class StoreMessageManager implements MessageManager {
     }
 
     @Override
-    public Iterator<MessageUid> expunge(MessageRange set, MailboxSession mailboxSession) throws MailboxException {
+    public Stream<MessageUid> expunge(MessageRange set, MailboxSession mailboxSession) throws MailboxException {
         if (!isWriteable(mailboxSession)) {
             throw new ReadOnlyException(getMailboxPath());
         }
@@ -257,7 +257,7 @@ public class StoreMessageManager implements MessageManager {
         Map<MessageUid, MessageMetaData> deletedMessages = deleteMessages(uids, mailboxSession);
 
         dispatchExpungeEvent(mailboxSession, deletedMessages);
-        return deletedMessages.keySet().iterator();
+        return deletedMessages.keySet().stream();
     }
 
     private List<MessageUid> retrieveMessagesMarkedForDeletion(MessageRange messageRange, MailboxSession session) throws MailboxException {

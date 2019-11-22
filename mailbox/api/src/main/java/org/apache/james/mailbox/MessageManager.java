@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -118,7 +117,7 @@ public interface MessageManager {
      * @throws MailboxException
      *             if anything went wrong
      */
-    Iterator<MessageUid> expunge(MessageRange set, MailboxSession mailboxSession) throws MailboxException;
+    Stream<MessageUid> expunge(MessageRange set, MailboxSession mailboxSession) throws MailboxException;
 
     /**
      * Deletes a list of messages given their uids in the mailbox.

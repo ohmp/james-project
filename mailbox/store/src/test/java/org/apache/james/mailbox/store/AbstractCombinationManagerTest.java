@@ -187,7 +187,6 @@ public abstract class AbstractCombinationManagerTest {
         messageIdManager.setFlags(deleted, FlagsUpdateMode.ADD, messageId.getMessageId(), ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(messageManager1.expunge(MessageRange.all(), session))
-            .toIterable()
             .containsOnly(messageId.getUid());
     }
 
@@ -202,7 +201,6 @@ public abstract class AbstractCombinationManagerTest {
         messageIdManager.setInMailboxes(messageId.getMessageId(), ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(messageManager1.expunge(MessageRange.all(), session))
-            .toIterable()
             .containsOnly(messageId.getUid());
     }
 
