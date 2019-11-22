@@ -128,7 +128,6 @@ public class GetMessageListMethod implements Method {
             mailboxManager.search(searchQuery,
                 mailboxSession,
                 postionValue + messageListRequest.getLimit().map(Number::asLong).orElse(maximumLimit))
-                .stream()
                 .skip(postionValue)
                 .forEach(builder::messageId);
             return builder.build();

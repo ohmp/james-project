@@ -679,7 +679,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
-    public List<MessageId> search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException {
+    public Stream<MessageId> search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException {
         ImmutableSet<MailboxId> wantedMailboxesId =
             getInMailboxes(expression.getInMailboxes(), session)
                 .filter(id -> !expression.getNotInMailboxes().contains(id))

@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -309,7 +308,7 @@ class LuceneMailboxMessageSearchIndexTest {
         SearchQuery query = new SearchQuery();
         query.andCriteria(SearchQuery.bodyContains("My Body"));
 
-        List<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
+        Stream<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
 
         assertThat(result).containsOnly(id1, id2);
     }
@@ -319,7 +318,7 @@ class LuceneMailboxMessageSearchIndexTest {
         SearchQuery query = new SearchQuery();
         query.andCriteria(SearchQuery.bodyContains("My Body"));
 
-        List<MessageId> result = index.search(session,
+        Stream<MessageId> result = index.search(session,
                 ImmutableList.of(mailbox.getMailboxId(), mailbox3.getMailboxId()),
                 query,
                 LIMIT);
@@ -332,7 +331,7 @@ class LuceneMailboxMessageSearchIndexTest {
         SearchQuery query = new SearchQuery();
         query.andCriteria(SearchQuery.all());
 
-        List<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
+        Stream<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
 
         // The query is not limited to one mailbox and we have 5 indexed messages
         assertThat(result).hasSize(5);
@@ -344,7 +343,7 @@ class LuceneMailboxMessageSearchIndexTest {
         query.andCriteria(SearchQuery.all());
 
         int limit = 1;
-        List<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, limit);
+        Stream<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, limit);
 
         assertThat(result).hasSize(limit);
     }

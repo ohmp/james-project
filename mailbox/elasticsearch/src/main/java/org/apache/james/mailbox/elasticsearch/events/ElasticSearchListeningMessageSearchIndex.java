@@ -116,11 +116,11 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     }
     
     @Override
-    public List<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) {
+    public Stream<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
 
         if (mailboxIds.isEmpty()) {
-            return ImmutableList.of();
+            return Stream.of();
         }
 
         try (Stream<SearchResult> searchResults = searcher.search(mailboxIds, searchQuery, Optional.empty())) {
@@ -129,8 +129,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
                 .map(SearchResult::getMessageId)
                 .flatMap(OptionalUtils::toStream)
                 .distinct()
-                .limit(limit)
-                .collect(Guavate.toImmutableList());
+                .limit(limit);
         }
     }
 

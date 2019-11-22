@@ -58,7 +58,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 /**
- * {@link MessageSearchIndex} which just fetch {@link MailboxMessage}'s from the {@link MessageMapper} and use {@link MessageSearcher}
+ * {@link MessageSearchIndex} which just fetch {@link MailboxMessage}'s from the {@link MessageMapper} and use {@link MessageSearches}
  * to match them against the {@link SearchQuery}.
  * 
  * This works with every implementation but is SLOW.
@@ -142,7 +142,7 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
     }
 
     @Override
-    public List<MessageId> search(MailboxSession session, final Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+    public Stream<MessageId> search(MailboxSession session, final Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
         MailboxMapper mailboxManager = mailboxMapperFactory.getMailboxMapper(session);
 
         Stream<Mailbox> filteredMailboxes = mailboxIds
@@ -165,12 +165,11 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
         }
     }
 
-    private List<MessageId> getAsMessageIds(List<SearchResult> temp, long limit) {
+    private Stream<MessageId> getAsMessageIds(List<SearchResult> temp, long limit) {
         return temp.stream()
             .map(searchResult -> searchResult.getMessageId().get())
             .filter(SearchUtil.distinct())
-            .limit(Long.valueOf(limit).intValue())
-            .collect(Guavate.toImmutableList());
+            .limit(Long.valueOf(limit).intValue());
     }
 
 }

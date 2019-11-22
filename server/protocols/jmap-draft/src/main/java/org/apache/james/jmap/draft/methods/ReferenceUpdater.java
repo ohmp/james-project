@@ -90,7 +90,8 @@ public class ReferenceUpdater {
         MultimailboxesSearchQuery searchByRFC822MessageId = MultimailboxesSearchQuery
             .from(new SearchQuery(SearchQuery.mimeMessageID(messageId)))
             .build();
-        List<MessageId> references = mailboxManager.search(searchByRFC822MessageId, session, limit);
+        List<MessageId> references = mailboxManager.search(searchByRFC822MessageId, session, limit)
+            .collect(Guavate.toImmutableList());
         try {
             MessageId reference = Iterables.getOnlyElement(references);
             List<MailboxId> mailboxIds = messageIdManager.getMessage(reference, FetchGroup.MINIMAL, session)

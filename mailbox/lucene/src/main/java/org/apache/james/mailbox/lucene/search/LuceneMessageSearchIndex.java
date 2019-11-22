@@ -119,7 +119,6 @@ import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -461,18 +460,17 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public List<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+    public Stream<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
         if (mailboxIds.isEmpty()) {
-            return ImmutableList.of();
+            return Stream.of();
         }
 
         return searchMultimap(mailboxIds, searchQuery)
             .stream()
             .map(searchResult -> searchResult.getMessageId().get())
             .filter(SearchUtil.distinct())
-            .limit(Long.valueOf(limit).intValue())
-            .collect(Guavate.toImmutableList());
+            .limit(Long.valueOf(limit).intValue());
     }
     
     private List<SearchResult> searchMultimap(Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {

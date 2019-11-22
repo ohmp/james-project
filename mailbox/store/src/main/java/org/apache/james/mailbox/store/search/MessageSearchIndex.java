@@ -21,7 +21,6 @@ package org.apache.james.mailbox.store.search;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -50,7 +49,7 @@ public interface MessageSearchIndex {
     /**
      * Return all uids of all {@link Mailbox}'s the current user has access to which match the {@link SearchQuery}
      */
-    List<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException;
+    Stream<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException;
 
     EnumSet<MailboxManager.SearchCapabilities> getSupportedCapabilities(EnumSet<MailboxManager.MessageCapabilities> messageCapabilities);
 

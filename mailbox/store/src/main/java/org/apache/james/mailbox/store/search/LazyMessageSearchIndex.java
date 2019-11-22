@@ -141,7 +141,7 @@ public class LazyMessageSearchIndex extends ListeningMessageSearchIndex {
     
 
     @Override
-    public List<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+    public Stream<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
         throw new UnsupportedSearchException();
     }
 }

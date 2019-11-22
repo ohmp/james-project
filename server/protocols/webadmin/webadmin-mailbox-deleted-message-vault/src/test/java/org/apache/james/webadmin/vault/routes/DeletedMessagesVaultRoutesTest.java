@@ -2249,8 +2249,9 @@ class DeletedMessagesVaultRoutesTest {
         MailboxSession session = mailboxManager.createSystemSession(username);
         int limitToOneMessage = 1;
 
-        return !mailboxManager.search(MultimailboxesSearchQuery.from(new SearchQuery()).build(), session, limitToOneMessage)
-            .isEmpty();
+        return mailboxManager.search(MultimailboxesSearchQuery.from(new SearchQuery()).build(), session, limitToOneMessage)
+            .iterator()
+            .hasNext();
     }
 
     private InputStream fullContent(MessageResult messageResult) {

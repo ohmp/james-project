@@ -28,9 +28,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -245,7 +245,7 @@ public abstract class AbstractMessageSearchIndexTest {
 
         SearchQuery searchQuery = new SearchQuery();
 
-        List<MessageId> result = messageSearchIndex.search(session,
+        Stream<MessageId> result = messageSearchIndex.search(session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,
             LIMIT);
@@ -277,7 +277,7 @@ public abstract class AbstractMessageSearchIndexTest {
 
         SearchQuery searchQuery = new SearchQuery();
 
-        List<MessageId> result = messageSearchIndex.search(session,
+        Stream<MessageId> result = messageSearchIndex.search(session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,
             LIMIT);
@@ -313,7 +313,7 @@ public abstract class AbstractMessageSearchIndexTest {
         SearchQuery searchQuery = new SearchQuery();
 
         int limit = 10;
-        List<MessageId> result = messageSearchIndex.search(session,
+        Stream<MessageId> result = messageSearchIndex.search(session,
             ImmutableList.of(mailbox2.getMailboxId(), mailbox.getMailboxId()),
             searchQuery,
             limit);
@@ -326,7 +326,7 @@ public abstract class AbstractMessageSearchIndexTest {
     void whenEmptyListOfMailboxGivenSearchShouldReturnEmpty() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
 
-        List<MessageId> result = messageSearchIndex.search(session,
+        Stream<MessageId> result = messageSearchIndex.search(session,
             ImmutableList.of(),
             searchQuery,
             LIMIT);
@@ -350,7 +350,7 @@ public abstract class AbstractMessageSearchIndexTest {
         await();
 
         int limit = 13;
-        List<MessageId> result = messageSearchIndex.search(session,
+        Stream<MessageId> result = messageSearchIndex.search(session,
             ImmutableList.of(mailbox2.getMailboxId(), mailbox.getMailboxId()),
             searchQuery,
             limit);
@@ -545,7 +545,7 @@ public abstract class AbstractMessageSearchIndexTest {
     protected void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInAllMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery(SearchQuery.flagIsSet(Flags.Flag.SEEN));
 
-        List<MessageId> actual = messageSearchIndex.search(
+        Stream<MessageId> actual = messageSearchIndex.search(
             session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,
@@ -558,7 +558,7 @@ public abstract class AbstractMessageSearchIndexTest {
     void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInOneMailbox() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery(SearchQuery.flagIsSet(Flags.Flag.SEEN));
 
-        List<MessageId> actual = messageSearchIndex.search(session, ImmutableList.of(mailbox.getMailboxId()), searchQuery, LIMIT);
+        Stream<MessageId> actual = messageSearchIndex.search(session, ImmutableList.of(mailbox.getMailboxId()), searchQuery, LIMIT);
 
         assertThat(actual).containsOnly(m6.getMessageId());
     }
@@ -567,7 +567,7 @@ public abstract class AbstractMessageSearchIndexTest {
     void multimailboxSearchShouldReturnUidOfMessageWithExpectedFromInTwoMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery(SearchQuery.address(AddressType.From, "murari"));
 
-        List<MessageId> actual = messageSearchIndex.search(
+        Stream<MessageId> actual = messageSearchIndex.search(
             session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,
@@ -580,7 +580,7 @@ public abstract class AbstractMessageSearchIndexTest {
     protected void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInTwoMailboxes() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery(SearchQuery.flagIsSet(Flags.Flag.SEEN));
 
-        List<MessageId> actual = messageSearchIndex.search(
+        Stream<MessageId> actual = messageSearchIndex.search(
             session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,
@@ -594,7 +594,7 @@ public abstract class AbstractMessageSearchIndexTest {
         SearchQuery searchQuery = new SearchQuery(SearchQuery.flagIsSet(Flags.Flag.SEEN));
 
         long limit = 1;
-        List<MessageId> actual = messageSearchIndex.search(
+        Stream<MessageId> actual = messageSearchIndex.search(
             session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,
@@ -610,7 +610,7 @@ public abstract class AbstractMessageSearchIndexTest {
         SearchQuery searchQuery = new SearchQuery();
 
         long limit = 256;
-        List<MessageId> actual = messageSearchIndex.search(
+        Stream<MessageId> actual = messageSearchIndex.search(
             session,
             ImmutableList.of(otherMailbox.getMailboxId()),
             searchQuery,
@@ -1404,7 +1404,7 @@ public abstract class AbstractMessageSearchIndexTest {
         SearchQuery searchQuery = new SearchQuery(SearchQuery.all());
         searchQuery.setSorts(ImmutableList.of(new Sort(SortClause.Arrival)));
 
-        List<MessageId> actual = messageSearchIndex.search(
+        Stream<MessageId> actual = messageSearchIndex.search(
             session,
             ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId()),
             searchQuery,

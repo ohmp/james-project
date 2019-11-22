@@ -107,7 +107,7 @@ public class ExtractMDNOriginalJMAPMessageId extends GenericMailet {
             MultimailboxesSearchQuery searchByRFC822MessageId = MultimailboxesSearchQuery
                 .from(new SearchQuery(SearchQuery.mimeMessageID(messageId)))
                 .build();
-            return mailboxManager.search(searchByRFC822MessageId, session, limit).stream().findFirst();
+            return mailboxManager.search(searchByRFC822MessageId, session, limit).findFirst();
         } catch (MailboxException | UsersRepositoryException e) {
             LOGGER.error("unable to find message with Message-Id: " + messageId, e);
         }
