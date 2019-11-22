@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -54,8 +55,6 @@ import org.apache.james.mime4j.dom.Message;
 import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
 
 public class GetMailboxesMethodTest {
 
@@ -103,7 +102,7 @@ public class GetMailboxesMethodTest {
     public void getMailboxesShouldNotFailWhenMailboxManagerErrors() throws Exception {
         StoreMailboxManager mockedMailboxManager = mock(StoreMailboxManager.class);
         when(mockedMailboxManager.list(any()))
-            .thenReturn(ImmutableList.of(new MailboxPath("namespace", Username.of("user"), "name")));
+            .thenReturn(Stream.of(new MailboxPath("namespace", Username.of("user"), "name")));
         when(mockedMailboxManager.getMailbox(any(MailboxPath.class), any()))
             .thenThrow(new MailboxException());
         GetMailboxesMethod testee = new GetMailboxesMethod(mockedMailboxManager, quotaRootResolver, quotaManager, mailboxFactory, new DefaultMetricFactory());

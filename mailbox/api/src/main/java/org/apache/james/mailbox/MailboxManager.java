@@ -280,7 +280,7 @@ public interface MailboxManager extends RequestAware, RightManager, MailboxAnnot
     /**
      * Return a unmodifiable {@link List} of {@link MailboxPath} objects
      */
-    List<MailboxPath> list(MailboxSession session) throws MailboxException;
+    Stream<MailboxPath> list(MailboxSession session) throws MailboxException;
 
     boolean hasChildren(MailboxPath mailboxPath, MailboxSession session) throws MailboxException;
 }

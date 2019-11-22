@@ -36,6 +36,8 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.github.steveash.guavate.Guavate;
+
 /**
  * Test class for the {@link MailboxCopierImpl} implementation.
  *
@@ -114,7 +116,7 @@ public class MailboxCopierTest {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(Username.of("manager"));
         mailboxManager.startProcessingRequest(mailboxSession);
 
-        List<MailboxPath> mailboxPathList = mailboxManager.list(mailboxSession);
+        List<MailboxPath> mailboxPathList = mailboxManager.list(mailboxSession).collect(Guavate.toImmutableList());
 
         assertThat(mailboxPathList).hasSize(DataProvisioner.EXPECTED_MAILBOXES_COUNT);
 

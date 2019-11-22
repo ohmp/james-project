@@ -40,6 +40,8 @@ import org.apache.james.mailbox.store.streaming.InputStreamContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
+
 /**
  * Implementation of the {@link MailboxCopier} interface.
  * 
@@ -59,7 +61,7 @@ public class MailboxCopierImpl implements MailboxCopier {
 
         srcMailboxSession = srcMailboxManager.createSystemSession(Username.of("manager"));
         srcMailboxManager.startProcessingRequest(srcMailboxSession);
-        mailboxPathList = srcMailboxManager.list(srcMailboxSession);
+        mailboxPathList = srcMailboxManager.list(srcMailboxSession).collect(Guavate.toImmutableList());
         srcMailboxManager.endProcessingRequest(srcMailboxSession);
 
         if (LOGGER.isInfoEnabled()) {
