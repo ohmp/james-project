@@ -68,7 +68,7 @@ public class FileSystemBlobStrategy implements BlobUploadStrategy, BlobDownloadS
     public URL uploadStream(ActiveMQBlobMessage message, InputStream in) throws JMSException, IOException {
         File f = getFile(message);
         try (FileOutputStream out = new FileOutputStream(f)) {
-            IOUtils.copy(in, out);
+            IOUtils.copy(in, out, policy.getBufferSize());
             out.flush();
             // File.toURL() is deprecated
             return f.toURI().toURL();
