@@ -1825,7 +1825,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         void getMessagesShouldIncludeHasAttachmentInformation() throws Exception {
             ComposedMessageId composeId = inboxManager.appendMessage(AppendCommand.builder()
                 .withFlags(new Flags(Flags.Flag.DELETED))
-                .build(ClassLoaderUtils.getSystemResourceAsSharedStream("eml/twoAttachments.eml")), session);
+                .build(ClassLoaderUtils.getSystemResourceAsSharedStream("eml/twoAttachmentsApi.eml")), session);
 
             MessageResultIterator messages = inboxManager.getMessages(MessageRange.one(composeId.getUid()), FetchGroupImpl.MINIMAL, session);
 
