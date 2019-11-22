@@ -150,7 +150,6 @@ public class SpamAssassinListener implements SpamEventListener {
     private ImmutableList<InputStream> retrieveMessages(MessageMoveEvent messageMoveEvent, MailboxSession session) throws MailboxException {
         return mapperFactory.getMessageIdMapper(session)
             .find(messageMoveEvent.getMessageIds(), MessageMapper.FetchType.Full)
-            .stream()
             .map(Throwing.function(Message::getFullContent))
             .collect(Guavate.toImmutableList());
     }

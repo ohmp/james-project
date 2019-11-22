@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -86,7 +87,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public List<MailboxMessage> find(Collection<MessageId> messageIds, FetchType fetchType) {
+    public Stream<MailboxMessage> find(Collection<MessageId> messageIds, FetchType fetchType) {
         return Flux.fromStream(messageIds.stream())
             .publishOn(Schedulers.boundedElastic())
             .flatMap(messageId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty()), cassandraConfiguration.getMessageReadChunkSize())
@@ -96,8 +97,8 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .map(CassandraMessageDAO.MessageResult::message)
             .flatMap(messageRepresentation -> attachmentLoader.addAttachmentToMessage(messageRepresentation, fetchType))
             .flatMap(this::keepMessageIfMailboxExists)
-            .collectSortedList(Comparator.comparing(MailboxMessage::getUid))
-            .block();
+            .sort(Comparator.comparing(MailboxMessage::getUid))
+            .toStream();
     }
 
     private Mono<MailboxMessage> keepMessageIfMailboxExists(MailboxMessage message) {
@@ -112,12 +113,11 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public List<MailboxId> findMailboxes(MessageId messageId) {
+    public Stream<MailboxId> findMailboxes(MessageId messageId) {
         return imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty())
             .map(ComposedMessageIdWithMetaData::getComposedMessageId)
             .map(ComposedMessageId::getMailboxId)
-            .collectList()
-            .block();
+            .toStream();
     }
 
     @Override

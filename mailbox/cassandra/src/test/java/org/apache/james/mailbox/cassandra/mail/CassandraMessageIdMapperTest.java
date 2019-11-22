@@ -21,7 +21,7 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
@@ -63,7 +63,7 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
 
         saveMessages();
 
-        List<MailboxMessage> messages = mapperFactory.getMessageIdMapper(MAILBOX_SESSION)
+        Stream<MailboxMessage> messages = mapperFactory.getMessageIdMapper(MAILBOX_SESSION)
             .find(
                 ImmutableList.of(message1.getMessageId(),
                     message2.getMessageId(),

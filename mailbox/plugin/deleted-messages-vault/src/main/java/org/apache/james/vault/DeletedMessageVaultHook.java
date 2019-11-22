@@ -135,7 +135,7 @@ public class DeletedMessageVaultHook implements PreDeletionHook {
 
     private Mono<Void> appendToTheVault(DeletedMessageMailboxContext deletedMessageMailboxContext) throws MailboxException {
         Optional<MailboxMessage> maybeMailboxMessage = mapperFactory.getMessageIdMapper(session)
-            .find(ImmutableList.of(deletedMessageMailboxContext.getMessageId()), MessageMapper.FetchType.Full).stream()
+            .find(ImmutableList.of(deletedMessageMailboxContext.getMessageId()), MessageMapper.FetchType.Full)
             .findFirst();
 
         return maybeMailboxMessage.map(Throwing.function(mailboxMessage -> Pair.of(mailboxMessage,

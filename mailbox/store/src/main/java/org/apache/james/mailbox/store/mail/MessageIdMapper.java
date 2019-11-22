@@ -21,6 +21,7 @@ package org.apache.james.mailbox.store.mail;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -37,9 +38,9 @@ import com.google.common.collect.Multimap;
 
 public interface MessageIdMapper {
 
-    List<MailboxMessage> find(Collection<MessageId> messageIds, FetchType fetchType);
+    Stream<MailboxMessage> find(Collection<MessageId> messageIds, FetchType fetchType);
 
-    List<MailboxId> findMailboxes(MessageId messageId);
+    Stream<MailboxId> findMailboxes(MessageId messageId);
 
     void save(MailboxMessage mailboxMessage) throws MailboxNotFoundException, MailboxException;
 

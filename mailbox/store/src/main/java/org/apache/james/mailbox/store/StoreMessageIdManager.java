@@ -126,7 +126,8 @@ public class StoreMessageIdManager implements MessageIdManager {
     @Override
     public Set<MessageId> accessibleMessages(Collection<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Metadata);
+        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Metadata)
+            .collect(Guavate.toImmutableList());
 
         ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.Read);
 
@@ -141,7 +142,8 @@ public class StoreMessageIdManager implements MessageIdManager {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
 
         MessageMapper.FetchType fetchType = FetchGroupConverter.getFetchType(fetchGroup);
-        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, fetchType);
+        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, fetchType)
+            .collect(Guavate.toImmutableList());
 
         ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.Read);
 
@@ -167,7 +169,6 @@ public class StoreMessageIdManager implements MessageIdManager {
 
         List<MailboxMessage> messageList = messageIdMapper
             .find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
             .filter(inMailboxes(mailboxIds))
             .collect(Guavate.toImmutableList());
 
@@ -182,7 +183,8 @@ public class StoreMessageIdManager implements MessageIdManager {
     public DeleteResult delete(List<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
 
-        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Metadata);
+        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, MessageMapper.FetchType.Metadata)
+            .collect(Guavate.toImmutableList());
         ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.DeleteMessages);
 
         ImmutableSet<MessageId> accessibleMessages = messageList.stream()
@@ -257,7 +259,8 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     public void setInMailboxesNoCheck(MessageId messageId, MailboxId targetMailboxId, MailboxSession mailboxSession) throws MailboxException {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-        List<MailboxMessage> currentMailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata);
+        List<MailboxMessage> currentMailboxMessages = messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
+            .collect(Guavate.toImmutableList());
 
         MessageMoves messageMoves = MessageMoves.builder()
             .previousMailboxIds(toMailboxIds(currentMailboxMessages))
@@ -273,7 +276,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
 
         return messageIdMapper.find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
+
             .filter(hasRightsOn(mailboxSession, Right.Read))
             .collect(Guavate.toImmutableList());
     }

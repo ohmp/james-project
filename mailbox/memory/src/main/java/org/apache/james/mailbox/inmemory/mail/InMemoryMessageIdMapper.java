@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
@@ -57,7 +58,7 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public List<MailboxMessage> find(Collection<MessageId> messageIds, MessageMapper.FetchType fetchType) {
+    public Stream<MailboxMessage> find(Collection<MessageId> messageIds, MessageMapper.FetchType fetchType) {
         try {
             return mailboxMapper.list()
                 .stream()
@@ -65,8 +66,7 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
                     ImmutableList.copyOf(
                         messageMapper.findInMailbox(mailbox, MessageRange.all(), fetchType, UNLIMITED))
                         .stream()))
-                .filter(message -> messageIds.contains(message.getMessageId()))
-                .collect(Guavate.toImmutableList());
+                .filter(message -> messageIds.contains(message.getMessageId()));
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         }
@@ -74,11 +74,9 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public List<MailboxId> findMailboxes(MessageId messageId) {
+    public Stream<MailboxId> findMailboxes(MessageId messageId) {
         return find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
-            .map(MailboxMessage::getMailboxId)
-            .collect(Guavate.toImmutableList());
+            .map(MailboxMessage::getMailboxId);
     }
 
     @Override
@@ -89,7 +87,7 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
 
     @Override
     public void copyInMailbox(MailboxMessage mailboxMessage) throws MailboxException {
-        boolean isAlreadyInMailbox = findMailboxes(mailboxMessage.getMessageId()).contains(mailboxMessage.getMailboxId());
+        boolean isAlreadyInMailbox = findMailboxes(mailboxMessage.getMessageId()).anyMatch(mailboxMessage.getMailboxId()::equals);
         if (!isAlreadyInMailbox) {
             save(mailboxMessage);
         }
@@ -107,7 +105,6 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
     @Override
     public void delete(MessageId messageId, Collection<MailboxId> mailboxIds) {
         find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
             .filter(message -> mailboxIds.contains(message.getMailboxId()))
             .forEach(Throwing.consumer(
                 message -> messageMapper.delete(
@@ -119,7 +116,6 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
     public Map<MailboxId, UpdatedFlags> setFlags(MessageId messageId, List<MailboxId> mailboxIds,
                                                  Flags newState, FlagsUpdateMode updateMode) throws MailboxException {
         return find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
             .filter(message -> mailboxIds.contains(message.getMailboxId()))
             .map(updateMessage(newState, updateMode))
             .collect(Guavate.entriesToMap());

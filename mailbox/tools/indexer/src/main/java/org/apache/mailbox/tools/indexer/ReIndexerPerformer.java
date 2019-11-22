@@ -149,7 +149,6 @@ public class ReIndexerPerformer {
 
             return mailboxSessionMapperFactory.getMessageIdMapper(session)
                 .find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
-                .stream()
                 .map(mailboxMessage -> reIndex(mailboxMessage, session))
                 .reduce(Task::combine)
                 .orElse(Task.Result.COMPLETED);
