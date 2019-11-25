@@ -59,7 +59,7 @@ import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.mock.DataProvisioner;
 import org.apache.james.mailbox.model.ComposedMessageId;
-import org.apache.james.mailbox.model.FetchGroupImpl;
+import org.apache.james.mailbox.model.FetchGroup;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
@@ -1771,7 +1771,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 assertThatThrownBy(() -> inboxManager.expunge(MessageRange.one(composeId1.getUid()), session))
                     .isInstanceOf(RuntimeException.class);
 
-                assertThat(ImmutableList.copyOf(inboxManager.getMessages(MessageRange.one(composeId1.getUid()), FetchGroupImpl.MINIMAL, session))
+                assertThat(ImmutableList.copyOf(inboxManager.getMessages(MessageRange.one(composeId1.getUid()), FetchGroup.MINIMAL, session))
                         .stream()
                         .map(MessageResult::getMessageId))
                     .hasSize(1)
@@ -1802,7 +1802,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 latchForHook1.await();
                 latchForHook2.await();
 
-                assertThat(inboxManager.getMessages(MessageRange.one(composeId1.getUid()), FetchGroupImpl.MINIMAL, session))
+                assertThat(inboxManager.getMessages(MessageRange.one(composeId1.getUid()), FetchGroup.MINIMAL, session))
                     .toIterable()
                     .isEmpty();
             }
