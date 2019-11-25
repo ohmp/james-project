@@ -53,6 +53,7 @@ import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.UidProvider;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
+import org.apache.james.mailbox.store.user.SubscriptionMapperFactory;
 import org.apache.james.modules.data.JPAEntityManagerModule;
 import org.apache.james.utils.MailboxManagerDefinition;
 import org.apache.mailbox.tools.indexer.ReIndexerImpl;
@@ -85,6 +86,7 @@ public class JPAMailboxModule extends AbstractModule {
         bind(DefaultMessageId.Factory.class).in(Scopes.SINGLETON);
         bind(ReIndexerImpl.class).in(Scopes.SINGLETON);
 
+        bind(SubscriptionMapperFactory.class).to(JPAMailboxSessionMapperFactory.class);
         bind(MessageMapperFactory.class).to(JPAMailboxSessionMapperFactory.class);
         bind(MailboxMapperFactory.class).to(JPAMailboxSessionMapperFactory.class);
         bind(MailboxSessionMapperFactory.class).to(JPAMailboxSessionMapperFactory.class);
