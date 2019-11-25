@@ -42,6 +42,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxId.Factory;
+import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.metrics.api.MetricFactory;
@@ -125,11 +126,12 @@ public class GetMessageListMethod implements Method {
         try {
             MultimailboxesSearchQuery searchQuery = convertToSearchQuery(messageListRequest);
             Long postionValue = messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION);
-            mailboxManager.search(searchQuery,
-                mailboxSession,
-                postionValue + messageListRequest.getLimit().map(Number::asLong).orElse(maximumLimit))
-                .skip(postionValue)
-                .forEach(builder::messageId);
+            long limit = postionValue + messageListRequest.getLimit().map(Number::asLong).orElse(maximumLimit);
+            try (Stream<MessageId> results = mailboxManager.search(searchQuery, mailboxSession, limit)) {
+                results
+                    .skip(postionValue)
+                    .forEach(builder::messageId);
+            }
             return builder.build();
         } catch (MailboxException e) {
             throw new RuntimeException(e);

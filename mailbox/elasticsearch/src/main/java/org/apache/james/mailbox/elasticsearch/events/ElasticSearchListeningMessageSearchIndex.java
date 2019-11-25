@@ -104,7 +104,10 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             SearchCapabilities.AttachmentFileName,
             SearchCapabilities.PartialEmailMatch);
     }
-    
+
+    /**
+     * Caller is responsible to close this stream to ensure resources and search context get released.
+     */
     @Override
     public Stream<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
@@ -114,7 +117,10 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
             .map(SearchResult::getMessageUid);
     }
-    
+
+    /**
+     * Caller is responsible to close this stream to ensure resources and search context get released.
+     */
     @Override
     public Stream<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
@@ -123,14 +129,12 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             return Stream.of();
         }
 
-        try (Stream<SearchResult> searchResults = searcher.search(mailboxIds, searchQuery, Optional.empty())) {
-            return searchResults
-                .peek(this::logIfNoMessageId)
-                .map(SearchResult::getMessageId)
-                .flatMap(OptionalUtils::toStream)
-                .distinct()
-                .limit(limit);
-        }
+        return searcher.search(mailboxIds, searchQuery, Optional.empty())
+            .peek(this::logIfNoMessageId)
+            .map(SearchResult::getMessageId)
+            .flatMap(OptionalUtils::toStream)
+            .distinct()
+            .limit(limit);
     }
 
     @Override

@@ -235,6 +235,8 @@ public interface MailboxManager extends RequestAware, RightManager, MailboxAnnot
 
     /**
      * Searches for mailboxes matching the given query.
+     *
+     * Caller is responsible to close this stream to ensure resources and search context get released.
      * 
      * @param expression
      *            not null

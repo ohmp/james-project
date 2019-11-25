@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
@@ -90,8 +91,7 @@ public class ReferenceUpdater {
         MultimailboxesSearchQuery searchByRFC822MessageId = MultimailboxesSearchQuery
             .from(new SearchQuery(SearchQuery.mimeMessageID(messageId)))
             .build();
-        List<MessageId> references = mailboxManager.search(searchByRFC822MessageId, session, limit)
-            .collect(Guavate.toImmutableList());
+        List<MessageId> references = getReferences(session, limit, searchByRFC822MessageId);
         try {
             MessageId reference = Iterables.getOnlyElement(references);
             List<MailboxId> mailboxIds = messageIdManager.getMessage(reference, FetchGroup.MINIMAL, session)
@@ -102,6 +102,12 @@ public class ReferenceUpdater {
             logger.info("Unable to find a message with this Mime Message Id: " + messageId);
         } catch (IllegalArgumentException e) {
             logger.info("Too many messages are matching this Mime Message Id: " + messageId);
+        }
+    }
+
+    private List<MessageId> getReferences(MailboxSession session, int limit, MultimailboxesSearchQuery searchByRFC822MessageId) throws MailboxException {
+        try (Stream<MessageId> references = mailboxManager.search(searchByRFC822MessageId, session, limit)) {
+             return references.collect(Guavate.toImmutableList());
         }
     }
 }
