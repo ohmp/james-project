@@ -1827,7 +1827,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .withFlags(new Flags(Flags.Flag.DELETED))
                 .build(ClassLoaderUtils.getSystemResourceAsSharedStream("eml/twoAttachmentsApi.eml")), session);
 
-            MessageResultIterator messages = inboxManager.getMessages(MessageRange.one(composeId.getUid()), FetchGroupImpl.MINIMAL, session);
+            MessageResultIterator messages = inboxManager.getMessages(MessageRange.one(composeId.getUid()), FetchGroup.MINIMAL, session);
 
             assertThat(messages).toIterable()
                 .hasSize(1)
@@ -1841,7 +1841,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .withFlags(new Flags(Flags.Flag.DELETED))
                 .build(message), session);
 
-            MessageResultIterator messages = inboxManager.getMessages(MessageRange.one(composeId.getUid()), FetchGroupImpl.MINIMAL, session);
+            MessageResultIterator messages = inboxManager.getMessages(MessageRange.one(composeId.getUid()), FetchGroup.MINIMAL, session);
 
             assertThat(messages).toIterable()
                 .hasSize(1)
