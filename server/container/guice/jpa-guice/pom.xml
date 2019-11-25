@@ -199,7 +199,7 @@
                 <configuration>
                     <!-- Isolation issues with Derby inMemory database -->
                     <reuseForks>false</reuseForks>
-                    <!-- Speed uo a bit things -->
+                    <!-- Speed up a bit things -->
                     <forkCount>1C</forkCount>
                 </configuration>
             </plugin>
