@@ -19,8 +19,12 @@
 
 package org.apache.james.mailbox.model;
 
-import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+
+import com.github.steveash.guavate.Guavate;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Indicates the results fetched.
@@ -43,15 +47,16 @@ public class FetchGroup {
     public static final FetchGroup FULL_CONTENT = new FetchGroup(FULL_CONTENT_MASK);
     public static final FetchGroup BODY_CONTENT = new FetchGroup(BODY_CONTENT_MASK);
 
-    private int content;
+    private final int content;
+    private final ImmutableSet<PartContentDescriptor> partContentDescriptors;
 
-    private Set<PartContentDescriptor> partContentDescriptors;
-
-    private FetchGroup(int content) {
-        this(content, new HashSet<>());
+    @VisibleForTesting
+    FetchGroup(int content) {
+        this(content, ImmutableSet.of());
     }
 
-    private FetchGroup(int content, Set<PartContentDescriptor> partContentDescriptors) {
+    @VisibleForTesting
+    FetchGroup(int content, ImmutableSet<PartContentDescriptor> partContentDescriptors) {
         this.content = content;
         this.partContentDescriptors = partContentDescriptors;
     }
@@ -72,12 +77,8 @@ public class FetchGroup {
         return content;
     }
 
-    public void or(int content) {
-        this.content = this.content | content;
-    }
-
-    public String toString() {
-        return "Fetch " + content;
+    public FetchGroup or(int content) {
+         return new FetchGroup(this.content | content, partContentDescriptors);
     }
 
     /**
@@ -99,19 +100,39 @@ public class FetchGroup {
      * @param content
      *            bitwise content constant
      */
-    public void addPartContent(MimePath path, int content) {
-        if (partContentDescriptors == null) {
-            partContentDescriptors = new HashSet<>();
-        }
-        PartContentDescriptor currentDescriptor = partContentDescriptors.stream()
+    public FetchGroup addPartContent(MimePath path, int content) {
+        PartContentDescriptor newContent = partContentDescriptors.stream()
             .filter(descriptor -> path.equals(descriptor.path()))
             .findFirst()
-            .orElseGet(() -> {
-                PartContentDescriptor result = new PartContentDescriptor(path);
-                partContentDescriptors.add(result);
-                return result;
-            });
+            .orElse(new PartContentDescriptor(path))
+            .or(content);
 
-        currentDescriptor.or(content);
+        return new FetchGroup(this.content, ImmutableSet.<PartContentDescriptor>builder()
+            .addAll(partContentDescriptors.stream()
+                .filter(descriptor -> descriptor.path().equals(path))
+                .collect(Guavate.toImmutableSet()))
+            .add(newContent)
+            .build());
+    }
+
+    @Override
+    public String toString() {
+        return "Fetch " + content;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof FetchGroup) {
+            FetchGroup that = (FetchGroup) o;
+
+            return Objects.equals(this.content, that.content)
+                && Objects.equals(this.partContentDescriptors, that.partContentDescriptors);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(content, partContentDescriptors);
     }
 }
