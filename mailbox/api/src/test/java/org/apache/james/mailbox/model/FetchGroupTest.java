@@ -107,4 +107,12 @@ class FetchGroupTest {
                 .hasOnlyMasks(FetchGroup.FULL_CONTENT_MASK))
             .isFalse();
     }
+
+    @Test
+    void minimalShouldAlwaysBeValid() {
+        assertThat(FetchGroup.MINIMAL
+                .hasOnlyMasks(FetchGroup.FULL_CONTENT_MASK, FetchGroup.HEADERS_MASK, FetchGroup.BODY_CONTENT_MASK,
+                    FetchGroup.MIME_DESCRIPTOR_MASK))
+            .isTrue();
+    }
 }

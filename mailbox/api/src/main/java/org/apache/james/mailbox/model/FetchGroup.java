@@ -125,7 +125,7 @@ public class FetchGroup {
         int allowedMask = Arrays.stream(masks)
             .reduce((a, b) -> a | b)
             .orElse(0);
-        return (content ^ allowedMask) == 0;
+        return (content & (~ allowedMask)) == 0;
     }
 
     @Override
