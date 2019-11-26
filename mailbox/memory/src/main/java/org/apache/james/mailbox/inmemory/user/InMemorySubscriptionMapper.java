@@ -32,8 +32,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Table;
 
 public class InMemorySubscriptionMapper extends NonTransactionalMapper implements SubscriptionMapper {
+    private enum ValueHolder {
+        INSTANCE
+    }
     
-    private final Table<Username, String, Object> subscriptionsByUser;
+    private final Table<Username, String, ValueHolder> subscriptionsByUser;
     
     public InMemorySubscriptionMapper() {
         subscriptionsByUser = HashBasedTable.create();
@@ -62,7 +65,7 @@ public class InMemorySubscriptionMapper extends NonTransactionalMapper implement
     @Override
     public void save(Subscription subscription) {
         synchronized (subscriptionsByUser) {
-            subscriptionsByUser.put(subscription.getUser(), subscription.getMailbox(), new Object());
+            subscriptionsByUser.put(subscription.getUser(), subscription.getMailbox(), ValueHolder.INSTANCE);
         }
     }
     
