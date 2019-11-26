@@ -67,7 +67,12 @@ public final class MimePath {
 
     @Override
     public final String toString() {
+        List<Integer> parts = Arrays.stream(positions)
+            .boxed()
+            .collect(Guavate.toImmutableList());
+
         return "MIMEPath:"
-            + Arrays.toString(positions);
+            + Joiner.on('.')
+            .join(parts);
     }
 }
