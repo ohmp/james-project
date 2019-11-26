@@ -23,17 +23,22 @@
 package org.apache.james.mailbox.model;
 
 import java.util.Arrays;
+import java.util.List;
+
+import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Describes a path within a multipart MIME message. All implementations
  * must implement equals. Two paths are equal if and only if each position
  * is identical.
  */
-public class MimePath {
+public final class MimePath {
     private final int[] positions;
 
     public MimePath(int[] positions) {
-        this.positions = positions;
+        this.positions = Arrays.copyOf(positions, positions.length);
     }
 
     /**
