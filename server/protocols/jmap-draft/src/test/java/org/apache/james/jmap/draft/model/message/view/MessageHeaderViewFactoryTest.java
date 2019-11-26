@@ -85,7 +85,7 @@ class MessageHeaderViewFactoryTest {
     @Test
     void fromMessageResultsShouldReturnCorrectView() throws Exception {
         List<MessageResult> messages = messageIdManager
-            .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.MINIMAL, session);
+            .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.HEADERS, session);
 
         MessageHeaderView actual = testee.fromMessageResults(messages);
         SoftAssertions.assertSoftly(softly -> {
@@ -113,7 +113,7 @@ class MessageHeaderViewFactoryTest {
         bobMailbox.setFlags(new Flags(Flags.Flag.FLAGGED), MessageManager.FlagsUpdateMode.REPLACE, MessageRange.all(), session);
 
         List<MessageResult> messages = messageIdManager
-            .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.MINIMAL, session);
+            .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.HEADERS, session);
 
         MessageHeaderView actual = testee.fromMessageResults(messages);
         SoftAssertions.assertSoftly(softly -> {
