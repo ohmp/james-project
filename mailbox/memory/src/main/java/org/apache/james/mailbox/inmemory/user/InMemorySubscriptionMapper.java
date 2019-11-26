@@ -28,7 +28,6 @@ import org.apache.james.mailbox.store.user.model.Subscription;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Table;
 
 public class InMemorySubscriptionMapper extends NonTransactionalMapper implements SubscriptionMapper {
