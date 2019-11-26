@@ -53,9 +53,7 @@ public class InMemorySubscriptionMapper extends NonTransactionalMapper implement
     public List<Subscription> findSubscriptionsForUser(Username user) {
         synchronized (subscriptionsByUser) {
             Set<String> subscriptions = subscriptionsByUser.row(user).keySet();
-            if (subscriptions == null) {
-                return ImmutableList.of();
-            }
+
             return subscriptions.stream()
                 .map(mailbox -> new Subscription(user, mailbox))
                 .collect(Guavate.toImmutableList());
