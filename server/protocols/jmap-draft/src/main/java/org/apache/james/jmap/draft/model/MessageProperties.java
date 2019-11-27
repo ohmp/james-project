@@ -24,6 +24,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.james.mailbox.model.FetchGroupImpl;
+import org.apache.james.mailbox.model.MessageResult;
+
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -213,9 +216,9 @@ public class MessageProperties {
     }
 
     public enum ReadProfile {
-        Metadata(0),
-        Header(1),
-        Full(2);
+        Metadata(0, FetchGroupImpl.MINIMAL),
+        Header(1, FetchGroupImpl.HEADERS),
+        Full(2, FetchGroupImpl.FULL_CONTENT);
 
         static ReadProfile combine(ReadProfile readProfile1, ReadProfile readProfile2) {
             if (readProfile1.priority > readProfile2.priority) {
@@ -225,9 +228,15 @@ public class MessageProperties {
         }
 
         private final int priority;
+        private final MessageResult.FetchGroup fetchGroup;
 
-        ReadProfile(int priority) {
+        ReadProfile(int priority, MessageResult.FetchGroup fetchGroup) {
             this.priority = priority;
+            this.fetchGroup = fetchGroup;
+        }
+
+        public MessageResult.FetchGroup getFetchGroup() {
+            return fetchGroup;
         }
     }
 
