@@ -20,6 +20,7 @@ package org.apache.james.mailbox.store.user.model;
 
 import org.apache.james.core.Username;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
@@ -73,4 +74,12 @@ public class Subscription {
         return Objects.hashCode(user, mailbox);
     }
 
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("user", user)
+            .add("mailbox", mailbox)
+            .toString();
+    }
 }
