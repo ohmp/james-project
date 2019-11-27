@@ -34,7 +34,7 @@ import com.google.common.base.Preconditions;
 import spark.Service;
 
 public class JmapDataRoutes implements Routes {
-    private static final String BASE_PATH = "/jmap";
+    public static final String BASE_PATH = "/jmap";
     private static final String ACTION = "action";
     private static final String RECOMPUTE_JMAP_PREVIEW = "recomputeJmapPreview";
 
