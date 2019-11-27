@@ -24,11 +24,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.apache.james.jmap.draft.model.message.view.MessageFullView;
-import org.apache.james.jmap.draft.model.message.view.MessageHeaderView;
-import org.apache.james.jmap.draft.model.message.view.MessageMetadataView;
-import org.apache.james.jmap.draft.model.message.view.MessageView;
-
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
