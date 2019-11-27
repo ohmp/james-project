@@ -124,7 +124,7 @@ public class GetMessagesMethod implements Method {
 
         try {
             MessageProperties.ReadProfile readProfile = getMessagesRequest.getProperties().computeReadLevel();
-            MessageViewFactory<? extends MessageView> factory = messageViewFactory.getFactory(readProfile.getAssociatedView());
+            MessageViewFactory factory = messageViewFactory.getFactory(readProfile);
 
             return GetMessagesResponse.builder()
                 .messages(
@@ -144,7 +144,7 @@ public class GetMessagesMethod implements Method {
         }
     }
 
-    private Function<Collection<MessageResult>, Stream<? extends MessageView>> toMessageViews(MessageViewFactory<? extends MessageView> factory) {
+    private Function<Collection<MessageResult>, Stream<MessageView>> toMessageViews(MessageViewFactory factory) {
         return messageResults -> {
             try {
                 return Stream.of(factory.fromMessageResults(messageResults));

@@ -218,9 +218,9 @@ public class MessageProperties {
     }
 
     public enum ReadProfile {
-        Metadata(0, MessageMetadataView.class),
-        Header(1, MessageHeaderView.class),
-        Full(2, MessageFullView.class);
+        Metadata(0),
+        Header(1),
+        Full(2);
 
         static ReadProfile combine(ReadProfile readProfile1, ReadProfile readProfile2) {
             if (readProfile1.priority > readProfile2.priority) {
@@ -230,15 +230,9 @@ public class MessageProperties {
         }
 
         private final int priority;
-        private final Class<? extends MessageView> associatedView;
 
-        ReadProfile(int priority, Class<? extends MessageView> associatedView) {
+        ReadProfile(int priority) {
             this.priority = priority;
-            this.associatedView = associatedView;
-        }
-
-        public Class<? extends MessageView> getAssociatedView() {
-            return associatedView;
         }
     }
 

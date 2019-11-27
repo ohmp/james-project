@@ -21,6 +21,8 @@ package org.apache.james.jmap.draft.model.message.view;
 
 import javax.inject.Inject;
 
+import org.apache.james.jmap.draft.model.MessageProperties;
+
 public class MetaMessageViewFactory {
     private final MessageFullViewFactory messageFullViewFactory;
     private final MessageHeaderViewFactory messageHeaderViewFactory;
@@ -33,16 +35,16 @@ public class MetaMessageViewFactory {
         this.messageMetadataViewFactory = messageMetadataViewFactory;
     }
 
-    public <T extends MessageView> MessageViewFactory<T> getFactory(Class<T> expectedClass) {
-        if (expectedClass.equals(MessageFullView.class)) {
-            return (MessageViewFactory<T>) messageFullViewFactory;
+    public MessageViewFactory getFactory(MessageProperties.ReadProfile readProfile) {
+        switch (readProfile) {
+            case Full:
+                return messageFullViewFactory;
+            case Header:
+                return messageHeaderViewFactory;
+            case Metadata:
+                return messageMetadataViewFactory;
+            default:
+                throw new IllegalArgumentException(readProfile + " is not a James JMAP draft supported view");
         }
-        if (expectedClass.equals(MessageHeaderView.class)) {
-            return (MessageViewFactory<T>) messageHeaderViewFactory;
-        }
-        if (expectedClass.equals(MessageMetadataView.class)) {
-            return (MessageViewFactory<T>) messageMetadataViewFactory;
-        }
-        throw new IllegalArgumentException(expectedClass + " is not a James JMAP draft supported view");
     }
 }
