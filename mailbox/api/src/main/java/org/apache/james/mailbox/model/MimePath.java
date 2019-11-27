@@ -27,7 +27,6 @@ import java.util.List;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Describes a path within a multipart MIME message. All implementations
