@@ -50,6 +50,9 @@ import org.apache.james.task.eventsourcing.distributed.TasksSerializationModule;
 import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTask;
 import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTaskAdditionalInformationDTO;
 import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTaskDTO;
+import org.apache.james.webadmin.data.jmap.MessagePreviewCorrector;
+import org.apache.james.webadmin.data.jmap.RecomputeAllPreviewsTask;
+import org.apache.james.webadmin.data.jmap.RecomputeAllPreviewsTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.CassandraMappingsSolveInconsistenciesTask;
 import org.apache.james.webadmin.service.ClearMailQueueTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.ClearMailQueueTaskDTO;
@@ -150,6 +153,11 @@ public class TaskSerializationModule extends AbstractModule {
     @ProvidesIntoSet
     public TaskDTOModule<?, ?> clearMailQueueTask(MailQueueFactory<? extends ManageableMailQueue> mailQueueFactory) {
         return ClearMailQueueTaskDTO.module(mailQueueFactory);
+    }
+
+    @ProvidesIntoSet
+    public TaskDTOModule<?, ?> recomputeAllJmapPreviewsTask(MessagePreviewCorrector corrector) {
+        return RecomputeAllPreviewsTask.module(corrector);
     }
 
     @ProvidesIntoSet
@@ -345,6 +353,11 @@ public class TaskSerializationModule extends AbstractModule {
     @ProvidesIntoSet
     public AdditionalInformationDTOModule<?, ?> userReindexingAdditionalInformation(MailboxId.Factory mailboxIdFactory) {
         return UserReindexingTaskAdditionalInformationDTO.serializationModule(mailboxIdFactory);
+    }
+
+    @ProvidesIntoSet
+    public AdditionalInformationDTOModule<?, ?> recomputeAllJmapPreviewsAdditionalInformation() {
+        return RecomputeAllPreviewsTaskAdditionalInformationDTO.SERIALIZATION_MODULE;
     }
 
     @Named(EVENT_NESTED_TYPES_INJECTION_NAME)
