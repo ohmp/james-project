@@ -33,7 +33,7 @@ public class CassandraLdapJamesServerMain {
     public static final Module MODULES = Modules.override(ALL_BUT_JMX_CASSANDRA_MODULE)
         .with(new LdapUsersRepositoryModule());
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Configuration configuration = Configuration.builder()
             .useWorkingDirectoryEnvProperty()
             .build();

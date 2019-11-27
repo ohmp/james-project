@@ -93,7 +93,7 @@ public class JPAJamesServerMain {
 
     public static final Module JPA_MODULE_AGGREGATE = Modules.combine(JPA_SERVER_MODULE, PROTOCOLS);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Configuration configuration = Configuration.builder()
             .useWorkingDirectoryEnvProperty()
             .build();

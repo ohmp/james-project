@@ -59,7 +59,7 @@ public class JPAJamesServerMain {
         new RawPostDequeueDecoratorModule(),
         new ElasticSearchMetricReporterModule());
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Configuration configuration = Configuration.builder()
             .useWorkingDirectoryEnvProperty()
             .build();

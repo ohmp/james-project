@@ -155,7 +155,7 @@ public class CassandraJamesServerMain {
         CASSANDRA_EVENT_STORE_JSON_SERIALIZATION_DEFAULT_MODULE
     );
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Configuration configuration = Configuration.builder()
             .useWorkingDirectoryEnvProperty()
             .build();

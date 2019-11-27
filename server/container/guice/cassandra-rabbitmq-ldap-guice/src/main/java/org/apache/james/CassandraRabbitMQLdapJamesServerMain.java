@@ -31,7 +31,7 @@ public class CassandraRabbitMQLdapJamesServerMain {
         .override(CassandraRabbitMQJamesServerMain.MODULES)
         .with(new LdapUsersRepositoryModule());
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Configuration configuration = Configuration.builder()
             .useWorkingDirectoryEnvProperty()
             .build();

@@ -106,7 +106,7 @@ class GuiceJamesServerStartUpCheckTest {
     interface StartUpCheckSuccessContract {
 
         @Test
-        default void serverShouldStartSuccessfully(GuiceJamesServer server) throws Exception {
+        default void serverShouldStartSuccessfully(GuiceJamesServer server) {
             server.start();
 
             assertThat(server.isStarted()).isTrue();
@@ -163,7 +163,7 @@ class GuiceJamesServerStartUpCheckTest {
             .build();
 
         @Test
-        void startUpCheckFailsShouldThrowAnExceptionCarryingOnlyBadChecks(GuiceJamesServer server) throws Exception {
+        void startUpCheckFailsShouldThrowAnExceptionCarryingOnlyBadChecks(GuiceJamesServer server) {
             assertThatThrownBy(server::start)
                 .isInstanceOfSatisfying(
                     StartUpChecksPerformer.StartUpChecksException.class,
@@ -172,7 +172,7 @@ class GuiceJamesServerStartUpCheckTest {
         }
 
         @Test
-        void serverShouldNotStartWhenAStartUpCheckFails(GuiceJamesServer server) throws Exception {
+        void serverShouldNotStartWhenAStartUpCheckFails(GuiceJamesServer server) {
             assertThatThrownBy(server::start)
                 .isInstanceOf(StartUpChecksPerformer.StartUpChecksException.class);
 
