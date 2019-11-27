@@ -26,7 +26,6 @@ import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -51,17 +50,11 @@ public class JPASubscriptionMapper extends JPATransactionalMapper implements Sub
     @Override
     public void save(Subscription subscription) throws SubscriptionException {
         EntityManager entityManager = getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
         try {
             if (!exists(entityManager, subscription)) {
                 entityManager.persist(new JPASubscription(subscription));
             }
-            transaction.commit();
         } catch (PersistenceException e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
             throw new SubscriptionException(e);
         }
     }
@@ -83,16 +76,10 @@ public class JPASubscriptionMapper extends JPATransactionalMapper implements Sub
     @Override
     public void delete(Subscription subscription) throws SubscriptionException {
         EntityManager entityManager = getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
         try {
             findJpaSubscription(entityManager, subscription)
                 .ifPresent(entityManager::remove);
-            transaction.commit();
         } catch (PersistenceException e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
             throw new SubscriptionException(e);
         }
     }
