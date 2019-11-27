@@ -22,6 +22,7 @@ package org.apache.james.mailbox.model;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
@@ -103,18 +104,22 @@ public class FetchGroup {
      *            bitwise content constant
      */
     public FetchGroup addPartContent(MimePath path, int content) {
-        PartContentDescriptor newContent = partContentDescriptors.stream()
-            .filter(descriptor -> path.equals(descriptor.path()))
-            .findFirst()
-            .orElse(new PartContentDescriptor(path))
-            .or(content);
+        PartContentDescriptor newContent = retrieveUpdatedPartContentDescriptor(path, content);
 
-        return new FetchGroup(this.content, ImmutableSet.<PartContentDescriptor>builder()
-            .addAll(partContentDescriptors.stream()
-                .filter(descriptor -> descriptor.path().equals(path))
-                .collect(Guavate.toImmutableSet()))
-            .add(newContent)
-            .build());
+        return new FetchGroup(this.content,
+            Stream.concat(
+                partContentDescriptors.stream()
+                    .filter(descriptor -> !descriptor.path().equals(path)),
+                Stream.of(newContent))
+                .collect(Guavate.toImmutableSet()));
+    }
+
+    private PartContentDescriptor retrieveUpdatedPartContentDescriptor(MimePath path, int content) {
+        return partContentDescriptors.stream()
+                .filter(descriptor -> path.equals(descriptor.path()))
+                .findFirst()
+                .orElse(new PartContentDescriptor(path))
+                .or(content);
     }
 
     public boolean hasMask(int mask) {

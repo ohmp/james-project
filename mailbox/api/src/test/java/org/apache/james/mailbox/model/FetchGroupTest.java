@@ -51,13 +51,26 @@ class FetchGroupTest {
     }
 
     @Test
+    void addPartContentShouldUnionDifferentPartContents() {
+        int[] path = {12};
+        int[] path2 = {13};
+        assertThat(
+            FetchGroup.MINIMAL
+                .addPartContent(new MimePath(path), FetchGroup.MINIMAL_MASK)
+                .addPartContent(new MimePath(path2), FetchGroup.MINIMAL_MASK))
+            .isEqualTo(new FetchGroup(FetchGroup.MINIMAL_MASK,
+                ImmutableSet.of(new PartContentDescriptor(FetchGroup.MINIMAL_MASK, new MimePath(path)),
+                    new PartContentDescriptor(FetchGroup.MINIMAL_MASK, new MimePath(path2)))));
+    }
+
+    @Test
     void addPartContentShouldModifyPartContentWhenAlreadySpecified() {
         int[] path = {12};
         assertThat(
             FetchGroup.MINIMAL
                 .addPartContent(new MimePath(path), FetchGroup.MINIMAL_MASK)
                 .addPartContent(new MimePath(path), FetchGroup.HEADERS_MASK))
-            .isEqualTo(new FetchGroup(FetchGroup.MINIMAL_MASK, ImmutableSet.of(new PartContentDescriptor(FetchGroup.MINIMAL_MASK | FetchGroup.HEADERS_MASK, new MimePath(path)))));
+            .isEqualTo(new FetchGroup(FetchGroup.MINIMAL_MASK, ImmutableSet.of(new PartContentDescriptor(FetchGroup.MINIMAL_MASK, new MimePath(path)).or(FetchGroup.HEADERS_MASK))));
     }
 
     @Test
