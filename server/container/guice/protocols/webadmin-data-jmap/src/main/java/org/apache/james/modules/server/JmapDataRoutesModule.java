@@ -17,45 +17,18 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.preview;
+package org.apache.james.modules.server;
 
-import java.util.concurrent.ConcurrentHashMap;
+import org.apache.james.webadmin.Routes;
+import org.apache.james.webadmin.data.jmap.JmapDataRoutes;
 
-import org.apache.james.jmap.api.preview.MessagePreviewStore;
-import org.apache.james.jmap.api.preview.Preview;
-import org.apache.james.mailbox.model.MessageId;
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
 
-import com.google.common.base.Preconditions;
-
-import reactor.core.publisher.Mono;
-
-public class MemoryMessagePreviewStore implements MessagePreviewStore {
-
-    private final ConcurrentHashMap<MessageId, Preview> previews;
-
-    public MemoryMessagePreviewStore() {
-        this.previews = new ConcurrentHashMap<>();
-    }
-
+public class JmapDataRoutesModule extends AbstractModule {
     @Override
-    public Mono<Void> store(MessageId messageId, Preview preview) {
-        Preconditions.checkNotNull(messageId);
-        Preconditions.checkNotNull(preview);
-
-        return Mono.fromRunnable(() -> previews.put(messageId, preview));
-    }
-
-    @Override
-    public Mono<Preview> retrieve(MessageId messageId) {
-        Preconditions.checkNotNull(messageId);
-
-        return Mono.fromSupplier(() -> previews.get(messageId));
-    }
-
-    @Override
-    public Mono<Void> delete(MessageId messageId) {
-        Preconditions.checkNotNull(messageId);
-
-        return Mono.fromRunnable(() -> previews.remove(messageId));
+    protected void configure() {
+        Multibinder<Routes> routesMultibinder = Multibinder.newSetBinder(binder(), Routes.class);
+        routesMultibinder.addBinding().to(JmapDataRoutes.class);
     }
 }

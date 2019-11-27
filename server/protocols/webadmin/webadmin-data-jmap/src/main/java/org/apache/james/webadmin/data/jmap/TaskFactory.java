@@ -17,45 +17,21 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.preview;
+package org.apache.james.webadmin.data.jmap;
 
-import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Inject;
 
-import org.apache.james.jmap.api.preview.MessagePreviewStore;
-import org.apache.james.jmap.api.preview.Preview;
-import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.task.Task;
 
-import com.google.common.base.Preconditions;
+class TaskFactory {
+    private final MessagePreviewCorrector messagePreviewCorrector;
 
-import reactor.core.publisher.Mono;
-
-public class MemoryMessagePreviewStore implements MessagePreviewStore {
-
-    private final ConcurrentHashMap<MessageId, Preview> previews;
-
-    public MemoryMessagePreviewStore() {
-        this.previews = new ConcurrentHashMap<>();
+    @Inject
+    TaskFactory(MessagePreviewCorrector messagePreviewCorrector) {
+        this.messagePreviewCorrector = messagePreviewCorrector;
     }
 
-    @Override
-    public Mono<Void> store(MessageId messageId, Preview preview) {
-        Preconditions.checkNotNull(messageId);
-        Preconditions.checkNotNull(preview);
-
-        return Mono.fromRunnable(() -> previews.put(messageId, preview));
-    }
-
-    @Override
-    public Mono<Preview> retrieve(MessageId messageId) {
-        Preconditions.checkNotNull(messageId);
-
-        return Mono.fromSupplier(() -> previews.get(messageId));
-    }
-
-    @Override
-    public Mono<Void> delete(MessageId messageId) {
-        Preconditions.checkNotNull(messageId);
-
-        return Mono.fromRunnable(() -> previews.remove(messageId));
+    Task recomputeAllPrevious() {
+        return new RecomputeAllPreviewsTask(messagePreviewCorrector);
     }
 }

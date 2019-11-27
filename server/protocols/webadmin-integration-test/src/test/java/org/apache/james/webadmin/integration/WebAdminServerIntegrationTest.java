@@ -419,4 +419,20 @@ public class WebAdminServerIntegrationTest {
         .statusCode(HttpStatus.OK_200)
             .body("source", hasItems(ALIAS_1, ALIAS_2));
     }
+
+    @Test
+    public void jmapRoutesShouldBeExposed() {
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .post("/jmap")
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"));
+    }
 }

@@ -23,6 +23,7 @@ import static io.restassured.RestAssured.when;
 
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.data.jmap.JmapDataRoutes;
 import org.apache.james.webadmin.routes.AliasRoutes;
 import org.apache.james.webadmin.routes.CassandraMappingsRoutes;
 import org.apache.james.webadmin.routes.CassandraMigrationRoutes;
@@ -118,7 +119,8 @@ class UnauthorizedEndpointsTest {
             CassandraMappingsRoutes.ROOT_PATH,
             EventDeadLettersRoutes.BASE_PATH,
             EventDeadLettersRoutes.BASE_PATH + "/groups/group@james.org",
-            EventDeadLettersRoutes.BASE_PATH + "/groups/group@james.org/1"
+            EventDeadLettersRoutes.BASE_PATH + "/groups/group@james.org/1",
+            JmapDataRoutes.BASE_PATH
     })
     void checkUrlProtectionOnPost(String url) {
         when()
