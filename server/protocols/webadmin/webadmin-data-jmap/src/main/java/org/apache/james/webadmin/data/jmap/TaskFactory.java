@@ -21,6 +21,7 @@ package org.apache.james.webadmin.data.jmap;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.Username;
 import org.apache.james.task.Task;
 
 class TaskFactory {
@@ -31,7 +32,11 @@ class TaskFactory {
         this.messagePreviewCorrector = messagePreviewCorrector;
     }
 
-    Task recomputeAllPrevious() {
+    Task recomputeAllPreviews() {
         return new RecomputeAllPreviewsTask(messagePreviewCorrector);
+    }
+
+    Task recomputeUserPreviews(Username username) {
+        return new RecomputeUserPreviewsTask(username, messagePreviewCorrector);
     }
 }

@@ -1,0 +1,4 @@
+{
+  "type":"RecomputeUserPreviewsTask",
+  "username": "bob"
+}

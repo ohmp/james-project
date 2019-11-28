@@ -106,7 +106,7 @@ public class MessagePreviewCorrector {
         }
     }
 
-    private Mono<Void> correctAllPreviews(Context context, Username username) {
+    Mono<Void> correctAllPreviews(Context context, Username username) {
         try {
             MailboxSession session = mailboxManager.createSystemSession(username);
             return Flux.fromIterable(mailboxManager.search(MailboxQuery.privateMailboxesBuilder(session).build(), session))
