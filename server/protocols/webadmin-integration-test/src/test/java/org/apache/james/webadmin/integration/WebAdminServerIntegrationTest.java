@@ -421,9 +421,26 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void jmapRoutesShouldBeExposed() {
+    public void jmapRecomputeAllPreviewsRouteShouldBeExposed() {
         String taskId = with()
             .queryParam("action", "recomputeJmapPreview")
+            .post("/jmap")
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"));
+    }
+
+    @Test
+    public void jmapRecomputeUserPreviewsRouteShouldBeExposed() {
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", "bob@domain.tld")
             .post("/jmap")
             .jsonPath()
             .get("taskId");
