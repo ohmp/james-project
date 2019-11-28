@@ -21,6 +21,7 @@ package org.apache.james.webadmin.data.jmap;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.Username;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
@@ -30,7 +31,9 @@ import org.apache.james.webadmin.utils.JsonTransformer;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
+import spark.Request;
 import spark.Service;
 
 public class JmapDataRoutes implements Routes {
@@ -43,7 +46,7 @@ public class JmapDataRoutes implements Routes {
     private final JsonTransformer jsonTransformer;
 
     @Inject
-    public JmapDataRoutes(TaskManager taskManager, TaskFactory taskFactory, JsonTransformer jsonTransformer) {
+    JmapDataRoutes(TaskManager taskManager, TaskFactory taskFactory, JsonTransformer jsonTransformer) {
         this.taskManager = taskManager;
         this.taskFactory = taskFactory;
         this.jsonTransformer = jsonTransformer;
@@ -60,9 +63,19 @@ public class JmapDataRoutes implements Routes {
             Preconditions.checkArgument(Objects.equal(request.queryParams(ACTION), RECOMPUTE_JMAP_PREVIEW),
                 "'" + ACTION + "' request URL parameter is required. Only '" + RECOMPUTE_JMAP_PREVIEW + "' is supported.");
 
-            Task task = taskFactory.recomputeAllPrevious();
+            Task task = getTask(request);
             TaskId taskId = taskManager.submit(task);
             return TaskIdDto.respond(response, taskId);
         }), jsonTransformer);
+    }
+
+    private Task getTask(Request request) {
+        String rawUsername = request.queryParams("username");
+        if (Strings.isNullOrEmpty(rawUsername)) {
+            return taskFactory.recomputeAllPreviews();
+        } else {
+            Username username = Username.of(rawUsername);
+            return taskFactory.recomputeUserPreviews(username);
+        }
     }
 }

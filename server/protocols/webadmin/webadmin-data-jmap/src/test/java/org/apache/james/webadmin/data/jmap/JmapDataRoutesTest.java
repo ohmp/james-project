@@ -310,4 +310,173 @@ class JmapDataRoutesTest {
         assertThat(messagePreviewStore.retrieve(messageId.getMessageId()).block())
             .isEqualTo(Preview.from("body"));
     }
+
+    @Test
+    void postShouldReturnRecomputeAllOnEmptyUsername() {
+        String taskId = with()
+            .queryParam("username", "")
+            .queryParam("action", "recomputeJmapPreview")
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+            .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("taskId", is(taskId))
+            .body("type", is("RecomputeAllPreviewsTask"));
+    }
+
+    @Test
+    void postShouldFailOnInvalidUsername() {
+        given()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", "b@l@de")
+            .post()
+        .then()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .body("statusCode", is(400))
+            .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
+            .body("message", is("Invalid arguments supplied in the user request"))
+            .body("details", is("The username should not contain multiple domain delimiter."));
+    }
+
+    @Test
+    void recomputeUserShouldCompleteWhenNoUser() {
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", BOB.asString())
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("taskId", is(taskId))
+            .body("type", is("RecomputeUserPreviewsTask"))
+            .body("additionalInformation.username", is(BOB.asString()))
+            .body("additionalInformation.processedMessageCount", is(0))
+            .body("additionalInformation.failedMessageCount", is(0))
+            .body("startedDate", is(notNullValue()))
+            .body("submitDate", is(notNullValue()))
+            .body("completedDate", is(notNullValue()));
+    }
+
+    @Test
+    void recomputeUserShouldCompleteWhenNoMailbox() throws Exception {
+        usersRepository.addUser(BOB, "pass");
+
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", BOB.asString())
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("taskId", is(taskId))
+            .body("type", is("RecomputeUserPreviewsTask"))
+            .body("additionalInformation.username", is(BOB.asString()))
+            .body("additionalInformation.processedMessageCount", is(0))
+            .body("additionalInformation.failedMessageCount", is(0))
+            .body("startedDate", is(notNullValue()))
+            .body("submitDate", is(notNullValue()))
+            .body("completedDate", is(notNullValue()));
+    }
+
+    @Test
+    void recomputeUserShouldCompleteWhenNoMessage() throws Exception {
+        usersRepository.addUser(BOB, "pass");
+        mailboxManager.createMailbox(MailboxPath.inbox(BOB), mailboxManager.createSystemSession(BOB));
+
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", BOB.asString())
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("taskId", is(taskId))
+            .body("type", is("RecomputeUserPreviewsTask"))
+            .body("additionalInformation.username", is(BOB.asString()))
+            .body("additionalInformation.processedMessageCount", is(0))
+            .body("additionalInformation.failedMessageCount", is(0))
+            .body("startedDate", is(notNullValue()))
+            .body("submitDate", is(notNullValue()))
+            .body("completedDate", is(notNullValue()));
+    }
+
+    @Test
+    void recomputeUserShouldCompleteWhenOneMessage() throws Exception {
+        usersRepository.addUser(BOB, "pass");
+        MailboxSession session = mailboxManager.createSystemSession(BOB);
+        Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
+        mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
+            MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
+            session);
+
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", BOB.asString())
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("taskId", is(taskId))
+            .body("type", is("RecomputeUserPreviewsTask"))
+            .body("additionalInformation.username", is(BOB.asString()))
+            .body("additionalInformation.processedMessageCount", is(1))
+            .body("additionalInformation.failedMessageCount", is(0))
+            .body("startedDate", is(notNullValue()))
+            .body("submitDate", is(notNullValue()))
+            .body("completedDate", is(notNullValue()));
+    }
+
+    @Test
+    void recomputeUserPreviewsShouldUpdatePreview()throws Exception {
+        usersRepository.addUser(BOB, "pass");
+        MailboxSession session = mailboxManager.createSystemSession(BOB);
+        Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
+        ComposedMessageId messageId = mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
+            MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
+            session);
+
+        String taskId = with()
+            .queryParam("action", "recomputeJmapPreview")
+            .queryParam("username", BOB.asString())
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        with()
+            .basePath(TasksRoutes.BASE)
+            .get(taskId + "/await");
+
+        assertThat(messagePreviewStore.retrieve(messageId.getMessageId()).block())
+            .isEqualTo(Preview.from("body"));
+    }
 }
