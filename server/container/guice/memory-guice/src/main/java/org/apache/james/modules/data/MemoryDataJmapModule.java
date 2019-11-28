@@ -22,9 +22,11 @@ package org.apache.james.modules.data;
 import org.apache.james.jmap.api.access.AccessTokenRepository;
 import org.apache.james.jmap.api.filtering.FilteringManagement;
 import org.apache.james.jmap.api.filtering.impl.EventSourcingFilteringManagement;
+import org.apache.james.jmap.api.preview.MessagePreviewStore;
 import org.apache.james.jmap.api.vacation.NotificationRegistry;
 import org.apache.james.jmap.api.vacation.VacationRepository;
 import org.apache.james.jmap.memory.access.MemoryAccessTokenRepository;
+import org.apache.james.jmap.memory.preview.MemoryMessagePreviewStore;
 import org.apache.james.jmap.memory.vacation.MemoryNotificationRegistry;
 import org.apache.james.jmap.memory.vacation.MemoryVacationRepository;
 import org.apache.james.mailbox.extractor.TextExtractor;
@@ -46,6 +48,9 @@ public class MemoryDataJmapModule extends AbstractModule {
 
         bind(MemoryNotificationRegistry.class).in(Scopes.SINGLETON);
         bind(NotificationRegistry.class).to(MemoryNotificationRegistry.class);
+        
+        bind(MemoryMessagePreviewStore.class).in(Scopes.SINGLETON);
+        bind(MessagePreviewStore.class).to(MemoryMessagePreviewStore.class);
 
         bind(EventSourcingFilteringManagement.class).in(Scopes.SINGLETON);
         bind(FilteringManagement.class).to(EventSourcingFilteringManagement.class);
