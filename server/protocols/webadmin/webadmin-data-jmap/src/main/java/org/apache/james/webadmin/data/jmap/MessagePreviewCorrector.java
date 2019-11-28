@@ -19,12 +19,10 @@
 
 package org.apache.james.webadmin.data.jmap;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Username;
 import org.apache.james.jmap.api.preview.MessagePreviewStore;
 import org.apache.james.jmap.api.preview.Preview;
@@ -33,16 +31,10 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroup;
-import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
-import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.search.MailboxQuery;
-import org.apache.james.mime4j.dom.Message;
-import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
-import org.apache.james.util.html.HtmlTextExtractor;
-import org.apache.james.util.mime.MessageContentExtractor;
 import org.apache.james.util.streams.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,16 +85,15 @@ public class MessagePreviewCorrector {
     private final UsersRepository usersRepository;
     private final MailboxManager mailboxManager;
     private final MessagePreviewStore messagePreviewStore;
-    private final MessageContentExtractor messageContentExtractor;
-    private final HtmlTextExtractor htmlTextExtractor;
+    private final Preview.Factory previewFactory;
 
     @Inject
-    MessagePreviewCorrector(UsersRepository usersRepository, MailboxManager mailboxManager, MessagePreviewStore messagePreviewStore, MessageContentExtractor messageContentExtractor, HtmlTextExtractor htmlTextExtractor) {
+    MessagePreviewCorrector(UsersRepository usersRepository, MailboxManager mailboxManager,
+                            MessagePreviewStore messagePreviewStore, Preview.Factory previewFactory) {
         this.usersRepository = usersRepository;
         this.mailboxManager = mailboxManager;
         this.messagePreviewStore = messagePreviewStore;
-        this.messageContentExtractor = messageContentExtractor;
-        this.htmlTextExtractor = htmlTextExtractor;
+        this.previewFactory = previewFactory;
     }
 
     Mono<Void> correctAllPreviews(Context context) {
@@ -136,7 +127,7 @@ public class MessagePreviewCorrector {
 
     private Mono<Void> correctAllPreviews(Context context, MessageManager messageManager, MailboxSession session) throws MailboxException {
         return Iterators.toFlux(messageManager.getMessages(MessageRange.all(), FetchGroup.BODY_CONTENT, session))
-            .map(Throwing.function(this::computePreview))
+            .map(Throwing.function(previewFactory::fromMessageResult))
             .flatMap(pair -> Mono.from(messagePreviewStore.store(pair.getKey(), pair.getValue()))
                 .doOnSuccess(any -> context.processedMessageCount.incrementAndGet()))
             .onErrorContinue((error, triggeringValue) -> {
@@ -145,22 +136,4 @@ public class MessagePreviewCorrector {
             })
             .then();
     }
-
-    private Pair<MessageId, Preview> computePreview(MessageResult messageResult) throws MailboxException, IOException {
-        Message mimeMessage = parse(messageResult);
-        MessageContentExtractor.MessageContent messageContent = messageContentExtractor.extract(mimeMessage);
-        Preview preview = messageContent.mainTextContent(htmlTextExtractor)
-            .map(Preview::compute)
-            .orElse(Preview.from(""));
-
-        return Pair.of(messageResult.getMessageId(), preview);
-    }
-
-    private Message parse(MessageResult message) throws MailboxException, IOException {
-        return Message.Builder.of()
-            .use(MimeConfig.PERMISSIVE)
-            .parse(message.getFullContent().getInputStream())
-            .build();
-    }
-
 }

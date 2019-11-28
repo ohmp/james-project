@@ -78,10 +78,12 @@ class JmapDataRoutesTest {
         usersRepository = MemoryUsersRepository.withoutVirtualHosting(NO_DOMAIN_LIST);
         MessageContentExtractor messageContentExtractor = new MessageContentExtractor();
         HtmlTextExtractor htmlTextExtractor = new JsoupHtmlTextExtractor();
+        Preview.Factory previewFactory = new Preview.Factory(messageContentExtractor, htmlTextExtractor);
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new TasksRoutes(taskManager, jsonTransformer),
             new JmapDataRoutes(taskManager, new TaskFactory(
-                new MessagePreviewCorrector(usersRepository, mailboxManager, messagePreviewStore, messageContentExtractor, htmlTextExtractor)), jsonTransformer))
+                new MessagePreviewCorrector(usersRepository, mailboxManager, messagePreviewStore, previewFactory)),
+                jsonTransformer))
             .start();
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
             .setBasePath("/jmap")

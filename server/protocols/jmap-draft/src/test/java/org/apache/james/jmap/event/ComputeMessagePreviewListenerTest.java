@@ -90,8 +90,10 @@ class ComputeMessagePreviewListenerTest {
         MessageContentExtractor messageContentExtractor = new MessageContentExtractor();
         HtmlTextExtractor htmlTextExtractor = new JsoupHtmlTextExtractor();
 
+        Preview.Factory previewFactory = new Preview.Factory(messageContentExtractor, htmlTextExtractor);
+
         ComputeMessagePreviewListener listener = new ComputeMessagePreviewListener(sessionProvider, messageIdManager,
-            messagePreviewStore, messageContentExtractor, htmlTextExtractor);
+            messagePreviewStore, previewFactory);
         resources.getEventBus().register(listener);
     }
 

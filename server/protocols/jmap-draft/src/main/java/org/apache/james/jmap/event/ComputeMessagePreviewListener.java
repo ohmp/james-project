@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.event;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -34,21 +33,13 @@ import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroup;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.store.SessionProvider;
-import org.apache.james.mime4j.dom.Message;
-import org.apache.james.mime4j.stream.MimeConfig;
-import org.apache.james.util.html.HtmlTextExtractor;
-import org.apache.james.util.mime.MessageContentExtractor;
-import org.apache.james.util.mime.MessageContentExtractor.MessageContent;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 public class ComputeMessagePreviewListener implements MailboxListener.GroupMailboxListener {
     public static class ComputeMessagePreviewListenerGroup extends Group {
@@ -60,18 +51,15 @@ public class ComputeMessagePreviewListener implements MailboxListener.GroupMailb
     private final MessageIdManager messageIdManager;
     private final MessagePreviewStore messagePreviewStore;
     private final SessionProvider sessionProvider;
-    private final MessageContentExtractor messageContentExtractor;
-    private final HtmlTextExtractor htmlTextExtractor;
+    private final Preview.Factory previewFactory;
 
     @Inject
     public ComputeMessagePreviewListener(SessionProvider sessionProvider, MessageIdManager messageIdManager,
-                                         MessagePreviewStore messagePreviewStore, MessageContentExtractor messageContentExtractor,
-                                         HtmlTextExtractor htmlExtractor) {
+                                         MessagePreviewStore messagePreviewStore, Preview.Factory previewFactory) {
         this.sessionProvider = sessionProvider;
         this.messageIdManager = messageIdManager;
         this.messagePreviewStore = messagePreviewStore;
-        this.messageContentExtractor = messageContentExtractor;
-        this.htmlTextExtractor = htmlExtractor;
+        this.previewFactory = previewFactory;
     }
 
     @Override
@@ -100,25 +88,8 @@ public class ComputeMessagePreviewListener implements MailboxListener.GroupMailb
     private void preComputePreview(List<MessageId> messageIds, MailboxSession session) throws MailboxException {
         Flux.fromIterable(messageIdManager.getMessages(messageIds, FetchGroup.BODY_CONTENT, session))
             .publishOn(Schedulers.boundedElastic())
-            .map(Throwing.function(this::computePreview))
-            .flatMap(message -> messagePreviewStore.store(message.getT1(), message.getT2()))
+            .map(Throwing.function(previewFactory::fromMessageResult))
+            .flatMap(message -> messagePreviewStore.store(message.getKey(), message.getValue()))
             .blockLast();
-    }
-
-    private Tuple2<MessageId, Preview> computePreview(MessageResult messageResult) throws MailboxException, IOException {
-        Message mimeMessage = parse(messageResult);
-        MessageContent messageContent = messageContentExtractor.extract(mimeMessage);
-        Preview preview = messageContent.mainTextContent(htmlTextExtractor)
-            .map(Preview::compute)
-            .orElse(Preview.from(""));
-
-        return Tuples.of(messageResult.getMessageId(), preview);
-    }
-
-    private Message parse(MessageResult message) throws MailboxException, IOException {
-        return Message.Builder.of()
-            .use(MimeConfig.PERMISSIVE)
-            .parse(message.getFullContent().getInputStream())
-            .build();
     }
 }

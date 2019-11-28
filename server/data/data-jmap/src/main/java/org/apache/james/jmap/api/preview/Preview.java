@@ -19,15 +19,57 @@
 
 package org.apache.james.jmap.api.preview;
 
+import java.io.IOException;
 import java.util.Objects;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageResult;
+import org.apache.james.mime4j.dom.Message;
+import org.apache.james.mime4j.stream.MimeConfig;
+import org.apache.james.util.html.HtmlTextExtractor;
+import org.apache.james.util.mime.MessageContentExtractor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 public class Preview {
+    public static class Factory {
+        private final MessageContentExtractor messageContentExtractor;
+        private final HtmlTextExtractor htmlTextExtractor;
+
+        @Inject
+        public Factory(MessageContentExtractor messageContentExtractor, HtmlTextExtractor htmlTextExtractor) {
+            this.messageContentExtractor = messageContentExtractor;
+            this.htmlTextExtractor = htmlTextExtractor;
+        }
+
+        public Pair<MessageId, Preview> fromMessageResult(MessageResult messageResult) throws MailboxException, IOException {
+            Message mimeMessage = parse(messageResult);
+            return fromMime4JMessage(messageResult, mimeMessage);
+        }
+
+        private Pair<MessageId, Preview> fromMime4JMessage(MessageResult messageResult, Message mimeMessage) throws IOException {
+            MessageContentExtractor.MessageContent messageContent = messageContentExtractor.extract(mimeMessage);
+            Preview preview = messageContent.mainTextContent(htmlTextExtractor)
+                .map(Preview::compute)
+                .orElse(Preview.from(""));
+
+            return Pair.of(messageResult.getMessageId(), preview);
+        }
+
+        private Message parse(MessageResult message) throws MailboxException, IOException {
+            return Message.Builder.of()
+                .use(MimeConfig.PERMISSIVE)
+                .parse(message.getFullContent().getInputStream())
+                .build();
+        }
+    }
 
     private static final int MAX_LENGTH = 256;
 
