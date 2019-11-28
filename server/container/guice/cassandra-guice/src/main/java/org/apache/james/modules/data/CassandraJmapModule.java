@@ -24,6 +24,7 @@ import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.jmap.api.access.AccessTokenRepository;
 import org.apache.james.jmap.api.filtering.FilteringManagement;
 import org.apache.james.jmap.api.filtering.impl.EventSourcingFilteringManagement;
+import org.apache.james.jmap.api.preview.MessagePreviewStore;
 import org.apache.james.jmap.api.vacation.NotificationRegistry;
 import org.apache.james.jmap.api.vacation.VacationRepository;
 import org.apache.james.jmap.cassandra.access.CassandraAccessModule;
@@ -33,6 +34,7 @@ import org.apache.james.jmap.cassandra.vacation.CassandraNotificationRegistry;
 import org.apache.james.jmap.cassandra.vacation.CassandraNotificationRegistryModule;
 import org.apache.james.jmap.cassandra.vacation.CassandraVacationModule;
 import org.apache.james.jmap.cassandra.vacation.CassandraVacationRepository;
+import org.apache.james.jmap.memory.preview.MemoryMessagePreviewStore;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -48,6 +50,9 @@ public class CassandraJmapModule extends AbstractModule {
 
         bind(CassandraVacationRepository.class).in(Scopes.SINGLETON);
         bind(VacationRepository.class).to(CassandraVacationRepository.class);
+
+        bind(MemoryMessagePreviewStore.class).in(Scopes.SINGLETON);
+        bind(MessagePreviewStore.class).to(MemoryMessagePreviewStore.class);
 
         bind(CassandraNotificationRegistry.class).in(Scopes.SINGLETON);
         bind(NotificationRegistry.class).to(CassandraNotificationRegistry.class);
