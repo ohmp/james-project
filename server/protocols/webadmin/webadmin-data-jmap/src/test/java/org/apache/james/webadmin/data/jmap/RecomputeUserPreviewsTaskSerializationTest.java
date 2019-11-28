@@ -54,6 +54,6 @@ class RecomputeUserPreviewsTaskSerializationTest {
         assertThat(task).isInstanceOf(RecomputeUserPreviewsTask.class);
 
         RecomputeUserPreviewsTask.AdditionalInformation details = (RecomputeUserPreviewsTask.AdditionalInformation) task.details().get();
-        assertThat(details.getUsername()).isEqualTo(BOB);
+        assertThat(details.getUsername()).isEqualTo(BOB.asString());
     }
 }
