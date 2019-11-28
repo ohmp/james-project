@@ -60,12 +60,10 @@ class JamesCapabilitiesServerTest {
             .thenReturn(EnumSet.allOf(MailboxManager.MessageCapabilities.class));
         when(mailboxManager.getSupportedSearchCapabilities())
             .thenReturn(EnumSet.allOf(MailboxManager.SearchCapabilities.class));
-        
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(JMAPModule.RequiredCapabilitiesStartUpCheck.CHECK_NAME));
+
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
     
     @Test
@@ -76,12 +74,10 @@ class JamesCapabilitiesServerTest {
             .thenReturn(EnumSet.allOf(MailboxManager.MessageCapabilities.class));
         when(mailboxManager.getSupportedSearchCapabilities())
             .thenReturn(EnumSet.allOf(MailboxManager.SearchCapabilities.class));
-        
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(JMAPModule.RequiredCapabilitiesStartUpCheck.CHECK_NAME));
+
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
     
     @Test
@@ -93,11 +89,9 @@ class JamesCapabilitiesServerTest {
         when(mailboxManager.getSupportedSearchCapabilities())
             .thenReturn(EnumSet.complementOf(EnumSet.of(MailboxManager.SearchCapabilities.Attachment)));
 
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(JMAPModule.RequiredCapabilitiesStartUpCheck.CHECK_NAME));
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
 
     @Test
@@ -109,11 +103,9 @@ class JamesCapabilitiesServerTest {
         when(mailboxManager.getSupportedSearchCapabilities())
             .thenReturn(EnumSet.complementOf(EnumSet.of(MailboxManager.SearchCapabilities.AttachmentFileName)));
 
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(JMAPModule.RequiredCapabilitiesStartUpCheck.CHECK_NAME));
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
     
     @Test
@@ -125,11 +117,9 @@ class JamesCapabilitiesServerTest {
         when(mailboxManager.getSupportedSearchCapabilities())
             .thenReturn(EnumSet.complementOf(EnumSet.of(MailboxManager.SearchCapabilities.MultimailboxSearch)));
 
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(JMAPModule.RequiredCapabilitiesStartUpCheck.CHECK_NAME));
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
 
     @Test
@@ -141,15 +131,13 @@ class JamesCapabilitiesServerTest {
         when(mailboxManager.getSupportedSearchCapabilities())
             .thenReturn(EnumSet.allOf(MailboxManager.SearchCapabilities.class));
 
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(JMAPModule.RequiredCapabilitiesStartUpCheck.CHECK_NAME));
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
 
     @Test
-    void startShouldSucceedWhenRequiredCapabilities(GuiceJamesServer server) throws Exception {
+    void startShouldSucceedWhenRequiredCapabilities(GuiceJamesServer server) {
         when(mailboxManager.hasCapability(MailboxManager.MailboxCapabilities.Move)).thenReturn(true);
         when(mailboxManager.hasCapability(MailboxManager.MailboxCapabilities.ACL)).thenReturn(true);
         when(mailboxManager.getSupportedMessageCapabilities())

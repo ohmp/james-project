@@ -58,18 +58,9 @@ class JamesWithNonCompatibleElasticSearchServerTest {
     }
 
     @Test
-    void jamesShouldStopWhenStartingWithANonCompatibleElasticSearchServer(GuiceJamesServer server) throws Exception {
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksPerformer.StartUpChecksException.class,
-                ex -> assertThat(ex.getBadChecks())
-                    .containsOnly(CheckResult.builder()
-                        .checkName(ElasticSearchStartUpCheck.CHECK_NAME)
-                        .resultType(StartUpCheck.ResultType.BAD)
-                        .description("ES version(2.4.6) is not compatible with the recommendation(6.3.2)")
-                        .build()));
+    void jamesShouldStopWhenStartingWithANonCompatibleElasticSearchServer(GuiceJamesServer server) {
+        server.start();
 
-        assertThat(server.isStarted())
-            .isFalse();
+        assertThat(server.isStarted()).isFalse();
     }
 }

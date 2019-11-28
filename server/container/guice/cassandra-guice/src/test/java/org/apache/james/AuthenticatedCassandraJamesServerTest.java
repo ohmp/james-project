@@ -21,6 +21,7 @@ package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
 import static org.apache.james.JamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.backends.cassandra.init.configuration.ClusterConfiguration;
@@ -78,9 +79,9 @@ class AuthenticatedCassandraJamesServerTest {
 
         @Test
         void startShouldFailWhenSslUsedAndNotSupportedByServer(GuiceJamesServer jamesServer) {
-            assertThatThrownBy(jamesServer::start)
-                .isInstanceOf(CreationException.class)
-                .hasStackTraceContaining("Caused by: com.datastax.driver.core.exceptions.NoHostAvailableException: All host(s) tried for query failed");
+            jamesServer.start();
+
+            assertThat(jamesServer.isStarted()).isFalse();
         }
     }
 
@@ -100,9 +101,9 @@ class AuthenticatedCassandraJamesServerTest {
 
         @Test
         void startShouldFailOnBadPassword(GuiceJamesServer jamesServer) {
-            assertThatThrownBy(jamesServer::start)
-                .isInstanceOf(CreationException.class)
-                .hasStackTraceContaining("Caused by: com.datastax.driver.core.exceptions.AuthenticationException: Authentication error");
+            jamesServer.start();
+
+            assertThat(jamesServer.isStarted()).isFalse();
         }
     }
 }

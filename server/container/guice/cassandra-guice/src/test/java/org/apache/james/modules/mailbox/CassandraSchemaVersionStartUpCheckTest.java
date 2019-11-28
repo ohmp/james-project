@@ -29,6 +29,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.james.CassandraExtension;
@@ -122,11 +123,9 @@ class CassandraSchemaVersionStartUpCheckTest {
         when(versionDAO.getCurrentSchemaVersion())
             .thenReturn(Mono.just(Optional.of(MIN_VERSION.previous())));
 
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(CassandraSchemaVersionStartUpCheck.CHECK_NAME));
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
 
     @Test
@@ -134,11 +133,9 @@ class CassandraSchemaVersionStartUpCheckTest {
         when(versionDAO.getCurrentSchemaVersion())
             .thenReturn(Mono.just(Optional.of(MAX_VERSION.next())));
 
-        assertThatThrownBy(server::start)
-            .isInstanceOfSatisfying(
-                StartUpChecksException.class,
-                exception -> assertThat(exception.badCheckNames())
-                    .containsOnly(CassandraSchemaVersionStartUpCheck.CHECK_NAME));
+        server.start();
+
+        assertThat(server.isStarted()).isFalse();
     }
 
     private String responseAfterConnectTo(GuiceJamesServer server) throws IOException {
@@ -148,6 +145,6 @@ class CassandraSchemaVersionStartUpCheckTest {
         socketChannel.read(byteBuffer);
         byte[] bytes = byteBuffer.array();
 
-        return new String(bytes, Charset.forName("UTF-8"));
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }
