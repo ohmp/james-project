@@ -163,18 +163,8 @@ class GuiceJamesServerStartUpCheckTest {
             .build();
 
         @Test
-        void startUpCheckFailsShouldThrowAnExceptionCarryingOnlyBadChecks(GuiceJamesServer server) {
-            assertThatThrownBy(server::start)
-                .isInstanceOfSatisfying(
-                    StartUpChecksPerformer.StartUpChecksException.class,
-                    exception -> assertThat(nameOfStartUpChecks(exception.getBadChecks()))
-                        .containsOnly(FailingStartUpCheck.CHECK_NAME));
-        }
-
-        @Test
         void serverShouldNotStartWhenAStartUpCheckFails(GuiceJamesServer server) {
-            assertThatThrownBy(server::start)
-                .isInstanceOf(StartUpChecksPerformer.StartUpChecksException.class);
+            server.start();
 
             assertThat(server.isStarted())
                 .isFalse();

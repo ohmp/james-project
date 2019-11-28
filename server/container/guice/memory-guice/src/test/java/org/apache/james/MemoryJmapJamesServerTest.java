@@ -68,12 +68,9 @@ class MemoryJmapJamesServerTest {
 
             @Test
             void jamesShouldNotStartWhenBadAliasKeyStore(GuiceJamesServer server) {
-                assertThatThrownBy(server::start)
-                    .isInstanceOfSatisfying(
-                        StartUpChecksPerformer.StartUpChecksException.class,
-                        ex -> assertThat(ex.badCheckNames())
-                            .containsOnly(JMAPConfigurationStartUpCheck.CHECK_NAME))
-                    .hasMessageContaining("Alias 'james' keystore can't be found");
+                server.start();
+
+                assertThat(server.isStarted()).isFalse();
             }
         }
 
@@ -92,12 +89,9 @@ class MemoryJmapJamesServerTest {
 
             @Test
             void jamesShouldNotStartWhenBadSecret(GuiceJamesServer server) {
-                assertThatThrownBy(server::start)
-                    .isInstanceOfSatisfying(
-                        StartUpChecksPerformer.StartUpChecksException.class,
-                        ex -> assertThat(ex.badCheckNames())
-                            .containsOnly(JMAPConfigurationStartUpCheck.CHECK_NAME))
-                    .hasMessageContaining("Keystore was tampered with, or password was incorrect");
+                server.start();
+
+                assertThat(server.isStarted()).isFalse();
             }
         }
     }
