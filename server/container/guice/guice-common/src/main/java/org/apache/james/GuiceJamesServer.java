@@ -88,7 +88,7 @@ public class GuiceJamesServer {
             injector.getInstance(InitializationOperations.class).initModules();
             guiceProbeProvider = injector.getInstance(GuiceProbeProvider.class);
             isStartedProbe.notifyStarted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.error("Fatal error while starting James", e);
             throw e;
         }
