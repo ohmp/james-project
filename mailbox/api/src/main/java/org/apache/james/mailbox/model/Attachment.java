@@ -23,9 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -128,17 +128,17 @@ public class Attachment {
     public boolean equals(Object obj) {
         if (obj instanceof Attachment) {
             Attachment other = (Attachment) obj;
-            return Objects.equal(attachmentId, other.attachmentId)
+            return Objects.equals(attachmentId, other.attachmentId)
                 && Arrays.equals(bytes, other.bytes)
-                && Objects.equal(type, other.type)
-                && Objects.equal(size, other.size);
+                && Objects.equals(type, other.type)
+                && Objects.equals(size, other.size);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(attachmentId, bytes, type, size);
+        return Objects.hash(attachmentId, bytes, type, size);
     }
 
     @Override
