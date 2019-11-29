@@ -53,6 +53,7 @@ Finally, please note that in case of a malformed URL the 400 bad request respons
  - [Deleted Messages Vault](#Deleted_Messages_Vault)
  - [Task management](#Task_management)
  - [Cassandra extra operations](#Cassandra_extra_operations)
+ - [JMAP extra operations](#Jmap_extra_operations)
 
 ## HealthCheck
 
@@ -3363,3 +3364,31 @@ Response codes :
  - 201: the taskId of the created task
  - 400: Invalid action argument for performing operation on mappings data
 
+## JMAP extra operations
+
+Some webadmin features to manage some extra operations on JMAP messages, like recomputing message previews.
+
+ - [Operations on message previews](#Operations_on_message_previews)
+
+### Operations on message previews
+
+You can do a series of action on message `previews` :
+
+```
+curl -XPOST /jmap/messages?action=[ACTION]
+```
+
+Will return the taskId corresponding to the related task. Actions supported so far are :
+
+ - recomputeJmapPreview : Will recompute and store the previews of all messages for each user.
+
+For example :
+
+```
+curl -XPOST /jmap/messages?action=recomputeJmapPreview
+```
+
+Response codes :
+
+ - 201: the taskId of the created task
+ - 400: Invalid action argument for performing operation on JMAP data
