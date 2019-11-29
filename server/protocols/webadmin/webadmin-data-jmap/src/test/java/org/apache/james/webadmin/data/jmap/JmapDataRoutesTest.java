@@ -86,7 +86,7 @@ class JmapDataRoutesTest {
                 jsonTransformer))
             .start();
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
-            .setBasePath("/jmap")
+            .setBasePath("/jmap/messages")
             .log(LogDetail.URI)
             .build();
     }

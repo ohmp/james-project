@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 
-import org.apache.james.core.Username;
 import org.apache.james.jmap.api.preview.MessagePreviewStore;
 import org.apache.james.jmap.api.preview.Preview;
 import org.apache.james.mailbox.MailboxManager;
@@ -48,13 +47,13 @@ public class MessagePreviewCorrector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagePreviewCorrector.class);
 
-    static class Context {
+    static class Progress {
         private final AtomicLong processedUserCount;
         private final AtomicLong processedMessageCount;
         private final AtomicLong failedUserCount;
         private final AtomicLong failedMessageCount;
 
-        Context() {
+        Progress() {
             failedUserCount = new AtomicLong();
             processedMessageCount = new AtomicLong();
             processedUserCount = new AtomicLong();
@@ -77,7 +76,7 @@ public class MessagePreviewCorrector {
             return failedMessageCount.get();
         }
 
-        boolean noFailure() {
+        boolean success() {
             return failedMessageCount.get() == 0 && failedUserCount.get() == 0;
         }
     }
@@ -96,43 +95,43 @@ public class MessagePreviewCorrector {
         this.previewFactory = previewFactory;
     }
 
-    Mono<Void> correctAllPreviews(Context context) {
+    Mono<Void> correctAllPreviews(Progress progress) {
         try {
             return Iterators.toFlux(usersRepository.list())
-                .concatMap(username -> correctAllPreviews(context, username))
+                .map(Throwing.function(mailboxManager::createSystemSession))
+                .concatMap(userSession -> correctUserPreviews(progress, userSession))
                 .then();
         } catch (UsersRepositoryException e) {
             return Mono.error(e);
         }
     }
 
-    private Mono<Void> correctAllPreviews(Context context, Username username) {
+    private Mono<Void> correctUserPreviews(Progress progress, MailboxSession session) {
         try {
-            MailboxSession session = mailboxManager.createSystemSession(username);
             return Flux.fromIterable(mailboxManager.search(MailboxQuery.privateMailboxesBuilder(session).build(), session))
-                .flatMap(mailboxMetadata -> Mono.fromCallable(() -> mailboxManager.getMailbox(mailboxMetadata.getId(), session)))
-                .concatMap(Throwing.function(messageManager -> correctAllPreviews(context, messageManager, session)))
-                .doOnComplete(context.processedUserCount::incrementAndGet)
+                .concatMap(mailboxMetadata -> Mono.fromCallable(() -> mailboxManager.getMailbox(mailboxMetadata.getId(), session)))
+                .concatMap(Throwing.function(messageManager -> correctUserMailboxPreviews(progress, messageManager, session)))
+                .doOnComplete(progress.processedUserCount::incrementAndGet)
                 .onErrorContinue((error, o) -> {
-                    LOGGER.error("JMAP preview re-computation aborted for {}", username, error);
-                    context.failedUserCount.incrementAndGet();
+                    LOGGER.error("JMAP preview re-computation aborted for {}", session.getUser().asString(), error);
+                    progress.failedUserCount.incrementAndGet();
                 })
                 .then();
         } catch (MailboxException e) {
-            LOGGER.error("JMAP preview re-computation aborted for {} as we failed listing user mailboxes", username, e);
-            context.failedUserCount.incrementAndGet();
+            LOGGER.error("JMAP preview re-computation aborted for {} as we failed listing user mailboxes", session.getUser().asString(), e);
+            progress.failedUserCount.incrementAndGet();
             return Mono.empty();
         }
     }
 
-    private Mono<Void> correctAllPreviews(Context context, MessageManager messageManager, MailboxSession session) throws MailboxException {
+    private Mono<Void> correctUserMailboxPreviews(Progress progress, MessageManager messageManager, MailboxSession session) throws MailboxException {
         return Iterators.toFlux(messageManager.getMessages(MessageRange.all(), FetchGroup.BODY_CONTENT, session))
             .map(Throwing.function(previewFactory::fromMessageResult))
             .flatMap(pair -> Mono.from(messagePreviewStore.store(pair.getKey(), pair.getValue()))
-                .doOnSuccess(any -> context.processedMessageCount.incrementAndGet()))
+                .doOnSuccess(any -> progress.processedMessageCount.incrementAndGet()))
             .onErrorContinue((error, triggeringValue) -> {
                 LOGGER.error("JMAP preview re-computation aborted for {} - {}", session.getUser(), triggeringValue, error);
-                context.failedMessageCount.incrementAndGet();
+                progress.failedMessageCount.incrementAndGet();
             })
             .then();
     }

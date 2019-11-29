@@ -31,7 +31,7 @@ class TaskFactory {
         this.messagePreviewCorrector = messagePreviewCorrector;
     }
 
-    Task recomputeAllPrevious() {
+    Task recomputeAllPreviews() {
         return new RecomputeAllPreviewsTask(messagePreviewCorrector);
     }
 }

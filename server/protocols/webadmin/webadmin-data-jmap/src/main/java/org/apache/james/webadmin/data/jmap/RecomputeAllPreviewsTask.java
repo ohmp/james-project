@@ -38,12 +38,12 @@ public class RecomputeAllPreviewsTask implements Task {
     static final TaskType TASK_TYPE = TaskType.of("RecomputeAllPreviewsTask");
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private static AdditionalInformation from(MessagePreviewCorrector.Context context) {
+        private static AdditionalInformation from(MessagePreviewCorrector.Progress progress) {
             return new AdditionalInformation(
-                context.getProcessedUserCount(),
-                context.getProcessedMessageCount(),
-                context.getFailedUserCount(),
-                context.getFailedMessageCount(),
+                progress.getProcessedUserCount(),
+                progress.getProcessedMessageCount(),
+                progress.getFailedUserCount(),
+                progress.getFailedMessageCount(),
                 Clock.systemUTC().instant());
         }
 
@@ -83,10 +83,10 @@ public class RecomputeAllPreviewsTask implements Task {
         }
     }
 
-    public static class RecomputeAllPreviousTaskDTO implements TaskDTO {
+    public static class RecomputeAllPreviewsTaskDTO implements TaskDTO {
         private final String type;
 
-        public RecomputeAllPreviousTaskDTO(@JsonProperty("type") String type) {
+        public RecomputeAllPreviewsTaskDTO(@JsonProperty("type") String type) {
             this.type = type;
         }
 
@@ -96,31 +96,31 @@ public class RecomputeAllPreviewsTask implements Task {
         }
     }
 
-    public static TaskDTOModule<RecomputeAllPreviewsTask, RecomputeAllPreviousTaskDTO> module(MessagePreviewCorrector corrector) {
+    public static TaskDTOModule<RecomputeAllPreviewsTask, RecomputeAllPreviewsTaskDTO> module(MessagePreviewCorrector corrector) {
         return DTOModule
             .forDomainObject(RecomputeAllPreviewsTask.class)
-            .convertToDTO(RecomputeAllPreviousTaskDTO.class)
+            .convertToDTO(RecomputeAllPreviewsTaskDTO.class)
             .toDomainObjectConverter(dto -> new RecomputeAllPreviewsTask(corrector))
-            .toDTOConverter((task, type) -> new RecomputeAllPreviousTaskDTO(type))
+            .toDTOConverter((task, type) -> new RecomputeAllPreviewsTaskDTO(type))
             .typeName(TASK_TYPE.asString())
             .withFactory(TaskDTOModule::new);
     }
 
     private final MessagePreviewCorrector corrector;
-    private final MessagePreviewCorrector.Context context;
+    private final MessagePreviewCorrector.Progress progress;
 
     RecomputeAllPreviewsTask(MessagePreviewCorrector corrector) {
         this.corrector = corrector;
-        this.context = new MessagePreviewCorrector.Context();
+        this.progress = new MessagePreviewCorrector.Progress();
     }
 
     @Override
     public Result run() {
-        corrector.correctAllPreviews(context)
+        corrector.correctAllPreviews(progress)
             .subscribeOn(Schedulers.boundedElastic())
             .block();
 
-        if (context.noFailure()) {
+        if (progress.success()) {
             return Result.COMPLETED;
         }
         return Result.PARTIAL;
@@ -133,6 +133,6 @@ public class RecomputeAllPreviewsTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(AdditionalInformation.from(context));
+        return Optional.of(AdditionalInformation.from(progress));
     }
 }
