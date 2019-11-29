@@ -40,6 +40,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraAttachmentDAOTest {
     private static final AttachmentId ATTACHMENT_ID = AttachmentId.from("id1");
     private static final AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
+    public static final byte[] BYTES = "{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8);
+    public static final byte[] BYTES2 = "{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8);
+    public static final byte[] BYTES1 = "{\"property\":`\"value1\"}".getBytes(StandardCharsets.UTF_8);
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraAttachmentModule.MODULE);
@@ -54,7 +57,7 @@ class CassandraAttachmentDAOTest {
 
     @Test
     void getAttachmentShouldReturnEmptyWhenAbsent() {
-        Optional<Attachment> attachment = testee.getAttachment(ATTACHMENT_ID).blockOptional();
+        Optional<Attachment.WithBytes> attachment = testee.getAttachment(ATTACHMENT_ID).blockOptional();
 
         assertThat(attachment).isEmpty();
     }
@@ -70,16 +73,14 @@ class CassandraAttachmentDAOTest {
 
     @Test
     void retrieveAllShouldReturnStoredAttachments() throws Exception {
-        Attachment attachment1 = Attachment.builder()
+        Attachment.WithBytes attachment1 = Attachment.builder()
             .attachmentId(ATTACHMENT_ID)
             .type("application/json")
-            .bytes("{\"property\":`\"value1\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-        Attachment attachment2 = Attachment.builder()
+            .buildWithBytes(BYTES1);
+        Attachment.WithBytes attachment2 = Attachment.builder()
             .attachmentId(ATTACHMENT_ID_2)
             .type("application/json")
-            .bytes("{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
+            .buildWithBytes(BYTES2);
         testee.storeAttachment(attachment1).block();
         testee.storeAttachment(attachment2).block();
 
@@ -92,30 +93,28 @@ class CassandraAttachmentDAOTest {
 
     @Test
     void getAttachmentShouldReturnAttachmentWhenStored() throws Exception {
-        Attachment attachment = Attachment.builder()
+        Attachment.WithBytes attachment = Attachment.builder()
             .attachmentId(ATTACHMENT_ID)
             .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
+            .buildWithBytes(BYTES);
         testee.storeAttachment(attachment).block();
 
-        Optional<Attachment> actual = testee.getAttachment(ATTACHMENT_ID).blockOptional();
+        Optional<Attachment.WithBytes> actual = testee.getAttachment(ATTACHMENT_ID).blockOptional();
 
         assertThat(actual).contains(attachment);
     }
 
     @Test
     void deleteAttachmentShouldRemoveAttachment() throws Exception {
-        Attachment attachment = Attachment.builder()
+        Attachment.WithBytes attachment = Attachment.builder()
             .attachmentId(ATTACHMENT_ID)
             .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
+            .buildWithBytes(BYTES);
         testee.storeAttachment(attachment).block();
 
-        testee.deleteAttachment(attachment.getAttachmentId()).block();
+        testee.deleteAttachment(attachment.getMetadata().getAttachmentId()).block();
 
-        assertThat(testee.getAttachment(attachment.getAttachmentId()).blockOptional())
+        assertThat(testee.getAttachment(attachment.getMetadata().getAttachmentId()).blockOptional())
             .isEmpty();
     }
 }

@@ -78,11 +78,6 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
             .orElseThrow(() -> new AttachmentNotFoundException(attachmentId.getId()));
     }
 
-    private Mono<Attachment> retrievePayload(DAOAttachment daoAttachment) {
-        return blobStore.readBytes(blobStore.getDefaultBucketName(), daoAttachment.getBlobId())
-            .map(daoAttachment::toAttachment);
-    }
-
     @Override
     public List<Attachment> getAttachments(Collection<AttachmentId> attachmentIds) {
         Preconditions.checkArgument(attachmentIds != null);
@@ -92,32 +87,33 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
             .block();
     }
 
-    public Mono<Attachment> getAttachmentsAsMono(AttachmentId attachmentId) {
+    Mono<Attachment> getAttachmentsAsMono(AttachmentId attachmentId) {
         return getAttachmentInternal(attachmentId)
             .switchIfEmpty(ReactorUtils.executeAndEmpty(() -> logNotFound((attachmentId))));
     }
 
     private Mono<Attachment> getAttachmentInternal(AttachmentId id) {
         return attachmentDAOV2.getAttachment(id)
-            .flatMap(this::retrievePayload)
+            .map(DAOAttachment::toAttachment)
             .switchIfEmpty(fallbackToV1(id));
     }
 
     private Mono<Attachment> fallbackToV1(AttachmentId attachmentId) {
-        return attachmentDAO.getAttachment(attachmentId);
+        return attachmentDAO.getAttachment(attachmentId)
+            .map(Attachment.WithBytes::getMetadata);
     }
 
     @Override
-    public void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException {
-        ownerDAO.addOwner(attachment.getAttachmentId(), owner)
+    public void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException {
+        ownerDAO.addOwner(attachment.getMetadata().getAttachmentId(), owner)
             .then(blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes()))
-            .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
+            .map(blobId -> CassandraAttachmentDAOV2.from(attachment.getMetadata(), blobId))
             .flatMap(attachmentDAOV2::storeAttachment)
             .block();
     }
 
     @Override
-    public void storeAttachmentsForMessage(Collection<Attachment> attachments, MessageId ownerMessageId) throws MailboxException {
+    public void storeAttachmentsForMessage(Collection<Attachment.WithBytes> attachments, MessageId ownerMessageId) throws MailboxException {
         Flux.fromIterable(attachments)
             .flatMap(attachment -> storeAttachmentAsync(attachment, ownerMessageId))
             .then()
@@ -136,9 +132,38 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
         return ownerDAO.retrieveOwners(attachmentId).collect(Guavate.toImmutableList()).block();
     }
 
-    public Mono<Void> storeAttachmentAsync(Attachment attachment, MessageId ownerMessageId) {
+    @Override
+    public Attachment.WithBytes retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException {
+        return retrieveContentAsync(attachmentId).blockOptional()
+            .orElseThrow(() -> new AttachmentNotFoundException(attachmentId.getId()));
+    }
+
+    @Override
+    public List<Attachment.WithBytes> retrieveContents(Collection<AttachmentId> attachmentIds) {
+        return Flux.fromIterable(attachmentIds)
+            .concatMap(this::retrieveContentAsync)
+            .collect(Guavate.toImmutableList())
+            .block();
+    }
+
+    private Mono<Attachment.WithBytes> retrieveContentAsync(AttachmentId attachmentId) {
+        return attachmentDAOV2.getAttachment(attachmentId)
+            .flatMap(this::retrievePayload)
+            .switchIfEmpty(fallbackToV1WithBytes(attachmentId));
+    }
+
+    private Mono<Attachment.WithBytes> retrievePayload(DAOAttachment daoAttachment) {
+        return blobStore.readBytes(blobStore.getDefaultBucketName(), daoAttachment.getBlobId())
+            .map(data -> daoAttachment.toAttachment().withBytes(data));
+    }
+
+    private Mono<Attachment.WithBytes> fallbackToV1WithBytes(AttachmentId attachmentId) {
+        return attachmentDAO.getAttachment(attachmentId);
+    }
+
+    private Mono<Void> storeAttachmentAsync(Attachment.WithBytes attachment, MessageId ownerMessageId) {
         return blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes())
-            .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
+            .map(blobId -> CassandraAttachmentDAOV2.from(attachment.getMetadata(), blobId))
             .flatMap(daoAttachment -> storeAttachmentWithIndex(daoAttachment, ownerMessageId));
     }
 

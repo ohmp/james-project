@@ -96,7 +96,7 @@ public class CassandraAttachmentDAO {
             .from(TABLE_NAME));
     }
 
-    public Mono<Attachment> getAttachment(AttachmentId attachmentId) {
+    public Mono<Attachment.WithBytes> getAttachment(AttachmentId attachmentId) {
         Preconditions.checkArgument(attachmentId != null);
         return cassandraAsyncExecutor.executeSingleRow(
             selectStatement.bind()
@@ -104,7 +104,7 @@ public class CassandraAttachmentDAO {
             .map(this::attachment);
     }
 
-    public Flux<Attachment> retrieveAll() {
+    public Flux<Attachment.WithBytes> retrieveAll() {
         return cassandraAsyncExecutor.executeRows(
                 selectAllStatement.bind()
                     .setReadTimeoutMillis(configuration.getAttachmentV2MigrationReadTimeout())
@@ -112,12 +112,12 @@ public class CassandraAttachmentDAO {
             .map(this::attachment);
     }
 
-    public Mono<Void> storeAttachment(Attachment attachment) throws IOException {
+    public Mono<Void> storeAttachment(Attachment.WithBytes attachment) throws IOException {
         return cassandraAsyncExecutor.executeVoid(
             insertStatement.bind()
-                .setString(ID, attachment.getAttachmentId().getId())
-                .setLong(SIZE, attachment.getSize())
-                .setString(TYPE, attachment.getType())
+                .setString(ID, attachment.getMetadata().getAttachmentId().getId())
+                .setLong(SIZE, attachment.getMetadata().getSize())
+                .setString(TYPE, attachment.getMetadata().getType())
                 .setBytes(PAYLOAD, ByteBuffer.wrap(attachment.getBytes())));
     }
 
@@ -128,11 +128,12 @@ public class CassandraAttachmentDAO {
                 .setString(ID, attachmentId.getId()));
     }
 
-    private Attachment attachment(Row row) {
+    private Attachment.WithBytes attachment(Row row) {
+        byte[] bytes = row.getBytes(PAYLOAD).array();
+
         return Attachment.builder()
             .attachmentId(AttachmentId.from(row.getString(ID)))
-            .bytes(row.getBytes(PAYLOAD).array())
             .type(row.getString(TYPE))
-            .build();
+            .buildWithBytes(bytes);
     }
 }

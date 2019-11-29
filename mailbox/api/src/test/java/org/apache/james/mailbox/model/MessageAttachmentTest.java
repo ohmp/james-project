@@ -22,16 +22,20 @@ package org.apache.james.mailbox.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 class MessageAttachmentTest {
 
+    public static final byte[] BYTES = "content".getBytes(StandardCharsets.UTF_8);
+
     @Test
     void buildShouldThrowWhenAttachmentIsNotGiven() {
         assertThatThrownBy(() -> MessageAttachment.builder()
-                .build())
+
+            .build())
             .isInstanceOf(IllegalStateException.class);
     }
 
@@ -45,9 +49,10 @@ class MessageAttachmentTest {
     @Test
     void buildShouldWorkWhenMandatoryAttributesAreGiven() {
         Attachment attachment = Attachment.builder()
-                .bytes("content".getBytes())
                 .type("type")
-                .build();
+
+
+    .size(36)        .build();
         MessageAttachment expectedMessageAttachment = new MessageAttachment(attachment, Optional.empty(), Optional.empty(), false);
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
@@ -60,9 +65,10 @@ class MessageAttachmentTest {
     @Test
     void buildShouldAcceptIsInlineAndNoCid() {
         Attachment attachment = Attachment.builder()
-                .bytes("content".getBytes())
                 .type("type")
-                .build();
+
+
+    .size(36)        .build();
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
             .attachment(attachment)
@@ -75,9 +81,10 @@ class MessageAttachmentTest {
     @Test
     void buildShouldSetAttributesWhenAllAreGiven() {
         Attachment attachment = Attachment.builder()
-                .bytes("content".getBytes())
                 .type("type")
-                .build();
+
+
+    .size(36)        .build();
         MessageAttachment expectedMessageAttachment = new MessageAttachment(attachment, Optional.of("name"), Optional.of(Cid.from("cid")), true);
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
@@ -93,8 +100,8 @@ class MessageAttachmentTest {
     @Test
     void isInlinedWithCidShouldReturnTrueWhenIsInlineAndHasCid() throws Exception {
         Attachment attachment = Attachment.builder()
-            .bytes("content".getBytes())
             .type("type")
+            .size(36)
             .build();
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
@@ -110,8 +117,8 @@ class MessageAttachmentTest {
     @Test
     void isInlinedWithCidShouldReturnFalseWhenIsNotInline() throws Exception {
         Attachment attachment = Attachment.builder()
-            .bytes("content".getBytes())
             .type("type")
+            .size(36)
             .build();
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
@@ -127,8 +134,8 @@ class MessageAttachmentTest {
     @Test
     void isInlinedWithCidShouldReturnFalseWhenIsInlineButNoCid() throws Exception {
         Attachment attachment = Attachment.builder()
-            .bytes("content".getBytes())
             .type("type")
+            .size(36)
             .build();
 
         MessageAttachment messageAttachment = MessageAttachment.builder()

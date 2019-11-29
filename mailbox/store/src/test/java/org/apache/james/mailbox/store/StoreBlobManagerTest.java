@@ -75,12 +75,11 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldReturnBlobWhenAttachment() throws Exception {
-        when(attachmentManager.getAttachment(ATTACHMENT_ID, session))
+        when(attachmentManager.retrieveContent(ATTACHMENT_ID, session))
             .thenReturn(Attachment.builder()
                 .attachmentId(ATTACHMENT_ID)
-                .bytes(BYTES)
                 .type(CONTENT_TYPE)
-                .build());
+                .buildWithBytes(BYTES));
 
         assertThat(blobManager.retrieve(BLOB_ID_ATTACHMENT, session))
             .isEqualTo(Blob.builder()
@@ -92,7 +91,7 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldThrowWhenNotFound() throws Exception {
-        when(attachmentManager.getAttachment(ATTACHMENT_ID, session))
+        when(attachmentManager.retrieveContent(ATTACHMENT_ID, session))
             .thenThrow(new AttachmentNotFoundException(ID));
         when(messageIdManager.getMessages(ImmutableList.of(MESSAGE_ID), FetchGroup.FULL_CONTENT, session))
             .thenReturn(ImmutableList.of());
@@ -103,7 +102,7 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldReturnBlobWhenMessage() throws Exception {
-        when(attachmentManager.getAttachment(any(), any()))
+        when(attachmentManager.retrieveContent(any(), any()))
             .thenThrow(new AttachmentNotFoundException(ID));
 
         MessageResult messageResult = mock(MessageResult.class);
@@ -123,7 +122,7 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldThrowOnMailboxExceptionWhenRetrievingAttachment() throws Exception {
-        when(attachmentManager.getAttachment(any(), any()))
+        when(attachmentManager.retrieveContent(any(), any()))
             .thenThrow(new MailboxException());
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_MESSAGE, session))

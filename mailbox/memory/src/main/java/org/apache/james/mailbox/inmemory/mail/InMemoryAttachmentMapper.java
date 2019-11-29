@@ -21,6 +21,7 @@ package org.apache.james.mailbox.inmemory.mail;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.james.core.Username;
@@ -30,7 +31,11 @@ import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
+import org.apache.james.util.OptionalUtils;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.functions.FunctionChainer;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -39,9 +44,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 public class InMemoryAttachmentMapper implements AttachmentMapper {
-    
     private static final int INITIAL_SIZE = 128;
-    private final Map<AttachmentId, Attachment> attachmentsById;
+
+    private final Map<AttachmentId, Attachment.WithBytes> attachmentsById;
     private final Multimap<AttachmentId, MessageId> messageIdsByAttachmentId;
     private final Multimap<AttachmentId, Username> ownersByAttachmentId;
 
@@ -53,11 +58,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
 
     @Override
     public Attachment getAttachment(AttachmentId attachmentId) throws AttachmentNotFoundException {
-        Preconditions.checkArgument(attachmentId != null);
-        if (!attachmentsById.containsKey(attachmentId)) {
-            throw new AttachmentNotFoundException(attachmentId.getId());
-        }
-        return attachmentsById.get(attachmentId);
+        return retrieveContent(attachmentId).getMetadata();
     }
 
     @Override
@@ -66,16 +67,16 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
         Builder<Attachment> builder = ImmutableList.builder();
         for (AttachmentId attachmentId : attachmentIds) {
             if (attachmentsById.containsKey(attachmentId)) {
-                builder.add(attachmentsById.get(attachmentId));
+                builder.add(attachmentsById.get(attachmentId).getMetadata());
             }
         }
         return builder.build();
     }
 
     @Override
-    public void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException {
-        attachmentsById.put(attachment.getAttachmentId(), attachment);
-        ownersByAttachmentId.put(attachment.getAttachmentId(), owner);
+    public void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException {
+        attachmentsById.put(attachment.getMetadata().getAttachmentId(), attachment);
+        ownersByAttachmentId.put(attachment.getMetadata().getAttachmentId(), owner);
     }
 
     @Override
@@ -89,10 +90,10 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public void storeAttachmentsForMessage(Collection<Attachment> attachments, MessageId ownerMessageId) throws MailboxException {
-        for (Attachment attachment: attachments) {
-            attachmentsById.put(attachment.getAttachmentId(), attachment);
-            messageIdsByAttachmentId.put(attachment.getAttachmentId(), ownerMessageId);
+    public void storeAttachmentsForMessage(Collection<Attachment.WithBytes> attachments, MessageId ownerMessageId) throws MailboxException {
+        for (Attachment.WithBytes attachment: attachments) {
+            attachmentsById.put(attachment.getMetadata().getAttachmentId(), attachment);
+            messageIdsByAttachmentId.put(attachment.getMetadata().getAttachmentId(), ownerMessageId);
         }
     }
 
@@ -104,5 +105,24 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     @Override
     public Collection<Username> getOwners(final AttachmentId attachmentId) throws MailboxException {
         return ownersByAttachmentId.get(attachmentId);
+    }
+
+    @Override
+    public Attachment.WithBytes retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException {
+        Preconditions.checkArgument(attachmentId != null);
+        if (!attachmentsById.containsKey(attachmentId)) {
+            throw new AttachmentNotFoundException(attachmentId.getId());
+        }
+        return attachmentsById.get(attachmentId);
+    }
+
+    @Override
+    public List<Attachment.WithBytes> retrieveContents(Collection<AttachmentId> attachmentIds) {
+        FunctionChainer<AttachmentId, Optional<Attachment.WithBytes>> retrieveContent = Throwing.function(id -> Optional.of(retrieveContent(id)));
+
+        return attachmentIds.stream()
+            .map(retrieveContent.fallbackTo(any -> Optional.empty()))
+            .flatMap(OptionalUtils::toStream)
+            .collect(Guavate.toImmutableList());
     }
 }

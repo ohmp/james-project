@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 class MIMEMessageConverterTest {
-    
+
     @Test
     void convertToMimeShouldAddInReplyToHeaderWhenProvided() {
         // Given
@@ -597,15 +597,16 @@ class MIMEMessageConverterTest {
             String expectedMimeType = "image/png";
             String text = "123456";
             TextBody expectedBody = new BasicBodyFactory().textBody(text.getBytes(), StandardCharsets.UTF_8);
-            MessageAttachment attachment = MessageAttachment.builder()
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes(text.getBytes())
+                    .size(text.getBytes(StandardCharsets.UTF_8).length)
                     .type(expectedMimeType)
                     .build())
                 .cid(Cid.from(expectedCID))
                 .isInline(true)
-                .build();
+                .build()
+                .withBytes(text.getBytes(StandardCharsets.UTF_8));
 
             // When
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
@@ -644,15 +645,16 @@ class MIMEMessageConverterTest {
             String expectedMimeType = "image/png";
             String text = "123456";
             TextBody expectedAttachmentBody = new BasicBodyFactory().textBody(text.getBytes(), StandardCharsets.UTF_8);
-            MessageAttachment attachment = MessageAttachment.builder()
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes(text.getBytes())
+                    .size(text.getBytes(StandardCharsets.UTF_8).length)
                     .type(expectedMimeType)
                     .build())
                 .cid(Cid.from(expectedCID))
                 .isInline(true)
-                .build();
+                .build()
+                .withBytes(text.getBytes(StandardCharsets.UTF_8));
 
             // When
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
@@ -694,7 +696,7 @@ class MIMEMessageConverterTest {
                     .build();
 
             // When
-            ImmutableList<MessageAttachment> attachments = ImmutableList.of();
+            ImmutableList<MessageAttachment.WithBytes> attachments = ImmutableList.of();
             byte[] convert = sut.convert(new ValueWithId.CreationMessageEntry(
                     CreationMessageId.of("user|mailbox|1"), testMessage), attachments);
 
@@ -722,16 +724,17 @@ class MIMEMessageConverterTest {
             String text = "123456";
             String name = "ديناصور.png";
             String expectedName = EncoderUtil.encodeEncodedWord(name, Usage.TEXT_TOKEN);
-            MessageAttachment attachment = MessageAttachment.builder()
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .name(name)
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes(text.getBytes())
+                    .size(text.getBytes(StandardCharsets.UTF_8).length)
                     .type(expectedMimeType)
                     .build())
                 .cid(Cid.from(expectedCID))
                 .isInline(true)
-                .build();
+                .build()
+                .withBytes(text.getBytes(StandardCharsets.UTF_8));
 
             // When
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
@@ -757,16 +760,18 @@ class MIMEMessageConverterTest {
                 .htmlBody("Hello <b>all<b>!")
                 .build();
 
-            MessageAttachment attachment = MessageAttachment.builder()
+            byte[] bytes = "123456".getBytes(StandardCharsets.UTF_8);
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .name("ديناصور.png")
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes("123456".getBytes())
+                    .size(bytes.length)
                     .type("image/png")
                     .build())
                 .cid(Cid.from("cid"))
                 .isInline(false)
-                .build();
+                .build()
+                .withBytes(bytes);
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                 CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment));
@@ -787,16 +792,18 @@ class MIMEMessageConverterTest {
                 .htmlBody("Hello <b>all<b>!")
                 .build();
 
-            MessageAttachment attachment = MessageAttachment.builder()
+            byte[] bytes = "123456".getBytes(StandardCharsets.UTF_8);
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .name("ديناصور.png")
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes("123456".getBytes())
+                    .size(bytes.length)
                     .type("image/png")
                     .build())
                 .cid(Cid.from("cid"))
                 .isInline(false)
-                .build();
+                .build()
+                .withBytes(bytes);
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                 CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment));
@@ -817,16 +824,18 @@ class MIMEMessageConverterTest {
                 .htmlBody("Hello <b>all<b>!")
                 .build();
 
-            MessageAttachment attachment = MessageAttachment.builder()
+            byte[] bytes = "123456".getBytes(StandardCharsets.UTF_8);
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .name("ديناصور.png")
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes("123456".getBytes())
+                    .size(bytes.length)
                     .type("image/png")
                     .build())
                 .cid(Cid.from("cid"))
                 .isInline(false)
-                .build();
+                .build()
+                .withBytes(bytes);
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                 CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment));
@@ -848,17 +857,19 @@ class MIMEMessageConverterTest {
                 .htmlBody("Hello <b>all<b>!")
                 .build();
 
+            byte[] bytes = "123456".getBytes(StandardCharsets.UTF_8);
             String name = "ديناصور.png";
-            MessageAttachment attachment = MessageAttachment.builder()
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .name(name)
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes("123456".getBytes())
+                    .size(bytes.length)
                     .type("image/png")
                     .build())
                 .cid(Cid.from("cid"))
                 .isInline(true)
-                .build();
+                .build()
+                .withBytes(bytes);
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                     CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment));
@@ -883,27 +894,30 @@ class MIMEMessageConverterTest {
                 .htmlBody("Hello <b>all<b>!")
                 .build();
 
-            MessageAttachment inline = MessageAttachment.builder()
+            byte[] bytes = "inline data".getBytes(StandardCharsets.UTF_8);
+            MessageAttachment.WithBytes inline = MessageAttachment.builder()
                 .name("ديناصور.png")
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId"))
-                    .bytes("inline data".getBytes())
+                    .size(bytes.length)
                     .type("image/png")
                     .build())
                 .cid(Cid.from("cid"))
                 .isInline(true)
-                .build();
+                .build()
+                .withBytes(bytes);
 
-            MessageAttachment attachment = MessageAttachment.builder()
+            MessageAttachment.WithBytes attachment = MessageAttachment.builder()
                 .name("att.pdf")
                 .attachment(org.apache.james.mailbox.model.Attachment.builder()
                     .attachmentId(AttachmentId.from("blodId2"))
-                    .bytes("attachment data".getBytes())
+                    .size(bytes.length)
                     .type("image/png")
                     .build())
                 .cid(Cid.from("cid2"))
                 .isInline(false)
-                .build();
+                .build()
+                .withBytes(bytes);
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                     CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(inline, attachment));

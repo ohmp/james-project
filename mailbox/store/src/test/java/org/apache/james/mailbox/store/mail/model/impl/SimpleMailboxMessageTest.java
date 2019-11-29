@@ -185,7 +185,7 @@ public class SimpleMailboxMessageTest {
         MessageUid uid = MessageUid.of(45);
         MessageAttachment messageAttachment = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("".getBytes(StandardCharsets.UTF_8))
+                .size(0)
                 .type("type")
                 .build())
             .name("name")

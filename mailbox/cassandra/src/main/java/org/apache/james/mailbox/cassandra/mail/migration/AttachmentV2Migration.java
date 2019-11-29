@@ -54,10 +54,10 @@ public class AttachmentV2Migration implements Migration {
             .blockLast();
     }
 
-    private Mono<Void> migrateAttachment(Attachment attachment) {
+    private Mono<Void> migrateAttachment(Attachment.WithBytes attachment) {
         return blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes())
-            .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
+            .map(blobId -> CassandraAttachmentDAOV2.from(attachment.getMetadata(), blobId))
             .flatMap(attachmentDAOV2::storeAttachment)
-            .then(attachmentDAOV1.deleteAttachment(attachment.getAttachmentId()));
+            .then(attachmentDAOV1.deleteAttachment(attachment.getMetadata().getAttachmentId()));
     }
 }

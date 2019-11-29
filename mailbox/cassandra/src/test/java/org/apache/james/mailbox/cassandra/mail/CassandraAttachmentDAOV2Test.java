@@ -21,7 +21,6 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
@@ -65,7 +64,7 @@ class CassandraAttachmentDAOV2Test {
         Attachment attachment = Attachment.builder()
             .attachmentId(ATTACHMENT_ID)
             .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
+            .size(28)
             .build();
         BlobId blobId = BLOB_ID_FACTORY.from("blobId");
         DAOAttachment daoAttachment = CassandraAttachmentDAOV2.from(attachment, blobId);

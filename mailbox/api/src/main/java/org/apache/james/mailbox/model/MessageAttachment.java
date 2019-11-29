@@ -26,6 +26,32 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 public class MessageAttachment {
+    public static class WithBytes {
+        private final byte[] bytes;
+        private final MessageAttachment metadata;
+
+        public WithBytes(byte[] bytes, MessageAttachment metadata) {
+            Preconditions.checkArgument(bytes != null);
+            this.bytes = bytes;
+            this.metadata = metadata;
+        }
+
+        public MessageAttachment getMetadata() {
+            return metadata;
+        }
+
+        public Attachment getAttachment() {
+            return metadata.attachment;
+        }
+
+        public Attachment.WithBytes getAttachmentWithBytes() {
+            return metadata.attachment.withBytes(bytes);
+        }
+
+        public byte[] getBytes() {
+            return bytes;
+        }
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -111,6 +137,12 @@ public class MessageAttachment {
 
     public boolean isInlinedWithCid() {
         return isInline && cid.isPresent();
+    }
+
+    public MessageAttachment.WithBytes withBytes(byte[] bytes) {
+        Preconditions.checkNotNull(bytes);
+        Preconditions.checkArgument(bytes.length == attachment.getSize(), "Provided content do not match attachment size");
+        return new WithBytes(bytes, this);
     }
 
     @Override

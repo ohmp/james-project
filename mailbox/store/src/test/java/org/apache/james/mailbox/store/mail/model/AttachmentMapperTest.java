@@ -41,8 +41,16 @@ public abstract class AttachmentMapperTest {
     private static final AttachmentId UNKNOWN_ATTACHMENT_ID = AttachmentId.from("unknown");
     private static final Username OWNER = Username.of("owner");
     private static final Username ADDITIONAL_OWNER = Username.of("additionalOwner");
+    private static final byte[] OTHER_BYTES = "something different".getBytes(StandardCharsets.UTF_8);
 
     private AttachmentMapper attachmentMapper;
+    private static final byte[] BYTES = "payload".getBytes(StandardCharsets.UTF_8);
+    private static final Attachment.WithBytes ATTACHMENT = Attachment.builder()
+        .type("content")
+        .buildWithBytes(BYTES);
+    private static final Attachment.WithBytes OTHER_ATTACHMENT = Attachment.builder()
+        .type("content")
+        .buildWithBytes(OTHER_BYTES);
 
     protected abstract AttachmentMapper createAttachmentMapper();
 
@@ -66,40 +74,53 @@ public abstract class AttachmentMapperTest {
     }
 
     @Test
+    void retrieveContentShouldThrowWhenNonReferencedAttachmentId() {
+        assertThatThrownBy(() -> attachmentMapper.retrieveContent(UNKNOWN_ATTACHMENT_ID))
+            .isInstanceOf(AttachmentNotFoundException.class);
+    }
+
+    @Test
     void getAttachmentShouldReturnTheAttachmentWhenReferenced() throws Exception {
         //Given
-        Attachment expected = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = expected.getAttachmentId();
-        attachmentMapper.storeAttachmentForOwner(expected, OWNER);
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
         //When
         Attachment attachment = attachmentMapper.getAttachment(attachmentId);
         //Then
-        assertThat(attachment).isEqualTo(expected);
+        assertThat(attachment).isEqualTo(ATTACHMENT.getMetadata());
+    }
+
+    @Test
+    void retrieveContentShouldReturnTheAttachmentWhenReferenced() throws Exception {
+        //Given
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
+        //When
+        Attachment.WithBytes attachment = attachmentMapper.retrieveContent(attachmentId);
+        //Then
+        assertThat(attachment).isEqualTo(ATTACHMENT);
     }
 
     @Test
     void getAttachmentShouldReturnTheAttachmentsWhenMultipleStored() throws Exception {
         //Given
-        Attachment expected1 = Attachment.builder()
-                .bytes("payload1".getBytes(StandardCharsets.UTF_8))
+        byte[] bytes = "payload1".getBytes(StandardCharsets.UTF_8);
+        byte[] bytes2 = "payload2".getBytes(StandardCharsets.UTF_8);
+        Attachment.WithBytes expected1 = Attachment.builder()
                 .type("content1")
-                .build();
-        Attachment expected2 = Attachment.builder()
-                .bytes("payload2".getBytes(StandardCharsets.UTF_8))
+                .buildWithBytes(bytes);
+        Attachment.WithBytes expected2 = Attachment.builder()
                 .type("content2")
-                .build();
-        AttachmentId attachmentId1 = expected1.getAttachmentId();
-        AttachmentId attachmentId2 = expected2.getAttachmentId();
+                .buildWithBytes(bytes2);
+        AttachmentId attachmentId1 = expected1.getMetadata().getAttachmentId();
+        AttachmentId attachmentId2 = expected2.getMetadata().getAttachmentId();
         //When
         attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(expected1, expected2), generateMessageId());
         //Then
         Attachment attachment1 = attachmentMapper.getAttachment(attachmentId1);
         Attachment attachment2 = attachmentMapper.getAttachment(attachmentId2);
-        assertThat(attachment1).isEqualTo(expected1);
-        assertThat(attachment2).isEqualTo(expected2);
+        assertThat(attachment1).isEqualTo(expected1.getMetadata());
+        assertThat(attachment2).isEqualTo(expected2.getMetadata());
     }
 
     @Test
@@ -118,24 +139,20 @@ public abstract class AttachmentMapperTest {
     @Test
     void getAttachmentsShouldReturnTheAttachmentsWhenSome() throws Exception {
         //Given
-        Attachment expected = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = expected.getAttachmentId();
-        attachmentMapper.storeAttachmentForOwner(expected, OWNER);
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
 
-        Attachment expected2 = Attachment.builder()
-                .bytes("payload2".getBytes(StandardCharsets.UTF_8))
+        byte[] bytes = "payload2".getBytes(StandardCharsets.UTF_8);
+        Attachment.WithBytes expected2 = Attachment.builder()
                 .type("content")
-                .build();
-        AttachmentId attachmentId2 = expected2.getAttachmentId();
+                .buildWithBytes(bytes);
+        AttachmentId attachmentId2 = expected2.getMetadata().getAttachmentId();
         attachmentMapper.storeAttachmentForOwner(expected2, OWNER);
 
         //When
         List<Attachment> attachments = attachmentMapper.getAttachments(ImmutableList.of(attachmentId, attachmentId2));
         //Then
-        assertThat(attachments).contains(expected, expected2);
+        assertThat(attachments).contains(ATTACHMENT.getMetadata(), expected2.getMetadata());
     }
 
     @Test
@@ -148,12 +165,8 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnerMessageIdsShouldReturnEmptyWhenStoredWithoutMessageId() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = attachment.getAttachmentId();
-        attachmentMapper.storeAttachmentForOwner(attachment, OWNER);
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
         
         //When
         Collection<MessageId> messageIds = attachmentMapper.getRelatedMessageIds(attachmentId);
@@ -164,13 +177,9 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnerMessageIdsShouldReturnMessageIdWhenStoredWithMessageId() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = attachment.getAttachmentId();
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
         MessageId messageId = generateMessageId();
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageId);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), messageId);
         
         //When
         Collection<MessageId> messageIds = attachmentMapper.getRelatedMessageIds(attachmentId);
@@ -181,15 +190,11 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnerMessageIdsShouldReturnTwoMessageIdsWhenStoredTwice() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = attachment.getAttachmentId();
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
         MessageId messageId1 = generateMessageId();
         MessageId messageId2 = generateMessageId();
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageId1);
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageId2);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), messageId1);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), messageId2);
         
         //When
         Collection<MessageId> messageIds = attachmentMapper.getRelatedMessageIds(attachmentId);
@@ -200,19 +205,11 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnerMessageIdsShouldReturnOnlyMatchingMessageId() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        Attachment otherAttachment = Attachment.builder()
-                .bytes("something different".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = attachment.getAttachmentId();
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
         MessageId messageId1 = generateMessageId();
         MessageId messageId2 = generateMessageId();
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageId1);
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(otherAttachment), messageId2);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), messageId1);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(OTHER_ATTACHMENT), messageId2);
         
         //When
         Collection<MessageId> messageIds = attachmentMapper.getRelatedMessageIds(attachmentId);
@@ -223,14 +220,10 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnerMessageIdsShouldReturnOnlyOneMessageIdWhenStoredTwice() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = attachment.getAttachmentId();
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
         MessageId messageId = generateMessageId();
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageId);
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageId);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), messageId);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), messageId);
         
         //When
         Collection<MessageId> messageIds = attachmentMapper.getRelatedMessageIds(attachmentId);
@@ -241,18 +234,10 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnerMessageIdsShouldReturnMessageIdForTwoAttachmentsWhenBothStoredAtTheSameTime() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-                .bytes("payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        Attachment attachment2 = Attachment.builder()
-                .bytes("other payload".getBytes(StandardCharsets.UTF_8))
-                .type("content")
-                .build();
-        AttachmentId attachmentId = attachment.getAttachmentId();
-        AttachmentId attachmentId2 = attachment2.getAttachmentId();
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        AttachmentId attachmentId2 = OTHER_ATTACHMENT.getMetadata().getAttachmentId();
         MessageId messageId = generateMessageId();
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment, attachment2), messageId);
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT, OTHER_ATTACHMENT), messageId);
         
         //When
         Collection<MessageId> messageIds = attachmentMapper.getRelatedMessageIds(attachmentId);
@@ -264,13 +249,8 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnersShouldBeRetrievedWhenExplicitlySpecified() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-            .bytes("payload".getBytes(StandardCharsets.UTF_8))
-            .type("content")
-            .build();
-
-        AttachmentId attachmentId = attachment.getAttachmentId();
-        attachmentMapper.storeAttachmentForOwner(attachment, OWNER);
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
 
         //When
         Collection<Username> expectedOwners = ImmutableList.of(OWNER);
@@ -282,13 +262,8 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnersShouldReturnEmptyWhenMessageIdReferenced() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-            .bytes("payload".getBytes(StandardCharsets.UTF_8))
-            .type("content")
-            .build();
-
-        AttachmentId attachmentId = attachment.getAttachmentId();
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), generateMessageId());
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(ATTACHMENT), generateMessageId());
 
         //When
         Collection<Username> actualOwners = attachmentMapper.getOwners(attachmentId);
@@ -299,14 +274,9 @@ public abstract class AttachmentMapperTest {
     @Test
     void getOwnersShouldReturnAllOwners() throws Exception {
         //Given
-        Attachment attachment = Attachment.builder()
-            .bytes("payload".getBytes(StandardCharsets.UTF_8))
-            .type("content")
-            .build();
-
-        AttachmentId attachmentId = attachment.getAttachmentId();
-        attachmentMapper.storeAttachmentForOwner(attachment, OWNER);
-        attachmentMapper.storeAttachmentForOwner(attachment, ADDITIONAL_OWNER);
+        AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
+        attachmentMapper.storeAttachmentForOwner(ATTACHMENT, ADDITIONAL_OWNER);
 
         //When
         Collection<Username> expectedOwners = ImmutableList.of(OWNER, ADDITIONAL_OWNER);

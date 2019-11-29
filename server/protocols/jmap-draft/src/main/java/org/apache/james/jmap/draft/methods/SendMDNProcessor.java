@@ -176,8 +176,9 @@ public class SendMDNProcessor implements SetMessagesProcessor {
     }
 
     private MessageAttachment convertReportToAttachment(MDNReport mdnReport) {
+        byte[] bytes = mdnReport.formattedValue().getBytes(StandardCharsets.UTF_8);
         Attachment attachment = Attachment.builder()
-            .bytes(mdnReport.formattedValue().getBytes(StandardCharsets.UTF_8))
+            .size(bytes.length)
             .type(MDN.DISPOSITION_CONTENT_TYPE)
             .build();
 

@@ -76,7 +76,7 @@ public class MessageParser {
             .unwrap();
     }
 
-    public List<MessageAttachment> retrieveAttachments(InputStream fullContent) throws MimeException, IOException {
+    public List<MessageAttachment.WithBytes> retrieveAttachments(InputStream fullContent) throws MimeException, IOException {
         DefaultMessageBuilder defaultMessageBuilder = new DefaultMessageBuilder();
         defaultMessageBuilder.setMimeEntityConfig(MimeConfig.PERMISSIVE);
         defaultMessageBuilder.setDecodeMonitor(DecodeMonitor.SILENT);
@@ -99,13 +99,13 @@ public class MessageParser {
         }
     }
 
-    private Stream<MessageAttachment> listAttachments(Multipart multipart, Context context) {
+    private Stream<MessageAttachment.WithBytes> listAttachments(Multipart multipart, Context context) {
         return multipart.getBodyParts()
             .stream()
             .flatMap(entity -> listAttachments(entity, context));
     }
 
-    private Stream<MessageAttachment> listAttachments(Entity entity, Context context) {
+    private Stream<MessageAttachment.WithBytes> listAttachments(Entity entity, Context context) {
         if (isMultipart(entity)) {
             return listAttachments((Multipart) entity.getBody(), Context.fromEntity(entity));
         }
@@ -121,7 +121,7 @@ public class MessageParser {
         return Stream.empty();
     }
 
-    private MessageAttachment retrieveAttachment(Entity entity) throws IOException {
+    private MessageAttachment.WithBytes retrieveAttachment(Entity entity) throws IOException {
         Optional<ContentTypeField> contentTypeField = getContentTypeField(entity);
         Optional<ContentDispositionField> contentDispositionField = getContentDispositionField(entity);
         Optional<String> contentType = contentType(contentTypeField);
@@ -129,15 +129,17 @@ public class MessageParser {
         Optional<Cid> cid = cid(readHeader(entity, CONTENT_ID, ContentIdField.class));
         boolean isInline = isInline(readHeader(entity, CONTENT_DISPOSITION, ContentDispositionField.class)) && cid.isPresent();
 
+        byte[] bytes = getBytes(entity.getBody());
         return MessageAttachment.builder()
                 .attachment(Attachment.builder()
-                    .bytes(getBytes(entity.getBody()))
+                    .size(bytes.length)
                     .type(contentType.orElse(DEFAULT_CONTENT_TYPE))
                     .build())
                 .name(name.orElse(null))
                 .cid(cid.orElse(null))
                 .isInline(isInline)
-                .build();
+                .build()
+                .withBytes(bytes);
     }
 
     private <T extends ParsedField> Optional<T> readHeader(Entity entity, String headerName, Class<T> clazz) {

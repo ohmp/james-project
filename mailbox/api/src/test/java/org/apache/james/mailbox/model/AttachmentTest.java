@@ -37,10 +37,10 @@ class AttachmentTest {
     @Test
     void streamShouldBeConsumedOneTime() throws Exception {
         String input = "mystream";
-        Attachment attachment = Attachment.builder()
-                .bytes(input.getBytes(CHARSET))
+        byte[] bytes = input.getBytes(CHARSET);
+        Attachment.WithBytes attachment = Attachment.builder()
                 .type("content")
-                .build();
+                .buildWithBytes(bytes);
 
         InputStream stream = attachment.getStream();
         assertThat(stream).isNotNull();
@@ -50,10 +50,10 @@ class AttachmentTest {
     @Test
     void getByteShouldReturnByteArrayRepresentingTheAttachment() {
         String input = "mystream";
-        Attachment attachment = Attachment.builder()
-            .bytes(input.getBytes(CHARSET))
+        byte[] inputBytes = input.getBytes(CHARSET);
+        Attachment.WithBytes attachment = Attachment.builder()
             .type("content")
-            .build();
+            .buildWithBytes(inputBytes);
 
         byte[] bytes = attachment.getBytes();
         assertThat(new String(bytes, CHARSET)).isEqualTo(input);
@@ -62,10 +62,10 @@ class AttachmentTest {
     @Test
     void streamShouldBeConsumedMoreThanOneTime() throws Exception {
         String input = "mystream";
-        Attachment attachment = Attachment.builder()
-                .bytes(input.getBytes(CHARSET))
-                .type("content")
-                .build();
+        byte[] inputBytes = input.getBytes(CHARSET);
+        Attachment.WithBytes attachment = Attachment.builder()
+            .type("content")
+            .buildWithBytes(inputBytes);
 
         attachment.getStream();
         InputStream stream = attachment.getStream();
@@ -81,10 +81,24 @@ class AttachmentTest {
     }
 
     @Test
-    void builderShouldThrowWhenBytesIsNull() {
+    void builderShouldThrowWhenSizeIsNegative() {
         assertThatThrownBy(() -> Attachment.builder()
-                .bytes(null))
+                .size(-1))
             .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void withBytesShouldThrowWhenNull() {
+        String input = "mystream";
+        byte[] inputBytes = input.getBytes(CHARSET);
+
+        Attachment attachment = Attachment.builder()
+            .size(inputBytes.length)
+            .type("content")
+            .build();
+
+        assertThatThrownBy(() -> attachment.withBytes(null))
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -112,6 +126,7 @@ class AttachmentTest {
     void buildShouldThrowWhenBytesIsNotProvided() {
         assertThatThrownBy(() -> Attachment.builder()
                 .attachmentId(AttachmentId.random())
+                .type("image/png")
                 .build())
             .isInstanceOf(IllegalStateException.class);
     }
@@ -120,7 +135,7 @@ class AttachmentTest {
     void buildShouldThrowWhenTypeIsNotProvided() {
         assertThatThrownBy(() -> Attachment.builder()
                 .attachmentId(AttachmentId.random())
-                .bytes("mystream".getBytes(CHARSET))
+                .size(36)
                 .build())
             .isInstanceOf(IllegalStateException.class);
     }
@@ -128,22 +143,24 @@ class AttachmentTest {
     @Test
     void buildShouldSetTheSize() {
         String input = "mystream";
-        Attachment attachment = Attachment.builder()
-                .bytes(input.getBytes(CHARSET))
-                .type("content")
-                .build();
+        byte[] inputBytes = input.getBytes(CHARSET);
+        Attachment.WithBytes attachment = Attachment.builder()
+            .type("content")
+            .buildWithBytes(inputBytes);
 
-        assertThat(attachment.getSize()).isEqualTo(input.getBytes(CHARSET).length);
+        assertThat(attachment.getMetadata().getSize()).isEqualTo(input.getBytes(CHARSET).length);
     }
 
     @Test
     void toBlobShouldGenerateTheAttachmentBlob() {
         byte[] bytes = "mystream".getBytes(CHARSET);
         String content = "content";
-        Attachment attachment = Attachment.builder()
-            .bytes(bytes)
+        String input = "mystream";
+        byte[] inputBytes = input.getBytes(CHARSET);
+        Attachment.WithBytes attachment = Attachment.builder()
             .type(content)
-            .build();
+            .buildWithBytes(inputBytes);
+
         Blob expected = Blob.builder()
             .id(BlobId.fromBytes(bytes))
             .contentType(content)

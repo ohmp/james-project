@@ -51,6 +51,16 @@ class CassandraAttachmentFallbackTest {
     private static final AttachmentId ATTACHMENT_ID_1 = AttachmentId.from("id1");
     private static final AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
+    private static final byte[] BYTES = "{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8);
+    private static final Attachment.WithBytes ATTACHMENT = Attachment.builder()
+        .attachmentId(ATTACHMENT_ID_1)
+        .type("application/json")
+        .buildWithBytes(BYTES);
+    private static final byte[] BYTES_2 = "{\"property\":`\"different\"}".getBytes(StandardCharsets.UTF_8);
+    private static final Attachment.WithBytes OTHER_ATTACHMENT = Attachment.builder()
+        .attachmentId(ATTACHMENT_ID_2)
+        .type("application/json")
+        .buildWithBytes(BYTES_2);
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
@@ -90,93 +100,48 @@ class CassandraAttachmentFallbackTest {
 
     @Test
     void getAttachmentShouldReturnV2WhenPresentInV1AndV2() throws Exception {
-        Attachment attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-        Attachment otherAttachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"different\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes()).block();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).block();
-        attachmentDAO.storeAttachment(otherAttachment).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), ATTACHMENT.getBytes()).block();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT.getMetadata(), blobId)).block();
+        attachmentDAO.storeAttachment(OTHER_ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachment(ATTACHMENT_ID_1))
-            .isEqualTo(attachment);
+            .isEqualTo(ATTACHMENT.getMetadata());
     }
 
     @Test
     void getAttachmentShouldReturnV1WhenV2Absent() throws Exception {
-        Attachment attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-
-        attachmentDAO.storeAttachment(attachment).block();
+        attachmentDAO.storeAttachment(ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachment(ATTACHMENT_ID_1))
-            .isEqualTo(attachment);
+            .isEqualTo(ATTACHMENT.getMetadata());
     }
 
     @Test
     void getAttachmentsShouldReturnV2WhenV2AndV1() throws Exception {
-        Attachment attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-        Attachment otherAttachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"different\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes()).block();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).block();
-        attachmentDAO.storeAttachment(otherAttachment).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), ATTACHMENT.getBytes()).block();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT.getMetadata(), blobId)).block();
+        attachmentDAO.storeAttachment(OTHER_ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1)))
-            .containsExactly(attachment);
+            .containsExactly(ATTACHMENT.getMetadata());
     }
 
     @Test
     void getAttachmentsShouldReturnV1WhenV2Absent() throws Exception {
-        Attachment attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-
-        attachmentDAO.storeAttachment(attachment).block();
+        attachmentDAO.storeAttachment(ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1)))
-            .containsExactly(attachment);
+            .containsExactly(ATTACHMENT.getMetadata());
     }
 
     @Test
     void getAttachmentsShouldCombineElementsFromV1AndV2() throws Exception {
-        Attachment attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_1)
-            .type("application/json")
-            .bytes("{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-        Attachment otherAttachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_2)
-            .type("application/json")
-            .bytes("{\"property\":`\"different\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
-
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes()).block();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).block();
-        attachmentDAO.storeAttachment(otherAttachment).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), ATTACHMENT.getBytes()).block();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT.getMetadata(), blobId)).block();
+        attachmentDAO.storeAttachment(OTHER_ATTACHMENT).block();
 
         List<Attachment> attachments = attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1, ATTACHMENT_ID_2));
         assertThat(attachments)
-            .containsExactlyInAnyOrder(attachment, otherAttachment);
+            .containsExactlyInAnyOrder(ATTACHMENT.getMetadata(), OTHER_ATTACHMENT.getMetadata());
     }
 }

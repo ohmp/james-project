@@ -44,7 +44,6 @@ import org.apache.james.mailbox.ModSeq;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.UnsupportedSearchException;
 import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.Header;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.SearchQuery;
@@ -53,6 +52,7 @@ import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import org.apache.james.mailbox.model.SearchQuery.UidRange;
 import org.apache.james.mailbox.store.ResultUtils;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.search.comparator.CombinedComparator;
 import org.apache.james.mime4j.MimeException;
@@ -240,7 +240,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
     }
 
     private boolean attachmentsContain(String value, MailboxMessage message) throws IOException, MimeException {
-        List<MessageAttachment> attachments = message.getAttachments();
+        List<MessageAttachment.WithBytes> attachments = new MessageParser().retrieveAttachments(message.getFullContent());
         return isInAttachments(value, attachments);
     }
 
@@ -251,20 +251,19 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
             .anyMatch(nameOptional -> nameOptional.map(value::equals).orElse(false));
     }
 
-    private boolean isInAttachments(String value, List<MessageAttachment> attachments) {
+    private boolean isInAttachments(String value, List<MessageAttachment.WithBytes> attachments) {
         return attachments.stream()
-            .map(MessageAttachment::getAttachment)
             .flatMap(this::toAttachmentContent)
             .anyMatch(string -> string.contains(value));
     }
 
-    private Stream<String> toAttachmentContent(Attachment attachment) {
+    private Stream<String> toAttachmentContent(MessageAttachment.WithBytes attachment) {
         try {
             return OptionalUtils.toStream(
                     textExtractor
                          .extractContent(
-                             attachment.getStream(),
-                             attachment.getType())
+                             attachment.getAttachmentWithBytes().getStream(),
+                             attachment.getAttachment().getType())
                         .getTextualContent());
             } catch (Exception e) {
             LOGGER.error("Error while parsing attachment content", e);

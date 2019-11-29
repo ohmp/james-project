@@ -47,6 +47,8 @@ import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.james.mime4j.stream.MimeTokenStream;
 import org.apache.james.mime4j.stream.RecursionMode;
 
+import com.github.steveash.guavate.Guavate;
+
 public class MaildirMessage implements Message {
 
     private final MaildirMessageName messageName;
@@ -269,7 +271,10 @@ public class MaildirMessage implements Message {
     @Override
     public List<MessageAttachment> getAttachments() {
         try {
-            return new MessageParser().retrieveAttachments(getFullContent());
+            return new MessageParser().retrieveAttachments(getFullContent())
+                .stream()
+                .map(MessageAttachment.WithBytes::getMetadata)
+                .collect(Guavate.toImmutableList());
         } catch (MimeException | IOException e) {
             throw new RuntimeException(e);
         }

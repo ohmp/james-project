@@ -213,7 +213,7 @@ class CassandraMessageDAOTest {
         //Given
         MessageAttachment attachment = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("content".getBytes(StandardCharsets.UTF_8))
+                .size(7)
                 .type("type")
                 .build())
             .build();
@@ -233,13 +233,13 @@ class CassandraMessageDAOTest {
         //Given
         MessageAttachment attachment1 = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("content".getBytes(StandardCharsets.UTF_8))
+                .size(7)
                 .type("type")
                 .build())
             .build();
         MessageAttachment attachment2 = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("other content".getBytes(StandardCharsets.UTF_8))
+                .size(13)
                 .type("type")
                 .build())
             .build();
@@ -261,13 +261,13 @@ class CassandraMessageDAOTest {
         MessageId messageId2 = messageIdFactory.generate();
         MessageAttachment attachment1 = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("content".getBytes(StandardCharsets.UTF_8))
+                .size(7)
                 .type("type")
                 .build())
             .build();
         MessageAttachment attachment2 = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("other content".getBytes(StandardCharsets.UTF_8))
+                .size(13)
                 .type("type")
                 .build())
             .build();
@@ -306,13 +306,13 @@ class CassandraMessageDAOTest {
         MessageId messageId3 = messageIdFactory.generate();
         MessageAttachment attachmentFor1 = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("content".getBytes(StandardCharsets.UTF_8))
+                .size(7)
                 .type("type")
                 .build())
             .build();
         MessageAttachment attachmentFor3 = MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("other content".getBytes(StandardCharsets.UTF_8))
+                .size(13)
                 .type("type")
                 .build())
             .build();

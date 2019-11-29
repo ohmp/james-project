@@ -36,20 +36,13 @@ public class Attachment {
     }
 
     public static class Builder {
-
         private AttachmentId attachmentId;
-        private byte[] bytes;
         private String type;
+        private Long size;
 
         public Builder attachmentId(AttachmentId attachmentId) {
             Preconditions.checkArgument(attachmentId != null);
             this.attachmentId = attachmentId;
-            return this;
-        }
-
-        public Builder bytes(byte[] bytes) {
-            Preconditions.checkArgument(bytes != null);
-            this.bytes = bytes;
             return this;
         }
 
@@ -59,12 +52,25 @@ public class Attachment {
             return this;
         }
 
+        public Builder size(long size) {
+            Preconditions.checkArgument(size >= 0, "'size' needs to be positive");
+            this.size = size;
+            return this;
+        }
+
         public Attachment build() {
-            Preconditions.checkState(bytes != null, "'bytes' is mandatory");
             Preconditions.checkState(type != null, "'type' is mandatory");
+            Preconditions.checkState(size != null, "'size' is mandatory");
             AttachmentId builtAttachmentId = attachmentId();
             Preconditions.checkState(builtAttachmentId != null, "'attachmentId' is mandatory");
-            return new Attachment(bytes, builtAttachmentId, type, size());
+
+            return new Attachment(builtAttachmentId, type, size);
+        }
+
+        public Attachment.WithBytes buildWithBytes(byte[] bytes) {
+            return size(bytes.length)
+                .build()
+                .withBytes(bytes);
         }
 
         private AttachmentId attachmentId() {
@@ -73,19 +79,65 @@ public class Attachment {
             }
             return AttachmentId.random();
         }
+    }
 
-        private long size() {
-            return bytes.length;
+    public static class WithBytes {
+        private final byte[] bytes;
+        private final Attachment metadata;
+
+        public WithBytes(byte[] bytes, Attachment metadata) {
+            Preconditions.checkArgument(bytes != null);
+            this.bytes = bytes;
+            this.metadata = metadata;
+        }
+
+        public Attachment getMetadata() {
+            return metadata;
+        }
+
+        public InputStream getStream() throws IOException {
+            return new ByteArrayInputStream(bytes);
+        }
+
+        /**
+         * Be careful the returned array is not a copy of the attachment byte array.
+         * Mutating it will mutate the attachment!
+         * @return the attachment content
+         */
+        public byte[] getBytes() {
+            return bytes;
+        }
+
+        public Blob toBlob() {
+            return Blob.builder()
+                .id(BlobId.fromBytes(bytes))
+                .payload(bytes)
+                .contentType(metadata.type)
+                .build();
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof WithBytes) {
+                WithBytes withBytes = (WithBytes) o;
+
+                return Arrays.equals(this.bytes, withBytes.bytes)
+                    && Objects.equals(this.metadata, withBytes.metadata);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(bytes, metadata);
         }
     }
 
-    private final byte[] bytes;
     private final AttachmentId attachmentId;
     private final String type;
     private final long size;
 
-    private Attachment(byte[] bytes, AttachmentId attachmentId, String type, long size) {
-        this.bytes = bytes;
+    private Attachment(AttachmentId attachmentId, String type, long size) {
         this.attachmentId = attachmentId;
         this.type = type;
         this.size = size;
@@ -103,25 +155,10 @@ public class Attachment {
         return size;
     }
 
-    public InputStream getStream() throws IOException {
-        return new ByteArrayInputStream(bytes);
-    }
-
-    /**
-     * Be careful the returned array is not a copy of the attachment byte array.
-     * Mutating it will mutate the attachment!
-     * @return the attachment content
-     */
-    public byte[] getBytes() {
-        return bytes;
-    }
-
-    public Blob toBlob() {
-        return Blob.builder()
-            .id(BlobId.fromBytes(bytes))
-            .payload(bytes)
-            .contentType(type)
-            .build();
+    public Attachment.WithBytes withBytes(byte[] bytes) {
+        Preconditions.checkNotNull(bytes);
+        Preconditions.checkArgument(bytes.length == size, "Provided content do not match attachment size");
+        return new WithBytes(bytes, this);
     }
 
     @Override
@@ -129,7 +166,6 @@ public class Attachment {
         if (obj instanceof Attachment) {
             Attachment other = (Attachment) obj;
             return Objects.equals(attachmentId, other.attachmentId)
-                && Arrays.equals(bytes, other.bytes)
                 && Objects.equals(type, other.type)
                 && Objects.equals(size, other.size);
         }
@@ -138,7 +174,7 @@ public class Attachment {
 
     @Override
     public int hashCode() {
-        return Objects.hash(attachmentId, bytes, type, size);
+        return Objects.hash(attachmentId, type, size);
     }
 
     @Override
@@ -146,7 +182,6 @@ public class Attachment {
         return MoreObjects
                 .toStringHelper(this)
                 .add("attachmentId", attachmentId)
-                .add("bytes", bytes)
                 .add("type", type)
                 .add("size", size)
                 .toString();

@@ -52,15 +52,15 @@ public class UploadHandler {
     }
 
     private UploadResponse uploadContent(String contentType, InputStream inputStream, MailboxSession session) throws IOException, MailboxException {
-        Attachment attachment = Attachment.builder()
-                .bytes(ByteStreams.toByteArray(inputStream))
+        byte[] bytes = ByteStreams.toByteArray(inputStream);
+        Attachment.WithBytes attachment = Attachment.builder()
                 .type(contentType)
-                .build();
+                .buildWithBytes(bytes);
         attachmentManager.storeAttachment(attachment, session);
         return UploadResponse.builder()
-                .blobId(attachment.getAttachmentId().getId())
-                .type(attachment.getType())
-                .size(attachment.getSize())
+                .blobId(attachment.getMetadata().getAttachmentId().getId())
+                .type(attachment.getMetadata().getType())
+                .size(attachment.getMetadata().getSize())
                 .build();
     }
 

@@ -24,8 +24,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
@@ -48,7 +46,7 @@ public class StoreAttachmentManagerTest {
     private static final Attachment ATTACHMENT = Attachment.builder()
         .attachmentId(ATTACHMENT_ID)
         .type("type")
-        .bytes("Any".getBytes(StandardCharsets.UTF_8))
+        .size(3)
         .build();
 
     private StoreAttachmentManager testee;

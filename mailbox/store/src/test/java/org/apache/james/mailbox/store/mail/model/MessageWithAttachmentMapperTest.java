@@ -23,6 +23,7 @@ import static org.apache.james.mailbox.store.mail.model.MessageAssert.assertThat
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -81,31 +82,31 @@ public abstract class MessageWithAttachmentMapperTest {
 
         attachmentsMailbox = createMailbox(MailboxPath.forUser(Username.of("benwa"), "Attachments"));
 
-        Attachment attachment = Attachment.builder()
+        byte[] bytes = "attachment".getBytes(StandardCharsets.UTF_8);
+        Attachment.WithBytes attachment = Attachment.builder()
                 .attachmentId(AttachmentId.from("123"))
-                .bytes("attachment".getBytes())
                 .type("content")
-                .build();
-        Attachment attachment2 = Attachment.builder()
+                .buildWithBytes(bytes);
+        byte[] bytes2 = "attachment2".getBytes(StandardCharsets.UTF_8);
+        Attachment.WithBytes attachment2 = Attachment.builder()
                 .attachmentId(AttachmentId.from("456"))
-                .bytes("attachment2".getBytes())
                 .type("content")
-                .build();
+                .buildWithBytes(bytes2);
         messageWith1Attachment = createMessage(attachmentsMailbox, mapperProvider.generateMessageId(), "Subject: Test7 \n\nBody7\n.\n", BODY_START, new PropertyBuilder(), 
                 ImmutableList.of(MessageAttachment.builder()
-                        .attachment(attachment)
+                        .attachment(attachment.getMetadata())
                         .cid(Cid.from("cid"))
                         .isInline(true)
                         .build()));
         messageWith2Attachments = createMessage(attachmentsMailbox, mapperProvider.generateMessageId(), "Subject: Test8 \n\nBody8\n.\n", BODY_START, new PropertyBuilder(),
                 ImmutableList.of(
                         MessageAttachment.builder()
-                            .attachment(attachment)
+                            .attachment(attachment.getMetadata())
                             .cid(Cid.from("cid"))
                             .isInline(true)
                             .build(),
                         MessageAttachment.builder()
-                            .attachment(attachment2)
+                            .attachment(attachment2.getMetadata())
                             .cid(Cid.from("cid2"))
                             .isInline(false)
                             .build()));

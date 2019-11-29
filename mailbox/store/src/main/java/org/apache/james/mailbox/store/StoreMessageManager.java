@@ -58,6 +58,7 @@ import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.ReadOnlyException;
 import org.apache.james.mailbox.exception.UnsupportedRightException;
+import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.FetchGroup;
 import org.apache.james.mailbox.model.Mailbox;
@@ -445,10 +446,13 @@ public class StoreMessageManager implements MessageManager {
         try (SharedFileInputStream contentIn = new SharedFileInputStream(file)) {
             final int size = (int) file.length();
 
-            final List<MessageAttachment> attachments = extractAttachments(contentIn);
+            final List<MessageAttachment.WithBytes> attachments = extractAttachments(contentIn);
+            final List<MessageAttachment> attachmentsMetadata = attachments.stream()
+                .map(MessageAttachment.WithBytes::getMetadata)
+                .collect(Guavate.toImmutableList());
             propertyBuilder.setHasAttachment(hasNonInlinedAttachment(attachments));
 
-            final MailboxMessage message = createMessage(internalDate, size, bodyStartOctet, contentIn, flags, propertyBuilder, attachments);
+            final MailboxMessage message = createMessage(internalDate, size, bodyStartOctet, contentIn, flags, propertyBuilder, attachmentsMetadata);
 
             new QuotaChecker(quotaManager, quotaRootResolver, mailbox).tryAddition(1, size);
 
@@ -499,12 +503,13 @@ public class StoreMessageManager implements MessageManager {
         return propertyBuilder;
     }
 
-    private boolean hasNonInlinedAttachment(List<MessageAttachment> attachments) {
+    private boolean hasNonInlinedAttachment(List<MessageAttachment.WithBytes> attachments) {
         return attachments.stream()
+            .map(MessageAttachment.WithBytes::getMetadata)
             .anyMatch(messageAttachment -> !messageAttachment.isInlinedWithCid());
     }
 
-    private List<MessageAttachment> extractAttachments(SharedFileInputStream contentIn) {
+    private List<MessageAttachment.WithBytes> extractAttachments(SharedFileInputStream contentIn) {
         try {
             return messageParser.retrieveAttachments(contentIn);
         } catch (Exception e) {
@@ -675,16 +680,19 @@ public class StoreMessageManager implements MessageManager {
         }, MailboxPathLocker.LockType.Write);
     }
 
-    protected MessageMetaData appendMessageToStore(final MailboxMessage message, final List<MessageAttachment> messageAttachments, MailboxSession session) throws MailboxException {
+    protected MessageMetaData appendMessageToStore(final MailboxMessage message, final List<MessageAttachment.WithBytes> messageAttachments, MailboxSession session) throws MailboxException {
         final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+        final List<Attachment.WithBytes> attachmentsWithByte = messageAttachments.stream()
+            .map(MessageAttachment.WithBytes::getAttachmentWithBytes)
+            .collect(Guavate.toImmutableList());
 
         return mapperFactory.getMessageMapper(session).execute(() -> {
-            storeAttachment(message, messageAttachments, session);
+            storeAttachment(message, attachmentsWithByte, session);
             return messageMapper.add(getMailboxEntity(), message);
         });
     }
 
-    protected void storeAttachment(final MailboxMessage message, final List<MessageAttachment> messageAttachments, final MailboxSession session) throws MailboxException {
+    protected void storeAttachment(final MailboxMessage message, final List<Attachment.WithBytes> messageAttachments, final MailboxSession session) throws MailboxException {
 
     }
 

@@ -70,7 +70,7 @@ public class StoreBlobManager implements BlobManager {
     private Optional<Blob> getBlobFromAttachment(BlobId blobId, MailboxSession mailboxSession) throws MailboxException {
         try {
             AttachmentId attachmentId = AttachmentId.from(blobId);
-            return Optional.of(attachmentManager.getAttachment(attachmentId, mailboxSession).toBlob());
+            return Optional.of(attachmentManager.retrieveContent(attachmentId, mailboxSession).toBlob());
         } catch (AttachmentNotFoundException e) {
             return Optional.empty();
         }

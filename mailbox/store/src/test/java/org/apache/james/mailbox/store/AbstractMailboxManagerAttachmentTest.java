@@ -26,15 +26,12 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSessionUtil;
 import org.apache.james.mailbox.MessageManager;
-import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageAttachment;
@@ -46,9 +43,6 @@ import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.junit.jupiter.api.Test;
-
-import com.github.fge.lambdas.Throwing;
-import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractMailboxManagerAttachmentTest {
     private static final Username USERNAME = Username.of("user@domain.tld");
@@ -129,7 +123,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         assertThat(messages.hasNext()).isTrue();
         List<MessageAttachment> attachments = messages.next().getAttachments();
         assertThat(attachments).hasSize(1);
-        assertThat(attachmentMapper.getAttachment(attachments.get(0).getAttachmentId()).getStream())
+        assertThat(attachmentMapper.retrieveContent(attachments.get(0).getAttachmentId()).getStream())
             .hasSameContentAs(ClassLoader.getSystemResourceAsStream("eml/gimp.png"));
     }
 
@@ -143,33 +137,6 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
         assertThat(messages.hasNext()).isTrue();
         assertThat(messages.next().getAttachments()).hasSize(2);
-    }
-
-    @Test
-    void appendMessageShouldStoreTwoRetrievableAttachmentsWhenMailWithTwoAttachment() throws Exception {
-        InputStream mailInputStream = ClassLoader.getSystemResourceAsStream("eml/twoAttachments.eml");
-
-        inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
-            .build(mailInputStream), mailboxSession);
-        
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
-        assertThat(messages.hasNext()).isTrue();
-        List<MessageAttachment> attachments = messages.next().getAttachments();
-        assertThat(attachments).hasSize(2);
-        ImmutableList<byte[]> attachmentContents = attachments
-            .stream()
-            .map(MessageAttachment::getAttachmentId)
-            .map(Throwing.function(attachmentMapper::getAttachment))
-            .map(Attachment::getBytes)
-            .collect(ImmutableList.toImmutableList());
-
-        ImmutableList<byte[]> files = Stream.of("eml/4037_014.jpg", "eml/4037_015.jpg")
-                .map(ClassLoader::getSystemResourceAsStream)
-                .map(Throwing.function(IOUtils::toByteArray))
-                .collect(ImmutableList.toImmutableList());
-
-        assertThat(attachmentContents)
-            .containsExactlyInAnyOrder(files.get(0), files.get(1));
     }
 
     @Test

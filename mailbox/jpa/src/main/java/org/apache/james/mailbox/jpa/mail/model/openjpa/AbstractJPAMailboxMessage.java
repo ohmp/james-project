@@ -505,7 +505,10 @@ public abstract class AbstractJPAMailboxMessage implements MailboxMessage {
     @Override
     public List<MessageAttachment> getAttachments() {
         try {
-            return new MessageParser().retrieveAttachments(getFullContent());
+            return new MessageParser().retrieveAttachments(getFullContent())
+                .stream()
+                .map(MessageAttachment.WithBytes::getMetadata)
+                .collect(Guavate.toImmutableList());
         } catch (MimeException | IOException e) {
             throw new RuntimeException(e);
         }

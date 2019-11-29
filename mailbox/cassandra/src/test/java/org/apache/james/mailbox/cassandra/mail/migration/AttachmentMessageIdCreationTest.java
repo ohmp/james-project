@@ -61,6 +61,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import reactor.core.publisher.Flux;
 
 @ExtendWith(CassandraRestartExtension.class)
@@ -192,7 +193,7 @@ class AttachmentMessageIdCreationTest {
     private MessageAttachment createAttachment() {
         return MessageAttachment.builder()
             .attachment(Attachment.builder()
-                .bytes("content".getBytes(StandardCharsets.UTF_8))
+                .size(10)
                 .type("type")
                 .build())
             .build();

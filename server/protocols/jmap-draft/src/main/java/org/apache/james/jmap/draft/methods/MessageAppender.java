@@ -77,7 +77,7 @@ public class MessageAppender {
                                                                                List<MailboxId> targetMailboxes,
                                                                                MailboxSession session) throws MailboxException {
         Preconditions.checkArgument(!targetMailboxes.isEmpty());
-        ImmutableList<MessageAttachment> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
+        ImmutableList<MessageAttachment.WithBytes> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
         byte[] messageContent = mimeMessageConverter.convert(createdEntry, messageAttachments);
         SharedByteArrayInputStream content = new SharedByteArrayInputStream(messageContent);
         Date internalDate = Date.from(createdEntry.getValue().getDate().toInstant());
@@ -100,7 +100,9 @@ public class MessageAppender {
             .internalDate(internalDate.toInstant())
             .sharedContent(content)
             .size(messageContent.length)
-            .attachments(messageAttachments)
+            .attachments(messageAttachments.stream()
+                .map(MessageAttachment.WithBytes::getMetadata)
+                .collect(Guavate.toImmutableList()))
             .mailboxId(mailbox.getId())
             .messageId(message.getMessageId())
             .build();
@@ -151,22 +153,24 @@ public class MessageAppender {
         return message.getKeywords().asFlags();
     }
 
-    private ImmutableList<MessageAttachment> getMessageAttachments(MailboxSession session, ImmutableList<Attachment> attachments) throws MailboxException {
-        ThrowingFunction<Attachment, Optional<MessageAttachment>> toMessageAttachment = att -> messageAttachment(session, att);
+    private ImmutableList<MessageAttachment.WithBytes> getMessageAttachments(MailboxSession session, ImmutableList<Attachment> attachments) throws MailboxException {
+        ThrowingFunction<Attachment, Optional<MessageAttachment.WithBytes>> toMessageAttachment = att -> messageAttachment(session, att);
         return attachments.stream()
             .map(Throwing.function(toMessageAttachment).sneakyThrow())
             .flatMap(OptionalUtils::toStream)
             .collect(Guavate.toImmutableList());
     }
 
-    private Optional<MessageAttachment> messageAttachment(MailboxSession session, Attachment attachment) throws MailboxException {
+    private Optional<MessageAttachment.WithBytes> messageAttachment(MailboxSession session, Attachment attachment) throws MailboxException {
         try {
+            org.apache.james.mailbox.model.Attachment.WithBytes mailboxAttachment = attachmentManager.retrieveContent(AttachmentId.from(attachment.getBlobId().getRawValue()), session);
             return Optional.of(MessageAttachment.builder()
-                .attachment(attachmentManager.getAttachment(AttachmentId.from(attachment.getBlobId().getRawValue()), session))
+                .attachment(mailboxAttachment.getMetadata())
                 .name(attachment.getName().orElse(null))
                 .cid(attachment.getCid().map(Cid::from).orElse(null))
                 .isInline(attachment.isIsInline())
-                .build());
+                .build()
+                .withBytes(mailboxAttachment.getBytes()));
         } catch (AttachmentNotFoundException e) {
             LOGGER.error(String.format("Attachment %s not found", attachment.getBlobId()), e);
             return Optional.empty();

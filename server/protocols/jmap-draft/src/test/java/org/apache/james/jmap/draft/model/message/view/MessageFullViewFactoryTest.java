@@ -478,7 +478,7 @@ class MessageFullViewFactoryTest {
                 .attachments(ImmutableList.of(MessageAttachment.builder()
                         .attachment(org.apache.james.mailbox.model.Attachment.builder()
                                 .attachmentId(AttachmentId.from(blodId.getRawValue()))
-                                .bytes(payload.getBytes())
+                                .size(payload.getBytes(StandardCharsets.UTF_8).length)
                                 .type(type)
                                 .build())
                         .cid(Cid.from("cid"))

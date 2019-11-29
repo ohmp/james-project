@@ -35,9 +35,13 @@ public interface AttachmentMapper extends Mapper {
 
     List<Attachment> getAttachments(Collection<AttachmentId> attachmentIds);
 
-    void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException;
+    Attachment.WithBytes retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException;
 
-    void storeAttachmentsForMessage(Collection<Attachment> attachments, MessageId ownerMessageId) throws MailboxException;
+    List<Attachment.WithBytes> retrieveContents(Collection<AttachmentId> attachmentIds);
+
+    void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException;
+
+    void storeAttachmentsForMessage(Collection<Attachment.WithBytes> attachments, MessageId ownerMessageId) throws MailboxException;
 
     Collection<MessageId> getRelatedMessageIds(AttachmentId attachmentId) throws MailboxException;
 

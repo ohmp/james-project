@@ -65,8 +65,8 @@ class AttachmentV2MigrationTest {
     private CassandraAttachmentDAOV2 attachmentDAOV2;
     private CassandraBlobStore blobsStore;
     private AttachmentV2Migration migration;
-    private Attachment attachment1;
-    private Attachment attachment2;
+    private Attachment.WithBytes attachment1;
+    private Attachment.WithBytes attachment2;
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
@@ -76,16 +76,16 @@ class AttachmentV2MigrationTest {
         blobsStore = new CassandraBlobStore(cassandra.getConf());
         migration = new AttachmentV2Migration(attachmentDAO, attachmentDAOV2, blobsStore);
 
+        byte[] bytes1 = "{\"property\":`\"value1\"}".getBytes(StandardCharsets.UTF_8);
         attachment1 = Attachment.builder()
             .attachmentId(ATTACHMENT_ID)
             .type("application/json")
-            .bytes("{\"property\":`\"value1\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
+            .buildWithBytes(bytes1);
+        byte[] bytes2 = "{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8);
         attachment2 = Attachment.builder()
             .attachmentId(ATTACHMENT_ID_2)
             .type("application/json")
-            .bytes("{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8))
-            .build();
+            .buildWithBytes(bytes2);
     }
 
     @Test
@@ -111,9 +111,9 @@ class AttachmentV2MigrationTest {
         migration.apply();
 
         assertThat(attachmentDAOV2.getAttachment(ATTACHMENT_ID).blockOptional())
-            .contains(CassandraAttachmentDAOV2.from(attachment1, BLOB_ID_FACTORY.forPayload(attachment1.getBytes())));
+            .contains(CassandraAttachmentDAOV2.from(attachment1.getMetadata(), BLOB_ID_FACTORY.forPayload(attachment1.getBytes())));
         assertThat(attachmentDAOV2.getAttachment(ATTACHMENT_ID_2).blockOptional())
-            .contains(CassandraAttachmentDAOV2.from(attachment2, BLOB_ID_FACTORY.forPayload(attachment2.getBytes())));
+            .contains(CassandraAttachmentDAOV2.from(attachment2.getMetadata(), BLOB_ID_FACTORY.forPayload(attachment2.getBytes())));
         assertThat(blobsStore.readBytes(blobsStore.getDefaultBucketName(), BLOB_ID_FACTORY.forPayload(attachment1.getBytes())).block())
             .isEqualTo(attachment1.getBytes());
         assertThat(blobsStore.readBytes(blobsStore.getDefaultBucketName(), BLOB_ID_FACTORY.forPayload(attachment2.getBytes())).block())

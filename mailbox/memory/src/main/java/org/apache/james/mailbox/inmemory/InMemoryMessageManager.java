@@ -8,8 +8,8 @@ import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.Mailbox;
-import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
@@ -21,8 +21,6 @@ import org.apache.james.mailbox.store.StoreRightManager;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
-
-import com.github.steveash.guavate.Guavate;
 
 public class InMemoryMessageManager extends StoreMessageManager {
 
@@ -54,12 +52,10 @@ public class InMemoryMessageManager extends StoreMessageManager {
     }
 
     @Override
-    protected void storeAttachment(final MailboxMessage message, final List<MessageAttachment> messageAttachments, final MailboxSession session) throws MailboxException {
+    protected void storeAttachment(final MailboxMessage message, final List<Attachment.WithBytes> messageAttachments, final MailboxSession session) throws MailboxException {
         mapperFactory.getAttachmentMapper(session)
             .storeAttachmentsForMessage(
-                messageAttachments.stream()
-                    .map(MessageAttachment::getAttachment)
-                    .collect(Guavate.toImmutableList()),
+                messageAttachments,
                 message.getMessageId());
     }
 }

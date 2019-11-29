@@ -44,6 +44,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Preconditions;
+
 import reactor.core.publisher.Mono;
 
 public class CassandraAttachmentDAOV2 {
@@ -76,11 +77,11 @@ public class CassandraAttachmentDAOV2 {
             return size;
         }
 
-        public Attachment toAttachment(byte[] data) {
+        public Attachment toAttachment() {
             return Attachment.builder()
                 .attachmentId(attachmentId)
                 .type(type)
-                .bytes(data)
+                .size(size)
                 .build();
         }
 
