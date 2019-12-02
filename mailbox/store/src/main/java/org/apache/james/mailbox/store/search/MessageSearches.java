@@ -265,7 +265,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
                              attachment.getAttachmentWithBytes().getStream(),
                              attachment.getAttachment().getType())
                         .getTextualContent());
-            } catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error("Error while parsing attachment content", e);
             return Stream.of();
         }
