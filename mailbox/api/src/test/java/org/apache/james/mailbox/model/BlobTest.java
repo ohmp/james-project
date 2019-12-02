@@ -22,17 +22,20 @@ package org.apache.james.mailbox.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class BlobTest {
-
-    public static final BlobId ID = BlobId.fromString("123");
-    public static final String CONTENT_TYPE = "text/plain";
-    public static final byte[] PAYLOAD = "abc".getBytes(StandardCharsets.UTF_8);
+    private static final BlobId ID = BlobId.fromString("123");
+    private static final String CONTENT_TYPE = "text/plain";
+    private static final byte[] PAYLOAD = "abc".getBytes(StandardCharsets.UTF_8);
+    private static final Supplier<InputStream> PAYLOAD_SUPPLIER = () -> new ByteArrayInputStream(PAYLOAD);
 
     @Test
     void shouldMatchBeanContract() {
@@ -50,7 +53,7 @@ class BlobTest {
                 .payload(PAYLOAD)
                 .build())
             .isEqualTo(
-                new Blob(ID, PAYLOAD, CONTENT_TYPE));
+                new Blob(ID, PAYLOAD_SUPPLIER, CONTENT_TYPE, Long.valueOf(PAYLOAD.length)));
     }
 
     @Test
@@ -79,6 +82,18 @@ class BlobTest {
             Blob.builder()
                 .id(ID)
                 .contentType(CONTENT_TYPE)
+                .size(36)
+                .build())
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void buildShouldThrowOnMissingSize() {
+        assertThatThrownBy(() ->
+            Blob.builder()
+                .id(ID)
+                .contentType(CONTENT_TYPE)
+                .payload(PAYLOAD_SUPPLIER)
                 .build())
             .isInstanceOf(IllegalStateException.class);
     }

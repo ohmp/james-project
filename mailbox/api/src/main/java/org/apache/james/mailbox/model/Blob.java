@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -32,8 +33,9 @@ public class Blob {
 
     public static class Builder {
         private BlobId blobId;
-        private byte[] payload;
+        private Supplier<InputStream> payload;
         private String contentType;
+        private Long size;
 
         private Builder() {
         }
@@ -44,6 +46,12 @@ public class Blob {
         }
 
         public Builder payload(byte[] payload) {
+            this.payload = () -> new ByteArrayInputStream(payload);
+            this.size = Long.valueOf(payload.length);
+            return this;
+        }
+
+        public Builder payload(Supplier<InputStream> payload) {
             this.payload = payload;
             return this;
         }
@@ -53,12 +61,19 @@ public class Blob {
             return this;
         }
 
+        public Builder size(long size) {
+            Preconditions.checkArgument(size >= 0, "'size' should be positive");
+            this.size = size;
+            return this;
+        }
+
         public Blob build() {
             Preconditions.checkState(blobId != null, "id can not be empty");
             Preconditions.checkState(payload != null, "payload can not be empty");
+            Preconditions.checkState(size != null, "size can not be empty");
             Preconditions.checkState(contentType != null, "contentType can not be empty");
 
-            return new Blob(blobId, payload, contentType);
+            return new Blob(blobId, payload, contentType, size);
         }
     }
 
@@ -67,16 +82,16 @@ public class Blob {
     }
 
     private final BlobId blobId;
-    private final byte[] payload;
+    private final Supplier<InputStream> payload;
     private final String contentType;
     private final long size;
 
     @VisibleForTesting
-    Blob(BlobId blobId, byte[] payload, String contentType) {
+    Blob(BlobId blobId, Supplier<InputStream> payload, String contentType, long size) {
         this.blobId = blobId;
         this.payload = payload;
         this.contentType = contentType;
-        this.size = payload.length;
+        this.size = size;
     }
 
     public BlobId getBlobId() {
@@ -84,7 +99,7 @@ public class Blob {
     }
 
     public InputStream getStream() throws IOException {
-        return new ByteArrayInputStream(payload);
+        return payload.get();
     }
 
     public long getSize() {
