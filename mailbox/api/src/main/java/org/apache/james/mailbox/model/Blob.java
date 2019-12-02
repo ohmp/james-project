@@ -83,10 +83,6 @@ public class Blob {
         return blobId;
     }
 
-    public byte[] getPayload() {
-        return payload;
-    }
-
     public InputStream getStream() throws IOException {
         return new ByteArrayInputStream(payload);
     }
