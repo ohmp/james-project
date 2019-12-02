@@ -81,6 +81,9 @@ public class StoreAttachmentManager implements AttachmentManager {
 
     @Override
     public Attachment.WithBytes retrieveContent(AttachmentId id, MailboxSession session) throws MailboxException, AttachmentNotFoundException {
+        if (!userHasAccessToAttachment(id, session)) {
+            throw new AttachmentNotFoundException(id.getId());
+        }
         return attachmentMapperFactory.getAttachmentMapper(session)
             .retrieveContent(id);
     }

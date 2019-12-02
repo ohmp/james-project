@@ -24,6 +24,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
@@ -73,6 +75,18 @@ public class StoreAttachmentManagerTest {
         when(messageIdManager.accessibleMessages(MESSAGE_IDS, mailboxSession)).thenReturn(ImmutableSet.of());
 
         assertThatThrownBy(() -> testee.getAttachment(ATTACHMENT_ID, mailboxSession))
+            .isInstanceOf(AttachmentNotFoundException.class);
+    }
+
+    @Test
+    public void retrieveContentShouldThrowWhenAttachmentDoesNotBelongToUser() throws Exception {
+        MailboxSession mailboxSession = mock(MailboxSession.class);
+        when(attachmentMapper.retrieveContent(ATTACHMENT_ID)).thenReturn(ATTACHMENT.withBytes("abc".getBytes(StandardCharsets.UTF_8)));
+        when(attachmentMapper.getRelatedMessageIds(ATTACHMENT_ID)).thenReturn(MESSAGE_IDS);
+        when(attachmentMapper.getOwners(ATTACHMENT_ID)).thenReturn(ImmutableList.of());
+        when(messageIdManager.accessibleMessages(MESSAGE_IDS, mailboxSession)).thenReturn(ImmutableSet.of());
+
+        assertThatThrownBy(() -> testee.retrieveContent(ATTACHMENT_ID, mailboxSession))
             .isInstanceOf(AttachmentNotFoundException.class);
     }
 
