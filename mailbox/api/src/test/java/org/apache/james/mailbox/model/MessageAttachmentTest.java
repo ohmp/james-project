@@ -49,10 +49,9 @@ class MessageAttachmentTest {
     @Test
     void buildShouldWorkWhenMandatoryAttributesAreGiven() {
         Attachment attachment = Attachment.builder()
-                .type("type")
-
-
-    .size(36)        .build();
+            .type("type")
+            .size(36)
+            .build();
         MessageAttachment expectedMessageAttachment = new MessageAttachment(attachment, Optional.empty(), Optional.empty(), false);
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
@@ -65,10 +64,9 @@ class MessageAttachmentTest {
     @Test
     void buildShouldAcceptIsInlineAndNoCid() {
         Attachment attachment = Attachment.builder()
-                .type("type")
-
-
-    .size(36)        .build();
+            .type("type")
+            .size(36)
+            .build();
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
             .attachment(attachment)
@@ -81,10 +79,9 @@ class MessageAttachmentTest {
     @Test
     void buildShouldSetAttributesWhenAllAreGiven() {
         Attachment attachment = Attachment.builder()
-                .type("type")
-
-
-    .size(36)        .build();
+            .type("type")
+            .size(36)
+            .build();
         MessageAttachment expectedMessageAttachment = new MessageAttachment(attachment, Optional.of("name"), Optional.of(Cid.from("cid")), true);
 
         MessageAttachment messageAttachment = MessageAttachment.builder()
