@@ -150,23 +150,4 @@ class AttachmentTest {
 
         assertThat(attachment.getMetadata().getSize()).isEqualTo(input.getBytes(CHARSET).length);
     }
-
-    @Test
-    void toBlobShouldGenerateTheAttachmentBlob() {
-        byte[] bytes = "mystream".getBytes(CHARSET);
-        String content = "content";
-        String input = "mystream";
-        byte[] inputBytes = input.getBytes(CHARSET);
-        Attachment.WithBytes attachment = Attachment.builder()
-            .type(content)
-            .buildWithBytes(inputBytes);
-
-        Blob expected = Blob.builder()
-            .id(BlobId.fromBytes(bytes))
-            .contentType(content)
-            .payload(bytes)
-            .build();
-
-        assertThat(attachment.toBlob()).isEqualTo(expected);
-    }
 }

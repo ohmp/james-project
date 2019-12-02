@@ -21,6 +21,7 @@ package org.apache.james.mailbox.store;
 
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
@@ -32,6 +33,7 @@ import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.exception.BlobNotFoundException;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.Blob;
 import org.apache.james.mailbox.model.BlobId;
@@ -70,7 +72,14 @@ public class StoreBlobManager implements BlobManager {
     private Optional<Blob> getBlobFromAttachment(BlobId blobId, MailboxSession mailboxSession) throws MailboxException {
         try {
             AttachmentId attachmentId = AttachmentId.from(blobId);
-            return Optional.of(attachmentManager.retrieveContent(attachmentId, mailboxSession).toBlob());
+            Attachment attachment = attachmentManager.getAttachment(attachmentId, mailboxSession);
+            Supplier<InputStream> content = Throwing.supplier(() -> attachmentManager.retrieveContent(attachmentId, mailboxSession));
+            return Optional.of(Blob.builder()
+                .id(blobId)
+                .payload(content)
+                .size(attachment.getSize())
+                .contentType(attachment.getType())
+                .build());
         } catch (AttachmentNotFoundException e) {
             return Optional.empty();
         }

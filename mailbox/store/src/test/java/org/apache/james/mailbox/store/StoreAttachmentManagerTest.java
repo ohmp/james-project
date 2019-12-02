@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.james.mailbox.MailboxSession;
@@ -81,7 +82,7 @@ public class StoreAttachmentManagerTest {
     @Test
     public void retrieveContentShouldThrowWhenAttachmentDoesNotBelongToUser() throws Exception {
         MailboxSession mailboxSession = mock(MailboxSession.class);
-        when(attachmentMapper.retrieveContent(ATTACHMENT_ID)).thenReturn(ATTACHMENT.withBytes("abc".getBytes(StandardCharsets.UTF_8)));
+        when(attachmentMapper.retrieveContent(ATTACHMENT_ID)).thenReturn(new ByteArrayInputStream("abc".getBytes(StandardCharsets.UTF_8)));
         when(attachmentMapper.getRelatedMessageIds(ATTACHMENT_ID)).thenReturn(MESSAGE_IDS);
         when(attachmentMapper.getOwners(ATTACHMENT_ID)).thenReturn(ImmutableList.of());
         when(messageIdManager.accessibleMessages(MESSAGE_IDS, mailboxSession)).thenReturn(ImmutableSet.of());

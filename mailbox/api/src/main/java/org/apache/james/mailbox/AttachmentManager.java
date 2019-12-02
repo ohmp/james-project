@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
@@ -35,5 +36,5 @@ public interface AttachmentManager {
 
     void storeAttachment(Attachment.WithBytes attachment, MailboxSession mailboxSession) throws MailboxException;
 
-    Attachment.WithBytes retrieveContent(AttachmentId id, MailboxSession session) throws MailboxException, AttachmentNotFoundException;
+    InputStream retrieveContent(AttachmentId id, MailboxSession session) throws MailboxException, AttachmentNotFoundException;
 }

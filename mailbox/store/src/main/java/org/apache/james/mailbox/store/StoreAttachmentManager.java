@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.store;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class StoreAttachmentManager implements AttachmentManager {
     }
 
     @Override
-    public Attachment.WithBytes retrieveContent(AttachmentId id, MailboxSession session) throws MailboxException, AttachmentNotFoundException {
+    public InputStream retrieveContent(AttachmentId id, MailboxSession session) throws MailboxException, AttachmentNotFoundException {
         if (!userHasAccessToAttachment(id, session)) {
             throw new AttachmentNotFoundException(id.getId());
         }

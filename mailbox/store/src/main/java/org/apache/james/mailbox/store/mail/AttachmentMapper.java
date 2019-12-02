@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.mailbox.store.mail;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,9 +36,7 @@ public interface AttachmentMapper extends Mapper {
 
     List<Attachment> getAttachments(Collection<AttachmentId> attachmentIds);
 
-    Attachment.WithBytes retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException;
-
-    List<Attachment.WithBytes> retrieveContents(Collection<AttachmentId> attachmentIds);
+    InputStream retrieveContent(AttachmentId attachmentId) throws MailboxException, AttachmentNotFoundException;
 
     void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException;
 

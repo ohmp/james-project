@@ -18,10 +18,10 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory.mail;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.james.core.Username;
@@ -31,11 +31,7 @@ import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
-import org.apache.james.util.OptionalUtils;
 
-import com.github.fge.lambdas.Throwing;
-import com.github.fge.lambdas.functions.FunctionChainer;
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -58,7 +54,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
 
     @Override
     public Attachment getAttachment(AttachmentId attachmentId) throws AttachmentNotFoundException {
-        return retrieveContent(attachmentId).getMetadata();
+        return retrieveContentWithBytes(attachmentId).getMetadata();
     }
 
     @Override
@@ -108,21 +104,15 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public Attachment.WithBytes retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException {
+    public InputStream retrieveContent(AttachmentId attachmentId) throws MailboxException {
+        return retrieveContentWithBytes(attachmentId).getStream();
+    }
+
+    private Attachment.WithBytes retrieveContentWithBytes(AttachmentId attachmentId) throws AttachmentNotFoundException {
         Preconditions.checkArgument(attachmentId != null);
         if (!attachmentsById.containsKey(attachmentId)) {
             throw new AttachmentNotFoundException(attachmentId.getId());
         }
         return attachmentsById.get(attachmentId);
-    }
-
-    @Override
-    public List<Attachment.WithBytes> retrieveContents(Collection<AttachmentId> attachmentIds) {
-        FunctionChainer<AttachmentId, Optional<Attachment.WithBytes>> retrieveContent = Throwing.function(id -> Optional.of(retrieveContent(id)));
-
-        return attachmentIds.stream()
-            .map(retrieveContent.fallbackTo(any -> Optional.empty()))
-            .flatMap(OptionalUtils::toStream)
-            .collect(Guavate.toImmutableList());
     }
 }

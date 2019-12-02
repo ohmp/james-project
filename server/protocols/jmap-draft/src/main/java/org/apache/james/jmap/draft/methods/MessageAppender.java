@@ -20,6 +20,7 @@
 package org.apache.james.jmap.draft.methods;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import javax.inject.Inject;
 import javax.mail.Flags;
 import javax.mail.util.SharedByteArrayInputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.james.jmap.draft.methods.ValueWithId.CreationMessageEntry;
 import org.apache.james.jmap.draft.model.Attachment;
 import org.apache.james.jmap.draft.model.CreationMessage;
@@ -163,20 +165,23 @@ public class MessageAppender {
 
     private Optional<MessageAttachment.WithBytes> messageAttachment(MailboxSession session, Attachment attachment) throws MailboxException {
         try {
-            org.apache.james.mailbox.model.Attachment.WithBytes mailboxAttachment = attachmentManager.retrieveContent(AttachmentId.from(attachment.getBlobId().getRawValue()), session);
+            org.apache.james.mailbox.model.Attachment mailboxAttachment = attachmentManager.getAttachment(AttachmentId.from(attachment.getBlobId().getRawValue()), session);
+            InputStream content = attachmentManager.retrieveContent(AttachmentId.from(attachment.getBlobId().getRawValue()), session);
             return Optional.of(MessageAttachment.builder()
-                .attachment(mailboxAttachment.getMetadata())
+                .attachment(mailboxAttachment)
                 .name(attachment.getName().orElse(null))
                 .cid(attachment.getCid().map(Cid::from).orElse(null))
                 .isInline(attachment.isIsInline())
                 .build()
-                .withBytes(mailboxAttachment.getBytes()));
+                .withBytes(IOUtils.toByteArray(content)));
         } catch (AttachmentNotFoundException e) {
             LOGGER.error(String.format("Attachment %s not found", attachment.getBlobId()), e);
             return Optional.empty();
         } catch (IllegalStateException e) {
             LOGGER.error(String.format("Attachment %s is not well-formed", attachment.getBlobId()), e);
             return Optional.empty();
+        } catch (IOException e) {
+            throw new MailboxException("Error while copying attachment content", e);
         }
     }
 }

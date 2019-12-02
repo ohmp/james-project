@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.model;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Objects;
@@ -95,7 +94,7 @@ public class Attachment {
             return metadata;
         }
 
-        public InputStream getStream() throws IOException {
+        public InputStream getStream() {
             return new ByteArrayInputStream(bytes);
         }
 
@@ -106,14 +105,6 @@ public class Attachment {
          */
         public byte[] getBytes() {
             return bytes;
-        }
-
-        public Blob toBlob() {
-            return Blob.builder()
-                .id(BlobId.fromBytes(bytes))
-                .payload(bytes)
-                .contentType(metadata.type)
-                .build();
         }
 
         @Override

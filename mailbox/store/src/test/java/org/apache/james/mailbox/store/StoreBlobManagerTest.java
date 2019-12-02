@@ -75,15 +75,18 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldReturnBlobWhenAttachment() throws Exception {
-        when(attachmentManager.retrieveContent(ATTACHMENT_ID, session))
+        when(attachmentManager.getAttachment(ATTACHMENT_ID, session))
             .thenReturn(Attachment.builder()
                 .attachmentId(ATTACHMENT_ID)
                 .type(CONTENT_TYPE)
-                .buildWithBytes(BYTES));
+                .size(BYTES.length)
+                .build());
+        when(attachmentManager.retrieveContent(ATTACHMENT_ID, session))
+            .thenReturn(new ByteArrayInputStream(BYTES));
 
         assertThat(blobManager.retrieve(BLOB_ID_ATTACHMENT, session))
             .isEqualTo(Blob.builder()
-                .id(BlobId.fromString("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"))
+                .id(BLOB_ID_ATTACHMENT)
                 .contentType(CONTENT_TYPE)
                 .payload(BYTES)
                 .build());
@@ -91,7 +94,7 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldThrowWhenNotFound() throws Exception {
-        when(attachmentManager.retrieveContent(ATTACHMENT_ID, session))
+        when(attachmentManager.getAttachment(ATTACHMENT_ID, session))
             .thenThrow(new AttachmentNotFoundException(ID));
         when(messageIdManager.getMessages(ImmutableList.of(MESSAGE_ID), FetchGroup.FULL_CONTENT, session))
             .thenReturn(ImmutableList.of());
@@ -102,7 +105,7 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldReturnBlobWhenMessage() throws Exception {
-        when(attachmentManager.retrieveContent(any(), any()))
+        when(attachmentManager.getAttachment(any(), any()))
             .thenThrow(new AttachmentNotFoundException(ID));
 
         MessageResult messageResult = mock(MessageResult.class);
@@ -122,7 +125,7 @@ public class StoreBlobManagerTest {
 
     @Test
     public void retrieveShouldThrowOnMailboxExceptionWhenRetrievingAttachment() throws Exception {
-        when(attachmentManager.retrieveContent(any(), any()))
+        when(attachmentManager.getAttachment(any(), any()))
             .thenThrow(new MailboxException());
 
         assertThatThrownBy(() -> blobManager.retrieve(BLOB_ID_MESSAGE, session))

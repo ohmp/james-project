@@ -123,7 +123,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         assertThat(messages.hasNext()).isTrue();
         List<MessageAttachment> attachments = messages.next().getAttachments();
         assertThat(attachments).hasSize(1);
-        assertThat(attachmentMapper.retrieveContent(attachments.get(0).getAttachmentId()).getStream())
+        assertThat(attachmentMapper.retrieveContent(attachments.get(0).getAttachmentId()))
             .hasSameContentAs(ClassLoader.getSystemResourceAsStream("eml/gimp.png"));
     }
 

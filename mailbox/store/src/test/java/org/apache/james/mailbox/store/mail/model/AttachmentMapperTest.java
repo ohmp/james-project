@@ -22,6 +22,7 @@ package org.apache.james.mailbox.store.mail.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
@@ -96,9 +97,9 @@ public abstract class AttachmentMapperTest {
         AttachmentId attachmentId = ATTACHMENT.getMetadata().getAttachmentId();
         attachmentMapper.storeAttachmentForOwner(ATTACHMENT, OWNER);
         //When
-        Attachment.WithBytes attachment = attachmentMapper.retrieveContent(attachmentId);
+        InputStream attachment = attachmentMapper.retrieveContent(attachmentId);
         //Then
-        assertThat(attachment).isEqualTo(ATTACHMENT);
+        assertThat(attachment).hasSameContentAs(ATTACHMENT.getStream());
     }
 
     @Test

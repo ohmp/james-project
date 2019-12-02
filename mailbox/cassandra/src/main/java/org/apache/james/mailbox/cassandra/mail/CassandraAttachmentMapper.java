@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -133,28 +134,15 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public Attachment.WithBytes retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException {
+    public InputStream retrieveContent(AttachmentId attachmentId) throws AttachmentNotFoundException {
         return retrieveContentAsync(attachmentId).blockOptional()
             .orElseThrow(() -> new AttachmentNotFoundException(attachmentId.getId()));
     }
 
-    @Override
-    public List<Attachment.WithBytes> retrieveContents(Collection<AttachmentId> attachmentIds) {
-        return Flux.fromIterable(attachmentIds)
-            .concatMap(this::retrieveContentAsync)
-            .collect(Guavate.toImmutableList())
-            .block();
-    }
-
-    private Mono<Attachment.WithBytes> retrieveContentAsync(AttachmentId attachmentId) {
+    private Mono<InputStream> retrieveContentAsync(AttachmentId attachmentId) {
         return attachmentDAOV2.getAttachment(attachmentId)
-            .flatMap(this::retrievePayload)
-            .switchIfEmpty(fallbackToV1WithBytes(attachmentId));
-    }
-
-    private Mono<Attachment.WithBytes> retrievePayload(DAOAttachment daoAttachment) {
-        return blobStore.readBytes(blobStore.getDefaultBucketName(), daoAttachment.getBlobId())
-            .map(data -> daoAttachment.toAttachment().withBytes(data));
+            .map(dao -> blobStore.read(blobStore.getDefaultBucketName(), dao.getBlobId()))
+            .switchIfEmpty(fallbackToV1WithBytes(attachmentId).map(Attachment.WithBytes::getStream));
     }
 
     private Mono<Attachment.WithBytes> fallbackToV1WithBytes(AttachmentId attachmentId) {

@@ -3943,7 +3943,7 @@ public abstract class SetMessagesMethodTest {
             .body(thirdAttachment + ".name", equalTo("进化还是不.png"));
     }
 
-    private String uploadAttachment(Attachment.WithBytes attachment) throws IOException {
+    private String uploadAttachment(Attachment.WithBytes attachment) {
         return with()
             .header("Authorization", accessToken.serialize())
             .contentType(attachment.getMetadata().getType())
