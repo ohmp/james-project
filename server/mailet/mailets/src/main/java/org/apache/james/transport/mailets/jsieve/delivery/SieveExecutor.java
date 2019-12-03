@@ -46,6 +46,7 @@ import org.apache.mailet.MailetContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 public class SieveExecutor {
@@ -154,6 +155,7 @@ public class SieveExecutor {
         }
     }
 
+    @VisibleForTesting
     void handleFailure(MailAddress recipient, Mail aMail, Exception ex) throws MessagingException, IOException {
         aMail.setAttribute(new Attribute(SIEVE_NOTIFICATION, AttributeValue.of(true)));
 
