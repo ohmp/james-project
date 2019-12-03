@@ -71,7 +71,6 @@ import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.core.Username;
 import org.apache.james.core.quota.QuotaSizeLimit;
@@ -3960,7 +3959,7 @@ public abstract class SetMessagesMethodTest {
         return with()
             .header("Authorization", accessToken.serialize())
             .contentType(attachment.getMetadata().getType())
-            .body(new String(IOUtils.toByteArray(attachment.getStream()), StandardCharsets.UTF_8))
+            .body(new String(attachment.getBytes(), StandardCharsets.UTF_8))
             .post("/upload")
         .then()
             .extract()

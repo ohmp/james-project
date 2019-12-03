@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory.mail;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +104,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public InputStream retrieveContent(AttachmentId attachmentId) throws MailboxException {
+    public ByteArrayInputStream retrieveContent(AttachmentId attachmentId) throws MailboxException {
         return retrieveContentWithBytes(attachmentId).getStream();
     }
 

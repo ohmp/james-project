@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.model;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -94,7 +93,7 @@ public class Attachment {
             return metadata;
         }
 
-        public InputStream getStream() {
+        public ByteArrayInputStream getStream() {
             return new ByteArrayInputStream(bytes);
         }
 

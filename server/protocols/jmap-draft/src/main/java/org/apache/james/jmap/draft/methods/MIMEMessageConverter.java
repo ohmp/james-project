@@ -64,7 +64,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
 
 public class MIMEMessageConverter {
@@ -303,7 +302,7 @@ public class MIMEMessageConverter {
     private BodyPart attachmentBodyPart(MessageAttachment.WithBytes att) throws IOException {
         BodyPartBuilder builder = BodyPartBuilder.create()
             .use(bodyFactory)
-            .setBody(new BasicBodyFactory().binaryBody(ByteStreams.toByteArray(att.getAttachmentWithBytes().getStream())))
+            .setBody(new BasicBodyFactory().binaryBody(att.getBytes()))
             .setField(contentTypeField(att.getMetadata()))
             .setField(contentDispositionField(att.getMetadata().isInline()))
             .setContentTransferEncoding(BASE64);
