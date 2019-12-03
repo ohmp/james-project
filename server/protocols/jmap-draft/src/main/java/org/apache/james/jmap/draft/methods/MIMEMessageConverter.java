@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.TimeZone;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.james.jmap.draft.model.CreationMessage;
@@ -246,7 +245,7 @@ public class MIMEMessageConverter {
 
     private MultipartBuilder addAttachments(List<MessageAttachment.WithBytes> messageAttachments,
                                             MultipartBuilder multipartBuilder) {
-        messageAttachments.forEach(addAttachment(multipartBuilder));
+        messageAttachments.forEach(att -> multipartBuilder.addBodyPart(attachmentBodyPart(att)));
 
         return multipartBuilder;
     }
@@ -288,18 +287,7 @@ public class MIMEMessageConverter {
         }
     }
 
-    private Consumer<MessageAttachment.WithBytes> addAttachment(MultipartBuilder builder) {
-        return att -> { 
-            try {
-                builder.addBodyPart(attachmentBodyPart(att));
-            } catch (IOException e) {
-                LOGGER.error("Error while creating attachment", e);
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    private BodyPart attachmentBodyPart(MessageAttachment.WithBytes att) throws IOException {
+    private BodyPart attachmentBodyPart(MessageAttachment.WithBytes att) {
         BodyPartBuilder builder = BodyPartBuilder.create()
             .use(bodyFactory)
             .setBody(new BasicBodyFactory().binaryBody(att.getBytes()))
