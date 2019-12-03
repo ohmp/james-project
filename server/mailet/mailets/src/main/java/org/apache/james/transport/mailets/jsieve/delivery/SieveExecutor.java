@@ -26,6 +26,7 @@ import javax.mail.MessagingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.james.core.MailAddress;
+import org.apache.james.server.core.MailImpl;
 import org.apache.james.sieverepository.api.exception.ScriptNotFoundException;
 import org.apache.james.transport.mailets.jsieve.ActionDispatcher;
 import org.apache.james.transport.mailets.jsieve.ResourceLocator;
@@ -46,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 public class SieveExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SieveExecutor.class);
@@ -154,8 +154,17 @@ public class SieveExecutor {
         }
     }
 
-    protected void handleFailure(MailAddress recipient, Mail aMail, Exception ex) throws MessagingException, IOException {
+    void handleFailure(MailAddress recipient, Mail aMail, Exception ex) throws MessagingException, IOException {
         aMail.setAttribute(new Attribute(SIEVE_NOTIFICATION, AttributeValue.of(true)));
-        mailetContext.sendMail(recipient, ImmutableList.of(recipient), SieveFailureMessageComposer.composeMessage(aMail, ex, recipient.toString()));
+
+        MailImpl errorMail = MailImpl.builder()
+            .name(MailImpl.getId())
+            .addAttribute(new Attribute(SIEVE_NOTIFICATION, AttributeValue.of(true)))
+            .sender(recipient)
+            .addRecipient(recipient)
+            .mimeMessage(SieveFailureMessageComposer.composeMessage(aMail, ex, recipient.toString()))
+            .build();
+
+        mailetContext.sendMail(errorMail);
     }
 }
