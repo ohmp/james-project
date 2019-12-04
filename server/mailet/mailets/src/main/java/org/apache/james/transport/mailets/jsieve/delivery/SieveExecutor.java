@@ -157,8 +157,6 @@ public class SieveExecutor {
 
     @VisibleForTesting
     void handleFailure(MailAddress recipient, Mail aMail, Exception ex) throws MessagingException, IOException {
-        aMail.setAttribute(new Attribute(SIEVE_NOTIFICATION, AttributeValue.of(true)));
-
         MailImpl errorMail = MailImpl.builder()
             .name(MailImpl.getId())
             .addAttribute(new Attribute(SIEVE_NOTIFICATION, AttributeValue.of(true)))
