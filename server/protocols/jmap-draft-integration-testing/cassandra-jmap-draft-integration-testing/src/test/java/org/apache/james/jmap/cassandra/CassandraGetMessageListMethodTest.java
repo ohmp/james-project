@@ -75,7 +75,7 @@ public class CassandraGetMessageListMethodTest extends GetMessageListMethodTest 
             .when()
                 .post("/jmap")
             .then()
-                .statusCode(500);
+                .statusCode(503);
         } finally {
             rule.getDockerElasticSearchRule().getDockerEs().unpause();
         }
