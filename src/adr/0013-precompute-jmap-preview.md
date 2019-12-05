@@ -33,20 +33,20 @@ Some performance tests will be run in order to evaluate the improvements.
 
 ## Consequences
 
-Given the following scenario played by 5000 users per hour (constant rate)
+Given the following scenario played by 2500 users per hour (constant rate)
  - Authenticate
  - List mailboxes
  - List messages in one of their mailboxes
- - Get 10 time the properties expected to be fast to fetch with JMAP
+ - Get 8 time the properties expected to be fast to fetch with JMAP
 
 We went from:
- - A 20% failure rate before this change to no failure
- - Mean time for GetMessages went from 27 159 ms to 27 ms (1000 time improvment), for all operation from
- 27 591 ms to 60 ms (460 time improvment)
- - P99 is a metic thatdid not make sense because the initial simulation exceeded Gatling (the performance measuring tool 
- we use) timeout (60s) at the p50 percentile. After this proposal p99 for the entire scenario is of 1 383 ms
+ - A 7% failure rate before this change to almost no failure
+ - Mean time for GetMessages went from 9 710 ms to 434 ms (22 time improvment), for all operation from
+ 12 802 ms to 407 ms (31 time improvment)
+ - P99 is a metric that did not make sense because the initial simulation exceeded Gatling (the performance measuring tool 
+ we use) timeout (60s) at the p95 percentile. After this proposal p99 for the entire scenario is of 1 747 ms
 
-As such, this changeset significantly increase the JMAP performance.
+As such, this changeset significantly increases the JMAP performance.
 
 ## References
 
