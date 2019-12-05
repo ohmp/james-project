@@ -44,6 +44,11 @@ public class Blob {
             return this;
         }
 
+        /**
+         * Be careful the returned array is not a copy of the attachment byte array.
+         * Mutating it will mutate the blob!
+         * @return the attachment content
+         */
         public Builder payload(byte[] payload) {
             this.payload = () -> new ByteArrayInputStream(payload);
             this.size = Long.valueOf(payload.length);
