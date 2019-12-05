@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.model;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -98,7 +97,12 @@ public class Blob {
         return blobId;
     }
 
-    public InputStream getStream() throws IOException {
+    /**
+     * Needs to be closed by the caller
+     *
+     * @return An InputStream containing the data of this Blob
+     */
+    public InputStream createStream() {
         return payload.get();
     }
 

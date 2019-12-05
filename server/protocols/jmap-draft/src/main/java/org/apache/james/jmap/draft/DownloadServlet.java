@@ -24,6 +24,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -129,7 +130,9 @@ public class DownloadServlet extends HttpServlet {
             resp.setHeader("Content-Length", String.valueOf(blob.getSize()));
             resp.setHeader("Content-Type", blob.getContentType());
             resp.setStatus(SC_OK);
-            IOUtils.copy(blob.getStream(), resp.getOutputStream());
+            try (InputStream stream = blob.createStream()) {
+                IOUtils.copy(stream, resp.getOutputStream());
+            }
         } catch (BlobNotFoundException e) {
             LOGGER.info("Attachment '{}' not found", blobId, e);
             resp.setStatus(SC_NOT_FOUND);
