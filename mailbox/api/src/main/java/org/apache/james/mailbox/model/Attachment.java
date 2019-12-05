@@ -19,8 +19,6 @@
 
 package org.apache.james.mailbox.model;
 
-import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
@@ -65,61 +63,11 @@ public class Attachment {
             return new Attachment(builtAttachmentId, type, size);
         }
 
-        public Attachment.WithBytes buildWithBytes(byte[] bytes) {
-            return size(bytes.length)
-                .build()
-                .withBytes(bytes);
-        }
-
         private AttachmentId attachmentId() {
             if (attachmentId != null) {
                 return attachmentId;
             }
             return AttachmentId.random();
-        }
-    }
-
-    public static class WithBytes {
-        private final byte[] bytes;
-        private final Attachment metadata;
-
-        public WithBytes(byte[] bytes, Attachment metadata) {
-            Preconditions.checkArgument(bytes != null);
-            this.bytes = bytes;
-            this.metadata = metadata;
-        }
-
-        public Attachment getMetadata() {
-            return metadata;
-        }
-
-        public ByteArrayInputStream getStream() {
-            return new ByteArrayInputStream(bytes);
-        }
-
-        /**
-         * Be careful the returned array is not a copy of the attachment byte array.
-         * Mutating it will mutate the attachment!
-         * @return the attachment content
-         */
-        public byte[] getBytes() {
-            return bytes;
-        }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof WithBytes) {
-                WithBytes withBytes = (WithBytes) o;
-
-                return Arrays.equals(this.bytes, withBytes.bytes)
-                    && Objects.equals(this.metadata, withBytes.metadata);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(bytes, metadata);
         }
     }
 
@@ -143,12 +91,6 @@ public class Attachment {
 
     public long getSize() {
         return size;
-    }
-
-    public Attachment.WithBytes withBytes(byte[] bytes) {
-        Preconditions.checkNotNull(bytes);
-        Preconditions.checkArgument(bytes.length == size, "Provided content do not match attachment size");
-        return new WithBytes(bytes, this);
     }
 
     @Override
