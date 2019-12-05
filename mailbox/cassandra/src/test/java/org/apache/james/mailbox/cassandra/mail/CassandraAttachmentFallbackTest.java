@@ -35,6 +35,7 @@ import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO.DAOAttachmentV1;
 import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.model.Attachment;
@@ -52,15 +53,19 @@ class CassandraAttachmentFallbackTest {
     private static final AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
     private static final byte[] BYTES = "{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8);
-    private static final Attachment.WithBytes ATTACHMENT = Attachment.builder()
+    private static final Attachment ATTACHMENT = Attachment.builder()
         .attachmentId(ATTACHMENT_ID_1)
         .type("application/json")
-        .buildWithBytes(BYTES);
+        .size(BYTES.length)
+        .build();
+    private static final DAOAttachmentV1 DAO_ATTACHMENT = new DAOAttachmentV1(BYTES, ATTACHMENT);
     private static final byte[] BYTES_2 = "{\"property\":`\"different\"}".getBytes(StandardCharsets.UTF_8);
-    private static final Attachment.WithBytes OTHER_ATTACHMENT = Attachment.builder()
+    private static final Attachment OTHER_ATTACHMENT = Attachment.builder()
         .attachmentId(ATTACHMENT_ID_2)
         .type("application/json")
-        .buildWithBytes(BYTES_2);
+        .size(BYTES_2.length)
+        .build();
+    private static final DAOAttachmentV1 OTHER_DAO_ATTACHMENT = new DAOAttachmentV1(BYTES_2, OTHER_ATTACHMENT);
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
@@ -100,48 +105,48 @@ class CassandraAttachmentFallbackTest {
 
     @Test
     void getAttachmentShouldReturnV2WhenPresentInV1AndV2() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), ATTACHMENT.getBytes()).block();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT.getMetadata(), blobId)).block();
-        attachmentDAO.storeAttachment(OTHER_ATTACHMENT).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), BYTES).block();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT, blobId)).block();
+        attachmentDAO.storeAttachment(OTHER_DAO_ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachment(ATTACHMENT_ID_1))
-            .isEqualTo(ATTACHMENT.getMetadata());
+            .isEqualTo(ATTACHMENT);
     }
 
     @Test
     void getAttachmentShouldReturnV1WhenV2Absent() throws Exception {
-        attachmentDAO.storeAttachment(ATTACHMENT).block();
+        attachmentDAO.storeAttachment(DAO_ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachment(ATTACHMENT_ID_1))
-            .isEqualTo(ATTACHMENT.getMetadata());
+            .isEqualTo(ATTACHMENT);
     }
 
     @Test
     void getAttachmentsShouldReturnV2WhenV2AndV1() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), ATTACHMENT.getBytes()).block();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT.getMetadata(), blobId)).block();
-        attachmentDAO.storeAttachment(OTHER_ATTACHMENT).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), BYTES).block();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT, blobId)).block();
+        attachmentDAO.storeAttachment(OTHER_DAO_ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1)))
-            .containsExactly(ATTACHMENT.getMetadata());
+            .containsExactly(ATTACHMENT);
     }
 
     @Test
     void getAttachmentsShouldReturnV1WhenV2Absent() throws Exception {
-        attachmentDAO.storeAttachment(ATTACHMENT).block();
+        attachmentDAO.storeAttachment(DAO_ATTACHMENT).block();
 
         assertThat(attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1)))
-            .containsExactly(ATTACHMENT.getMetadata());
+            .containsExactly(ATTACHMENT);
     }
 
     @Test
     void getAttachmentsShouldCombineElementsFromV1AndV2() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), ATTACHMENT.getBytes()).block();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT.getMetadata(), blobId)).block();
-        attachmentDAO.storeAttachment(OTHER_ATTACHMENT).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), BYTES).block();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(ATTACHMENT, blobId)).block();
+        attachmentDAO.storeAttachment(OTHER_DAO_ATTACHMENT).block();
 
         List<Attachment> attachments = attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1, ATTACHMENT_ID_2));
         assertThat(attachments)
-            .containsExactlyInAnyOrder(ATTACHMENT.getMetadata(), OTHER_ATTACHMENT.getMetadata());
+            .containsExactlyInAnyOrder(ATTACHMENT, OTHER_ATTACHMENT);
     }
 }

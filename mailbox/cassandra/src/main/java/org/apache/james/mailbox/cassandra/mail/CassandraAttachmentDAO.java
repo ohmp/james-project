@@ -31,8 +31,11 @@ import static org.apache.james.mailbox.cassandra.table.CassandraAttachmentTable.
 import static org.apache.james.mailbox.cassandra.table.CassandraAttachmentTable.TABLE_NAME;
 import static org.apache.james.mailbox.cassandra.table.CassandraAttachmentTable.TYPE;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -50,6 +53,51 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CassandraAttachmentDAO {
+    public static class DAOAttachmentV1 {
+        private final byte[] bytes;
+        private final Attachment metadata;
+
+        public DAOAttachmentV1(byte[] bytes, Attachment metadata) {
+            Preconditions.checkArgument(bytes != null);
+            Preconditions.checkArgument(metadata.getSize() == bytes.length);
+
+            this.bytes = bytes;
+            this.metadata = metadata;
+        }
+
+        public Attachment getMetadata() {
+            return metadata;
+        }
+
+        public ByteArrayInputStream getStream() {
+            return new ByteArrayInputStream(bytes);
+        }
+
+        /**
+         * Be careful the returned array is not a copy of the attachment byte array.
+         * Mutating it will mutate the attachment!
+         * @return the attachment content
+         */
+        public byte[] getBytes() {
+            return bytes;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof DAOAttachmentV1) {
+                DAOAttachmentV1 withBytes = (DAOAttachmentV1) o;
+
+                return Arrays.equals(this.bytes, withBytes.bytes)
+                    && Objects.equals(this.metadata, withBytes.metadata);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(bytes, metadata);
+        }
+    }
 
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraConfiguration configuration;
@@ -96,7 +144,7 @@ public class CassandraAttachmentDAO {
             .from(TABLE_NAME));
     }
 
-    public Mono<Attachment.WithBytes> getAttachment(AttachmentId attachmentId) {
+    public Mono<DAOAttachmentV1> getAttachment(AttachmentId attachmentId) {
         Preconditions.checkArgument(attachmentId != null);
         return cassandraAsyncExecutor.executeSingleRow(
             selectStatement.bind()
@@ -104,7 +152,7 @@ public class CassandraAttachmentDAO {
             .map(this::attachment);
     }
 
-    public Flux<Attachment.WithBytes> retrieveAll() {
+    public Flux<DAOAttachmentV1> retrieveAll() {
         return cassandraAsyncExecutor.executeRows(
                 selectAllStatement.bind()
                     .setReadTimeoutMillis(configuration.getAttachmentV2MigrationReadTimeout())
@@ -112,7 +160,7 @@ public class CassandraAttachmentDAO {
             .map(this::attachment);
     }
 
-    public Mono<Void> storeAttachment(Attachment.WithBytes attachment) throws IOException {
+    public Mono<Void> storeAttachment(CassandraAttachmentDAO.DAOAttachmentV1 attachment) throws IOException {
         return cassandraAsyncExecutor.executeVoid(
             insertStatement.bind()
                 .setString(ID, attachment.getMetadata().getAttachmentId().getId())
@@ -128,12 +176,13 @@ public class CassandraAttachmentDAO {
                 .setString(ID, attachmentId.getId()));
     }
 
-    private Attachment.WithBytes attachment(Row row) {
+    private DAOAttachmentV1 attachment(Row row) {
         byte[] bytes = row.getBytes(PAYLOAD).array();
 
-        return Attachment.builder()
+        return new DAOAttachmentV1(bytes, Attachment.builder()
             .attachmentId(AttachmentId.from(row.getString(ID)))
             .type(row.getString(TYPE))
-            .buildWithBytes(bytes);
+            .size(row.getLong(SIZE))
+            .build());
     }
 }

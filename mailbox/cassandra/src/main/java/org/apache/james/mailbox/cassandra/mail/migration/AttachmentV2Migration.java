@@ -24,8 +24,8 @@ import javax.inject.Inject;
 import org.apache.james.backends.cassandra.migration.Migration;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO.DAOAttachmentV1;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
-import org.apache.james.mailbox.model.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public class AttachmentV2Migration implements Migration {
             .blockLast();
     }
 
-    private Mono<Void> migrateAttachment(Attachment.WithBytes attachment) {
+    private Mono<Void> migrateAttachment(DAOAttachmentV1 attachment) {
         return blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes())
             .map(blobId -> CassandraAttachmentDAOV2.from(attachment.getMetadata(), blobId))
             .flatMap(attachmentDAOV2::storeAttachment)

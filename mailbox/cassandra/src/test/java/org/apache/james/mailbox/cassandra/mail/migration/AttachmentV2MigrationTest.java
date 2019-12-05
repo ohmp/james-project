@@ -36,6 +36,7 @@ import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO.DAOAttachmentV1;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAOV2;
 import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
 import org.apache.james.mailbox.model.Attachment;
@@ -65,8 +66,8 @@ class AttachmentV2MigrationTest {
     private CassandraAttachmentDAOV2 attachmentDAOV2;
     private CassandraBlobStore blobsStore;
     private AttachmentV2Migration migration;
-    private Attachment.WithBytes attachment1;
-    private Attachment.WithBytes attachment2;
+    private DAOAttachmentV1 attachment1;
+    private DAOAttachmentV1 attachment2;
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
@@ -77,15 +78,17 @@ class AttachmentV2MigrationTest {
         migration = new AttachmentV2Migration(attachmentDAO, attachmentDAOV2, blobsStore);
 
         byte[] bytes1 = "{\"property\":`\"value1\"}".getBytes(StandardCharsets.UTF_8);
-        attachment1 = Attachment.builder()
+        attachment1 = new DAOAttachmentV1(bytes1, Attachment.builder()
             .attachmentId(ATTACHMENT_ID)
             .type("application/json")
-            .buildWithBytes(bytes1);
+            .size(bytes1.length)
+            .build());
         byte[] bytes2 = "{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8);
-        attachment2 = Attachment.builder()
+        attachment2 = new DAOAttachmentV1(bytes2, Attachment.builder()
             .attachmentId(ATTACHMENT_ID_2)
             .type("application/json")
-            .buildWithBytes(bytes2);
+            .size(bytes2.length)
+            .build());
     }
 
     @Test

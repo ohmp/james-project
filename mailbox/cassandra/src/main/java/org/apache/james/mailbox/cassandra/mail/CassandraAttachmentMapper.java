@@ -101,7 +101,7 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
 
     private Mono<Attachment> fallbackToV1(AttachmentId attachmentId) {
         return attachmentDAO.getAttachment(attachmentId)
-            .map(Attachment.WithBytes::getMetadata);
+            .map(CassandraAttachmentDAO.DAOAttachmentV1::getMetadata);
     }
 
     @Override
@@ -142,10 +142,10 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     private Mono<InputStream> retrieveContentAsync(AttachmentId attachmentId) {
         return attachmentDAOV2.getAttachment(attachmentId)
             .map(dao -> blobStore.read(blobStore.getDefaultBucketName(), dao.getBlobId()))
-            .switchIfEmpty(fallbackToV1WithBytes(attachmentId).map(Attachment.WithBytes::getStream));
+            .switchIfEmpty(fallbackToV1WithBytes(attachmentId).map(CassandraAttachmentDAO.DAOAttachmentV1::getStream));
     }
 
-    private Mono<Attachment.WithBytes> fallbackToV1WithBytes(AttachmentId attachmentId) {
+    private Mono<CassandraAttachmentDAO.DAOAttachmentV1> fallbackToV1WithBytes(AttachmentId attachmentId) {
         return attachmentDAO.getAttachment(attachmentId);
     }
 

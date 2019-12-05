@@ -28,6 +28,7 @@ import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.CassandraRestartExtension;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
+import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentDAO.DAOAttachmentV1;
 import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
 import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
@@ -38,11 +39,20 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @ExtendWith(CassandraRestartExtension.class)
 class CassandraAttachmentDAOTest {
+    private static final byte[] BYTES = "{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] BYTES2 = "{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8);
     private static final AttachmentId ATTACHMENT_ID = AttachmentId.from("id1");
+    private static final Attachment ATTACHMENT = Attachment.builder()
+        .attachmentId(ATTACHMENT_ID)
+        .type("application/json")
+        .size(BYTES.length)
+        .build();
     private static final AttachmentId ATTACHMENT_ID_2 = AttachmentId.from("id2");
-    public static final byte[] BYTES = "{\"property\":`\"value\"}".getBytes(StandardCharsets.UTF_8);
-    public static final byte[] BYTES2 = "{\"property\":`\"value2\"}".getBytes(StandardCharsets.UTF_8);
-    public static final byte[] BYTES1 = "{\"property\":`\"value1\"}".getBytes(StandardCharsets.UTF_8);
+    private static final Attachment ATTACHMENT2 = Attachment.builder()
+        .attachmentId(ATTACHMENT_ID_2)
+        .type("application/json")
+        .size(BYTES2.length)
+        .build();
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraAttachmentModule.MODULE);
@@ -57,7 +67,7 @@ class CassandraAttachmentDAOTest {
 
     @Test
     void getAttachmentShouldReturnEmptyWhenAbsent() {
-        Optional<Attachment.WithBytes> attachment = testee.getAttachment(ATTACHMENT_ID).blockOptional();
+        Optional<DAOAttachmentV1> attachment = testee.getAttachment(ATTACHMENT_ID).blockOptional();
 
         assertThat(attachment).isEmpty();
     }
@@ -73,14 +83,8 @@ class CassandraAttachmentDAOTest {
 
     @Test
     void retrieveAllShouldReturnStoredAttachments() throws Exception {
-        Attachment.WithBytes attachment1 = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID)
-            .type("application/json")
-            .buildWithBytes(BYTES1);
-        Attachment.WithBytes attachment2 = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID_2)
-            .type("application/json")
-            .buildWithBytes(BYTES2);
+        DAOAttachmentV1 attachment1 =  new DAOAttachmentV1(BYTES, ATTACHMENT);
+        DAOAttachmentV1 attachment2 = new DAOAttachmentV1(BYTES2, ATTACHMENT2);
         testee.storeAttachment(attachment1).block();
         testee.storeAttachment(attachment2).block();
 
@@ -93,23 +97,17 @@ class CassandraAttachmentDAOTest {
 
     @Test
     void getAttachmentShouldReturnAttachmentWhenStored() throws Exception {
-        Attachment.WithBytes attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID)
-            .type("application/json")
-            .buildWithBytes(BYTES);
+        DAOAttachmentV1 attachment = new DAOAttachmentV1(BYTES, ATTACHMENT);
         testee.storeAttachment(attachment).block();
 
-        Optional<Attachment.WithBytes> actual = testee.getAttachment(ATTACHMENT_ID).blockOptional();
+        Optional<DAOAttachmentV1> actual = testee.getAttachment(ATTACHMENT_ID).blockOptional();
 
         assertThat(actual).contains(attachment);
     }
 
     @Test
     void deleteAttachmentShouldRemoveAttachment() throws Exception {
-        Attachment.WithBytes attachment = Attachment.builder()
-            .attachmentId(ATTACHMENT_ID)
-            .type("application/json")
-            .buildWithBytes(BYTES);
+        DAOAttachmentV1 attachment = new DAOAttachmentV1(BYTES, ATTACHMENT);
         testee.storeAttachment(attachment).block();
 
         testee.deleteAttachment(attachment.getMetadata().getAttachmentId()).block();
