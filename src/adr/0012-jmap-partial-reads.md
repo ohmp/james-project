@@ -34,7 +34,7 @@ Given the following scenario played by 5000 users per hour (constant rate)
  - Authenticate
  - List mailboxes
  - List messages in one of their mailboxes
- - Get 10 time the mailboxIds and keywords of the given messages
+ - Get 10 times the mailboxIds and keywords of the given messages
 
 We went from:
  - A 20% failure rate before this change to no failure

@@ -37,7 +37,7 @@ Given the following scenario played by 2500 users per hour (constant rate)
  - Authenticate
  - List mailboxes
  - List messages in one of their mailboxes
- - Get 8 time the properties expected to be fast to fetch with JMAP
+ - Get 8 times the properties expected to be fast to fetch with JMAP
 
 We went from:
  - A 7% failure rate before this change to almost no failure
