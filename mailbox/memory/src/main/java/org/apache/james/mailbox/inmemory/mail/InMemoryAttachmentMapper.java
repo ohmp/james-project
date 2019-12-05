@@ -19,9 +19,11 @@
 package org.apache.james.mailbox.inmemory.mail;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.james.core.Username;
@@ -40,9 +42,51 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 public class InMemoryAttachmentMapper implements AttachmentMapper {
+
+    private static class AttachmentWithBytes {
+        private final byte[] bytes;
+        private final Attachment metadata;
+
+        private AttachmentWithBytes(byte[] bytes, Attachment metadata) {
+            Preconditions.checkArgument(bytes != null);
+            Preconditions.checkArgument(metadata.getSize() == bytes.length);
+            this.bytes = bytes;
+            this.metadata = metadata;
+        }
+
+        private Attachment getMetadata() {
+            return metadata;
+        }
+
+        /**
+         * Be careful the returned array is not a copy of the attachment byte array.
+         * Mutating it will mutate the attachment!
+         * @return the attachment content
+         */
+        private byte[] getBytes() {
+            return bytes;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof AttachmentWithBytes) {
+                AttachmentWithBytes withBytes = (AttachmentWithBytes) o;
+
+                return Arrays.equals(this.bytes, withBytes.bytes)
+                    && Objects.equals(this.metadata, withBytes.metadata);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(bytes, metadata);
+        }
+    }
+
     private static final int INITIAL_SIZE = 128;
 
-    private final Map<AttachmentId, Attachment.WithBytes> attachmentsById;
+    private final Map<AttachmentId, AttachmentWithBytes> attachmentsById;
     private final Multimap<AttachmentId, MessageId> messageIdsByAttachmentId;
     private final Multimap<AttachmentId, Username> ownersByAttachmentId;
 
@@ -71,7 +115,7 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
 
     @Override
     public void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException {
-        attachmentsById.put(attachment.getMetadata().getAttachmentId(), attachment);
+        attachmentsById.put(attachment.getMetadata().getAttachmentId(), new AttachmentWithBytes(attachment.getBytes(), attachment.getMetadata()));
         ownersByAttachmentId.put(attachment.getMetadata().getAttachmentId(), owner);
     }
 
@@ -86,10 +130,10 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public void storeAttachmentsForMessage(Collection<Attachment.WithBytes> attachments, MessageId ownerMessageId) throws MailboxException {
-        for (Attachment.WithBytes attachment: attachments) {
-            attachmentsById.put(attachment.getMetadata().getAttachmentId(), attachment);
-            messageIdsByAttachmentId.put(attachment.getMetadata().getAttachmentId(), ownerMessageId);
+    public void storeAttachmentsForMessage(Map<Attachment, byte[]> attachments, MessageId ownerMessageId) throws MailboxException {
+        for (Map.Entry<Attachment, byte[]> attachment: attachments.entrySet()) {
+            attachmentsById.put(attachment.getKey().getAttachmentId(), new AttachmentWithBytes(attachment.getValue(), attachment.getKey()));
+            messageIdsByAttachmentId.put(attachment.getKey().getAttachmentId(), ownerMessageId);
         }
     }
 
@@ -105,10 +149,10 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
 
     @Override
     public ByteArrayInputStream retrieveContent(AttachmentId attachmentId) throws MailboxException {
-        return retrieveContentWithBytes(attachmentId).getStream();
+        return new ByteArrayInputStream(retrieveContentWithBytes(attachmentId).getBytes());
     }
 
-    private Attachment.WithBytes retrieveContentWithBytes(AttachmentId attachmentId) throws AttachmentNotFoundException {
+    private AttachmentWithBytes retrieveContentWithBytes(AttachmentId attachmentId) throws AttachmentNotFoundException {
         Preconditions.checkArgument(attachmentId != null);
         if (!attachmentsById.containsKey(attachmentId)) {
             throw new AttachmentNotFoundException(attachmentId.getId());
