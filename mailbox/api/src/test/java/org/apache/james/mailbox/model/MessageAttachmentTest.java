@@ -34,7 +34,6 @@ class MessageAttachmentTest {
     @Test
     void buildShouldThrowWhenAttachmentIsNotGiven() {
         assertThatThrownBy(() -> MessageAttachment.builder()
-
             .build())
             .isInstanceOf(IllegalStateException.class);
     }
