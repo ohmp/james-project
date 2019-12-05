@@ -52,7 +52,7 @@ import reactor.core.publisher.Mono;
 public class CassandraAttachmentDAO {
 
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
-    private CassandraConfiguration configuration;
+    private final CassandraConfiguration configuration;
     private final PreparedStatement insertStatement;
     private final PreparedStatement deleteStatement;
     private final PreparedStatement selectStatement;
