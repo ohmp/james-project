@@ -99,8 +99,8 @@ Supported health checks include:
 
 Response codes:
 
- - 200: All checks have answered with a Healthy status
- - 500: At least one check have answered with a Unhealthy or Degraded status
+ - 200: All checks have answered with a Healthy or Degraded status. James services can still be used.
+ - 503: At least one check have answered with a Unhealthy or Degraded status
 
 ### Check single component
 
