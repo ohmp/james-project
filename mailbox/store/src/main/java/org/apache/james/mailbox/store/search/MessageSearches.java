@@ -240,7 +240,7 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
     }
 
     private boolean attachmentsContain(String value, MailboxMessage message) throws IOException, MimeException {
-        List<MessageAttachment.WithBytes> attachments = new MessageParser().retrieveAttachments(message.getFullContent());
+        List<MessageParser.MessageAttachmentWithBytes> attachments = new MessageParser().retrieveAttachments(message.getFullContent());
         return isInAttachments(value, attachments);
     }
 
@@ -251,18 +251,18 @@ public class MessageSearches implements Iterable<SimpleMessageSearchIndex.Search
             .anyMatch(nameOptional -> nameOptional.map(value::equals).orElse(false));
     }
 
-    private boolean isInAttachments(String value, List<MessageAttachment.WithBytes> attachments) {
+    private boolean isInAttachments(String value, List<MessageParser.MessageAttachmentWithBytes> attachments) {
         return attachments.stream()
             .flatMap(this::toAttachmentContent)
             .anyMatch(string -> string.contains(value));
     }
 
-    private Stream<String> toAttachmentContent(MessageAttachment.WithBytes attachment) {
+    private Stream<String> toAttachmentContent(MessageParser.MessageAttachmentWithBytes attachment) {
         try {
             return OptionalUtils.toStream(
                     textExtractor
                          .extractContent(
-                             attachment.getAttachmentWithBytes().getStream(),
+                             new ByteArrayInputStream(attachment.getBytes()),
                              attachment.getAttachment().getType())
                         .getTextualContent());
         } catch (Exception e) {

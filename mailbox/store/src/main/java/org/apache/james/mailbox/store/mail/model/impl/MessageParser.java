@@ -49,9 +49,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class MessageParser {
+    public static class MessageAttachmentWithBytes {
+        private final byte[] bytes;
+        private final MessageAttachment metadata;
+
+        private MessageAttachmentWithBytes(byte[] bytes, MessageAttachment metadata) {
+            Preconditions.checkArgument(bytes != null);
+            Preconditions.checkArgument(metadata.getAttachment().getSize() == bytes.length);
+            this.bytes = bytes;
+            this.metadata = metadata;
+        }
+
+        public MessageAttachment getMetadata() {
+            return metadata;
+        }
+
+        public Attachment getAttachment() {
+            return metadata.getAttachment();
+        }
+
+        public Attachment.WithBytes getAttachmentWithBytes() {
+            return metadata.getAttachment().withBytes(bytes);
+        }
+
+        public byte[] getBytes() {
+            return bytes;
+        }
+    }
 
     private static final String TEXT_MEDIA_TYPE = "text";
     private static final String CONTENT_TYPE = "Content-Type";
@@ -76,7 +104,7 @@ public class MessageParser {
             .unwrap();
     }
 
-    public List<MessageAttachment.WithBytes> retrieveAttachments(InputStream fullContent) throws MimeException, IOException {
+    public List<MessageAttachmentWithBytes> retrieveAttachments(InputStream fullContent) throws MimeException, IOException {
         DefaultMessageBuilder defaultMessageBuilder = new DefaultMessageBuilder();
         defaultMessageBuilder.setMimeEntityConfig(MimeConfig.PERMISSIVE);
         defaultMessageBuilder.setDecodeMonitor(DecodeMonitor.SILENT);
@@ -99,13 +127,13 @@ public class MessageParser {
         }
     }
 
-    private Stream<MessageAttachment.WithBytes> listAttachments(Multipart multipart, Context context) {
+    private Stream<MessageAttachmentWithBytes> listAttachments(Multipart multipart, Context context) {
         return multipart.getBodyParts()
             .stream()
             .flatMap(entity -> listAttachments(entity, context));
     }
 
-    private Stream<MessageAttachment.WithBytes> listAttachments(Entity entity, Context context) {
+    private Stream<MessageAttachmentWithBytes> listAttachments(Entity entity, Context context) {
         if (isMultipart(entity)) {
             return listAttachments((Multipart) entity.getBody(), Context.fromEntity(entity));
         }
@@ -121,7 +149,7 @@ public class MessageParser {
         return Stream.empty();
     }
 
-    private MessageAttachment.WithBytes retrieveAttachment(Entity entity) throws IOException {
+    private MessageAttachmentWithBytes retrieveAttachment(Entity entity) throws IOException {
         Optional<ContentTypeField> contentTypeField = getContentTypeField(entity);
         Optional<ContentDispositionField> contentDispositionField = getContentDispositionField(entity);
         Optional<String> contentType = contentType(contentTypeField);
@@ -130,7 +158,9 @@ public class MessageParser {
         boolean isInline = isInline(readHeader(entity, CONTENT_DISPOSITION, ContentDispositionField.class)) && cid.isPresent();
 
         byte[] bytes = getBytes(entity.getBody());
-        return MessageAttachment.builder()
+        return new MessageAttachmentWithBytes(
+            bytes,
+            MessageAttachment.builder()
                 .attachment(Attachment.builder()
                     .size(bytes.length)
                     .type(contentType.orElse(DEFAULT_CONTENT_TYPE))
@@ -138,8 +168,7 @@ public class MessageParser {
                 .name(name.orElse(null))
                 .cid(cid.orElse(null))
                 .isInline(isInline)
-                .build()
-                .withBytes(bytes);
+                .build());
     }
 
     private <T extends ParsedField> Optional<T> readHeader(Entity entity, String headerName, Class<T> clazz) {

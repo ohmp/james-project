@@ -446,9 +446,9 @@ public class StoreMessageManager implements MessageManager {
         try (SharedFileInputStream contentIn = new SharedFileInputStream(file)) {
             final int size = (int) file.length();
 
-            final List<MessageAttachment.WithBytes> attachments = extractAttachments(contentIn);
+            final List<MessageParser.MessageAttachmentWithBytes> attachments = extractAttachments(contentIn);
             final List<MessageAttachment> attachmentsMetadata = attachments.stream()
-                .map(MessageAttachment.WithBytes::getMetadata)
+                .map(MessageParser.MessageAttachmentWithBytes::getMetadata)
                 .collect(Guavate.toImmutableList());
             propertyBuilder.setHasAttachment(hasNonInlinedAttachment(attachments));
 
@@ -503,13 +503,13 @@ public class StoreMessageManager implements MessageManager {
         return propertyBuilder;
     }
 
-    private boolean hasNonInlinedAttachment(List<MessageAttachment.WithBytes> attachments) {
+    private boolean hasNonInlinedAttachment(List<MessageParser.MessageAttachmentWithBytes> attachments) {
         return attachments.stream()
-            .map(MessageAttachment.WithBytes::getMetadata)
+            .map(MessageParser.MessageAttachmentWithBytes::getMetadata)
             .anyMatch(messageAttachment -> !messageAttachment.isInlinedWithCid());
     }
 
-    private List<MessageAttachment.WithBytes> extractAttachments(SharedFileInputStream contentIn) {
+    private List<MessageParser.MessageAttachmentWithBytes> extractAttachments(SharedFileInputStream contentIn) {
         try {
             return messageParser.retrieveAttachments(contentIn);
         } catch (Exception e) {
@@ -680,10 +680,10 @@ public class StoreMessageManager implements MessageManager {
         }, MailboxPathLocker.LockType.Write);
     }
 
-    protected MessageMetaData appendMessageToStore(final MailboxMessage message, final List<MessageAttachment.WithBytes> messageAttachments, MailboxSession session) throws MailboxException {
+    private MessageMetaData appendMessageToStore(final MailboxMessage message, final List<MessageParser.MessageAttachmentWithBytes> messageAttachments, MailboxSession session) throws MailboxException {
         final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
         final List<Attachment.WithBytes> attachmentsWithByte = messageAttachments.stream()
-            .map(MessageAttachment.WithBytes::getAttachmentWithBytes)
+            .map(MessageParser.MessageAttachmentWithBytes::getAttachmentWithBytes)
             .collect(Guavate.toImmutableList());
 
         return mapperFactory.getMessageMapper(session).execute(() -> {

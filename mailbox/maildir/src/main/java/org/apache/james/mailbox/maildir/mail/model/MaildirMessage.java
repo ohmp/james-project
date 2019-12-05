@@ -273,7 +273,7 @@ public class MaildirMessage implements Message {
         try {
             return new MessageParser().retrieveAttachments(getFullContent())
                 .stream()
-                .map(MessageAttachment.WithBytes::getMetadata)
+                .map(MessageParser.MessageAttachmentWithBytes::getMetadata)
                 .collect(Guavate.toImmutableList());
         } catch (MimeException | IOException e) {
             throw new RuntimeException(e);

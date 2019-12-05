@@ -70,18 +70,18 @@ public class MIMEMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MIMEMessageConverter.class);
 
-    public static class MessageAttachmentWithBytes {
+    static class MessageAttachmentWithBytes {
         private final MessageAttachment messageAttachment;
         private final byte[] content;
 
-        public MessageAttachmentWithBytes(MessageAttachment messageAttachment, byte[] content) {
+        MessageAttachmentWithBytes(MessageAttachment messageAttachment, byte[] content) {
             Preconditions.checkArgument(messageAttachment.getAttachment().getSize() == content.length);
 
             this.messageAttachment = messageAttachment;
             this.content = content;
         }
 
-        public MessageAttachment getMessageAttachment() {
+        MessageAttachment getMessageAttachment() {
             return messageAttachment;
         }
     }
