@@ -34,7 +34,7 @@ public interface AttachmentManager {
 
     List<Attachment> getAttachments(List<AttachmentId> attachmentIds, MailboxSession mailboxSession) throws MailboxException;
 
-    void storeAttachment(Attachment.WithBytes attachment, MailboxSession mailboxSession) throws MailboxException;
+    void storeAttachment(Attachment attachment, byte[] bytes, MailboxSession mailboxSession) throws MailboxException;
 
     InputStream retrieveContent(AttachmentId id, MailboxSession session) throws MailboxException, AttachmentNotFoundException;
 }

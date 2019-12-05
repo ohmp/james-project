@@ -75,9 +75,9 @@ public class StoreAttachmentManager implements AttachmentManager {
     }
 
     @Override
-    public void storeAttachment(Attachment.WithBytes attachment, MailboxSession mailboxSession) throws MailboxException {
+    public void storeAttachment(Attachment attachment, byte[] bytes, MailboxSession mailboxSession) throws MailboxException {
         attachmentMapperFactory.getAttachmentMapper(mailboxSession)
-            .storeAttachmentForOwner(attachment.getMetadata(), attachment.getBytes(), mailboxSession.getUser());
+            .storeAttachmentForOwner(attachment, bytes, mailboxSession.getUser());
     }
 
     @Override
