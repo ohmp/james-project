@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -68,6 +69,22 @@ import com.google.common.net.MediaType;
 public class MIMEMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MIMEMessageConverter.class);
+
+    public static class MessageAttachmentWithBytes {
+        private final MessageAttachment messageAttachment;
+        private final byte[] content;
+
+        public MessageAttachmentWithBytes(MessageAttachment messageAttachment, byte[] content) {
+            Preconditions.checkArgument(messageAttachment.getAttachment().getSize() == content.length);
+
+            this.messageAttachment = messageAttachment;
+            this.content = content;
+        }
+
+        public MessageAttachment getMessageAttachment() {
+            return messageAttachment;
+        }
+    }
 
     private static final String PLAIN_TEXT_MEDIA_TYPE = MediaType.PLAIN_TEXT_UTF_8.withoutParameters().toString();
     private static final String HTML_MEDIA_TYPE = MediaType.HTML_UTF_8.withoutParameters().toString();
@@ -102,7 +119,7 @@ public class MIMEMessageConverter {
         this.bodyFactory = new BasicBodyFactory();
     }
 
-    public byte[] convert(ValueWithId.CreationMessageEntry creationMessageEntry, ImmutableList<MessageAttachment.WithBytes> messageAttachments) {
+    public byte[] convert(ValueWithId.CreationMessageEntry creationMessageEntry, ImmutableList<MessageAttachmentWithBytes> messageAttachments) {
         return asBytes(convertToMime(creationMessageEntry, messageAttachments));
     }
 
@@ -114,7 +131,7 @@ public class MIMEMessageConverter {
         }
     }
 
-    @VisibleForTesting Message convertToMime(ValueWithId.CreationMessageEntry creationMessageEntry, ImmutableList<MessageAttachment.WithBytes> messageAttachments) {
+    @VisibleForTesting Message convertToMime(ValueWithId.CreationMessageEntry creationMessageEntry, ImmutableList<MessageAttachmentWithBytes> messageAttachments) {
         if (creationMessageEntry == null || creationMessageEntry.getValue() == null) {
             throw new IllegalArgumentException("creationMessageEntry is either null or has null message");
         }
@@ -130,7 +147,7 @@ public class MIMEMessageConverter {
         return messageBuilder.build();
     }
 
-    private void buildMimeHeaders(Message.Builder messageBuilder, CreationMessage newMessage, ImmutableList<MessageAttachment.WithBytes> messageAttachments) {
+    private void buildMimeHeaders(Message.Builder messageBuilder, CreationMessage newMessage, ImmutableList<MessageAttachmentWithBytes> messageAttachments) {
         Optional<Mailbox> fromAddress = newMessage.getFrom().filter(DraftEmailer::hasValidEmail).map(this::convertEmailToMimeHeader);
         fromAddress.ifPresent(messageBuilder::setFrom);
         fromAddress.ifPresent(messageBuilder::setSender);
@@ -184,12 +201,12 @@ public class MIMEMessageConverter {
         messageBuilder.addField(parser.parse(rawField, DecodeMonitor.SILENT));
     }
 
-    private boolean isMultipart(CreationMessage newMessage, ImmutableList<MessageAttachment.WithBytes> messageAttachments) {
+    private boolean isMultipart(CreationMessage newMessage, ImmutableList<MessageAttachmentWithBytes> messageAttachments) {
         return (newMessage.getTextBody().isPresent() && newMessage.getHtmlBody().isPresent())
                 || hasAttachment(messageAttachments);
     }
 
-    private boolean hasAttachment(ImmutableList<MessageAttachment.WithBytes> messageAttachments) {
+    private boolean hasAttachment(ImmutableList<MessageAttachmentWithBytes> messageAttachments) {
         return !messageAttachments.isEmpty();
     }
 
@@ -200,7 +217,7 @@ public class MIMEMessageConverter {
         return bodyFactory.textBody(body, StandardCharsets.UTF_8);
     }
 
-    private Multipart createMultipart(CreationMessage newMessage, ImmutableList<MessageAttachment.WithBytes> messageAttachments) {
+    private Multipart createMultipart(CreationMessage newMessage, ImmutableList<MessageAttachmentWithBytes> messageAttachments) {
         try {
             if (hasAttachment(messageAttachments)) {
                 return createMultipartWithAttachments(newMessage, messageAttachments);
@@ -213,13 +230,13 @@ public class MIMEMessageConverter {
         }
     }
 
-    private Multipart createMultipartWithAttachments(CreationMessage newMessage, ImmutableList<MessageAttachment.WithBytes> messageAttachments) throws IOException {
+    private Multipart createMultipartWithAttachments(CreationMessage newMessage, ImmutableList<MessageAttachmentWithBytes> messageAttachments) throws IOException {
         MultipartBuilder mixedMultipartBuilder = MultipartBuilder.create(MIXED_SUB_TYPE);
-        List<MessageAttachment.WithBytes> inlineAttachments = messageAttachments.stream()
-            .filter(attachment -> attachment.getMetadata().isInline())
+        List<MessageAttachmentWithBytes> inlineAttachments = messageAttachments.stream()
+            .filter(attachment -> attachment.messageAttachment.isInline())
             .collect(Guavate.toImmutableList());
-        List<MessageAttachment.WithBytes> besideAttachments = messageAttachments.stream()
-            .filter(attachment -> !attachment.getMetadata().isInline())
+        List<MessageAttachmentWithBytes> besideAttachments = messageAttachments.stream()
+            .filter(attachment -> !attachment.messageAttachment.isInline())
             .collect(Guavate.toImmutableList());
 
         if (inlineAttachments.size() > 0) {
@@ -233,7 +250,7 @@ public class MIMEMessageConverter {
         return mixedMultipartBuilder.build();
     }
 
-    private Message relatedInnerMessage(CreationMessage newMessage, List<MessageAttachment.WithBytes> inlines) throws IOException {
+    private Message relatedInnerMessage(CreationMessage newMessage, List<MessageAttachmentWithBytes> inlines) throws IOException {
         MultipartBuilder relatedMultipart = MultipartBuilder.create(RELATED_SUB_TYPE);
         addBody(newMessage, relatedMultipart);
 
@@ -243,7 +260,7 @@ public class MIMEMessageConverter {
             .build();
     }
 
-    private MultipartBuilder addAttachments(List<MessageAttachment.WithBytes> messageAttachments,
+    private MultipartBuilder addAttachments(List<MessageAttachmentWithBytes> messageAttachments,
                                             MultipartBuilder multipartBuilder) {
         messageAttachments.forEach(att -> multipartBuilder.addBodyPart(attachmentBodyPart(att)));
 
@@ -287,14 +304,14 @@ public class MIMEMessageConverter {
         }
     }
 
-    private BodyPart attachmentBodyPart(MessageAttachment.WithBytes att) {
+    private BodyPart attachmentBodyPart(MessageAttachmentWithBytes att) {
         BodyPartBuilder builder = BodyPartBuilder.create()
             .use(bodyFactory)
-            .setBody(new BasicBodyFactory().binaryBody(att.getBytes()))
-            .setField(contentTypeField(att.getMetadata()))
-            .setField(contentDispositionField(att.getMetadata().isInline()))
+            .setBody(new BasicBodyFactory().binaryBody(att.content))
+            .setField(contentTypeField(att.messageAttachment))
+            .setField(contentDispositionField(att.messageAttachment.isInline()))
             .setContentTransferEncoding(BASE64);
-        contentId(builder, att.getMetadata());
+        contentId(builder, att.messageAttachment);
         return builder.build();
     }
 

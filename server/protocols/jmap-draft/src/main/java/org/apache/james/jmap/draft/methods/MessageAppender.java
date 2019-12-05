@@ -79,7 +79,7 @@ public class MessageAppender {
                                                                                List<MailboxId> targetMailboxes,
                                                                                MailboxSession session) throws MailboxException {
         Preconditions.checkArgument(!targetMailboxes.isEmpty());
-        ImmutableList<MessageAttachment.WithBytes> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
+        ImmutableList<MIMEMessageConverter.MessageAttachmentWithBytes> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
         byte[] messageContent = mimeMessageConverter.convert(createdEntry, messageAttachments);
         SharedByteArrayInputStream content = new SharedByteArrayInputStream(messageContent);
         Date internalDate = Date.from(createdEntry.getValue().getDate().toInstant());
@@ -103,7 +103,7 @@ public class MessageAppender {
             .sharedContent(content)
             .size(messageContent.length)
             .attachments(messageAttachments.stream()
-                .map(MessageAttachment.WithBytes::getMetadata)
+                .map(MIMEMessageConverter.MessageAttachmentWithBytes::getMessageAttachment)
                 .collect(Guavate.toImmutableList()))
             .mailboxId(mailbox.getId())
             .messageId(message.getMessageId())
@@ -155,25 +155,27 @@ public class MessageAppender {
         return message.getKeywords().asFlags();
     }
 
-    private ImmutableList<MessageAttachment.WithBytes> getMessageAttachments(MailboxSession session, ImmutableList<Attachment> attachments) throws MailboxException {
-        ThrowingFunction<Attachment, Optional<MessageAttachment.WithBytes>> toMessageAttachment = att -> messageAttachment(session, att);
+    private ImmutableList<MIMEMessageConverter.MessageAttachmentWithBytes> getMessageAttachments(MailboxSession session, ImmutableList<Attachment> attachments) throws MailboxException {
+        ThrowingFunction<Attachment, Optional<MIMEMessageConverter.MessageAttachmentWithBytes>> toMessageAttachment = att -> messageAttachment(session, att);
         return attachments.stream()
             .map(Throwing.function(toMessageAttachment).sneakyThrow())
             .flatMap(OptionalUtils::toStream)
             .collect(Guavate.toImmutableList());
     }
 
-    private Optional<MessageAttachment.WithBytes> messageAttachment(MailboxSession session, Attachment attachment) throws MailboxException {
+    private Optional<MIMEMessageConverter.MessageAttachmentWithBytes> messageAttachment(MailboxSession session, Attachment attachment) throws MailboxException {
         try {
             org.apache.james.mailbox.model.Attachment mailboxAttachment = attachmentManager.getAttachment(AttachmentId.from(attachment.getBlobId().getRawValue()), session);
             InputStream content = attachmentManager.retrieveContent(AttachmentId.from(attachment.getBlobId().getRawValue()), session);
-            return Optional.of(MessageAttachment.builder()
-                .attachment(mailboxAttachment)
-                .name(attachment.getName().orElse(null))
-                .cid(attachment.getCid().map(Cid::from).orElse(null))
-                .isInline(attachment.isIsInline())
-                .build()
-                .withBytes(IOUtils.toByteArray(content)));
+            return Optional.of(
+                new MIMEMessageConverter.MessageAttachmentWithBytes(
+                    MessageAttachment.builder()
+                        .attachment(mailboxAttachment)
+                        .name(attachment.getName().orElse(null))
+                        .cid(attachment.getCid().map(Cid::from).orElse(null))
+                        .isInline(attachment.isIsInline())
+                        .build(),
+                    IOUtils.toByteArray(content)));
         } catch (AttachmentNotFoundException e) {
             LOGGER.error(String.format("Attachment %s not found", attachment.getBlobId()), e);
             return Optional.empty();
