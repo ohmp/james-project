@@ -58,7 +58,7 @@ public class CassandraGetMessageListMethodTest extends GetMessageListMethodTest 
 
     @Ignore("Demonstrate James respond 400 upon unavailable ElasticSearch")
     @Test
-    public void getMessageListShouldReturn500WhenElasticSearchIsDown() throws Exception {
+    public void getMessageListShouldReturn503WhenElasticSearchIsDown() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE.asString(), "mailbox");
 
         mailboxProbe.appendMessage(ALICE.asString(), ALICE_MAILBOX,
