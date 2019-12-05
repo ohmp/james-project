@@ -681,10 +681,11 @@ public class StoreMessageManager implements MessageManager {
     }
 
     private MessageMetaData appendMessageToStore(final MailboxMessage message, final List<MessageParser.MessageAttachmentWithBytes> messageAttachments, MailboxSession session) throws MailboxException {
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
-        final List<Attachment.WithBytes> attachmentsWithByte = messageAttachments.stream()
-            .map(MessageParser.MessageAttachmentWithBytes::getAttachmentWithBytes)
-            .collect(Guavate.toImmutableList());
+        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+        Map<Attachment, byte[]> attachmentsWithByte = messageAttachments.stream()
+            .collect(Guavate.toImmutableMap(
+                MessageParser.MessageAttachmentWithBytes::getAttachment,
+                MessageParser.MessageAttachmentWithBytes::getBytes));
 
         return mapperFactory.getMessageMapper(session).execute(() -> {
             storeAttachment(message, attachmentsWithByte, session);
@@ -692,7 +693,7 @@ public class StoreMessageManager implements MessageManager {
         });
     }
 
-    protected void storeAttachment(final MailboxMessage message, final List<Attachment.WithBytes> messageAttachments, final MailboxSession session) throws MailboxException {
+    protected void storeAttachment(final MailboxMessage message, final Map<Attachment, byte[]> messageAttachments, final MailboxSession session) throws MailboxException {
 
     }
 

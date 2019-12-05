@@ -114,9 +114,9 @@ public class InMemoryAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException {
-        attachmentsById.put(attachment.getMetadata().getAttachmentId(), new AttachmentWithBytes(attachment.getBytes(), attachment.getMetadata()));
-        ownersByAttachmentId.put(attachment.getMetadata().getAttachmentId(), owner);
+    public void storeAttachmentForOwner(Attachment attachment, byte[] bytes, Username owner) throws MailboxException {
+        attachmentsById.put(attachment.getAttachmentId(), new AttachmentWithBytes(bytes, attachment));
+        ownersByAttachmentId.put(attachment.getAttachmentId(), owner);
     }
 
     @Override

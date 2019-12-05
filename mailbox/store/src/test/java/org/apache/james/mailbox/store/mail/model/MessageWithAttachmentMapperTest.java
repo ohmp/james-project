@@ -51,6 +51,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public abstract class MessageWithAttachmentMapperTest {
 
@@ -83,38 +84,40 @@ public abstract class MessageWithAttachmentMapperTest {
         attachmentsMailbox = createMailbox(MailboxPath.forUser(Username.of("benwa"), "Attachments"));
 
         byte[] bytes = "attachment".getBytes(StandardCharsets.UTF_8);
-        Attachment.WithBytes attachment = Attachment.builder()
+        Attachment attachment = Attachment.builder()
                 .attachmentId(AttachmentId.from("123"))
                 .type("content")
-                .buildWithBytes(bytes);
+                .size(bytes.length)
+                .build();
         byte[] bytes2 = "attachment2".getBytes(StandardCharsets.UTF_8);
-        Attachment.WithBytes attachment2 = Attachment.builder()
+        Attachment attachment2 = Attachment.builder()
                 .attachmentId(AttachmentId.from("456"))
                 .type("content")
-                .buildWithBytes(bytes2);
+                .size(bytes2.length)
+                .build();
         messageWith1Attachment = createMessage(attachmentsMailbox, mapperProvider.generateMessageId(), "Subject: Test7 \n\nBody7\n.\n", BODY_START, new PropertyBuilder(), 
                 ImmutableList.of(MessageAttachment.builder()
-                        .attachment(attachment.getMetadata())
+                        .attachment(attachment)
                         .cid(Cid.from("cid"))
                         .isInline(true)
                         .build()));
         messageWith2Attachments = createMessage(attachmentsMailbox, mapperProvider.generateMessageId(), "Subject: Test8 \n\nBody8\n.\n", BODY_START, new PropertyBuilder(),
                 ImmutableList.of(
                         MessageAttachment.builder()
-                            .attachment(attachment.getMetadata())
+                            .attachment(attachment)
                             .cid(Cid.from("cid"))
                             .isInline(true)
                             .build(),
                         MessageAttachment.builder()
-                            .attachment(attachment2.getMetadata())
+                            .attachment(attachment2)
                             .cid(Cid.from("cid2"))
                             .isInline(false)
                             .build()));
         messageWithoutAttachment = createMessage(attachmentsMailbox, mapperProvider.generateMessageId(), "Subject: Test1 \n\nBody1\n.\n", BODY_START, new PropertyBuilder());
 
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageWith1Attachment.getMessageId());
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment), messageWith2Attachments.getMessageId());
-        attachmentMapper.storeAttachmentsForMessage(ImmutableList.of(attachment2), messageWith2Attachments.getMessageId());
+        attachmentMapper.storeAttachmentsForMessage(ImmutableMap.of(attachment, bytes), messageWith1Attachment.getMessageId());
+        attachmentMapper.storeAttachmentsForMessage(ImmutableMap.of(attachment, bytes), messageWith2Attachments.getMessageId());
+        attachmentMapper.storeAttachmentsForMessage(ImmutableMap.of(attachment2, bytes2), messageWith2Attachments.getMessageId());
     }
 
     @Test

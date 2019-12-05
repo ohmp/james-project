@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.cassandra;
 
-import java.util.List;
+import java.util.Map;
 
 import javax.mail.Flags;
 
@@ -72,7 +72,7 @@ public class CassandraMessageManager extends StoreMessageManager {
     }
 
     @Override
-    protected void storeAttachment(MailboxMessage message, List<Attachment.WithBytes> attachments, MailboxSession session) throws MailboxException {
+    protected void storeAttachment(MailboxMessage message, Map<Attachment, byte[]> attachments, MailboxSession session) throws MailboxException {
         mapperFactory.getAttachmentMapper(session)
             .storeAttachmentsForMessage(
                 attachments,

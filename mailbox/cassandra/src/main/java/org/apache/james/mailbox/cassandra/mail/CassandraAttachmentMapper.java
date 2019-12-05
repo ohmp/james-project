@@ -22,6 +22,7 @@ package org.apache.james.mailbox.cassandra.mail;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -105,18 +106,22 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     }
 
     @Override
-    public void storeAttachmentForOwner(Attachment.WithBytes attachment, Username owner) throws MailboxException {
-        ownerDAO.addOwner(attachment.getMetadata().getAttachmentId(), owner)
-            .then(blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes()))
-            .map(blobId -> CassandraAttachmentDAOV2.from(attachment.getMetadata(), blobId))
+    public void storeAttachmentForOwner(Attachment attachment, byte[] bytes, Username owner) throws MailboxException {
+        Preconditions.checkArgument(attachment.getSize() == bytes.length);
+
+        ownerDAO.addOwner(attachment.getAttachmentId(), owner)
+            .then(blobStore.save(blobStore.getDefaultBucketName(), bytes))
+            .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
             .flatMap(attachmentDAOV2::storeAttachment)
             .block();
     }
 
     @Override
-    public void storeAttachmentsForMessage(Collection<Attachment.WithBytes> attachments, MessageId ownerMessageId) throws MailboxException {
-        Flux.fromIterable(attachments)
-            .flatMap(attachment -> storeAttachmentAsync(attachment, ownerMessageId))
+    public void storeAttachmentsForMessage(Map<Attachment, byte[]> attachments, MessageId ownerMessageId) throws MailboxException {
+        attachments.forEach((key, value) -> Preconditions.checkArgument(key.getSize() == value.length));
+
+        Flux.fromIterable(attachments.entrySet())
+            .flatMap(attachment -> storeAttachmentAsync(attachment.getKey(), attachment.getValue(), ownerMessageId))
             .then()
             .block();
     }
@@ -149,9 +154,9 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
         return attachmentDAO.getAttachment(attachmentId);
     }
 
-    private Mono<Void> storeAttachmentAsync(Attachment.WithBytes attachment, MessageId ownerMessageId) {
-        return blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes())
-            .map(blobId -> CassandraAttachmentDAOV2.from(attachment.getMetadata(), blobId))
+    private Mono<Void> storeAttachmentAsync(Attachment attachment, byte[] bytes, MessageId ownerMessageId) {
+        return blobStore.save(blobStore.getDefaultBucketName(), bytes)
+            .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
             .flatMap(daoAttachment -> storeAttachmentWithIndex(daoAttachment, ownerMessageId));
     }
 

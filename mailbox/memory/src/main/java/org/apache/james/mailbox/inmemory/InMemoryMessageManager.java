@@ -1,6 +1,6 @@
 package org.apache.james.mailbox.inmemory;
 
-import java.util.List;
+import java.util.Map;
 
 import javax.mail.Flags;
 
@@ -52,7 +52,7 @@ public class InMemoryMessageManager extends StoreMessageManager {
     }
 
     @Override
-    protected void storeAttachment(final MailboxMessage message, final List<Attachment.WithBytes> messageAttachments, final MailboxSession session) throws MailboxException {
+    protected void storeAttachment(final MailboxMessage message, final Map<Attachment, byte[]> messageAttachments, final MailboxSession session) throws MailboxException {
         mapperFactory.getAttachmentMapper(session)
             .storeAttachmentsForMessage(
                 messageAttachments,

@@ -72,10 +72,6 @@ public class MessageParser {
             return metadata.getAttachment();
         }
 
-        public Attachment.WithBytes getAttachmentWithBytes() {
-            return metadata.getAttachment().withBytes(bytes);
-        }
-
         public byte[] getBytes() {
             return bytes;
         }
