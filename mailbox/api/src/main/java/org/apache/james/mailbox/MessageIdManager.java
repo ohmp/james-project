@@ -49,6 +49,10 @@ public interface MessageIdManager {
 
     void setInMailboxes(MessageId messageId, Collection<MailboxId> mailboxIds, MailboxSession mailboxSession) throws MailboxException;
 
+    default List<MessageResult> getMessage(MessageId messageId, FetchGroup minimal, MailboxSession mailboxSession) throws MailboxException {
+        return getMessages(ImmutableList.of(messageId), minimal, mailboxSession);
+    }
+
     default DeleteResult delete(MessageId messageId, MailboxSession mailboxSession) throws MailboxException {
         return delete(ImmutableList.of(messageId), mailboxSession);
     }
