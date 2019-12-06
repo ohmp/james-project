@@ -41,6 +41,11 @@ public class FullUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreM
         @Test
         protected void renameMailboxShouldChangeTheMailboxPathOfAMailbox() {
         }
+
+        @Disabled("MAILBOX-389 Mailbox rename fails with Maildir")
+        @Test
+        protected void renameMailboxByIdShouldChangeTheMailboxPathOfAMailbox() {
+        }
     }
 
     @RegisterExtension
