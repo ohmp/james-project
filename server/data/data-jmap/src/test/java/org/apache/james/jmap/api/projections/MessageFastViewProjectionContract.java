@@ -159,7 +159,7 @@ public interface MessageFastViewProjectionContract {
         Mono.from(testee().store(messageId2, MESSAGE_FAST_VIEW_PRECOMPUTED_PROPERTIES_2))
             .block();
 
-        assertThat(Mono.from(testee().retrieve(ImmutableList.of(messageId1))).block())
+        assertThat(Mono.from(testee().retrieve(messageId1)).block())
             .isEqualTo(ImmutableMap.builder()
                 .put(messageId1, MESSAGE_FAST_VIEW_PRECOMPUTED_PROPERTIES_1)
                 .build());
