@@ -24,9 +24,6 @@ import java.io.IOException;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.process.ImapSession;
 
-/**
- * TODO: correct this API
- */
 public interface ImapResponseEncoder<T extends ImapMessage> {
     Class<T> acceptableMessages();
 
