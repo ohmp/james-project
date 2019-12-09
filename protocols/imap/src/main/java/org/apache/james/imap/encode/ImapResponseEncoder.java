@@ -28,7 +28,7 @@ public interface ImapResponseEncoder<T extends ImapMessage> {
     Class<T> acceptableMessages();
 
     /**
-     * Writes response. TODO: pass in writer rather than composer
+     * Writes response.
      * 
      * @param message
      *            <code>ImapMessage</code>, not null
