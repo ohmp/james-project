@@ -42,7 +42,7 @@ public abstract class AbstractImapCommandParser implements ImapCommandParser {
 
     private final ImapCommand command;
 
-    protected final StatusResponseFactory statusResponseFactory;
+    private final StatusResponseFactory statusResponseFactory;
 
     public AbstractImapCommandParser(ImapCommand command, StatusResponseFactory statusResponseFactory) {
         this.command = command;
@@ -51,6 +51,10 @@ public abstract class AbstractImapCommandParser implements ImapCommandParser {
 
     public ImapCommand getCommand() {
         return command;
+    }
+
+    protected StatusResponseFactory getStatusResponseFactory() {
+        return statusResponseFactory;
     }
 
     /**
