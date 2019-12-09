@@ -41,7 +41,7 @@ public class MailboxStatusResponseEncoderTest  {
     }
 
     @Test
-    public void testIsAcceptable() {
+    public void acceptableMessagesShouldReturnMailboxStatusResponseClass() {
         assertThat(encoder.acceptableMessages()).isEqualTo(MailboxStatusResponse.class);
     }
 

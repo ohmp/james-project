@@ -43,7 +43,7 @@ public class SearchResponseEncoderTest {
     }
 
     @Test
-    public void testIsAcceptable() {
+    public void acceptableMessagesShouldReturnSearchResponseClass() {
         assertThat(encoder.acceptableMessages()).isEqualTo(SearchResponse.class);
     }
 
