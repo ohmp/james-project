@@ -37,7 +37,7 @@ Given the following scenario played by 5000 users per hour (constant rate)
  - Get 10 times the mailboxIds and keywords of the given messages
 
 We went from:
- - A 20% failure rate before this change to no failure
+ - A 20% failure and timeout rate before this change to no failure
  - Mean time for GetMessages went from 27 159 ms to 27 ms (1000 time improvment), for all operation from
  27 591 ms to 60 ms (460 time improvment)
  - P99 is a metric that did not make sense because the initial simulation exceeded Gatling (the performance measuring tool 

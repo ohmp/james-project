@@ -40,7 +40,7 @@ Given the following scenario played by 2500 users per hour (constant rate)
  - Get 8 times the properties expected to be fast to fetch with JMAP
 
 We went from:
- - A 7% failure rate before this change to almost no failure
+ - A 7% failure and timeout rate before this change to almost no failure
  - Mean time for GetMessages went from 9 710 ms to 434 ms (22 time improvment), for all operation from
  12 802 ms to 407 ms (31 time improvment)
  - P99 is a metric that did not make sense because the initial simulation exceeded Gatling (the performance measuring tool 
