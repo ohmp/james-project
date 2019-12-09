@@ -35,7 +35,7 @@ public class QuotaRootResponseEncoder implements ImapResponseEncoder<QuotaRootRe
     }
 
     @Override
-    public void encode(QuotaRootResponse quotaRootResponse, ImapResponseComposer composer, ImapSession session) throws IOException {
+    public void encode(QuotaRootResponse quotaRootResponse, ImapResponseComposer composer) throws IOException {
         String quotaRoot = quotaRootResponse.getQuotaRoot();
         String mailbox = quotaRootResponse.getMailboxName();
 

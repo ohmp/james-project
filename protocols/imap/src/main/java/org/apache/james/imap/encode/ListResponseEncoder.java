@@ -34,7 +34,7 @@ public class ListResponseEncoder implements ImapResponseEncoder<ListResponse> {
     }
 
     @Override
-    public void encode(ListResponse response, ImapResponseComposer composer, ImapSession session) throws IOException {
+    public void encode(ListResponse response, ImapResponseComposer composer) throws IOException {
         ListingEncodingUtils.encodeListingResponse(ImapConstants.LIST_RESPONSE_NAME, composer, response);
     }
 }

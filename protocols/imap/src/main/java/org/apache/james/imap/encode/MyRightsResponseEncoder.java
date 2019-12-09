@@ -36,7 +36,7 @@ public class MyRightsResponseEncoder implements ImapResponseEncoder<MyRightsResp
     }
 
     @Override
-    public void encode(MyRightsResponse aclResponse, ImapResponseComposer composer, ImapSession session) throws IOException {
+    public void encode(MyRightsResponse aclResponse, ImapResponseComposer composer) throws IOException {
         Rfc4314Rights myRights = aclResponse.getMyRights();
         composer.untagged();
         composer.commandName(ImapConstants.MYRIGHTS_RESPONSE_NAME);

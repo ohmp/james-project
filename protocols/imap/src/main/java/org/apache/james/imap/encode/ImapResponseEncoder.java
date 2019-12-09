@@ -34,10 +34,8 @@ public interface ImapResponseEncoder<T extends ImapMessage> {
      *            <code>ImapMessage</code>, not null
      * @param composer
      *            <code>ImapResponseComposer</code>, not null
-     * @param session
-     *            TODO
      * @throws IOException
      *             when message encoding fails
      */
-    void encode(T message, ImapResponseComposer composer, ImapSession session) throws IOException;
+    void encode(T message, ImapResponseComposer composer) throws IOException;
 }

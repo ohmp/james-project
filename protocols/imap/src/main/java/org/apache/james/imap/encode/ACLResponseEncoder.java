@@ -34,7 +34,7 @@ import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
  */
 public class ACLResponseEncoder implements ImapResponseEncoder<ACLResponse> {
     @Override
-    public void encode(ACLResponse aclResponse, ImapResponseComposer composer, ImapSession session) throws IOException {
+    public void encode(ACLResponse aclResponse, ImapResponseComposer composer) throws IOException {
         Map<EntryKey, Rfc4314Rights> entries = aclResponse.getAcl().getEntries();
         composer.untagged();
         composer.commandName(ImapConstants.ACL_RESPONSE_NAME);

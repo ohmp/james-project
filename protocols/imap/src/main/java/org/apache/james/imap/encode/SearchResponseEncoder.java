@@ -35,7 +35,7 @@ public class SearchResponseEncoder implements ImapResponseEncoder<SearchResponse
     }
 
     @Override
-    public void encode(SearchResponse response, ImapResponseComposer composer, ImapSession session) throws IOException {
+    public void encode(SearchResponse response, ImapResponseComposer composer) throws IOException {
         final long[] ids = response.getIds();
         ModSeq highestModSeq = response.getHighestModSeq();
         composer.untagged();

@@ -37,7 +37,7 @@ public class MailboxStatusResponseEncoder implements ImapConstants, ImapResponse
     }
 
     @Override
-    public void encode(MailboxStatusResponse response, ImapResponseComposer composer, ImapSession session) throws IOException {
+    public void encode(MailboxStatusResponse response, ImapResponseComposer composer) throws IOException {
         Long messages = response.getMessages();
         Long recent = response.getRecent();
         MessageUid uidNext = response.getUidNext();
