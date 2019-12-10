@@ -23,6 +23,7 @@ import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.Tag;
 import org.apache.james.imap.api.display.HumanReadableText;
+import org.apache.james.imap.api.message.response.StatusResponse;
 import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.DecodingException;
@@ -53,8 +54,8 @@ public abstract class AbstractImapCommandParser implements ImapCommandParser {
         return command;
     }
 
-    protected StatusResponseFactory getStatusResponseFactory() {
-        return statusResponseFactory;
+    protected StatusResponse taggedNo(Tag tag, ImapCommand command, HumanReadableText displayTextKey, StatusResponse.ResponseCode code) {
+        return statusResponseFactory.taggedNo(tag, command, displayTextKey, code);
     }
 
     /**
