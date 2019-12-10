@@ -22,6 +22,7 @@ package org.apache.james.imap.decode.parser;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.decode.ImapCommandParser;
@@ -29,7 +30,6 @@ import org.apache.james.imap.decode.ImapCommandParserFactory;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ImmutableList;
 
 /**
  * A factory for ImapCommand instances, provided based on the command name.
@@ -39,7 +39,7 @@ public class ImapParserFactory implements ImapCommandParserFactory {
     private final Map<String, ImapCommandParser> imapCommands;
 
     public ImapParserFactory(StatusResponseFactory statusResponseFactory) {
-        ImmutableList<AbstractImapCommandParser> parsers = ImmutableList.of(
+        Stream<AbstractImapCommandParser> parsers = Stream.of(
             // Commands valid in any state
             // CAPABILITY, NOOP, and LOGOUT
             new CapabilityCommandParser(statusResponseFactory),
@@ -110,8 +110,7 @@ public class ImapParserFactory implements ImapCommandParserFactory {
             new SetAnnotationCommandParser(statusResponseFactory),
             new GetAnnotationCommandParser(statusResponseFactory));
 
-        imapCommands = parsers.stream()
-            .collect(Guavate.toImmutableMap(
+        imapCommands = parsers.collect(Guavate.toImmutableMap(
                 parser -> parser.getCommand().getName(),
                 Function.identity()));
     }
