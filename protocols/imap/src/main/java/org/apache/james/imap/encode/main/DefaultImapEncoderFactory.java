@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.display.Localizer;
@@ -67,8 +68,8 @@ public class DefaultImapEncoderFactory implements ImapEncoderFactory {
         private final Map<Class<? extends ImapMessage>, ImapResponseEncoder> encoders;
         private final EndImapEncoder endImapEncoder;
 
-        private DefaultImapEncoder(List<ImapResponseEncoder> encoders, EndImapEncoder endImapEncoder) {
-            this.encoders = encoders.stream()
+        private DefaultImapEncoder(Stream<ImapResponseEncoder> encoders, EndImapEncoder endImapEncoder) {
+            this.encoders = encoders
                 .collect(Guavate.toImmutableMap(
                     ImapResponseEncoder::acceptableMessages,
                     Function.identity()));
@@ -98,7 +99,7 @@ public class DefaultImapEncoderFactory implements ImapEncoderFactory {
      * @return not null
      */
     public static final ImapEncoder createDefaultEncoder(Localizer localizer, boolean neverAddBodyStructureExtensions) {
-        return new DefaultImapEncoder(ImmutableList.of(
+        return new DefaultImapEncoder(Stream.of(
             new AnnotationResponseEncoder(),
             new MyRightsResponseEncoder(),
             new ListRightsResponseEncoder(),
