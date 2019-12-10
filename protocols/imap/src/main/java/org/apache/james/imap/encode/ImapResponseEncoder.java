@@ -22,7 +22,6 @@ package org.apache.james.imap.encode;
 import java.io.IOException;
 
 import org.apache.james.imap.api.ImapMessage;
-import org.apache.james.imap.api.process.ImapSession;
 
 public interface ImapResponseEncoder<T extends ImapMessage> {
     Class<T> acceptableMessages();

@@ -21,7 +21,6 @@ package org.apache.james.imap.encode;
 
 import java.io.IOException;
 
-import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.message.response.RecentResponse;
 
 public class RecentResponseEncoder implements ImapResponseEncoder<RecentResponse> {
