@@ -110,40 +110,12 @@ public class FetchData {
         return bodyElements;
     }
 
-    public boolean isBody() {
-        return itemToFetch.contains(Item.BODY);
-    }
-
-    public boolean isBodyStructure() {
-        return itemToFetch.contains(Item.BODY_STRUCTURE);
-    }
-
-    public boolean isEnvelope() {
-        return itemToFetch.contains(Item.ENVELOPE);
-    }
-
-    public boolean isFlags() {
-        return itemToFetch.contains(Item.FLAGS);
-    }
-
-    public boolean isInternalDate() {
-        return itemToFetch.contains(Item.INTERNAL_DATE);
-    }
-
-    public boolean isSize() {
-        return itemToFetch.contains(Item.SIZE);
-    }
-
-    public boolean isUid() {
-        return itemToFetch.contains(Item.UID);
+    public boolean contains(Item item) {
+        return itemToFetch.contains(item);
     }
 
     public boolean isSetSeen() {
         return setSeen;
-    }
-
-    public boolean isModSeq() {
-        return itemToFetch.contains(Item.MODSEQ);
     }
     
     public long getChangedSince() {
@@ -178,16 +150,16 @@ public class FetchData {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-            .add("flags", isFlags())
-            .add("uid", isUid())
-            .add("internalDate", isInternalDate())
-            .add("size", isSize())
-            .add("envelope", isEnvelope())
-            .add("body", isBody())
-            .add("bodyStructure", isBodyStructure())
+            .add("flags", contains(Item.FLAGS))
+            .add("uid", contains(Item.UID))
+            .add("internalDate", contains(Item.INTERNAL_DATE))
+            .add("size", contains(Item.SIZE))
+            .add("envelope", contains(Item.ENVELOPE))
+            .add("body", contains(Item.BODY))
+            .add("bodyStructure", contains(Item.BODY_STRUCTURE))
             .add("setSeen", setSeen)
             .add("bodyElements", ImmutableSet.copyOf(bodyElements))
-            .add("modSeq", isModSeq())
+            .add("modSeq", contains(Item.MODSEQ))
             .add("changedSince", changedSince)
             .add("vanished", vanished)
             .toString();

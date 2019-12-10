@@ -27,6 +27,7 @@ import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
 import org.apache.james.imap.api.message.FetchData;
+import org.apache.james.imap.api.message.FetchData.Item;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.api.process.ImapProcessor;
@@ -86,7 +87,7 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
             final MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
 
             MetaData metaData = mailbox.getMetaData(false, mailboxSession, org.apache.james.mailbox.MessageManager.MetaData.FetchGroup.NO_COUNT);
-            if (fetch.getChangedSince() != -1 || fetch.isModSeq()) {
+            if (fetch.getChangedSince() != -1 || fetch.contains(Item.MODSEQ)) {
                 // Enable CONDSTORE as this is a CONDSTORE enabling command
                 condstoreEnablingCommand(session, responder,  metaData, true);
             }
@@ -129,7 +130,7 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
         if (EnableProcessor.getEnabledCapabilities(session).contains(ImapConstants.SUPPORTS_QRESYNC)) {
             return FetchData.builder()
                 .from(request.getFetch())
-                .fetch(FetchData.Item.UID)
+                .fetch(Item.UID)
                 .build();
         }
         return request.getFetch();
@@ -149,7 +150,7 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
                 final MessageResult result = messages.next();
 
                 //skip unchanged messages - this should be filtered at the mailbox level to take advantage of indexes
-                if (fetch.isModSeq() && result.getModSeq().asLong() <= fetch.getChangedSince()) {
+                if (fetch.contains(Item.MODSEQ) && result.getModSeq().asLong() <= fetch.getChangedSince()) {
                     continue;
                 }
 
