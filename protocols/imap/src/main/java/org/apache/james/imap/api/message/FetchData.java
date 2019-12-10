@@ -28,7 +28,56 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 public class FetchData {
-    enum Item {
+    public static class Builder {
+        private EnumSet<Item> itemToFetch = EnumSet.noneOf(Item.class);
+        private Set<BodyFetchElement> bodyElements = new HashSet<>();
+        private boolean setSeen = false;
+        private long changedSince = -1;
+        private boolean vanished;
+
+        public Builder from(FetchData fetchData) {
+            itemToFetch = EnumSet.copyOf(fetchData.itemToFetch);
+            setSeen = fetchData.setSeen;
+            changedSince = fetchData.changedSince;
+            vanished = fetchData.vanished;
+            bodyElements = new HashSet<>();
+            bodyElements.addAll(fetchData.bodyElements);
+            return this;
+        }
+
+        public Builder fetch(Item item) {
+            itemToFetch.add(item);
+            return this;
+        }
+
+        public Builder setChangedSince(long changedSince) {
+            this.changedSince = changedSince;
+            itemToFetch.add(Item.MODSEQ);
+            return this;
+        }
+
+        /**
+         * Set to true if the VANISHED FETCH modifier was used as stated in <code>QRESYNC</code> extension
+         */
+        public Builder setVanished(boolean vanished) {
+            this.vanished = vanished;
+            return this;
+        }
+
+        public Builder add(BodyFetchElement element, boolean peek) {
+            if (!peek) {
+                setSeen = true;
+            }
+            bodyElements.add(element);
+            return this;
+        }
+
+        public FetchData build() {
+            return new FetchData(itemToFetch, bodyElements, setSeen, changedSince, vanished);
+        }
+    }
+
+    public enum Item {
         FLAGS,
         UID,
         INTERNAL_DATE,
@@ -39,12 +88,23 @@ public class FetchData {
         MODSEQ,
     }
 
-    private final EnumSet<Item> itemToFetch = EnumSet.noneOf(Item.class);
-    private final Set<BodyFetchElement> bodyElements = new HashSet<>();
+    public static Builder builder() {
+        return new Builder();
+    }
 
-    private boolean setSeen = false;
-    private long changedSince = -1;
-    private boolean vanished;
+    private final EnumSet<Item> itemToFetch;
+    private final Set<BodyFetchElement> bodyElements;
+    private final boolean setSeen;
+    private final long changedSince;
+    private final boolean vanished;
+
+    private FetchData(EnumSet<Item> itemToFetch, Set<BodyFetchElement> bodyElements, boolean setSeen, long changedSince, boolean vanished) {
+        this.itemToFetch = EnumSet.copyOf(itemToFetch);
+        this.bodyElements = ImmutableSet.copyOf(bodyElements);
+        this.setSeen = setSeen;
+        this.changedSince = changedSince;
+        this.vanished = vanished;
+    }
 
     public Collection<BodyFetchElement> getBodyElements() {
         return bodyElements;
@@ -54,83 +114,36 @@ public class FetchData {
         return itemToFetch.contains(Item.BODY);
     }
 
-    public FetchData fetchBody() {
-        itemToFetch.add(Item.BODY);
-        return this;
-    }
-
     public boolean isBodyStructure() {
         return itemToFetch.contains(Item.BODY_STRUCTURE);
-    }
-
-    public FetchData fetchBodyStructure() {
-        itemToFetch.add(Item.BODY_STRUCTURE);
-        return this;
     }
 
     public boolean isEnvelope() {
         return itemToFetch.contains(Item.ENVELOPE);
     }
 
-    public FetchData fetchEnvelope() {
-        itemToFetch.add(Item.ENVELOPE);
-        return this;
-    }
-
     public boolean isFlags() {
         return itemToFetch.contains(Item.FLAGS);
-    }
-
-    public FetchData fetchFlags() {
-        itemToFetch.add(Item.FLAGS);
-        return this;
     }
 
     public boolean isInternalDate() {
         return itemToFetch.contains(Item.INTERNAL_DATE);
     }
 
-    public FetchData fetchInternalDate() {
-        itemToFetch.add(Item.INTERNAL_DATE);
-        return this;
-    }
-
     public boolean isSize() {
         return itemToFetch.contains(Item.SIZE);
-    }
-
-    public FetchData fetchSize() {
-        itemToFetch.add(Item.SIZE);
-        return this;
     }
 
     public boolean isUid() {
         return itemToFetch.contains(Item.UID);
     }
 
-    public FetchData fetchUid() {
-        itemToFetch.add(Item.UID);
-        return this;
-    }
-
     public boolean isSetSeen() {
         return setSeen;
     }
 
-
     public boolean isModSeq() {
         return itemToFetch.contains(Item.MODSEQ);
-    }
-
-    public FetchData fetchModSeq() {
-        itemToFetch.add(Item.MODSEQ);
-        return this;
-    }
-    
-    public FetchData setChangedSince(long changedSince) {
-        this.changedSince = changedSince;
-        itemToFetch.add(Item.MODSEQ);
-        return this;
     }
     
     public long getChangedSince() {
@@ -138,26 +151,10 @@ public class FetchData {
     }
     
     /**
-     * Set to true if the VANISHED FETCH modifier was used as stated in <code>QRESYNC</code> extension
-     */
-    public FetchData setVanished(boolean vanished) {
-        this.vanished = vanished;
-        return this;
-    }
-    
-    /**
      * Return true if the VANISHED FETCH modifier was used as stated in <code>QRESYNC<code> extension
      */
     public boolean getVanished() {
         return vanished;
-    }
-    
-    public FetchData add(BodyFetchElement element, boolean peek) {
-        if (!peek) {
-            setSeen = true;
-        }
-        bodyElements.add(element);
-        return this;
     }
 
     @Override

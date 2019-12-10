@@ -62,8 +62,8 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
     protected void processRequest(FetchRequest request, ImapSession session, Responder responder) {
         final boolean useUids = request.isUseUids();
         final IdRange[] idSet = request.getIdSet();
-        final FetchData fetch = request.getFetch();
-        
+        final FetchData fetch = computeFetchData(request, session);
+
         try {
             final Long changedSince = fetch.getChangedSince();
 
@@ -107,10 +107,6 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
                 //       If we do so we could prolly save one mailbox access which should give use some more speed up
                 respondVanished(mailboxSession, mailbox, ranges, changedSince, metaData, responder);
             }
-            // if QRESYNC is enable its necessary to also return the UID in all cases
-            if (EnableProcessor.getEnabledCapabilities(session).contains(ImapConstants.SUPPORTS_QRESYNC)) {
-                fetch.fetchUid();
-            }
             processMessageRanges(session, mailbox, ranges, fetch, useUids, mailboxSession, responder);
 
             
@@ -128,8 +124,17 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
         }
     }
 
+    private FetchData computeFetchData(FetchRequest request, ImapSession session) {
+        // if QRESYNC is enable its necessary to also return the UID in all cases
+        if (EnableProcessor.getEnabledCapabilities(session).contains(ImapConstants.SUPPORTS_QRESYNC)) {
+            return FetchData.builder()
+                .from(request.getFetch())
+                .fetch(FetchData.Item.UID)
+                .build();
+        }
+        return request.getFetch();
+    }
 
-    
     /**
      * Process the given message ranges by fetch them and pass them to the
      * {@link org.apache.james.imap.api.process.ImapProcessor.Responder}
