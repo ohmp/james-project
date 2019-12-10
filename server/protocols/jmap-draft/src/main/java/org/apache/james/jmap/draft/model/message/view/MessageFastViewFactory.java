@@ -130,7 +130,7 @@ public class MessageFastViewFactory implements MessageViewFactory<MessageFastVie
     private Flux<MessageFastView> gatherMessageViews(Set<MessageId> messageIds, MailboxSession mailboxSession,
                                                      Map<MessageId, MessageFastViewPrecomputedProperties> fastProjections) {
         Set<MessageId> withProjectionEntry = fastProjections.keySet();
-        Set<MessageId> withoutProjectionEntry = Sets.difference(messageIds, fastProjections.keySet());
+        Set<MessageId> withoutProjectionEntry = Sets.difference(messageIds, withProjectionEntry);
         return Flux.merge(
                 fetch(withProjectionEntry, FetchGroup.HEADERS, mailboxSession)
                     .map(messageResults -> Helpers.toMessageViews(messageResults, new FromMessageResultAndPreview(blobManager, fastProjections))),
