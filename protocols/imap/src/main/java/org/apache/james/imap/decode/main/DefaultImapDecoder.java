@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.imap.decode.main;
 
+import java.util.Optional;
+
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.ImapSessionState;
 import org.apache.james.imap.api.Tag;
@@ -82,7 +84,7 @@ public class DefaultImapDecoder implements ImapDecoder {
     }
 
     private ImapMessage unknownCommand(Tag tag, ImapSession session) {
-        int count = retrieveUnknownCommandCount(session);
+        int count = retrieveUnknownCommandCount(session) + 1;
 
         if (count > maxInvalidCommands || session.getState() == ImapSessionState.NON_AUTHENTICATED) {
             ImapMessage message = responseFactory.bye(HumanReadableText.BYE_UNKNOWN_COMMAND);
@@ -97,13 +99,9 @@ public class DefaultImapDecoder implements ImapDecoder {
     }
 
     private int retrieveUnknownCommandCount(ImapSession session) {
-        Object c = session.getAttribute(INVALID_COMMAND_COUNT);
-        int count = 0;
-        if (c != null) {
-            count = (Integer) c;
-        }
-        count++;
-        return count;
+        return Optional.ofNullable(session.getAttribute(INVALID_COMMAND_COUNT))
+            .map(Integer.class::cast)
+            .orElse(0);
     }
 
     private ImapMessage decodeCommandNamed(ImapRequestLineReader request, Tag tag, String commandName, ImapSession session) {
