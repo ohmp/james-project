@@ -33,28 +33,14 @@ import spark.Request;
 class TaskFactoryTest {
     static final Task TASK_1 = mock(Task.class);
     static final Task TASK_2 = mock(Task.class);
-    static RegisteredTaskGenerator TASK_GENERATOR_1 = new RegisteredTaskGenerator() {
-        @Override
-        public TaskRegistrationKey registrationKey() {
-            return TaskRegistrationKey.of("task1");
-        }
-
-        @Override
-        public Task generate(Request request) {
-            return TASK_1;
-        }
-    };
-    static RegisteredTaskGenerator TASK_GENERATOR_2 = new RegisteredTaskGenerator() {
-        @Override
-        public TaskRegistrationKey registrationKey() {
-            return TaskRegistrationKey.of("task2");
-        }
-
-        @Override
-        public Task generate(Request request) {
-            return TASK_2;
-        }
-    };
+    static RegisteredTaskGenerator TASK_GENERATOR_1 = RegisteredTaskGenerator.builder()
+        .registrationKey(TaskRegistrationKey.of("task1"))
+        .task(any -> TASK_1)
+        .build();
+    static RegisteredTaskGenerator TASK_GENERATOR_2 = RegisteredTaskGenerator.builder()
+        .registrationKey(TaskRegistrationKey.of("task2"))
+        .task(any -> TASK_2)
+        .build();
 
     Request request;
     TaskFactory taskFactory;

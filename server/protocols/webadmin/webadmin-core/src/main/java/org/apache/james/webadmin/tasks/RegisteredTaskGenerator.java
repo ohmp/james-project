@@ -25,9 +25,8 @@ import com.google.common.base.Preconditions;
 
 import spark.Request;
 
-public interface RegisteredTaskGenerator extends TaskGenerator {
-    interface Builder {
-
+public final class RegisteredTaskGenerator implements TaskGenerator {
+    public interface Builder {
         @FunctionalInterface
         interface RequireRegistrationKey {
             RequireTask registrationKey(TaskRegistrationKey registrationKey);
@@ -51,24 +50,29 @@ public interface RegisteredTaskGenerator extends TaskGenerator {
             }
 
             public RegisteredTaskGenerator build() {
-                return new RegisteredTaskGenerator() {
-                    @Override
-                    public TaskRegistrationKey registrationKey() {
-                        return taskRegistrationKey;
-                    }
-
-                    @Override
-                    public Task generate(Request request) throws Exception {
-                        return taskGenerator.generate(request);
-                    }
-                };
+                return new RegisteredTaskGenerator(taskRegistrationKey, taskGenerator);
             }
         }
     }
 
-    static Builder.RequireRegistrationKey builder() {
+    public static Builder.RequireRegistrationKey builder() {
         return registrationKey -> task -> new Builder.FinalStage(registrationKey, task);
     }
 
-    TaskRegistrationKey registrationKey();
+    private final TaskRegistrationKey taskRegistrationKey;
+    private final TaskGenerator taskGenerator;
+
+    private RegisteredTaskGenerator(TaskRegistrationKey taskRegistrationKey, TaskGenerator taskGenerator) {
+        this.taskRegistrationKey = taskRegistrationKey;
+        this.taskGenerator = taskGenerator;
+    }
+
+    public TaskRegistrationKey registrationKey() {
+        return taskRegistrationKey;
+    }
+
+    @Override
+    public Task generate(Request request) throws Exception {
+        return taskGenerator.generate(request);
+    }
 }
