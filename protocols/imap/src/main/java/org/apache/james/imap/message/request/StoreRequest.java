@@ -81,10 +81,10 @@ public class StoreRequest extends AbstractImapRequest {
         if (isSilent()) {
             builder.append("SILENT ");
         }
-        if (flagsUpdateMode.equals(MessageManager.FlagsUpdateMode.ADD)) {
+        if (flagsUpdateMode == MessageManager.FlagsUpdateMode.ADD) {
             builder.append("+ ");
         }
-        if (flagsUpdateMode.equals(MessageManager.FlagsUpdateMode.REMOVE)) {
+        if (flagsUpdateMode == MessageManager.FlagsUpdateMode.REMOVE) {
             builder.append("- ");
         }
         if (flags.contains(Flags.Flag.ANSWERED)) {
