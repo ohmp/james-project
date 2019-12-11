@@ -31,8 +31,8 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
+import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
-import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
@@ -106,7 +106,7 @@ public class MessageIdReindexingRoutes implements Routes {
     private Route reIndexMessage() {
         return TaskFactory.builder()
             .parameterName(TASK_PARAMETER)
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(ReindexingRoutes.RE_INDEX)
                 .task(request -> reIndexer.reIndex(extractMessageId(request))))
             .build()

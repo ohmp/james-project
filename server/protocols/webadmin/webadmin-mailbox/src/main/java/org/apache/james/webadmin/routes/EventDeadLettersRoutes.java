@@ -36,8 +36,8 @@ import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.EventDeadLettersService;
+import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
-import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -120,7 +120,7 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnAllEvents() {
         return TaskFactory.builder()
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(RE_DELIVER)
                 .task(request -> eventDeadLettersService.redeliverAllEvents()))
             .build()
@@ -190,7 +190,7 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnGroupEvents() {
         return TaskFactory.builder()
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(RE_DELIVER)
                 .task(request -> {
                     Group group = parseGroup(request);
@@ -304,7 +304,7 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnSingleEvent() {
         return TaskFactory.builder()
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(RE_DELIVER)
                 .task(request -> {
                     Group group = parseGroup(request);

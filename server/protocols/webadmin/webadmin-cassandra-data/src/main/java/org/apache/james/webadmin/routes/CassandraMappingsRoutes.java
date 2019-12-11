@@ -29,8 +29,8 @@ import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.CassandraMappingsService;
+import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
-import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
@@ -98,7 +98,7 @@ public class CassandraMappingsRoutes implements Routes {
     })
     public Route performActionOnMappings() {
         return TaskFactory.builder()
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(TaskRegistrationKey.of("SolveInconsistencies"))
                 .task(request -> cassandraMappingsService.solveMappingsSourcesInconsistencies()))
             .build()

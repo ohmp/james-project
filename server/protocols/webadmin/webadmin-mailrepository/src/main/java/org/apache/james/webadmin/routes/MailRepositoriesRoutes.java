@@ -42,8 +42,6 @@ import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.queue.api.MailQueueFactory;
-import org.apache.james.task.Task;
-import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
 import org.apache.james.util.streams.Limit;
 import org.apache.james.util.streams.Offset;
@@ -58,6 +56,7 @@ import org.apache.james.webadmin.service.MailRepositoryStoreService;
 import org.apache.james.webadmin.service.ReprocessingAllMailsTask;
 import org.apache.james.webadmin.service.ReprocessingOneMailTask;
 import org.apache.james.webadmin.service.ReprocessingService;
+import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
 import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
@@ -394,12 +393,10 @@ public class MailRepositoriesRoutes implements Routes {
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - unknown action")
     })
     public void defineDeleteAll() {
-        service.delete(MAIL_REPOSITORIES + "/:encodedPath/mails", (request, response) -> {
+        TaskGenerator taskGenerator = request -> {
             MailRepositoryPath path = decodedRepositoryPath(request);
             try {
-                Task task = repositoryStoreService.createClearMailRepositoryTask(path);
-                TaskId taskId = taskManager.submit(task);
-                return TaskIdDto.respond(response, taskId);
+                return repositoryStoreService.createClearMailRepositoryTask(path);
             } catch (MailRepositoryStore.MailRepositoryStoreException | MessagingException e) {
                 throw ErrorResponder.builder()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
@@ -408,7 +405,8 @@ public class MailRepositoriesRoutes implements Routes {
                     .message("Error while deleting all mails")
                     .haltError();
             }
-        }, jsonTransformer);
+        };
+        service.delete(MAIL_REPOSITORIES + "/:encodedPath/mails", taskGenerator.asRoute(taskManager), jsonTransformer);
     }
 
     @PATCH
@@ -448,7 +446,7 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineReprocessAll() {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails",
             TaskFactory.builder()
-                .task(TaskGenerator.builder()
+                .task(RegisteredTaskGenerator.builder()
                     .registrationKey(REPROCESS_ACTION)
                     .task(request -> {
                         MailRepositoryPath path = decodedRepositoryPath(request);
@@ -500,7 +498,7 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineReprocessOne() {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails/:key",
             TaskFactory.builder()
-                .task(TaskGenerator.builder()
+                .task(RegisteredTaskGenerator.builder()
                     .registrationKey(REPROCESS_ACTION)
                     .task(request -> {
                         MailRepositoryPath path = decodedRepositoryPath(request);

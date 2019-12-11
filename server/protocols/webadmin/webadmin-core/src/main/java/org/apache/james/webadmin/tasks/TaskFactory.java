@@ -26,9 +26,6 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.task.Task;
-import org.apache.james.task.TaskId;
-import org.apache.james.task.TaskManager;
-import org.apache.james.webadmin.dto.TaskIdDto;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
@@ -38,15 +35,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import spark.Request;
-import spark.Response;
-import spark.Route;
 
-public class TaskFactory {
+public class TaskFactory implements TaskGenerator {
     private static final String DEFAULT_PARAMETER = "action";
 
     public static class Builder {
         private Optional<String> taskParameterName;
-        private ImmutableSet.Builder<TaskGenerator> tasks;
+        private ImmutableSet.Builder<RegisteredTaskGenerator> tasks;
 
         public Builder() {
             taskParameterName = Optional.empty();
@@ -58,48 +53,31 @@ public class TaskFactory {
             return this;
         }
 
-        public Builder tasks(TaskGenerator... taskGenerators) {
-            this.tasks.add(taskGenerators);
+        public Builder tasks(RegisteredTaskGenerator... registeredTaskGenerators) {
+            this.tasks.add(registeredTaskGenerators);
             return this;
         }
 
-        public Builder task(TaskGenerator.Builder.FinalStage task) {
+        public Builder task(RegisteredTaskGenerator.Builder.FinalStage task) {
             this.tasks.add(task.build());
             return this;
         }
 
-        public Builder tasks(Set<TaskGenerator> taskGenerators) {
-            this.tasks.addAll(taskGenerators);
+        public Builder tasks(Set<RegisteredTaskGenerator> registeredTaskGenerators) {
+            this.tasks.addAll(registeredTaskGenerators);
             return this;
         }
 
         public TaskFactory build() {
-            ImmutableSet<TaskGenerator> taskGeneratos = tasks.build();
+            ImmutableSet<RegisteredTaskGenerator> taskGeneratos = tasks.build();
             Preconditions.checkState(!taskGeneratos.isEmpty());
             return new TaskFactory(
                 taskParameterName.orElse(DEFAULT_PARAMETER),
                 taskGeneratos
                     .stream()
                     .collect(Guavate.toImmutableMap(
-                        TaskGenerator::registrationKey,
+                        RegisteredTaskGenerator::registrationKey,
                         Function.identity())));
-        }
-    }
-
-    private static class TaskRoute implements Route {
-        private final TaskFactory taskFactory;
-        private final TaskManager taskManager;
-
-        TaskRoute(TaskFactory taskFactory, TaskManager taskManager) {
-            this.taskFactory = taskFactory;
-            this.taskManager = taskManager;
-        }
-
-        @Override
-        public Object handle(Request request, Response response) throws Exception {
-            Task task = taskFactory.generate(request);
-            TaskId taskId = taskManager.submit(task);
-            return TaskIdDto.respond(response, taskId);
         }
     }
 
@@ -108,23 +86,20 @@ public class TaskFactory {
     }
 
     private final String taskParameterName;
-    private final Map<TaskRegistrationKey, TaskGenerator> taskGenerators;
+    private final Map<TaskRegistrationKey, RegisteredTaskGenerator> taskGenerators;
 
-    private TaskFactory(String taskParameterName, Map<TaskRegistrationKey, TaskGenerator> taskGenerators) {
+    private TaskFactory(String taskParameterName, Map<TaskRegistrationKey, RegisteredTaskGenerator> taskGenerators) {
         this.taskParameterName = taskParameterName;
         this.taskGenerators = taskGenerators;
     }
 
+    @Override
     public Task generate(Request request) throws Exception {
         TaskRegistrationKey registrationKey = parseRegistrationKey(request);
         return Optional.ofNullable(taskGenerators.get(registrationKey))
-            .map(Throwing.<TaskGenerator, Task>function(taskGenerator -> taskGenerator.generate(request)).sneakyThrow())
+            .map(Throwing.<RegisteredTaskGenerator, Task>function(taskGenerator -> taskGenerator.generate(request)).sneakyThrow())
             .orElseThrow(() -> new IllegalArgumentException("Invalid value supplied for '" + taskParameterName + "': " + registrationKey.asString()
                 + ". " + supportedValueMessage()));
-    }
-
-    public Route asRoute(TaskManager taskManager) {
-        return new TaskRoute(this, taskManager);
     }
 
     private TaskRegistrationKey parseRegistrationKey(Request request) {

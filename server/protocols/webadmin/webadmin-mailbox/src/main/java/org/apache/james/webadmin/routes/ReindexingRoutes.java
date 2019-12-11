@@ -38,8 +38,8 @@ import org.apache.james.task.TaskNotFoundException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.PreviousReIndexingService;
+import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
-import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -137,7 +137,7 @@ public class ReindexingRoutes implements Routes {
     private Route reIndexAll() {
         return TaskFactory.builder()
             .parameterName(TASK_PARAMETER)
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(RE_INDEX)
                 .task(wrap(this::reIndexAll)))
             .build()
@@ -239,7 +239,7 @@ public class ReindexingRoutes implements Routes {
     private Route reIndexMailbox() {
         return TaskFactory.builder()
             .parameterName(TASK_PARAMETER)
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(RE_INDEX)
                 .task(wrap(request -> reIndexer.reIndex(extractMailboxId(request)))))
             .build()
@@ -284,14 +284,14 @@ public class ReindexingRoutes implements Routes {
     private Route reIndexMessage() {
         return TaskFactory.builder()
             .parameterName(TASK_PARAMETER)
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(RE_INDEX)
                 .task(wrap(request -> reIndexer.reIndex(extractMailboxId(request), extractUid(request)))))
             .build()
             .asRoute(taskManager);
     }
 
-    private TaskGenerator.Builder.ToTask wrap(TaskGenerator.Builder.ToTask toBeWrapped) {
+    private RegisteredTaskGenerator.Builder.ToTask wrap(RegisteredTaskGenerator.Builder.ToTask toBeWrapped) {
         return request -> {
             try {
                 return toBeWrapped.generate(request);

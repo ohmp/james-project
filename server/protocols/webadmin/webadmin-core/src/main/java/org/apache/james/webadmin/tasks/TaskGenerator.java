@@ -20,61 +20,35 @@
 package org.apache.james.webadmin.tasks;
 
 import org.apache.james.task.Task;
-
-import com.google.common.base.Preconditions;
+import org.apache.james.task.TaskId;
+import org.apache.james.task.TaskManager;
+import org.apache.james.webadmin.dto.TaskIdDto;
 
 import spark.Request;
+import spark.Response;
+import spark.Route;
 
 public interface TaskGenerator {
-    interface Builder {
-        @FunctionalInterface
-        interface ToTask {
-            Task generate(Request request) throws Exception;
+    class TaskRoute implements Route {
+        private final TaskGenerator taskGenerator;
+        private final TaskManager taskManager;
+
+        TaskRoute(TaskGenerator taskGenerator, TaskManager taskManager) {
+            this.taskGenerator = taskGenerator;
+            this.taskManager = taskManager;
         }
 
-        @FunctionalInterface
-        interface RequireRegistrationKey {
-            RequireTask registrationKey(TaskRegistrationKey registrationKey);
-        }
-
-        @FunctionalInterface
-        interface RequireTask {
-            FinalStage task(ToTask task);
-        }
-
-        class FinalStage {
-            private final TaskRegistrationKey taskRegistrationKey;
-            private final ToTask toTask;
-
-            FinalStage(TaskRegistrationKey taskRegistrationKey, ToTask toTask) {
-                Preconditions.checkNotNull(taskRegistrationKey);
-                Preconditions.checkNotNull(toTask);
-
-                this.taskRegistrationKey = taskRegistrationKey;
-                this.toTask = toTask;
-            }
-
-            public TaskGenerator build() {
-                return new TaskGenerator() {
-                    @Override
-                    public TaskRegistrationKey registrationKey() {
-                        return taskRegistrationKey;
-                    }
-
-                    @Override
-                    public Task generate(Request request) throws Exception {
-                        return toTask.generate(request);
-                    }
-                };
-            }
+        @Override
+        public Object handle(Request request, Response response) throws Exception {
+            Task task = taskGenerator.generate(request);
+            TaskId taskId = taskManager.submit(task);
+            return TaskIdDto.respond(response, taskId);
         }
     }
-
-    static Builder.RequireRegistrationKey builder() {
-        return registrationKey -> task -> new Builder.FinalStage(registrationKey, task);
-    }
-
-    TaskRegistrationKey registrationKey();
 
     Task generate(Request request) throws Exception;
+
+    default Route asRoute(TaskManager taskManager) {
+        return new TaskRoute(this, taskManager);
+    }
 }

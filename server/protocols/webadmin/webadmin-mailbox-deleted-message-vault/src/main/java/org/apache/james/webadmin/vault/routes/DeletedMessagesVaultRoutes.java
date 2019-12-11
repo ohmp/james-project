@@ -34,7 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.task.TaskId;
+import org.apache.james.task.Task;
 import org.apache.james.task.TaskManager;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -45,6 +45,7 @@ import org.apache.james.vault.search.Query;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
+import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
 import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
@@ -62,7 +63,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import spark.Request;
-import spark.Response;
 import spark.Route;
 import spark.Service;
 
@@ -119,7 +119,9 @@ public class DeletedMessagesVaultRoutes implements Routes {
     public void define(Service service) {
         service.post(USER_PATH, userActions(), jsonTransformer);
         service.delete(ROOT_PATH, deleteWithScope(), jsonTransformer);
-        service.delete(DELETE_PATH, this::deleteMessage, jsonTransformer);
+
+        TaskGenerator deleteTaskGenerator = this::deleteMessage;
+        service.delete(DELETE_PATH, deleteTaskGenerator.asRoute(taskManager), jsonTransformer);
     }
 
     @POST
@@ -157,7 +159,7 @@ public class DeletedMessagesVaultRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side.")
     })
     private Route userActions() {
-        TaskGenerator export = TaskGenerator.builder()
+        RegisteredTaskGenerator export = RegisteredTaskGenerator.builder()
             .registrationKey(EXPORT_REGISTRATION_KEY)
             .task(request -> {
                 Username username = extractUser(request);
@@ -166,7 +168,7 @@ public class DeletedMessagesVaultRoutes implements Routes {
                 return new DeletedMessagesVaultExportTask(vaultExport, username, query, extractMailAddress(request));
             })
             .build();
-        TaskGenerator restore = TaskGenerator.builder()
+        RegisteredTaskGenerator restore = RegisteredTaskGenerator.builder()
             .registrationKey(RESTORE_REGISTRATION_KEY)
             .task(request -> {
                 Username username = extractUser(request);
@@ -201,7 +203,7 @@ public class DeletedMessagesVaultRoutes implements Routes {
     private Route deleteWithScope() {
         return TaskFactory.builder()
             .parameterName(SCOPE_QUERY_PARAM)
-            .task(TaskGenerator.builder()
+            .task(RegisteredTaskGenerator.builder()
                 .registrationKey(EXPIRED_REGISTRATION_KEY)
                 .task(request -> deletedMessageVault.deleteExpiredMessagesTask()))
             .build()
@@ -234,13 +236,12 @@ public class DeletedMessagesVaultRoutes implements Routes {
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - messageId param is invalid"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side.")
     })
-    private TaskIdDto deleteMessage(Request request, Response response) {
+    private Task deleteMessage(Request request) {
         Username username = extractUser(request);
         validateUserExist(username);
         MessageId messageId = parseMessageId(request);
 
-        TaskId taskId = taskManager.submit(new DeletedMessagesVaultDeleteTask(deletedMessageVault, username, messageId));
-        return TaskIdDto.respond(response, taskId);
+        return new DeletedMessagesVaultDeleteTask(deletedMessageVault, username, messageId);
     }
 
     private void validateUserExist(Username username) {
