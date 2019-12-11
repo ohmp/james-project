@@ -26,16 +26,14 @@ import javax.ws.rs.Produces;
 
 import org.apache.james.mailbox.indexer.MessageIdReIndexer;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.task.Task;
-import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
+import org.apache.james.webadmin.tasks.TaskFactory;
+import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
-
-import com.github.fge.lambdas.supplier.ThrowingSupplier;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -44,7 +42,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import spark.Request;
-import spark.Response;
+import spark.Route;
 import spark.Service;
 
 @Api(tags = "MessageIdReIndexing")
@@ -75,7 +73,7 @@ public class MessageIdReindexingRoutes implements Routes {
 
     @Override
     public void define(Service service) {
-        service.post(MESSAGE_PATH, this::reIndexMessage, jsonTransformer);
+        service.post(MESSAGE_PATH, reIndexMessage(), jsonTransformer);
     }
 
     @POST
@@ -103,8 +101,13 @@ public class MessageIdReindexingRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
     })
-    private TaskIdDto reIndexMessage(Request request, Response response) {
-        return wrap(request, response, () -> reIndexer.reIndex(extractMessageId(request)));
+    private Route reIndexMessage() {
+        return TaskFactory.builder()
+            .task(TaskGenerator.builder()
+                .registrationKey(ReindexingRoutes.RE_INDEX)
+                .task(request -> reIndexer.reIndex(extractMessageId(request))))
+            .build()
+            .asRoute(taskManager);
     }
 
     private MessageId extractMessageId(Request request) {
@@ -118,13 +121,5 @@ public class MessageIdReindexingRoutes implements Routes {
                 .cause(e)
                 .haltError();
         }
-    }
-
-    private TaskIdDto wrap(Request request, Response response, ThrowingSupplier<Task> taskGenerator) {
-        ReIndexingRoutesUtil.enforceTaskParameter(request);
-
-        Task task = taskGenerator.get();
-        TaskId taskId = taskManager.submit(task);
-        return TaskIdDto.respond(response, taskId);
     }
 }

@@ -38,6 +38,9 @@ import org.apache.james.task.TaskNotFoundException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.PreviousReIndexingService;
+import org.apache.james.webadmin.tasks.TaskFactory;
+import org.apache.james.webadmin.tasks.TaskGenerator;
+import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
@@ -50,18 +53,16 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import spark.HaltException;
 import spark.Request;
-import spark.Response;
+import spark.Route;
 import spark.Service;
 
 @Api(tags = "ReIndexing (mailboxes)")
 @Path("/mailboxes")
 @Produces("application/json")
 public class ReindexingRoutes implements Routes {
-    @FunctionalInterface
-    interface TaskGenerator {
-        Task generate() throws MailboxException;
-    }
+
 
     private static final String BASE_PATH = "/mailboxes";
     private static final String USER_QUERY_PARAM = "user";
@@ -70,6 +71,7 @@ public class ReindexingRoutes implements Routes {
     private static final String UID_PARAM = ":uid";
     private static final String MAILBOX_PATH = BASE_PATH + "/" + MAILBOX_PARAM;
     private static final String MESSAGE_PATH = MAILBOX_PATH + "/mails/" + UID_PARAM;
+    static final TaskRegistrationKey RE_INDEX = TaskRegistrationKey.of("reIndex");
 
     private final TaskManager taskManager;
     private final PreviousReIndexingService previousReIndexingService;
@@ -93,9 +95,9 @@ public class ReindexingRoutes implements Routes {
 
     @Override
     public void define(Service service) {
-        service.post(BASE_PATH, this::reIndexAll, jsonTransformer);
-        service.post(MAILBOX_PATH, this::reIndexMailbox, jsonTransformer);
-        service.post(MESSAGE_PATH, this::reIndexMessage, jsonTransformer);
+        service.post(BASE_PATH, reIndexAll(), jsonTransformer);
+        service.post(MAILBOX_PATH, reIndexMailbox(), jsonTransformer);
+        service.post(MESSAGE_PATH, reIndexMessage(), jsonTransformer);
     }
 
     @POST
@@ -131,20 +133,29 @@ public class ReindexingRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
     })
-    private TaskIdDto reIndexAll(Request request, Response response) {
+    private Route reIndexAll() {
+        return TaskFactory.builder()
+            .task(TaskGenerator.builder()
+                .registrationKey(RE_INDEX)
+                .task(wrap(this::reIndexAll)))
+            .build()
+            .asRoute(taskManager);
+    }
+
+    private Task reIndexAll(Request request) throws MailboxException {
         boolean userReIndexing = !Strings.isNullOrEmpty(request.queryParams(USER_QUERY_PARAM));
         boolean indexingCorrection = !Strings.isNullOrEmpty(request.queryParams(RE_INDEX_FAILED_MESSAGES_QUERY_PARAM));
         if (userReIndexing && indexingCorrection) {
-            return rejectInvalidQueryParameterCombination();
+            throw  rejectInvalidQueryParameterCombination();
         }
         if (userReIndexing) {
-            return wrap(request, response, () -> reIndexer.reIndex(extractUser(request)));
+            return reIndexer.reIndex(extractUser(request));
         }
         if (indexingCorrection) {
             IndexingDetailInformation indexingDetailInformation = retrieveIndexingExecutionDetails(request);
-            return wrap(request, response, () -> reIndexer.reIndex(indexingDetailInformation.failures()));
+            return reIndexer.reIndex(indexingDetailInformation.failures());
         }
-        return wrap(request, response, reIndexer::reIndex);
+        return reIndexer.reIndex();
     }
 
     private IndexingDetailInformation retrieveIndexingExecutionDetails(Request request) {
@@ -182,7 +193,7 @@ public class ReindexingRoutes implements Routes {
         }
     }
 
-    private TaskIdDto rejectInvalidQueryParameterCombination() {
+    private HaltException rejectInvalidQueryParameterCombination() {
         throw ErrorResponder.builder()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
@@ -223,9 +234,13 @@ public class ReindexingRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
     })
-    private TaskIdDto reIndexMailbox(Request request, Response response) {
-        return wrap(request, response,
-            () -> reIndexer.reIndex(extractMailboxId(request)));
+    private Route reIndexMailbox() {
+        return TaskFactory.builder()
+            .task(TaskGenerator.builder()
+                .registrationKey(RE_INDEX)
+                .task(wrap(request -> reIndexer.reIndex(extractMailboxId(request)))))
+            .build()
+            .asRoute(taskManager);
     }
 
     @POST
@@ -263,27 +278,28 @@ public class ReindexingRoutes implements Routes {
             defaultValue = "none",
             value = "Compulsory. Needs to be a valid UID")
     })
-    private TaskIdDto reIndexMessage(Request request, Response response) {
-        return wrap(request, response,
-            () -> reIndexer.reIndex(extractMailboxId(request), extractUid(request)));
+    private Route reIndexMessage() {
+        return TaskFactory.builder()
+            .task(TaskGenerator.builder()
+                .registrationKey(RE_INDEX)
+                .task(wrap(request -> reIndexer.reIndex(extractMailboxId(request), extractUid(request)))))
+            .build()
+            .asRoute(taskManager);
     }
 
-    private TaskIdDto wrap(Request request, Response response, TaskGenerator taskGenerator) {
-        ReIndexingRoutesUtil.enforceTaskParameter(request);
-        try {
-            Task task = taskGenerator.generate();
-            TaskId taskId = taskManager.submit(task);
-            return TaskIdDto.respond(response, taskId);
-        } catch (MailboxNotFoundException e) {
-            throw ErrorResponder.builder()
-                .statusCode(HttpStatus.NOT_FOUND_404)
-                .type(ErrorResponder.ErrorType.NOT_FOUND)
-                .message("mailbox not found")
-                .cause(e)
-                .haltError();
-        } catch (MailboxException e) {
-            throw new RuntimeException(e);
-        }
+    private TaskGenerator.Builder.ToTask wrap(TaskGenerator.Builder.ToTask toBeWrapped) {
+        return request -> {
+            try {
+                return toBeWrapped.generate(request);
+            } catch (MailboxNotFoundException e) {
+                throw ErrorResponder.builder()
+                    .statusCode(HttpStatus.NOT_FOUND_404)
+                    .type(ErrorResponder.ErrorType.NOT_FOUND)
+                    .message("mailbox not found")
+                    .cause(e)
+                    .haltError();
+            }
+        };
     }
 
     private Username extractUser(Request request) {
