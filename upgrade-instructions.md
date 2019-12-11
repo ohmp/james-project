@@ -22,6 +22,7 @@ Change list:
  - [UsersFileRepository](#usersfilerepository)
  - [ElasticSearch performance enhancements](#elasticsearch-performance-enhancements)
  - [JAMES-2703 Post 3.4.0 release removals](#james-2703-post-340-release-removals)
+ - [Health checks routes return code changes](#health-checks-routes-return-code-changes)
  
 #### Health checks routes return code changes
 
