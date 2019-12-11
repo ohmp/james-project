@@ -33,6 +33,7 @@ import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
+import org.apache.james.imap.api.message.Capability;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.UidRange;
 import org.apache.james.imap.api.message.response.StatusResponse;
@@ -248,7 +249,7 @@ public class StoreProcessor extends AbstractMailboxProcessor<StoreRequest> {
             selected.resetNewApplicableFlags();
         }
         
-        Set<String> enabled = EnableProcessor.getEnabledCapabilities(session);
+        Set<Capability> enabled = EnableProcessor.getEnabledCapabilities(session);
         boolean qresyncEnabled = enabled.contains(ImapConstants.SUPPORTS_QRESYNC);
         boolean condstoreEnabled = enabled.contains(ImapConstants.SUPPORTS_CONDSTORE);
         

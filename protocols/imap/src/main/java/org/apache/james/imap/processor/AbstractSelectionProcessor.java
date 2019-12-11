@@ -26,6 +26,7 @@ import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
+import org.apache.james.imap.api.message.Capability;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.UidRange;
 import org.apache.james.imap.api.message.request.ImapRequest;
@@ -62,7 +63,7 @@ import com.google.common.collect.ImmutableList;
 
 abstract class AbstractSelectionProcessor<R extends AbstractMailboxSelectionRequest> extends AbstractMailboxProcessor<R> implements PermitEnableCapabilityProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSelectionProcessor.class);
-    private static final List<String> CAPS = ImmutableList.of(ImapConstants.SUPPORTS_QRESYNC, ImapConstants.SUPPORTS_CONDSTORE);
+    private static final List<Capability> CAPS = ImmutableList.of(ImapConstants.SUPPORTS_QRESYNC, ImapConstants.SUPPORTS_CONDSTORE);
 
     private final StatusResponseFactory statusResponseFactory;
     private final boolean openReadOnly;
@@ -419,17 +420,17 @@ abstract class AbstractSelectionProcessor<R extends AbstractMailboxSelectionRequ
     }
 
     @Override
-    public List<String> getImplementedCapabilities(ImapSession session) {
+    public List<Capability> getImplementedCapabilities(ImapSession session) {
         return CAPS;
     }
 
     @Override
-    public List<String> getPermitEnableCapabilities(ImapSession session) {
+    public List<Capability> getPermitEnableCapabilities(ImapSession session) {
         return CAPS;
     }
 
     @Override
-    public void enable(ImapMessage message, Responder responder, ImapSession session, String capability) throws EnableException {
+    public void enable(ImapMessage message, Responder responder, ImapSession session, Capability capability) throws EnableException {
 
         if (EnableProcessor.getEnabledCapabilities(session).contains(capability) == false) {
             SelectedMailbox sm = session.getSelected();
@@ -437,7 +438,7 @@ abstract class AbstractSelectionProcessor<R extends AbstractMailboxSelectionRequ
             // QRESYNC or CONDSTORE
             //
             // See http://www.dovecot.org/list/dovecot/2008-March/029561.html
-            if (capability.equalsIgnoreCase(ImapConstants.SUPPORTS_CONDSTORE) || capability.equalsIgnoreCase(ImapConstants.SUPPORTS_QRESYNC)) {
+            if (capability.equals(ImapConstants.SUPPORTS_CONDSTORE) || capability.equals(ImapConstants.SUPPORTS_QRESYNC)) {
                 try {
                     MetaData metaData  = null;
                     boolean send = false;
@@ -448,7 +449,7 @@ abstract class AbstractSelectionProcessor<R extends AbstractMailboxSelectionRequ
                     }
                     condstoreEnablingCommand(session, responder, metaData, send);
                 } catch (MailboxException e) {
-                    throw new EnableException("Unable to enable " + capability, e);
+                    throw new EnableException("Unable to enable " + capability.asString(), e);
                 }
             }
             

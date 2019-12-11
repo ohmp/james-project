@@ -89,7 +89,7 @@ public class MoveProcessorTest {
 
     @Test
     public void getImplementedCapabilitiesShouldContainMoveWhenSupportedByMailboxManager() {
-        assertThat(testee.getImplementedCapabilities(null)).containsExactly(ImapConstants.MOVE_COMMAND_NAME);
+        assertThat(testee.getImplementedCapabilities(null)).containsExactly(ImapConstants.SUPPORTS_MOVE);
     }
 
     @Test

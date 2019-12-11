@@ -32,6 +32,7 @@ import javax.mail.Flags.Flag;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapSessionUtils;
 import org.apache.james.imap.api.display.HumanReadableText;
+import org.apache.james.imap.api.message.Capability;
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.UidRange;
 import org.apache.james.imap.api.message.request.DayMonthYear;
@@ -74,7 +75,7 @@ public class SearchProcessor extends AbstractMailboxProcessor<SearchRequest> imp
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchProcessor.class);
 
     protected static final String SEARCH_MODSEQ = "SEARCH_MODSEQ";
-    private static final List<String> CAPS = ImmutableList.of("WITHIN", "ESEARCH", "SEARCHRES");
+    private static final List<Capability> CAPS = ImmutableList.of(Capability.of("WITHIN"), Capability.of("ESEARCH"), Capability.of("SEARCHRES"));
     
     public SearchProcessor(ImapProcessor next, MailboxManager mailboxManager, StatusResponseFactory factory,
             MetricFactory metricFactory) {
@@ -499,7 +500,7 @@ public class SearchProcessor extends AbstractMailboxProcessor<SearchRequest> imp
     }
 
     @Override
-    public List<String> getImplementedCapabilities(ImapSession session) {
+    public List<Capability> getImplementedCapabilities(ImapSession session) {
         return CAPS;
     }
 
