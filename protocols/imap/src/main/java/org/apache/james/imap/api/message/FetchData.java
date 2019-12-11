@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.imap.api.message;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -45,12 +46,12 @@ public class FetchData {
             return this;
         }
 
-        public Builder fetch(Item item) {
-            itemToFetch.add(item);
+        public Builder fetch(Item... item) {
+            itemToFetch.addAll(Arrays.asList(item));
             return this;
         }
 
-        public Builder setChangedSince(long changedSince) {
+        public Builder changedSince(long changedSince) {
             this.changedSince = changedSince;
             itemToFetch.add(Item.MODSEQ);
             return this;
@@ -59,7 +60,7 @@ public class FetchData {
         /**
          * Set to true if the VANISHED FETCH modifier was used as stated in <code>QRESYNC</code> extension
          */
-        public Builder setVanished(boolean vanished) {
+        public Builder vanished(boolean vanished) {
             this.vanished = vanished;
             return this;
         }

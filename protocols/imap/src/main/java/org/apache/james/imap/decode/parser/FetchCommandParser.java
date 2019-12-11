@@ -100,7 +100,7 @@ public class FetchCommandParser extends AbstractUidCommandParser {
                             }
                         }
                     });
-                    fetch.setChangedSince(request.number(true));
+                    fetch.changedSince(request.number(true));
                     
                     break;
                 
@@ -117,7 +117,7 @@ public class FetchCommandParser extends AbstractUidCommandParser {
                             }
                         }
                     });
-                    fetch.setVanished(true);
+                    fetch.vanished(true);
                     break;
                 default:
                     break;
@@ -142,20 +142,11 @@ public class FetchCommandParser extends AbstractUidCommandParser {
         // Simple elements with no '[]' parameters.
         if (next != '[') {
             if ("FAST".equalsIgnoreCase(name)) {
-                fetch.fetch(FLAGS);
-                fetch.fetch(INTERNAL_DATE);
-                fetch.fetch(SIZE);
+                fetch.fetch(FLAGS, INTERNAL_DATE, SIZE);
             } else if ("FULL".equalsIgnoreCase(name)) {
-                fetch.fetch(FLAGS);
-                fetch.fetch(INTERNAL_DATE);
-                fetch.fetch(SIZE);
-                fetch.fetch(ENVELOPE);
-                fetch.fetch(BODY);
+                fetch.fetch(FLAGS, INTERNAL_DATE, SIZE, ENVELOPE, BODY);
             } else if ("ALL".equalsIgnoreCase(name)) {
-                fetch.fetch(FLAGS);
-                fetch.fetch(INTERNAL_DATE);
-                fetch.fetch(SIZE);
-                fetch.fetch(ENVELOPE);
+                fetch.fetch(FLAGS, INTERNAL_DATE, SIZE, ENVELOPE);
             } else if ("FLAGS".equalsIgnoreCase(name)) {
                 fetch.fetch(FLAGS);
             } else if ("RFC822.SIZE".equalsIgnoreCase(name)) {
