@@ -240,7 +240,7 @@ public class CassandraMigrationRoutesTest {
             .body(String.valueOf(OLDER_VERSION.getValue()))
         .when()
             .post("/upgrade")
-            .then()
+        .then()
             .header("Location", notNullValue());
     }
 
