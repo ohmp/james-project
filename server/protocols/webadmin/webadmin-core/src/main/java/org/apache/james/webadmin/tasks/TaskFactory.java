@@ -63,6 +63,11 @@ public class TaskFactory {
             return this;
         }
 
+        public Builder task(TaskGenerator.Builder.FinalStage task) {
+            this.tasks.add(task.build());
+            return this;
+        }
+
         public Builder tasks(Set<TaskGenerator> taskGenerators) {
             this.tasks.addAll(taskGenerators);
             return this;

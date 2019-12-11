@@ -203,10 +203,9 @@ public class DeletedMessagesVaultRoutes implements Routes {
     private Route deleteWithScope() {
         return TaskFactory.builder()
             .parameterName(SCOPE_QUERY_PARAM)
-            .tasks(TaskGenerator.builder()
+            .task(TaskGenerator.builder()
                 .registrationKey(EXPIRED_REGISTRATION_KEY)
-                .task(request -> deletedMessageVault.deleteExpiredMessagesTask())
-                .build())
+                .task(request -> deletedMessageVault.deleteExpiredMessagesTask()))
             .build()
             .asRoute(taskManager);
     }

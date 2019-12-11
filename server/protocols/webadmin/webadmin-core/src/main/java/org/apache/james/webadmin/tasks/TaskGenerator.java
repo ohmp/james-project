@@ -26,7 +26,7 @@ import com.google.common.base.Preconditions;
 import spark.Request;
 
 public interface TaskGenerator {
-    class Builder {
+    interface Builder {
         @FunctionalInterface
         interface ToTask {
             Task generate(Request request) throws Exception;
@@ -42,7 +42,7 @@ public interface TaskGenerator {
             FinalStage task(ToTask task);
         }
 
-        static class FinalStage {
+        class FinalStage {
             private final TaskRegistrationKey taskRegistrationKey;
             private final ToTask toTask;
 

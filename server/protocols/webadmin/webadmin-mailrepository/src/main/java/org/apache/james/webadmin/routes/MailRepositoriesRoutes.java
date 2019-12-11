@@ -449,7 +449,7 @@ public class MailRepositoriesRoutes implements Routes {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails",
             TaskFactory.builder()
                 .parameterName("action")
-                .tasks(TaskGenerator.builder()
+                .task(TaskGenerator.builder()
                     .registrationKey(REPROCESS_ACTION)
                     .task(request -> {
                         MailRepositoryPath path = decodedRepositoryPath(request);
@@ -458,8 +458,7 @@ public class MailRepositoriesRoutes implements Routes {
 
                         Long repositorySize = repositoryStoreService.size(path).orElse(0L);
                         return new ReprocessingAllMailsTask(reprocessingService, repositorySize, path, targetQueue, targetProcessor);
-                    })
-                    .build())
+                    }))
                 .build()
                 .asRoute(taskManager),
             jsonTransformer);
@@ -503,7 +502,7 @@ public class MailRepositoriesRoutes implements Routes {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails/:key",
             TaskFactory.builder()
                 .parameterName(ACTION_PARAMETER)
-                .tasks(TaskGenerator.builder()
+                .task(TaskGenerator.builder()
                     .registrationKey(REPROCESS_ACTION)
                     .task(request -> {
                         MailRepositoryPath path = decodedRepositoryPath(request);
@@ -513,8 +512,7 @@ public class MailRepositoriesRoutes implements Routes {
                         String targetQueue = parseTargetQueue(request);
 
                         return new ReprocessingOneMailTask(reprocessingService, path, targetQueue, key, targetProcessor, Clock.systemUTC());
-                    })
-                    .build())
+                    }))
                 .build()
                 .asRoute(taskManager),
             jsonTransformer);
