@@ -42,7 +42,7 @@ import spark.Response;
 import spark.Route;
 
 public class TaskFactory {
-    private static final String DEFAULT_PARAMETER = "task";
+    private static final String DEFAULT_PARAMETER = "action";
 
     public static class Builder {
         private Optional<String> taskParameterName;

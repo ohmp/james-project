@@ -82,7 +82,6 @@ public class DeletedMessagesVaultRoutes implements Routes {
     static final String USER_PATH = ROOT_PATH + SEPARATOR + USERS + SEPARATOR + USER_PATH_PARAM;
     private static final String DELETE_PATH = ROOT_PATH + SEPARATOR + USERS + SEPARATOR + USER_PATH_PARAM + SEPARATOR + MESSAGE_PATH_PARAM + SEPARATOR + MESSAGE_ID_PARAM;
     private static final String SCOPE_QUERY_PARAM = "scope";
-    private static final String ACTION_QUERY_PARAM = "action";
     private static final String EXPORT_TO_QUERY_PARAM = "exportTo";
 
     private final RestoreService vaultRestore;
@@ -178,7 +177,6 @@ public class DeletedMessagesVaultRoutes implements Routes {
             .build();
 
         return TaskFactory.builder()
-            .parameterName(ACTION_QUERY_PARAM)
             .tasks(export, restore)
             .build()
             .asRoute(taskManager);

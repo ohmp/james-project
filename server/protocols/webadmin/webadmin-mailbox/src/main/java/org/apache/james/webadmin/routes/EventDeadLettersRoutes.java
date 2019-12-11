@@ -66,7 +66,6 @@ public class EventDeadLettersRoutes implements Routes {
 
     private static final String INTERNAL_SERVER_ERROR = "Internal server error - Something went bad on the server side.";
     private static final TaskRegistrationKey RE_DELIVER = TaskRegistrationKey.of("reDeliver");
-    private static final String ACTION_PARAMETER = "action";
 
     private final EventDeadLettersService eventDeadLettersService;
     private final EventSerializer eventSerializer;
@@ -121,7 +120,6 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnAllEvents() {
         return TaskFactory.builder()
-            .parameterName(ACTION_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(RE_DELIVER)
                 .task(request -> eventDeadLettersService.redeliverAllEvents()))
@@ -192,7 +190,6 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnGroupEvents() {
         return TaskFactory.builder()
-            .parameterName(ACTION_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(RE_DELIVER)
                 .task(request -> {
@@ -307,7 +304,6 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnSingleEvent() {
         return TaskFactory.builder()
-            .parameterName(ACTION_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(RE_DELIVER)
                 .task(request -> {

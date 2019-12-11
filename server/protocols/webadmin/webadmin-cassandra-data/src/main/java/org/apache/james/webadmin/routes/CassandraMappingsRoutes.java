@@ -98,7 +98,6 @@ public class CassandraMappingsRoutes implements Routes {
     })
     public Route performActionOnMappings() {
         return TaskFactory.builder()
-            .parameterName("action")
             .task(TaskGenerator.builder()
                 .registrationKey(TaskRegistrationKey.of("SolveInconsistencies"))
                 .task(request -> cassandraMappingsService.solveMappingsSourcesInconsistencies()))

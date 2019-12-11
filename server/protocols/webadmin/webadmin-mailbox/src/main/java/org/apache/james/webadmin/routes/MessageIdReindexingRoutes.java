@@ -19,6 +19,8 @@
 
 package org.apache.james.webadmin.routes;
 
+import static org.apache.james.webadmin.routes.ReindexingRoutes.TASK_PARAMETER;
+
 import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -103,6 +105,7 @@ public class MessageIdReindexingRoutes implements Routes {
     })
     private Route reIndexMessage() {
         return TaskFactory.builder()
+            .parameterName(TASK_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(ReindexingRoutes.RE_INDEX)
                 .task(request -> reIndexer.reIndex(extractMessageId(request))))

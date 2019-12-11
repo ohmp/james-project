@@ -72,6 +72,7 @@ public class ReindexingRoutes implements Routes {
     private static final String MAILBOX_PATH = BASE_PATH + "/" + MAILBOX_PARAM;
     private static final String MESSAGE_PATH = MAILBOX_PATH + "/mails/" + UID_PARAM;
     static final TaskRegistrationKey RE_INDEX = TaskRegistrationKey.of("reIndex");
+    static final String TASK_PARAMETER = "task";
 
     private final TaskManager taskManager;
     private final PreviousReIndexingService previousReIndexingService;
@@ -135,6 +136,7 @@ public class ReindexingRoutes implements Routes {
     })
     private Route reIndexAll() {
         return TaskFactory.builder()
+            .parameterName(TASK_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(RE_INDEX)
                 .task(wrap(this::reIndexAll)))
@@ -236,6 +238,7 @@ public class ReindexingRoutes implements Routes {
     })
     private Route reIndexMailbox() {
         return TaskFactory.builder()
+            .parameterName(TASK_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(RE_INDEX)
                 .task(wrap(request -> reIndexer.reIndex(extractMailboxId(request)))))
@@ -280,6 +283,7 @@ public class ReindexingRoutes implements Routes {
     })
     private Route reIndexMessage() {
         return TaskFactory.builder()
+            .parameterName(TASK_PARAMETER)
             .task(TaskGenerator.builder()
                 .registrationKey(RE_INDEX)
                 .task(wrap(request -> reIndexer.reIndex(extractMailboxId(request), extractUid(request)))))

@@ -448,7 +448,6 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineReprocessAll() {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails",
             TaskFactory.builder()
-                .parameterName("action")
                 .task(TaskGenerator.builder()
                     .registrationKey(REPROCESS_ACTION)
                     .task(request -> {
@@ -501,7 +500,6 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineReprocessOne() {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails/:key",
             TaskFactory.builder()
-                .parameterName(ACTION_PARAMETER)
                 .task(TaskGenerator.builder()
                     .registrationKey(REPROCESS_ACTION)
                     .task(request -> {
