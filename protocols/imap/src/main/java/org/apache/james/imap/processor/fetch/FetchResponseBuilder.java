@@ -134,7 +134,7 @@ public final class FetchResponseBuilder {
         }
 
         // FLAGS response
-        if (fetch.contains(Item.INTERNAL_DATE) || ensureFlagsResponse) {
+        if (fetch.contains(Item.FLAGS) || ensureFlagsResponse) {
             if (selected.isRecent(resultUid)) {
                 resultFlags.add(Flags.Flag.RECENT);
             }
