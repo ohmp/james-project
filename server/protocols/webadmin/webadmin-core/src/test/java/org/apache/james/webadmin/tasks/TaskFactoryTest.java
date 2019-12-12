@@ -33,14 +33,8 @@ import spark.Request;
 class TaskFactoryTest {
     static final Task TASK_1 = mock(Task.class);
     static final Task TASK_2 = mock(Task.class);
-    static RegisteredTaskGenerator TASK_GENERATOR_1 = RegisteredTaskGenerator.builder()
-        .registrationKey(TaskRegistrationKey.of("task1"))
-        .task(any -> TASK_1)
-        .build();
-    static RegisteredTaskGenerator TASK_GENERATOR_2 = RegisteredTaskGenerator.builder()
-        .registrationKey(TaskRegistrationKey.of("task2"))
-        .task(any -> TASK_2)
-        .build();
+    static final TaskRegistrationKey KEY_1 = TaskRegistrationKey.of("task1");
+    static final TaskRegistrationKey KEY_2 = TaskRegistrationKey.of("task2");
 
     Request request;
     TaskFactory taskFactory;
@@ -49,8 +43,13 @@ class TaskFactoryTest {
     @BeforeEach
     void setUp() {
         request = mock(Request.class);
-        taskFactory = TaskFactory.builder().tasks(TASK_GENERATOR_1, TASK_GENERATOR_2).build();
-        singleTaskFactory = TaskFactory.builder().tasks(TASK_GENERATOR_1).build();
+        taskFactory = TaskFactory.builder()
+            .register(KEY_1, any -> TASK_1)
+            .register(KEY_2, any -> TASK_2)
+            .build();
+        singleTaskFactory = TaskFactory.builder()
+            .register(KEY_1, any -> TASK_1)
+            .build();
     }
 
     @Test
@@ -77,7 +76,7 @@ class TaskFactoryTest {
     void generateShouldThrowWhenCustomParameterValueIsInvalid() {
         TaskFactory taskFactory = TaskFactory.builder()
             .parameterName("custom")
-            .tasks(TASK_GENERATOR_1)
+            .register(KEY_1, any -> TASK_1)
             .build();
 
         when(request.queryParams("custom")).thenReturn("unknown");
@@ -91,7 +90,7 @@ class TaskFactoryTest {
     void generateShouldThrowWhenCustomParameterNotSpecified() {
         TaskFactory taskFactory = TaskFactory.builder()
             .parameterName("custom")
-            .tasks(TASK_GENERATOR_1)
+            .register(KEY_1, any -> TASK_1)
             .build();
 
         when(request.queryParams("task")).thenReturn("unknown");
@@ -149,7 +148,7 @@ class TaskFactoryTest {
     void generateShouldHandleCustomTaskParameter() throws Exception {
         TaskFactory taskFactory = TaskFactory.builder()
             .parameterName("custom")
-            .tasks(TASK_GENERATOR_1)
+            .register(KEY_1, any -> TASK_1)
             .build();
 
         when(request.queryParams("custom")).thenReturn("task1");

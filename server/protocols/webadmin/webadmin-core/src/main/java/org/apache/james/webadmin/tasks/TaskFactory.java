@@ -19,9 +19,9 @@
 
 package org.apache.james.webadmin.tasks;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +32,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 
 import spark.Request;
 
@@ -41,11 +41,11 @@ public class TaskFactory implements TaskGenerator {
 
     public static class Builder {
         private Optional<String> taskParameterName;
-        private ImmutableSet.Builder<RegisteredTaskGenerator> tasks;
+        private ImmutableMap.Builder<TaskRegistrationKey, TaskGenerator> tasks;
 
         public Builder() {
             taskParameterName = Optional.empty();
-            tasks = ImmutableSet.builder();
+            tasks = ImmutableMap.builder();
         }
 
         public Builder parameterName(String parameterName) {
@@ -54,30 +54,24 @@ public class TaskFactory implements TaskGenerator {
         }
 
         public Builder tasks(RegisteredTaskGenerator... registeredTaskGenerators) {
-            this.tasks.add(registeredTaskGenerators);
+            this.tasks.putAll(Arrays.stream(registeredTaskGenerators)
+                .collect(Guavate.toImmutableMap(
+                    RegisteredTaskGenerator::registrationKey,
+                    Function.identity())));
             return this;
         }
 
-        public Builder task(RegisteredTaskGenerator.Builder.FinalStage task) {
-            this.tasks.add(task.build());
-            return this;
-        }
-
-        public Builder tasks(Set<RegisteredTaskGenerator> registeredTaskGenerators) {
-            this.tasks.addAll(registeredTaskGenerators);
+        public Builder register(TaskRegistrationKey key, TaskGenerator taskGenerator) {
+            this.tasks.put(key, taskGenerator);
             return this;
         }
 
         public TaskFactory build() {
-            ImmutableSet<RegisteredTaskGenerator> taskGeneratos = tasks.build();
+            ImmutableMap<TaskRegistrationKey, TaskGenerator> taskGeneratos = tasks.build();
             Preconditions.checkState(!taskGeneratos.isEmpty());
             return new TaskFactory(
                 taskParameterName.orElse(DEFAULT_PARAMETER),
-                taskGeneratos
-                    .stream()
-                    .collect(Guavate.toImmutableMap(
-                        RegisteredTaskGenerator::registrationKey,
-                        Function.identity())));
+                taskGeneratos);
         }
     }
 
@@ -86,9 +80,9 @@ public class TaskFactory implements TaskGenerator {
     }
 
     private final String taskParameterName;
-    private final Map<TaskRegistrationKey, RegisteredTaskGenerator> taskGenerators;
+    private final Map<TaskRegistrationKey, TaskGenerator> taskGenerators;
 
-    private TaskFactory(String taskParameterName, Map<TaskRegistrationKey, RegisteredTaskGenerator> taskGenerators) {
+    private TaskFactory(String taskParameterName, Map<TaskRegistrationKey, TaskGenerator> taskGenerators) {
         this.taskParameterName = taskParameterName;
         this.taskGenerators = taskGenerators;
     }
@@ -97,7 +91,7 @@ public class TaskFactory implements TaskGenerator {
     public Task generate(Request request) throws Exception {
         TaskRegistrationKey registrationKey = parseRegistrationKey(request);
         return Optional.ofNullable(taskGenerators.get(registrationKey))
-            .map(Throwing.<RegisteredTaskGenerator, Task>function(taskGenerator -> taskGenerator.generate(request)).sneakyThrow())
+            .map(Throwing.<TaskGenerator, Task>function(taskGenerator -> taskGenerator.generate(request)).sneakyThrow())
             .orElseThrow(() -> new IllegalArgumentException("Invalid value supplied for '" + taskParameterName + "': " + registrationKey.asString()
                 + ". " + supportedValueMessage()));
     }

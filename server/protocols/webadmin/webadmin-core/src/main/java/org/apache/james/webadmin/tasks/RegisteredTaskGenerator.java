@@ -21,44 +21,9 @@ package org.apache.james.webadmin.tasks;
 
 import org.apache.james.task.Task;
 
-import com.google.common.base.Preconditions;
-
 import spark.Request;
 
 public final class RegisteredTaskGenerator implements TaskGenerator {
-    public interface Builder {
-        @FunctionalInterface
-        interface RequireRegistrationKey {
-            RequireTask registrationKey(TaskRegistrationKey registrationKey);
-        }
-
-        @FunctionalInterface
-        interface RequireTask {
-            FinalStage task(TaskGenerator task);
-        }
-
-        class FinalStage {
-            private final TaskRegistrationKey taskRegistrationKey;
-            private final TaskGenerator taskGenerator;
-
-            FinalStage(TaskRegistrationKey taskRegistrationKey, TaskGenerator taskGenerator) {
-                Preconditions.checkNotNull(taskRegistrationKey);
-                Preconditions.checkNotNull(taskGenerator);
-
-                this.taskRegistrationKey = taskRegistrationKey;
-                this.taskGenerator = taskGenerator;
-            }
-
-            public RegisteredTaskGenerator build() {
-                return new RegisteredTaskGenerator(taskRegistrationKey, taskGenerator);
-            }
-        }
-    }
-
-    public static Builder.RequireRegistrationKey builder() {
-        return registrationKey -> task -> new Builder.FinalStage(registrationKey, task);
-    }
-
     private final TaskRegistrationKey taskRegistrationKey;
     private final TaskGenerator taskGenerator;
 
