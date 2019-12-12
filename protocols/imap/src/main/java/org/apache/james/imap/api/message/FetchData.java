@@ -36,7 +36,7 @@ public class FetchData {
                 .vanished(fetchData.vanished)
                 .changedSince(fetchData.changedSince)
                 .addBodyElements(fetchData.bodyElements)
-                .setSeen(fetchData.setSeen);
+                .seen(fetchData.setSeen);
         }
 
         private EnumSet<Item> itemToFetch = EnumSet.noneOf(Item.class);
@@ -80,7 +80,7 @@ public class FetchData {
             return this;
         }
 
-        private Builder setSeen(boolean setSeen) {
+        private Builder seen(boolean setSeen) {
             this.setSeen = setSeen;
             return this;
         }
