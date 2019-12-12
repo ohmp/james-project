@@ -44,7 +44,6 @@ import org.apache.james.vault.dto.query.QueryTranslator;
 import org.apache.james.vault.search.Query;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
-import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
 import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskIdDto;
@@ -159,27 +158,21 @@ public class DeletedMessagesVaultRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side.")
     })
     private Route userActions() {
-        RegisteredTaskGenerator export = RegisteredTaskGenerator.builder()
-            .registrationKey(EXPORT_REGISTRATION_KEY)
-            .task(request -> {
-                Username username = extractUser(request);
-                validateUserExist(username);
-                Query query = translate(jsonExtractor.parse(request.body()));
-                return new DeletedMessagesVaultExportTask(vaultExport, username, query, extractMailAddress(request));
-            })
-            .build();
-        RegisteredTaskGenerator restore = RegisteredTaskGenerator.builder()
-            .registrationKey(RESTORE_REGISTRATION_KEY)
-            .task(request -> {
-                Username username = extractUser(request);
-                validateUserExist(username);
-                Query query = translate(jsonExtractor.parse(request.body()));
-                return new DeletedMessagesVaultRestoreTask(vaultRestore, username, query);
-            })
-            .build();
-
         return TaskFactory.builder()
-            .tasks(export, restore)
+            .register(EXPORT_REGISTRATION_KEY,
+                request -> {
+                    Username username = extractUser(request);
+                    validateUserExist(username);
+                    Query query = translate(jsonExtractor.parse(request.body()));
+                    return new DeletedMessagesVaultExportTask(vaultExport, username, query, extractMailAddress(request));
+                })
+            .register(RESTORE_REGISTRATION_KEY,
+                request -> {
+                    Username username = extractUser(request);
+                    validateUserExist(username);
+                    Query query = translate(jsonExtractor.parse(request.body()));
+                    return new DeletedMessagesVaultRestoreTask(vaultRestore, username, query);
+                })
             .build()
             .asRoute(taskManager);
     }
@@ -203,9 +196,8 @@ public class DeletedMessagesVaultRoutes implements Routes {
     private Route deleteWithScope() {
         return TaskFactory.builder()
             .parameterName(SCOPE_QUERY_PARAM)
-            .task(RegisteredTaskGenerator.builder()
-                .registrationKey(EXPIRED_REGISTRATION_KEY)
-                .task(request -> deletedMessageVault.deleteExpiredMessagesTask()))
+            .register(EXPIRED_REGISTRATION_KEY,
+                request -> deletedMessageVault.deleteExpiredMessagesTask())
             .build()
             .asRoute(taskManager);
     }

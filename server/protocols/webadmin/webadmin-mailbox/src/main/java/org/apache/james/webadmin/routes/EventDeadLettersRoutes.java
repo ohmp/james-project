@@ -35,7 +35,6 @@ import org.apache.james.mailbox.events.Group;
 import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.service.EventDeadLettersService;
-import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
 import org.apache.james.webadmin.tasks.TaskIdDto;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
@@ -120,9 +119,8 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnAllEvents() {
         return TaskFactory.builder()
-            .task(RegisteredTaskGenerator.builder()
-                .registrationKey(RE_DELIVER)
-                .task(request -> eventDeadLettersService.redeliverAllEvents()))
+            .register(RE_DELIVER,
+                request -> eventDeadLettersService.redeliverAllEvents())
             .build()
             .asRoute(taskManager);
     }
@@ -190,12 +188,11 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnGroupEvents() {
         return TaskFactory.builder()
-            .task(RegisteredTaskGenerator.builder()
-                .registrationKey(RE_DELIVER)
-                .task(request -> {
+            .register(RE_DELIVER,
+                request -> {
                     Group group = parseGroup(request);
                     return eventDeadLettersService.redeliverGroupEvents(group);
-                }))
+                })
             .build()
             .asRoute(taskManager);
     }
@@ -304,13 +301,12 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public Route performActionOnSingleEvent() {
         return TaskFactory.builder()
-            .task(RegisteredTaskGenerator.builder()
-                .registrationKey(RE_DELIVER)
-                .task(request -> {
+            .register(RE_DELIVER,
+                request -> {
                     Group group = parseGroup(request);
                     EventDeadLetters.InsertionId insertionId = parseInsertionId(request);
                     return eventDeadLettersService.redeliverSingleEvent(group, insertionId);
-                }))
+                })
             .build()
             .asRoute(taskManager);
     }

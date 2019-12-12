@@ -55,7 +55,6 @@ import org.apache.james.webadmin.service.MailRepositoryStoreService;
 import org.apache.james.webadmin.service.ReprocessingAllMailsTask;
 import org.apache.james.webadmin.service.ReprocessingOneMailTask;
 import org.apache.james.webadmin.service.ReprocessingService;
-import org.apache.james.webadmin.tasks.RegisteredTaskGenerator;
 import org.apache.james.webadmin.tasks.TaskFactory;
 import org.apache.james.webadmin.tasks.TaskGenerator;
 import org.apache.james.webadmin.tasks.TaskIdDto;
@@ -446,16 +445,15 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineReprocessAll() {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails",
             TaskFactory.builder()
-                .task(RegisteredTaskGenerator.builder()
-                    .registrationKey(REPROCESS_ACTION)
-                    .task(request -> {
+                .register(REPROCESS_ACTION,
+                    request -> {
                         MailRepositoryPath path = decodedRepositoryPath(request);
                         Optional<String> targetProcessor = parseTargetProcessor(request);
                         String targetQueue = parseTargetQueue(request);
 
                         Long repositorySize = repositoryStoreService.size(path).orElse(0L);
                         return new ReprocessingAllMailsTask(reprocessingService, repositorySize, path, targetQueue, targetProcessor);
-                    }))
+                    })
                 .build()
                 .asRoute(taskManager),
             jsonTransformer);
@@ -498,9 +496,8 @@ public class MailRepositoriesRoutes implements Routes {
     public void defineReprocessOne() {
         service.patch(MAIL_REPOSITORIES + "/:encodedPath/mails/:key",
             TaskFactory.builder()
-                .task(RegisteredTaskGenerator.builder()
-                    .registrationKey(REPROCESS_ACTION)
-                    .task(request -> {
+                .register(REPROCESS_ACTION,
+                    request -> {
                         MailRepositoryPath path = decodedRepositoryPath(request);
                         MailKey key = new MailKey(request.params("key"));
 
@@ -508,7 +505,7 @@ public class MailRepositoriesRoutes implements Routes {
                         String targetQueue = parseTargetQueue(request);
 
                         return new ReprocessingOneMailTask(reprocessingService, path, targetQueue, key, targetProcessor, Clock.systemUTC());
-                    }))
+                    })
                 .build()
                 .asRoute(taskManager),
             jsonTransformer);
