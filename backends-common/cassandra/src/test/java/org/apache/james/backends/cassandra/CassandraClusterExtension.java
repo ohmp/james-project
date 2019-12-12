@@ -29,8 +29,6 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import com.github.fge.lambdas.Throwing;
-
 public class CassandraClusterExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback, AfterEachCallback, ParameterResolver {
     private final DockerCassandraExtension cassandraExtension;
     private final CassandraModule cassandraModule;
@@ -59,7 +57,7 @@ public class CassandraClusterExtension implements BeforeAllCallback, BeforeEachC
         DockerCassandraSingleton.incrementTestsPlayed();
         DockerCassandraSingleton.restartAfterMaxTestsPlayed(
             cassandraCluster::close,
-            Throwing.runnable(this::start));
+            this::start);
     }
 
     @Override
