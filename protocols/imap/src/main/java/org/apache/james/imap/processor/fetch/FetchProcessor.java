@@ -128,8 +128,7 @@ public class FetchProcessor extends AbstractMailboxProcessor<FetchRequest> {
     private FetchData computeFetchData(FetchRequest request, ImapSession session) {
         // if QRESYNC is enable its necessary to also return the UID in all cases
         if (EnableProcessor.getEnabledCapabilities(session).contains(ImapConstants.SUPPORTS_QRESYNC)) {
-            return FetchData.builder()
-                .from(request.getFetch())
+            return FetchData.Builder.from(request.getFetch())
                 .fetch(Item.UID)
                 .build();
         }

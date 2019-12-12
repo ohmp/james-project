@@ -30,31 +30,33 @@ import com.google.common.collect.ImmutableSet;
 
 public class FetchData {
     public static class Builder {
+        public static Builder from(FetchData fetchData) {
+            return builder()
+                .fetch(fetchData.itemToFetch)
+                .vanished(fetchData.vanished)
+                .changedSince(fetchData.changedSince)
+                .addBodyElements(fetchData.bodyElements)
+                .setSeen(fetchData.setSeen);
+        }
+
         private EnumSet<Item> itemToFetch = EnumSet.noneOf(Item.class);
         private Set<BodyFetchElement> bodyElements = new HashSet<>();
         private boolean setSeen = false;
         private long changedSince = -1;
         private boolean vanished;
 
-        public Builder from(FetchData fetchData) {
-            itemToFetch = EnumSet.copyOf(fetchData.itemToFetch);
-            setSeen = fetchData.setSeen;
-            changedSince = fetchData.changedSince;
-            vanished = fetchData.vanished;
-            bodyElements = new HashSet<>();
-            bodyElements.addAll(fetchData.bodyElements);
-            return this;
+        public Builder fetch(Item... item) {
+            return fetch(Arrays.asList(item));
         }
 
-        public Builder fetch(Item... item) {
-            itemToFetch.addAll(Arrays.asList(item));
+        public Builder fetch(Collection<Item> items) {
+            itemToFetch.addAll(items);
             return this;
         }
 
         public Builder changedSince(long changedSince) {
             this.changedSince = changedSince;
-            itemToFetch.add(Item.MODSEQ);
-            return this;
+            return fetch(Item.MODSEQ);
         }
 
         /**
@@ -70,6 +72,16 @@ public class FetchData {
                 setSeen = true;
             }
             bodyElements.add(element);
+            return this;
+        }
+
+        private Builder addBodyElements(Collection<BodyFetchElement> elements) {
+            bodyElements.addAll(elements);
+            return this;
+        }
+
+        private Builder setSeen(boolean setSeen) {
+            this.setSeen = setSeen;
             return this;
         }
 
