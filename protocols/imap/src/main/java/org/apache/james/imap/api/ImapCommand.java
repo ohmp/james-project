@@ -38,6 +38,10 @@ public class ImapCommand {
         Validity(EnumSet<ImapSessionState> validStates) {
             this.validStates = validStates;
         }
+
+        boolean allowed(ImapSessionState sessionState) {
+            return validStates.contains(sessionState);
+        }
     }
 
     public static ImapCommand nonAuthenticatedStateCommand(String name) {
@@ -69,7 +73,7 @@ public class ImapCommand {
     }
 
     public boolean validForState(ImapSessionState state) {
-        return validity.validStates.contains(state);
+        return validity.allowed(state);
     }
 
     public String toString() {
