@@ -883,7 +883,7 @@ class MessageFullViewFactoryTest {
         @Test
         void fromMessageResultsShouldComputeWhenProjectionReturnEmpty() throws Exception {
             List<MessageResult> messages = messageIdManager
-                .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.FULL_CONTENT, session)
+                .getMessage(message1.getMessageId(), FetchGroup.FULL_CONTENT, session)
                 .collect(Guavate.toImmutableList());
             messageFullViewFactory.fromMessageResults(messages);
 
@@ -902,7 +902,7 @@ class MessageFullViewFactoryTest {
                 .block();
 
             List<MessageResult> messages = messageIdManager
-                .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.FULL_CONTENT, session)
+                .getMessage(message1.getMessageId(), FetchGroup.FULL_CONTENT, session)
                 .collect(Guavate.toImmutableList());
 
             assertThat(messageFullViewFactory.fromMessageResults(messages))
@@ -916,7 +916,7 @@ class MessageFullViewFactoryTest {
                 .when(fastViewProjection).retrieve(any(MessageId.class));
 
             List<MessageResult> messages = messageIdManager
-                .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.FULL_CONTENT, session)
+                .getMessage(message1.getMessageId(), FetchGroup.FULL_CONTENT, session)
                 .collect(Guavate.toImmutableList());
 
             assertThat(messageFullViewFactory.fromMessageResults(messages))
@@ -930,7 +930,7 @@ class MessageFullViewFactoryTest {
                 .when(fastViewProjection).store(any(), any());
 
             List<MessageResult> messages = messageIdManager
-                .getMessages(ImmutableList.of(message1.getMessageId()), FetchGroup.FULL_CONTENT, session)
+                .getMessage(message1.getMessageId(), FetchGroup.FULL_CONTENT, session)
                 .collect(Guavate.toImmutableList());
 
             assertThat(messageFullViewFactory.fromMessageResults(messages))
