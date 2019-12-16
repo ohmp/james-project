@@ -18,75 +18,69 @@
  ****************************************************************/
 package org.apache.james.webadmin.vault.routes;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
 import java.time.Instant;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestMessageId;
-import org.apache.james.server.task.json.JsonTaskAdditionalInformationSerializer;
-import org.apache.james.server.task.json.JsonTaskSerializer;
+import org.apache.james.server.task.json.TaskAdditionalInformationSerializationContract;
+import org.apache.james.server.task.json.TaskSerializationContract;
+import org.apache.james.server.task.json.dto.AdditionalInformationDTOModule;
+import org.apache.james.server.task.json.dto.TaskDTOModule;
+import org.apache.james.task.Task;
+import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.vault.DeletedMessageVault;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+class DeletedMessagesVaultDeleteTaskSerializationTest implements TaskSerializationContract, TaskAdditionalInformationSerializationContract {
+    static final Instant TIMESTAMP = Instant.parse("2018-11-13T12:00:55Z");
+    static final Username USERNAME = Username.of("james");
+    static final TestMessageId.Factory MESSAGE_ID_FACTORY = new TestMessageId.Factory();
+    static final MessageId MESSAGE_ID = MESSAGE_ID_FACTORY.generate();
 
-class DeletedMessagesVaultDeleteTaskSerializationTest {
-
-    private static final Instant TIMESTAMP = Instant.parse("2018-11-13T12:00:55Z");
-
-    private DeletedMessageVault deletedMessageVault;
-    private JsonTaskSerializer taskSerializer;
-    private final Username username = Username.of("james");
-
-    private final TestMessageId.Factory messageIdFactory = new TestMessageId.Factory();
-    private final MessageId messageId = messageIdFactory.generate();
-
-    private final String serializedDeleteMessagesVaultDeleteTask = "{\"type\": \"deleted-messages-delete\", \"userName\":\"james\", \"messageId\": \"" + messageId.serialize() + "\"}";
-    private final String serializedAdditionalInformation = "{\"type\": \"deleted-messages-delete\", \"userName\":\"james\", \"messageId\": \"" + messageId.serialize() + "\", \"timestamp\":\"2018-11-13T12:00:55Z\"}";
-
-    private JsonTaskAdditionalInformationSerializer jsonAdditionalInformationSerializer;
+    DeletedMessageVault deletedMessageVault;
+    DeletedMessagesVaultDeleteTask.Factory factory;
 
     @BeforeEach
     void setUp() {
         deletedMessageVault = mock(DeletedMessageVault.class);
-        DeletedMessagesVaultDeleteTask.Factory factory = new DeletedMessagesVaultDeleteTask.Factory(deletedMessageVault, messageIdFactory);
-        taskSerializer = JsonTaskSerializer.of(DeletedMessagesVaultDeleteTaskDTO.module(factory));
-        jsonAdditionalInformationSerializer = JsonTaskAdditionalInformationSerializer.of(DeletedMessagesVaultDeleteTaskAdditionalInformationDTO.serializationModule(messageIdFactory));
+        factory = new DeletedMessagesVaultDeleteTask.Factory(deletedMessageVault, MESSAGE_ID_FACTORY);
     }
 
-    @Test
-    void deleteMessagesVaultDeleteTaskShouldBeSerializable() throws JsonProcessingException {
-        DeletedMessagesVaultDeleteTask task = new DeletedMessagesVaultDeleteTask(deletedMessageVault, username, messageId);
-
-        assertThatJson(taskSerializer.serialize(task))
-            .isEqualTo(serializedDeleteMessagesVaultDeleteTask);
+    @Override
+    public String serializedAdditionalInformation() {
+        return "{\"type\": \"deleted-messages-delete\", \"userName\":\"james\", \"messageId\": \"" + MESSAGE_ID.serialize() + "\", \"timestamp\":\"2018-11-13T12:00:55Z\"}";
     }
 
-    @Test
-    void deleteMessagesVaultDeleteTaskShouldBeDeserializable() throws IOException {
-        DeletedMessagesVaultDeleteTask task = new DeletedMessagesVaultDeleteTask(deletedMessageVault, username, messageId);
-
-        assertThat(taskSerializer.deserialize(serializedDeleteMessagesVaultDeleteTask))
-            .isEqualToComparingOnlyGivenFields(task, "username", "messageId");
+    @Override
+    public TaskExecutionDetails.AdditionalInformation additionalInformation() {
+        return new DeletedMessagesVaultDeleteTask.AdditionalInformation(USERNAME, MESSAGE_ID, TIMESTAMP);
     }
 
-
-    @Test
-    void additionalInformationShouldBeSerializable() throws JsonProcessingException {
-        DeletedMessagesVaultDeleteTask.AdditionalInformation details = new DeletedMessagesVaultDeleteTask.AdditionalInformation(username, messageId, TIMESTAMP);
-        assertThatJson(jsonAdditionalInformationSerializer.serialize(details)).isEqualTo(serializedAdditionalInformation);
+    @Override
+    public AdditionalInformationDTOModule additionalInformationDTOModule() {
+        return DeletedMessagesVaultDeleteTaskAdditionalInformationDTO.serializationModule(MESSAGE_ID_FACTORY);
     }
 
-    @Test
-    void additonalInformationShouldBeDeserializable() throws IOException {
-        DeletedMessagesVaultDeleteTask.AdditionalInformation details = new DeletedMessagesVaultDeleteTask.AdditionalInformation(username, messageId, TIMESTAMP);
-        assertThat(jsonAdditionalInformationSerializer.deserialize(serializedAdditionalInformation))
-            .isEqualToComparingFieldByField(details);
+    @Override
+    public String serializedTask() {
+        return "{\"type\": \"deleted-messages-delete\", \"userName\":\"james\", \"messageId\": \"" + MESSAGE_ID.serialize() + "\"}";
+    }
+
+    @Override
+    public Task task() {
+        return new DeletedMessagesVaultDeleteTask(deletedMessageVault, USERNAME, MESSAGE_ID);
+    }
+
+    @Override
+    public TaskDTOModule taskDtoModule() {
+        return DeletedMessagesVaultDeleteTaskDTO.module(factory);
+    }
+
+    @Override
+    public String[] comparisonFields() {
+        return new String[] {"username", "messageId"};
     }
 }
