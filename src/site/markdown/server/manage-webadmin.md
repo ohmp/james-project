@@ -3244,7 +3244,7 @@ Response codes:
  - 201: Task generation succeeded. Corresponding task id is returned.
  - Other response codes might be returned depending on the endpoint
 
-The additional information of such tasks depends on the scheduled task and is documented in the endpoint documentation.
+The additional information returned depends on the scheduled task type and is documented in the endpoint documentation.
 
 ## Cassandra extra operations
 
