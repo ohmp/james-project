@@ -28,7 +28,6 @@ import org.apache.james.jmap.api.projections.MessageFastViewProjection;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
-import org.reactivestreams.Publisher;
 
 import com.google.common.base.Preconditions;
 
