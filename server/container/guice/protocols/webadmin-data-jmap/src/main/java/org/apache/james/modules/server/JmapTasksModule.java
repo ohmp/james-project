@@ -17,16 +17,20 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin.data.jmap;
+package org.apache.james.modules.server;
 
-import javax.inject.Inject;
-
+import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewProjectionItemsRequestToTask;
+import org.apache.james.webadmin.routes.MailboxesRoutes;
 import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 
-public class RecomputeAllFastViewProjectionItemsRequestToTask extends TaskFromRequestRegistry.TaskRegistration {
-    @Inject
-    RecomputeAllFastViewProjectionItemsRequestToTask(MessageFastViewProjectionCorrector corrector) {
-        super(Constants.TASK_REGISTRATION_KEY,
-            request -> new RecomputeAllPreviewsTask(corrector));
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
+
+public class JmapTasksModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(MailboxesRoutes.ALL_MAILBOXES_TASKS))
+            .addBinding().to(RecomputeAllFastViewProjectionItemsRequestToTask.class);
     }
 }
