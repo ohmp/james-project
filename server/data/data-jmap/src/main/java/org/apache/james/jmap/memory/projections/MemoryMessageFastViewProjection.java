@@ -48,7 +48,7 @@ public class MemoryMessageFastViewProjection implements MessageFastViewProjectio
     }
 
     @Override
-    public Publisher<Void> store(MessageId messageId, MessageFastViewPrecomputedProperties precomputedProperties) {
+    public Mono<Void> store(MessageId messageId, MessageFastViewPrecomputedProperties precomputedProperties) {
         Preconditions.checkNotNull(messageId);
         Preconditions.checkNotNull(precomputedProperties);
 
@@ -56,7 +56,7 @@ public class MemoryMessageFastViewProjection implements MessageFastViewProjectio
     }
 
     @Override
-    public Publisher<MessageFastViewPrecomputedProperties> retrieve(MessageId messageId) {
+    public Mono<MessageFastViewPrecomputedProperties> retrieve(MessageId messageId) {
         Preconditions.checkNotNull(messageId);
 
         return Mono.fromSupplier(() -> previews.get(messageId))
@@ -65,7 +65,7 @@ public class MemoryMessageFastViewProjection implements MessageFastViewProjectio
     }
 
     @Override
-    public Publisher<Void> delete(MessageId messageId) {
+    public Mono<Void> delete(MessageId messageId) {
         Preconditions.checkNotNull(messageId);
 
         return Mono.fromRunnable(() -> previews.remove(messageId));
