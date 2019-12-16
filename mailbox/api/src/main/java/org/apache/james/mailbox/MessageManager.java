@@ -93,6 +93,8 @@ public interface MessageManager {
     /**
      * Searches for messages matching the given query. The result must be
      * ordered
+     *
+     * Caller is responsible to close this stream to ensure resources and search context get released.
      * 
      * @param mailboxSession
      *            not null
