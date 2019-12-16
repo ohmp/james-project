@@ -109,13 +109,6 @@ public class MailboxesRoutes implements Routes {
             example = "?task=reIndex",
             value = "Compulsory. Only supported value is `reIndex`"),
         @ApiImplicitParam(
-            name = "user",
-            paramType = "query parameter",
-            dataType = "String",
-            defaultValue = "none",
-            example = "?user=toto%40domain.tld",
-            value = "optional. If present, only mailboxes of that user will be reIndexed."),
-        @ApiImplicitParam(
             name = "reIndexFailedMessagesOf",
             paramType = "query parameter",
             dataType = "String",
