@@ -51,7 +51,7 @@ public class Preview {
         }
 
         public Preview fromMessageResult(MessageResult messageResult) throws MailboxException, IOException {
-            try(InputStream inputStream = messageResult.getFullContent().getInputStream()) {
+            try (InputStream inputStream = messageResult.getFullContent().getInputStream()) {
                 return fromInputStream(inputStream);
             }
         }
