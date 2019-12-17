@@ -313,7 +313,7 @@ public abstract class WebAdminServerIntegrationTest {
     public void jmapTasksShouldBeExposed() {
         String taskId = with()
             .queryParam("task", "recomputeFastViewProjectionItems")
-            .post("/mailboxes").prettyPeek()
+            .post("/mailboxes")
             .jsonPath()
             .get("taskId");
 
