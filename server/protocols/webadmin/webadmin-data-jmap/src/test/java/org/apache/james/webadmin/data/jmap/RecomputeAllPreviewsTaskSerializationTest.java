@@ -19,34 +19,35 @@
 
 package org.apache.james.webadmin.data.jmap;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import org.apache.james.server.task.json.JsonTaskSerializer;
+import org.apache.james.JsonSerializationVerifier;
 import org.apache.james.util.ClassLoaderUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 class RecomputeAllPreviewsTaskSerializationTest {
-    JsonTaskSerializer testee;
     MessageFastViewProjectionCorrector corrector;
 
     @BeforeEach
     void setUp() {
         corrector = mock(MessageFastViewProjectionCorrector.class);
-        testee = JsonTaskSerializer.of(RecomputeAllPreviewsTask.module(corrector));
     }
 
     @Test
-    void serializeShouldReturnTheExpectedJson() throws Exception {
-        assertThatJson(testee.serialize(new RecomputeAllPreviewsTask(corrector)))
-            .isEqualTo(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.task.json"));
+    void shouldMatchJsonSerializationContract() throws Exception {
+        JsonSerializationVerifier.dtoModule(RecomputeAllPreviewsTask.module(corrector))
+            .bean(new RecomputeAllPreviewsTask(corrector))
+            .json(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.task.json"))
+            .verify();
     }
 
     @Test
-    void deserializeShouldReturnTheExpectedDomainObject() throws Exception {
-        assertThat(testee.deserialize(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.task.json")))
-            .isInstanceOf(RecomputeAllPreviewsTask.class);
+    void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(RecomputeAllPreviewsTask.class)
+            .withIgnoredFields("corrector", "progress")
+            .verify();
     }
 }

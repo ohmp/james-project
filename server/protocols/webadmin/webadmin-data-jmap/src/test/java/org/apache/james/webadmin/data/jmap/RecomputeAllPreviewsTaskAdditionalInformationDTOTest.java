@@ -19,54 +19,29 @@
 
 package org.apache.james.webadmin.data.jmap;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.Instant;
 
-import org.apache.james.server.task.json.JsonTaskAdditionalInformationSerializer;
+import org.apache.james.JsonSerializationVerifier;
 import org.apache.james.util.ClassLoaderUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 class RecomputeAllPreviewsTaskAdditionalInformationDTOTest {
     private static final Instant INSTANT = Instant.parse("2007-12-03T10:15:30.00Z");
-    private static final RecomputeAllPreviewsTaskAdditionalInformationDTO DTO = new RecomputeAllPreviewsTaskAdditionalInformationDTO("RecomputeAllPreviewsTask", INSTANT, 1, 2, 3, 4);
     private static final RecomputeAllPreviewsTask.AdditionalInformation DOMAIN_OBJECT = new RecomputeAllPreviewsTask.AdditionalInformation(1, 2, 3, 4, INSTANT);
 
-    private JsonTaskAdditionalInformationSerializer testee;
-
-    @BeforeEach
-    void setUp() {
-        testee = JsonTaskAdditionalInformationSerializer.of(RecomputeAllPreviewsTaskAdditionalInformationDTO.SERIALIZATION_MODULE);
+    @Test
+    void shouldMatchJsonSerializationContract() throws Exception {
+        JsonSerializationVerifier.dtoModule(RecomputeAllPreviewsTaskAdditionalInformationDTO.SERIALIZATION_MODULE)
+            .bean(DOMAIN_OBJECT)
+            .json(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.additionalInformation.json"))
+            .verify();
     }
 
     @Test
-    void toDTOShouldReturnCorrectObject() {
-        RecomputeAllPreviewsTaskAdditionalInformationDTO actual = RecomputeAllPreviewsTaskAdditionalInformationDTO.SERIALIZATION_MODULE
-            .toDTO(DOMAIN_OBJECT);
-
-        assertThat(actual).isEqualToComparingFieldByField(DTO);
-    }
-
-    @Test
-    void toDomainObjectShouldReturnCorrectObject() {
-        RecomputeAllPreviewsTask.AdditionalInformation actual = RecomputeAllPreviewsTaskAdditionalInformationDTO.SERIALIZATION_MODULE
-            .getToDomainObjectConverter()
-            .convert(DTO);
-
-        assertThat(actual).isEqualToComparingFieldByField(DOMAIN_OBJECT);
-    }
-
-    @Test
-    void serializeShouldReturnExpectedString() throws Exception {
-        assertThatJson(testee.serialize(DOMAIN_OBJECT))
-            .isEqualTo(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.additionalInformation.json"));
-    }
-
-    @Test
-    void deserializeShouldReturnExpectedDomainObject() throws Exception {
-        assertThat(testee.deserialize(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.additionalInformation.json")))
-            .isEqualToComparingFieldByField(DOMAIN_OBJECT);
+    void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(RecomputeAllPreviewsTask.AdditionalInformation.class)
+            .verify();
     }
 }
