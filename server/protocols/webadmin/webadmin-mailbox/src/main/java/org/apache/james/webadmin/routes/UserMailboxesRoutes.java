@@ -71,6 +71,7 @@ public class UserMailboxesRoutes implements Routes {
     public static final String USER_MAILBOXES_OPERATIONS_INJECTION_KEY = "userMailboxesOperations";
 
     public static class UserReIndexingTaskRegistration extends TaskRegistration {
+        @Inject
         public UserReIndexingTaskRegistration(ReIndexer reIndexer) {
             super(RE_INDEX, request -> reIndexer.reIndex(getUsernameParam(request)));
         }
