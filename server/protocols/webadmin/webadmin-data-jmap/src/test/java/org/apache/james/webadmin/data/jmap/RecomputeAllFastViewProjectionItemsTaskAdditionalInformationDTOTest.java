@@ -25,11 +25,9 @@ import org.apache.james.JsonSerializationVerifier;
 import org.apache.james.util.ClassLoaderUtils;
 import org.junit.jupiter.api.Test;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
-class RecomputeAllPreviewsTaskAdditionalInformationDTOTest {
+class RecomputeAllFastViewProjectionItemsTaskAdditionalInformationDTOTest {
     private static final Instant INSTANT = Instant.parse("2007-12-03T10:15:30.00Z");
-    private static final RecomputeAllPreviewsTask.AdditionalInformation DOMAIN_OBJECT = new RecomputeAllPreviewsTask.AdditionalInformation(1, 2, 3, 4, INSTANT);
+    private static final RecomputeAllFastViewProjectionItemsTask.AdditionalInformation DOMAIN_OBJECT = new RecomputeAllFastViewProjectionItemsTask.AdditionalInformation(1, 2, 3, 4, INSTANT);
 
     @Test
     void shouldMatchJsonSerializationContract() throws Exception {

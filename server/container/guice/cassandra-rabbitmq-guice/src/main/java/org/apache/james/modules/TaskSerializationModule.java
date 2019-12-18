@@ -53,7 +53,7 @@ import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTask;
 import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTaskAdditionalInformationDTO;
 import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTaskDTO;
 import org.apache.james.webadmin.data.jmap.MessageFastViewProjectionCorrector;
-import org.apache.james.webadmin.data.jmap.RecomputeAllPreviewsTask;
+import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewProjectionItemsTask;
 import org.apache.james.webadmin.data.jmap.RecomputeAllPreviewsTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.CassandraMappingsSolveInconsistenciesTask;
 import org.apache.james.webadmin.service.ClearMailQueueTaskAdditionalInformationDTO;
@@ -178,7 +178,7 @@ public class TaskSerializationModule extends AbstractModule {
 
     @ProvidesIntoSet
     public TaskDTOModule<?, ?> recomputeAllJmapPreviewsTask(MessageFastViewProjectionCorrector corrector) {
-        return RecomputeAllPreviewsTask.module(corrector);
+        return RecomputeAllFastViewProjectionItemsTask.module(corrector);
     }
 
     @ProvidesIntoSet
