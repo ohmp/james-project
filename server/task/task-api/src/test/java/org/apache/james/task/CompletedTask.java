@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.task;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class CompletedTask implements Task {
@@ -37,15 +36,5 @@ public class CompletedTask implements Task {
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
         return Optional.empty();
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(CompletedTask.class);
-    }
-
-    @Override
-    public final boolean equals(Object obj) {
-        return obj instanceof CompletedTask;
     }
 }
