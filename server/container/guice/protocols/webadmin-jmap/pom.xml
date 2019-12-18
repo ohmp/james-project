@@ -28,8 +28,8 @@
 
     <artifactId>james-server-guice-webadmin-data-jmap</artifactId>
 
-    <name>Apache James :: Server :: Guice :: Webadmin :: Data :: JMAP</name>
-    <description>Webadmin data-jmap modules for Guice implementation of James server</description>
+    <name>Apache James :: Server :: Guice :: Webadmin :: JMAP</name>
+    <description>Webadmin jmap modules for Guice implementation of James server</description>
 
     <dependencies>
         <dependency>
@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>james-server-webadmin-data-jmap</artifactId>
+            <artifactId>james-server-webadmin-jmap</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>

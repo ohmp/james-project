@@ -69,7 +69,7 @@
         <module>protocols/webadmin-cassandra</module>
         <module>protocols/webadmin-cassandra-data</module>
         <module>protocols/webadmin-data</module>
-        <module>protocols/webadmin-data-jmap</module>
+        <module>protocols/webadmin-jmap</module>
         <module>protocols/webadmin-mailbox</module>
         <module>protocols/webadmin-mailqueue</module>
         <module>protocols/webadmin-mailrepository</module>
@@ -197,7 +197,7 @@
             </dependency>
             <dependency>
                 <groupId>${james.groupId}</groupId>
-                <artifactId>james-server-guice-webadmin-data-jmap</artifactId>
+                <artifactId>james-server-guice-webadmin-jmap</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
