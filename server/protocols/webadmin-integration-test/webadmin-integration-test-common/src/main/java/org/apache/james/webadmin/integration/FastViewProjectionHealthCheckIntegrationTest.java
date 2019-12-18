@@ -108,27 +108,12 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldReturnHealthyAfterSendingMessagesWithoutReading() {
-        IntStream.rangeClosed(1, 5)
-            .forEach(counter -> bobSendAMessageToAlice());
-        calmlyAwait.until(() -> listMessageIdsForAccount(aliceAccessToken).size() == 5);
-
-        webAdminApi.when()
-            .get("/healthcheck/checks/" + MESSAGE_FAST_VIEW_PROJECTION)
-        .then()
-            .statusCode(HttpStatus.OK_200)
-            .body("componentName", equalTo(MESSAGE_FAST_VIEW_PROJECTION))
-            .body("escapedComponentName", equalTo(MESSAGE_FAST_VIEW_PROJECTION))
-            .body("status", equalTo(ResultStatus.HEALTHY.getValue()));
-    }
-
-    @Test
-    public void checkShouldReturnHealthyAfterSendingAMessageWithReads() {
+    public void checkShouldReturnHealthyAfterSendingAMessageWithReads() throws InterruptedException {
         bobSendAMessageToAlice();
         calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
             .hasSize(1));
 
-        IntStream.rangeClosed(1, 5)
+        IntStream.rangeClosed(1, 20)
             .forEach(counter -> aliceReadLastMessage());
 
         webAdminApi.when()
@@ -141,7 +126,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection() {
+    public void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection() throws InterruptedException {
         bobSendAMessageToAlice();
         calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
             .hasSize(1));
@@ -157,18 +142,17 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
             .statusCode(HttpStatus.OK_200)
             .body("componentName", equalTo(MESSAGE_FAST_VIEW_PROJECTION))
             .body("escapedComponentName", equalTo(MESSAGE_FAST_VIEW_PROJECTION))
-            .body("status", equalTo(ResultStatus.DEGRADED.getValue()))
-            .body("cause", equalTo("retrieveMissCount percentage 25.0% (1/4) is higher than the threshold 10.0%"));
+            .body("status", equalTo(ResultStatus.DEGRADED.getValue()));
     }
 
     @Test
-    public void checkShouldTurnFromDegradedToHealthyAfterMoreReadsOnAMissedProjection() {
+    public void checkShouldTurnFromDegradedToHealthyAfterMoreReadsOnAMissedProjection() throws InterruptedException {
         bobSendAMessageToAlice();
         calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
             .hasSize(1));
         makeHealthCheckDegraded();
 
-        IntStream.rangeClosed(1, 10)
+        IntStream.rangeClosed(1, 100)
             .forEach(counter -> aliceReadLastMessage());
 
         webAdminApi.when()
