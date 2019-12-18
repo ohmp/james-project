@@ -19,36 +19,28 @@
 
 package org.apache.james.webadmin.service;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.apache.james.mailrepository.api.MailKey;
+import org.apache.james.JsonSerializationVerifier;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
-import org.apache.james.server.task.json.JsonTaskAdditionalInformationSerializer;
 import org.apache.james.server.task.json.JsonTaskSerializer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 class ReprocessingAllMailsTaskTest {
 
     private static final Instant TIMESTAMP = Instant.parse("2018-11-13T12:00:55Z");
     private static final ReprocessingService REPROCESSING_SERVICE = mock(ReprocessingService.class);
-    private JsonTaskAdditionalInformationSerializer jsonAdditionalInformationSerializer = JsonTaskAdditionalInformationSerializer.of(ReprocessingAllMailsTaskAdditionalInformationDTO.SERIALIZATION_MODULE);
     private static final long REPOSITORY_SIZE = 5L;
     private static final MailRepositoryPath REPOSITORY_PATH = MailRepositoryPath.from("a");
     private static final String TARGET_QUEUE = "queue";
-    private static final MailKey MAIL_KEY = new MailKey("myMail");
     private static final Optional<String> SOME_TARGET_PROCESSOR = Optional.of("targetProcessor");
     private static final long REMAINING_COUNT = 3L;
     private static final String SERIALIZED_TASK_WITH_TARGET_PROCESSOR = "{\"type\":\"reprocessing-all\",\"repositorySize\":5,\"repositoryPath\":\"a\",\"targetQueue\":\"queue\",\"targetProcessor\":\"targetProcessor\"}";
@@ -62,40 +54,19 @@ class ReprocessingAllMailsTaskTest {
                                   MailRepositoryPath repositoryPath,
                                   String targetQueue,
                                   Optional<String> targetProcessor,
-                                  String serialized) throws JsonProcessingException {
-        JsonTaskSerializer testee = JsonTaskSerializer.of(ReprocessingAllMailsTaskDTO.module(REPROCESSING_SERVICE));
+                                  String serialized) throws Exception {
         ReprocessingAllMailsTask task = new ReprocessingAllMailsTask(REPROCESSING_SERVICE, repositorySize, repositoryPath, targetQueue, targetProcessor);
-        assertThatJson(testee.serialize(task))
-            .isEqualTo(serialized);
+
+        JsonSerializationVerifier.dtoModule(ReprocessingAllMailsTaskDTO.module(REPROCESSING_SERVICE))
+            .bean(task)
+            .json(serialized)
+            .verify();
     }
 
     private static Stream<Arguments> taskShouldBeSerializable() {
-        return allValidTasks();
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    void taskShouldBeDeserializable(long repositorySize,
-                                    MailRepositoryPath repositoryPath,
-                                    String targetQueue,
-                                    Optional<String> targetProcessor,
-                                    String serialized) throws IOException {
-        JsonTaskSerializer testee = JsonTaskSerializer.of(ReprocessingAllMailsTaskDTO.module(REPROCESSING_SERVICE));
-        ReprocessingAllMailsTask task = new ReprocessingAllMailsTask(REPROCESSING_SERVICE, repositorySize, repositoryPath, targetQueue, targetProcessor);
-
-        assertThat(testee.deserialize(serialized))
-            .isEqualToComparingFieldByFieldRecursively(task);
-    }
-
-    private static Stream<Arguments> taskShouldBeDeserializable() {
-        return allValidTasks();
-    }
-
-    private static Stream<Arguments> allValidTasks() {
         return Stream.of(
             Arguments.of(REPOSITORY_SIZE, REPOSITORY_PATH, TARGET_QUEUE, SOME_TARGET_PROCESSOR, SERIALIZED_TASK_WITH_TARGET_PROCESSOR),
-            Arguments.of(REPOSITORY_SIZE, REPOSITORY_PATH, TARGET_QUEUE, Optional.empty(), SERIALIZED_TASK_WITHOUT_TARGET_PROCESSOR)
-        );
+            Arguments.of(REPOSITORY_SIZE, REPOSITORY_PATH, TARGET_QUEUE, Optional.empty(), SERIALIZED_TASK_WITHOUT_TARGET_PROCESSOR));
     }
 
     @ParameterizedTest
@@ -122,29 +93,20 @@ class ReprocessingAllMailsTaskTest {
                                                    Optional<String> targetProcessor,
                                                    long repositorySize,
                                                    long remainingCount,
-                                                   String serialized) throws JsonProcessingException {
+                                                   String serialized) throws Exception {
+
         ReprocessingAllMailsTask.AdditionalInformation details = new ReprocessingAllMailsTask.AdditionalInformation(repositoryPath, targetQueue, targetProcessor, repositorySize, remainingCount, TIMESTAMP);
-        assertThatJson(jsonAdditionalInformationSerializer.serialize(details)).isEqualTo(serialized);
+
+
+        JsonSerializationVerifier.dtoModule(ReprocessingAllMailsTaskAdditionalInformationDTO.SERIALIZATION_MODULE)
+            .bean(details)
+            .json(serialized)
+            .verify();
     }
 
     private static Stream<Arguments> additionalInformationShouldBeSerializable() {
-        return allAdditionalInformation();
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    void additionalInformationShouldBeDeserializable(MailRepositoryPath repositoryPath,
-                                                     String targetQueue,
-                                                     Optional<String> targetProcessor,
-                                                     long repositorySize,
-                                                     long remainingCount,
-                                                     String serialized) throws IOException {
-        ReprocessingAllMailsTask.AdditionalInformation details = new ReprocessingAllMailsTask.AdditionalInformation(repositoryPath, targetQueue, targetProcessor, repositorySize, remainingCount, TIMESTAMP);
-        assertThat(jsonAdditionalInformationSerializer.deserialize(serialized))
-            .isEqualToComparingFieldByField(details);
-    }
-
-    private static Stream<Arguments> additionalInformationShouldBeDeserializable() {
-        return allAdditionalInformation();
+        return Stream.of(
+            Arguments.of(REPOSITORY_PATH, TARGET_QUEUE, SOME_TARGET_PROCESSOR, REPOSITORY_SIZE, REMAINING_COUNT, SERIALIZED_TASK_ADDITIONAL_INFORMATION_WITH_TARGET_PROCESSOR),
+            Arguments.of(REPOSITORY_PATH, TARGET_QUEUE, Optional.empty(), REPOSITORY_SIZE, REMAINING_COUNT, SERIALIZED_TASK_ADDITIONAL_INFORMATION_WITHOUT_TARGET_PROCESSOR));
     }
 }

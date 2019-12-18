@@ -19,8 +19,6 @@
 
 package org.apache.james.webadmin.service;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -31,18 +29,15 @@ import java.time.ZoneId;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.james.JsonSerializationVerifier;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
-import org.apache.james.server.task.json.JsonTaskAdditionalInformationSerializer;
 import org.apache.james.server.task.json.JsonTaskSerializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 
 class ReprocessingOneMailTaskTest {
 
@@ -55,7 +50,6 @@ class ReprocessingOneMailTaskTest {
     private static final String TARGET_QUEUE = "queue";
     private static final MailKey MAIL_KEY = new MailKey("myMail");
     private static final Optional<String> TARGET_PROCESSOR = Optional.of("targetProcessor");
-    private JsonTaskAdditionalInformationSerializer jsonAdditionalInformationSerializer = JsonTaskAdditionalInformationSerializer.of(ReprocessingOneMailTaskAdditionalInformationDTO.SERIALIZATION_MODULE);
 
     @ParameterizedTest
     @MethodSource
@@ -63,40 +57,18 @@ class ReprocessingOneMailTaskTest {
                                   String targetQueue,
                                   MailKey mailKey,
                                   Optional<String> targetProcessor,
-                                  String serialized) throws JsonProcessingException {
-        JsonTaskSerializer testee = JsonTaskSerializer.of(ReprocessingOneMailTaskDTO.module(CLOCK, REPROCESSING_SERVICE));
+                                  String serialized) throws Exception {
         ReprocessingOneMailTask task = new ReprocessingOneMailTask(REPROCESSING_SERVICE, repositoryPath, targetQueue, mailKey, targetProcessor, CLOCK);
-        JsonAssertions.assertThatJson(testee.serialize(task))
-            .isEqualTo(serialized);
+        JsonSerializationVerifier.dtoModule(ReprocessingOneMailTaskDTO.module(CLOCK, REPROCESSING_SERVICE))
+            .bean(task)
+            .json(serialized)
+            .verify();
     }
 
     private static Stream<Arguments> taskShouldBeSerializable() {
-        return allValidTasks();
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    void taskShouldBeDeserializable(MailRepositoryPath repositoryPath,
-                                    String targetQueue,
-                                    MailKey mailKey,
-                                    Optional<String> targetProcessor,
-                                    String serialized) throws IOException {
-        JsonTaskSerializer testee = JsonTaskSerializer.of(ReprocessingOneMailTaskDTO.module(CLOCK, REPROCESSING_SERVICE));
-        ReprocessingOneMailTask task = new ReprocessingOneMailTask(REPROCESSING_SERVICE, repositoryPath, targetQueue, mailKey, targetProcessor, CLOCK);
-
-        assertThat(testee.deserialize(serialized))
-            .isEqualToComparingFieldByFieldRecursively(task);
-    }
-
-    private static Stream<Arguments> taskShouldBeDeserializable() {
-        return allValidTasks();
-    }
-
-    private static Stream<Arguments> allValidTasks() {
         return Stream.of(
             Arguments.of(REPOSITORY_PATH, TARGET_QUEUE, MAIL_KEY, TARGET_PROCESSOR, SERIALIZED_TASK_1),
-            Arguments.of(REPOSITORY_PATH, TARGET_QUEUE, new MailKey("myMail"), Optional.empty(), "{\"type\":\"reprocessing-one\",\"repositoryPath\":\"a\",\"targetQueue\":\"queue\",\"mailKey\": \"myMail\"}")
-        );
+            Arguments.of(REPOSITORY_PATH, TARGET_QUEUE, new MailKey("myMail"), Optional.empty(), "{\"type\":\"reprocessing-one\",\"repositoryPath\":\"a\",\"targetQueue\":\"queue\",\"mailKey\": \"myMail\"}"));
     }
 
     @ParameterizedTest
@@ -109,15 +81,11 @@ class ReprocessingOneMailTaskTest {
     }
 
     @Test
-    void additionalInformationShouldBeSerializable() throws JsonProcessingException {
+    void additionalInformationShouldBeSerializable() throws IOException {
         ReprocessingOneMailTask.AdditionalInformation details = new ReprocessingOneMailTask.AdditionalInformation(REPOSITORY_PATH, TARGET_QUEUE, MAIL_KEY, TARGET_PROCESSOR, TIMESTAMP);
-        assertThatJson(jsonAdditionalInformationSerializer.serialize(details)).isEqualTo(SERIALIZED_TASK_1_ADDITIONAL_INFORMATION);
-    }
-
-    @Test
-    void additonalInformationShouldBeDeserializable() throws IOException {
-        ReprocessingOneMailTask.AdditionalInformation details = new ReprocessingOneMailTask.AdditionalInformation(REPOSITORY_PATH, TARGET_QUEUE, MAIL_KEY, TARGET_PROCESSOR, TIMESTAMP);
-        assertThat(jsonAdditionalInformationSerializer.deserialize(SERIALIZED_TASK_1_ADDITIONAL_INFORMATION))
-            .isEqualToComparingFieldByField(details);
+        JsonSerializationVerifier.dtoModule(ReprocessingOneMailTaskAdditionalInformationDTO.SERIALIZATION_MODULE)
+            .bean(details)
+            .json(SERIALIZED_TASK_1_ADDITIONAL_INFORMATION)
+            .verify();
     }
 }
