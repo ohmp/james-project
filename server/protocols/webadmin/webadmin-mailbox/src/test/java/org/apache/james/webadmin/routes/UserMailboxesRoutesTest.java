@@ -100,7 +100,6 @@ class UserMailboxesRoutesTest {
 
 
         taskManager = new MemoryTaskManager(new Hostname("foo"));
-        InMemoryId.Factory mailboxIdFactory = new InMemoryId.Factory();
         searchIndex = mock(ListeningMessageSearchIndex.class);
         ReIndexerPerformer reIndexerPerformer = new ReIndexerPerformer(
             mailboxManager,
