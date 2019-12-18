@@ -43,11 +43,4 @@ class RecomputeAllPreviewsTaskSerializationTest {
             .json(ClassLoaderUtils.getSystemResourceAsString("json/recomputeAll.task.json"))
             .verify();
     }
-
-    @Test
-    void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(RecomputeAllPreviewsTask.class)
-            .withIgnoredFields("corrector", "progress")
-            .verify();
-    }
 }
