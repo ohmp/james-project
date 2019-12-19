@@ -51,34 +51,30 @@ import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 
-public abstract class FastViewProjectionHealthCheckIntegrationTest {
-
+public abstract class FastViewProjectionHealthCheckIntegrationContract {
     private static final String MESSAGE_FAST_VIEW_PROJECTION = "MessageFastViewProjection";
 
-    private GuiceJamesServer guiceJamesServer;
     private RequestSpecification webAdminApi;
     private AccessToken bobAccessToken;
     private AccessToken aliceAccessToken;
 
-    @Before
-    public void setUp() throws Exception {
-        guiceJamesServer = createJamesServer();
-        guiceJamesServer.start();
+    @BeforeEach
+    void setUp(GuiceJamesServer jamesServer) throws Exception {
+        jamesServer.start();
 
-        DataProbe dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
+        DataProbe dataProbe = jamesServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DOMAIN);
         dataProbe.addUser(BOB.asString(), BOB_PASSWORD);
         dataProbe.addUser(ALICE.asString(), ALICE_PASSWORD);
         dataProbe.addUser(CEDRIC.asString(), CEDRIC_PASSWORD);
 
-        Port jmapPort = guiceJamesServer.getProbe(JmapGuiceProbe.class).getJmapPort();
+        Port jmapPort = jamesServer.getProbe(JmapGuiceProbe.class).getJmapPort();
         RestAssured.requestSpecification = jmapRequestSpecBuilder
             .setPort(jmapPort.getValue())
             .build();
@@ -86,18 +82,11 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
         bobAccessToken = authenticateJamesUser(baseUri(jmapPort), BOB, BOB_PASSWORD);
         aliceAccessToken = authenticateJamesUser(baseUri(jmapPort), ALICE, ALICE_PASSWORD);
 
-        webAdminApi = WebAdminUtils.spec(guiceJamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
+        webAdminApi = WebAdminUtils.spec(jamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
     }
-
-    @After
-    public void tearDown() {
-        guiceJamesServer.stop();
-    }
-
-    protected abstract GuiceJamesServer createJamesServer() throws Exception;
 
     @Test
-    public void checkShouldReturnHealthyWhenNoMessage() {
+    void checkShouldReturnHealthyWhenNoMessage() {
         webAdminApi.when()
             .get("/healthcheck/checks/" + MESSAGE_FAST_VIEW_PROJECTION)
         .then()
@@ -108,7 +97,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldReturnHealthyAfterSendingAMessageWithReads() {
+    void checkShouldReturnHealthyAfterSendingAMessageWithReads() {
         bobSendAMessageToAlice();
 
         IntStream.rangeClosed(1, 20)
@@ -124,7 +113,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection() {
+    void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection(GuiceJamesServer guiceJamesServer) {
         bobSendAMessageToAlice();
 
         guiceJamesServer.getProbe(JmapGuiceProbe.class)
@@ -143,11 +132,11 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldTurnFromDegradedToHealthyAfterMoreReadsOnAMissedProjection() {
+    void checkShouldTurnFromDegradedToHealthyAfterMoreReadsOnAMissedProjection(GuiceJamesServer guiceJamesServer) {
         bobSendAMessageToAlice();
         calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
             .hasSize(1));
-        makeHealthCheckDegraded();
+        makeHealthCheckDegraded(guiceJamesServer);
 
         IntStream.rangeClosed(1, 100)
             .forEach(counter -> aliceReadLastMessage());
@@ -161,7 +150,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
             .body("status", equalTo(ResultStatus.HEALTHY.getValue()));
     }
 
-    private void makeHealthCheckDegraded() {
+    private void makeHealthCheckDegraded(GuiceJamesServer guiceJamesServer) {
         guiceJamesServer.getProbe(JmapGuiceProbe.class)
             .clearMessageFastViewProjection();
         aliceReadLastMessage();
