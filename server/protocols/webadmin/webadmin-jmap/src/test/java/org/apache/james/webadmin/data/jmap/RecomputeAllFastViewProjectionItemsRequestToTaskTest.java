@@ -41,7 +41,7 @@ import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.metrics.api.NoopMetricFactory;
+import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.apache.james.task.Hostname;
 import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.task.TaskManager;
@@ -111,7 +111,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
         JsonTransformer jsonTransformer = new JsonTransformer();
         taskManager = new MemoryTaskManager(new Hostname("foo"));
 
-        messageFastViewProjection = new MemoryMessageFastViewProjection(new NoopMetricFactory());
+        messageFastViewProjection = new MemoryMessageFastViewProjection(new RecordingMetricFactory());
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         usersRepository = MemoryUsersRepository.withoutVirtualHosting(NO_DOMAIN_LIST);
         MessageContentExtractor messageContentExtractor = new MessageContentExtractor();
