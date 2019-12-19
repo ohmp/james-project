@@ -168,11 +168,6 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
         guiceJamesServer.getProbe(JmapGuiceProbe.class)
             .clearMessageFastViewProjection();
         aliceReadLastMessage();
-
-        webAdminApi.when()
-            .get("/healthcheck/checks/" + MESSAGE_FAST_VIEW_PROJECTION)
-        .then()
-            .body("status", equalTo(ResultStatus.DEGRADED.getValue()));
     }
 
     private void bobSendAMessageToAlice() {
