@@ -160,7 +160,7 @@ public class MessageFastViewProjectionCorrector {
         try {
             return Iterators.toFlux(messageManager.getMessages(MessageRange.one(messageResult.getUid()), FetchGroup.FULL_CONTENT, session));
         } catch (MailboxException e) {
-            throw new RuntimeException(e);
+            return Flux.error(e);
         }
     }
 
