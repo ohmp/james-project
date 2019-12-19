@@ -108,7 +108,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldReturnHealthyAfterSendingAMessageWithReads() throws InterruptedException {
+    public void checkShouldReturnHealthyAfterSendingAMessageWithReads() {
         bobSendAMessageToAlice();
 
         IntStream.rangeClosed(1, 20)
@@ -124,7 +124,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection() throws InterruptedException {
+    public void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection() {
         bobSendAMessageToAlice();
 
         guiceJamesServer.getProbe(JmapGuiceProbe.class)
@@ -143,7 +143,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     }
 
     @Test
-    public void checkShouldTurnFromDegradedToHealthyAfterMoreReadsOnAMissedProjection() throws InterruptedException {
+    public void checkShouldTurnFromDegradedToHealthyAfterMoreReadsOnAMissedProjection() {
         bobSendAMessageToAlice();
         calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
             .hasSize(1));
