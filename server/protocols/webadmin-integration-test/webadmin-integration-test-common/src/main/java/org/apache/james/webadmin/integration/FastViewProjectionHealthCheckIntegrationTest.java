@@ -110,8 +110,6 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     @Test
     public void checkShouldReturnHealthyAfterSendingAMessageWithReads() throws InterruptedException {
         bobSendAMessageToAlice();
-        calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
-            .hasSize(1));
 
         IntStream.rangeClosed(1, 20)
             .forEach(counter -> aliceReadLastMessage());
@@ -128,8 +126,7 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
     @Test
     public void checkShouldReturnDegradedAfterFewReadsOnAMissedProjection() throws InterruptedException {
         bobSendAMessageToAlice();
-        calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
-            .hasSize(1));
+
         guiceJamesServer.getProbe(JmapGuiceProbe.class)
             .clearMessageFastViewProjection();
 
@@ -197,6 +194,10 @@ public abstract class FastViewProjectionHealthCheckIntegrationTest {
             .extract()
             .body()
             .path(ARGUMENTS + ".created." + messageCreationId + ".id");
+
+
+        calmlyAwait.untilAsserted(() -> assertThat(listMessageIdsForAccount(aliceAccessToken))
+            .hasSize(1));
     }
 
     private void aliceReadLastMessage() {
