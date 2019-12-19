@@ -55,7 +55,7 @@ class DeletedMessagesVaultRestoreTaskSerializationTest {
         exportService = mock(RestoreService.class);
         factory = new DeletedMessagesVaultRestoreTaskDTO.Factory(exportService, queryTranslator);
         equalityTester = (a, b) -> {
-            assertThat(a).isEqualToComparingOnlyGivenFields(b, "userExportFrom", "exportTo");
+            assertThat(a).isEqualToComparingOnlyGivenFields(b, "userToRestore");
             assertThat(queryTranslator.toDTO(a.query)).isEqualTo(queryTranslator.toDTO(b.query));
         };
     }
