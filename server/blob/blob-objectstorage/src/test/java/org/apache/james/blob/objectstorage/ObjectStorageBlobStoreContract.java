@@ -19,6 +19,7 @@
 
 package org.apache.james.blob.objectstorage;
 
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LowCost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
@@ -38,7 +39,7 @@ public interface ObjectStorageBlobStoreContract {
     default void assertBlobStoreCanStoreAndRetrieve(ObjectStorageBlobStoreBuilder.ReadyToBuild builder) {
         ObjectStorageBlobStore blobStore = builder.build();
 
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), CONTENT).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), CONTENT, LowCost).block();
 
         InputStream inputStream = blobStore.read(blobStore.getDefaultBucketName(), blobId);
         assertThat(inputStream).hasSameContentAs(IOUtils.toInputStream(CONTENT, StandardCharsets.UTF_8));
