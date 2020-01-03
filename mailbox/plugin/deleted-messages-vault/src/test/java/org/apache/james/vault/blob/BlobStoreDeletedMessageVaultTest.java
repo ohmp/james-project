@@ -67,7 +67,8 @@ class BlobStoreDeletedMessageVaultTest implements DeletedMessageVaultContract, D
         messageVault = new BlobStoreDeletedMessageVault(metricFactory, new MemoryDeletedMessageMetadataVault(),
             new MemoryBlobStore(new HashBlobId.Factory()),
             new BucketNameGenerator(clock), clock, RetentionConfiguration.DEFAULT,
-            Salt.Factory.RANDOM);
+            Salt.Factory.RANDOM,
+            new AESEncoder());
     }
 
     @Override

@@ -1969,6 +1969,11 @@
                 <version>0.9.6</version>
             </dependency>
             <dependency>
+                <groupId>com.google.crypto.tink</groupId>
+                <artifactId>tink</artifactId>
+                <version>1.2.2</version>
+            </dependency>
+            <dependency>
                 <groupId>com.github.steveash.guavate</groupId>
                 <artifactId>guavate</artifactId>
                 <version>${guavate.version}</version>

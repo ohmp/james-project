@@ -109,6 +109,7 @@ import org.apache.james.vault.DeletedMessage;
 import org.apache.james.vault.DeletedMessageVault;
 import org.apache.james.vault.DeletedMessageZipper;
 import org.apache.james.vault.RetentionConfiguration;
+import org.apache.james.vault.blob.AESEncoder;
 import org.apache.james.vault.blob.BlobStoreDeletedMessageVault;
 import org.apache.james.vault.blob.BucketNameGenerator;
 import org.apache.james.vault.dto.query.QueryTranslator;
@@ -180,7 +181,8 @@ class DeletedMessagesVaultRoutesTest {
         vault = spy(new BlobStoreDeletedMessageVault(new RecordingMetricFactory(), new MemoryDeletedMessageMetadataVault(),
             blobStore, new BucketNameGenerator(clock), clock,
             RetentionConfiguration.DEFAULT,
-            Salt.Factory.RANDOM));
+            Salt.Factory.RANDOM,
+            new AESEncoder()));
         InMemoryIntegrationResources inMemoryResource = InMemoryIntegrationResources.defaultResources();
         mailboxManager = spy(inMemoryResource.getMailboxManager());
 

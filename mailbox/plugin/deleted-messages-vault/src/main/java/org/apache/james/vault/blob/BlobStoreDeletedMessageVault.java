@@ -71,12 +71,13 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     private final RetentionConfiguration retentionConfiguration;
     private final BlobStoreVaultGarbageCollectionTask.Factory taskFactory;
     private final Salt.Factory saltFactory;
+    private final AESEncoder aesEncoder;
 
     @Inject
     public BlobStoreDeletedMessageVault(MetricFactory metricFactory, DeletedMessageMetadataVault messageMetadataVault,
                                         BlobStore blobStore, BucketNameGenerator nameGenerator,
                                         Clock clock,
-                                        RetentionConfiguration retentionConfiguration, Salt.Factory saltFactory) {
+                                        RetentionConfiguration retentionConfiguration, Salt.Factory saltFactory, AESEncoder aesEncoder) {
         this.metricFactory = metricFactory;
         this.messageMetadataVault = messageMetadataVault;
         this.blobStore = blobStore;
@@ -84,6 +85,7 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
         this.clock = clock;
         this.retentionConfiguration = retentionConfiguration;
         this.saltFactory = saltFactory;
+        this.aesEncoder = aesEncoder;
         this.taskFactory = new BlobStoreVaultGarbageCollectionTask.Factory(this);
     }
 
@@ -101,7 +103,7 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     private Mono<Void> appendMessage(DeletedMessage deletedMessage, InputStream mimeMessage, BucketName bucketName) {
         Salt salt = saltFactory.generate();
 
-        return blobStore.save(bucketName, mimeMessage)
+        return blobStore.save(bucketName, aesEncoder.encode(mimeMessage, salt))
             .map(blobId -> StorageInformation.builder()
                 .bucketName(bucketName)
                 .blobId(blobId)
@@ -124,6 +126,9 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
 
     private Mono<InputStream> loadMimeMessage(StorageInformation storageInformation, Username username, MessageId messageId) {
         return Mono.fromSupplier(() -> blobStore.read(storageInformation.getBucketName(), storageInformation.getBlobId()))
+            .map(inputStream -> storageInformation.getSalt()
+                .map(salt -> aesEncoder.decode(inputStream, salt))
+                .orElse(inputStream))
             .onErrorResume(
                 ObjectNotFoundException.class,
                 ex -> Mono.error(new DeletedMessageContentNotFoundException(username, messageId)));
