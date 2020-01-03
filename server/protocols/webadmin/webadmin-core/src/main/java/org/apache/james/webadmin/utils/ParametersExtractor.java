@@ -72,7 +72,7 @@ public class ParametersExtractor {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
-                .message(" %s can not be negative", parameterName)
+                .message("%s can not be negative", parameterName)
                 .haltError();
         }
         return value;
