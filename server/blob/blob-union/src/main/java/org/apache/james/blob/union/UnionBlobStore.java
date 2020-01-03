@@ -156,13 +156,6 @@ public class UnionBlobStore implements BlobStore {
             .onErrorResume(this::logDeleteFailureAndReturnEmpty);
     }
 
-    @Override
-    public Mono<Void> delete(BucketName bucketName, BlobId blobId) {
-        return Mono.defer(() -> currentBlobStore.delete(bucketName, blobId))
-            .and(legacyBlobStore.delete(bucketName, blobId))
-            .onErrorResume(this::logDeleteFailureAndReturnEmpty);
-    }
-
     private InputStream readFallBackIfEmptyResult(BucketName bucketName, BlobId blobId) {
         return Optional.ofNullable(currentBlobStore.read(bucketName, blobId))
             .map(PushbackInputStream::new)

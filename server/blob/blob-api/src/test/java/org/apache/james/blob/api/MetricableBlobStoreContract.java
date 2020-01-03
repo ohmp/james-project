@@ -20,7 +20,6 @@
 package org.apache.james.blob.api;
 
 import static org.apache.james.blob.api.MetricableBlobStore.DELETE_BUCKET_TIMER_NAME;
-import static org.apache.james.blob.api.MetricableBlobStore.DELETE_TIMER_NAME;
 import static org.apache.james.blob.api.MetricableBlobStore.READ_BYTES_TIMER_NAME;
 import static org.apache.james.blob.api.MetricableBlobStore.READ_TIMER_NAME;
 import static org.apache.james.blob.api.MetricableBlobStore.SAVE_BYTES_TIMER_NAME;
@@ -126,19 +125,5 @@ public interface MetricableBlobStoreContract extends BlobStoreContract {
 
         assertThat(metricsTestExtension.getMetricFactory().executionTimesFor(DELETE_BUCKET_TIMER_NAME))
             .hasSize(1);
-    }
-
-    @Test
-    default void deleteShouldPublishDeleteTimerMetrics() {
-        BlobStore store = testee();
-
-        BlobId blobId1 = store.save(store.getDefaultBucketName(), BYTES_CONTENT).block();
-        BlobId blobId2 = store.save(store.getDefaultBucketName(), BYTES_CONTENT).block();
-
-        store.delete(BucketName.DEFAULT, blobId1).block();
-        store.delete(BucketName.DEFAULT, blobId2).block();
-
-        assertThat(metricsTestExtension.getMetricFactory().executionTimesFor(DELETE_TIMER_NAME))
-            .hasSize(2);
     }
 }

@@ -165,7 +165,7 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
         return Mono.from(messageMetadataVault.retrieveStorageInformation(username, messageId))
             .flatMap(storageInformation -> Mono.from(messageMetadataVault.remove(storageInformation.getBucketName(), username, messageId))
                 .thenReturn(storageInformation))
-            .flatMap(storageInformation -> blobStore.delete(storageInformation.getBucketName(), storageInformation.getBlobId()))
+            .then()
             .subscribeOn(Schedulers.elastic());
     }
 

@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Strings;
 
-public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobStoreContract {
+public interface BlobStoreContract extends BucketBlobStoreContract {
 
     String SHORT_STRING = "toto";
     byte[] EMPTY_BYTEARRAY = {};

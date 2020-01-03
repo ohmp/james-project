@@ -206,11 +206,4 @@ public class ObjectStorageBlobStore implements BlobStore {
             .doOnNext(blobStore::deleteContainer)
             .then();
     }
-
-    @Override
-    public Mono<Void> delete(BucketName bucketName, BlobId blobId) {
-        ObjectStorageBucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
-        return Mono.<Void>fromRunnable(() -> blobStore.removeBlob(resolvedBucketName.asString(), blobId.asString()))
-            .subscribeOn(Schedulers.elastic());
-    }
 }

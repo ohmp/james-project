@@ -117,17 +117,4 @@ public class MemoryBlobStore implements BlobStore {
     public BucketName getDefaultBucketName() {
         return defaultBucketName;
     }
-
-    @Override
-    public Mono<Void> delete(BucketName bucketName, BlobId blobId) {
-        Preconditions.checkNotNull(bucketName);
-        Preconditions.checkNotNull(blobId);
-
-        return Mono.fromRunnable(() -> {
-            synchronized (blobs) {
-                blobs.remove(bucketName, blobId);
-            }
-        });
-    }
-
 }

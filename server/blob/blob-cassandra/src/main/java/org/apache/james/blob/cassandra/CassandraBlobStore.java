@@ -162,8 +162,7 @@ public class CassandraBlobStore implements BlobStore {
             .then();
     }
 
-    @Override
-    public Mono<Void> delete(BucketName bucketName, BlobId blobId) {
+    private Mono<Void> delete(BucketName bucketName, BlobId blobId) {
         if (isDefaultBucket(bucketName)) {
             return defaultBucketDAO.deletePosition(blobId)
                 .then(defaultBucketDAO.deleteParts(blobId));
