@@ -19,44 +19,21 @@
 
 package org.apache.james.vault.metadata;
 
-import static org.apache.james.vault.metadata.DeletedMessageVaultMetadataFixture.BLOB_ID;
-import static org.apache.james.vault.metadata.DeletedMessageVaultMetadataFixture.BUCKET_NAME;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-class StorageInformationTest {
+class SaltTest {
     @Test
-    void shouldRespectBeanContract() {
-        EqualsVerifier.forClass(StorageInformation.class).verify();
+    void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(Salt.class).verify();
     }
 
     @Test
-    void constructorShouldThrowOnNullBucketName() {
-        assertThatThrownBy(() -> StorageInformation.builder()
-                .bucketName(null)
-                .blobId(BLOB_ID)
-                .salt(new Salt("auhveu")))
-            .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    void constructorShouldThrowOnNullBlobId() {
-        assertThatThrownBy(() -> StorageInformation.builder()
-                .bucketName(BUCKET_NAME)
-                .blobId(null)
-                .salt(new Salt("auhveu")))
-            .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    void constructorShouldThrowOnNullSalt() {
-        assertThatThrownBy(() -> StorageInformation.builder()
-                .bucketName(BUCKET_NAME)
-                .blobId(BLOB_ID)
-                .salt((Salt) null))
+    void constructorShouldThrowOnNull() {
+        assertThatThrownBy(() -> new Salt(null))
             .isInstanceOf(NullPointerException.class);
     }
 }

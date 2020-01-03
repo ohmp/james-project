@@ -53,6 +53,7 @@ import org.apache.james.mime4j.dom.Message;
 import org.apache.james.vault.blob.BlobStoreDeletedMessageVault;
 import org.apache.james.vault.blob.BucketNameGenerator;
 import org.apache.james.vault.memory.metadata.MemoryDeletedMessageMetadataVault;
+import org.apache.james.vault.metadata.Salt;
 import org.apache.james.vault.search.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -109,7 +110,8 @@ class DeletedMessageVaultHookTest {
         clock = Clock.fixed(DELETION_DATE.toInstant(), ZoneOffset.UTC);
         messageVault = new BlobStoreDeletedMessageVault(new RecordingMetricFactory(), new MemoryDeletedMessageMetadataVault(),
             new MemoryBlobStore(new HashBlobId.Factory()), new BucketNameGenerator(clock), clock,
-            RetentionConfiguration.DEFAULT);
+            RetentionConfiguration.DEFAULT,
+            Salt.Factory.RANDOM);
 
         DeletedMessageConverter deletedMessageConverter = new DeletedMessageConverter();
 

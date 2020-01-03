@@ -39,6 +39,7 @@ import org.apache.james.vault.DeletedMessageVault;
 import org.apache.james.vault.RetentionConfiguration;
 import org.apache.james.vault.metadata.DeletedMessageMetadataVault;
 import org.apache.james.vault.metadata.DeletedMessageWithStorageInformation;
+import org.apache.james.vault.metadata.Salt;
 import org.apache.james.vault.metadata.StorageInformation;
 import org.apache.james.vault.search.Query;
 import org.reactivestreams.Publisher;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -68,18 +70,20 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     private final Clock clock;
     private final RetentionConfiguration retentionConfiguration;
     private final BlobStoreVaultGarbageCollectionTask.Factory taskFactory;
+    private final Salt.Factory saltFactory;
 
     @Inject
     public BlobStoreDeletedMessageVault(MetricFactory metricFactory, DeletedMessageMetadataVault messageMetadataVault,
                                         BlobStore blobStore, BucketNameGenerator nameGenerator,
                                         Clock clock,
-                                        RetentionConfiguration retentionConfiguration) {
+                                        RetentionConfiguration retentionConfiguration, Salt.Factory saltFactory) {
         this.metricFactory = metricFactory;
         this.messageMetadataVault = messageMetadataVault;
         this.blobStore = blobStore;
         this.nameGenerator = nameGenerator;
         this.clock = clock;
         this.retentionConfiguration = retentionConfiguration;
+        this.saltFactory = saltFactory;
         this.taskFactory = new BlobStoreVaultGarbageCollectionTask.Factory(this);
     }
 
@@ -95,10 +99,13 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     }
 
     private Mono<Void> appendMessage(DeletedMessage deletedMessage, InputStream mimeMessage, BucketName bucketName) {
+        Salt salt = saltFactory.generate();
+
         return blobStore.save(bucketName, mimeMessage)
             .map(blobId -> StorageInformation.builder()
                 .bucketName(bucketName)
-                .blobId(blobId))
+                .blobId(blobId)
+                .salt(salt))
             .map(storageInformation -> new DeletedMessageWithStorageInformation(deletedMessage, storageInformation))
             .flatMap(message -> Mono.from(messageMetadataVault.store(message)))
             .then();
@@ -161,7 +168,6 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     public Task deleteExpiredMessagesTask() {
         return taskFactory.create();
     }
-
 
     Flux<BucketName> deleteExpiredMessages(ZonedDateTime beginningOfRetentionPeriod) {
         return metricFactory.runPublishingTimerMetric(

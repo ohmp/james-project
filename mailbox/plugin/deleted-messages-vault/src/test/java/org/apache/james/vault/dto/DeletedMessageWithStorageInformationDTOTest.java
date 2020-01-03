@@ -26,6 +26,7 @@ import static org.apache.james.vault.DeletedMessageFixture.DELETED_MESSAGE_WITH_
 import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTO.DeletedMessageDTO;
 import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTO.StorageInformationDTO;
 import static org.apache.james.vault.metadata.DeletedMessageVaultMetadataFixture.STORAGE_INFORMATION;
+import static org.apache.james.vault.metadata.DeletedMessageVaultMetadataFixture.STORAGE_INFORMATION_NO_SALT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -91,6 +92,18 @@ class DeletedMessageWithStorageInformationDTOTest {
     }
 
     @Test
+    void shouldSerializeStorageInformationWhenNoSalt() throws Exception {
+        assertThatJson(objectMapper.writeValueAsString(StorageInformationDTO.toDTO(STORAGE_INFORMATION_NO_SALT)))
+            .isEqualTo(getSystemResourceAsString("json/storage_information_no_salt.json"));
+    }
+
+    @Test
+    void shouldDeserializeStorageInformationWhenNoSalt() throws Exception {
+        assertThat(converter.toDomainObject(objectMapper.readValue(getSystemResourceAsString("json/storage_information_no_salt.json"), StorageInformationDTO.class)))
+            .isEqualTo(STORAGE_INFORMATION_NO_SALT);
+    }
+
+    @Test
     void shouldSerializeDeletedMessage() throws Exception {
         assertThatJson(objectMapper.writeValueAsString(DELETED_MESSAGE_DTO))
             .isEqualTo(DELETED_MESSAGE_JSON);
@@ -124,6 +137,24 @@ class DeletedMessageWithStorageInformationDTOTest {
     void shouldDeserializeDeletedMessageWithStorageInformation() throws Exception {
         assertThat(converter.toDomainObject(objectMapper.readValue(DELETED_MESSAGE_WITH_STORAGE_INFO_JSON, DeletedMessageWithStorageInformationDTO.class)))
             .isEqualTo(DELETED_MESSAGE_WITH_STORAGE_INFO);
+    }
+
+    @Test
+    void shouldSerializeDeletedMessageWithStorageInformationWhenNoSalt() throws Exception {
+        DeletedMessageWithStorageInformation domainObject = new DeletedMessageWithStorageInformation(DELETED_MESSAGE_WITH_SUBJECT, STORAGE_INFORMATION_NO_SALT);
+        String json = getSystemResourceAsString("json/deleted_message_with_storage_information_nosalt.json");
+
+        assertThatJson(objectMapper.writeValueAsString(DeletedMessageWithStorageInformationDTO.toDTO(domainObject)))
+            .isEqualTo(json);
+    }
+
+    @Test
+    void shouldDeserializeDeletedMessageWithStorageInformationWhenNoSalt() throws Exception {
+        DeletedMessageWithStorageInformation domainObject = new DeletedMessageWithStorageInformation(DELETED_MESSAGE_WITH_SUBJECT, STORAGE_INFORMATION_NO_SALT);
+        String json = getSystemResourceAsString("json/deleted_message_with_storage_information_nosalt.json");
+
+        assertThat(converter.toDomainObject(objectMapper.readValue(json, DeletedMessageWithStorageInformationDTO.class)))
+            .isEqualTo(domainObject);
     }
 
     @Test

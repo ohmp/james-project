@@ -32,6 +32,7 @@ import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.model.TestMessageId;
+import org.apache.james.vault.metadata.StorageInformationDAO.BlobStoreInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -44,8 +45,8 @@ class StorageInformationDAOTest {
     private static final TestMessageId MESSAGE_ID = TestMessageId.of(36);
     private static final BlobId BLOB_ID = new HashBlobId.Factory().from("05dcb33b-8382-4744-923a-bc593ad84d23");
     private static final BlobId BLOB_ID_2 = new HashBlobId.Factory().from("05dcb33b-8382-4744-923a-bc593ad84d24");
-    private static final StorageInformation STORAGE_INFORMATION = StorageInformation.builder().bucketName(BUCKET_NAME).blobId(BLOB_ID);
-    private static final StorageInformation STORAGE_INFORMATION_2 = StorageInformation.builder().bucketName(BUCKET_NAME_2).blobId(BLOB_ID_2);
+    private static final BlobStoreInformation STORAGE_INFORMATION = new BlobStoreInformation(BUCKET_NAME, BLOB_ID);
+    private static final BlobStoreInformation STORAGE_INFORMATION_2 = new BlobStoreInformation(BUCKET_NAME_2, BLOB_ID_2);;
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(MODULE);
@@ -59,7 +60,7 @@ class StorageInformationDAOTest {
 
     @Test
     void retrieveStorageInformationShouldReturnEmptyWhenNone() {
-        Optional<StorageInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
+        Optional<BlobStoreInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
 
         assertThat(storageInformation).isEmpty();
     }
@@ -68,7 +69,7 @@ class StorageInformationDAOTest {
     void retrieveStorageInformationShouldReturnAddedValue() {
         testee.referenceStorageInformation(OWNER, MESSAGE_ID, STORAGE_INFORMATION).block();
 
-        Optional<StorageInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
+        Optional<BlobStoreInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
         assertThat(storageInformation).contains(STORAGE_INFORMATION);
     }
 
@@ -78,7 +79,7 @@ class StorageInformationDAOTest {
 
         testee.referenceStorageInformation(OWNER, MESSAGE_ID, STORAGE_INFORMATION_2).block();
 
-        Optional<StorageInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
+        Optional<BlobStoreInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
         assertThat(storageInformation).contains(STORAGE_INFORMATION_2);
     }
 
@@ -88,7 +89,7 @@ class StorageInformationDAOTest {
 
         testee.deleteStorageInformation(OWNER, MESSAGE_ID).block();
 
-        Optional<StorageInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
+        Optional<BlobStoreInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
         assertThat(storageInformation).isEmpty();
     }
 
@@ -101,7 +102,7 @@ class StorageInformationDAOTest {
 
         testee.referenceStorageInformation(OWNER, MESSAGE_ID, STORAGE_INFORMATION).block();
 
-        Optional<StorageInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
+        Optional<BlobStoreInformation> storageInformation = testee.retrieveStorageInformation(OWNER, MESSAGE_ID).blockOptional();
         assertThat(storageInformation).contains(STORAGE_INFORMATION);
     }
 

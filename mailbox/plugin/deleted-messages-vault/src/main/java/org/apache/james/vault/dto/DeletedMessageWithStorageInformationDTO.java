@@ -28,6 +28,7 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.vault.DeletedMessage;
 import org.apache.james.vault.metadata.DeletedMessageWithStorageInformation;
+import org.apache.james.vault.metadata.Salt;
 import org.apache.james.vault.metadata.StorageInformation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -43,20 +44,24 @@ public class DeletedMessageWithStorageInformationDTO {
 
         public static StorageInformationDTO toDTO(StorageInformation storageInformation) {
             return new StorageInformationDTO(storageInformation.getBucketName().asString(),
-                storageInformation.getBlobId().asString());
+                storageInformation.getBlobId().asString(),
+                storageInformation.getSalt().map(Salt::asString));
         }
 
         private final String bucketName;
         private final String blobId;
+        private final Optional<String> salt;
 
         @JsonCreator
         public StorageInformationDTO(@JsonProperty("bucketName") String bucketName,
-                                     @JsonProperty("blobId") String blobId) {
+                                     @JsonProperty("blobId") String blobId,
+                                     @JsonProperty("salt") Optional<String> salt) {
             Preconditions.checkNotNull(bucketName);
             Preconditions.checkNotNull(blobId);
 
             this.bucketName = bucketName;
             this.blobId = blobId;
+            this.salt = salt;
         }
 
         public String getBucketName() {
@@ -65,6 +70,10 @@ public class DeletedMessageWithStorageInformationDTO {
 
         public String getBlobId() {
             return blobId;
+        }
+
+        public Optional<String> getSalt() {
+            return salt;
         }
     }
 

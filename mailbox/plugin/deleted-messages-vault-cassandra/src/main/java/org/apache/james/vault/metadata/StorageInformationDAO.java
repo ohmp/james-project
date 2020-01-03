@@ -30,6 +30,8 @@ import static org.apache.james.vault.metadata.DeletedMessageMetadataModule.Stora
 import static org.apache.james.vault.metadata.DeletedMessageMetadataModule.StorageInformationTable.OWNER;
 import static org.apache.james.vault.metadata.DeletedMessageMetadataModule.StorageInformationTable.TABLE;
 
+import java.util.Objects;
+
 import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
@@ -44,6 +46,40 @@ import com.datastax.driver.core.Session;
 import reactor.core.publisher.Mono;
 
 public class StorageInformationDAO {
+    static class BlobStoreInformation {
+        private final BucketName bucketName;
+        private final BlobId blobId;
+
+        BlobStoreInformation(BucketName bucketName, BlobId blobId) {
+            this.bucketName = bucketName;
+            this.blobId = blobId;
+        }
+
+        public BucketName getBucketName() {
+            return bucketName;
+        }
+
+        public BlobId getBlobId() {
+            return blobId;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof BlobStoreInformation) {
+                BlobStoreInformation that = (BlobStoreInformation) o;
+
+                return Objects.equals(this.bucketName, that.bucketName)
+                    && Objects.equals(this.blobId, that.blobId);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(bucketName, blobId);
+        }
+    }
+
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement addStatement;
     private final PreparedStatement removeStatement;
@@ -80,7 +116,7 @@ public class StorageInformationDAO {
             .value(BLOB_ID, bindMarker(BLOB_ID)));
     }
 
-    Mono<Void> referenceStorageInformation(Username username, MessageId messageId, StorageInformation storageInformation) {
+    Mono<Void> referenceStorageInformation(Username username, MessageId messageId, BlobStoreInformation storageInformation) {
         return cassandraAsyncExecutor.executeVoid(addStatement.bind()
             .setString(OWNER, username.asString())
             .setString(MESSAGE_ID, messageId.serialize())
@@ -94,12 +130,12 @@ public class StorageInformationDAO {
             .setString(MESSAGE_ID, messageId.serialize()));
     }
 
-    Mono<StorageInformation> retrieveStorageInformation(Username username, MessageId messageId) {
+    Mono<BlobStoreInformation> retrieveStorageInformation(Username username, MessageId messageId) {
         return cassandraAsyncExecutor.executeSingleRow(readStatement.bind()
             .setString(OWNER, username.asString())
             .setString(MESSAGE_ID, messageId.serialize()))
-            .map(row -> StorageInformation.builder()
-                    .bucketName(BucketName.of(row.getString(BUCKET_NAME)))
-                    .blobId(blobIdFactory.from(row.getString(BLOB_ID))));
+            .map(row -> new BlobStoreInformation(
+                BucketName.of(row.getString(BUCKET_NAME)),
+                blobIdFactory.from(row.getString(BLOB_ID))));
     }
 }

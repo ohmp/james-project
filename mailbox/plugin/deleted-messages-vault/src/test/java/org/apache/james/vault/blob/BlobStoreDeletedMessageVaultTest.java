@@ -27,9 +27,9 @@ import static org.apache.james.vault.DeletedMessageFixture.NOW;
 import static org.apache.james.vault.DeletedMessageFixture.OLD_DELETED_MESSAGE;
 import static org.apache.james.vault.DeletedMessageFixture.USERNAME;
 import static org.apache.james.vault.blob.BlobStoreDeletedMessageVault.APPEND_METRIC_NAME;
+import static org.apache.james.vault.blob.BlobStoreDeletedMessageVault.DELETE_EXPIRED_MESSAGES_METRIC_NAME;
 import static org.apache.james.vault.blob.BlobStoreDeletedMessageVault.DELETE_METRIC_NAME;
 import static org.apache.james.vault.blob.BlobStoreDeletedMessageVault.LOAD_MIME_MESSAGE_METRIC_NAME;
-import static org.apache.james.vault.blob.BlobStoreDeletedMessageVault.DELETE_EXPIRED_MESSAGES_METRIC_NAME;
 import static org.apache.james.vault.blob.BlobStoreDeletedMessageVault.SEARCH_METRIC_NAME;
 import static org.apache.james.vault.search.Query.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +48,7 @@ import org.apache.james.vault.DeletedMessageVaultContract;
 import org.apache.james.vault.DeletedMessageVaultSearchContract;
 import org.apache.james.vault.RetentionConfiguration;
 import org.apache.james.vault.memory.metadata.MemoryDeletedMessageMetadataVault;
+import org.apache.james.vault.metadata.Salt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +66,8 @@ class BlobStoreDeletedMessageVaultTest implements DeletedMessageVaultContract, D
         metricFactory = new RecordingMetricFactory();
         messageVault = new BlobStoreDeletedMessageVault(metricFactory, new MemoryDeletedMessageMetadataVault(),
             new MemoryBlobStore(new HashBlobId.Factory()),
-            new BucketNameGenerator(clock), clock, RetentionConfiguration.DEFAULT);
+            new BucketNameGenerator(clock), clock, RetentionConfiguration.DEFAULT,
+            Salt.Factory.RANDOM);
     }
 
     @Override

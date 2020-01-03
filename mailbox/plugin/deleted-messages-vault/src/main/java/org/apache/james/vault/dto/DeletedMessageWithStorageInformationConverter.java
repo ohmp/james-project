@@ -34,6 +34,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.vault.DeletedMessage;
 import org.apache.james.vault.metadata.DeletedMessageWithStorageInformation;
+import org.apache.james.vault.metadata.Salt;
 import org.apache.james.vault.metadata.StorageInformation;
 
 import com.github.fge.lambdas.Throwing;
@@ -57,7 +58,8 @@ public class DeletedMessageWithStorageInformationConverter {
     public StorageInformation toDomainObject(DeletedMessageWithStorageInformationDTO.StorageInformationDTO storageInformationDTO) {
         return StorageInformation.builder()
             .bucketName(BucketName.of(storageInformationDTO.getBucketName()))
-            .blobId(blobFactory.from(storageInformationDTO.getBlobId()));
+            .blobId(blobFactory.from(storageInformationDTO.getBlobId()))
+            .salt(storageInformationDTO.getSalt().map(Salt::new));
     }
 
     public DeletedMessage toDomainObject(DeletedMessageWithStorageInformationDTO.DeletedMessageDTO deletedMessageDTO) throws AddressException {

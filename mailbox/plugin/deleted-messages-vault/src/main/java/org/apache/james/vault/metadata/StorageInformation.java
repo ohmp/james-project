@@ -20,6 +20,7 @@
 package org.apache.james.vault.metadata;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BucketName;
@@ -27,7 +28,6 @@ import org.apache.james.blob.api.BucketName;
 import com.google.common.base.Preconditions;
 
 public class StorageInformation {
-
     public static class Builder {
         @FunctionalInterface
         public interface RequireBucketName {
@@ -36,23 +36,39 @@ public class StorageInformation {
 
         @FunctionalInterface
         public interface RequireBlobId {
-            StorageInformation blobId(BlobId blobId);
+            RequireSalt blobId(BlobId blobId);
+        }
+
+        @FunctionalInterface
+        public interface RequireSalt {
+            StorageInformation salt(Optional<Salt> salt);
+
+            default StorageInformation salt(Salt salt) {
+                return salt(Optional.of(salt));
+            }
+
+            default StorageInformation noSalt() {
+                return salt(Optional.empty());
+            }
         }
     }
 
     public static Builder.RequireBucketName builder() {
-        return bucketName -> blobId -> new StorageInformation(bucketName, blobId);
+        return bucketName -> blobId -> salt -> new StorageInformation(bucketName, blobId, salt);
     }
 
     private final BucketName bucketName;
     private final BlobId blobId;
+    private final Optional<Salt> salt;
 
-    private StorageInformation(BucketName bucketName, BlobId blobId) {
+    private StorageInformation(BucketName bucketName, BlobId blobId, Optional<Salt> salt) {
         Preconditions.checkNotNull(bucketName);
         Preconditions.checkNotNull(blobId);
+        Preconditions.checkNotNull(salt);
 
         this.bucketName = bucketName;
         this.blobId = blobId;
+        this.salt = salt;
     }
 
     public BucketName getBucketName() {
@@ -63,19 +79,24 @@ public class StorageInformation {
         return blobId;
     }
 
+    public Optional<Salt> getSalt() {
+        return salt;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (o instanceof StorageInformation) {
             StorageInformation that = (StorageInformation) o;
 
             return Objects.equals(this.bucketName, that.bucketName)
-                && Objects.equals(this.blobId, that.blobId);
+                && Objects.equals(this.blobId, that.blobId)
+                && Objects.equals(this.salt, that.salt);
         }
         return false;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(bucketName, blobId);
+        return Objects.hash(bucketName, blobId, salt);
     }
 }

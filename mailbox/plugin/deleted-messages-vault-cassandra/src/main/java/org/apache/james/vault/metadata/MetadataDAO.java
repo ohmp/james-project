@@ -49,6 +49,7 @@ public class MetadataDAO {
     private final PreparedStatement removeStatement;
     private final PreparedStatement removeAllStatement;
     private final PreparedStatement readStatement;
+    private final PreparedStatement readOneStatement;
     private final PreparedStatement readMessageIdStatement;
     private final MessageId.Factory messageIdFactory;
     private final MetadataSerializer metadataSerializer;
@@ -60,6 +61,7 @@ public class MetadataDAO {
         this.removeStatement = prepareRemove(session);
         this.removeAllStatement = prepareRemoveAll(session);
         this.readStatement = prepareRead(session, PAYLOAD);
+        this.readOneStatement = prepareOneRead(session, PAYLOAD);
         this.readMessageIdStatement = prepareRead(session, MESSAGE_ID);
         this.messageIdFactory = messageIdFactory;
         this.metadataSerializer = metadataSerializer;
@@ -69,6 +71,13 @@ public class MetadataDAO {
         return session.prepare(select(fieldName).from(TABLE)
             .where(eq(BUCKET_NAME, bindMarker(BUCKET_NAME)))
             .and(eq(OWNER, bindMarker(OWNER))));
+    }
+
+    private PreparedStatement prepareOneRead(Session session, String fieldName) {
+        return session.prepare(select(fieldName).from(TABLE)
+            .where(eq(BUCKET_NAME, bindMarker(BUCKET_NAME)))
+            .and(eq(OWNER, bindMarker(OWNER)))
+            .and(eq(MESSAGE_ID, bindMarker(MESSAGE_ID))));
     }
 
     private PreparedStatement prepareAdd(Session session) {
@@ -108,6 +117,16 @@ public class MetadataDAO {
             readStatement.bind()
                 .setString(BUCKET_NAME, bucketName.asString())
                 .setString(OWNER, username.asString()))
+            .map(row -> row.getString(PAYLOAD))
+            .flatMap(metadataSerializer::deserialize);
+    }
+
+    Mono<DeletedMessageWithStorageInformation> retrieveOneMetadata(BucketName bucketName, Username username, MessageId messageId) {
+        return cassandraAsyncExecutor.executeSingleRow(
+            readOneStatement.bind()
+                .setString(BUCKET_NAME, bucketName.asString())
+                .setString(OWNER, username.asString())
+                .setString(MESSAGE_ID, messageId.serialize()))
             .map(row -> row.getString(PAYLOAD))
             .flatMap(metadataSerializer::deserialize);
     }

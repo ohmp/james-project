@@ -32,10 +32,17 @@ public interface DeletedMessageVaultMetadataFixture {
 
     StorageInformation STORAGE_INFORMATION = StorageInformation.builder()
         .bucketName(BUCKET_NAME)
-        .blobId(BLOB_ID);
+        .blobId(BLOB_ID)
+        .salt(new Salt("zufkzugf"));
+
+    StorageInformation STORAGE_INFORMATION_NO_SALT = StorageInformation.builder()
+        .bucketName(BUCKET_NAME)
+        .blobId(BLOB_ID)
+        .noSalt();
     StorageInformation OTHER_STORAGE_INFORMATION = StorageInformation.builder()
         .bucketName(OTHER_BUCKET_NAME)
-        .blobId(BLOB_ID_2);
+        .blobId(BLOB_ID_2)
+        .salt(new Salt("eykrgvery"));
 
     DeletedMessageWithStorageInformation DELETED_MESSAGE_2_OTHER_BUCKET = new DeletedMessageWithStorageInformation(DeletedMessageFixture.DELETED_MESSAGE_2,
         OTHER_STORAGE_INFORMATION);
