@@ -756,7 +756,7 @@ public abstract class DeletedMessageVaultIntegrationTest {
     }
 
     @Test
-    public void vaultDeleteShouldDeleteAllMessagesHavingSameBlobContent() throws Exception {
+    public void vaultDeleteShouldNotDeleteMessagesHavingSameBlobContent() throws Exception {
         bartSendMessageToHomerAndJack();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
@@ -774,7 +774,8 @@ public abstract class DeletedMessageVaultIntegrationTest {
 
         String fileLocationOfBartMessages = exportAndGetFileLocationFromLastMail(EXPORT_ALL_JACK_MESSAGES_TO_HOMER, homerAccessToken);
         try (ZipAssert zipAssert = assertThatZip(new FileInputStream(fileLocationOfBartMessages))) {
-            zipAssert.hasNoEntry();
+            zipAssert.hasEntriesSize(1)
+                .allSatisfies(entry -> hasName(jackInboxMessageId + ".eml"));
         }
     }
 
