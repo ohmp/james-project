@@ -21,9 +21,6 @@ package org.apache.james.modules.mailbox;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.modules.vault.DeletedMessageVaultModule;
-import org.apache.james.vault.DeletedMessageVault;
-import org.apache.james.vault.blob.BlobStoreDeletedMessageVault;
-import org.apache.james.vault.blob.BucketNameGenerator;
 import org.apache.james.vault.dto.DeletedMessageWithStorageInformationConverter;
 import org.apache.james.vault.metadata.CassandraDeletedMessageMetadataVault;
 import org.apache.james.vault.metadata.DeletedMessageMetadataModule;
@@ -55,10 +52,5 @@ public class CassandraDeletedMessageVaultModule extends AbstractModule {
         bind(CassandraDeletedMessageMetadataVault.class).in(Scopes.SINGLETON);
         bind(DeletedMessageMetadataVault.class)
             .to(CassandraDeletedMessageMetadataVault.class);
-
-        bind(BucketNameGenerator.class).in(Scopes.SINGLETON);
-        bind(BlobStoreDeletedMessageVault.class).in(Scopes.SINGLETON);
-        bind(DeletedMessageVault.class)
-            .to(BlobStoreDeletedMessageVault.class);
     }
 }

@@ -22,6 +22,7 @@ package org.apache.james.modules.vault;
 import org.apache.james.vault.DeletedMessageVault;
 import org.apache.james.vault.blob.BlobStoreDeletedMessageVault;
 import org.apache.james.vault.blob.BucketNameGenerator;
+import org.apache.james.vault.metadata.Salt;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -35,5 +36,7 @@ public class DeletedMessageVaultModule extends AbstractModule {
         bind(BlobStoreDeletedMessageVault.class).in(Scopes.SINGLETON);
         bind(DeletedMessageVault.class)
             .to(BlobStoreDeletedMessageVault.class);
+
+        bind(Salt.Factory.class).toInstance(Salt.Factory.RANDOM);
     }
 }
