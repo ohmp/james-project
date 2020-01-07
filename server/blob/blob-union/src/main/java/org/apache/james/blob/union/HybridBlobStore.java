@@ -73,13 +73,13 @@ public class HybridBlobStore implements BlobStore {
     }
 
     public static class Configuration {
-        public static final int DEFAULT_SIZE_THREASHOLD = 32 * 1024;
-        public static final Configuration DEFAULT = new Configuration(DEFAULT_SIZE_THREASHOLD);
+        public static final int DEFAULT_SIZE_THRESHOLD = 32 * 1024;
+        public static final Configuration DEFAULT = new Configuration(DEFAULT_SIZE_THRESHOLD);
         private static final String PROPERTY_NAME = "hybrid.size.threshold";
 
         public static Configuration from(org.apache.commons.configuration2.Configuration propertiesConfiguration) {
             return new Configuration(Optional.ofNullable(propertiesConfiguration.getInteger(PROPERTY_NAME, null))
-                .orElse(DEFAULT_SIZE_THREASHOLD));
+                .orElse(DEFAULT_SIZE_THRESHOLD));
         }
 
         private final int sizeThreshold;
