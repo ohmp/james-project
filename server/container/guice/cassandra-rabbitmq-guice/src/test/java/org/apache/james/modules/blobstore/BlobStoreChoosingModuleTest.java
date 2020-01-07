@@ -134,7 +134,7 @@ class BlobStoreChoosingModuleTest {
     void providesHybridBlobStoreConfigurationShouldThrowWhenNegative() {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("hybrib.size.threshold", -1);
+        configuration.addProperty("hybrid.size.threshold", -1);
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
             .register(ConfigurationComponent.NAME, configuration)
             .build();
@@ -147,7 +147,7 @@ class BlobStoreChoosingModuleTest {
     void providesHybridBlobStoreConfigurationShouldNotThrowWhenZero() {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("hybrib.size.threshold", 0);
+        configuration.addProperty("hybrid.size.threshold", 0);
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
             .register(ConfigurationComponent.NAME, configuration)
             .build();
@@ -160,7 +160,7 @@ class BlobStoreChoosingModuleTest {
     void providesHybridBlobStoreConfigurationShouldReturnConfiguration() {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("hybrib.size.threshold", 36);
+        configuration.addProperty("hybrid.size.threshold", 36);
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
             .register(ConfigurationComponent.NAME, configuration)
             .build();
@@ -173,7 +173,7 @@ class BlobStoreChoosingModuleTest {
     void providesHybridBlobStoreConfigurationShouldReturnConfigurationWhenLegacyFile() {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty("hybrib.size.threshold", 36);
+        configuration.addProperty("hybrid.size.threshold", 36);
         FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
             .register(ConfigurationComponent.LEGACY, configuration)
             .build();

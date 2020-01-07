@@ -75,23 +75,23 @@ public class HybridBlobStore implements BlobStore {
     public static class Configuration {
         public static final int DEFAULT_SIZE_THREASHOLD = 32 * 1024;
         public static final Configuration DEFAULT = new Configuration(DEFAULT_SIZE_THREASHOLD);
-        private static final String PROPERTY_NAME = "hybrib.size.threshold";
+        private static final String PROPERTY_NAME = "hybrid.size.threshold";
 
         public static Configuration from(org.apache.commons.configuration2.Configuration propertiesConfiguration) {
             return new Configuration(Optional.ofNullable(propertiesConfiguration.getInteger(PROPERTY_NAME, null))
                 .orElse(DEFAULT_SIZE_THREASHOLD));
         }
 
-        private final int sizeThreashold;
+        private final int sizeThreshold;
 
-        public Configuration(int sizeThreashold) {
-            Preconditions.checkArgument(sizeThreashold >= 0, "'" + PROPERTY_NAME + "' needs to be positive");
+        public Configuration(int sizeThreshold) {
+            Preconditions.checkArgument(sizeThreshold >= 0, "'" + PROPERTY_NAME + "' needs to be positive");
 
-            this.sizeThreashold = sizeThreashold;
+            this.sizeThreshold = sizeThreshold;
         }
 
-        public int getSizeThreashold() {
-            return sizeThreashold;
+        public int getSizeThreshold() {
+            return sizeThreshold;
         }
 
         @Override
@@ -99,14 +99,14 @@ public class HybridBlobStore implements BlobStore {
             if (o instanceof Configuration) {
                 Configuration that = (Configuration) o;
 
-                return Objects.equals(this.sizeThreashold, that.sizeThreashold);
+                return Objects.equals(this.sizeThreshold, that.sizeThreshold);
             }
             return false;
         }
 
         @Override
         public final int hashCode() {
-            return Objects.hash(sizeThreashold);
+            return Objects.hash(sizeThreshold);
         }
     }
 
@@ -128,7 +128,7 @@ public class HybridBlobStore implements BlobStore {
 
     @Override
     public Mono<BlobId> save(BucketName bucketName, byte[] data, StoragePolicy storagePolicy) {
-        return selectBlobStore(storagePolicy, Mono.just(data.length > configuration.getSizeThreashold()))
+        return selectBlobStore(storagePolicy, Mono.just(data.length > configuration.getSizeThreshold()))
             .flatMap(blobStore -> blobStore.save(bucketName, data, storagePolicy));
     }
 
@@ -136,7 +136,7 @@ public class HybridBlobStore implements BlobStore {
     public Mono<BlobId> save(BucketName bucketName, InputStream data, StoragePolicy storagePolicy) {
         Preconditions.checkNotNull(data);
 
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(data, configuration.getSizeThreashold() + 1);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(data, configuration.getSizeThreshold() + 1);
         return selectBlobStore(storagePolicy, Mono.fromCallable(() -> isItABigStream(bufferedInputStream)))
             .flatMap(blobStore -> blobStore.save(bucketName, bufferedInputStream, storagePolicy));
     }
@@ -161,7 +161,7 @@ public class HybridBlobStore implements BlobStore {
 
     private boolean isItABigStream(InputStream bufferedData) throws IOException {
         bufferedData.mark(0);
-        bufferedData.skip(configuration.getSizeThreashold());
+        bufferedData.skip(configuration.getSizeThreshold());
         boolean isItABigStream = bufferedData.read() != -1;
         bufferedData.reset();
         return isItABigStream;
