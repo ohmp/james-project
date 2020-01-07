@@ -81,8 +81,8 @@ public class HybridBlobStore implements BlobStore {
 
     @Override
     public Mono<BlobId> save(BucketName bucketName, byte[] data, StoragePolicy storagePolicy) {
-        return selectBlobStore(storagePolicy, () -> data.length > SIZE_THRESHOLD)
-            .save(bucketName, data, storagePolicy);
+        return selectBlobStore(storagePolicy, Mono.just(data.length > SIZE_THRESHOLD))
+            .flatMap(blobStore -> blobStore.save(bucketName, data, storagePolicy));
     }
 
     @Override
@@ -90,21 +90,23 @@ public class HybridBlobStore implements BlobStore {
         Preconditions.checkNotNull(data);
 
         BufferedInputStream bufferedInputStream = new BufferedInputStream(data, SIZE_THRESHOLD + 1);
-        return selectBlobStore(storagePolicy, Throwing.supplier(() -> isItABigStream(bufferedInputStream)))
-            .save(bucketName, bufferedInputStream, storagePolicy);
+        return selectBlobStore(storagePolicy, Mono.fromCallable(() -> isItABigStream(bufferedInputStream)))
+            .flatMap(blobStore -> blobStore.save(bucketName, bufferedInputStream, storagePolicy));
     }
 
-    private BlobStore selectBlobStore(StoragePolicy storagePolicy, Supplier<Boolean> largeData) {
+    private Mono<BlobStore> selectBlobStore(StoragePolicy storagePolicy, Mono<Boolean> largeData) {
         switch (storagePolicy) {
             case LowCost:
-                return lowCostBlobStore;
+                return Mono.just(lowCostBlobStore);
             case SizeBased:
-                if (largeData.get()) {
-                    return lowCostBlobStore;
-                }
-                return highPerformanceBlobStore;
+                return largeData.map(isLarge -> {
+                    if (isLarge) {
+                        return lowCostBlobStore;
+                    }
+                    return highPerformanceBlobStore;
+                });
             case Performing:
-                return highPerformanceBlobStore;
+                return Mono.just(highPerformanceBlobStore);
             default:
                 throw new RuntimeException("Unknown storage policy: " + storagePolicy);
         }
