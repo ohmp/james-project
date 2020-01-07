@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
-import static org.apache.james.blob.api.BlobStore.StoragePolicy.LowCost;
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
 
 import java.util.Collection;
 import java.util.List;
@@ -112,7 +112,7 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     @Override
     public void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException {
         ownerDAO.addOwner(attachment.getAttachmentId(), owner)
-            .then(blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes(), LowCost))
+            .then(blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes(), LOW_COST))
             .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
             .flatMap(attachmentDAOV2::storeAttachment)
             .block();
@@ -139,7 +139,7 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     }
 
     public Mono<Void> storeAttachmentAsync(Attachment attachment, MessageId ownerMessageId) {
-        return blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes(), LowCost)
+        return blobStore.save(blobStore.getDefaultBucketName(), attachment.getBytes(), LOW_COST)
             .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
             .flatMap(daoAttachment -> storeAttachmentWithIndex(daoAttachment, ownerMessageId));
     }

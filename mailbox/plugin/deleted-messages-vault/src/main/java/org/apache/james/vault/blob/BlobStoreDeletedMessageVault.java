@@ -19,7 +19,7 @@
 
 package org.apache.james.vault.blob;
 
-import static org.apache.james.blob.api.BlobStore.StoragePolicy.LowCost;
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
 
 import java.io.InputStream;
 import java.time.Clock;
@@ -98,7 +98,7 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     }
 
     private Mono<Void> appendMessage(DeletedMessage deletedMessage, InputStream mimeMessage, BucketName bucketName) {
-        return blobStore.save(bucketName, mimeMessage, LowCost)
+        return blobStore.save(bucketName, mimeMessage, LOW_COST)
             .map(blobId -> StorageInformation.builder()
                 .bucketName(bucketName)
                 .blobId(blobId))

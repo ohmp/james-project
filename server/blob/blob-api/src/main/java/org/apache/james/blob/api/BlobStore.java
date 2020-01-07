@@ -26,9 +26,9 @@ import reactor.core.publisher.Mono;
 public interface BlobStore {
 
     enum StoragePolicy {
-        SizeBased,
-        LowCost,
-        Performing
+        SIZE_BASED,
+        LOW_COST,
+        HIGH_PERFORMANCE
     }
 
     Mono<BlobId> save(BucketName bucketName, byte[] data, StoragePolicy storagePolicy);

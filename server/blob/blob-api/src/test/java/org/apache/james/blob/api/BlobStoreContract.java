@@ -19,7 +19,7 @@
 
 package org.apache.james.blob.api;
 
-import static org.apache.james.blob.api.BlobStore.StoragePolicy.LowCost;
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -48,7 +48,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        assertThatThrownBy(() -> store.save(defaultBucketName, (byte[]) null, LowCost).block())
+        assertThatThrownBy(() -> store.save(defaultBucketName, (byte[]) null, LOW_COST).block())
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -57,7 +57,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        assertThatThrownBy(() -> store.save(defaultBucketName, (String) null, LowCost).block())
+        assertThatThrownBy(() -> store.save(defaultBucketName, (String) null, LOW_COST).block())
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -66,7 +66,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        assertThatThrownBy(() -> store.save(defaultBucketName, (InputStream) null, LowCost).block())
+        assertThatThrownBy(() -> store.save(defaultBucketName, (InputStream) null, LOW_COST).block())
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -75,7 +75,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, EMPTY_BYTEARRAY, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, EMPTY_BYTEARRAY, LOW_COST).block();
 
         byte[] bytes = store.readBytes(defaultBucketName, blobId).block();
 
@@ -87,7 +87,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, new String(), LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, new String(), LOW_COST).block();
 
         byte[] bytes = store.readBytes(defaultBucketName, blobId).block();
 
@@ -99,7 +99,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, new ByteArrayInputStream(EMPTY_BYTEARRAY), LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, new ByteArrayInputStream(EMPTY_BYTEARRAY), LOW_COST).block();
 
         byte[] bytes = store.readBytes(defaultBucketName, blobId).block();
 
@@ -111,7 +111,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, SHORT_BYTEARRAY, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, SHORT_BYTEARRAY, LOW_COST).block();
 
         assertThat(blobId).isEqualTo(blobIdFactory().from("31f7a65e315586ac198bd798b6629ce4903d0899476d5741a9f32e2e521b6a66"));
     }
@@ -121,7 +121,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, SHORT_STRING, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, SHORT_STRING, LOW_COST).block();
 
         assertThat(blobId).isEqualTo(blobIdFactory().from("31f7a65e315586ac198bd798b6629ce4903d0899476d5741a9f32e2e521b6a66"));
     }
@@ -131,7 +131,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, new ByteArrayInputStream(SHORT_BYTEARRAY), LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, new ByteArrayInputStream(SHORT_BYTEARRAY), LOW_COST).block();
 
         assertThat(blobId).isEqualTo(blobIdFactory().from("31f7a65e315586ac198bd798b6629ce4903d0899476d5741a9f32e2e521b6a66"));
     }
@@ -150,7 +150,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, SHORT_BYTEARRAY, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, SHORT_BYTEARRAY, LOW_COST).block();
 
         byte[] bytes = store.readBytes(defaultBucketName, blobId).block();
 
@@ -162,7 +162,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, ELEVEN_KILOBYTES, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, ELEVEN_KILOBYTES, LOW_COST).block();
 
         byte[] bytes = store.readBytes(defaultBucketName, blobId).block();
 
@@ -174,7 +174,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, TWELVE_MEGABYTES, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, TWELVE_MEGABYTES, LOW_COST).block();
 
         byte[] bytes = store.readBytes(defaultBucketName, blobId).block();
 
@@ -195,7 +195,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, SHORT_BYTEARRAY, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, SHORT_BYTEARRAY, LOW_COST).block();
 
         InputStream read = store.read(defaultBucketName, blobId);
 
@@ -207,7 +207,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BlobStore store = testee();
         BucketName defaultBucketName = store.getDefaultBucketName();
 
-        BlobId blobId = store.save(defaultBucketName, ELEVEN_KILOBYTES, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, ELEVEN_KILOBYTES, LOW_COST).block();
 
         InputStream read = store.read(defaultBucketName, blobId);
 
@@ -220,7 +220,7 @@ public interface BlobStoreContract extends DeleteBlobStoreContract, BucketBlobSt
         BucketName defaultBucketName = store.getDefaultBucketName();
 
         // 12 MB of text
-        BlobId blobId = store.save(defaultBucketName, TWELVE_MEGABYTES, LowCost).block();
+        BlobId blobId = store.save(defaultBucketName, TWELVE_MEGABYTES, LOW_COST).block();
 
         InputStream read = store.read(defaultBucketName, blobId);
 

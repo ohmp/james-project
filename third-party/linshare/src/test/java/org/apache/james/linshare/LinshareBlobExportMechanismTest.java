@@ -20,7 +20,7 @@
 package org.apache.james.linshare;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.james.blob.api.BlobStore.StoragePolicy.LowCost;
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
 import static org.apache.james.linshare.LinshareFixture.USER_1;
 import static org.apache.james.linshare.LinshareFixture.USER_2;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +75,7 @@ class LinshareBlobExportMechanismTest {
 
     @Test
     void exportShouldShareTheDocumentViaLinshare() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LowCost).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LOW_COST).block();
         String filePrefix = "deleted-message-of-bob@james.org-";
 
         testee.blobId(blobId)
@@ -94,7 +94,7 @@ class LinshareBlobExportMechanismTest {
 
     @Test
     void exportShouldSendAnEmailToSharee() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LowCost).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LOW_COST).block();
 
         testee.blobId(blobId)
             .with(new MailAddress(USER_2.getUsername()))
@@ -123,7 +123,7 @@ class LinshareBlobExportMechanismTest {
 
     @Test
     void exportShouldShareTheDocumentAndAllowDownloadViaLinshare() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LowCost).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LOW_COST).block();
 
         testee.blobId(blobId)
             .with(new MailAddress(USER_2.getUsername()))
@@ -153,7 +153,7 @@ class LinshareBlobExportMechanismTest {
 
     @Test
     void exportWithFilePrefixShouldCreateFileWithCustomPrefix() throws Exception {
-        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LowCost).block();
+        BlobId blobId = blobStore.save(blobStore.getDefaultBucketName(), FILE_CONTENT, LOW_COST).block();
         String filePrefix = "deleted-message-of-bob@james.org";
 
         testee.blobId(blobId)

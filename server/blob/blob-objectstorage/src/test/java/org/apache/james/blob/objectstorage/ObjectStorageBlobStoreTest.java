@@ -19,7 +19,7 @@
 
 package org.apache.james.blob.objectstorage;
 
-import static org.apache.james.blob.api.BlobStore.StoragePolicy.LowCost;
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -120,7 +120,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
             .namespace(defaultBucketName)
             .build();
         String content = "James is the best!";
-        BlobId blobId = encryptedBlobStore.save(encryptedBlobStore.getDefaultBucketName(), content, LowCost).block();
+        BlobId blobId = encryptedBlobStore.save(encryptedBlobStore.getDefaultBucketName(), content, LOW_COST).block();
 
         InputStream read = encryptedBlobStore.read(encryptedBlobStore.getDefaultBucketName(), blobId);
         String expectedContent = IOUtils.toString(read, Charsets.UTF_8);
@@ -136,7 +136,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
             .namespace(defaultBucketName)
             .build();
         String content = "James is the best!";
-        BlobId blobId = encryptedBlobStore.save(encryptedBlobStore.getDefaultBucketName(), content, LowCost).block();
+        BlobId blobId = encryptedBlobStore.save(encryptedBlobStore.getDefaultBucketName(), content, LOW_COST).block();
 
         InputStream encryptedIs = testee.read(encryptedBlobStore.getDefaultBucketName(), blobId);
         assertThat(encryptedIs).isNotNull();
@@ -151,7 +151,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
     @Test
     void deleteBucketShouldDeleteSwiftContainer() {
         BucketName bucketName = BucketName.of("azerty");
-        objectStorageBlobStore.save(bucketName, "data", LowCost).block();
+        objectStorageBlobStore.save(bucketName, "data", LOW_COST).block();
 
         objectStorageBlobStore.deleteBucket(bucketName).block();
 
@@ -178,7 +178,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
     void saveBytesShouldNotCompleteWhenDoesNotAwait() {
         // String need to be big enough to get async thread busy hence could not return result instantly
         Mono<BlobId> blobIdFuture = testee
-            .save(testee.getDefaultBucketName(), BIG_STRING.getBytes(StandardCharsets.UTF_8), LowCost)
+            .save(testee.getDefaultBucketName(), BIG_STRING.getBytes(StandardCharsets.UTF_8), LOW_COST)
             .subscribeOn(Schedulers.elastic());
         assertThat(blobIdFuture.toFuture()).isNotCompleted();
     }
@@ -186,7 +186,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
     @Test
     void saveStringShouldNotCompleteWhenDoesNotAwait() {
         Mono<BlobId> blobIdFuture = testee
-            .save(testee.getDefaultBucketName(), BIG_STRING, LowCost)
+            .save(testee.getDefaultBucketName(), BIG_STRING, LOW_COST)
             .subscribeOn(Schedulers.elastic());
         assertThat(blobIdFuture.toFuture()).isNotCompleted();
     }
@@ -194,14 +194,14 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
     @Test
     void saveInputStreamShouldNotCompleteWhenDoesNotAwait() {
         Mono<BlobId> blobIdFuture = testee
-            .save(testee.getDefaultBucketName(), new ByteArrayInputStream(BIG_STRING.getBytes(StandardCharsets.UTF_8)), LowCost)
+            .save(testee.getDefaultBucketName(), new ByteArrayInputStream(BIG_STRING.getBytes(StandardCharsets.UTF_8)), LOW_COST)
             .subscribeOn(Schedulers.elastic());
         assertThat(blobIdFuture.toFuture()).isNotCompleted();
     }
 
     @Test
     void readBytesShouldNotCompleteWhenDoesNotAwait() {
-        BlobId blobId = testee().save(testee.getDefaultBucketName(), BIG_STRING, LowCost).block();
+        BlobId blobId = testee().save(testee.getDefaultBucketName(), BIG_STRING, LOW_COST).block();
         Mono<byte[]> resultFuture = testee.readBytes(testee.getDefaultBucketName(), blobId).subscribeOn(Schedulers.elastic());
         assertThat(resultFuture.toFuture()).isNotCompleted();
     }
