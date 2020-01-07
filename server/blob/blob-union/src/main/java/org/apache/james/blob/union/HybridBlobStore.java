@@ -45,22 +45,22 @@ public class HybridBlobStore implements BlobStore {
 
     @FunctionalInterface
     public interface RequirePerforming {
-        Builder performing(BlobStore blobStore);
+        Builder highPerformance(BlobStore blobStore);
     }
 
     public static class Builder {
         private final BlobStore lowCostBlobStore;
-        private final BlobStore legacyBlobStore;
+        private final BlobStore highPerformanceBlobStore;
 
-        Builder(BlobStore lowCostBlobStore, BlobStore legacyBlobStore) {
+        Builder(BlobStore lowCostBlobStore, BlobStore highPerformanceBlobStore) {
             this.lowCostBlobStore = lowCostBlobStore;
-            this.legacyBlobStore = legacyBlobStore;
+            this.highPerformanceBlobStore = highPerformanceBlobStore;
         }
 
         public HybridBlobStore build() {
             return new HybridBlobStore(
                 lowCostBlobStore,
-                legacyBlobStore);
+                highPerformanceBlobStore);
         }
     }
 
@@ -68,15 +68,15 @@ public class HybridBlobStore implements BlobStore {
     private static final int SIZE_THRESHOLD = 32 * 1024;
 
     public static RequireLowCost builder() {
-        return lowCost -> performing -> new Builder(lowCost, performing);
+        return lowCost -> highPerformance -> new Builder(lowCost, highPerformance);
     }
 
     private final BlobStore lowCostBlobStore;
-    private final BlobStore performingBlobStore;
+    private final BlobStore highPerformanceBlobStore;
 
-    private HybridBlobStore(BlobStore lowCostBlobStore, BlobStore performingBlobStore) {
+    private HybridBlobStore(BlobStore lowCostBlobStore, BlobStore highPerformanceBlobStore) {
         this.lowCostBlobStore = lowCostBlobStore;
-        this.performingBlobStore = performingBlobStore;
+        this.highPerformanceBlobStore = highPerformanceBlobStore;
     }
 
     @Override
@@ -102,9 +102,9 @@ public class HybridBlobStore implements BlobStore {
                 if (largeData.get()) {
                     return lowCostBlobStore;
                 }
-                return performingBlobStore;
+                return highPerformanceBlobStore;
             case Performing:
-                return performingBlobStore;
+                return highPerformanceBlobStore;
             default:
                 throw new RuntimeException("Unknown storage policy: " + storagePolicy);
         }
@@ -122,8 +122,8 @@ public class HybridBlobStore implements BlobStore {
     public BucketName getDefaultBucketName() {
         Preconditions.checkState(
             lowCostBlobStore.getDefaultBucketName()
-                .equals(performingBlobStore.getDefaultBucketName()),
-            "currentBlobStore and legacyBlobStore doen't have same defaultBucketName which could lead to " +
+                .equals(highPerformanceBlobStore.getDefaultBucketName()),
+            "lowCostBlobStore and highPerformanceBlobStore doen't have same defaultBucketName which could lead to " +
                 "unexpected result when interact with other APIs");
 
         return lowCostBlobStore.getDefaultBucketName();
@@ -131,7 +131,7 @@ public class HybridBlobStore implements BlobStore {
 
     @Override
     public Mono<byte[]> readBytes(BucketName bucketName, BlobId blobId) {
-        return Mono.defer(() -> performingBlobStore.readBytes(bucketName, blobId))
+        return Mono.defer(() -> highPerformanceBlobStore.readBytes(bucketName, blobId))
             .onErrorResume(this::logAndReturnEmpty)
             .switchIfEmpty(Mono.defer(() -> lowCostBlobStore.readBytes(bucketName, blobId)));
     }
@@ -139,11 +139,11 @@ public class HybridBlobStore implements BlobStore {
     @Override
     public InputStream read(BucketName bucketName, BlobId blobId) {
         try {
-            return performingBlobStore.read(bucketName, blobId);
+            return highPerformanceBlobStore.read(bucketName, blobId);
         } catch (ObjectNotFoundException e) {
             return lowCostBlobStore.read(bucketName, blobId);
         } catch (Exception e) {
-            LOGGER.error("Error reading {} {} in {}, falling back to {}", bucketName, blobId, performingBlobStore, lowCostBlobStore);
+            LOGGER.error("Error reading {} {} in {}, falling back to {}", bucketName, blobId, highPerformanceBlobStore, lowCostBlobStore);
             return lowCostBlobStore.read(bucketName, blobId);
         }
     }
@@ -151,14 +151,14 @@ public class HybridBlobStore implements BlobStore {
     @Override
     public Mono<Void> deleteBucket(BucketName bucketName) {
         return Mono.defer(() -> lowCostBlobStore.deleteBucket(bucketName))
-            .and(performingBlobStore.deleteBucket(bucketName))
+            .and(highPerformanceBlobStore.deleteBucket(bucketName))
             .onErrorResume(this::logDeleteFailureAndReturnEmpty);
     }
 
     @Override
     public Mono<Void> delete(BucketName bucketName, BlobId blobId) {
         return Mono.defer(() -> lowCostBlobStore.delete(bucketName, blobId))
-            .and(performingBlobStore.delete(bucketName, blobId))
+            .and(highPerformanceBlobStore.delete(bucketName, blobId))
             .onErrorResume(this::logDeleteFailureAndReturnEmpty);
     }
 
@@ -168,7 +168,7 @@ public class HybridBlobStore implements BlobStore {
     }
 
     private <T> Mono<T> logDeleteFailureAndReturnEmpty(Throwable throwable) {
-        LOGGER.error("Cannot delete from either lowCost or performing blob store", throwable);
+        LOGGER.error("Cannot delete from either lowCost or highPerformance blob store", throwable);
         return Mono.empty();
     }
 
@@ -176,7 +176,7 @@ public class HybridBlobStore implements BlobStore {
     public String toString() {
         return MoreObjects.toStringHelper(this)
             .add("lowCostBlobStore", lowCostBlobStore)
-            .add("performingBlobStore", performingBlobStore)
+            .add("highPerformanceBlobStore", highPerformanceBlobStore)
             .toString();
     }
 }

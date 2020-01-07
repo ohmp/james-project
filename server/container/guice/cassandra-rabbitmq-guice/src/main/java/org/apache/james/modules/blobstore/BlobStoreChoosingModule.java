@@ -85,7 +85,7 @@ public class BlobStoreChoosingModule extends AbstractModule {
             case HYBRID:
                 return HybridBlobStore.builder()
                     .lowCost(swiftBlobStoreProvider.get())
-                    .performing(cassandraBlobStoreProvider.get())
+                    .highPerformance(cassandraBlobStoreProvider.get())
                     .build();
             default:
                 throw new RuntimeException(String.format("can not get the right blobstore provider with configuration %s",
