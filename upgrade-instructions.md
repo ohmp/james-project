@@ -34,12 +34,12 @@ SHA-1 XXX
 
 Concerned products: Guice distributed James server
 
-Union blobStore, allowing to store newer blobs within Cassandra while storing new blobs into object storage, had been removed.
+Union blobStore, allowing to store older blobs within Cassandra while storing new blobs into object storage, had been removed.
 
-Hybrid blobStore had been replacing it, allowing to store blobs either in a low cost blobStore or in a performing blobStore, allowing thus some performance 
-improvement for small, often read blobs while big or unfrequently read blobs keeps stored cheaply.
+Hybrid blobStore had been replacing it, allowing to store blobs either in a low cost blobStore or in a high performance blobStore, allowing thus some performance 
+improvement for small, often read blobs while big or unfrequently read blobs keeps being stored cheaply.
 
-Users relying on the Union blobStore will need to adopt Hybrid blobStore. Please adjust "blobstore.properties" accordingly:
+Users relying on the Union blobStore will need to adopt Hybrid blobStore. Please adjust "blob.properties" accordingly:
 
 ```
 implementation=hybrid
