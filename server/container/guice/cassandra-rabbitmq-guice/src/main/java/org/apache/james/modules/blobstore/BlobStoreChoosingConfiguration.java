@@ -82,7 +82,7 @@ public class BlobStoreChoosingConfiguration {
         return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECTSTORAGE);
     }
 
-    public static BlobStoreChoosingConfiguration union() {
+    public static BlobStoreChoosingConfiguration hybrid() {
         return new BlobStoreChoosingConfiguration(BlobStoreImplName.HYBRID);
     }
 

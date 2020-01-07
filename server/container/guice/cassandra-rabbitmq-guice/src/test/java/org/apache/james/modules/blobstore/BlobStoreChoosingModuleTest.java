@@ -105,7 +105,7 @@ class BlobStoreChoosingModuleTest {
     }
 
     @Test
-    void provideChoosingConfigurationShouldReturnUnionConfigurationWhenConfigurationImplIsUnion() throws Exception {
+    void provideChoosingConfigurationShouldReturnHybridConfigurationWhenConfigurationImplIsHybrid() throws Exception {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("implementation", BlobStoreImplName.HYBRID.getName());
@@ -114,7 +114,7 @@ class BlobStoreChoosingModuleTest {
             .build();
 
         assertThat(module.provideChoosingConfiguration(propertyProvider))
-            .isEqualTo(BlobStoreChoosingConfiguration.union());
+            .isEqualTo(BlobStoreChoosingConfiguration.hybrid());
     }
 
     @Test
@@ -149,10 +149,10 @@ class BlobStoreChoosingModuleTest {
     }
 
     @Test
-    void provideBlobStoreShouldReturnUnionBlobStoreWhenUnionConfigured() {
+    void provideBlobStoreShouldReturnHybridBlobStoreWhenHybridConfigured() {
         BlobStoreChoosingModule module = new BlobStoreChoosingModule();
 
-        assertThat(module.provideBlobStore(BlobStoreChoosingConfiguration.union(),
+        assertThat(module.provideBlobStore(BlobStoreChoosingConfiguration.hybrid(),
             CASSANDRA_BLOBSTORE_PROVIDER, OBJECT_STORAGE_BLOBSTORE_PROVIDER))
             .isInstanceOf(HybridBlobStore.class);
     }
