@@ -22,7 +22,6 @@ package org.apache.james.blob.union;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.function.Supplier;
 
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
@@ -31,7 +30,6 @@ import org.apache.james.blob.api.ObjectNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.fge.lambdas.Throwing;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
@@ -96,16 +94,16 @@ public class HybridBlobStore implements BlobStore {
 
     private Mono<BlobStore> selectBlobStore(StoragePolicy storagePolicy, Mono<Boolean> largeData) {
         switch (storagePolicy) {
-            case LowCost:
+            case LOW_COST:
                 return Mono.just(lowCostBlobStore);
-            case SizeBased:
+            case SIZE_BASED:
                 return largeData.map(isLarge -> {
                     if (isLarge) {
                         return lowCostBlobStore;
                     }
                     return highPerformanceBlobStore;
                 });
-            case Performing:
+            case HIGH_PERFORMANCE:
                 return Mono.just(highPerformanceBlobStore);
             default:
                 throw new RuntimeException("Unknown storage policy: " + storagePolicy);
