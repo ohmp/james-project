@@ -40,11 +40,11 @@ import reactor.core.publisher.Mono;
 public class HybridBlobStore implements BlobStore {
     @FunctionalInterface
     public interface RequireLowCost {
-        RequirePerforming lowCost(BlobStore blobStore);
+        RequireHighPerformance lowCost(BlobStore blobStore);
     }
 
     @FunctionalInterface
-    public interface RequirePerforming {
+    public interface RequireHighPerformance {
         RequireConfiguration highPerformance(BlobStore blobStore);
     }
 
