@@ -59,6 +59,7 @@ public class ReIndexerPerformer {
 
     private final MailboxManager mailboxManager;
     private final ListeningMessageSearchIndex messageSearchIndex;
+    // todo should not be used here
     private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
 
     @Inject
