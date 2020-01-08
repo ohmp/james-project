@@ -55,6 +55,8 @@ import org.junit.jupiter.api.Test;
 
 class StoreRightManagerTest {
 
+    // TODO test system session in StoreRightManagerTest
+    
     static final long UID_VALIDITY = 3421L;
     StoreRightManager storeRightManager;
     MailboxSession aliceSession;
