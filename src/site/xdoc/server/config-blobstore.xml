@@ -48,6 +48,22 @@
                 <dd>objectstorage: use Swift/AWS S3 based BlobStore</dd>
                 <dd>union: Using both objectstorage as the current BlobStore and cassandra as the legacy BlobStore</dd>
             </dl>
+            <subsection name="Cassandra BlobStore encryption Configuration">
+                <dl>
+                    <dt><strong>cassandra.encryption.algorithm</strong></dt>
+                    <dd>DEFAULT: no encryption (default)</dd>
+                    <dd>AES-256: AES-256 encryption</dd>
+                </dl>
+                <subsection name="Cassandra AES256 Encryption">
+                    <dl>
+                        <dt><strong>cassandra.aes256.salt</strong></dt>
+                        <dd>salt string required by AES 256 encryption, required when AES256 is used, must be in hexadecimal format</dd>
+
+                        <dt><strong>cassandra.aes256.password</strong></dt>
+                        <dd>password string required by AES 256 encryption, required when AES256 is used</dd>
+                    </dl>
+                </subsection>
+            </subsection>
 
             <subsection name="ObjectStorage BlobStore Codec Configuration">
                 <dl>
