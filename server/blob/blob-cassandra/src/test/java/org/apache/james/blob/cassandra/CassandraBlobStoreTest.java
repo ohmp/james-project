@@ -38,6 +38,7 @@ import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.MetricableBlobStore;
 import org.apache.james.blob.api.MetricableBlobStoreContract;
 import org.apache.james.blob.api.ObjectStoreException;
+import org.apache.james.blob.cassandra.encryption.NoEncryptionCodec;
 import org.apache.james.util.ZeroedInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +72,8 @@ public class CassandraBlobStoreTest implements MetricableBlobStoreContract {
                 CassandraConfiguration.builder()
                     .blobPartSize(CHUNK_SIZE)
                     .build(),
-                blobIdFactory));
+                blobIdFactory,
+                new NoEncryptionCodec()));
     }
 
     @Override
