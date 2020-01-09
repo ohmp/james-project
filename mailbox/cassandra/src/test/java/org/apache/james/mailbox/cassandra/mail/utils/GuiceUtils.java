@@ -26,6 +26,8 @@ import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
+import org.apache.james.blob.cassandra.encryption.EncryptionCodec;
+import org.apache.james.blob.cassandra.encryption.NoEncryptionCodec;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.model.MessageId;
 
@@ -47,6 +49,7 @@ public class GuiceUtils {
     public static Injector testInjector(Session session, CassandraTypesProvider typesProvider, CassandraMessageId.Factory messageIdFactory, CassandraConfiguration configuration) {
         return Guice.createInjector(
             Modules.combine(
+                binder -> binder.bind(EncryptionCodec.class).to(NoEncryptionCodec.class),
                 binder -> binder.bind(MessageId.Factory.class).toInstance(messageIdFactory),
                 binder -> binder.bind(BlobId.Factory.class).toInstance(new HashBlobId.Factory()),
                 binder -> binder.bind(BlobStore.class).to(CassandraBlobStore.class),
