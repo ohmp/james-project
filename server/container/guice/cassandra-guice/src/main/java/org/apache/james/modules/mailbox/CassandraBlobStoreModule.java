@@ -19,19 +19,32 @@
 
 package org.apache.james.modules.mailbox;
 
+import java.io.FileNotFoundException;
+
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.MetricableBlobStore;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
 import org.apache.james.blob.cassandra.CassandraDefaultBucketDAO;
+import org.apache.james.blob.cassandra.encryption.EncryptionCodec;
+import org.apache.james.blob.cassandra.encryption.NoEncryptionCodec;
+import org.apache.james.utils.PropertiesProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 public class CassandraBlobStoreModule extends AbstractModule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraBlobStoreModule.class);
+
     @Override
     protected void configure() {
         bind(CassandraDefaultBucketDAO.class).in(Scopes.SINGLETON);
@@ -43,5 +56,17 @@ public class CassandraBlobStoreModule extends AbstractModule {
 
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
         cassandraDataDefinitions.addBinding().toInstance(CassandraBlobModule.MODULE);
+    }
+
+    @Provides
+    @Singleton
+    EncryptionCodec providesEncryptionConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
+        try {
+            Configuration configuration = propertiesProvider.getConfigurations(ConfigurationComponent.NAMES);
+            return EncryptionCodec.from(configuration);
+        } catch (FileNotFoundException e) {
+            LOGGER.warn("Could not find " + ConfigurationComponent.NAME + " configuration file, encryption will be disabled");
+            return new NoEncryptionCodec();
+        }
     }
 }

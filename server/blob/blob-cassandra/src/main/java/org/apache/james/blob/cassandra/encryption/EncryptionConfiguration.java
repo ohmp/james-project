@@ -19,10 +19,17 @@
 
 package org.apache.james.blob.cassandra.encryption;
 
+import java.util.Optional;
+
+import org.apache.commons.configuration2.Configuration;
+
 import com.google.common.base.Preconditions;
 import com.google.crypto.tink.subtle.Hex;
 
 public class EncryptionConfiguration {
+    private static final String SALT_PROPERTY = "cassandra.aes256.salt";
+    private static final String PASSWORD_PROPERTY = "cassandra.aes256.password";
+
     public interface Builder {
         @FunctionalInterface
         interface RequireSalt {
@@ -39,12 +46,20 @@ public class EncryptionConfiguration {
         return salt -> password -> new EncryptionConfiguration(salt, password);
     }
 
+    public static EncryptionConfiguration from(Configuration configuration) {
+        return builder()
+            .salt(configuration.getString(SALT_PROPERTY, null))
+            .password(Optional.ofNullable(configuration.getString(PASSWORD_PROPERTY, null))
+                .map(String::toCharArray)
+                .orElse(null));
+    }
+
     private final String salt;
     private final char[] password;
 
     private EncryptionConfiguration(String salt, char[] password) {
-        Preconditions.checkNotNull(salt);
-        Preconditions.checkNotNull(password);
+        Preconditions.checkNotNull(salt, String.format("'%s' is compulsory", SALT_PROPERTY));
+        Preconditions.checkNotNull(password, String.format("'%s' is compulsory", PASSWORD_PROPERTY));
 
         this.salt = salt;
         this.password = password;
