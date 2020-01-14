@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.blob.cassandra.encryption;
+package org.apache.james.backends.cassandra.encryption;
 
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;

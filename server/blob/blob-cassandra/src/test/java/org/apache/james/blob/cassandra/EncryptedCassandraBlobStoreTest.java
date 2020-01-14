@@ -23,14 +23,14 @@ import static org.mockito.Mockito.spy;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
+import org.apache.james.backends.cassandra.encryption.AesEncryptionCodec;
+import org.apache.james.backends.cassandra.encryption.EncryptionConfiguration;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.MetricableBlobStore;
 import org.apache.james.blob.api.MetricableBlobStoreContract;
-import org.apache.james.blob.cassandra.encryption.AesEncryptionCodec;
-import org.apache.james.blob.cassandra.encryption.EncryptionConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 

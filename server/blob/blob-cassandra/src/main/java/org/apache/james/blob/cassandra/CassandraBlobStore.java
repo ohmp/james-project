@@ -31,14 +31,14 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.backends.cassandra.encryption.EncryptionCodec;
+import org.apache.james.backends.cassandra.encryption.NoEncryptionCodec;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.ObjectNotFoundException;
-import org.apache.james.blob.cassandra.encryption.EncryptionCodec;
-import org.apache.james.blob.cassandra.encryption.NoEncryptionCodec;
 import org.apache.james.blob.cassandra.utils.DataChunker;
 import org.apache.james.util.ReactorUtils;
 
