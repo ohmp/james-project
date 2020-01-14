@@ -22,8 +22,15 @@ package org.apache.james.blob.cassandra.encryption;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.hash.HashCode;
+import com.google.crypto.tink.subtle.Hex;
 
 class EncryptionCodecTest {
     @Test
@@ -113,5 +120,49 @@ class EncryptionCodecTest {
         configuration.addProperty("cassandra.aes256.salt", "c603a7327ee3dcbc031d8d34b1096c605feca5e1");
 
         assertThat(EncryptionCodec.from(configuration)).isInstanceOf(AesEncryptionCodec.class);
+    }
+    
+    @Test
+    void encryptShouldReturnADifferentByteArray() {
+        EncryptionCodec codec = aes256Codec();
+
+        byte[] payload = "toBeEncoded".getBytes(StandardCharsets.UTF_8);
+        byte[] encryptedPayload = codec.encrypt(ByteBuffer.wrap(payload)).array();
+
+        HashCode payloadHashCode = HashCode.fromBytes(payload);
+        HashCode encryptedPayloadHashCode = HashCode.fromBytes(encryptedPayload);
+
+        assertThat(payloadHashCode).isNotEqualTo(encryptedPayloadHashCode);
+    }
+
+    @Test
+    void decryptShouldReturnRawData() {
+        EncryptionCodec codec = aes256Codec();
+
+        byte[] payload = "toBeEncoded".getBytes(StandardCharsets.UTF_8);
+        byte[] encryptedPayload = Hex.decode("51a5c135875267685c17acedbaaa11838bb92aac134c3a1201ae5cf2ac85be8de1a07dedb4f9eb");
+        byte[] decryptedPayload = codec.decrypt(ByteBuffer.wrap(encryptedPayload)).array();
+
+        assertThat(new ByteArrayInputStream(payload)).hasSameContentAs(new ByteArrayInputStream(decryptedPayload));
+    }
+
+    @Test
+    void decryptShouldAllowToRetrieveEncryptedData() {
+        EncryptionCodec codec = aes256Codec();
+
+        byte[] payload = "toBeEncoded".getBytes(StandardCharsets.UTF_8);
+        ByteBuffer encryptedPayload = codec.encrypt(ByteBuffer.wrap(payload));
+        byte[] decryptedPayload = codec.decrypt(encryptedPayload).array();
+
+        assertThat(new ByteArrayInputStream(payload)).hasSameContentAs(new ByteArrayInputStream(decryptedPayload));
+    }
+
+    private EncryptionCodec aes256Codec() {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("cassandra.encryption.algorithm", "aes256");
+        configuration.addProperty("cassandra.aes256.password", "password");
+        configuration.addProperty("cassandra.aes256.salt", "c603a7327ee3dcbc031d8d34b1096c605feca5e1");
+
+        return EncryptionCodec.from(configuration);
     }
 }
