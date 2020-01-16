@@ -29,7 +29,7 @@ public class EntityManagerUtils {
      */
     public static void safelyClose(EntityManager entityManager) {
 
-        if (entityManager== null) {
+        if (entityManager == null) {
             return;
         }
 
