@@ -157,7 +157,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
             insert.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(NEXT_MODSEQ, nextModSeq.asLong()))
-            .flatMap(success -> successToModSeq(nextModSeq, success));
+            .handle((success, sink) -> successToModSeq(nextModSeq, success).ifPresent(sink::next));
     }
 
     private Mono<ModSeq> tryUpdateModSeq(CassandraId mailboxId, ModSeq modSeq) {
@@ -167,13 +167,14 @@ public class CassandraModSeqProvider implements ModSeqProvider {
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(NEXT_MODSEQ, nextModSeq.asLong())
                 .setLong(MOD_SEQ_CONDITION, modSeq.asLong()))
-            .flatMap(success -> successToModSeq(nextModSeq, success));
+            .handle((success, sink) -> successToModSeq(nextModSeq, success).ifPresent(sink::next));
     }
 
-    private Mono<ModSeq> successToModSeq(ModSeq modSeq, Boolean success) {
-        return Mono.just(success)
-            .filter(FunctionalUtils.identityPredicate())
-            .map(any -> modSeq);
+    private Optional<ModSeq> successToModSeq(ModSeq modSeq, Boolean success) {
+        if (success) {
+            return Optional.of(modSeq);
+        }
+        return Optional.empty();
     }
 
     public Mono<ModSeq> nextModSeq(CassandraId mailboxId) {
@@ -193,7 +194,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
 
     private Mono<ModSeq> tryFindThenUpdateOnce(CassandraId mailboxId) {
         return Mono.defer(() -> findHighestModSeq(mailboxId)
-            .flatMap(Mono::justOrEmpty)
+            .<ModSeq>handle((t, sink)-> t.ifPresent(sink::next))
             .flatMap(highestModSeq -> tryUpdateModSeq(mailboxId, highestModSeq)));
     }
 
