@@ -19,15 +19,7 @@
 
 package org.apache.james.backends.jpa;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceException;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class EntityManagerUtils {
 
