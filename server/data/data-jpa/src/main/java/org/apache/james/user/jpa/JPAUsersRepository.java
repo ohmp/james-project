@@ -78,7 +78,6 @@ public class JPAUsersRepository extends AbstractUsersRepository {
     public void init() {
         EntityManagerUtils.safelyClose(createEntityManager());
         }
-    }
 
     /**
      * Get the user object with the specified user name. Return null if no such
