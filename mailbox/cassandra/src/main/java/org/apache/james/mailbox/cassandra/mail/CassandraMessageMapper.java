@@ -240,7 +240,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return messageIdDAO.retrieve(mailboxId, uid)
             .doOnNext(optional -> OptionalUtils.executeIfEmpty(optional,
                 () -> LOGGER.warn("Could not retrieve message {} {}", mailboxId, uid)))
-            .handle((t, sink)-> t.ifPresent(sink::next));
+            .handle((t, sink) -> t.ifPresent(sink::next));
     }
 
     @Override
@@ -326,7 +326,7 @@ public class CassandraMessageMapper implements MessageMapper {
         if (!failed.isEmpty()) {
             Flux<ComposedMessageIdWithMetaData> toUpdate = Flux.fromIterable(failed)
                 .flatMap(uid -> messageIdDAO.retrieve(mailboxId, uid))
-                .handle((t, sink)-> t.ifPresent(sink::next));
+                .handle((t, sink) -> t.ifPresent(sink::next));
             return runUpdateStage(mailboxId, toUpdate, flagsUpdateCalculator);
         } else {
             return Mono.empty();

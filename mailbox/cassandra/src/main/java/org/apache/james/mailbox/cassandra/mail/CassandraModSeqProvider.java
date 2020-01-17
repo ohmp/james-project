@@ -44,7 +44,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
-import org.apache.james.util.FunctionalUtils;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
@@ -194,7 +193,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
 
     private Mono<ModSeq> tryFindThenUpdateOnce(CassandraId mailboxId) {
         return Mono.defer(() -> findHighestModSeq(mailboxId)
-            .<ModSeq>handle((t, sink)-> t.ifPresent(sink::next))
+            .<ModSeq>handle((t, sink) -> t.ifPresent(sink::next))
             .flatMap(highestModSeq -> tryUpdateModSeq(mailboxId, highestModSeq)));
     }
 
