@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -37,12 +38,13 @@ import org.apache.james.mailbox.elasticsearch.IndexAttachments;
 import org.apache.james.mailbox.extractor.ParsedContent;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
+import org.apache.james.mailbox.model.Attachment;
+import org.apache.james.mailbox.model.AttachmentId;
+import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.extractor.DefaultTextExtractor;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.Property;
-import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.tika.TikaConfiguration;
 import org.apache.james.mailbox.tika.TikaExtension;
 import org.apache.james.mailbox.tika.TikaHttpClientImpl;
@@ -306,7 +308,7 @@ class IndexableMessageTest {
     }
 
     @Test
-    void hasAttachmentsShouldReturnTrueWhenPropertyIsPresentAndTrue() throws IOException {
+    void hasAttachmentsShouldReturnTrueWhenNonInlined() throws IOException {
         //Given
         MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
         TestId mailboxId = TestId.of(1);
@@ -322,7 +324,15 @@ class IndexableMessageTest {
             .thenReturn(new Flags());
         when(mailboxMessage.getUid())
             .thenReturn(MESSAGE_UID);
-        when(mailboxMessage.getProperties()).thenReturn(ImmutableList.of(IndexableMessage.HAS_ATTACHMENT_PROPERTY));
+        when(mailboxMessage.getAttachments())
+            .thenReturn(ImmutableList.of(MessageAttachment.builder()
+                .attachment(Attachment.builder()
+                    .attachmentId(AttachmentId.from("1"))
+                    .type("text/plain")
+                    .bytes("content".getBytes(StandardCharsets.UTF_8))
+                    .build())
+                .isInline(false)
+                .build()));
 
         // When
         IndexableMessage indexableMessage = IndexableMessage.builder()
@@ -353,38 +363,6 @@ class IndexableMessageTest {
             .thenReturn(MESSAGE_UID);
         when(mailboxMessage.getModSeq())
             .thenReturn(ModSeq.first());
-        when(mailboxMessage.getProperties())
-            .thenReturn(ImmutableList.of(new Property(PropertyBuilder.JAMES_INTERNALS, PropertyBuilder.HAS_ATTACHMENT, "false")));
-
-        // When
-        IndexableMessage indexableMessage = IndexableMessage.builder()
-                .message(mailboxMessage)
-                .extractor(new DefaultTextExtractor())
-                .zoneId(ZoneId.of("Europe/Paris"))
-                .indexAttachments(IndexAttachments.NO)
-                .build();
-
-        // Then
-        assertThat(indexableMessage.getHasAttachment()).isFalse();
-    }
-
-    @Test
-    void hasAttachmentsShouldReturnFalseWhenPropertyIsAbsent() throws IOException {
-        //Given
-        MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
-        TestId mailboxId = TestId.of(1);
-        when(mailboxMessage.getMailboxId())
-            .thenReturn(mailboxId);
-        when(mailboxMessage.getModSeq())
-            .thenReturn(ModSeq.first());
-        when(mailboxMessage.getMessageId())
-            .thenReturn(InMemoryMessageId.of(42));
-        when(mailboxMessage.getFullContent())
-            .thenReturn(ClassLoader.getSystemResourceAsStream("eml/mailWithHeaders.eml"));
-        when(mailboxMessage.createFlags())
-            .thenReturn(new Flags());
-        when(mailboxMessage.getUid())
-            .thenReturn(MESSAGE_UID);
         when(mailboxMessage.getProperties())
             .thenReturn(ImmutableList.of());
 
