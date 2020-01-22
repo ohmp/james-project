@@ -31,12 +31,12 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
@@ -148,15 +148,15 @@ public class DeletedMessageVaultHook implements PreDeletionHook {
 
     private Flux<DeletedMessageMailboxContext> groupMetadataByOwnerAndMessageId(DeleteOperation deleteOperation) {
         return Flux.fromIterable(deleteOperation.getDeletionMetadataList())
-            .groupBy(MetadataWithMailboxId::getMailboxId)
+            .groupBy(MessageMetaData::getMailboxId)
             .flatMap(Throwing.function(this::addOwnerToMetadata).sneakyThrow())
             .groupBy(this::toMessageIdUserPair)
             .flatMap(groupFlux -> groupFlux.reduce(DeletedMessageMailboxContext::combine));
     }
 
-    private Publisher<DeletedMessageMailboxContext> addOwnerToMetadata(GroupedFlux<MailboxId, MetadataWithMailboxId> groupedFlux) throws MailboxException {
+    private Publisher<DeletedMessageMailboxContext> addOwnerToMetadata(GroupedFlux<MailboxId, MessageMetaData> groupedFlux) throws MailboxException {
         Username owner = retrieveMailboxUser(groupedFlux.key());
-        return groupedFlux.map(metadata -> new DeletedMessageMailboxContext(metadata.getMessageMetaData().getMessageId(), owner, ImmutableList.of(metadata.getMailboxId())));
+        return groupedFlux.map(metadata -> new DeletedMessageMailboxContext(metadata.getMessageId(), owner, ImmutableList.of(metadata.getMailboxId())));
     }
 
     private Pair<MessageId, Username> toMessageIdUserPair(DeletedMessageMailboxContext deletedMessageMetadata) {

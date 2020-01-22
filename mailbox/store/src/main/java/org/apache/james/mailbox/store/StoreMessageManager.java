@@ -50,7 +50,6 @@ import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.ModSeq;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
@@ -735,7 +734,7 @@ public class StoreMessageManager implements MessageManager {
             .publishOn(Schedulers.elastic())
             .flatMap(range -> Mono.fromCallable(() -> messageMapper.findInMailbox(mailbox, range, FetchType.Metadata, UNLIMITED))
                 .flatMapMany(iterator -> Flux.fromStream(Iterators.toStream(iterator))))
-            .map(mailboxMessage -> MetadataWithMailboxId.from(mailboxMessage.metaData(), mailboxMessage.getMailboxId()))
+            .map(MailboxMessage::metaData)
             .collect(Guavate.toImmutableList())
             .map(DeleteOperation::from)
             .block();

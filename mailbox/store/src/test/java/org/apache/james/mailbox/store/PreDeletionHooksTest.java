@@ -37,7 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.ModSeq;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.model.MessageMetaData;
@@ -60,9 +59,8 @@ class PreDeletionHooksTest {
     private static final ModSeq MOD_SEQ = ModSeq.of(18);
     private static final int SIZE = 12;
     private static final MessageMetaData MESSAGE_META_DATA = new MessageMetaData(MAILBOX_ID, MessageUid.of(1), MOD_SEQ, new Flags(), SIZE, new Date(), TestMessageId.of(42));
-    private static final PreDeletionHook.DeleteOperation DELETE_OPERATION = PreDeletionHook.DeleteOperation.from(ImmutableList.of(MetadataWithMailboxId.from(
-        MESSAGE_META_DATA,
-        MAILBOX_ID)));
+    private static final PreDeletionHook.DeleteOperation DELETE_OPERATION = PreDeletionHook.DeleteOperation.from(ImmutableList.of(MESSAGE_META_DATA));
+
     private PreDeletionHook hook1;
     private PreDeletionHook hook2;
     private PreDeletionHooks testee;

@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.james.mailbox.MetadataWithMailboxId;
+import org.apache.james.mailbox.model.MessageMetaData;
 import org.reactivestreams.Publisher;
 
 import com.google.common.base.Preconditions;
@@ -70,14 +70,14 @@ public interface PreDeletionHook {
 
     class DeleteOperation {
 
-        public static DeleteOperation from(List<MetadataWithMailboxId> deletionMetadataList) {
+        public static DeleteOperation from(List<MessageMetaData> deletionMetadataList) {
             return new DeleteOperation(DeletionId.random(), deletionMetadataList);
         }
 
         private final DeletionId deletionId;
-        private final List<MetadataWithMailboxId> deletionMetadataList;
+        private final List<MessageMetaData> deletionMetadataList;
 
-        private DeleteOperation(DeletionId deletionId, List<MetadataWithMailboxId> deletionMetadataList) {
+        private DeleteOperation(DeletionId deletionId, List<MessageMetaData> deletionMetadataList) {
             this.deletionId = deletionId;
             this.deletionMetadataList = deletionMetadataList;
         }
@@ -86,7 +86,7 @@ public interface PreDeletionHook {
             return deletionId;
         }
 
-        public List<MetadataWithMailboxId> getDeletionMetadataList() {
+        public List<MessageMetaData> getDeletionMetadataList() {
             return deletionMetadataList;
         }
 

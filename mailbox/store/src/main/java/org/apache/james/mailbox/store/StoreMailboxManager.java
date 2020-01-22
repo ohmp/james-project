@@ -41,7 +41,6 @@ import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxPathLocker.LockAwareExecution;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
-import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
@@ -77,6 +76,7 @@ import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
+import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.quota.QuotaComponents;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
@@ -448,12 +448,11 @@ public class StoreMailboxManager implements MailboxManager {
         QuotaRoot quotaRoot = quotaRootResolver.getQuotaRoot(mailbox.generateAssociatedPath());
         long messageCount = messageMapper.countMessagesInMailbox(mailbox);
 
-        List<MetadataWithMailboxId> metadata = Iterators.toStream(messageMapper.findInMailbox(mailbox, MessageRange.all(), MessageMapper.FetchType.Metadata, UNLIMITED))
-            .map(message -> MetadataWithMailboxId.from(message.metaData(), message.getMailboxId()))
+        List<MessageMetaData> metadata = Iterators.toStream(messageMapper.findInMailbox(mailbox, MessageRange.all(), MessageMapper.FetchType.Metadata, UNLIMITED))
+            .map(MailboxMessage::metaData)
             .collect(Guavate.toImmutableList());
 
         long totalSize = metadata.stream()
-            .map(MetadataWithMailboxId::getMessageMetaData)
             .mapToLong(MessageMetaData::getSize)
             .sum();
 
