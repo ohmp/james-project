@@ -127,7 +127,7 @@ class SetCustomFlagOnBigMessagesTest {
         MessageResult addedMessage = inboxMessageManager
             .getMessages(MessageRange.one(composedIdOfSmallMessage.getUid()), FetchGroup.MINIMAL, mailboxSession)
             .next();
-        MessageMetaData oneMBMetaData = new MessageMetaData(addedMessage.getUid(), addedMessage.getModSeq(),
+        MessageMetaData oneMBMetaData = new MessageMetaData(inboxMessageManager.getId(), addedMessage.getUid(), addedMessage.getModSeq(),
             addedMessage.getFlags(), ONE_MB, addedMessage.getInternalDate(), addedMessage.getMessageId());
 
         Event eventWithAFakeMessageSize = EventFactory.added()

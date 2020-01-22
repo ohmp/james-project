@@ -67,8 +67,8 @@ class EventTest {
         MessageUid uid2 = MessageUid.of(37);
         TestMessageId messageId1 = TestMessageId.of(45);
         TestMessageId messageId2 = TestMessageId.of(46);
-        MessageMetaData metaData1 = new MessageMetaData(uid1, ModSeq.of(85), new Flags(), 36, new Date(), messageId1);
-        MessageMetaData metaData2 = new MessageMetaData(uid2, ModSeq.of(85), new Flags(), 36, new Date(), messageId2);
+        MessageMetaData metaData1 = new MessageMetaData(TestId.of(1), uid1, ModSeq.of(85), new Flags(), 36, new Date(), messageId1);
+        MessageMetaData metaData2 = new MessageMetaData(TestId.of(2), uid2, ModSeq.of(85), new Flags(), 36, new Date(), messageId2);
 
         MailboxListener.Added added = new MailboxListener.Added(MailboxSession.SessionId.of(36), BOB, MailboxPath.inbox(BOB), TestId.of(48),
             ImmutableSortedMap.of(
@@ -84,8 +84,8 @@ class EventTest {
         MessageUid uid1 = MessageUid.of(36);
         MessageUid uid2 = MessageUid.of(37);
         TestMessageId messageId = TestMessageId.of(45);
-        MessageMetaData metaData1 = new MessageMetaData(uid1, ModSeq.of(85), new Flags(), 36, new Date(), messageId);
-        MessageMetaData metaData2 = new MessageMetaData(uid2, ModSeq.of(85), new Flags(), 36, new Date(), messageId);
+        MessageMetaData metaData1 = new MessageMetaData(TestId.of(1), uid1, ModSeq.of(85), new Flags(), 36, new Date(), messageId);
+        MessageMetaData metaData2 = new MessageMetaData(TestId.of(2), uid2, ModSeq.of(85), new Flags(), 36, new Date(), messageId);
 
         MailboxListener.Added added = new MailboxListener.Added(MailboxSession.SessionId.of(36), BOB, MailboxPath.inbox(BOB), TestId.of(48),
             ImmutableSortedMap.of(

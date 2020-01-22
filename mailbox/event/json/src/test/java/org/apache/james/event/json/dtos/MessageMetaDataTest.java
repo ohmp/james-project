@@ -294,6 +294,7 @@ class MessageMetaDataTest {
         @Test
         void deSerializeShouldThrowWhenInternalDateIsNull() {
             assertThatThrownBy(() -> DTO_JSON_SERIALIZE.messageMetaDataReads().reads(Json.parse("{" +
+                    "        \"mailboxId\": \"18\"," +
                     "        \"uid\": 123456," +
                     "        \"size\": 42," +
                     "        \"flags\": {" +
@@ -310,6 +311,7 @@ class MessageMetaDataTest {
         @Test
         void deSerializeShouldParseValidISOInstants() {
             assertThat(DTO_JSON_SERIALIZE.messageMetaDataReads().reads(Json.parse("{" +
+                    "        \"mailboxId\": \"18\"," +
                     "        \"uid\": 123456," +
                     "        \"size\": 42," +
                     "        \"flags\": {" +
@@ -327,6 +329,7 @@ class MessageMetaDataTest {
         @Test
         void deSerializeShouldParseWhenInternalDateIsMissingMilliSeconds() {
             assertThat(DTO_JSON_SERIALIZE.messageMetaDataReads().reads(Json.parse("{" +
+                    "        \"mailboxId\": \"18\"," +
                     "        \"uid\": 123456," +
                     "        \"size\": 42," +
                     "        \"flags\": {" +

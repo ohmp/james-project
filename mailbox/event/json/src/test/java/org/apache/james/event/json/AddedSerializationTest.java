@@ -66,7 +66,7 @@ class AddedSerializationTest {
         .add("User Custom Flag")
         .build();
     private static final SortedMap<MessageUid, MessageMetaData> ADDED = ImmutableSortedMap.of(
-        MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(INSTANT), MESSAGE_ID));
+        MESSAGE_UID, new MessageMetaData(MAILBOX_ID, MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(INSTANT), MESSAGE_ID));
 
     private static final MailboxListener.Added DEFAULT_ADDED_EVENT = new MailboxListener.Added(SESSION_ID, USERNAME,
         MAILBOX_PATH, MAILBOX_ID, ADDED, EVENT_ID);
@@ -82,6 +82,7 @@ class AddedSerializationTest {
         "    \"mailboxId\": \"18\"," +
         "    \"added\": {" +
         "      \"123456\": {" +
+        "        \"mailboxId\": \"18\"," +
         "        \"uid\": 123456," +
         "        \"modSeq\": 35," +
         "        \"flags\": {" +

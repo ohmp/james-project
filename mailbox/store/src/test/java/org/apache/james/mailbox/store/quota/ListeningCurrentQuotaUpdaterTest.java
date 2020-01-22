@@ -89,8 +89,8 @@ class ListeningCurrentQuotaUpdaterTest {
     void addedEventShouldIncreaseCurrentQuotaValues() throws Exception {
         MailboxListener.Added added = mock(MailboxListener.Added.class);
         when(added.getMailboxId()).thenReturn(MAILBOX_ID);
-        when(added.getMetaData(MessageUid.of(36))).thenReturn(new MessageMetaData(MessageUid.of(36), ModSeq.first(),new Flags(), SIZE, new Date(), new DefaultMessageId()));
-        when(added.getMetaData(MessageUid.of(38))).thenReturn(new MessageMetaData(MessageUid.of(38), ModSeq.first(),new Flags(), SIZE, new Date(), new DefaultMessageId()));
+        when(added.getMetaData(MessageUid.of(36))).thenReturn(new MessageMetaData(MAILBOX_ID, MessageUid.of(36), ModSeq.first(),new Flags(), SIZE, new Date(), new DefaultMessageId()));
+        when(added.getMetaData(MessageUid.of(38))).thenReturn(new MessageMetaData(MAILBOX_ID, MessageUid.of(38), ModSeq.first(),new Flags(), SIZE, new Date(), new DefaultMessageId()));
         when(added.getUids()).thenReturn(Lists.newArrayList(MessageUid.of(36), MessageUid.of(38)));
         when(added.getUsername()).thenReturn(USERNAME_BENWA);
         when(mockedQuotaRootResolver.getQuotaRoot(eq(MAILBOX_ID))).thenReturn(QUOTA_ROOT);
@@ -103,8 +103,8 @@ class ListeningCurrentQuotaUpdaterTest {
     @Test
     void expungedEventShouldDecreaseCurrentQuotaValues() throws Exception {
         MailboxListener.Expunged expunged = mock(MailboxListener.Expunged.class);
-        when(expunged.getMetaData(MessageUid.of(36))).thenReturn(new MessageMetaData(MessageUid.of(36), ModSeq.first(), new Flags(), SIZE, new Date(), new DefaultMessageId()));
-        when(expunged.getMetaData(MessageUid.of(38))).thenReturn(new MessageMetaData(MessageUid.of(38), ModSeq.first(), new Flags(), SIZE, new Date(), new DefaultMessageId()));
+        when(expunged.getMetaData(MessageUid.of(36))).thenReturn(new MessageMetaData(MAILBOX_ID, MessageUid.of(36), ModSeq.first(), new Flags(), SIZE, new Date(), new DefaultMessageId()));
+        when(expunged.getMetaData(MessageUid.of(38))).thenReturn(new MessageMetaData(MAILBOX_ID, MessageUid.of(38), ModSeq.first(), new Flags(), SIZE, new Date(), new DefaultMessageId()));
         when(expunged.getUids()).thenReturn(Lists.newArrayList(MessageUid.of(36), MessageUid.of(38)));
         when(expunged.getMailboxId()).thenReturn(MAILBOX_ID);
         when(expunged.getUsername()).thenReturn(USERNAME_BENWA);

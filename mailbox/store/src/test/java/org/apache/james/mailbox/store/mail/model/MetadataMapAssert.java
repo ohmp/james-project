@@ -44,6 +44,9 @@ public class MetadataMapAssert extends AbstractAssert<MetadataMapAssert, Map<Mes
 
     public MetadataMapAssert containsMetadataForMessages(MailboxMessage... messages) {
         for (MailboxMessage message : messages) {
+            if (! actual.get(message.getUid()).getMailboxId().equals(message.getMailboxId())) {
+                failWithMessage("Expected MailboxId stored in MessageMetadata to be <%s> but was <%s>", actual.get(message.getUid()).getMailboxId(), message.getMailboxId());
+            }
             if (! actual.get(message.getUid()).getUid().equals(message.getUid())) {
                 failWithMessage("Expected UID stored in MessageMetadata to be <%s> but was <%s>", actual.get(message.getUid()).getUid(), message.getUid());
             }

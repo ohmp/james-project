@@ -122,7 +122,7 @@ public class MailboxEventAnalyserTest {
         .randomEventId()
         .mailboxSession(MAILBOX_SESSION)
         .mailbox(DEFAULT_MAILBOX)
-        .addMetaData(new MessageMetaData(MessageUid.of(11), ModSeq.first(), new Flags(), 45, new Date(), new DefaultMessageId()))
+        .addMetaData(new MessageMetaData(MAILBOX_ID, MessageUid.of(11), ModSeq.first(), new Flags(), 45, new Date(), new DefaultMessageId()))
         .build();
 
     private SelectedMailboxImpl testee;

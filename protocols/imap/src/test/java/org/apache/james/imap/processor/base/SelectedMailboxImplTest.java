@@ -173,7 +173,7 @@ public class SelectedMailboxImplTest {
             .randomEventId()
             .mailboxSession(MailboxSessionUtil.create(Username.of("user")))
             .mailbox(mailbox)
-            .addMetaData(new MessageMetaData(EMITTED_EVENT_UID, MOD_SEQ, new Flags(), SIZE, new Date(), new DefaultMessageId()))
+            .addMetaData(new MessageMetaData(mailboxId, EMITTED_EVENT_UID, MOD_SEQ, new Flags(), SIZE, new Date(), new DefaultMessageId()))
             .build());
     }
 }

@@ -65,7 +65,7 @@ class MailboxListenerTest {
     private static final MailboxACL ACL_2 = new MailboxACL(
         Pair.of(MailboxACL.EntryKey.createUserEntryKey(Username.of("Bob")), new MailboxACL.Rfc4314Rights(MailboxACL.Right.Read)));
     private static final MessageUid UID = MessageUid.of(85);
-    private static final MessageMetaData META_DATA = new MessageMetaData(UID, ModSeq.of(45), new Flags(), 45, new Date(), TestMessageId.of(75));
+    private static final MessageMetaData META_DATA = new MessageMetaData(TestId.of(1), UID, ModSeq.of(45), new Flags(), 45, new Date(), TestMessageId.of(75));
 
     @Test
     void mailboxAddedShouldMatchBeanContract() {

@@ -28,6 +28,7 @@ import org.apache.james.mailbox.ModSeq;
 import com.google.common.base.Objects;
 
 public class MessageMetaData {
+    private final MailboxId mailboxId;
     private final MessageUid uid;
     private final Flags flags;
     private final long size;
@@ -35,13 +36,18 @@ public class MessageMetaData {
     private final ModSeq modSeq;
     private final MessageId messageId;
 
-    public MessageMetaData(MessageUid uid, ModSeq modSeq, Flags flags, long size, Date internalDate, MessageId messageId) {
+    public MessageMetaData(MailboxId mailboxId, MessageUid uid, ModSeq modSeq, Flags flags, long size, Date internalDate, MessageId messageId) {
+        this.mailboxId = mailboxId;
         this.uid = uid;
         this.flags = flags;
         this.size = size;
         this.modSeq = modSeq;
         this.internalDate = internalDate;
         this.messageId = messageId;
+    }
+
+    public MailboxId getMailboxId() {
+        return mailboxId;
     }
 
     public Flags getFlags() {

@@ -66,7 +66,7 @@ class ExpungedSerializationTest {
         .add("User Custom Flag")
         .build();
     private static final Map<MessageUid, MessageMetaData> EXPUNGED = ImmutableMap.of(
-        MESSAGE_UID, new MessageMetaData(MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(INSTANT), MESSAGE_ID));
+        MESSAGE_UID, new MessageMetaData(MAILBOX_ID, MESSAGE_UID, MOD_SEQ, FLAGS, SIZE, Date.from(INSTANT), MESSAGE_ID));
 
     private static final MailboxListener.Expunged DEFAULT_EXPUNGED_EVENT = new MailboxListener.Expunged(SESSION_ID, USERNAME,
         MAILBOX_PATH, MAILBOX_ID, EXPUNGED, EVENT_ID);
@@ -82,6 +82,7 @@ class ExpungedSerializationTest {
         "    \"mailboxId\": \"18\"," +
         "    \"expunged\": {" +
         "      \"123456\": {" +
+        "        \"mailboxId\": \"18\"," +
         "        \"uid\": 123456," +
         "        \"modSeq\": 35," +
         "        \"flags\": {" +
