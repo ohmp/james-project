@@ -25,12 +25,32 @@ Change list:
  - [Health checks routes return code changes](#health-checks-routes-return-code-changes)
  - [User mailboxes reIndexing endpoint change](#user-mailboxes-reindexing-endpoint-change)
  - [Hybrid blobStore replaces Union blobStore](#hybrid-blobstore-replaces-union-blobstore)
+ - [Format change in mailbox event JSON structure](#Format-change-in-mailbox-event-JSON-structure)
+
+### Format change in mailbox event JSON structure
+
+Date 03/02/2020
+
+JIRA MAILBOX-394
+
+SHA-1 XXX
+
+Concerned products: Guice distributed James server
+
+Given the addition of a field, prior mailbox event JSON can not be deserialized to newer events.
+
+An upgrade should be done with an empty event bus. To achieve this:
+ - Stop incoming traffic (SMTP, IMAP, JMAP, etc...)
+ - Monitor event bus queue size using [rabbitMQ management plugging](https://www.rabbitmq.com/management.html)
+ - Once event bus related queues are empty, ensure [dead letter]() is empty, triggering needed reprocessing or discarding failed events.
+ - Then you can upgrade and restart James
+
 
 ### Hybrid blobStore replaces Union blobStore
 
 Date 6/01/2020
 
-SHA-1 XXX
+SHA-1 f22e18fb6b
 
 Concerned products: Guice distributed James server
 
