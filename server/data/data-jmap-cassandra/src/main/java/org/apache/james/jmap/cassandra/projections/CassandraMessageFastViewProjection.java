@@ -40,6 +40,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.metrics.api.Metric;
 import org.apache.james.metrics.api.MetricFactory;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -90,7 +91,8 @@ public class CassandraMessageFastViewProjection implements MessageFastViewProjec
         return cassandraAsyncExecutor.executeVoid(storeStatement.bind()
             .setUUID(MESSAGE_ID, ((CassandraMessageId) messageId).get())
             .setString(PREVIEW, precomputedProperties.getPreview().getValue())
-            .setBool(HAS_ATTACHMENT, precomputedProperties.hasAttachment()));
+            .setBool(HAS_ATTACHMENT, precomputedProperties.hasAttachment())
+            .setConsistencyLevel(ConsistencyLevel.ONE));
     }
 
     @Override
