@@ -233,11 +233,9 @@ public class ImapRequestFrameDecoder extends FrameDecoder implements NettyConsta
                 if (size > 0) {
                     return ChannelBuffers.dynamicBuffer(size, ctx.getChannel().getConfig().getBufferFactory());
                 }
-                return super.newCumulationBuffer(ctx, minimumCapacity);
             }
-        } else {
-            return super.newCumulationBuffer(ctx, minimumCapacity);
         }
+        return super.newCumulationBuffer(ctx, minimumCapacity);
     }
 
 }
