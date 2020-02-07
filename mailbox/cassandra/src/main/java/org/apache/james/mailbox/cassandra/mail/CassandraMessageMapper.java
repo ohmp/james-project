@@ -171,17 +171,17 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        return retrieveMessages(retrieveMessageIds(mailboxId, messageRange), ftype, Limit.from(max))
+        return retrieveMessageIds(mailboxId, messageRange)
+            .flatMapMany(ids -> retrieveMessages(ids, ftype, Limit.from(max)))
             .map(MailboxMessage.class::cast)
             .sort(Comparator.comparing(MailboxMessage::getUid))
             .toIterable()
             .iterator();
     }
 
-    private List<ComposedMessageIdWithMetaData> retrieveMessageIds(CassandraId mailboxId, MessageRange messageRange) {
+    private Mono<List<ComposedMessageIdWithMetaData>> retrieveMessageIds(CassandraId mailboxId, MessageRange messageRange) {
         return messageIdDAO.retrieveMessages(mailboxId, messageRange)
-            .collect(Guavate.toImmutableList())
-            .block();
+            .collect(Guavate.toImmutableList());
     }
 
     private Flux<MailboxMessage> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
@@ -267,13 +267,13 @@ public class CassandraMessageMapper implements MessageMapper {
     public MessageMetaData add(Mailbox mailbox, MailboxMessage message) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
-        save(mailbox, addUidAndModseq(message, mailboxId))
-            .thenEmpty(indexTableHandler.updateIndexOnAdd(message, mailboxId))
-            .block();
+        block(addUidAndModseq(message, mailboxId)
+            .flatMap(Throwing.function(messageWithUidAndModSeq -> save(mailbox, messageWithUidAndModSeq)))
+            .thenEmpty(Mono.defer(() -> indexTableHandler.updateIndexOnAdd(message, mailboxId))));
         return message.metaData();
     }
 
-    private MailboxMessage addUidAndModseq(MailboxMessage message, CassandraId mailboxId) throws MailboxException {
+    private Mono<MailboxMessage> addUidAndModseq(MailboxMessage message, CassandraId mailboxId) {
         Mono<MessageUid> messageUidMono = uidProvider
             .nextUid(mailboxId)
             .switchIfEmpty(Mono.error(() -> new MailboxException("Can not find a UID to save " + message.getMessageId() + " in " + mailboxId)));
@@ -281,20 +281,23 @@ public class CassandraMessageMapper implements MessageMapper {
         Mono<ModSeq> nextModSeqMono = modSeqProvider.nextModSeq(mailboxId)
             .switchIfEmpty(Mono.error(() -> new MailboxException("Can not find a MODSEQ to save " + message.getMessageId() + " in " + mailboxId)));
 
-        try {
-            Mono.zip(messageUidMono, nextModSeqMono)
+        return Mono.zip(messageUidMono, nextModSeqMono)
                 .doOnNext(tuple -> {
                     message.setUid(tuple.getT1());
                     message.setModSeq(tuple.getT2());
                 })
-                .block();
+                .then(Mono.just(message));
+    }
+
+    private <T> T block(Mono<T> mono) throws MailboxException {
+        try {
+            return mono.block();
         } catch (RuntimeException e) {
             if (e.getCause() instanceof MailboxException) {
-                throw (MailboxException)e.getCause();
+                throw (MailboxException) e.getCause();
             }
             throw e;
         }
-        return message;
     }
 
     @Override
@@ -384,10 +387,9 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private MessageMetaData setInMailbox(Mailbox mailbox, MailboxMessage message) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-
-        insertIds(addUidAndModseq(message, mailboxId), mailboxId)
-                .thenEmpty(indexTableHandler.updateIndexOnAdd(message, mailboxId))
-                .block();
+        block(addUidAndModseq(message, mailboxId)
+            .flatMap(messageWithUidAndModseq -> insertIds(messageWithUidAndModseq, mailboxId))
+            .thenEmpty(Mono.defer(() -> indexTableHandler.updateIndexOnAdd(message, mailboxId))));
         return message.metaData();
     }
 
