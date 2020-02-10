@@ -42,6 +42,8 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * {@link FrameDecoder} which will decode via and {@link ImapDecoder} instance
  */
@@ -50,7 +52,8 @@ public class ImapRequestFrameDecoder extends FrameDecoder implements NettyConsta
     private final ImapDecoder decoder;
     private final int inMemorySizeLimit;
     private final int literalSizeLimit;
-    private static final String NEEDED_DATA = "NEEDED_DATA";
+    @VisibleForTesting
+    static final String NEEDED_DATA = "NEEDED_DATA";
     private static final String STORED_DATA = "STORED_DATA";
     private static final String WRITTEN_DATA = "WRITTEN_DATA";
     private static final String OUTPUT_STREAM = "OUTPUT_STREAM";
@@ -226,7 +229,7 @@ public class ImapRequestFrameDecoder extends FrameDecoder implements NettyConsta
             @SuppressWarnings("unchecked")
             int size = (Integer) attachment.get(NEEDED_DATA);
 
-            if (inMemorySizeLimit > 0) {
+            if (inMemorySizeLimit > 0 && size > 0) {
                 return ChannelBuffers.dynamicBuffer(Math.min(size, inMemorySizeLimit), ctx.getChannel().getConfig().getBufferFactory());
             } else {
 
