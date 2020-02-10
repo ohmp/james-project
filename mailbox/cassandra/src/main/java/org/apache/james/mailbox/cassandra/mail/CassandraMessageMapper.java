@@ -390,10 +390,12 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private MessageMetaData setInMailbox(Mailbox mailbox, MailboxMessage message) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        block(addUidAndModseq(message, mailboxId)
-            .flatMap(messageWithUidAndModseq -> insertIds(messageWithUidAndModseq, mailboxId))
-            .thenEmpty(Mono.defer(() -> indexTableHandler.updateIndexOnAdd(message, mailboxId))));
-        return message.metaData();
+        return block(addUidAndModseq(message, mailboxId)
+            .flatMap(messageWithUidAndModseq -> insertIds(messageWithUidAndModseq, mailboxId)
+                .thenReturn(messageWithUidAndModseq))
+            .flatMap(messageWithUidAndModseq -> indexTableHandler.updateIndexOnAdd(message, mailboxId)
+                .thenReturn(messageWithUidAndModseq))
+            .map(MailboxMessage::metaData));
     }
 
     private Mono<Void> save(Mailbox mailbox, MailboxMessage message) throws MailboxException {
