@@ -287,7 +287,7 @@ public class CassandraMessageMapper implements MessageMapper {
                     message.setUid(tuple.getT1());
                     message.setModSeq(tuple.getT2());
                 })
-                .then(Mono.just(message));
+                .thenReturn(message);
     }
 
     private <T> T block(Mono<T> mono) throws MailboxException {
