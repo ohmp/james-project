@@ -87,8 +87,9 @@ public class ElasticSearchSearcher {
     }
 
     private SearchRequest prepareSearch(Collection<MailboxId> mailboxIds, SearchQuery query, Optional<Integer> limit) {
+        Optional<Collection<MailboxId>> limitedMailboxIds = limitMailboxIds(mailboxIds);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
-            .query(queryConverter.from(mailboxIds, query))
+            .query(limitedMailboxIds.map(ids -> queryConverter.from(ids, query)).orElseGet(() -> queryConverter.allMailboxes(query)))
             .size(computeRequiredSize(limit))
             .storedFields(STORED_FIELDS);
 
@@ -102,17 +103,21 @@ public class ElasticSearchSearcher {
             .scroll(TIMEOUT)
             .source(searchSourceBuilder);
 
-        return toRoutingKey(mailboxIds)
-            .map(request::routing)
+        return limitedMailboxIds
+            .map(ids -> request.routing(toRoutingKey(ids)))
             .orElse(request);
     }
 
-    private Optional<String[]> toRoutingKey(Collection<MailboxId> mailboxIds) {
-        if (mailboxIds.size() < MAX_ROUTING_KEY) {
-            return Optional.of(mailboxIds.stream()
-                .map(routingKeyFactory::from)
-                .map(RoutingKey::asString)
-                .toArray(String[]::new));
+    private String[] toRoutingKey(Collection<MailboxId> mailboxIds) {
+        return mailboxIds.stream()
+            .map(routingKeyFactory::from)
+            .map(RoutingKey::asString)
+            .toArray(String[]::new);
+    }
+
+    private Optional<Collection<MailboxId>> limitMailboxIds(Collection<MailboxId> mailboxIds) {
+        if (mailboxIds.size() <= MAX_ROUTING_KEY) {
+            return Optional.of(mailboxIds);
         }
         return Optional.empty();
     }
