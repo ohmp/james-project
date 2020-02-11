@@ -97,6 +97,8 @@ Supported health checks include:
  - **JPA Backend**: JPA storage. Included in JPA Guice based products.
  - **RabbitMQ backend**: RabbitMQ messaging. Included in Distributed Guice based products.
  - **Guice application lifecycle**: included in all Guice products.
+ - **MessageFastViewProjection**: included in memory and Cassandra based Guice products.
+ - **ElasticSearch Backend**: ElasticSearch storage. Included in Cassandra Guice based products.
 
 Response codes:
 
