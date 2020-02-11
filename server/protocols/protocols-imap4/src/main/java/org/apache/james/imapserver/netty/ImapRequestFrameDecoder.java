@@ -230,13 +230,11 @@ public class ImapRequestFrameDecoder extends FrameDecoder implements NettyConsta
             @SuppressWarnings("unchecked")
             int size = (Integer) sizeAsObject;
 
-            if (inMemorySizeLimit > 0 && size > 0) {
-                return ChannelBuffers.dynamicBuffer(Math.min(size, inMemorySizeLimit), ctx.getChannel().getConfig().getBufferFactory());
-            } else {
+            if (size > 0) {
+                int sanitizedInMemorySizeLimit = Math.max(0, inMemorySizeLimit);
+                int sanitizedSize = Math.min(sanitizedInMemorySizeLimit, size);
 
-                if (size > 0) {
-                    return ChannelBuffers.dynamicBuffer(size, ctx.getChannel().getConfig().getBufferFactory());
-                }
+                return ChannelBuffers.dynamicBuffer(sanitizedSize, ctx.getChannel().getConfig().getBufferFactory());
             }
         }
         return super.newCumulationBuffer(ctx, minimumCapacity);
