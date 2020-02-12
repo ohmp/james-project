@@ -367,7 +367,7 @@ This action is only available for backends supporting JMAP protocol.
 Message fast view projection stores message properties expected to be fast to fetch but are actually expensive to compute,
 in order for GetMessages operation to be fast to execute for these properties.
 
-These projection items are asynchronously computed via a dedicated listener.
+These projection items are asynchronously computed on mailbox events via a dedicated MailboxListener.
 
 You can force the full projection recomputation by calling the following endpoint:
 
@@ -689,7 +689,7 @@ This action is only available for backends supporting JMAP protocol.
 Message fast view projection stores message properties expected to be fast to fetch but are actually expensive to compute,
 in order for GetMessages operation to be fast to execute for these properties.
 
-These projection items are asynchronously computed via a dedicated listener.
+These projection items are asynchronously computed on mailbox events via a dedicated MailboxListener.
 
 You can force the full projection recomputation by calling the following endpoint:
 
