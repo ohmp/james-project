@@ -2540,7 +2540,7 @@ The scheduled task will have the following type `clear-mail-queue` and the follo
 ```
 curl -XPATCH http://ip:port/mailQueues/mailQueueName?delayed=true \
   -d '{"delayed": false}' \
-   -H "Content-Type: application/json"
+  -H "Content-Type: application/json"
 ```
 
 This request should have the query parameter *delayed* set to *true*, in order to indicate only delayed mails are affected.
