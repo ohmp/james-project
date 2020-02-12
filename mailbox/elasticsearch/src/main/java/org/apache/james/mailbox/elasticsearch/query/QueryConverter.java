@@ -55,11 +55,6 @@ public class QueryConverter {
         return boolQueryBuilder;
     }
 
-    public QueryBuilder allMailboxes(SearchQuery query) {
-        return boolQuery()
-            .must(generateQueryBuilder(query));
-    }
-
     private QueryBuilder generateQueryBuilder(SearchQuery searchQuery) {
         List<SearchQuery.Criterion> criteria = searchQuery.getCriterias();
         if (criteria.isEmpty()) {

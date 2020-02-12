@@ -128,9 +128,9 @@ class ElasticSearchSearcherTest {
     }
 
     @Test
-    void searchingInFiveMailboxesShouldReturnOnlyTheseMailboxesMessagesUid() throws Exception {
+    void searchingInALargeNumberOfMailboxesShouldReturnAllMailboxesMessagesUid() throws Exception {
         MailboxSession session = MailboxSessionUtil.create(USERNAME);
-        int numberOfMailboxes = 6;
+        int numberOfMailboxes = 700;
         List<MailboxPath> mailboxPaths = IntStream
             .range(0, numberOfMailboxes)
             .mapToObj(index -> MailboxPath.forUser(USERNAME, "mailbox" + index))
@@ -148,45 +148,13 @@ class ElasticSearchSearcherTest {
 
         MultimailboxesSearchQuery multimailboxesSearchQuery = MultimailboxesSearchQuery
             .from(new SearchQuery(SearchQuery.all()))
-            .inMailboxes(mailboxIds.stream().limit(5).collect(Guavate.toImmutableList()))
-            .build();
-        List<MessageId> expectedMessageIds = composedMessageIds
-            .stream()
-            .limit(5)
-            .map(ComposedMessageId::getMessageId)
-            .collect(Guavate.toImmutableList());
-        assertThat(storeMailboxManager.search(multimailboxesSearchQuery, session, 10))
-            .containsExactlyInAnyOrderElementsOf(expectedMessageIds);
-    }
-
-    @Test
-    void searchingInSixMailboxesShouldReturnAllMailboxesMessagesUid() throws Exception {
-        MailboxSession session = MailboxSessionUtil.create(USERNAME);
-        int numberOfMailboxes = 7;
-        List<MailboxPath> mailboxPaths = IntStream
-            .range(0, numberOfMailboxes)
-            .mapToObj(index -> MailboxPath.forUser(USERNAME, "mailbox" + index))
-            .collect(Guavate.toImmutableList());
-
-        List<MailboxId> mailboxIds = mailboxPaths.stream()
-            .map(Throwing.<MailboxPath, MailboxId>function(mailboxPath -> storeMailboxManager.createMailbox(mailboxPath, session).get()).sneakyThrow())
-            .collect(Guavate.toImmutableList());
-
-        List<ComposedMessageId> composedMessageIds = mailboxPaths.stream()
-            .map(Throwing.<MailboxPath, ComposedMessageId>function(mailboxPath -> addMessage(session, mailboxPath)).sneakyThrow())
-            .collect(Guavate.toImmutableList());
-
-        elasticSearch.awaitForElasticSearch();
-
-        MultimailboxesSearchQuery multimailboxesSearchQuery = MultimailboxesSearchQuery
-            .from(new SearchQuery(SearchQuery.all()))
-            .inMailboxes(mailboxIds.stream().limit(6).collect(Guavate.toImmutableList()))
+            .inMailboxes(mailboxIds)
             .build();
         List<MessageId> expectedMessageIds = composedMessageIds
             .stream()
             .map(ComposedMessageId::getMessageId)
             .collect(Guavate.toImmutableList());
-        assertThat(storeMailboxManager.search(multimailboxesSearchQuery, session, 10))
+        assertThat(storeMailboxManager.search(multimailboxesSearchQuery, session, numberOfMailboxes + 1))
             .containsExactlyInAnyOrderElementsOf(expectedMessageIds);
     }
 
