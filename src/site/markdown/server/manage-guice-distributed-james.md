@@ -5,12 +5,12 @@ This guides aims to be an entry-point to the James documentation for user managi
 It includes:
 
  - Simple architecture explanations
- - Propose some diagnostic for some common issues
+ - Propose some diagnostics for some common issues
  - Present procedures that can be set up to address these issues
 
 In order to not duplicate information, existing documentation will be linked.
 
-Please note that this product is under active development, should be considered experimental and thus is addressed to 
+Please note that this product is under active development, should be considered experimental and thus targets 
 advanced users.
 
 ## Table of content
@@ -26,7 +26,7 @@ In order to achieve this goal, this product leverages the following technologies
 
  - **Cassandra** for meta-data storage
  - **ObjectStorage** (S3) for binary content storage
- - **ElasticSearch** for distributed search
+ - **ElasticSearch** for search
  - **RabbitMQ** for messaging
 
 A [docker-compose](https://github.com/linagora/james-project/blob/master/dockerfiles/run/docker-compose.yml) file is 
@@ -34,7 +34,7 @@ available to allow you to quickly deploy locally this product.
 
 ## Basic Monitoring
 
-A given number of tools are available "out of the box" to help an administrator diagnose issues:
+A toolbox is available to help an administrator diagnose issues:
  - [Structured logging into Kibana](#structured-logging-into-kibana)
  - [Metrics graphs into Grafana](#metrics-graphs-into-grafana)
  - [WebAdmin HealthChecks](#webadmin-healthchecks)
@@ -43,7 +43,7 @@ A given number of tools are available "out of the box" to help an administrator 
 
 Read this page regarding [setting up structured logging](monitor-logging.html#Guice_products_and_logging).
 
-We recommend closely monitoring **ERROR** and **WARNING** logs. Those logs should be considered not normal.
+We recommend to closely monitoring **ERROR** and **WARNING** logs. Those logs should be considered not normal.
 
 If you encounter some suspicious logs:
  - If you have any doubt about the log being caused by a bug in James source code, please reach us via 
@@ -53,8 +53,8 @@ If you encounter some suspicious logs:
 
 Leveraging filters in Kibana discover view can help filtering out "already known" frequently occurring logs.
 
-When reporting logs error or warning, consider adding the full logs, and related data (eg EML triggering an issue) to
-the bug report in order to ease resolution.
+When reporting ERROR or WARNING logs, consider adding the full logs, and related data (eg the raw content of a mail 
+triggering an issue) to the bug report in order to ease resolution.
 
 ### Metrics graphs into Grafana
 
