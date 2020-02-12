@@ -1,6 +1,6 @@
 # Managing Guice distributed James
 
-This guides aims to be an entry-point to the James documentation for user managing a distributed Guice James server.
+This guide aims to be an entry-point to the James documentation for user managing a distributed Guice James server.
 
 It includes:
 
@@ -29,7 +29,7 @@ In order to achieve this goal, this product leverages the following technologies
  - **ElasticSearch** for search
  - **RabbitMQ** for messaging
 
-A [docker-compose](https://github.com/linagora/james-project/blob/master/dockerfiles/run/docker-compose.yml) file is 
+A [docker-compose](https://github.com/apache/james-project/blob/master/dockerfiles/run/docker-compose.yml) file is 
 available to allow you to quickly deploy locally this product.
 
 ## Basic Monitoring
@@ -49,7 +49,7 @@ If you encounter some suspicious logs:
  - If you have any doubt about the log being caused by a bug in James source code, please reach us via 
  [the bug tracker](https://issues.apache.org/jira/browse/JAMES) or [the user mailing list](/mail.html)
  - They can be due to insufficient performance from tier applications (eg Cassandra timeouts). In such case we advise
- you a close review of performances at the database level.
+ you to conduct a close review of performances at the tier level.
 
 Leveraging filters in Kibana discover view can help filtering out "already known" frequently occurring logs.
 
@@ -67,19 +67,19 @@ Here is a list of [available metric boards](https://github.com/apache/james-proj
 Configuration of [ElasticSearch metric exporting](config-elasticsearch.html) allows a direct display within 
 [Grafana](https://grafana.com/)
 
-Monitoring these graphs on a regular basis allow diagnosing early some performance issues. 
+Monitoring these graphs on a regular basis allows diagnosing early some performance issues. 
 
-If some metrics seems abnormally slow despite in depth database performance tuning, feedback is appreciated as well on 
+If some metrics seem abnormally slow despite in depth database performance tuning, feedback is appreciated as well on 
 [the bug tracker](https://issues.apache.org/jira/browse/JAMES) or [the user mailing list](/mail.html). Any additional 
-details categorizing the slowness is appreciated as well (details of the slow requests for instance).
+details categorizing the slowness are appreciated as well (details of the slow requests for instance).
 
 ### WebAdmin HealthChecks
 
-James webadmin API allow to run healthChecks for a quick health overview.
+James webadmin API allows to run healthChecks for a quick health overview.
 
 Here is related [webadmin documentation](manage-webadmin.html#HealthCheck)
 
-Here are the available checks alongs side the insight they offer:
+Here are the available checks alongside the insight they offer:
 
  - **Cassandra backend**: Cassandra storage. Ensure queries can be executed on the connection James uses.
  - **ElasticSearch Backend**: ElasticSearch storage. Triggers an ElasticSearch health request on indices James uses.
