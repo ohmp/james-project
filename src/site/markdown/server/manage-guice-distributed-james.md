@@ -47,7 +47,7 @@ We recommend to closely monitoring **ERROR** and **WARNING** logs. Those logs sh
 
 If you encounter some suspicious logs:
  - If you have any doubt about the log being caused by a bug in James source code, please reach us via  
-the bug tracker, the user mailing list or our giiter channel (see our [community page](http://james.apache.org/#second))
+the bug tracker, the user mailing list or our Gitter channel (see our [community page](http://james.apache.org/#second))
  - They can be due to insufficient performance from tier applications (eg Cassandra timeouts). In such case we advise
  you to conduct a close review of performances at the tier level.
 
@@ -70,7 +70,7 @@ Configuration of [ElasticSearch metric exporting](config-elasticsearch.html) all
 Monitoring these graphs on a regular basis allows diagnosing early some performance issues. 
 
 If some metrics seem abnormally slow despite in depth database performance tuning, feedback is appreciated as well on 
-the bug tracker, the user mailing list or our giiter channel (see our [community page](http://james.apache.org/#second))
+the bug tracker, the user mailing list or our Gitter channel (see our [community page](http://james.apache.org/#second))
 . Any additional details categorizing the slowness are appreciated as well (details of the slow requests for instance).
 
 ### WebAdmin HealthChecks
