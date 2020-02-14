@@ -50,16 +50,12 @@ import reactor.core.publisher.Mono;
 public class SolveMailboxInconsistenciesService {
     public static final Logger LOGGER = LoggerFactory.getLogger(SolveMailboxInconsistenciesService.class);
 
+    @FunctionalInterface
     interface Inconsistency {
         Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO);
     }
 
-    private static class NoInconsistency implements Inconsistency{
-        @Override
-        public Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
-            return Mono.just(Result.COMPLETED);
-        }
-    }
+    private static Inconsistency NO_INCONSISTENCY = (context, mailboxDAO1, pathV2DAO) -> Mono.just(Result.COMPLETED);
 
     /**
      * The Mailbox is referenced in MailboxDAO but the corresponding
@@ -341,7 +337,7 @@ public class SolveMailboxInconsistenciesService {
         return mailboxPathV2DAO.retrieveId(mailbox.generateAssociatedPath())
             .map(pathRegistration -> {
                 if (pathRegistration.getCassandraId().equals(mailbox.getMailboxId())) {
-                    return new NoInconsistency();
+                    return NO_INCONSISTENCY;
                 }
                 // Path entry references another mailbox.
                 return new ConflictingEntryInconsistency(mailbox, pathRegistration);
@@ -353,7 +349,7 @@ public class SolveMailboxInconsistenciesService {
         return mailboxDAO.retrieveMailbox(pathRegistration.getCassandraId())
             .map(mailbox -> {
                 if (mailbox.generateAssociatedPath().equals(pathRegistration.getMailboxPath())) {
-                    return new NoInconsistency();
+                    return NO_INCONSISTENCY;
                 }
                 // Mailbox references another path
                 return new ConflictingEntryInconsistency(mailbox, pathRegistration);
