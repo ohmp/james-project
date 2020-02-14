@@ -101,7 +101,7 @@ public class SolveMailboxInconsistenciesService {
      *
      * CassandraIds are guaranteed to be unique, and are immutable once set to a mailbox.
      *
-     * This this inconsistency arise if mailbox creation fails or upon partial deletes.
+     * This inconsistency arise if mailbox creation fails or upon partial deletes.
      *
      * In both case removing the dandling path registration solves the inconsistency
      *
@@ -142,6 +142,8 @@ public class SolveMailboxInconsistenciesService {
      *
      * This error can not be recovered as some data-loss might be involved. It is preferable to
      * ask the admin to review then merge the two mailbowes together using {@link MailboxMergingTask}.
+     *
+     * See https://github.com/apache/james-project/blob/master/src/site/markdown/server/manage-webadmin.md#correcting-ghost-mailbox
      */
     private static class ConflictingEntryInconsistency implements Inconsistency {
         private final ConflictingEntry conflictingEntry;
