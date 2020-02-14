@@ -318,9 +318,9 @@ public class SolveMailboxInconsistenciesService {
             .orElse(false);
 
         Preconditions.checkState(isVersionValid,
-            "%s is required in order to ensure mailboxPathV2DAO to be correctly populated, got %s",
-            MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION,
-            maybeVersion);
+            "Schema version %s is required in order to ensure mailboxPathV2DAO to be correctly populated, got %s",
+            MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION.getValue(),
+            maybeVersion.map(SchemaVersion::getValue));
     }
 
     private Flux<Result> processMailboxPathDaoInconsistencies(Context context) {
