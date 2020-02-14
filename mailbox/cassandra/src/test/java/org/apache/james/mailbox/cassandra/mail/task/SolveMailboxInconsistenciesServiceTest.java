@@ -222,7 +222,9 @@ class SolveMailboxInconsistenciesServiceTest {
                 .processedMailboxEntries(2)
                 .processedMailboxPathEntries(1)
                 .fixedInconsistencies(0)
-                .addConflictingEntry(new ConflictingEntry(MAILBOX_PATH, CASSANDRA_ID_1, MAILBOX_PATH, CASSANDRA_ID_2))
+                .addConflictingEntry(ConflictingEntry.builder()
+                    .mailboxDaoEntry(MAILBOX)
+                    .mailboxPathDaoEntry(MAILBOX_PATH, CASSANDRA_ID_2))
                 .build());
     }
 
@@ -239,7 +241,9 @@ class SolveMailboxInconsistenciesServiceTest {
                 .processedMailboxEntries(1)
                 .processedMailboxPathEntries(1)
                 .fixedInconsistencies(1)
-                .addConflictingEntry(new ConflictingEntry(MAILBOX_PATH, CASSANDRA_ID_1, MAILBOX_PATH, CASSANDRA_ID_2))
+                .addConflictingEntry(ConflictingEntry.builder()
+                    .mailboxDaoEntry(MAILBOX)
+                    .mailboxPathDaoEntry(MAILBOX_PATH, CASSANDRA_ID_2))
                 .build());
     }
 

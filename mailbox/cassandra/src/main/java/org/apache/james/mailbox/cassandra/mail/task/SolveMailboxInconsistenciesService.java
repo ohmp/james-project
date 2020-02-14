@@ -152,19 +152,17 @@ public class SolveMailboxInconsistenciesService {
 
             Preconditions.checkState(samePath != sameId);
 
-            this.conflictingEntry = new ConflictingEntry(
-                mailbox.getMailboxId().serialize(),
-                mailbox.generateAssociatedPath().asString(),
-                pathRegistration.getMailboxPath().asString(),
-                pathRegistration.getCassandraId().serialize());
+            this.conflictingEntry = ConflictingEntry.builder()
+                .mailboxDaoEntry(mailbox)
+                .mailboxPathDaoEntry(pathRegistration);
         }
 
         @Override
         public Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
             LOGGER.error("MailboxDAO contains mailbox {} {} which conflict with corresponding registration {} {}. " +
                 "We recommend merging these mailboxes together to prevent mail data loss.",
-                conflictingEntry.getMailboxIdAsString(), conflictingEntry.getMailboxPathAsString(),
-                conflictingEntry.getPathRegistrationIdAsString(), conflictingEntry.getPathRegistrationPathAsString());
+                conflictingEntry.getMailboxDaoEntry().getMailboxId(), conflictingEntry.getMailboxDaoEntry().getMailboxPath(),
+                conflictingEntry.getMailboxPathDaoEntry().getMailboxId(), conflictingEntry.getMailboxPathDaoEntry().getMailboxPath());
             context.conflictingEntries.add(conflictingEntry);
             return Mono.just(Result.PARTIAL);
         }

@@ -21,48 +21,101 @@ package org.apache.james.mailbox.cassandra.mail.task;
 
 import java.util.Objects;
 
+import org.apache.james.mailbox.cassandra.mail.CassandraIdAndPath;
+import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ConflictingEntry {
-    private final String mailboxPathAsString;
-    private final String mailboxIdAsString;
-    private final String pathRegistrationPathAsString;
-    private final String pathRegistrationIdAsString;
+    public static class DaoEntry {
+        private final String mailboxPath;
+        private final String mailboxId;
 
-    ConflictingEntry(MailboxPath mailboxPath,
-                            MailboxId mailboxId,
-                            MailboxPath pathRegistrationPath,
-                            MailboxId pathRegistrationId) {
-        this(mailboxPath.asString(), mailboxId.serialize(), pathRegistrationPath.asString(), pathRegistrationId.serialize());
+        public DaoEntry(MailboxPath mailboxPath,
+                        MailboxId mailboxId) {
+            this(mailboxPath.asString(), mailboxId.serialize());
+        }
+
+        private DaoEntry(@JsonProperty("mailboxPath") String mailboxPath,
+                        @JsonProperty("mailboxId") String mailboxId) {
+            this.mailboxPath = mailboxPath;
+            this.mailboxId = mailboxId;
+        }
+
+        public String getMailboxPath() {
+            return mailboxPath;
+        }
+
+        public String getMailboxId() {
+            return mailboxId;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof DaoEntry) {
+                DaoEntry daoEntry = (DaoEntry) o;
+
+                return Objects.equals(this.mailboxPath, daoEntry.mailboxPath)
+                    && Objects.equals(this.mailboxId, daoEntry.mailboxId);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(mailboxPath, mailboxId);
+        }
     }
 
-    public ConflictingEntry(@JsonProperty("mailboxPathAsString") String mailboxPathAsString,
-                            @JsonProperty("mailboxIdAsString") String mailboxIdAsString,
-                            @JsonProperty("pathRegistrationPathAsString") String pathRegistrationPathAsString,
-                            @JsonProperty("pathRegistrationIdAsString") String pathRegistrationIdAsString) {
-        this.mailboxPathAsString = mailboxPathAsString;
-        this.mailboxIdAsString = mailboxIdAsString;
-        this.pathRegistrationPathAsString = pathRegistrationPathAsString;
-        this.pathRegistrationIdAsString = pathRegistrationIdAsString;
+    public interface Builder {
+        @FunctionalInterface
+        interface RequireMailboxDaoEntry {
+            RequireMailboxPathDaoEntry mailboxDaoEntry(DaoEntry daoEntry);
+
+            default RequireMailboxPathDaoEntry mailboxDaoEntry(Mailbox mailbox) {
+                return mailboxDaoEntry(mailbox.generateAssociatedPath(), mailbox.getMailboxId());
+            }
+
+            default RequireMailboxPathDaoEntry mailboxDaoEntry(MailboxPath path, MailboxId id) {
+                return mailboxDaoEntry(new DaoEntry(path, id));
+            }
+        }
+
+        @FunctionalInterface
+        interface RequireMailboxPathDaoEntry {
+            ConflictingEntry mailboxPathDaoEntry(DaoEntry daoEntry);
+
+            default ConflictingEntry mailboxPathDaoEntry(CassandraIdAndPath mailbox) {
+                return mailboxPathDaoEntry(mailbox.getMailboxPath(), mailbox.getCassandraId());
+            }
+
+            default ConflictingEntry mailboxPathDaoEntry(MailboxPath path, MailboxId id) {
+                return mailboxPathDaoEntry(new DaoEntry(path, id));
+            }
+        }
     }
 
-    public String getMailboxPathAsString() {
-        return mailboxPathAsString;
+    public static Builder.RequireMailboxDaoEntry builder() {
+        return mailboxDaoEntry -> mailboxPathDaoEntry -> new ConflictingEntry(mailboxDaoEntry, mailboxPathDaoEntry);
     }
 
-    public String getMailboxIdAsString() {
-        return mailboxIdAsString;
+    private final DaoEntry mailboxDaoEntry;
+    private final DaoEntry mailboxPathDaoEntry;
+
+    private ConflictingEntry(@JsonProperty("mailboxDaoEntry") DaoEntry mailboxDaoEntry,
+                            @JsonProperty("mailboxPathDaoEntry") DaoEntry mailboxPathDaoEntry) {
+        this.mailboxDaoEntry = mailboxDaoEntry;
+        this.mailboxPathDaoEntry = mailboxPathDaoEntry;
     }
 
-    public String getPathRegistrationPathAsString() {
-        return pathRegistrationPathAsString;
+    public DaoEntry getMailboxDaoEntry() {
+        return mailboxDaoEntry;
     }
 
-    public String getPathRegistrationIdAsString() {
-        return pathRegistrationIdAsString;
+    public DaoEntry getMailboxPathDaoEntry() {
+        return mailboxPathDaoEntry;
     }
 
     @Override
@@ -70,16 +123,14 @@ public class ConflictingEntry {
         if (o instanceof ConflictingEntry) {
             ConflictingEntry that = (ConflictingEntry) o;
 
-            return Objects.equals(this.mailboxPathAsString, that.mailboxPathAsString)
-                && Objects.equals(this.mailboxIdAsString, that.mailboxIdAsString)
-                && Objects.equals(this.pathRegistrationPathAsString, that.pathRegistrationPathAsString)
-                && Objects.equals(this.pathRegistrationIdAsString, that.pathRegistrationIdAsString);
+            return Objects.equals(this.mailboxDaoEntry, that.mailboxDaoEntry)
+                && Objects.equals(this.mailboxPathDaoEntry, that.mailboxPathDaoEntry);
         }
         return false;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(mailboxPathAsString, mailboxIdAsString, pathRegistrationPathAsString, pathRegistrationIdAsString);
+        return Objects.hash(mailboxDaoEntry, mailboxPathDaoEntry);
     }
 }
