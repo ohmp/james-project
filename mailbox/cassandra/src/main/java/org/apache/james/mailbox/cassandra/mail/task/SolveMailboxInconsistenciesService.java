@@ -79,14 +79,14 @@ public class SolveMailboxInconsistenciesService {
             return pathV2DAO.save(mailbox.generateAssociatedPath(), (CassandraId) mailbox.getMailboxId())
                 .map(success -> {
                     if (success) {
-                        LOGGER.info("Fixing inconsistency for orphan mailbox {} - {}",
+                        LOGGER.info("Inconsistency fixed for orphan mailbox {} - {}",
                             mailbox.getMailboxId().serialize(),
                             mailbox.generateAssociatedPath().asString());
                         context.fixedInconsistencies.incrementAndGet();
                         return Result.COMPLETED;
                     } else {
                         context.errors.incrementAndGet();
-                        LOGGER.warn("Fail fixing inconsistency for orphan mailbox {} - {}",
+                        LOGGER.warn("Failed fixing inconsistency for orphan mailbox {} - {}",
                             mailbox.getMailboxId().serialize(),
                             mailbox.generateAssociatedPath().asString());
                         return Result.PARTIAL;
@@ -118,7 +118,7 @@ public class SolveMailboxInconsistenciesService {
         public Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
             return pathV2DAO.delete(pathRegistration.getMailboxPath())
                 .doOnSuccess(any -> {
-                    LOGGER.info("Fixing inconsistency for orphan mailboxPath {} - {}",
+                    LOGGER.info("Inconsistency fixed for orphan mailboxPath {} - {}",
                         pathRegistration.getCassandraId().serialize(),
                         pathRegistration.getMailboxPath().asString());
                     context.fixedInconsistencies.incrementAndGet();
@@ -126,7 +126,7 @@ public class SolveMailboxInconsistenciesService {
                 .map(any -> Result.COMPLETED)
                 .switchIfEmpty(Mono.just(Result.COMPLETED))
                 .onErrorResume(e -> {
-                    LOGGER.error("Fail fixing inconsistency for orphan mailboxPath {} - {}",
+                    LOGGER.error("Failed fixing inconsistency for orphan mailboxPath {} - {}",
                         pathRegistration.getCassandraId().serialize(),
                         pathRegistration.getMailboxPath().asString(),
                         e);
