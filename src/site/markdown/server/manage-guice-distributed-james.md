@@ -89,4 +89,5 @@ Here are the available checks alongside the insight they offer:
  - **MessageFastViewProjection**: Follows MessageFastViewProjection cache miss rates and warns if it is below 10%. If this 
  projection is missing, this results in performance issues for JMAP GetMessages list requests. WebAdmin offers a
  [global](manage-webadmin.html#recomputing-global-jmap-fast-message-view-projection) and 
- [per user](manage-webadmin.html#recomputing-user-jmap-fast-message-view-projection) projection re-computation.
+ [per user](manage-webadmin.html#recomputing-user-jmap-fast-message-view-projection) projection re-computation. Note that
+ as computation is asynchronous, this projection can be slightly out of sync on a normally behaving server.
