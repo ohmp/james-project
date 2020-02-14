@@ -164,6 +164,22 @@ class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegrationTes
             .body("source", hasItems(ALIAS_1, ALIAS_2));
     }
 
+    @Test
+    void solveMailboxInconsistenciesTaskShouldBeExposed() {
+        String taskId = with()
+            .queryParam("task", "SolveInconsistencies")
+        .post("/mailboxes")
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"))
+            .body("type", is("solve-mailbox-inconsistencies"));
+    }
 
     @Test
     void getSwaggerShouldContainDistributedEndpoints() {

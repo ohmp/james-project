@@ -82,7 +82,7 @@ public class SolveMailboxInconsistenciesTask implements Task {
 
     private final SolveMailboxInconsistenciesService service;
 
-    SolveMailboxInconsistenciesTask(SolveMailboxInconsistenciesService service) {
+    public SolveMailboxInconsistenciesTask(SolveMailboxInconsistenciesService service) {
         this.service = service;
         this.context = new SolveMailboxInconsistenciesService.Context();
     }
