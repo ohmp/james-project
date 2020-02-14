@@ -19,8 +19,6 @@
 
 package org.apache.james.modules.server;
 
-import static org.apache.james.mailbox.cassandra.mail.migration.MailboxPathV2Migration.MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION;
-
 import org.apache.james.backends.cassandra.migration.CassandraMigrationService;
 import org.apache.james.backends.cassandra.migration.Migration;
 import org.apache.james.backends.cassandra.migration.MigrationTask;
@@ -45,7 +43,7 @@ public class CassandraRoutesModule extends AbstractModule {
     private static final SchemaTransition FROM_V2_TO_V3 = SchemaTransition.to(new SchemaVersion(3));
     private static final SchemaTransition FROM_V3_TO_V4 = SchemaTransition.to(new SchemaVersion(4));
     private static final SchemaTransition FROM_V4_TO_V5 = SchemaTransition.to(new SchemaVersion(5));
-    private static final SchemaTransition FROM_V5_TO_V6 = SchemaTransition.to(MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION);
+    private static final SchemaTransition FROM_V5_TO_V6 = SchemaTransition.to(new SchemaVersion(6));
     private static final SchemaTransition FROM_V6_TO_V7 = SchemaTransition.to(new SchemaVersion(7));
 
     @Override

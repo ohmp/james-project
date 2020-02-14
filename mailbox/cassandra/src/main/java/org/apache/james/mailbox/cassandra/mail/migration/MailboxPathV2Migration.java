@@ -26,7 +26,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.migration.Migration;
-import org.apache.james.backends.cassandra.versions.SchemaVersion;
 import org.apache.james.mailbox.cassandra.mail.CassandraIdAndPath;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOImpl;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathV2DAO;
@@ -39,8 +38,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class MailboxPathV2Migration implements Migration {
-    public static final SchemaVersion MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION = new SchemaVersion(6);
-
     static class MailboxPathV2MigrationTask implements Task {
         private final MailboxPathV2Migration migration;
 

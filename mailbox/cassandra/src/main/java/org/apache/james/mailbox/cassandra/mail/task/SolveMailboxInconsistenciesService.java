@@ -19,8 +19,6 @@
 
 package org.apache.james.mailbox.cassandra.mail.task;
 
-import static org.apache.james.mailbox.cassandra.mail.migration.MailboxPathV2Migration.MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION;
-
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -286,6 +284,8 @@ public class SolveMailboxInconsistenciesService {
             return Objects.hash(processedMailboxEntries.get(), processedMailboxPathEntries.get(), fixedInconsistencies.get(), getConflictingEntries(), errors.get());
         }
     }
+
+    private static final SchemaVersion MAILBOX_PATH_V_2_MIGRATION_PERFORMED_VERSION = new SchemaVersion(6);
 
     private final CassandraMailboxDAO mailboxDAO;
     private final CassandraMailboxPathV2DAO mailboxPathV2DAO;
