@@ -123,7 +123,7 @@ class SolveMailboxInconsistenciesServiceTest {
     }
 
     @Test
-    void fixMailboxInconsistenciesShouldReturnCompletedWhenCoherentData() {
+    void fixMailboxInconsistenciesShouldReturnCompletedWhenConsistentData() {
         mailboxDAO.save(MAILBOX).block();
         mailboxPathV2DAO.save(MAILBOX_PATH, CASSANDRA_ID_1).block();
 
