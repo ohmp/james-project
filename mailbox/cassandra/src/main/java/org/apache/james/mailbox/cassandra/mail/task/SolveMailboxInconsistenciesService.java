@@ -59,7 +59,7 @@ public class SolveMailboxInconsistenciesService {
      * The Mailbox is referenced in MailboxDAO but the corresponding
      * reference is missing in MailboxPathDao.
      *
-     * In order to solve this inconsistency, we can simple re-reference the mailboxPath.
+     * In order to solve this inconsistency, we can simply re-reference the mailboxPath.
      */
     private static class OrphanMailboxDAOEntry implements Inconsistency {
         private final Mailbox mailbox;
@@ -99,7 +99,7 @@ public class SolveMailboxInconsistenciesService {
      *
      * In both case removing the dandling path registration solves the inconsistency
      *
-     * In order to solve this inconsistency, we can simple re-reference the mailboxPath.
+     * In order to solve this inconsistency, we can simply re-reference the mailboxPath.
      */
     private static class OrphanMailboxPathDAOEntry implements Inconsistency {
         private final CassandraIdAndPath pathRegistration;
