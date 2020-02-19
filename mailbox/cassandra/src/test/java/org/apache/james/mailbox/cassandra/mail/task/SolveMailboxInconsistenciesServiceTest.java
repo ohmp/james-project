@@ -175,7 +175,7 @@ class SolveMailboxInconsistenciesServiceTest {
     }
 
     @Test
-    void fixMailboxInconsistenciesShouldUpdateContextWhenCoherentData() {
+    void fixMailboxInconsistenciesShouldUpdateContextWhenConsistentData() {
         Context context = new Context();
         mailboxDAO.save(MAILBOX).block();
         mailboxPathV2DAO.save(MAILBOX_PATH, CASSANDRA_ID_1).block();
@@ -267,7 +267,7 @@ class SolveMailboxInconsistenciesServiceTest {
     }
 
     @Test
-    void fixMailboxInconsistenciesShouldNotAlterStateWhenCoherent() {
+    void fixMailboxInconsistenciesShouldNotAlterStateWhenConsistent() {
         mailboxDAO.save(MAILBOX).block();
         mailboxPathV2DAO.save(MAILBOX_PATH, CASSANDRA_ID_1).block();
 
