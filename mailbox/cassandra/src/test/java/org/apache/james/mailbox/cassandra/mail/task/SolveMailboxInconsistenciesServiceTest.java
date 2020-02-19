@@ -46,8 +46,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 class SolveMailboxInconsistenciesServiceTest {
     private static final int UID_VALIDITY_1 = 145;
     private static final int UID_VALIDITY_2 = 147;
@@ -202,7 +200,7 @@ class SolveMailboxInconsistenciesServiceTest {
         assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(1)
-                .fixedInconsistencies(1)
+                .addFixedInconsistencies(MAILBOX.getMailboxId())
                 .build()
                 .snapshot());
     }
@@ -217,7 +215,7 @@ class SolveMailboxInconsistenciesServiceTest {
         assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxPathEntries(1)
-                .fixedInconsistencies(1)
+                .addFixedInconsistencies(CASSANDRA_ID_1)
                 .build()
                 .snapshot());
     }
@@ -235,7 +233,6 @@ class SolveMailboxInconsistenciesServiceTest {
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(2)
                 .processedMailboxPathEntries(1)
-                .fixedInconsistencies(0)
                 .addConflictingEntry(ConflictingEntry.builder()
                     .mailboxDaoEntry(MAILBOX)
                     .mailboxPathDaoEntry(MAILBOX_PATH, CASSANDRA_ID_2))
@@ -255,7 +252,7 @@ class SolveMailboxInconsistenciesServiceTest {
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(1)
                 .processedMailboxPathEntries(1)
-                .fixedInconsistencies(1)
+                .addFixedInconsistencies(CASSANDRA_ID_1)
                 .addConflictingEntry(ConflictingEntry.builder()
                     .mailboxDaoEntry(MAILBOX)
                     .mailboxPathDaoEntry(NEW_MAILBOX_PATH, CASSANDRA_ID_1))
