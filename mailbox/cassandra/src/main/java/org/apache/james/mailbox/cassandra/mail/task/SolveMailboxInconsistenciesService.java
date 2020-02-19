@@ -268,13 +268,13 @@ public class SolveMailboxInconsistenciesService {
         @Override
         public final boolean equals(Object o) {
             if (o instanceof Context) {
-                Context context = (Context) o;
+                Context that = (Context) o;
 
-                return Objects.equals(this.processedMailboxEntries.get(), context.processedMailboxEntries.get())
-                    && Objects.equals(this.processedMailboxPathEntries.get(), context.processedMailboxPathEntries.get())
-                    && Objects.equals(this.fixedInconsistencies.get(), context.fixedInconsistencies.get())
-                    && Objects.equals(getConflictingEntries(), getConflictingEntries())
-                    && Objects.equals(this.errors.get(), context.errors.get());
+                return Objects.equals(this.processedMailboxEntries.get(), that.processedMailboxEntries.get())
+                    && Objects.equals(this.processedMailboxPathEntries.get(), that.processedMailboxPathEntries.get())
+                    && Objects.equals(this.fixedInconsistencies.get(), that.fixedInconsistencies.get())
+                    && Objects.equals(this.getConflictingEntries(), that.getConflictingEntries())
+                    && Objects.equals(this.errors.get(), that.errors.get());
             }
             return false;
         }
