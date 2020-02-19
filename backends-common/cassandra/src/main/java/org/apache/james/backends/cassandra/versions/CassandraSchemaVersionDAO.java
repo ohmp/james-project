@@ -37,6 +37,7 @@ import org.apache.james.backends.cassandra.versions.table.CassandraSchemaVersion
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.utils.UUIDs;
+import com.google.common.annotations.VisibleForTesting;
 
 import reactor.core.publisher.Mono;
 
@@ -81,6 +82,7 @@ public class CassandraSchemaVersionDAO {
                 .setInt(VALUE, newVersion.getValue()));
     }
 
+    @VisibleForTesting
     public Mono<Void> truncateVersion() {
         return cassandraAsyncExecutor.executeVoid(truncate(TABLE_NAME));
     }
