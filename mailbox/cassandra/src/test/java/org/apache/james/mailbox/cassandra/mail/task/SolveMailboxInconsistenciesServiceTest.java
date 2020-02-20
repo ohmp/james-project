@@ -27,26 +27,37 @@ import java.time.Duration;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
+import org.apache.james.backends.cassandra.TestingSession.Barrier;
 import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
+import org.apache.james.mailbox.cassandra.mail.CassandraACLMapper;
 import org.apache.james.mailbox.cassandra.mail.CassandraIdAndPath;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxDAO;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxMapper;
+import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathDAOImpl;
 import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathV2DAO;
+import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAO;
 import org.apache.james.mailbox.cassandra.mail.task.SolveMailboxInconsistenciesService.Context;
 import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
 import org.apache.james.mailbox.model.Mailbox;
+import org.apache.james.mailbox.model.MailboxAssertingTool;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.task.Task.Result;
+import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 class SolveMailboxInconsistenciesServiceTest {
     private static final int UID_VALIDITY_1 = 145;
@@ -54,7 +65,8 @@ class SolveMailboxInconsistenciesServiceTest {
     private static final Username USER = Username.of("user");
     private static final MailboxPath MAILBOX_PATH = MailboxPath.forUser(USER, "abc");
     private static final MailboxPath NEW_MAILBOX_PATH = MailboxPath.forUser(USER, "xyz");
-    private static final Duration GRACE_PERIOD = Duration.ofMillis(100);
+    private static final int GRACE_PERIOD_MILLIS = 500;
+    private static final Duration GRACE_PERIOD = Duration.ofMillis(GRACE_PERIOD_MILLIS);
     private static CassandraId CASSANDRA_ID_1 = CassandraId.timeBased();
     private static final Mailbox MAILBOX = new Mailbox(MAILBOX_PATH, UID_VALIDITY_1, CASSANDRA_ID_1);
     private static CassandraId CASSANDRA_ID_2 = CassandraId.timeBased();
@@ -70,16 +82,28 @@ class SolveMailboxInconsistenciesServiceTest {
     CassandraMailboxDAO mailboxDAO;
     CassandraMailboxPathV2DAO mailboxPathV2DAO;
     CassandraSchemaVersionDAO versionDAO;
+    CassandraMailboxMapper mapper;
     SolveMailboxInconsistenciesService testee;
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        mailboxDAO = new CassandraMailboxDAO(cassandra.getSession(), cassandra.getTypesProvider());
-        mailboxPathV2DAO = new CassandraMailboxPathV2DAO(cassandra.getSession(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
-        versionDAO = new CassandraSchemaVersionDAO(cassandra.getSession());
+        mailboxDAO = new CassandraMailboxDAO(cassandra.getConf(), cassandra.getTypesProvider());
+        mailboxPathV2DAO = new CassandraMailboxPathV2DAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+        versionDAO = new CassandraSchemaVersionDAO(cassandra.getConf());
         testee = new SolveMailboxInconsistenciesService(mailboxDAO, mailboxPathV2DAO, versionDAO, GRACE_PERIOD);
 
+        mapper = createMailboxMapper(cassandra);
+
         versionDAO.updateVersion(new SchemaVersion(7)).block();
+    }
+
+    private CassandraMailboxMapper createMailboxMapper(CassandraCluster cassandra) {
+        CassandraUserMailboxRightsDAO userMailboxRightsDAO = new CassandraUserMailboxRightsDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+        return new CassandraMailboxMapper(mailboxDAO,
+            new CassandraMailboxPathDAOImpl(cassandra.getConf(), cassandra.getTypesProvider()),
+            mailboxPathV2DAO,
+            userMailboxRightsDAO,
+            new CassandraACLMapper(cassandra.getConf(), userMailboxRightsDAO, CassandraConfiguration.builder().build()));
     }
 
     @Test
@@ -399,6 +423,56 @@ class SolveMailboxInconsistenciesServiceTest {
             softly.assertThat(mailboxPathV2DAO.listAll().collectList().block())
                 .containsExactlyInAnyOrder(
                     new CassandraIdAndPath(CASSANDRA_ID_2, MAILBOX_PATH));
+        });
+    }
+
+    @Test
+    void concurrentCreateShouldNotBeConsideredAsAnInconsistency(CassandraCluster cassandra) throws Exception {
+        Barrier barrier = new Barrier();
+
+        cassandra.getConf()
+            .awaitOn(barrier)
+            .whenBoundStatementStartsWith("INSERT INTO mailbox ")
+            .times(6)
+            .setExecutionHook();
+
+        // Start create a mailbox. Path registration entry will be created.
+        // However we instrument the driver to block mailbox entry until barrier is released
+        Mono<Mailbox> createMailbox = Mono.fromCallable(() -> mapper.create(MAILBOX_PATH, UID_VALIDITY_1))
+            .cache();
+        createMailbox.subscribeOn(Schedulers.elastic())
+            .subscribe();
+        barrier.awaitCaller();
+
+        // Start fixing inconsistencies
+        Context context = new Context();
+        ConcurrentTestRunner runner = ConcurrentTestRunner.builder()
+            .operation((a, b) -> testee.fixMailboxInconsistencies(context).block())
+            .threadCount(1)
+            .operationCount(1)
+            .run();
+
+        // Let the 'fix inconsistencies' make some progress...
+        Thread.sleep(GRACE_PERIOD_MILLIS / 2);
+        barrier.releaseCaller();
+
+        runner.awaitTermination(Duration.ofMinutes(1));
+        SoftAssertions.assertSoftly(softly -> {
+            // Fail on concurrent modification
+            softly.assertThat(context)
+                .isEqualTo(Context.builder()
+                    .processedMailboxPathEntries(1)
+                    .errors(1)
+                    .build());
+
+            // Don't alter DB state
+            Mailbox mailbox = createMailbox.block();
+            CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+            MailboxAssertingTool.softly(softly)
+                .assertThat(mailboxDAO.retrieveMailbox(mailboxId).block())
+                .isEqualTo(mailbox);
+            assertThat(mailboxPathV2DAO.retrieveId(MAILBOX_PATH).block())
+                .isEqualTo(new CassandraIdAndPath(mailboxId, MAILBOX_PATH));
         });
     }
 }
