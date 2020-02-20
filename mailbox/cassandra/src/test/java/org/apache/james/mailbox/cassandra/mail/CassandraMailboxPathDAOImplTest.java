@@ -37,17 +37,13 @@ class CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest<Cassan
         testee.save(USER_OUTBOX_MAILBOXPATH, OUTBOX_ID).block();
         testee.save(OTHER_USER_MAILBOXPATH, otherMailboxId).block();
 
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.countAll().block())
+        assertThat(testee.countAll().block())
             .isEqualTo(3);
     }
 
     @Test
     void countAllShouldReturnZeroByDefault() {
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.countAll().block())
+        assertThat(testee.countAll().block())
             .isEqualTo(0);
     }
 
@@ -57,9 +53,7 @@ class CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest<Cassan
         testee.save(USER_OUTBOX_MAILBOXPATH, OUTBOX_ID).block();
         testee.save(OTHER_USER_MAILBOXPATH, otherMailboxId).block();
 
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.readAll().toIterable())
+        assertThat(testee.readAll().toIterable())
             .containsOnly(
                 new CassandraIdAndPath(INBOX_ID, USER_INBOX_MAILBOXPATH),
                 new CassandraIdAndPath(OUTBOX_ID, USER_OUTBOX_MAILBOXPATH),
@@ -68,9 +62,7 @@ class CassandraMailboxPathDAOImplTest extends CassandraMailboxPathDAOTest<Cassan
 
     @Test
     void readAllShouldReturnEmptyByDefault() {
-        CassandraMailboxPathDAOImpl daoV1 = (CassandraMailboxPathDAOImpl) testee;
-
-        assertThat(daoV1.readAll().toIterable())
+        assertThat(testee.readAll().toIterable())
             .isEmpty();
     }
 }
