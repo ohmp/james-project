@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail.task;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,6 +40,8 @@ import org.apache.james.task.Task.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -47,13 +50,27 @@ import reactor.core.publisher.Mono;
 
 public class SolveMailboxInconsistenciesService {
     public static final Logger LOGGER = LoggerFactory.getLogger(SolveMailboxInconsistenciesService.class);
+    private static final boolean INCONSISTENCY_STILL_PRESENT = true;
+    // Delay of 2 * Cassandra TCP timeout to ensure concurrentWrite upon diagnostic had time to complete
+    private static final Duration DEFAULT_GRACE_PERIOD = Duration.ofSeconds(10);
 
-    @FunctionalInterface
     interface Inconsistency {
         Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO);
+
+        Mono<Boolean> isStillPertinent(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO);
     }
 
-    private static Inconsistency NO_INCONSISTENCY = (context, mailboxDAO1, pathV2DAO) -> Mono.just(Result.COMPLETED);
+    private static Inconsistency NO_INCONSISTENCY = new Inconsistency() {
+        @Override
+        public Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+            return Mono.just(Result.COMPLETED);
+        }
+
+        @Override
+        public Mono<Boolean> isStillPertinent(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+            return Mono.just(INCONSISTENCY_STILL_PRESENT);
+        }
+    };
 
     /**
      * The Mailbox is referenced in MailboxDAO but the corresponding
@@ -86,6 +103,29 @@ public class SolveMailboxInconsistenciesService {
                         return Result.PARTIAL;
                     }
                 });
+        }
+
+        /**
+         * We validate:
+         *  - That the mailbox record stil exists and that its path did not change
+         *  - That no corresponding path record exist
+         */
+        @Override
+        public Mono<Boolean> isStillPertinent(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+            return mailboxDAO.retrieveMailbox((CassandraId) mailbox.getMailboxId())
+                .filter(currentMailbox -> currentMailbox.generateAssociatedPath().equals(mailbox.generateAssociatedPath()))
+                .flatMap(currentMailbox -> pathV2DAO.retrieveId(currentMailbox.generateAssociatedPath())
+                    .map(entry -> !INCONSISTENCY_STILL_PRESENT)
+                    .switchIfEmpty(Mono.just(INCONSISTENCY_STILL_PRESENT)))
+                .filter(stillPresent -> stillPresent)
+                .switchIfEmpty(Mono.fromCallable(() -> {
+                    context.errors.incrementAndGet();
+                    LOGGER.error("Concurrent modification performed while attempting to fix {} {} orphan mailbox entry. " +
+                            "This can be due to a mailbox on the operation while performing the check.",
+                        mailbox.generateAssociatedPath().asString(),
+                        mailbox.getMailboxId().serialize());
+                    return !INCONSISTENCY_STILL_PRESENT;
+                }));
         }
     }
 
@@ -128,6 +168,29 @@ public class SolveMailboxInconsistenciesService {
                     return Mono.just(Result.PARTIAL);
                 });
         }
+
+        /**
+         * We validate:
+         *  - That the path record stil exists and that its id did not change
+         *  - That no corresponding mailbox record exist
+         */
+        @Override
+        public Mono<Boolean> isStillPertinent(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+            return pathV2DAO.retrieveId(pathRegistration.getMailboxPath())
+                .filter(pathRegistration::equals)
+                .flatMap(currentRegistration -> mailboxDAO.retrieveMailbox(currentRegistration.getCassandraId())
+                    .map(entry -> !INCONSISTENCY_STILL_PRESENT)
+                    .switchIfEmpty(Mono.just(INCONSISTENCY_STILL_PRESENT)))
+                .filter(stillPresent -> stillPresent)
+                .switchIfEmpty(Mono.fromCallable(() -> {
+                    context.errors.incrementAndGet();
+                    LOGGER.error("Concurrent modification performed while attempting to fix {} {} orphan path entry. " +
+                        "This can be due to a mailbox on the operation while performing the check.",
+                        pathRegistration.getMailboxPath().asString(),
+                        pathRegistration.getCassandraId().serialize());
+                    return !INCONSISTENCY_STILL_PRESENT;
+                }));
+        }
     }
 
     /**
@@ -161,6 +224,14 @@ public class SolveMailboxInconsistenciesService {
                 conflictingEntry.getMailboxPathDaoEntry().getMailboxId(), conflictingEntry.getMailboxPathDaoEntry().getMailboxPath());
             context.conflictingEntries.add(conflictingEntry);
             return Mono.just(Result.PARTIAL);
+        }
+
+        /**
+         * Skip validating conflict as no table level correction will be performed
+         */
+        @Override
+        public Mono<Boolean> isStillPertinent(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+            return Mono.just(true);
         }
     }
 
@@ -290,12 +361,19 @@ public class SolveMailboxInconsistenciesService {
     private final CassandraMailboxDAO mailboxDAO;
     private final CassandraMailboxPathV2DAO mailboxPathV2DAO;
     private final CassandraSchemaVersionDAO versionDAO;
+    private final Duration gracePeriod;
 
     @Inject
     SolveMailboxInconsistenciesService(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO mailboxPathV2DAO, CassandraSchemaVersionDAO versionDAO) {
+        this(mailboxDAO, mailboxPathV2DAO, versionDAO, DEFAULT_GRACE_PERIOD);
+    }
+
+    @VisibleForTesting
+    SolveMailboxInconsistenciesService(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO mailboxPathV2DAO, CassandraSchemaVersionDAO versionDAO, Duration gracePeriod) {
         this.mailboxDAO = mailboxDAO;
         this.mailboxPathV2DAO = mailboxPathV2DAO;
         this.versionDAO = versionDAO;
+        this.gracePeriod = gracePeriod;
     }
 
     Mono<Result> fixMailboxInconsistencies(Context context) {
@@ -322,15 +400,33 @@ public class SolveMailboxInconsistenciesService {
     private Flux<Result> processMailboxPathDaoInconsistencies(Context context) {
         return mailboxPathV2DAO.listAll()
             .flatMap(this::detectInconsistency)
-            .flatMap(inconsistency -> inconsistency.fix(context, mailboxDAO, mailboxPathV2DAO))
+            .collect(Guavate.toImmutableList())
+            // Wait to ensure concurrentWrite upon diagnostic had time to complete
+            .delayElement(gracePeriod)
+            .flatMapMany(Flux::fromIterable)
+            .flatMap(inconsistency -> fixInconsistencyIfNeeded(context, inconsistency))
             .doOnNext(any -> context.processedMailboxPathEntries.incrementAndGet());
     }
 
     private Flux<Result> processMailboxDaoInconsistencies(Context context) {
         return mailboxDAO.retrieveAllMailboxes()
             .flatMap(this::detectInconsistency)
-            .flatMap(inconsistency -> inconsistency.fix(context, mailboxDAO, mailboxPathV2DAO))
+            .collect(Guavate.toImmutableList())
+            // Wait to ensure concurrentWrite upon diagnostic had time to complete
+            .delayElement(gracePeriod)
+            .flatMapMany(Flux::fromIterable)
+            .flatMap(inconsistency -> fixInconsistencyIfNeeded(context, inconsistency))
             .doOnNext(any -> context.processedMailboxEntries.incrementAndGet());
+    }
+
+    private Mono<Result> fixInconsistencyIfNeeded(Context context, Inconsistency inconsistency) {
+        return inconsistency.isStillPertinent(context, mailboxDAO, mailboxPathV2DAO)
+            .flatMap(pertinent -> {
+                if (pertinent) {
+                    return inconsistency.fix(context, mailboxDAO, mailboxPathV2DAO);
+                }
+                return Mono.just(Result.PARTIAL);
+            });
     }
 
     private Mono<Inconsistency> detectInconsistency(Mailbox mailbox) {

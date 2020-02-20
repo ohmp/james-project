@@ -23,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Duration;
+
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
@@ -46,14 +48,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 class SolveMailboxInconsistenciesServiceTest {
     private static final int UID_VALIDITY_1 = 145;
     private static final int UID_VALIDITY_2 = 147;
     private static final Username USER = Username.of("user");
     private static final MailboxPath MAILBOX_PATH = MailboxPath.forUser(USER, "abc");
     private static final MailboxPath NEW_MAILBOX_PATH = MailboxPath.forUser(USER, "xyz");
+    private static final Duration GRACE_PERIOD = Duration.ofMillis(100);
     private static CassandraId CASSANDRA_ID_1 = CassandraId.timeBased();
     private static final Mailbox MAILBOX = new Mailbox(MAILBOX_PATH, UID_VALIDITY_1, CASSANDRA_ID_1);
     private static CassandraId CASSANDRA_ID_2 = CassandraId.timeBased();
@@ -73,10 +74,10 @@ class SolveMailboxInconsistenciesServiceTest {
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        mailboxDAO = new CassandraMailboxDAO(cassandra.getConf(), cassandra.getTypesProvider());
-        mailboxPathV2DAO = new CassandraMailboxPathV2DAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
-        versionDAO = new CassandraSchemaVersionDAO(cassandra.getConf());
-        testee = new SolveMailboxInconsistenciesService(mailboxDAO, mailboxPathV2DAO, versionDAO);
+        mailboxDAO = new CassandraMailboxDAO(cassandra.getSession(), cassandra.getTypesProvider());
+        mailboxPathV2DAO = new CassandraMailboxPathV2DAO(cassandra.getSession(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+        versionDAO = new CassandraSchemaVersionDAO(cassandra.getSession());
+        testee = new SolveMailboxInconsistenciesService(mailboxDAO, mailboxPathV2DAO, versionDAO, GRACE_PERIOD);
 
         versionDAO.updateVersion(new SchemaVersion(7)).block();
     }
