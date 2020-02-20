@@ -400,7 +400,11 @@ public class SolveMailboxInconsistenciesService {
     private Flux<Result> processMailboxPathDaoInconsistencies(Context context) {
         return mailboxPathV2DAO.listAll()
             .flatMap(this::detectInconsistency)
-            .flatMap(inconsistency -> inconsistency.fix(context, mailboxDAO, mailboxPathV2DAO))
+            .collect(Guavate.toImmutableList())
+            // Wait to ensure concurrentWrite upon diagnostic had time to complete
+            .delayElement(gracePeriod)
+            .flatMapMany(Flux::fromIterable)
+            .flatMap(inconsistency -> fixInconsistencyIfNeeded(context, inconsistency))
             .doOnNext(any -> context.processedMailboxPathEntries.incrementAndGet());
     }
 
@@ -418,7 +422,6 @@ public class SolveMailboxInconsistenciesService {
     private Mono<Result> fixInconsistencyIfNeeded(Context context, Inconsistency inconsistency) {
         return inconsistency.isStillPertinent(context, mailboxDAO, mailboxPathV2DAO)
             .flatMap(pertinent -> {
-                System.out.println("And finally pertinent " + pertinent);
                 if (pertinent) {
                     return inconsistency.fix(context, mailboxDAO, mailboxPathV2DAO);
                 }
