@@ -47,7 +47,7 @@ public class SelectProcessor extends AbstractSelectionProcessor<SelectRequest> {
             .addContext("knownModseq", message.getKnownModSeq())
             .addContext("knownUids", UidRange.toString(message.getKnownUidSet()))
             .addContext("knownIdRange", IdRange.toString(message.getKnownSequenceSet()))
-            .addContext("lastKnownUidValidity", message.getLastKnownUidValidity())
+            .addContext("lastKnownUidValidity", message.getLastKnownUidValidity().asLong())
             .addContext("uidSet", UidRange.toString(message.getUidSet()))
             .build();
     }
