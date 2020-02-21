@@ -24,7 +24,7 @@ Operation:
  then we can have an orphan `mailboxPathV2`. The corresponding mailbox don't exist, but can't either be created.
 
 Mitigation:
- - As part of Sprint 14 we:
+ - As part of Sprint 15 we:
   - Add a retry strategy on write operations that can lead to inconsistencies
   - We removed unecessary operations out of the write path to increase resilience
   
@@ -36,7 +36,7 @@ so that an admin can use the mailbox merging endpoint.
 Criticity:
  - High. This had been spotted in production. It prevents from migrating some user mailboxes.
 
-This work is in progress (Sprint 14).
+This work is in progress (Sprint 15).
 
 ## ACL/CassandraUserMailboxRightsTable
 
