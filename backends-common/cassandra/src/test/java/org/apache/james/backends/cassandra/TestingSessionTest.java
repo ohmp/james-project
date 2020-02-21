@@ -169,7 +169,7 @@ class TestingSessionTest {
         SchemaVersion originalSchemaVersion = new SchemaVersion(32);
         dao.updateVersion(originalSchemaVersion).block();
         Barrier barrier = new Barrier();
-        cassandra.getSession()
+        cassandra.getConf()
             .awaitOn(barrier)
             .whenBoundStatementStartsWith("INSERT INTO schemaVersion")
             .times(1)
@@ -190,7 +190,7 @@ class TestingSessionTest {
 
         dao.updateVersion(originalSchemaVersion).block();
         Barrier barrier = new Barrier();
-        cassandra.getSession()
+        cassandra.getConf()
             .awaitOn(barrier)
             .whenBoundStatementStartsWith("INSERT INTO schemaVersion")
             .times(1)
@@ -213,7 +213,7 @@ class TestingSessionTest {
 
         dao.updateVersion(originalSchemaVersion).block();
         Barrier barrier = new Barrier();
-        cassandra.getSession()
+        cassandra.getConf()
             .awaitOn(barrier)
             .whenBoundStatementStartsWith("INSERT INTO schemaVersion")
             .times(1)
