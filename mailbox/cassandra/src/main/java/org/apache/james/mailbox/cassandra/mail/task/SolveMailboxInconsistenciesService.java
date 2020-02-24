@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -91,19 +92,27 @@ public class SolveMailboxInconsistenciesService {
             return pathV2DAO.save(mailbox.generateAssociatedPath(), (CassandraId) mailbox.getMailboxId())
                 .map(success -> {
                     if (success) {
-                        LOGGER.info("Inconsistency fixed for orphan mailbox {} - {}",
-                            mailbox.getMailboxId().serialize(),
-                            mailbox.generateAssociatedPath().asString());
-                        context.fixedInconsistencies.incrementAndGet();
+                        notifySuccess(context);
                         return Result.COMPLETED;
                     } else {
-                        context.errors.incrementAndGet();
-                        LOGGER.warn("Failed fixing inconsistency for orphan mailbox {} - {}",
-                            mailbox.getMailboxId().serialize(),
-                            mailbox.generateAssociatedPath().asString());
+                        notifyFailure(context);
                         return Result.PARTIAL;
                     }
                 });
+        }
+
+        private void notifyFailure(Context context) {
+            context.errors.incrementAndGet();
+            LOGGER.warn("Failed fixing inconsistency for orphan mailbox {} - {}",
+                mailbox.getMailboxId().serialize(),
+                mailbox.generateAssociatedPath().asString());
+        }
+
+        private void notifySuccess(Context context) {
+            LOGGER.info("Inconsistency fixed for orphan mailbox {} - {}",
+                mailbox.getMailboxId().serialize(),
+                mailbox.generateAssociatedPath().asString());
+            context.fixedInconsistencies.incrementAndGet();
         }
 
         /**
@@ -354,6 +363,17 @@ public class SolveMailboxInconsistenciesService {
         @Override
         public final int hashCode() {
             return Objects.hash(processedMailboxEntries.get(), processedMailboxPathEntries.get(), fixedInconsistencies.get(), getConflictingEntries(), errors.get());
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                .add("processedMailboxEntries", processedMailboxEntries.get())
+                .add("processedMailboxPathEntries", processedMailboxPathEntries.get())
+                .add("fixedInconsistencies", fixedInconsistencies.get())
+                .add("processedMailboxEntries", getConflictingEntries())
+                .add("processedMailboxEntries", errors.get())
+                .toString();
         }
     }
 
