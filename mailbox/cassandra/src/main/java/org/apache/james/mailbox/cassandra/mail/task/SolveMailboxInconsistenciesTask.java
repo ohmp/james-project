@@ -100,11 +100,12 @@ public class SolveMailboxInconsistenciesTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
+        SolveMailboxInconsistenciesService.Context.Snapshot snapshot = context.snapshot();
         return Optional.of(new Details(Clock.systemUTC().instant(),
-            context.getProcessedMailboxEntries(),
-            context.getProcessedMailboxPathEntries(),
-            context.getFixedInconsistencies(),
-            context.getConflictingEntries(),
-            context.getErrors()));
+            snapshot.getProcessedMailboxEntries(),
+            snapshot.getProcessedMailboxPathEntries(),
+            snapshot.getFixedInconsistencies(),
+            snapshot.getConflictingEntries(),
+            snapshot.getErrors()));
     }
 }
