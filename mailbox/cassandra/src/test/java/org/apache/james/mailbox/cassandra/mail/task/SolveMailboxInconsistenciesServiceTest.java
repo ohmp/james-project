@@ -174,7 +174,7 @@ class SolveMailboxInconsistenciesServiceTest {
 
         testee.fixMailboxInconsistencies(context).block();
 
-        assertThat(context).isEqualToComparingFieldByFieldRecursively(new Context());
+        assertThat(context.snapshot()).isEqualToComparingFieldByFieldRecursively(new Context().snapshot());
     }
 
     @Test
@@ -185,11 +185,12 @@ class SolveMailboxInconsistenciesServiceTest {
 
         testee.fixMailboxInconsistencies(context).block();
 
-        assertThat(context)
+        assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(1)
                 .processedMailboxPathEntries(1)
-                .build());
+                .build()
+                .snapshot());
     }
 
     @Test
@@ -199,11 +200,12 @@ class SolveMailboxInconsistenciesServiceTest {
 
         testee.fixMailboxInconsistencies(context).block();
 
-        assertThat(context)
+        assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(1)
                 .fixedInconsistencies(1)
-                .build());
+                .build()
+                .snapshot());
     }
 
     @Test
@@ -213,11 +215,12 @@ class SolveMailboxInconsistenciesServiceTest {
 
         testee.fixMailboxInconsistencies(context).block();
 
-        assertThat(context)
+        assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxPathEntries(1)
                 .fixedInconsistencies(1)
-                .build());
+                .build()
+                .snapshot());
     }
 
     @Test
@@ -229,7 +232,7 @@ class SolveMailboxInconsistenciesServiceTest {
 
         testee.fixMailboxInconsistencies(context).block();
 
-        assertThat(context)
+        assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(2)
                 .processedMailboxPathEntries(1)
@@ -237,7 +240,8 @@ class SolveMailboxInconsistenciesServiceTest {
                 .addConflictingEntry(ConflictingEntry.builder()
                     .mailboxDaoEntry(MAILBOX)
                     .mailboxPathDaoEntry(MAILBOX_PATH, CASSANDRA_ID_2))
-                .build());
+                .build()
+                .snapshot());
     }
 
     @Test
@@ -248,7 +252,7 @@ class SolveMailboxInconsistenciesServiceTest {
 
         testee.fixMailboxInconsistencies(context).block();
 
-        assertThat(context)
+        assertThat(context.snapshot())
             .isEqualTo(Context.builder()
                 .processedMailboxEntries(1)
                 .processedMailboxPathEntries(1)
@@ -256,7 +260,8 @@ class SolveMailboxInconsistenciesServiceTest {
                 .addConflictingEntry(ConflictingEntry.builder()
                     .mailboxDaoEntry(MAILBOX)
                     .mailboxPathDaoEntry(NEW_MAILBOX_PATH, CASSANDRA_ID_1))
-                .build());
+                .build()
+                .snapshot());
     }
 
     @Test

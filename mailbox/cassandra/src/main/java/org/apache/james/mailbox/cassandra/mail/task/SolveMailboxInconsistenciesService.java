@@ -300,6 +300,52 @@ public class SolveMailboxInconsistenciesService {
             return new Builder();
         }
 
+        static class Snapshot {
+            private final long processedMailboxEntries;
+            private final long processedMailboxPathEntries;
+            private final long fixedInconsistencies;
+            private final ImmutableList<ConflictingEntry> conflictingEntries;
+            private final long errors;
+
+            private Snapshot(long processedMailboxEntries, long processedMailboxPathEntries, long fixedInconsistencies, ImmutableList<ConflictingEntry> conflictingEntries, long errors) {
+                this.processedMailboxEntries = processedMailboxEntries;
+                this.processedMailboxPathEntries = processedMailboxPathEntries;
+                this.fixedInconsistencies = fixedInconsistencies;
+                this.conflictingEntries = conflictingEntries;
+                this.errors = errors;
+            }
+
+            @Override
+            public final boolean equals(Object o) {
+                if (o instanceof Snapshot) {
+                    Snapshot that = (Snapshot) o;
+
+                    return Objects.equals(this.processedMailboxEntries, that.processedMailboxEntries)
+                        && Objects.equals(this.processedMailboxPathEntries, that.processedMailboxPathEntries)
+                        && Objects.equals(this.fixedInconsistencies, that.fixedInconsistencies)
+                        && Objects.equals(this.errors, that.errors)
+                        && Objects.equals(this.conflictingEntries, that.conflictingEntries);
+                }
+                return false;
+            }
+
+            @Override
+            public final int hashCode() {
+                return Objects.hash(processedMailboxEntries, processedMailboxPathEntries, fixedInconsistencies, conflictingEntries, errors);
+            }
+
+            @Override
+            public String toString() {
+                return MoreObjects.toStringHelper(this)
+                    .add("processedMailboxEntries", processedMailboxEntries)
+                    .add("processedMailboxPathEntries", processedMailboxPathEntries)
+                    .add("fixedInconsistencies", fixedInconsistencies)
+                    .add("conflictingEntries", conflictingEntries)
+                    .add("errors", errors)
+                    .toString();
+            }
+        }
+
         private final AtomicLong processedMailboxEntries;
         private final AtomicLong processedMailboxPathEntries;
         private final AtomicLong fixedInconsistencies;
@@ -346,34 +392,13 @@ public class SolveMailboxInconsistenciesService {
             return errors.get();
         }
 
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof Context) {
-                Context that = (Context) o;
-
-                return Objects.equals(this.processedMailboxEntries.get(), that.processedMailboxEntries.get())
-                    && Objects.equals(this.processedMailboxPathEntries.get(), that.processedMailboxPathEntries.get())
-                    && Objects.equals(this.fixedInconsistencies.get(), that.fixedInconsistencies.get())
-                    && Objects.equals(this.getConflictingEntries(), that.getConflictingEntries())
-                    && Objects.equals(this.errors.get(), that.errors.get());
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(processedMailboxEntries.get(), processedMailboxPathEntries.get(), fixedInconsistencies.get(), getConflictingEntries(), errors.get());
-        }
-
-        @Override
-        public String toString() {
-            return MoreObjects.toStringHelper(this)
-                .add("processedMailboxEntries", processedMailboxEntries.get())
-                .add("processedMailboxPathEntries", processedMailboxPathEntries.get())
-                .add("fixedInconsistencies", fixedInconsistencies.get())
-                .add("processedMailboxEntries", getConflictingEntries())
-                .add("processedMailboxEntries", errors.get())
-                .toString();
+        Snapshot snapshot() {
+            return new Snapshot(
+                processedMailboxEntries.get(),
+                processedMailboxPathEntries.get(),
+                fixedInconsistencies.get(),
+                ImmutableList.copyOf(conflictingEntries),
+                errors.get());
         }
     }
 
