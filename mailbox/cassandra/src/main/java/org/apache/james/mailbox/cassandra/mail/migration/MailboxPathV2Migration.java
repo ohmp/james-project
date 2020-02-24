@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class MailboxPathV2Migration implements Migration {
+
     static class MailboxPathV2MigrationTask implements Task {
         private final MailboxPathV2Migration migration;
 
