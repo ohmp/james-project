@@ -102,7 +102,7 @@ public class SolveMailboxInconsistenciesService {
         }
 
         private void notifyFailure(Context context) {
-            context.errors.incrementAndGet();
+            context.incrementErrors();
             LOGGER.warn("Failed fixing inconsistency for orphan mailbox {} - {}",
                 mailbox.getMailboxId().serialize(),
                 mailbox.generateAssociatedPath().asString());
@@ -112,7 +112,7 @@ public class SolveMailboxInconsistenciesService {
             LOGGER.info("Inconsistency fixed for orphan mailbox {} - {}",
                 mailbox.getMailboxId().serialize(),
                 mailbox.generateAssociatedPath().asString());
-            context.fixedInconsistencies.incrementAndGet();
+            context.incrementFixedInconsistencies();
         }
 
         /**
@@ -177,7 +177,7 @@ public class SolveMailboxInconsistenciesService {
                     LOGGER.info("Inconsistency fixed for orphan mailboxPath {} - {}",
                         pathRegistration.getCassandraId().serialize(),
                         pathRegistration.getMailboxPath().asString());
-                    context.fixedInconsistencies.incrementAndGet();
+                    context.incrementFixedInconsistencies();
                 })
                 .map(any -> Result.COMPLETED)
                 .switchIfEmpty(Mono.just(Result.COMPLETED))
@@ -186,7 +186,7 @@ public class SolveMailboxInconsistenciesService {
                         pathRegistration.getCassandraId().serialize(),
                         pathRegistration.getMailboxPath().asString(),
                         e);
-                    context.errors.incrementAndGet();
+                    context.incrementErrors();
                     return Mono.just(Result.PARTIAL);
                 });
         }
@@ -212,7 +212,7 @@ public class SolveMailboxInconsistenciesService {
             return new Inconsistency() {
                 @Override
                 public Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
-                    context.errors.incrementAndGet();
+                    context.incrementErrors();
                     LOGGER.error("Concurrent modification performed while attempting to fix {} {} orphan path entry. " +
                             "This can be due to a mailbox on the operation while performing the check.",
                         pathRegistration.getMailboxPath().asString(),
@@ -257,7 +257,7 @@ public class SolveMailboxInconsistenciesService {
                 "We recommend merging these mailboxes together to prevent mail data loss.",
                 conflictingEntry.getMailboxDaoEntry().getMailboxId(), conflictingEntry.getMailboxDaoEntry().getMailboxPath(),
                 conflictingEntry.getMailboxPathDaoEntry().getMailboxId(), conflictingEntry.getMailboxPathDaoEntry().getMailboxPath());
-            context.conflictingEntries.add(conflictingEntry);
+            context.addConflictingEntries(conflictingEntry);
             return Mono.just(Result.PARTIAL);
         }
 
@@ -340,6 +340,26 @@ public class SolveMailboxInconsistenciesService {
                 this.errors = errors;
             }
 
+            long getProcessedMailboxEntries() {
+                return processedMailboxEntries;
+            }
+
+            long getProcessedMailboxPathEntries() {
+                return processedMailboxPathEntries;
+            }
+
+            long getFixedInconsistencies() {
+                return fixedInconsistencies;
+            }
+
+            ImmutableList<ConflictingEntry> getConflictingEntries() {
+                return conflictingEntries;
+            }
+
+            long getErrors() {
+                return errors;
+            }
+
             @Override
             public final boolean equals(Object o) {
                 if (o instanceof Snapshot) {
@@ -397,24 +417,24 @@ public class SolveMailboxInconsistenciesService {
             this.errors = errors;
         }
 
-        long getProcessedMailboxEntries() {
-            return processedMailboxEntries.get();
+        void incrementProcessedMailboxEntries() {
+            processedMailboxEntries.incrementAndGet();
         }
 
-        long getProcessedMailboxPathEntries() {
-            return processedMailboxPathEntries.get();
+        void incrementProcessedMailboxPathEntries() {
+            processedMailboxPathEntries.incrementAndGet();
         }
 
-        long getFixedInconsistencies() {
-            return fixedInconsistencies.get();
+        void incrementFixedInconsistencies() {
+            fixedInconsistencies.incrementAndGet();
         }
 
-        ImmutableList<ConflictingEntry> getConflictingEntries() {
-            return ImmutableList.copyOf(conflictingEntries);
+        void addConflictingEntries(ConflictingEntry conflictingEntry) {
+            conflictingEntries.add(conflictingEntry);
         }
 
-        long getErrors() {
-            return errors.get();
+        void incrementErrors() {
+            errors.incrementAndGet();
         }
 
         Snapshot snapshot() {
@@ -476,7 +496,7 @@ public class SolveMailboxInconsistenciesService {
             .delayElement(gracePeriod)
             .flatMapMany(Flux::fromIterable)
             .flatMap(inconsistency -> fixInconsistencyIfNeeded(context, inconsistency))
-            .doOnNext(any -> context.processedMailboxPathEntries.incrementAndGet());
+            .doOnNext(any -> context.incrementProcessedMailboxPathEntries());
     }
 
     private Flux<Result> processMailboxDaoInconsistencies(Context context) {
@@ -487,7 +507,7 @@ public class SolveMailboxInconsistenciesService {
             .delayElement(gracePeriod)
             .flatMapMany(Flux::fromIterable)
             .flatMap(inconsistency -> fixInconsistencyIfNeeded(context, inconsistency))
-            .doOnNext(any -> context.processedMailboxEntries.incrementAndGet());
+            .doOnNext(any -> context.incrementProcessedMailboxEntries());
     }
 
     private Mono<Result> fixInconsistencyIfNeeded(Context context, Inconsistency inconsistency) {
