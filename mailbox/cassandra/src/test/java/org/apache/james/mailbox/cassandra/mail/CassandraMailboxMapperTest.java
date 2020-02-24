@@ -72,6 +72,7 @@ class CassandraMailboxMapperTest {
         CassandraMailboxModule.MODULE,
         CassandraSchemaVersionModule.MODULE,
         CassandraAclModule.MODULE);
+    private static final int TRY_COUNT_BEFORE_FAILURE = 6;
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(MODULES);
@@ -274,7 +275,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("SELECT id,mailboxbase,uidvalidity,name FROM mailbox WHERE id=:id;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -305,7 +306,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("SELECT id,mailboxbase,uidvalidity,name FROM mailbox WHERE id=:id;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -330,7 +331,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("SELECT id,mailboxbase,uidvalidity,name FROM mailbox WHERE id=:id;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -354,7 +355,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2 WHERE namespace=:namespace AND user=:user AND mailboxName=:mailboxName;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -385,7 +386,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2 WHERE namespace=:namespace AND user=:user AND mailboxName=:mailboxName;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -408,7 +409,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2 WHERE namespace=:namespace AND user=:user AND mailboxName=:mailboxName;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -432,7 +433,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.delete(inbox));
@@ -480,7 +481,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.create(inboxPath, UID_VALIDITY));
@@ -509,7 +510,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.create(inboxPath, UID_VALIDITY));
@@ -542,7 +543,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.delete(inbox));
@@ -574,7 +575,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("SELECT id,mailboxbase,uidvalidity,name FROM mailbox WHERE id=:id;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
@@ -613,7 +614,7 @@ class CassandraMailboxMapperTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2 WHERE namespace=:namespace AND user=:user AND mailboxName=:mailboxName;")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.rename(inboxRenamed));
