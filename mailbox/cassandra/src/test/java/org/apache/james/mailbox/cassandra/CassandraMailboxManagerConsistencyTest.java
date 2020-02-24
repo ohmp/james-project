@@ -45,6 +45,7 @@ class CassandraMailboxManagerConsistencyTest {
     private static final Username USER = Username.of("user");
     private static final String INBOX = "INBOX";
     private static final String INBOX_RENAMED = "INBOX_RENAMED";
+    private static final int TRY_COUNT_BEFORE_FAILURE = 6;
 
     @RegisterExtension
     static CassandraClusterExtension cassandra = new CassandraClusterExtension(MailboxAggregateModule.MODULE_WITH_QUOTA);
@@ -81,7 +82,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.createMailbox(inboxPath, mailboxSession));
@@ -101,7 +102,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailboxPathV2")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.createMailbox(inboxPath, mailboxSession));
@@ -122,7 +123,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.createMailbox(inboxPath, mailboxSession));
@@ -136,7 +137,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailboxPathV2")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.createMailbox(inboxPath, mailboxSession));
@@ -163,7 +164,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.createMailbox(inboxPath, mailboxSession));
@@ -181,7 +182,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailboxPathV2")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.createMailbox(inboxPath, mailboxSession));
@@ -216,7 +217,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.renameMailbox(inboxPath, inboxPathRenamed, mailboxSession));
@@ -242,7 +243,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailboxPathV2")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.renameMailbox(inboxPath, inboxPathRenamed, mailboxSession));
@@ -269,7 +270,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.renameMailbox(inboxPath, inboxPathRenamed, mailboxSession));
@@ -303,7 +304,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailboxPathV2")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.renameMailbox(inboxPath, inboxPathRenamed, mailboxSession));
@@ -338,7 +339,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase) VALUES (:id,:name,:uidvalidity,:mailboxbase);")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.renameMailbox(inboxPath, inboxPathRenamed, mailboxSession));
@@ -358,7 +359,7 @@ class CassandraMailboxManagerConsistencyTest {
             cassandra.getConf()
                 .fail()
                 .whenBoundStatementStartsWith("INSERT INTO mailboxPathV2")
-                .times(6)
+                .times(TRY_COUNT_BEFORE_FAILURE)
                 .setExecutionHook();
 
             doQuietly(() -> testee.renameMailbox(inboxPath, inboxPathRenamed, mailboxSession));
@@ -395,7 +396,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -422,7 +423,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -448,7 +449,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -474,7 +475,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -503,7 +504,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -532,7 +533,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -561,7 +562,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -591,7 +592,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -624,7 +625,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -651,7 +652,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -675,7 +676,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -700,7 +701,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -728,7 +729,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -758,7 +759,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailbox WHERE id=:id;")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
@@ -787,7 +788,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxPath, mailboxSession));
@@ -817,7 +818,7 @@ class CassandraMailboxManagerConsistencyTest {
                 cassandra.getConf()
                     .fail()
                     .whenBoundStatementStartsWith("DELETE FROM mailboxPathV2")
-                    .times(6)
+                    .times(TRY_COUNT_BEFORE_FAILURE)
                     .setExecutionHook();
 
                 doQuietly(() -> testee.deleteMailbox(inboxId, mailboxSession));
