@@ -37,6 +37,7 @@ import org.apache.james.mailbox.cassandra.mail.CassandraMailboxPathV2DAO;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.task.Task;
 import org.apache.james.task.Task.Result;
+import org.apache.james.util.FunctionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +118,7 @@ public class SolveMailboxInconsistenciesService {
                 .flatMap(currentMailbox -> pathV2DAO.retrieveId(currentMailbox.generateAssociatedPath())
                     .map(entry -> !INCONSISTENCY_STILL_PRESENT)
                     .switchIfEmpty(Mono.just(INCONSISTENCY_STILL_PRESENT)))
-                .filter(stillPresent -> stillPresent)
+                .filter(FunctionalUtils.identityPredicate())
                 .switchIfEmpty(Mono.fromCallable(() -> {
                     context.errors.incrementAndGet();
                     LOGGER.error("Concurrent modification performed while attempting to fix {} {} orphan mailbox entry. " +
@@ -181,7 +182,7 @@ public class SolveMailboxInconsistenciesService {
                 .flatMap(currentRegistration -> mailboxDAO.retrieveMailbox(currentRegistration.getCassandraId())
                     .map(entry -> !INCONSISTENCY_STILL_PRESENT)
                     .switchIfEmpty(Mono.just(INCONSISTENCY_STILL_PRESENT)))
-                .filter(stillPresent -> stillPresent)
+                .filter(FunctionalUtils.identityPredicate())
                 .switchIfEmpty(Mono.fromCallable(() -> {
                     context.errors.incrementAndGet();
                     LOGGER.error("Concurrent modification performed while attempting to fix {} {} orphan path entry. " +
