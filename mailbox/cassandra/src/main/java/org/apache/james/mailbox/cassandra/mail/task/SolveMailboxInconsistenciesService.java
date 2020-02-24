@@ -59,7 +59,7 @@ public class SolveMailboxInconsistenciesService {
     interface Inconsistency {
         Mono<Result> fix(Context context, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO);
 
-        Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO);
+        Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO);
     }
 
     private static Inconsistency NO_INCONSISTENCY = new Inconsistency() {
@@ -69,7 +69,7 @@ public class SolveMailboxInconsistenciesService {
         }
 
         @Override
-        public Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+        public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
             return Mono.just(this);
         }
     };
@@ -121,7 +121,7 @@ public class SolveMailboxInconsistenciesService {
          *  - That no corresponding path record exist
          */
         @Override
-        public Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+        public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
             return mailboxDAO.retrieveMailbox((CassandraId) mailbox.getMailboxId())
                 .filter(currentMailbox -> currentMailbox.generateAssociatedPath().equals(mailbox.generateAssociatedPath()))
                 .flatMap(currentMailbox -> pathV2DAO.retrieveId(currentMailbox.generateAssociatedPath())
@@ -144,7 +144,7 @@ public class SolveMailboxInconsistenciesService {
                 }
 
                 @Override
-                public Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+                public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
                     throw new IllegalStateException("Double validation is not supported");
                 }
             };
@@ -198,7 +198,7 @@ public class SolveMailboxInconsistenciesService {
          */
         @Override
 
-        public Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {            return pathV2DAO.retrieveId(pathRegistration.getMailboxPath())
+        public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {            return pathV2DAO.retrieveId(pathRegistration.getMailboxPath())
                 .filter(pathRegistration::equals)
                 .flatMap(currentRegistration -> mailboxDAO.retrieveMailbox(currentRegistration.getCassandraId())
                     .map(entry -> !INCONSISTENCY_STILL_PRESENT)
@@ -221,7 +221,7 @@ public class SolveMailboxInconsistenciesService {
                 }
 
                 @Override
-                public Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+                public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
                     throw new IllegalStateException("Double validation is not supported");
                 }
             };
@@ -265,7 +265,7 @@ public class SolveMailboxInconsistenciesService {
          * Skip validating conflict as no table level correction will be performed
          */
         @Override
-        public Mono<Inconsistency> validate(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+        public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
             return Mono.just(this);
         }
     }
@@ -491,7 +491,7 @@ public class SolveMailboxInconsistenciesService {
     }
 
     private Mono<Result> fixInconsistencyIfNeeded(Context context, Inconsistency inconsistency) {
-        return inconsistency.validate(mailboxDAO, mailboxPathV2DAO)
+        return inconsistency.actualize(mailboxDAO, mailboxPathV2DAO)
             .flatMap(validatedInconsistency -> validatedInconsistency.fix(context, mailboxDAO, mailboxPathV2DAO));
     }
 
