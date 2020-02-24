@@ -67,6 +67,7 @@ class SolveMailboxInconsistenciesServiceTest {
     private static final MailboxPath NEW_MAILBOX_PATH = MailboxPath.forUser(USER, "xyz");
     private static final int GRACE_PERIOD_MILLIS = 500;
     private static final Duration GRACE_PERIOD = Duration.ofMillis(GRACE_PERIOD_MILLIS);
+    private static final int TRY_COUNT_BEFORE_FAILURE = 6;
     private static CassandraId CASSANDRA_ID_1 = CassandraId.timeBased();
     private static final Mailbox MAILBOX = new Mailbox(MAILBOX_PATH, UID_VALIDITY_1, CASSANDRA_ID_1);
     private static CassandraId CASSANDRA_ID_2 = CassandraId.timeBased();
@@ -433,7 +434,7 @@ class SolveMailboxInconsistenciesServiceTest {
         cassandra.getConf()
             .awaitOn(barrier)
             .whenBoundStatementStartsWith("INSERT INTO mailbox ")
-            .times(6)
+            .times(TRY_COUNT_BEFORE_FAILURE)
             .setExecutionHook();
 
         // Start create a mailbox. Path registration entry will be created.
