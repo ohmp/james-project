@@ -476,4 +476,52 @@ class SolveMailboxInconsistenciesServiceTest {
                 .isEqualTo(new CassandraIdAndPath(mailboxId, MAILBOX_PATH));
         });
     }
+
+    @Test
+    void concurrentDeleteShouldNotBeConsideredAsAnInconsistency(CassandraCluster cassandra) throws Exception {
+        Mailbox mailbox = mapper.create(MAILBOX_PATH, UID_VALIDITY_1);
+        Barrier barrier = new Barrier();
+
+        cassandra.getConf()
+            .awaitOn(barrier)
+            .whenBoundStatementStartsWith("DELETE FROM mailbox ")
+            .times(TRY_COUNT_BEFORE_FAILURE)
+            .setExecutionHook();
+
+        // Start create a mailbox. Path registration entry will be created.
+        // However we instrument the driver to block mailbox entry until barrier is released
+        Mono<Object> deleteMailbox = Mono.fromRunnable(() -> mapper.delete(mailbox))
+            .cache();
+        deleteMailbox.subscribeOn(Schedulers.elastic())
+            .subscribe();
+        barrier.awaitCaller();
+
+        // Start fixing inconsistencies
+        Context context = new Context();
+        ConcurrentTestRunner runner = ConcurrentTestRunner.builder()
+            .operation((a, b) -> testee.fixMailboxInconsistencies(context).block())
+            .threadCount(1)
+            .operationCount(1)
+            .run();
+
+        // Let the 'fix inconsistencies' make some progress...
+        Thread.sleep(GRACE_PERIOD_MILLIS / 2);
+        barrier.releaseCaller();
+
+        runner.awaitTermination(Duration.ofMinutes(1));
+        deleteMailbox.block();
+        SoftAssertions.assertSoftly(softly -> {
+            // Fail on concurrent modification
+            softly.assertThat(context)
+                .isEqualTo(Context.builder()
+                    .processedMailboxEntries(1)
+                    .errors(1)
+                    .build());
+
+            // Don't alter DB state
+            CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+            assertThat(mailboxDAO.retrieveMailbox(mailboxId).blockOptional()).isEmpty();
+            assertThat(mailboxPathV2DAO.retrieveId(MAILBOX_PATH).blockOptional()).isEmpty();
+        });
+    }
 }
