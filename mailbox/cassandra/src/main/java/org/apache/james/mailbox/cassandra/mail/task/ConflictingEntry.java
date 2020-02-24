@@ -27,6 +27,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 public class ConflictingEntry {
     public static class DaoEntry {
@@ -39,7 +40,7 @@ public class ConflictingEntry {
         }
 
         private DaoEntry(@JsonProperty("mailboxPath") String mailboxPath,
-                        @JsonProperty("mailboxId") String mailboxId) {
+                         @JsonProperty("mailboxId") String mailboxId) {
             this.mailboxPath = mailboxPath;
             this.mailboxId = mailboxId;
         }
@@ -66,6 +67,14 @@ public class ConflictingEntry {
         @Override
         public final int hashCode() {
             return Objects.hash(mailboxPath, mailboxId);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                .add("mailboxPath", mailboxPath)
+                .add("mailboxId", mailboxId)
+                .toString();
         }
     }
 
@@ -105,7 +114,7 @@ public class ConflictingEntry {
     private final DaoEntry mailboxPathDaoEntry;
 
     private ConflictingEntry(@JsonProperty("mailboxDaoEntry") DaoEntry mailboxDaoEntry,
-                            @JsonProperty("mailboxPathDaoEntry") DaoEntry mailboxPathDaoEntry) {
+                             @JsonProperty("mailboxPathDaoEntry") DaoEntry mailboxPathDaoEntry) {
         this.mailboxDaoEntry = mailboxDaoEntry;
         this.mailboxPathDaoEntry = mailboxPathDaoEntry;
     }
@@ -132,5 +141,13 @@ public class ConflictingEntry {
     @Override
     public final int hashCode() {
         return Objects.hash(mailboxDaoEntry, mailboxPathDaoEntry);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("mailboxDaoEntry", mailboxDaoEntry)
+            .add("mailboxPathDaoEntry", mailboxPathDaoEntry)
+            .toString();
     }
 }
