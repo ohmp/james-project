@@ -198,7 +198,8 @@ public class SolveMailboxInconsistenciesService {
          */
         @Override
 
-        public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {            return pathV2DAO.retrieveId(pathRegistration.getMailboxPath())
+        public Mono<Inconsistency> actualize(CassandraMailboxDAO mailboxDAO, CassandraMailboxPathV2DAO pathV2DAO) {
+            return pathV2DAO.retrieveId(pathRegistration.getMailboxPath())
                 .filter(pathRegistration::equals)
                 .flatMap(currentRegistration -> mailboxDAO.retrieveMailbox(currentRegistration.getCassandraId())
                     .map(entry -> !INCONSISTENCY_STILL_PRESENT)
