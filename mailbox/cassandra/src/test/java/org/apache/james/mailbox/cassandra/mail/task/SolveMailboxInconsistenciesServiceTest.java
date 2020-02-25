@@ -524,4 +524,55 @@ class SolveMailboxInconsistenciesServiceTest {
             assertThat(mailboxPathV2DAO.retrieveId(MAILBOX_PATH).blockOptional()).isEmpty();
         });
     }
+    @Test
+    void concurrentCreateThenNonConcurrentDeleteShouldNotBeConsideredAsAnInconsistency(CassandraCluster cassandra) throws Exception {
+        Barrier barrier = new Barrier();
+
+        cassandra.getConf()
+            .awaitOn(barrier)
+            .whenBoundStatementStartsWith("INSERT INTO mailbox ")
+            .times(TRY_COUNT_BEFORE_FAILURE)
+            .setExecutionHook();
+
+        // Start create a mailbox. Path registration entry will be created.
+        // However we instrument the driver to block mailbox entry until barrier is released
+        Mono<Mailbox> createMailbox = Mono.fromCallable(() -> mapper.create(MAILBOX_PATH, UID_VALIDITY_1))
+            // delete the mailbox once the mailbox is created
+            .flatMap(mailbox -> Mono.fromRunnable(() -> mapper.delete(mailbox))
+                .thenReturn(mailbox))
+            .cache();
+        createMailbox.subscribeOn(Schedulers.elastic())
+            .subscribe();
+        barrier.awaitCaller();
+
+        // Start fixing inconsistencies
+        Context context = new Context();
+        ConcurrentTestRunner runner = ConcurrentTestRunner.builder()
+            .operation((a, b) -> testee.fixMailboxInconsistencies(context).block())
+            .threadCount(1)
+            .operationCount(1)
+            .run();
+
+        // Let the 'fix inconsistencies' make some progress...
+        Thread.sleep(GRACE_PERIOD_MILLIS / 2);
+        barrier.releaseCaller();
+
+        runner.awaitTermination(Duration.ofMinutes(1));
+        SoftAssertions.assertSoftly(softly -> {
+            // Fail on concurrent modification
+            softly.assertThat(context)
+                .isEqualTo(Context.builder()
+                    .processedMailboxPathEntries(1)
+                    .errors(1)
+                    .build());
+
+            // Don't alter DB state, we should not re-create the deleted mailbox that was dirty read
+            Mailbox mailbox = createMailbox.block();
+            CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
+            assertThat(mailboxDAO.retrieveMailbox(mailboxId).blockOptional())
+                .isEmpty();
+            assertThat(mailboxPathV2DAO.retrieveId(MAILBOX_PATH).blockOptional())
+                .isEmpty();
+        });
+    }
 }
