@@ -346,6 +346,7 @@ class CassandraMailboxMapperTest {
             }));
         }
 
+        @Disabled("JAMES-3056 We end up with 2 path registrations for the same mailbox")
         @Test
         void renameThenFailToDeleteMailboxPathShouldBeConsistentWhenFindByInbox(CassandraCluster cassandra) throws Exception {
             Mailbox inbox = testee.create(inboxPath, UID_VALIDITY);
@@ -369,6 +370,8 @@ class CassandraMailboxMapperTest {
                 softly(softly)
                     .assertThat(testee.findMailboxByPath(inboxPath))
                     .isEqualTo(inbox);
+                assertThatThrownBy(() -> testee.findMailboxByPath(inboxPathRenamed))
+                    .isInstanceOf(MailboxNotFoundException.class);
                 softly.assertThat(testee.findMailboxWithPathLike(inboxSearchQuery))
                     .hasOnlyOneElementSatisfying(searchMailbox -> softly(softly)
                         .assertThat(searchMailbox)
