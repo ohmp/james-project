@@ -524,6 +524,7 @@ class SolveMailboxInconsistenciesServiceTest {
             assertThat(mailboxPathV2DAO.retrieveId(MAILBOX_PATH).blockOptional()).isEmpty();
         });
     }
+    
     @Test
     void concurrentCreateThenNonConcurrentDeleteShouldNotBeConsideredAsAnInconsistency(CassandraCluster cassandra) throws Exception {
         Barrier barrier = new Barrier();
