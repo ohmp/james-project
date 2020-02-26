@@ -21,13 +21,9 @@ advanced users.
  - [Mail Processing](#Mail_Processing)
  - [ElasticSearch Indexing](#Elasticsearch_Indexing)
  - [Solving cassandra inconsistencies](#Solving_cassandra_inconsistencies) 
-<<<<<<< HEAD
  - [Setting Cassandra user permissions](#Setting_Cassandra_user_permissions)
-
-=======
  - [Cassandra table level configuration](#Cassandra_table_level_configuration) 
  
->>>>>>> JAMES-3053 Admin procedures: low level Cassandra table options
 ## Overall architecture
 
 Guice distributed James server intends to provide a horizontally scalable email server.
