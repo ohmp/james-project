@@ -424,28 +424,28 @@ These options are:
  - The [caching options](https://www.datastax.com/blog/2011/04/maximizing-cache-benefit-cassandra)
  
 The compaction algorithms allow a tradeoff between background IO upon writes and reads. We recommend:
- - Using **Leveled Compaction Strategy** on read intensive tables subject to updates. This limit the count of SStables
- being read at the cost of more background IO. High garbage collections can be caused by an inapropriate use of Leveled 
+ - Using **Leveled Compaction Strategy** on read intensive tables subject to updates. This limits the count of SStables
+ being read at the cost of more background IO. High garbage collections can be caused by an inappropriate use of Leveled 
  Compaction Strategy.
- - Otherwise use the default **Size Tired Compaction Strategy**.
+ - Otherwise use the default **Size Tiered Compaction Strategy**.
  
-Bloom filters avoids unnecessary reads on SSTables. This probabilistic data structure can tell an entry absence from an 
-SSTable, as well as the presence of an entry with an associated probability. If a lot of false positives are noticed, 
-the size of the bloom filters can be increased.
+Bloom filters help avoiding unnecessary reads on SSTables. This probabilistic data structure can tell an entry absence 
+from a SSTable, as well as the presence of an entry with an associated probability. If a lot of false positives are 
+noticed, the size of the bloom filters can be increased.
  
 As explained in [this post](https://thelastpickle.com/blog/2018/08/08/compression_performance.html), chunk size used 
-upon compression allow a tradeoff between read and writes. A smaller size will mean decreasing compression, thus 
-increase data being stored on disk, but allow lower chunks to be read to access data, and will favor reads. A bigger 
-size will means better compression, thus writting less, but might imply reading bigger chunks.
+upon compression allows a tradeoff between reads and writes. A smaller size will mean decreasing compression, thus it
+increases data being stored on disk, but allow lower chunks to be read to access data, and will favor reads. A bigger 
+size will mean better compression, thus writing less, but it might imply reading bigger chunks.
 
-Cassandra enables a key cache and a row cache. Key cache enables skipping reading the partition index upon reads,
+Cassandra enables a key cache and a row cache. Key cache enables to skip reading the partition index upon reads,
 thus performing 1 read to the disk instead of 2. Enabling this cache is globally advised. Row cache stores the entire 
-row in memroy. It can be seen as an optimization, but might actually use memory no longer available for instance for 
-file system cache. We recommand turning it of on modern SSD hardware.
+row in memory. It can be seen as an optimization, but it might actually use memory no longer available for instance for 
+file system cache. We recommend turning it off on modern SSD hardware.
 
 A review of your usage can be conducted using 
-[nodetool](https://cassandra.apache.org/doc/latest/tools/nodetool/nodetool.html) utilility. For example 
-`nodetool tablestats {keyspace}` allow reviewing the number of SSTables, the read/write ratios, bloom filter efficiency. 
+[nodetool](https://cassandra.apache.org/doc/latest/tools/nodetool/nodetool.html) utility. For example 
+`nodetool tablestats {keyspace}` allows reviewing the number of SSTables, the read/write ratios, bloom filter efficiency. 
 `nodetool tablehistograms {keyspace}.{table}` might give insight about read/write performance.
 
 Table level options can be changed using **ALTER TABLE** for example with the 
