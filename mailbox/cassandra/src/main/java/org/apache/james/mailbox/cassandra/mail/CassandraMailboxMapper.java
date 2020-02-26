@@ -138,7 +138,7 @@ public class CassandraMailboxMapper implements MailboxMapper {
         String fixedNamespace = query.getFixedNamespace();
         Username fixedUser = query.getFixedUser();
 
-        return Flux.merge(mailboxPathV2DAO.listUserMailboxes(fixedNamespace, fixedUser),
+        return Flux.concat(mailboxPathV2DAO.listUserMailboxes(fixedNamespace, fixedUser),
                 mailboxPathDAO.listUserMailboxes(fixedNamespace, fixedUser))
             .filter(idAndPath -> query.isPathMatch(idAndPath.getMailboxPath()))
             .distinct(CassandraIdAndPath::getMailboxPath)
