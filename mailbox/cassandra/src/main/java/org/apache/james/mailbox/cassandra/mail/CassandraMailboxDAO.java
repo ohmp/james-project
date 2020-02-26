@@ -166,7 +166,7 @@ public class CassandraMailboxDAO {
             return updateUidValidity(cassandraId, newUidValidity)
                 .then(Mono.just(newUidValidity));
         }
-        return Mono.just(UidValidity.ofValid(uidValidityAsLong));
+        return Mono.just(UidValidity.of(uidValidityAsLong));
     }
 
     private Mono<Void> updateUidValidity(CassandraId cassandraId, UidValidity uidValidity) {
