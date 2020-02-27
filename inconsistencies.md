@@ -33,10 +33,19 @@ Solution:
 We can create a webadmin to solve these inconsistencies. Orphan mailboxPaths should be removed, and conflicts reported
 so that an admin can use the mailbox merging endpoint.
 
+However, due to the two invariants mentioned above, we can not identify a clear source of trust based on existing 
+tables for the mailbox object. The task previously mentioned is subject to concurrency issues that might cancel 
+legitimate concurrent user actions.
+
+Hence this task must be run offline.
+
+In the future, we should revisit the mailbox object data-model and restructure it, to identify a source of truth to 
+base the inconsistency fixing task on. Event sourcing is a good candidate for this.
+
 Criticity:
  - High. This had been spotted in production. It prevents from migrating some user mailboxes.
 
-This work is in progress (Sprint 15).
+Read the following related ADR: https://github.com/linagora/james-project/pull/3147
 
 ## ACL/CassandraUserMailboxRightsTable
 
