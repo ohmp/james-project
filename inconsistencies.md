@@ -198,6 +198,10 @@ We should ensure that a failed update to a given table don't impact updates to o
  - if updating `mailboxRecents` fails then `mailboxCounters` should still be updated (if applicable)
  - if updating `mailboxRecents` fails then `applicableFlag` should still be updated (if applicable)
  - if updating `mailboxRecents` fails then `firstUnseen` should still be updated (if applicable)
+ 
+https://github.com/linagora/james-project/pull/3150 shows the first encoutered errors aborts the overall pipeline.
+
+[JIRA](https://issues.apache.org/jira/browse/JAMES-3075) 
 
 ## Mailbox counters
 
