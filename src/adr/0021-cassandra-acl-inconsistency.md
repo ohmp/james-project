@@ -22,13 +22,13 @@ This can lead to the following user experience:
 ```
 ALICE delegates her INBOX mailbox to BOB
 The denormalisation process fails
-ALICE INBOX do not appear in BOB mailbox list
+ALICE INBOX does not appear in BOB mailbox list
 
 Given a delegated mailbox INBOX.delegated
 ALICE undo the sharing of her INBOX.delegated mailbox
 The denormalisation process fails
 ALICE INBOX.delegated mailbox still appear sin BOB mailbox list
-When BOB try to select it, he is being denied
+When BOB tries to select it, he is being denied
 ```
 
 ## Decision
