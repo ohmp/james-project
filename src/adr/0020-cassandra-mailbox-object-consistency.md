@@ -28,11 +28,11 @@ This can lead to the following user experience:
 BOB creates mailbox A
 Denormalization fails and an error is returned to A
 
-BOB retry mailbox A creation
-BOB is being told mailbox A alread exists
+BOB retries mailbox A creation
+BOB is being told mailbox A already exists
 
-BOB try to access mailbox A
-BOB is being told mailbox A do not exists
+BOB tries to access mailbox A
+BOB is being told mailbox A does not exists
 ```
 
 ## Decision
