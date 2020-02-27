@@ -429,6 +429,9 @@ Note that conflicting entry inconsistencies will not be fixed and will require t
 [ghost mailbox](#correcting-ghost-mailbox) endpoint in order to merge the conflicting mailboxes and prevent any message
 loss.
 
+**WARNING**: this task can cancel concurrently running legitimate user operations upon dirty read. As such this task 
+should be run offline.
+
 #### Recomputing Global JMAP fast message view projection
 
 This action is only available for backends supporting JMAP protocol.
