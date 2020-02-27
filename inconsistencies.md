@@ -47,6 +47,8 @@ Criticity:
 
 Read the following related ADR: https://github.com/linagora/james-project/pull/3147
 
+**ADR pull request**: https://github.com/linagora/james-project/pull/3147/files?short_path=85aa5b4#diff-85aa5b4ec6d985fa1c3fbc972cd2e355
+
 ## ACL/CassandraUserMailboxRightsTable
 
 Table: acl : holds the acls of a mailbox
@@ -70,6 +72,8 @@ We can create a webadmin to solve these inconsistencies. Iterating `acl` entries
 Iterating `UserMailboxACL` we can remove entries not referenced in `acl`.
 
 Criticity: High as it impacts the right system. Not yet spotted.
+
+**ADR pull request**: https://github.com/linagora/james-project/pull/3148/files?short_path=6d04996#diff-6d0499602ac1c7e4a3e8f6144e3ca271
 
 ## Message
 
@@ -113,6 +117,8 @@ in `messageIdTable`. Iterating `imapUidTable` we can remove entries not referenc
 
 Criticity:
  - High. This had been spotted in production. (some STATUS failed).
+ 
+**ADR pull request**: https://github.com/linagora/james-project/pull/3148/files?short_path=2b9b796#diff-2b9b796b57624d55c3e7b4bbc46e4314
 
 ## Message <-> attachment
 
