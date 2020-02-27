@@ -330,6 +330,9 @@ avoiding peak traffic in order to address both inconsistencies diagnostic and fi
 An admin can run offline webadmin 
 [solve Cassandra mailbox object inconsistencies task](manage-webadmin.html#Fixing_mailboxes_inconsistencies) in order 
 to sanitize his mailbox denormalization.
+                                        
+In order to ensure being offline, stop the traffic on SMTP, JMAP and IMAP ports, for example via re-configuration or 
+firewall rules.
 
 ## Setting Cassandra user permissions
 
