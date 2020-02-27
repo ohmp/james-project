@@ -53,7 +53,7 @@ class UidValidityTest {
 
     @Test
     void ofShouldThrowWhenNegative() {
-        assertThatThrownBy(() -> UidValidity.of(0))
+        assertThatThrownBy(() -> UidValidity.of(-1))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
