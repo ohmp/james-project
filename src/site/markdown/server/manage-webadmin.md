@@ -430,7 +430,12 @@ Note that conflicting entry inconsistencies will not be fixed and will require t
 loss.
 
 **WARNING**: this task can cancel concurrently running legitimate user operations upon dirty read. As such this task 
-should be run offline.
+should be run offline. 
+
+A dirty read is when data is read between the two writes of the denormalization operations (no isolation).
+
+In order to ensure being offline, stop the traffic on SMTP, JMAP and IMAP ports, for example via re-configuration or 
+firewall rules.
 
 #### Recomputing Global JMAP fast message view projection
 
