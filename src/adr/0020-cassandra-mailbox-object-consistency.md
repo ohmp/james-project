@@ -29,20 +29,21 @@ BOB creates mailbox A
 Denormalization fails and an error is returned to A
 
 BOB retries mailbox A creation
-BOB is being told mailbox A already exists
+BOB is being told mailbox A already exist
 
 BOB tries to access mailbox A
-BOB is being told mailbox A does not exists
+BOB is being told mailbox A does not exist
 ```
 
 ## Decision
 
-We should provide an offline webadmin task to solve mailbox object inconsistencies.
+We should provide an offline (meaning absence of user traffic via for exemple SMTP, IMAP or JMAP) webadmin task to 
+solve mailbox object inconsistencies.
 
 This task will read `mailbox` table and adapt path registrations in `mailboxPathV2`:
  - Missing registrations will be added
  - Orphan registrations will be removed
- - Mismatch in content between the two table will require merging the two mailboxes together.
+ - Mismatch in content between the two tables will require merging the two mailboxes together.
 
 ## Consequences
 
@@ -53,7 +54,8 @@ However, due to the two invariants mentioned above, we can not identify a clear 
 tables for the mailbox object. The task previously mentioned is subject to concurrency issues that might cancel 
 legitimate concurrent user actions.
 
-Hence this task must be run offline.
+Hence this task must be run offline (meaning absence of user traffic via for exemple SMTP, IMAP or JMAP). This can be
+achieved via reconfiguration (disabling the given protocols and restarting James) or via firewall rules.
 
 In the future, we should revisit the mailbox object data-model and restructure it, to identify a source of truth to 
 base the inconsistency fixing task on. Event sourcing is a good candidate for this.
