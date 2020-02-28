@@ -27,7 +27,7 @@ ALICE INBOX does not appear in BOB mailbox list
 Given a delegated mailbox INBOX.delegated
 ALICE undo the sharing of her INBOX.delegated mailbox
 The denormalisation process fails
-ALICE INBOX.delegated mailbox still appear sin BOB mailbox list
+ALICE INBOX.delegated mailbox still appears in BOB mailbox list
 When BOB tries to select it, he is being denied
 ```
 
