@@ -65,6 +65,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class CassandraMessageMapper implements MessageMapper {
     public static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageMapper.class);
+    private static final int PREFETCH = 2;
 
     private final CassandraModSeqProvider modSeqProvider;
     private final CassandraUidProvider uidProvider;
@@ -162,10 +163,11 @@ public class CassandraMessageMapper implements MessageMapper {
         CassandraMessageId messageId = (CassandraMessageId) composedMessageId.getMessageId();
         CassandraId mailboxId = (CassandraId) composedMessageId.getMailboxId();
         MessageUid uid = composedMessageId.getUid();
-        return Flux.merge(
-                imapUidDAO.delete(messageId, mailboxId),
-                messageIdDAO.delete(mailboxId, uid))
-            .then(indexTableHandler.updateIndexOnDelete(composedMessageIdWithMetaData, mailboxId));
+        return imapUidDAO.delete(messageId, mailboxId)
+            .then(Flux.mergeDelayError(PREFETCH,
+                    messageIdDAO.delete(mailboxId, uid),
+                    indexTableHandler.updateIndexOnDelete(composedMessageIdWithMetaData, mailboxId))
+                .then());
     }
 
     @Override
@@ -403,10 +405,8 @@ public class CassandraMessageMapper implements MessageMapper {
                 .flags(message.createFlags())
                 .modSeq(message.getModSeq())
                 .build();
-        return Flux.merge(
-                messageIdDAO.insert(composedMessageIdWithMetaData),
-                imapUidDAO.insert(composedMessageIdWithMetaData))
-            .then();
+        return messageIdDAO.insert(composedMessageIdWithMetaData)
+            .then(imapUidDAO.insert(composedMessageIdWithMetaData));
     }
 
 
