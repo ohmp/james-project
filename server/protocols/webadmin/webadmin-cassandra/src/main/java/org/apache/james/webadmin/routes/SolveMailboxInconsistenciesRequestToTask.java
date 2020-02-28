@@ -27,7 +27,7 @@ import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 
 public class SolveMailboxInconsistenciesRequestToTask extends TaskFromRequestRegistry.TaskRegistration {
-    private static final TaskRegistrationKey REGISTRATION_KEY = TaskRegistrationKey.of("solveInconsistencies");
+    private static final TaskRegistrationKey REGISTRATION_KEY = TaskRegistrationKey.of("SolveInconsistencies");
 
     @Inject
     public SolveMailboxInconsistenciesRequestToTask(SolveMailboxInconsistenciesService service) {
