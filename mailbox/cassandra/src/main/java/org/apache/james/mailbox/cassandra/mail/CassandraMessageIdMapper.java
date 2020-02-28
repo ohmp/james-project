@@ -58,6 +58,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class CassandraMessageIdMapper implements MessageIdMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageIdMapper.class);
+    private static final int PREFETCH = 2;
 
     private final MailboxMapper mailboxMapper;
     private final CassandraMailboxDAO mailboxDAO;
@@ -126,10 +127,11 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         mailboxMapper.findMailboxById(mailboxId);
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = createMetadataFor(mailboxMessage);
         messageDAO.save(mailboxMessage)
-            .thenMany(Flux.merge(
-                imapUidDAO.insert(composedMessageIdWithMetaData),
-                messageIdDAO.insert(composedMessageIdWithMetaData)))
-            .thenEmpty(indexTableHandler.updateIndexOnAdd(mailboxMessage, mailboxId))
+            .then(imapUidDAO.insert(composedMessageIdWithMetaData))
+            .then(Flux.mergeDelayError(PREFETCH,
+                    messageIdDAO.insert(composedMessageIdWithMetaData),
+                    indexTableHandler.updateIndexOnAdd(mailboxMessage, mailboxId))
+                .then())
             .block();
     }
 
@@ -138,10 +140,11 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         CassandraId mailboxId = (CassandraId) mailboxMessage.getMailboxId();
         mailboxMapper.findMailboxById(mailboxId);
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = createMetadataFor(mailboxMessage);
-        Flux.merge(
-                imapUidDAO.insert(composedMessageIdWithMetaData),
-                messageIdDAO.insert(composedMessageIdWithMetaData))
-            .thenEmpty(indexTableHandler.updateIndexOnAdd(mailboxMessage, mailboxId))
+        imapUidDAO.insert(composedMessageIdWithMetaData)
+            .then(Flux.mergeDelayError(PREFETCH,
+                    messageIdDAO.insert(composedMessageIdWithMetaData),
+                    indexTableHandler.updateIndexOnAdd(mailboxMessage, mailboxId))
+                .then())
             .block();
     }
 
@@ -196,10 +199,11 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     private Mono<Void> deleteIds(ComposedMessageIdWithMetaData metaData) {
         CassandraMessageId messageId = (CassandraMessageId) metaData.getComposedMessageId().getMessageId();
         CassandraId mailboxId = (CassandraId) metaData.getComposedMessageId().getMailboxId();
-        return Flux.merge(
-                imapUidDAO.delete(messageId, mailboxId),
-                messageIdDAO.delete(mailboxId, metaData.getComposedMessageId().getUid()))
-            .then(indexTableHandler.updateIndexOnDelete(metaData, mailboxId));
+        return imapUidDAO.delete(messageId, mailboxId)
+            .then(Flux.mergeDelayError(PREFETCH,
+                    messageIdDAO.delete(mailboxId, metaData.getComposedMessageId().getUid()),
+                    indexTableHandler.updateIndexOnDelete(metaData, mailboxId))
+                .then());
     }
 
     @Override
