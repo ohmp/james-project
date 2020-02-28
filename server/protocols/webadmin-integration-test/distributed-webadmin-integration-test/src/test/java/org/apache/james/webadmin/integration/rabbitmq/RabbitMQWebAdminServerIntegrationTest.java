@@ -26,6 +26,7 @@ import static org.apache.james.webadmin.Constants.JSON_CONTENT_TYPE;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import org.apache.james.CassandraExtension;
@@ -178,7 +179,12 @@ class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegrationTes
             .get(taskId + "/await")
         .then()
             .body("status", is("completed"))
-            .body("type", is("solve-mailbox-inconsistencies"));
+            .body("type", is("solve-mailbox-inconsistencies"))
+            .body("additionalInformation.processedMailboxEntries", is(0))
+            .body("additionalInformation.processedMailboxPathEntries", is(0))
+            .body("additionalInformation.errors", is(0))
+            .body("additionalInformation.fixedInconsistencies", hasSize(0))
+            .body("additionalInformation.conflictingEntries", hasSize(0));
     }
 
     @Test
