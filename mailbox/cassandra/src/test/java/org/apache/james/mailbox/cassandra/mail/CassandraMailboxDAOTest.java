@@ -22,6 +22,7 @@ package org.apache.james.mailbox.cassandra.mail;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static org.apache.james.backends.cassandra.Scenario.Builder.awaitOn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -29,7 +30,8 @@ import java.util.Optional;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
-import org.apache.james.backends.cassandra.TestingSession.Barrier;
+import org.apache.james.backends.cassandra.Scenario;
+import org.apache.james.backends.cassandra.Scenario.Barrier;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.core.Username;
@@ -133,10 +135,9 @@ class CassandraMailboxDAOTest {
             .where(eq("id", CASSANDRA_ID_1.asUuid())));
 
         Barrier barrier = new Barrier(2);
-        cassandra.getConf().awaitOn(barrier)
-            .whenBoundStatementStartsWith("UPDATE mailbox SET")
+        cassandra.getConf().registerScenario(awaitOn(barrier)
             .times(2)
-            .setExecutionHook();
+            .whenQueryStartsWith("UPDATE mailbox SET"));
 
         Mono<Mailbox> readMailbox1 = testee.retrieveMailbox(CASSANDRA_ID_1).cache();
         Mono<Mailbox> readMailbox2 = testee.retrieveMailbox(CASSANDRA_ID_1).cache();
