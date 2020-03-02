@@ -139,7 +139,7 @@ public abstract class AbstractSelectionCommandParser extends AbstractImapCommand
             // We know that the backend will regenerate it
             // Hence we force the mismatch
             // QRSYNC command will be ignored
-            return UidValidity.random();
+            return UidValidity.generate();
         }
     }
 
