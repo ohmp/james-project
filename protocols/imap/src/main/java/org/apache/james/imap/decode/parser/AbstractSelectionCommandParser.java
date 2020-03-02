@@ -34,7 +34,6 @@ import org.apache.james.imap.decode.base.AbstractImapCommandParser;
 import org.apache.james.imap.message.request.AbstractMailboxSelectionRequest;
 import org.apache.james.imap.message.request.AbstractMailboxSelectionRequest.ClientSpecifiedUidValidity;
 import org.apache.james.mailbox.MessageUid;
-import org.apache.james.mailbox.model.UidValidity;
 
 public abstract class AbstractSelectionCommandParser extends AbstractImapCommandParser {
     private static final String CONDSTORE = ImapConstants.SUPPORTS_CONDSTORE.asString();

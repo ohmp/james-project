@@ -26,7 +26,6 @@ import org.apache.james.imap.api.message.response.StatusResponseFactory;
 import org.apache.james.imap.message.request.AbstractMailboxSelectionRequest;
 import org.apache.james.imap.message.request.AbstractMailboxSelectionRequest.ClientSpecifiedUidValidity;
 import org.apache.james.imap.message.request.ExamineRequest;
-import org.apache.james.mailbox.model.UidValidity;
 
 /**
  * Parse EXAMINE commands

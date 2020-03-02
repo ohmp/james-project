@@ -20,7 +20,6 @@
 package org.apache.james.imap.processor;
 
 import java.io.Closeable;
-import java.util.Optional;
 
 import org.apache.james.imap.api.message.IdRange;
 import org.apache.james.imap.api.message.UidRange;
@@ -29,7 +28,6 @@ import org.apache.james.imap.api.process.ImapProcessor;
 import org.apache.james.imap.message.request.SelectRequest;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.events.EventBus;
-import org.apache.james.mailbox.model.UidValidity;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
 
