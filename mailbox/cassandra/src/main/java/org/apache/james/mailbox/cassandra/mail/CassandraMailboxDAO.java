@@ -159,6 +159,7 @@ public class CassandraMailboxDAO {
                 uidValidity,
                 cassandraId));
     }
+    
     private Mono<UidValidity> sanitizeUidValidity(CassandraId cassandraId, long uidValidityAsLong) {
         if (!UidValidity.isValid(uidValidityAsLong)) {
             UidValidity newUidValidity = UidValidity.generate();
