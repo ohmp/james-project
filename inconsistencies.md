@@ -109,7 +109,8 @@ We need to choose a source of truth. MessageIdToImapUid should be prefered as it
 
 Mitigation:
  - Add a retry strategy on write operations on `messageIdTable` could limit inconsistencies.
- - Tests to demonstrate impact of partial failures
+ - Tests to demonstrate impact of partial failures (see preliminary work done here: 
+ https://github.com/linagora/james-project/pull/3151 in JAMES-3076)
 
 Solution:
 We can create a webadmin to solve these inconsistencies. Iterating `imapUidTable` entries, we can rewrite entries 
@@ -199,7 +200,8 @@ We should ensure that a failed update to a given table don't impact updates to o
  - if updating `mailboxRecents` fails then `applicableFlag` should still be updated (if applicable)
  - if updating `mailboxRecents` fails then `firstUnseen` should still be updated (if applicable)
  
-https://github.com/linagora/james-project/pull/3150 shows the first encoutered errors aborts the overall pipeline.
+https://github.com/linagora/james-project/pull/3150 shows the first encoutered errors aborts the overall pipeline, and
+proposes a fix for it. It is merged but we remain to write systematic tests for this.
 
 [JIRA](https://issues.apache.org/jira/browse/JAMES-3075) 
 
