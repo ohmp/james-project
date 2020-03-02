@@ -145,7 +145,7 @@ public class JPAMailbox {
         if (UidValidity.isValid(uidValidity)) {
             return UidValidity.of(uidValidity);
         }
-        UidValidity sanitizedUidValidity = UidValidity.random();
+        UidValidity sanitizedUidValidity = UidValidity.generate();
         // Update storage layer thanks to JPA magics!
         setUidValidity(sanitizedUidValidity.asLong());
         return sanitizedUidValidity;
