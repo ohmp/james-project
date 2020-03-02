@@ -123,7 +123,7 @@ class CassandraMailboxDAOTest {
     }
 
     @Disabled("Expected concurrency issue in the absence of performance expensive LightWeight transaction" +
-        "As the Uid validity is updated only when equal to 0 (1 chance out of 2 billion) the benefits of LWT don't" +
+        "As the Uid validity is updated only when equal to 0 (1 chance out of 4 billion) the benefits of LWT don't" +
         "outweigh the costs")
     @Test
     void retrieveMailboxShouldNotBeSubjectToDataRaceUponUidValiditySanitizing(CassandraCluster cassandra) throws Exception {

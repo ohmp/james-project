@@ -159,7 +159,6 @@ public class CassandraMailboxDAO {
                 uidValidity,
                 cassandraId));
     }
-
     private Mono<UidValidity> sanitizeUidValidity(CassandraId cassandraId, long uidValidityAsLong) {
         if (!UidValidity.isValid(uidValidityAsLong)) {
             UidValidity newUidValidity = UidValidity.generate();
@@ -169,6 +168,11 @@ public class CassandraMailboxDAO {
         return Mono.just(UidValidity.of(uidValidityAsLong));
     }
 
+    /**
+     * Expected concurrency issue in the absence of performance expensive LightWeight transaction
+     * As the Uid validity is updated only when equal to 0 (1 chance out of 4 billion) the benefits of LWT don't
+     * outweigh the performance costs
+     */
     private Mono<Void> updateUidValidity(CassandraId cassandraId, UidValidity uidValidity) {
         return executor.executeVoid(updateUidValidityStatement.bind()
                 .setUUID(ID, cassandraId.asUuid())
