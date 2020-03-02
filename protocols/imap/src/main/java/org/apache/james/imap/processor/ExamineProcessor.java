@@ -49,8 +49,7 @@ public class ExamineProcessor extends AbstractSelectionProcessor<ExamineRequest>
             .addContext("knownModseq", request.getKnownModSeq())
             .addContext("knownUids", UidRange.toString(request.getKnownUidSet()))
             .addContext("knownIdRange", IdRange.toString(request.getKnownSequenceSet()))
-            .addContext("lastKnownUidValidity", Optional.ofNullable(request.getLastKnownUidValidity())
-                .map(UidValidity::asLong))
+            .addContext("lastKnownUidValidity", request.getLastKnownUidValidity())
             .addContext("uidSet", UidRange.toString(request.getUidSet()))
             .build();
     }
