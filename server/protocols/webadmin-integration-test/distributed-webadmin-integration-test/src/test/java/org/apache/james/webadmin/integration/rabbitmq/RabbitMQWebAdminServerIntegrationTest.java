@@ -167,7 +167,17 @@ class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegrationTes
 
     @Test
     void solveMailboxInconsistenciesTaskShouldBeExposed() {
-        String taskId = with()
+        // schema version 6 or higher required to run solve mailbox inconsistencies task
+        String taskId = with().post(UPGRADE_TO_LATEST_VERSION)
+            .jsonPath()
+            .get("taskId");
+
+        with()
+            .get("/tasks/" + taskId + "/await")
+        .then()
+            .body("status", is("completed"));
+
+        taskId = with()
             .queryParam("task", "SolveInconsistencies")
         .post("/mailboxes")
             .jsonPath()
