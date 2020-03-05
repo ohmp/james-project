@@ -60,6 +60,7 @@ import org.apache.james.util.retry.naming.ldap.RetryingLdapContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Strings;
 
@@ -450,8 +451,8 @@ public class ReadOnlyUsersLDAPRepository implements UsersRepository, Configurabl
         List<ReadOnlyLDAPUser> results = new ArrayList<>();
 
         for (String userDN : userDNs) {
-            ReadOnlyLDAPUser user = buildUser(userDN);
-            results.add(user);
+            Optional<ReadOnlyLDAPUser> user = buildUser(userDN);
+            user.ifPresent(results::add);
         }
 
         return results;
@@ -518,10 +519,13 @@ public class ReadOnlyUsersLDAPRepository implements UsersRepository, Configurabl
      * @throws NamingException
      *             Propagated by the underlying LDAP communication layer.
      */
-    private ReadOnlyLDAPUser buildUser(String userDN) throws NamingException {
+    private Optional<ReadOnlyLDAPUser> buildUser(String userDN) throws NamingException {
       Attributes userAttributes = ldapContext.getAttributes(userDN);
-      Attribute userName = userAttributes.get(ldapConfiguration.getUserIdAttribute());
-      return new ReadOnlyLDAPUser(Username.of(userName.get().toString()), userDN, ldapContext);
+      Optional<Attribute> userName = Optional.ofNullable(userAttributes.get(ldapConfiguration.getUserIdAttribute()));
+      return userName
+          .map(Throwing.<Attribute, String>function(u -> u.get().toString()).sneakyThrow())
+          .map(Username::of)
+          .map(username -> new ReadOnlyLDAPUser(username, userDN, ldapContext));
     }
 
     @Override

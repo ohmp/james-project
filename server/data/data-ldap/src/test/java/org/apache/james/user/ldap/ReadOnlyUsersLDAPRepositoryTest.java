@@ -33,11 +33,15 @@ import org.apache.commons.configuration2.plist.PropertyListConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainList;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 class ReadOnlyUsersLDAPRepositoryTest {
 
@@ -46,7 +50,22 @@ class ReadOnlyUsersLDAPRepositoryTest {
     static final Username UNKNOWN = Username.of("unknown");
     static final String BAD_PASSWORD = "badpassword";
 
+    static LdapGenericContainer ldapContainer = LdapGenericContainer.builder()
+        .domain(DOMAIN)
+        .password(ADMIN_PASSWORD)
+        .build();
+
     DomainList domainList;
+
+    @BeforeAll
+    static void setUpAll() {
+        ldapContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        ldapContainer.start();
+    }
 
     @BeforeEach
     void setUp() {
@@ -132,6 +151,13 @@ class ReadOnlyUsersLDAPRepositoryTest {
         }
 
         @Test
+        void testShouldListUsers() throws Exception {
+            ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
+            assertThat(ImmutableList.copyOf(ldapRepository.list()))
+                .containsOnly(JAMES_USER_MAIL);
+        }
+
+        @Test
         void testShouldStillWorkAfterRestartingLDAP() throws Exception {
             ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
             ldapRepository.test(JAMES_USER_MAIL, PASSWORD);
@@ -195,7 +221,7 @@ class ReadOnlyUsersLDAPRepositoryTest {
 
     private static HierarchicalConfiguration<ImmutableNode> ldapRepositoryConfiguration() {
         PropertyListConfiguration configuration = new PropertyListConfiguration();
-        configuration.addProperty("[@ldapHost]", DockerLdapSingleton.ldapContainer.getLdapHost());
+        configuration.addProperty("[@ldapHost]", ldapContainer.getLdapHost());
         configuration.addProperty("[@principal]", "cn=admin,dc=james,dc=org");
         configuration.addProperty("[@credentials]", ADMIN_PASSWORD);
         configuration.addProperty("[@userBase]", "ou=People,dc=james,dc=org");
@@ -212,7 +238,7 @@ class ReadOnlyUsersLDAPRepositoryTest {
 
     private static HierarchicalConfiguration<ImmutableNode> ldapRepositoryConfigurationWithVirtualHosting() {
         PropertyListConfiguration configuration = new PropertyListConfiguration();
-        configuration.addProperty("[@ldapHost]", DockerLdapSingleton.ldapContainer.getLdapHost());
+        configuration.addProperty("[@ldapHost]", ldapContainer.getLdapHost());
         configuration.addProperty("[@principal]", "cn=admin,dc=james,dc=org");
         configuration.addProperty("[@credentials]", ADMIN_PASSWORD);
         configuration.addProperty("[@userBase]", "ou=People,dc=james,dc=org");
