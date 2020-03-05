@@ -46,7 +46,6 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.util.FunctionalUtils;
 import org.apache.james.util.ReactorUtils;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
