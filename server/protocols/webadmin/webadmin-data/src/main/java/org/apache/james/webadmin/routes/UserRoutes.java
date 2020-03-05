@@ -137,7 +137,7 @@ public class UserRoutes implements Routes {
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.OK_200, message = "OK. User exists."),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid input user."),
-        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "Invalid input user."),
+        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "User does not exist."),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
