@@ -22,6 +22,7 @@ package org.apache.james.user.ldap;
 import static org.apache.james.user.ldap.DockerLdapSingleton.ADMIN_PASSWORD;
 import static org.apache.james.user.ldap.DockerLdapSingleton.DOMAIN;
 import static org.apache.james.user.ldap.DockerLdapSingleton.JAMES_USER;
+import static org.apache.james.user.ldap.ReadOnlyUsersLDAPRepositoryTest.ldapRepositoryConfigurationWithVirtualHosting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -47,6 +48,7 @@ class ReadOnlyUsersLDAPRepositoryInvalidDnTest {
         .build();
 
     DomainList domainList;
+    private ReadOnlyUsersLDAPRepository ldapRepository;
 
     @BeforeAll
     static void setUpAll() {
@@ -59,27 +61,30 @@ class ReadOnlyUsersLDAPRepositoryInvalidDnTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         domainList = mock(DomainList.class);
+        ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting(ldapContainer));
     }
 
     @Test
     void listShouldFilterOutUsersWithoutIdField() throws Exception {
-        ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
         assertThat(ImmutableList.copyOf(ldapRepository.list()))
             .isEmpty();
     }
 
     @Test
     void getUserByNameShouldReturnNullWhenNoIdField() throws Exception {
-        ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
         assertThat(ldapRepository.getUserByName(JAMES_USER)).isNull();
     }
 
     @Test
     void containsShouldReturnFalseWhenNoIdField() throws Exception {
-        ReadOnlyUsersLDAPRepository ldapRepository = startUsersRepository(ldapRepositoryConfigurationWithVirtualHosting());
         assertThat(ldapRepository.contains(JAMES_USER)).isFalse();
+    }
+
+    @Test
+    void contShouldReturnZeroWhenInvalidUser() throws Exception {
+        assertThat(ldapRepository.countUsers()).isEqualTo(0);
     }
 
     private ReadOnlyUsersLDAPRepository startUsersRepository(HierarchicalConfiguration<ImmutableNode> ldapRepositoryConfiguration) throws Exception {
@@ -87,23 +92,5 @@ class ReadOnlyUsersLDAPRepositoryInvalidDnTest {
         ldapRepository.configure(ldapRepositoryConfiguration);
         ldapRepository.init();
         return ldapRepository;
-    }
-
-    private static HierarchicalConfiguration<ImmutableNode> ldapRepositoryConfigurationWithVirtualHosting() {
-        PropertyListConfiguration configuration = new PropertyListConfiguration();
-        configuration.addProperty("[@ldapHost]", ldapContainer.getLdapHost());
-        configuration.addProperty("[@principal]", "cn=admin,dc=james,dc=org");
-        configuration.addProperty("[@credentials]", ADMIN_PASSWORD);
-        configuration.addProperty("[@userBase]", "ou=People,dc=james,dc=org");
-        configuration.addProperty("[@userIdAttribute]", "mail");
-        configuration.addProperty("[@userObjectClass]", "inetOrgPerson");
-        configuration.addProperty("[@maxRetries]", "1");
-        configuration.addProperty("[@retryStartInterval]", "0");
-        configuration.addProperty("[@retryMaxInterval]", "2");
-        configuration.addProperty("[@retryIntervalScale]", "100");
-        configuration.addProperty("supportsVirtualHosting", true);
-        configuration.addProperty("[@connectionTimeout]", "100");
-        configuration.addProperty("[@readTimeout]", "100");
-        return configuration;
     }
 }

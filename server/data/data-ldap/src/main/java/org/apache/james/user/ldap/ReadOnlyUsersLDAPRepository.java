@@ -54,6 +54,7 @@ import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.user.ldap.api.LdapConstants;
+import org.apache.james.util.OptionalUtils;
 import org.apache.james.util.retry.DoublingRetrySchedule;
 import org.apache.james.util.retry.api.RetrySchedule;
 import org.apache.james.util.retry.naming.ldap.RetryingLdapContext;
@@ -541,7 +542,10 @@ public class ReadOnlyUsersLDAPRepository implements UsersRepository, Configurabl
     @Override
     public int countUsers() throws UsersRepositoryException {
         try {
-            return getValidUsers().size();
+            return Math.toIntExact(getValidUsers().stream()
+                .map(Throwing.function(this::buildUser).sneakyThrow())
+                .flatMap(OptionalUtils::toStream)
+                .count());
         } catch (NamingException e) {
             LOGGER.error("Unable to retrieve user count from ldap", e);
             throw new UsersRepositoryException("Unable to retrieve user count from ldap", e);
