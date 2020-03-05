@@ -212,7 +212,7 @@ public class UserRoutes implements Routes {
     private String userExist(Request request, Response response) throws UsersRepositoryException {
         Username username = extractUsername(request);
         if (userService.userExists(username)) {
-            return Constants.EMPTY_BODY;
+            response.status(HttpStatus.OK_200);
         } else {
             response.status(HttpStatus.NOT_FOUND_404);
         }
