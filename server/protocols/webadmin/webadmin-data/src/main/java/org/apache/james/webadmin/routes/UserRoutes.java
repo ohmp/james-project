@@ -135,7 +135,7 @@ public class UserRoutes implements Routes {
         @ApiImplicitParam(required = true, dataType = "string", name = "username", paramType = "path")
     })
     @ApiResponses(value = {
-        @ApiResponse(code = HttpStatus.OK_200, message = "OK. User is removed."),
+        @ApiResponse(code = HttpStatus.OK_200, message = "OK. User exists."),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid input user."),
         @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "Invalid input user."),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
@@ -212,12 +212,11 @@ public class UserRoutes implements Routes {
     private String userExist(Request request, Response response) throws UsersRepositoryException {
         Username username = extractUsername(request);
         if (userService.userExists(username)) {
-            response.status(HttpStatus.OK_200);
             return Constants.EMPTY_BODY;
         } else {
             response.status(HttpStatus.NOT_FOUND_404);
-            return Constants.EMPTY_BODY;
         }
+        return Constants.EMPTY_BODY;
     }
 
     private HaltException upsertUser(Request request, Response response) throws JsonExtractException {
