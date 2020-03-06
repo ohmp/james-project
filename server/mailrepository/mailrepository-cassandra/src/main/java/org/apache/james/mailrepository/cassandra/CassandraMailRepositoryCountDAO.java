@@ -50,7 +50,7 @@ public class CassandraMailRepositoryCountDAO {
     private final PreparedStatement select;
 
     @Inject
-    public CassandraMailRepositoryCountDAO(Session session) {
+    CassandraMailRepositoryCountDAO(Session session) {
         this.executor = new CassandraAsyncExecutor(session);
 
         this.increment = prepareIncrement(session);
@@ -76,17 +76,17 @@ public class CassandraMailRepositoryCountDAO {
             .where(eq(REPOSITORY_NAME, bindMarker(REPOSITORY_NAME))));
     }
 
-    public Mono<Void> increment(MailRepositoryUrl url) {
+    Mono<Void> increment(MailRepositoryUrl url) {
         return executor.executeVoid(increment.bind()
             .setString(REPOSITORY_NAME, url.asString()));
     }
 
-    public Mono<Void> decrement(MailRepositoryUrl url) {
+    Mono<Void> decrement(MailRepositoryUrl url) {
         return executor.executeVoid(decrement.bind()
             .setString(REPOSITORY_NAME, url.asString()));
     }
 
-    public Mono<Long> getCount(MailRepositoryUrl url) {
+    Mono<Long> getCount(MailRepositoryUrl url) {
         return executor.executeSingleRowOptional(select.bind()
                 .setString(REPOSITORY_NAME, url.asString()))
             .map(this::toCount);
