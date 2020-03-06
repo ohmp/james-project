@@ -19,6 +19,7 @@
 
 package org.apache.james.sieve.cassandra;
 
+import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -112,7 +113,8 @@ public class CassandraSieveQuotaDAO {
         return cassandraAsyncExecutor.executeVoid(
             updateSpaceUsedStatement.bind()
                 .setLong(CassandraSieveSpaceTable.SPACE_USED, spaceUsed)
-                .setString(CassandraSieveSpaceTable.USER_NAME, username.asString()));
+                .setString(CassandraSieveSpaceTable.USER_NAME, username.asString())
+                .setConsistencyLevel(QUORUM));
     }
 
     public Mono<Optional<QuotaSizeLimit>> getQuota() {
