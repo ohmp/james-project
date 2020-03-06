@@ -19,6 +19,7 @@
 
 package org.apache.james.mailrepository.cassandra;
 
+import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.decr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -78,12 +79,14 @@ public class CassandraMailRepositoryCountDAO {
 
     Mono<Void> increment(MailRepositoryUrl url) {
         return executor.executeVoid(increment.bind()
-            .setString(REPOSITORY_NAME, url.asString()));
+            .setString(REPOSITORY_NAME, url.asString())
+                .setConsistencyLevel(QUORUM));
     }
 
     Mono<Void> decrement(MailRepositoryUrl url) {
         return executor.executeVoid(decrement.bind()
-            .setString(REPOSITORY_NAME, url.asString()));
+            .setString(REPOSITORY_NAME, url.asString())
+            .setConsistencyLevel(QUORUM));
     }
 
     Mono<Long> getCount(MailRepositoryUrl url) {
