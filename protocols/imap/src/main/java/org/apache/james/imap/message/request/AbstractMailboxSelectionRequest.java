@@ -114,7 +114,7 @@ public abstract class AbstractMailboxSelectionRequest extends AbstractImapReques
 
             @Override
             public boolean correspondsTo(UidValidity uidValidity) {
-                return false;
+                return this.uidValidity.equals(uidValidity);
             }
 
             @Override
