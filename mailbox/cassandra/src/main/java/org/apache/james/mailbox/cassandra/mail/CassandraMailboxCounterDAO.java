@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
+import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.decr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -154,19 +155,27 @@ public class CassandraMailboxCounterDAO {
     }
 
     Mono<Void> decrementCount(CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeVoid(bindWithMailbox(mailboxId, decrementMessageCountStatement));
+        return cassandraAsyncExecutor.executeVoid(
+            bindWithMailbox(mailboxId, decrementMessageCountStatement)
+                .setConsistencyLevel(QUORUM));
     }
 
     Mono<Void> incrementCount(CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeVoid(bindWithMailbox(mailboxId, incrementMessageCountStatement));
+        return cassandraAsyncExecutor.executeVoid(
+            bindWithMailbox(mailboxId, incrementMessageCountStatement)
+                .setConsistencyLevel(QUORUM));
     }
 
     Mono<Void> decrementUnseen(CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeVoid(bindWithMailbox(mailboxId, decrementUnseenCountStatement));
+        return cassandraAsyncExecutor.executeVoid(
+            bindWithMailbox(mailboxId, decrementUnseenCountStatement)
+                .setConsistencyLevel(QUORUM));
     }
 
     Mono<Void> incrementUnseen(CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeVoid(bindWithMailbox(mailboxId, incrementUnseenCountStatement));
+        return cassandraAsyncExecutor.executeVoid(
+            bindWithMailbox(mailboxId, incrementUnseenCountStatement)
+                .setConsistencyLevel(QUORUM));
     }
 
     private BoundStatement bindWithMailbox(CassandraId mailboxId, PreparedStatement statement) {
