@@ -47,7 +47,7 @@ we regenerate invalid UidValidity upon reads.
 While this sanitizing is transparent to the end user and the admin, it might lead to rare IMAP client full mailbox
  resynchronisation. (one chance out of two billions).
 
- ### UidValidity and maildir
+### UidValidity and maildir
 
 Date 26/02/2020
 
