@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.quota;
 
+import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.decr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -69,13 +70,15 @@ public class CassandraCurrentQuotaManager implements StoreCurrentQuotaManager {
     @Override
     public void increase(QuotaRoot quotaRoot, long count, long size) {
         checkArguments(count, size);
-        session.execute(increaseStatement.bind(count, size, quotaRoot.getValue()));
+        session.execute(increaseStatement.bind(count, size, quotaRoot.getValue())
+            .setConsistencyLevel(QUORUM));
     }
 
     @Override
     public void decrease(QuotaRoot quotaRoot, long count, long size) {
         checkArguments(count, size);
-        session.execute(decreaseStatement.bind(count, size, quotaRoot.getValue()));
+        session.execute(decreaseStatement.bind(count, size, quotaRoot.getValue())
+            .setConsistencyLevel(QUORUM));
     }
 
     @Override
