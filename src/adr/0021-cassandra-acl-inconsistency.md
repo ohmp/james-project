@@ -12,6 +12,7 @@ Mailboxes ACLs are denormalized in Cassandra in order to:
  - given a mailbox, list its ACL (enforcing rights for example)
  - discover which mailboxes are delegated to a given user (used to list mailboxes)
 
+Here is the tables organisation:
  - `acl` stores the ACLs of a given mailbox
  - `UserMailboxACL` stores which mailboxes had been delegated to which user
 
@@ -36,6 +37,7 @@ When BOB tries to select it, he is being denied
 We can adopt a retry policy of the `UserMailboxACL` projection update as a mitigation strategy.
 
 Using `acl` table as a source of truth, we can rebuild the `UserMailboxACL` projection:
+
  - Iterating `acl` entries, we can rewrite entries in `UserMailboxACL`
  - Iterating `UserMailboxACL` we can remove entries not referenced in `acl`
  - Adding a delay and a re-check before the actual fix can decrease the occurrence of concurrency issues
