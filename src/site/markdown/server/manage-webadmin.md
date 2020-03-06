@@ -327,7 +327,7 @@ Note: if the user exists already, its password will be updated.
 curl -XHEAD http://ip:port/users/usernameToBeUsed
 ```
 
-Resource name usernameToBeUsed representing valid users, 
+Resource name "usernameToBeUsed" represents a valid user,
 hence it should match the criteria at [User Repositories documentation](/server/config-users.html) 
 
 Response codes:

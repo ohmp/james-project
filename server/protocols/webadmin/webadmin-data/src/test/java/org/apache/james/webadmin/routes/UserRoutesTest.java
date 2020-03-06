@@ -537,7 +537,7 @@ class UserRoutesTest {
         void headShouldReturnNotFoundWhenUserDoesNotExist() {
             when()
                 .head(USERNAME_WITH_DOMAIN.asString())
-                .then()
+            .then()
                 .statusCode(HttpStatus.NOT_FOUND_404);
         }
 
