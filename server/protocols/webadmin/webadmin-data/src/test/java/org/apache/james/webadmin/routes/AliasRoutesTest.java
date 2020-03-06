@@ -231,6 +231,29 @@ class AliasRoutesTest {
         }
 
         @Test
+        void putExistingUserAsAliasSourceShouldBePossibleWhenByPass() {
+            given()
+                .queryParam("bypassUserCheck")
+                .put(BOB + SEPARATOR + "sources" + SEPARATOR + ALICE)
+            .then()
+                .statusCode(HttpStatus.NO_CONTENT_204);
+        }
+
+        @Test
+        void putExistingUserAsAliasSourceShouldCreateTheAliasWhenByPass() {
+            with()
+                .queryParam("bypassUserCheck")
+                .put(BOB + SEPARATOR + "sources" + SEPARATOR + ALICE);
+
+            when()
+                .get(BOB)
+            .then()
+                .contentType(ContentType.JSON)
+                .statusCode(HttpStatus.OK_200)
+                .body("source", hasItems(ALICE));
+        }
+
+        @Test
         void putSameSourceAndDestinationShouldReturnBadRequest() {
             Map<String, Object> errors = when()
                 .put(BOB_ALIAS + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS)

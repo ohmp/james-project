@@ -1802,6 +1802,15 @@ curl -XPUT http://ip:port/address/aliases/user@domain.com/sources/alias@domain.c
 
 Will add alias@domain.com to user@domain.com, creating the alias if needed
 
+And additional `bypassUserCheck` allows to use an existing username as a source of the alias, allowing effective email 
+traffic redirection.
+
+Example:
+
+```
+curl -XPUT http://ip:port/address/aliases/user@domain.com/sources/alias@domain.com?bypassUserCheck
+```
+
 Response codes:
 
  - 204: OK

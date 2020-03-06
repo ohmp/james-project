@@ -81,6 +81,7 @@ public class AliasRoutes implements Routes {
     private static final String MAILADDRESS_ASCII_DISCLAIMER = "Note that email addresses are restricted to ASCII character set. " +
         "Mail addresses not matching this criteria will be rejected.";
     private static final String ADDRESS_TYPE = "alias";
+    private static final String BYPASS_USER_CHECK_QUERY_PARAM = "bypassUserCheck";
 
     private final UsersRepository usersRepository;
     private final JsonTransformer jsonTransformer;
@@ -146,7 +147,10 @@ public class AliasRoutes implements Routes {
     })
     public HaltException addAlias(Request request, Response response) throws UsersRepositoryException, RecipientRewriteTableException {
         MailAddress aliasSourceAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_SOURCE_ADDRESS), ADDRESS_TYPE);
-        ensureUserDoesNotExist(aliasSourceAddress);
+        boolean bypass = request.queryParams().contains(BYPASS_USER_CHECK_QUERY_PARAM);
+        if (!bypass) {
+            ensureUserDoesNotExist(aliasSourceAddress);
+        }
         MailAddress destinationAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_DESTINATION_ADDRESS), ADDRESS_TYPE);
         MappingSource source = MappingSource.fromUser(Username.fromMailAddress(aliasSourceAddress));
         addAlias(source, destinationAddress);

@@ -317,6 +317,70 @@ public class AliasMappingTest {
         assertThat(imapMessageReader.readFirstMessage()).contains(MESSAGE_CONTENT);
     }
 
+    @Test
+    public void overridenUsersShouldSendTheMailToAliasTarget() throws Exception {
+        webAdminApi
+            .queryParam("bypassUserCheck")
+            .put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + ALICE_ADDRESS);
+
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .name("name")
+                .mimeMessage(message)
+                .sender(CEDRIC_ADDRESS)
+                .recipient(ALICE_ADDRESS));
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(BOB_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitAtMostOneMinute);
+        assertThat(imapMessageReader.readFirstMessage()).contains(MESSAGE_CONTENT);
+    }
+
+    @Test
+    public void overridenUsersShouldNotReceiveEmail() throws Exception {
+        webAdminApi
+            .queryParam("bypassUserCheck")
+            .put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + ALICE_ADDRESS);
+
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .name("name")
+                .mimeMessage(message)
+                .sender(CEDRIC_ADDRESS)
+                .recipient(ALICE_ADDRESS));
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(ALICE_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitNoMessage(awaitAtMostOneMinute);
+    }
+
+    @Test
+    public void overridenUsersShouldBeAbleToReadPreviouslyReceivedMailsViaIMAP() throws Exception {
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .name("name")
+                .mimeMessage(message)
+                .sender(CEDRIC_ADDRESS)
+                .recipient(ALICE_ADDRESS));
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(ALICE_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitAtMostOneMinute);
+
+        webAdminApi
+            .queryParam("bypassUserCheck")
+            .put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + ALICE_ADDRESS);
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(ALICE_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitAtMostOneMinute);
+        assertThat(imapMessageReader.readFirstMessage()).contains(MESSAGE_CONTENT);
+    }
+
 
     @Test
     public void messageShouldRedirectFromAliasContainingSlash() throws Exception {
