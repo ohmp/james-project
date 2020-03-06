@@ -9,9 +9,12 @@ Proposed
 ## Context
 
 Messages are denormalized in Cassandra in order to:
+
  - access them by their unique identifier (messageId), for example through the JMAP protocol
  - access them by their mailbox identifier and Unique IDentifier within that mailbox (mailboxId + uid), for example 
  through the IMAP protocol
+
+Here is the table organisation:
 
  - `messageIdTable` Holds mailbox and flags for each message, lookup by mailbox ID + UID
  - `imapUidTable` Holds mailbox and flags for each message, lookup by message ID
@@ -64,6 +67,7 @@ We thus need to modify CassandraMessageMapper 'add' + 'copy' to first write to t
 We can adopt a retry policy of the `messageIdTable` projection update as a mitigation strategy.
 
 Using `imapUidTable` table as a source of truth, we can rebuild the `messageIdTable` projection:
+
  - Iterating `imapUidTable` entries, we can rewrite entries in `messageIdTable`
  - Iterating `messageIdTable` we can remove entries not referenced in `imapUidTable`
  - Adding a delay and a re-check before the actual fix can decrease the occurrence of concurrency issues
