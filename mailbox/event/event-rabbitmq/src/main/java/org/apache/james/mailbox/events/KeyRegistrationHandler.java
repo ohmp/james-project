@@ -22,10 +22,11 @@ package org.apache.james.mailbox.events;
 import static org.apache.james.backends.rabbitmq.Constants.AUTO_DELETE;
 import static org.apache.james.backends.rabbitmq.Constants.DURABLE;
 import static org.apache.james.backends.rabbitmq.Constants.EXCLUSIVE;
-import static org.apache.james.backends.rabbitmq.Constants.NO_ARGUMENTS;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.EVENT_BUS_ID;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.james.backends.rabbitmq.ReceiverProvider;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Delivery;
 
@@ -51,6 +53,8 @@ import reactor.rabbitmq.Sender;
 class KeyRegistrationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyRegistrationHandler.class);
     private static final String EVENTBUS_QUEUE_NAME_PREFIX = "eventbus-";
+    private static final Duration EXPIRATION_TIMEOUT = Duration.ofMinutes(30);
+    private static final Map<String, Object> QUEUE_ARGUMENTS = ImmutableMap.of("x-expires", EXPIRATION_TIMEOUT.toMillis());
 
     private final EventBusId eventBusId;
     private final LocalListenerRegistry localListenerRegistry;
@@ -80,7 +84,7 @@ class KeyRegistrationHandler {
             .durable(DURABLE)
             .exclusive(!EXCLUSIVE)
             .autoDelete(AUTO_DELETE)
-            .arguments(NO_ARGUMENTS))
+            .arguments(QUEUE_ARGUMENTS))
             .map(AMQP.Queue.DeclareOk::getQueue)
             .doOnSuccess(registrationQueue::initialize)
             .block();
