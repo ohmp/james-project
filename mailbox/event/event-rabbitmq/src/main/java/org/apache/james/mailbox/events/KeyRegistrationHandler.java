@@ -50,6 +50,7 @@ import reactor.rabbitmq.Sender;
 
 class KeyRegistrationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyRegistrationHandler.class);
+    private static final String EVENTBUS_QUEUE_NAME_PREFIX = "eventbus-";
 
     private final EventBusId eventBusId;
     private final LocalListenerRegistry localListenerRegistry;
@@ -75,7 +76,7 @@ class KeyRegistrationHandler {
     }
 
     void start() {
-        sender.declareQueue(QueueSpecification.queue(eventBusId.asString())
+        sender.declareQueue(QueueSpecification.queue(EVENTBUS_QUEUE_NAME_PREFIX + eventBusId.asString())
             .durable(DURABLE)
             .exclusive(!EXCLUSIVE)
             .autoDelete(AUTO_DELETE)
