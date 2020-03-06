@@ -125,7 +125,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnAddShouldIncrementMessageCount() throws Exception {
+    void updateIndexOnAddShouldIncrementMessageCount() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -137,7 +137,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnAddShouldIncrementUnseenMessageCountWhenUnseen() throws Exception {
+    void updateIndexOnAddShouldIncrementUnseenMessageCountWhenUnseen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -149,7 +149,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnAddShouldNotIncrementUnseenMessageCountWhenSeen() throws Exception {
+    void updateIndexOnAddShouldNotIncrementUnseenMessageCountWhenSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -189,7 +189,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnDeleteShouldDecrementMessageCount() throws Exception {
+    void updateIndexOnDeleteShouldDecrementMessageCount() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -206,7 +206,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnDeleteShouldDecrementUnseenMessageCountWhenUnseen() throws Exception {
+    void updateIndexOnDeleteShouldDecrementUnseenMessageCountWhenUnseen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -223,7 +223,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnDeleteShouldNotDecrementUnseenMessageCountWhenSeen() throws Exception {
+    void updateIndexOnDeleteShouldNotDecrementUnseenMessageCountWhenSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -299,7 +299,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnFlagsUpdateShouldNotChangeMessageCount() throws Exception {
+    void updateIndexOnFlagsUpdateShouldNotChangeMessageCount() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -317,7 +317,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnFlagsUpdateShouldDecrementUnseenMessageCountWhenSeenIsSet() throws Exception {
+    void updateIndexOnFlagsUpdateShouldDecrementUnseenMessageCountWhenSeenIsSet() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -427,7 +427,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnFlagsUpdateShouldIncrementUnseenMessageCountWhenSeenIsUnset() throws Exception {
+    void updateIndexOnFlagsUpdateShouldIncrementUnseenMessageCountWhenSeenIsUnset() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -445,7 +445,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothSeen() throws Exception {
+    void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags(Flags.Flag.SEEN));
         when(message.getUid()).thenReturn(MESSAGE_UID);
@@ -463,7 +463,7 @@ class CassandraIndexTableHandlerTest {
     }
 
     @Test
-    void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothUnSeen() throws Exception {
+    void updateIndexOnFlagsUpdateShouldNotChangeUnseenCountWhenBothUnSeen() {
         MailboxMessage message = mock(MailboxMessage.class);
         when(message.createFlags()).thenReturn(new Flags());
         when(message.getUid()).thenReturn(MESSAGE_UID);
