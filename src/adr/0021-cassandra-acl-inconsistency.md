@@ -9,10 +9,12 @@ Proposed
 ## Context
 
 Mailboxes ACLs are denormalized in Cassandra in order to:
+
  - given a mailbox, list its ACL (enforcing rights for example)
  - discover which mailboxes are delegated to a given user (used to list mailboxes)
 
 Here is the tables organisation:
+
  - `acl` stores the ACLs of a given mailbox
  - `UserMailboxACL` stores which mailboxes had been delegated to which user
 
