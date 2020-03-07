@@ -220,9 +220,17 @@ Consideration:
  (retries if failed? EventDeadLetter?)
  
 Correction can be done from source of truth: MessageIdToImapUid
+
+See JAMES-3105 https://issues.apache.org/jira/browse/JAMES-3105 https://github.com/linagora/james-project/pull/3185 
+contributes a first corrective task that needs to be run offline to be concurrency-free. To be noted, rerunning the
+task upon consistencies issues will eventually be consistent.
+
+Further work is required to make this work concurrency friendly.
+
 Read notes below about restrictions reseting counters.
-As this is a counter value we might need to have an eventBus registration to not missconcurrent additions/deletes 
-(and correct the count afterward?
+
+Idea: As this is a counter value we might need to have an eventBus registration to not miss concurrent additions/deletes 
+(and correct the count afterward?)
 
 ## Applicale Flags
 
