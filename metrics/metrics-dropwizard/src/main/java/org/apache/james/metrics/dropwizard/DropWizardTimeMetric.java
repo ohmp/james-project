@@ -20,17 +20,54 @@
 package org.apache.james.metrics.dropwizard;
 
 import org.apache.james.metrics.api.TimeMetric;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
+import com.google.common.base.Preconditions;
 
 public class DropWizardTimeMetric implements TimeMetric {
 
-    private final String name;
-    private final Timer.Context time;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DropWizardTimeMetric.class);
 
-    public DropWizardTimeMetric(String name, Timer.Context context) {
+    static class DropWizardExecutionResult implements ExecutionResult {
+        private final String name;
+        private final long elaspedInNanoSeconds;
+        private final long p99InNanoSeconds;
+
+        DropWizardExecutionResult(String name, long elaspedInNanoSeconds, long p99InNanoSeconds) {
+            Preconditions.checkArgument(elaspedInNanoSeconds > 0);
+            Preconditions.checkArgument(p99InNanoSeconds > 0);
+
+            this.name = name;
+            this.elaspedInNanoSeconds = elaspedInNanoSeconds;
+            this.p99InNanoSeconds = p99InNanoSeconds;
+        }
+
+        @Override
+        public long elaspedInNanoSeconds() {
+            return elaspedInNanoSeconds;
+        }
+
+        @Override
+        public ExecutionResult logWhenExceedP99(long thresholdInNanoSeconds) {
+            Preconditions.checkArgument(thresholdInNanoSeconds > 0);
+            if (elaspedInNanoSeconds > p99InNanoSeconds && elaspedInNanoSeconds > thresholdInNanoSeconds) {
+                LOGGER.info("{} metrics took {} nano seconds to complete, exceeding its {} nano seconds p99",
+                    name, elaspedInNanoSeconds, p99InNanoSeconds);
+            }
+            return this;
+        }
+    }
+
+    private final String name;
+    private final Timer.Context context;
+    private final Timer timer;
+
+    public DropWizardTimeMetric(String name, Timer timer) {
         this.name = name;
-        this.time = context;
+        this.timer = timer;
+        this.context = this.timer.time();
     }
 
     @Override
@@ -39,7 +76,7 @@ public class DropWizardTimeMetric implements TimeMetric {
     }
 
     @Override
-    public long stopAndPublish() {
-        return time.stop();
+    public ExecutionResult stopAndPublish() {
+        return new DropWizardExecutionResult(name, context.stop(), Math.round(timer.getSnapshot().get999thPercentile()));
     }
 }

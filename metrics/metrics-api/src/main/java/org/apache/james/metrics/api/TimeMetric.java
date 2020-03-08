@@ -20,8 +20,16 @@ package org.apache.james.metrics.api;
 
 public interface TimeMetric {
 
+    interface ExecutionResult {
+        long DEFAULT_100_MS_THRESHOLD = 100 * 1000;
+
+        long elaspedInNanoSeconds();
+
+        ExecutionResult logWhenExceedP99(long thresholdInNanoSeconds);
+    }
+
     String name();
 
-    long stopAndPublish();
+    ExecutionResult stopAndPublish();
 
 }

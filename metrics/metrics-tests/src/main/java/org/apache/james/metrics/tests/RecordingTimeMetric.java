@@ -28,6 +28,24 @@ import org.apache.james.metrics.api.TimeMetric;
 import com.google.common.base.Stopwatch;
 
 public class RecordingTimeMetric implements TimeMetric {
+    static class DefaultExecutionResult implements ExecutionResult {
+        private final long elaspedInNanoSeconds;
+
+        DefaultExecutionResult(long elaspedInNanoSeconds) {
+            this.elaspedInNanoSeconds = elaspedInNanoSeconds;
+        }
+
+        @Override
+        public long elaspedInNanoSeconds() {
+            return elaspedInNanoSeconds;
+        }
+
+        @Override
+        public ExecutionResult logWhenExceedP99(long thresholdInNanoSeconds) {
+            return this;
+        }
+    }
+
     private final String name;
     private final Stopwatch stopwatch = Stopwatch.createStarted();
     private final Consumer<Duration> publishCallback;
@@ -43,9 +61,9 @@ public class RecordingTimeMetric implements TimeMetric {
     }
 
     @Override
-    public long stopAndPublish() {
+    public ExecutionResult stopAndPublish() {
         long elapsed = stopwatch.elapsed(TimeUnit.NANOSECONDS);
         publishCallback.accept(Duration.ofNanos(elapsed));
-        return elapsed;
+        return new DefaultExecutionResult(elapsed);
     }
 }
