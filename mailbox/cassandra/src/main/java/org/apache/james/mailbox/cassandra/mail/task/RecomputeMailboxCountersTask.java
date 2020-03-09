@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.cassandra.mail.task;
 
+import static org.apache.james.mailbox.cassandra.mail.task.RecomputeMailboxCountersService.Context.Snapshot;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
@@ -89,7 +91,7 @@ public class RecomputeMailboxCountersTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        RecomputeMailboxCountersService.Context.Snapshot snapshot = context.snapshot();
+        Snapshot snapshot = context.snapshot();
 
         return Optional.of(new Details(Clock.systemUTC().instant(),
             snapshot.getProcessedMailboxCount(),
