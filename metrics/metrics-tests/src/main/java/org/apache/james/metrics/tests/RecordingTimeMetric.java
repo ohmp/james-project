@@ -29,19 +29,19 @@ import com.google.common.base.Stopwatch;
 
 public class RecordingTimeMetric implements TimeMetric {
     static class DefaultExecutionResult implements ExecutionResult {
-        private final long elaspedInNanoSeconds;
+        private final Duration elasped;
 
-        DefaultExecutionResult(long elaspedInNanoSeconds) {
-            this.elaspedInNanoSeconds = elaspedInNanoSeconds;
+        DefaultExecutionResult(Duration elasped) {
+            this.elasped = elasped;
         }
 
         @Override
-        public long elaspedInNanoSeconds() {
-            return elaspedInNanoSeconds;
+        public Duration elasped() {
+            return elasped;
         }
 
         @Override
-        public ExecutionResult logWhenExceedP99(long thresholdInNanoSeconds) {
+        public ExecutionResult logWhenExceedP99(Duration thresholdInNanoSeconds) {
             return this;
         }
     }
@@ -62,8 +62,8 @@ public class RecordingTimeMetric implements TimeMetric {
 
     @Override
     public ExecutionResult stopAndPublish() {
-        long elapsed = stopwatch.elapsed(TimeUnit.NANOSECONDS);
-        publishCallback.accept(Duration.ofNanos(elapsed));
+        Duration elapsed = Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
+        publishCallback.accept(elapsed);
         return new DefaultExecutionResult(elapsed);
     }
 }

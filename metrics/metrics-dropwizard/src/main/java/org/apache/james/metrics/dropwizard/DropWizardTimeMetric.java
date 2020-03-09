@@ -19,6 +19,8 @@
 
 package org.apache.james.metrics.dropwizard;
 
+import java.time.Duration;
+
 import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,29 +34,30 @@ public class DropWizardTimeMetric implements TimeMetric {
 
     static class DropWizardExecutionResult implements ExecutionResult {
         private final String name;
-        private final long elaspedInNanoSeconds;
-        private final long p99InNanoSeconds;
+        private final Duration elasped;
+        private final Duration p99;
 
-        DropWizardExecutionResult(String name, long elaspedInNanoSeconds, long p99InNanoSeconds) {
-            Preconditions.checkArgument(elaspedInNanoSeconds > 0);
-            Preconditions.checkArgument(p99InNanoSeconds > 0);
+        DropWizardExecutionResult(String name, Duration elasped, Duration p99) {
+            Preconditions.checkNotNull(elasped);
+            Preconditions.checkNotNull(p99);
+            Preconditions.checkNotNull(name);
 
             this.name = name;
-            this.elaspedInNanoSeconds = elaspedInNanoSeconds;
-            this.p99InNanoSeconds = p99InNanoSeconds;
+            this.elasped = elasped;
+            this.p99 = p99;
         }
 
         @Override
-        public long elaspedInNanoSeconds() {
-            return elaspedInNanoSeconds;
+        public Duration elasped() {
+            return elasped;
         }
 
         @Override
-        public ExecutionResult logWhenExceedP99(long thresholdInNanoSeconds) {
-            Preconditions.checkArgument(thresholdInNanoSeconds > 0);
-            if (elaspedInNanoSeconds > p99InNanoSeconds && elaspedInNanoSeconds > thresholdInNanoSeconds) {
+        public ExecutionResult logWhenExceedP99(Duration thresholdInNanoSeconds) {
+            Preconditions.checkNotNull(thresholdInNanoSeconds);
+            if (elasped.compareTo(p99) > 0 && elasped.compareTo(thresholdInNanoSeconds) > 0) {
                 LOGGER.info("{} metrics took {} nano seconds to complete, exceeding its {} nano seconds p99",
-                    name, elaspedInNanoSeconds, p99InNanoSeconds);
+                    name, elasped, p99);
             }
             return this;
         }
@@ -77,6 +80,6 @@ public class DropWizardTimeMetric implements TimeMetric {
 
     @Override
     public ExecutionResult stopAndPublish() {
-        return new DropWizardExecutionResult(name, context.stop(), Math.round(timer.getSnapshot().get999thPercentile()));
+        return new DropWizardExecutionResult(name, Duration.ofNanos(context.stop()), Duration.ofNanos(Math.round(timer.getSnapshot().get999thPercentile())));
     }
 }

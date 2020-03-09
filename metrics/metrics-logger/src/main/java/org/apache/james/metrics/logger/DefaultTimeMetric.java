@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.metrics.logger;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.metrics.api.TimeMetric;
@@ -26,19 +27,19 @@ import com.google.common.base.Stopwatch;
 
 public class DefaultTimeMetric implements TimeMetric {
     static class DefaultExecutionResult implements ExecutionResult {
-        private final long elaspedInNanoSeconds;
+        private final Duration elasped;
 
-        DefaultExecutionResult(long elaspedInNanoSeconds) {
-            this.elaspedInNanoSeconds = elaspedInNanoSeconds;
+        DefaultExecutionResult(Duration elasped) {
+            this.elasped = elasped;
         }
 
         @Override
-        public long elaspedInNanoSeconds() {
-            return elaspedInNanoSeconds;
+        public Duration elasped() {
+            return elasped;
         }
 
         @Override
-        public ExecutionResult logWhenExceedP99(long thresholdInNanoSeconds) {
+        public ExecutionResult logWhenExceedP99(Duration thresholdInNanoSeconds) {
             return this;
         }
     }
@@ -60,7 +61,7 @@ public class DefaultTimeMetric implements TimeMetric {
     public ExecutionResult stopAndPublish() {
         long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         DefaultMetricFactory.LOGGER.info("Time spent in {}: {} ms.", name, elapsed);
-        return new DefaultExecutionResult(elapsed);
+        return new DefaultExecutionResult(Duration.ofNanos(elapsed));
     }
 
 }
