@@ -21,7 +21,6 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.decr;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.incr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
@@ -49,7 +48,6 @@ public class CassandraMailboxCounterDAO {
 
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement readStatement;
-    private final PreparedStatement deleteStatement;
     private final PreparedStatement incrementUnseenCountStatement;
     private final PreparedStatement incrementMessageCountStatement;
     private final PreparedStatement addToCounters;
@@ -61,7 +59,6 @@ public class CassandraMailboxCounterDAO {
     public CassandraMailboxCounterDAO(Session session) {
         cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         readStatement = createReadStatement(session);
-        deleteStatement = createReadStatement(session);
         incrementMessageCountStatement = updateMailboxStatement(session, incr(COUNT));
         incrementUnseenCountStatement = updateMailboxStatement(session, incr(UNSEEN));
         addToCounters = session.prepare(update(TABLE_NAME)
@@ -83,12 +80,6 @@ public class CassandraMailboxCounterDAO {
                 .where(eq(MAILBOX_ID, bindMarker(MAILBOX_ID))));
     }
 
-    private PreparedStatement createDeleteStatement(Session session) {
-        return session.prepare(delete()
-            .from(TABLE_NAME)
-                .where(eq(MAILBOX_ID, bindMarker(MAILBOX_ID))));
-    }
-
     private PreparedStatement updateMailboxStatement(Session session, Assignment operation) {
         return session.prepare(
             update(TABLE_NAME)
@@ -106,7 +97,7 @@ public class CassandraMailboxCounterDAO {
     }
 
     public Mono<Void> resetCounter(MailboxCounters counters) {
-        CassandraId mailboxId = ((CassandraId) counters.getMailboxId());
+        CassandraId mailboxId = (CassandraId) counters.getMailboxId();
 
         return retrieveMailboxCounters(mailboxId)
             .switchIfEmpty(Mono.just(emptyCounters(mailboxId)))
@@ -128,7 +119,7 @@ public class CassandraMailboxCounterDAO {
     }
 
     private Mono<Void> add(MailboxCounters counters) {
-        CassandraId mailboxId = ((CassandraId) counters.getMailboxId());
+        CassandraId mailboxId = (CassandraId) counters.getMailboxId();
         return cassandraAsyncExecutor.executeVoid(
             bindWithMailbox(mailboxId, addToCounters)
                 .setLong(COUNT, counters.getCount())
@@ -136,7 +127,7 @@ public class CassandraMailboxCounterDAO {
     }
 
     private Mono<Void> remove(MailboxCounters counters) {
-        CassandraId mailboxId = ((CassandraId) counters.getMailboxId());
+        CassandraId mailboxId = (CassandraId) counters.getMailboxId();
         return cassandraAsyncExecutor.executeVoid(
             bindWithMailbox(mailboxId, removeToCounters)
                 .setLong(COUNT, counters.getCount())
