@@ -51,10 +51,10 @@ public class RecomputeMailboxCountersTaskAdditionalInformationDTO implements Add
     private final ImmutableList<String> failedMailboxes;
     private final Instant timestamp;
 
-    public RecomputeMailboxCountersTaskAdditionalInformationDTO(@JsonProperty("type")String type,
-                                                                @JsonProperty("processedMailboxes")long processedMailboxes,
-                                                                @JsonProperty("failedMailboxes")ImmutableList<String> failedMailboxes,
-                                                                @JsonProperty("timestamp")Instant timestamp) {
+    public RecomputeMailboxCountersTaskAdditionalInformationDTO(@JsonProperty("type") String type,
+                                                                @JsonProperty("processedMailboxes") long processedMailboxes,
+                                                                @JsonProperty("failedMailboxes") ImmutableList<String> failedMailboxes,
+                                                                @JsonProperty("timestamp") Instant timestamp) {
         this.type = type;
         this.processedMailboxes = processedMailboxes;
         this.failedMailboxes = failedMailboxes;
