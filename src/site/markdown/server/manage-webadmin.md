@@ -478,7 +478,7 @@ The scheduled task will have the following type `recompute-mailbox-counters` and
 }
 ```
 
-Note that conflicting entry inconsistencies will not be fixed and will require to explicitly use 
+Note that conflicting inconsistencies entries will not be fixed and will require to explicitly use 
 [ghost mailbox](#correcting-ghost-mailbox) endpoint in order to merge the conflicting mailboxes and prevent any message
 loss.
 
