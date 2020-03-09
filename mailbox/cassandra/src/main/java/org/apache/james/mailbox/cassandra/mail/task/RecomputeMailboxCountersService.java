@@ -177,7 +177,7 @@ public class RecomputeMailboxCountersService {
         return imapUidToMessageIdDAO.retrieveMessages(mailboxId, MessageRange.all())
             .flatMap(message -> latestMetadata(mailboxId, message))
             .doOnNext(counter::process)
-            .then(Mono.defer(() -> counterDAO.resetCounter(counter.snapshot())))
+            .then(Mono.defer(() -> counterDAO.resetCounters(counter.snapshot())))
             .then(Mono.just(Result.COMPLETED))
             .doOnNext(any -> {
                 LOGGER.info("Counters recomputed for {}", mailboxId.serialize());
