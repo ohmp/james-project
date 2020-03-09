@@ -54,8 +54,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.datastax.driver.core.utils.UUIDs;
-
 class RecomputeMailboxCountersServiceTest {
     private static final UidValidity UID_VALIDITY_1 = UidValidity.ofValid(145);
     private static final Username USER = Username.of("user");
@@ -159,7 +157,7 @@ class RecomputeMailboxCountersServiceTest {
     }
 
     @Test
-    void recomputeMailboxCountersShouldReturnCompletedMailboxListReferenceIsMissing() {
+    void recomputeMailboxCountersShouldReturnCompletedWhenMailboxListReferenceIsMissing() {
         mailboxDAO.save(MAILBOX).block();
         messageIdToImapUidDAO.insert(METADATA_UNSEEN).block();
         counterDAO.incrementUnseen(CASSANDRA_ID_1).block();
