@@ -1,4 +1,4 @@
-# 22. Cassandra Message inconsistencies
+# 23. Cassandra Mailbox Counters inconsistencies
 
 Date: 2020-03-07
 
@@ -40,14 +40,14 @@ This endpoints will:
 
 ## Consequences
 
-This endpoint won't be friendly in the face of concurrent operations, which would be ignored during the recomputation of
-the counter of the given mailbox. However the source of truth is unaffected hence, upon rerunning the task, the result 
-will be eventually correct. To be noted that Cassandra counters can't be reset in an atomic manner anyway.
+This endpoint is subject to data races in the face of concurrent operations. Concurrent increments & decrements will be 
+ignored during a single mailbox processing. However the source of truth is unaffected hence, upon rerunning the task, 
+the result will be eventually correct. To be noted that Cassandra counters can't be reset in an atomic manner anyway.
 
 We rely on the "listing messages by mailbox" projection (that we recheck). Missing entries in there will
 be ignored until the given projection is healed (currently unsupported). 
 
-We furthermore can piggy back a partial check of the message denormalization describe in 
+We furthermore can piggy back a partial check of the message denormalization described in 
 [this ADR](0021-cassandra-acl-inconsistency.md) upon counter recomputation (partial because 
 we cannot detect missing entries in the "list messages in mailbox" denormalization table)
 
