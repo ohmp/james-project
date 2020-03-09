@@ -96,7 +96,7 @@ public class CassandraMailboxCounterDAO {
                 .build());
     }
 
-    public Mono<Void> resetCounter(MailboxCounters counters) {
+    public Mono<Void> resetCounters(MailboxCounters counters) {
         CassandraId mailboxId = (CassandraId) counters.getMailboxId();
 
         return retrieveMailboxCounters(mailboxId)
