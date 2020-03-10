@@ -19,8 +19,15 @@
 
 package org.apache.james.backends.cassandra.init;
 
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.exceptions.DriverException;
@@ -28,9 +35,13 @@ import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
 
 public class NotConsistencyAllRetryPolicy implements RetryPolicy {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(NotConsistencyAllRetryPolicy.class);
+
     @Override
     public RetryDecision onReadTimeout(Statement statement, ConsistencyLevel cl, int requiredResponses, int receivedResponses, boolean dataRetrieved, int nbRetry) {
         if (cl == ConsistencyLevel.ALL) {
+            log(statement);
             return RetryDecision.retry(ConsistencyLevel.QUORUM);
         }
         return DefaultRetryPolicy.INSTANCE.onReadTimeout(statement, cl, requiredResponses, receivedResponses, dataRetrieved, nbRetry);
@@ -39,6 +50,7 @@ public class NotConsistencyAllRetryPolicy implements RetryPolicy {
     @Override
     public RetryDecision onWriteTimeout(Statement statement, ConsistencyLevel cl, WriteType writeType, int requiredAcks, int receivedAcks, int nbRetry) {
         if (cl == ConsistencyLevel.ALL) {
+            log(statement);
             return RetryDecision.retry(ConsistencyLevel.QUORUM);
         }
         return DefaultRetryPolicy.INSTANCE.onWriteTimeout(statement, cl, writeType, requiredAcks, receivedAcks, nbRetry);
@@ -47,6 +59,7 @@ public class NotConsistencyAllRetryPolicy implements RetryPolicy {
     @Override
     public RetryDecision onUnavailable(Statement statement, ConsistencyLevel cl, int requiredReplica, int aliveReplica, int nbRetry) {
         if (cl == ConsistencyLevel.ALL) {
+            log(statement);
             return RetryDecision.retry(ConsistencyLevel.QUORUM);
         }
         return DefaultRetryPolicy.INSTANCE.onUnavailable(statement, cl, requiredReplica, aliveReplica, nbRetry);
@@ -55,6 +68,23 @@ public class NotConsistencyAllRetryPolicy implements RetryPolicy {
     @Override
     public RetryDecision onRequestError(Statement statement, ConsistencyLevel cl, DriverException e, int nbRetry) {
         return DefaultRetryPolicy.INSTANCE.onRequestError(statement, cl, e, nbRetry);
+    }
+
+    private void log(Statement statement) {
+        Optional<String> statementAsString = asString(statement);
+        statementAsString.ifPresent(string -> LOGGER.warn("Consistency Level ALL used for executing {}", string));
+    }
+
+    private Optional<String> asString(Statement statement) {
+        if (statement instanceof PreparedStatement) {
+            PreparedStatement preparedStatement = (PreparedStatement) statement;
+            return Optional.of(preparedStatement.getQueryString());
+        }
+        if (statement instanceof SimpleStatement) {
+            SimpleStatement simpleStatement = (SimpleStatement) statement;
+            return Optional.of(simpleStatement.getQueryString());
+        }
+        return Optional.empty();
     }
 
     @Override
