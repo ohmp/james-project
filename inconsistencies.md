@@ -273,6 +273,11 @@ Consideration:
 Correction can be done from source of truth: `MessageIdToImapUid`. Iterating `MessageIdToImapUid` we can rewrite 
 messages uids in `firstUnseen`. Iterating `firstUnseen`, we remove entries not existing in `MessageIdToImapUid`.
 
+Note that `firstUnseen` table can contain many tumbstones (after user making messages as READ) generating tumbstone 
+range warnings. https://issues.apache.org/jira/browse/JAMES-3109 proposes to rather rely on the search index for this 
+operation within the Cassandra mailbox. We need to evaluate the impact (correctness as it's eventually up to date, 
+performance) but this will effectively solve inconsistencies issues.
+
 ## Mailbox recent
 
 Table: mailboxRecents : Denormalisation table. This table holds for each mailbox the messages marked as RECENT. This
@@ -287,6 +292,13 @@ Consideration:
 Correction can be done from source of truth: `MessageIdToImapUid`. Iterating `MessageIdToImapUid` we can rewrite 
 messages marked as recent in `mailboxRecents`. Iterating `mailboxRecents`, we remove entries not marked as recent in 
 `MessageIdToImapUid`.
+
+
+Note that `mailboxRecents` table can contain many tumbstones (after performing an initial select on a freshly 
+migrates/populated mailbox) generating tumbstone range warnings. https://issues.apache.org/jira/browse/JAMES-3109
+proposes to rather rely on the search index for this operation within the Cassandra mailbox. We need to evaluate the 
+impact (correctness as it's eventually up to date, performance) but this will effectively solve inconsistencies issues.
+However this might result in large scrolls.
 
 ## Cassandra counter limitations
 
