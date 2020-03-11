@@ -16,24 +16,39 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.draft.model;
+package org.apache.james.jmap.http;
 
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.metrics.api.MetricFactory;
 
-public class AuthenticatedRequest extends InvocationRequest {
-    public static AuthenticatedRequest decorate(InvocationRequest request, MailboxSession session) {
-        return new AuthenticatedRequest(request, session);
+import com.google.common.annotations.VisibleForTesting;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerRequest;
+
+public class AuthenticationReactiveFilter {
+    private final List<AuthenticationStrategy> authMethods;
+    private final MetricFactory metricFactory;
+
+    @Inject
+    @VisibleForTesting
+    AuthenticationReactiveFilter(List<AuthenticationStrategy> authMethods, MetricFactory metricFactory) {
+        this.authMethods = authMethods;
+        this.metricFactory = metricFactory;
     }
 
-    private final MailboxSession session;
-
-    private AuthenticatedRequest(InvocationRequest request, MailboxSession session) {
-        super(request.getMethodName(), request.getParameters(), request.getMethodCallId());
-        this.session = session;
-        
-    }
-
-    public MailboxSession getMailboxSession() {
-        return session;
+    public Mono<MailboxSession> authenticate(HttpServerRequest request) {
+        return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
+            Flux.fromStream(authMethods.stream())
+                .flatMap(auth -> auth.createMailboxSession(request))
+                .onErrorContinue((throwable, nothing) -> { })
+                .singleOrEmpty()
+                .switchIfEmpty(Mono.error(new UnauthorizedException()))));
     }
 }

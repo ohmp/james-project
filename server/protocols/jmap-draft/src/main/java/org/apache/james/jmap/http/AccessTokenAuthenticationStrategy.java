@@ -16,57 +16,41 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-
-package org.apache.james.jmap.draft.crypto;
+package org.apache.james.jmap.http;
 
 import javax.inject.Inject;
 
-import org.apache.james.core.Username;
 import org.apache.james.jmap.api.access.AccessToken;
-import org.apache.james.jmap.api.access.AccessTokenRepository;
-import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 import org.apache.james.jmap.draft.api.AccessTokenManager;
+import org.apache.james.jmap.draft.exceptions.NoValidAuthHeaderException;
+import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.mailbox.MailboxSession;
 
-import com.google.common.base.Preconditions;
+import com.google.common.annotations.VisibleForTesting;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerRequest;
 
-public class AccessTokenManagerImpl implements AccessTokenManager {
-
-    private final AccessTokenRepository accessTokenRepository;
+public class AccessTokenAuthenticationStrategy implements AuthenticationStrategy {
+    private final AccessTokenManager accessTokenManager;
+    private final MailboxManager mailboxManager;
 
     @Inject
-    AccessTokenManagerImpl(AccessTokenRepository accessTokenRepository) {
-        this.accessTokenRepository = accessTokenRepository;
+    @VisibleForTesting
+    AccessTokenAuthenticationStrategy(AccessTokenManager accessTokenManager, MailboxManager mailboxManager) {
+        this.accessTokenManager = accessTokenManager;
+        this.mailboxManager = mailboxManager;
     }
 
     @Override
-    public Mono<AccessToken> grantAccessToken(Username username) {
-        Preconditions.checkNotNull(username);
-        AccessToken accessToken = AccessToken.generate();
-
-        return accessTokenRepository.addToken(username, accessToken)
-            .thenReturn(accessToken);
+    public Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest) throws NoValidAuthHeaderException {
+        return Flux.fromStream(authHeaders(httpRequest))
+            .map(AccessToken::fromString)
+            .filterWhen(accessTokenManager::isValid)
+            .flatMap(accessTokenManager::getUsernameFromToken)
+            .map(mailboxManager::createSystemSession)
+            .singleOrEmpty()
+            .switchIfEmpty(Mono.error(new NoValidAuthHeaderException()));
     }
-
-    @Override
-    public Mono<Username> getUsernameFromToken(AccessToken token) throws InvalidAccessToken {
-        return accessTokenRepository.getUsernameFromToken(token);
-    }
-    
-    @Override
-    public Mono<Boolean> isValid(AccessToken token) throws InvalidAccessToken {
-        try {
-            return getUsernameFromToken(token)
-                .thenReturn(true);
-        } catch (InvalidAccessToken e) {
-            return Mono.just(false);
-        }
-    }
-
-    @Override
-    public Mono<Void> revoke(AccessToken token) {
-        return accessTokenRepository.removeToken(token);
-    }
-
 }

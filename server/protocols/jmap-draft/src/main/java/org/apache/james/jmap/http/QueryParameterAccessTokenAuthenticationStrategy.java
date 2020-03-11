@@ -16,49 +16,53 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.draft;
+package org.apache.james.jmap.http;
 
-import java.util.Optional;
+import static org.apache.james.jmap.http.DownloadRoutes.BLOB_ID_PATH_PARAM;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.james.core.Username;
-import org.apache.james.jmap.api.access.AccessToken;
-import org.apache.james.jmap.draft.api.AccessTokenManager;
-import org.apache.james.jmap.draft.exceptions.NoValidAuthHeaderException;
-import org.apache.james.jmap.draft.utils.HeadersAuthenticationExtractor;
+import org.apache.james.jmap.draft.api.SimpleTokenManager;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
+import org.apache.james.jmap.draft.model.AttachmentAccessToken;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class AccessTokenAuthenticationStrategy implements AuthenticationStrategy {
+import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerRequest;
 
-    private final AccessTokenManager accessTokenManager;
+public class QueryParameterAccessTokenAuthenticationStrategy implements AuthenticationStrategy {
+    private static final String AUTHENTICATION_PARAMETER = "access_token";
+
+    private final SimpleTokenManager tokenManager;
     private final MailboxManager mailboxManager;
-    private final HeadersAuthenticationExtractor authenticationExtractor;
 
     @Inject
     @VisibleForTesting
-    AccessTokenAuthenticationStrategy(AccessTokenManager accessTokenManager, MailboxManager mailboxManager, HeadersAuthenticationExtractor authenticationExtractor) {
-        this.accessTokenManager = accessTokenManager;
+    QueryParameterAccessTokenAuthenticationStrategy(SimpleTokenManager tokenManager, MailboxManager mailboxManager) {
+        this.tokenManager = tokenManager;
         this.mailboxManager = mailboxManager;
-        this.authenticationExtractor = authenticationExtractor;
     }
 
     @Override
-    public MailboxSession createMailboxSession(HttpServletRequest httpRequest) throws NoValidAuthHeaderException {
+    public Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest) {
+        return getAccessToken(httpRequest)
+            .filter(tokenManager::isValid)
+            .map(AttachmentAccessToken::getUsername)
+            .map(Username::of)
+            .map(mailboxManager::createSystemSession)
+            .switchIfEmpty(Mono.error(new UnauthorizedException()));
+    }
 
-        Optional<Username> username = authenticationExtractor.authHeaders(httpRequest)
-            .map(AccessToken::fromString)
-            .filter(accessTokenManager::isValid)
-            .map(accessTokenManager::getUsernameFromToken)
-            .findFirst();
-
-        if (username.isPresent()) {
-            return mailboxManager.createSystemSession(username.get());
+    private Mono<AttachmentAccessToken> getAccessToken(HttpServerRequest httpRequest) {
+        try {
+            return Mono.justOrEmpty(httpRequest.param(BLOB_ID_PATH_PARAM))
+                .map(blobId -> AttachmentAccessToken.from(httpRequest.param(AUTHENTICATION_PARAMETER), blobId));
+        } catch (IllegalArgumentException e) {
+            return Mono.empty();
         }
-        throw new NoValidAuthHeaderException();
     }
 }
