@@ -22,17 +22,16 @@ package org.apache.james.jmap.draft.api;
 import org.apache.james.core.Username;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
-
-import reactor.core.publisher.Mono;
+import org.reactivestreams.Publisher;
 
 public interface AccessTokenManager {
 
-    Mono<AccessToken> grantAccessToken(Username username);
+    Publisher<AccessToken> grantAccessToken(Username username);
 
-    Mono<Username> getUsernameFromToken(AccessToken token) throws InvalidAccessToken;
-    
-    Mono<Boolean> isValid(AccessToken token);
-    
-    Mono<Void> revoke(AccessToken token);
+    Publisher<Username> getUsernameFromToken(AccessToken token) throws InvalidAccessToken;
+
+    Publisher<Boolean> isValid(AccessToken token);
+
+    Publisher<Void> revoke(AccessToken token);
 
 }
