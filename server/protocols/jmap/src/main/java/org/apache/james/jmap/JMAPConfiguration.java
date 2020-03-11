@@ -27,8 +27,6 @@ import com.google.common.base.Preconditions;
 
 public class JMAPConfiguration {
 
-    // TODO move tests too
-
     public static Builder builder() {
         return new Builder();
     }
