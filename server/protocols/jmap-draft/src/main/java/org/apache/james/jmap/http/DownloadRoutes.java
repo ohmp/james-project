@@ -24,7 +24,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.james.jmap.HttpConstants.TEXT_PLAIN_CONTENT_TYPE;
 import static org.apache.james.jmap.http.JMAPUrls.DOWNLOAD;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -52,6 +52,7 @@ import org.apache.james.util.ReactorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 
@@ -178,19 +179,27 @@ public class DownloadRoutes implements JMAPRoutes {
         try {
             Blob blob = blobManager.retrieve(BlobId.fromString(blobId), mailboxSession);
 
-            return addContentDispositionHeader(downloadPath.getName(), response)
-                .header("Content-Length", String.valueOf(blob.getSize()))
-                .header(CONTENT_TYPE, blob.getContentType())
-                .status(OK)
-                .send(ReactorUtils.toChunks(blob.getStream(), BUFFER_SIZE)
-                    .map(Unpooled::wrappedBuffer))
-                .then();
+            return Mono.usingWhen(
+                Mono.fromCallable(blob::getStream),
+                stream -> downloadBlob(downloadPath.getName(), response, blob.getSize(), blob.getContentType(), stream),
+                stream -> Mono.fromRunnable(Throwing.runnable(stream::close).sneakyThrow())
+            );
         } catch (BlobNotFoundException e) {
             LOGGER.info("Attachment '{}' not found", blobId, e);
             return response.status(NOT_FOUND).send();
-        } catch (MailboxException | IOException e) {
+        } catch (MailboxException e) {
             throw new InternalErrorException("Error while downloading", e);
         }
+    }
+
+    private Mono<Void> downloadBlob(Optional<String> optionalName, HttpServerResponse response, long blobSize, String blobContentType, InputStream stream) {
+        return addContentDispositionHeader(optionalName, response)
+            .header("Content-Length", String.valueOf(blobSize))
+            .header(CONTENT_TYPE, blobContentType)
+            .status(OK)
+            .send(ReactorUtils.toChunks(stream, BUFFER_SIZE)
+                .map(Unpooled::wrappedBuffer))
+            .then();
     }
 
     private HttpServerResponse addContentDispositionHeader(Optional<String> optionalName, HttpServerResponse resp) {
