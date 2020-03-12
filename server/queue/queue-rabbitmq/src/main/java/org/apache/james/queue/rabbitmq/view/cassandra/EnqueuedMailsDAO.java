@@ -66,6 +66,8 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -134,20 +136,30 @@ public class EnqueuedMailsDAO {
             .setString(BODY_BLOB_ID, mimeMessagePartsId.getBodyBlobId().asString())
             .setString(STATE, mail.getState())
             .setList(RECIPIENTS, asStringList(mail.getRecipients()))
-
             .setString(REMOTE_ADDR, mail.getRemoteAddr())
             .setString(REMOTE_HOST, mail.getRemoteHost())
             .setTimestamp(LAST_UPDATED, mail.getLastUpdated())
-            .setMap(ATTRIBUTES, toRawAttributeMap(mail))
-            .setList(PER_RECIPIENT_SPECIFIC_HEADERS, toTupleList(userHeaderNameHeaderValueTriple, mail.getPerRecipientSpecificHeaders()));
+            .setMap(ATTRIBUTES, toRawAttributeMap(mail));
 
-        Optional.ofNullable(mail.getErrorMessage())
-            .ifPresent(errorMessage -> statement.setString(ERROR_MESSAGE, mail.getErrorMessage()));
+        ImmutableList<TupleValue> headers = toTupleList(userHeaderNameHeaderValueTriple, mail.getPerRecipientSpecificHeaders());
+        if (headers.isEmpty()) {
+            statement.unset(PER_RECIPIENT_SPECIFIC_HEADERS);
+        } else {
+            statement.setList(PER_RECIPIENT_SPECIFIC_HEADERS, headers);
+        }
 
-        mail.getMaybeSender()
-            .asOptional()
-            .map(MailAddress::asString)
-            .ifPresent(mailAddress -> statement.setString(SENDER, mailAddress));
+        if (mail.getErrorMessage() == null) {
+            statement.unset(ERROR_MESSAGE);
+        } else {
+            statement.setString(ERROR_MESSAGE, mail.getErrorMessage());
+        }
+
+        if (mail.getMaybeSender().isNullSender()) {
+            statement.unset(SENDER);
+        } else {
+            String sender = mail.getMaybeSender().get().asString();
+            statement.setString(SENDER, sender);
+        }
 
         return executor.executeVoid(statement);
     }
