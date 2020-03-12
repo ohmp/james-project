@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -80,7 +79,6 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
