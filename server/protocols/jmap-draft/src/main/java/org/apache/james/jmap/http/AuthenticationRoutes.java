@@ -150,7 +150,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
         String authorizationHeader = req.requestHeaders().get("Authorization");
 
         return authenticationReactiveFilter.authenticate(req)
-            .flatMap(session -> accessTokenManager.revoke(AccessToken.fromString(authorizationHeader))
+            .flatMap(session -> Mono.from(accessTokenManager.revoke(AccessToken.fromString(authorizationHeader)))
                 .then(resp.status(NO_CONTENT).send().then()))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(resp, e))
             .subscribeOn(Schedulers.elastic());
@@ -239,7 +239,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> returnAccessTokenResponse(HttpServerResponse resp, Username username) {
-        return accessTokenManager.grantAccessToken(username)
+        return Mono.from(accessTokenManager.grantAccessToken(username))
             .map(accessToken -> AccessTokenResponse
                 .builder()
                 .accessToken(accessToken)

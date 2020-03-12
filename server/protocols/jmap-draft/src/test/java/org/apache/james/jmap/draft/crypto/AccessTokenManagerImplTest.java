@@ -60,33 +60,33 @@ class AccessTokenManagerImplTest {
 
     @Test
     void grantShouldStoreATokenOnUsername() {
-        AccessToken token = accessTokenManager.grantAccessToken(USERNAME).block();
+        AccessToken token = Mono.from(accessTokenManager.grantAccessToken(USERNAME)).block();
         assertThat(accessTokenRepository.getUsernameFromToken(token).block()).isEqualTo(USERNAME);
     }
     
     @Test
     void getUsernameShouldThrowWhenNullToken() {
         assertThatNullPointerException()
-            .isThrownBy(() -> accessTokenManager.getUsernameFromToken(null).block());
+            .isThrownBy(() -> Mono.from(accessTokenManager.getUsernameFromToken(null)).block());
     }
 
     @Test
     void getUsernameShouldThrowWhenUnknownToken() {
-        assertThatThrownBy(() -> accessTokenManager.getUsernameFromToken(AccessToken.generate()).block())
+        assertThatThrownBy(() -> Mono.from(accessTokenManager.getUsernameFromToken(AccessToken.generate())).block())
             .isExactlyInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
     void getUsernameShouldThrowWhenOtherToken() {
         accessTokenManager.grantAccessToken(USERNAME);
-        assertThatThrownBy(() -> accessTokenManager.getUsernameFromToken(AccessToken.generate()).block())
+        assertThatThrownBy(() -> Mono.from(accessTokenManager.getUsernameFromToken(AccessToken.generate())).block())
             .isExactlyInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
     void getUsernameShouldReturnUsernameWhenExistingUsername() {
-        AccessToken token = accessTokenManager.grantAccessToken(USERNAME).block();
-        assertThat(accessTokenManager.getUsernameFromToken(token).block()).isEqualTo(USERNAME);
+        AccessToken token = Mono.from(accessTokenManager.grantAccessToken(USERNAME)).block();
+        assertThat(Mono.from(accessTokenManager.getUsernameFromToken(token)).block()).isEqualTo(USERNAME);
     }
     
     @Test
@@ -97,44 +97,44 @@ class AccessTokenManagerImplTest {
     
     @Test
     void isValidShouldReturnFalseOnUnknownToken() {
-        assertThat(accessTokenManager.isValid(AccessToken.generate()).block()).isFalse();
+        assertThat(Mono.from(accessTokenManager.isValid(AccessToken.generate())).block()).isFalse();
     }
     
     @Test
     void isValidShouldReturnFalseWhenOtherToken() {
         accessTokenManager.grantAccessToken(USERNAME);
-        assertThat(accessTokenManager.isValid(AccessToken.generate()).block()).isFalse();
+        assertThat(Mono.from(accessTokenManager.isValid(AccessToken.generate())).block()).isFalse();
     }
     
     @Test
     void isValidShouldReturnTrueWhenValidToken() {
-        AccessToken accessToken = accessTokenManager.grantAccessToken(USERNAME).block();
-        assertThat(accessTokenManager.isValid(accessToken).block()).isTrue();
+        AccessToken accessToken = Mono.from(accessTokenManager.grantAccessToken(USERNAME)).block();
+        assertThat(Mono.from(accessTokenManager.isValid(accessToken)).block()).isTrue();
     }
     
     @Test
     void revokeShouldThrowWhenNullToken() {
         assertThatNullPointerException()
-            .isThrownBy(() -> accessTokenManager.revoke(null).block());
+            .isThrownBy(() -> Mono.from(accessTokenManager.revoke(null)).block());
     }
     
     @Test
     void revokeShouldNoopOnUnknownToken() {
-        accessTokenManager.revoke(AccessToken.generate()).block();
+        Mono.from(accessTokenManager.revoke(AccessToken.generate())).block();
     }
     
     @Test
     void revokeShouldNoopOnRevokingTwice() {
         AccessToken token = AccessToken.generate();
-        accessTokenManager.revoke(token).block();
-        accessTokenManager.revoke(token).block();
+        Mono.from(accessTokenManager.revoke(token)).block();
+        Mono.from(accessTokenManager.revoke(token)).block();
     }
     
     @Test
     void revokeShouldInvalidExistingToken() {
-        AccessToken token = accessTokenManager.grantAccessToken(USERNAME).block();
-        accessTokenManager.revoke(token).block();
-        assertThat(accessTokenManager.isValid(token).block()).isFalse();
+        AccessToken token = Mono.from(accessTokenManager.grantAccessToken(USERNAME)).block();
+        Mono.from(accessTokenManager.revoke(token)).block();
+        assertThat(Mono.from(accessTokenManager.isValid(token)).block()).isFalse();
     }
 
     @Test
@@ -145,7 +145,7 @@ class AccessTokenManagerImplTest {
         AccessToken accessToken = AccessToken.generate();
         when(accessTokenRepository.getUsernameFromToken(accessToken)).thenReturn(Mono.error(new InvalidAccessToken(accessToken)));
 
-        assertThatThrownBy(() -> accessTokenManager.getUsernameFromToken(accessToken).block())
+        assertThatThrownBy(() -> Mono.from(accessTokenManager.getUsernameFromToken(accessToken)).block())
             .isExactlyInstanceOf(InvalidAccessToken.class);
     }
 }
