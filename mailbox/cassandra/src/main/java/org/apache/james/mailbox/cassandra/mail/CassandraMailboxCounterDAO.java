@@ -125,7 +125,8 @@ public class CassandraMailboxCounterDAO {
         return cassandraAsyncExecutor.executeVoid(
             bindWithMailbox(mailboxId, addToCounters)
                 .setLong(COUNT, counters.getCount())
-                .setLong(UNSEEN, counters.getUnseen()));
+                .setLong(UNSEEN, counters.getUnseen())
+                .setConsistencyLevel(QUORUM));
     }
 
     private Mono<Void> remove(MailboxCounters counters) {
@@ -133,7 +134,8 @@ public class CassandraMailboxCounterDAO {
         return cassandraAsyncExecutor.executeVoid(
             bindWithMailbox(mailboxId, removeToCounters)
                 .setLong(COUNT, counters.getCount())
-                .setLong(UNSEEN, counters.getUnseen()));
+                .setLong(UNSEEN, counters.getUnseen())
+                .setConsistencyLevel(QUORUM));
     }
 
     Mono<Long> countMessagesInMailbox(Mailbox mailbox) {
