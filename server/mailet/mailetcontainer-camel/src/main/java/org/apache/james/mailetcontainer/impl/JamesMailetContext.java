@@ -39,7 +39,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.ParseException;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -54,11 +53,10 @@ import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.lifecycle.api.Disposable;
 import org.apache.james.lifecycle.api.LifecycleUtil;
+import org.apache.james.mailetcontainer.LocalResources;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.server.core.MailImpl;
-import org.apache.james.user.api.UsersRepository;
-import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.mailet.LookupException;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
@@ -78,17 +76,17 @@ public class JamesMailetContext implements MailetContext, Configurable, Disposab
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     protected final DNSService dns;
-    private final UsersRepository localusers;
     private final DomainList domains;
+    private final LocalResources localResources;
     private final MailQueueFactory<?> mailQueueFactory;
     private MailQueue rootMailQueue;
     private MailAddress postmaster;
 
     @Inject
-    public JamesMailetContext(DNSService dns, UsersRepository localusers, DomainList domains, MailQueueFactory<?> mailQueueFactory) {
+    public JamesMailetContext(DNSService dns, DomainList domains, LocalResources localResources, MailQueueFactory<?> mailQueueFactory) {
         this.dns = dns;
-        this.localusers = localusers;
         this.domains = domains;
+        this.localResources = localResources;
         this.mailQueueFactory = mailQueueFactory;
     }
 
@@ -234,39 +232,12 @@ public class JamesMailetContext implements MailetContext, Configurable, Disposab
 
     @Override
     public boolean isLocalUser(String name) {
-        if (name == null) {
-            return false;
-        }
-        try {
-            if (!name.contains("@")) {
-                try {
-                    return isLocalEmail(new MailAddress(name.toLowerCase(Locale.US), domains.getDefaultDomain().asString()));
-                } catch (DomainListException e) {
-                    LOGGER.error("Unable to access DomainList", e);
-                    return false;
-                }
-            } else {
-                return isLocalEmail(new MailAddress(name.toLowerCase(Locale.US)));
-            }
-        } catch (ParseException e) {
-            LOGGER.info("Error checking isLocalUser for user {}", name, e);
-            return false;
-        }
+        return localResources.isLocalUser(name);
     }
 
     @Override
     public boolean isLocalEmail(MailAddress mailAddress) {
-        if (mailAddress != null) {
-            if (!isLocalServer(mailAddress.getDomain())) {
-                return false;
-            }
-            try {
-                return localusers.contains(localusers.getUser(mailAddress));
-            } catch (UsersRepositoryException e) {
-                LOGGER.error("Unable to access UsersRepository", e);
-            }
-        }
-        return false;
+        return localResources.isLocalEmail(mailAddress);
     }
 
     @Override
@@ -317,12 +288,7 @@ public class JamesMailetContext implements MailetContext, Configurable, Disposab
 
     @Override
     public boolean isLocalServer(Domain domain) {
-        try {
-            return domains.containsDomain(domain);
-        } catch (DomainListException e) {
-            LOGGER.error("Unable to retrieve domains", e);
-            return false;
-        }
+        return localResources.isLocalServer(domain);
     }
 
     @Override
