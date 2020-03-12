@@ -47,14 +47,12 @@ import static org.apache.james.queue.rabbitmq.view.cassandra.EnqueuedMailsDaoUti
 import static org.apache.james.queue.rabbitmq.view.cassandra.EnqueuedMailsDaoUtil.toTupleList;
 
 import java.util.Date;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.mail.MimeMessagePartsId;
-import org.apache.james.core.MailAddress;
 import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.BucketId;
