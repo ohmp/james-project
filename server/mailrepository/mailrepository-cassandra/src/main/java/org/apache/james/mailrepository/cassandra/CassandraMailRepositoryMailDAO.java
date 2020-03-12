@@ -183,7 +183,6 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
             .flatMap(executor::executeVoid);
     }
 
-
     @Override
     public Mono<Void> remove(MailRepositoryUrl url, MailKey key) {
         return executor.executeVoid(deleteMail.bind()
