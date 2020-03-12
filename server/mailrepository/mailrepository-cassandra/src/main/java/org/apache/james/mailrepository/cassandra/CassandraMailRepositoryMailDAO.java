@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -79,6 +80,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
@@ -146,7 +148,7 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
     @Override
     public Mono<Void> store(MailRepositoryUrl url, Mail mail, BlobId headerId, BlobId bodyId) {
         return Mono.fromCallable(() -> {
-            BoundStatement boundStatement = insertMail.bind()
+            BoundStatement statement = insertMail.bind()
                 .setString(REPOSITORY_NAME, url.asString())
                 .setString(MAIL_KEY, mail.getName())
                 .setString(HEADER_BLOB_ID, headerId.asString())
@@ -157,20 +159,32 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
                 .setString(REMOTE_HOST, mail.getRemoteHost())
                 .setLong(MESSAGE_SIZE, mail.getMessageSize())
                 .setTimestamp(LAST_UPDATED, mail.getLastUpdated())
-                .setMap(ATTRIBUTES, toRawAttributeMap(mail))
-                .setMap(PER_RECIPIENT_SPECIFIC_HEADERS, toHeaderMap(mail.getPerRecipientSpecificHeaders()));
+                .setMap(ATTRIBUTES, toRawAttributeMap(mail));
 
-            Optional.ofNullable(mail.getErrorMessage())
-                .ifPresent(errorMessage -> boundStatement.setString(ERROR_MESSAGE, mail.getErrorMessage()));
+            ImmutableMap<String, UDTValue> headers = toHeaderMap(mail.getPerRecipientSpecificHeaders());
+            if (headers.isEmpty()) {
+                statement.unset(PER_RECIPIENT_SPECIFIC_HEADERS);
+            } else {
+                statement.setMap(PER_RECIPIENT_SPECIFIC_HEADERS, headers);
+            }
 
-            mail.getMaybeSender()
-                .asOptional()
-                .map(MailAddress::asString)
-                .ifPresent(mailAddress -> boundStatement.setString(SENDER, mailAddress));
-            return boundStatement;
+            if (mail.getErrorMessage() == null) {
+                statement.unset(ERROR_MESSAGE);
+            } else {
+                statement.setString(ERROR_MESSAGE, mail.getErrorMessage());
+            }
+
+            if (mail.getMaybeSender().isNullSender()) {
+                statement.unset(SENDER);
+            } else {
+                String sender = mail.getMaybeSender().get().asString();
+                statement.setString(SENDER, sender);
+            }
+            return statement;
         })
             .flatMap(executor::executeVoid);
     }
+
 
     @Override
     public Mono<Void> remove(MailRepositoryUrl url, MailKey key) {
