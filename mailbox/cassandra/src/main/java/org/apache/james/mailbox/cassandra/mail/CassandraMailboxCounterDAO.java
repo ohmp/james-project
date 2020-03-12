@@ -58,7 +58,7 @@ public class CassandraMailboxCounterDAO {
     private final PreparedStatement decrementMessageCountStatement;
 
     @Inject
-    CassandraMailboxCounterDAO(Session session) {
+    public CassandraMailboxCounterDAO(Session session) {
         cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         readStatement = createReadStatement(session);
         incrementMessageCountStatement = updateMailboxStatement(session, incr(COUNT));
@@ -89,7 +89,7 @@ public class CassandraMailboxCounterDAO {
                 .where(eq(MAILBOX_ID, bindMarker(MAILBOX_ID))));
     }
 
-    Mono<MailboxCounters> retrieveMailboxCounters(CassandraId mailboxId) {
+    public Mono<MailboxCounters> retrieveMailboxCounters(CassandraId mailboxId) {
         return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(mailboxId, readStatement))
             .map(row ->  MailboxCounters.builder()
                 .mailboxId(mailboxId)
@@ -164,7 +164,7 @@ public class CassandraMailboxCounterDAO {
                 .setConsistencyLevel(QUORUM));
     }
 
-    Mono<Void> incrementCount(CassandraId mailboxId) {
+    public Mono<Void> incrementCount(CassandraId mailboxId) {
         return cassandraAsyncExecutor.executeVoid(
             bindWithMailbox(mailboxId, incrementMessageCountStatement)
                 .setConsistencyLevel(QUORUM));
@@ -176,7 +176,7 @@ public class CassandraMailboxCounterDAO {
                 .setConsistencyLevel(QUORUM));
     }
 
-    Mono<Void> incrementUnseen(CassandraId mailboxId) {
+    public Mono<Void> incrementUnseen(CassandraId mailboxId) {
         return cassandraAsyncExecutor.executeVoid(
             bindWithMailbox(mailboxId, incrementUnseenCountStatement)
                 .setConsistencyLevel(QUORUM));
