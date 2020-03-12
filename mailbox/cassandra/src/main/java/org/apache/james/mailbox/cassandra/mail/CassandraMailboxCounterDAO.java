@@ -143,15 +143,17 @@ public class CassandraMailboxCounterDAO {
     }
 
     public Mono<Long> countMessagesInMailbox(CassandraId cassandraId) {
-        return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(cassandraId, readStatement))
-            .map(row -> row.getLong(COUNT));
+        return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(cassandraId, readStatement)
+                .setConsistencyLevel(QUORUM))
+            .map(row -> row.getLong(CassandraMailboxCountersTable.COUNT));
     }
 
     Mono<Long> countUnseenMessagesInMailbox(Mailbox mailbox) {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
-        return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(mailboxId, readStatement))
-            .map(row -> row.getLong(UNSEEN));
+        return cassandraAsyncExecutor.executeSingleRow(bindWithMailbox(mailboxId, readStatement)
+                .setConsistencyLevel(QUORUM))
+            .map(row -> row.getLong(CassandraMailboxCountersTable.UNSEEN));
     }
 
     Mono<Void> decrementCount(CassandraId mailboxId) {

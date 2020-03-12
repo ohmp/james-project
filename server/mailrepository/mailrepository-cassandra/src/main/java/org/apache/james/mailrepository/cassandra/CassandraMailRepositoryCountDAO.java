@@ -91,7 +91,8 @@ public class CassandraMailRepositoryCountDAO {
 
     Mono<Long> getCount(MailRepositoryUrl url) {
         return executor.executeSingleRowOptional(select.bind()
-                .setString(REPOSITORY_NAME, url.asString()))
+                .setString(REPOSITORY_NAME, url.asString())
+                .setConsistencyLevel(QUORUM))
             .map(this::toCount);
     }
 

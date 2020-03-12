@@ -104,7 +104,8 @@ public class CassandraSieveQuotaDAO {
     Mono<Long> spaceUsedBy(Username username) {
         return cassandraAsyncExecutor.executeSingleRowOptional(
             selectSpaceUsedByUserStatement.bind()
-                .setString(CassandraSieveSpaceTable.USER_NAME, username.asString()))
+                .setString(CassandraSieveSpaceTable.USER_NAME, username.asString())
+                .setConsistencyLevel(QUORUM))
             .map(optional -> optional.map(row -> row.getLong(CassandraSieveSpaceTable.SPACE_USED))
                 .orElse(0L));
     }
