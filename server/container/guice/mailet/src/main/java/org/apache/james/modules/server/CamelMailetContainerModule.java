@@ -29,6 +29,7 @@ import org.apache.camel.impl.SimpleRegistry;
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.mailetcontainer.api.MailProcessor;
@@ -134,11 +135,11 @@ public class CamelMailetContainerModule extends AbstractModule {
             .init(() -> mailetContext.configure(getMailetContextConfiguration(configurationProvider)));
     }
 
-    private HierarchicalConfiguration<ImmutableNode> getMailetContextConfiguration(ConfigurationProvider configurationProvider) {
+    private HierarchicalConfiguration<ImmutableNode> getMailetContextConfiguration(ConfigurationProvider configurationProvider) throws ConfigurationException {
+        HierarchicalConfiguration<ImmutableNode> mailetContainerConfiguration = configurationProvider.getConfiguration("mailetcontainer");
         try {
-            return configurationProvider.getConfiguration("mailetcontainer")
-                .configurationAt("context");
-        } catch (Exception e) {
+            return mailetContainerConfiguration.configurationAt("context");
+        } catch (ConfigurationRuntimeException e) {
             LOGGER.warn("Could not locate configuration for Mailet context. Assuming empty configuration for this component.");
             return new BaseHierarchicalConfiguration();
         }
@@ -176,11 +177,11 @@ public class CamelMailetContainerModule extends AbstractModule {
             camelCompositeProcessor.init();
         }
 
-        private HierarchicalConfiguration<ImmutableNode> getProcessorConfiguration() {
+        private HierarchicalConfiguration<ImmutableNode> getProcessorConfiguration() throws ConfigurationException {
+            HierarchicalConfiguration<ImmutableNode> mailetContainerConfiguration = configurationProvider.getConfiguration("mailetcontainer");
             try {
-                return configurationProvider.getConfiguration("mailetcontainer")
-                    .configurationAt("processors");
-            } catch (Exception e) {
+                return mailetContainerConfiguration.configurationAt("processors");
+            } catch (ConfigurationRuntimeException e) {
                 LOGGER.warn("Could not load configuration for Processors. Fallback to default.");
                 return defaultProcessorsConfigurationSupplier.getDefaultConfiguration();
             }
