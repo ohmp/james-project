@@ -17,12 +17,11 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.http;
-/*
 
-// TODO port for JMAP API routes
 import static io.restassured.RestAssured.given;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
+import static org.apache.james.jmap.http.JMAPUrls.JMAP;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -31,13 +30,12 @@ import static org.mockito.Mockito.when;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
-import org.apache.james.http.jetty.Configuration;
-import org.apache.james.http.jetty.JettyHttpServer;
 import org.apache.james.jmap.draft.methods.ErrorResponse;
 import org.apache.james.jmap.draft.methods.Method;
 import org.apache.james.jmap.draft.methods.RequestHandler;
 import org.apache.james.jmap.draft.model.InvocationResponse;
 import org.apache.james.jmap.draft.model.MethodCallId;
+import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -50,37 +48,53 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import reactor.core.publisher.Mono;
+import reactor.netty.DisposableServer;
+import reactor.netty.http.server.HttpServer;
 
-public class JMAPServletTest {
+public class JMAPApiRoutesTest {
+    private static final int RANDOM_PORT = 0;
 
-    private JettyHttpServer server;
+    private DisposableServer server;
     private RequestHandler requestHandler;
+    private AuthenticationReactiveFilter mockedAuthFilter;
+    private UserProvisioner mockedUserProvisionner;
+    private DefaultMailboxesReactiveProvisioner mockedMailboxesProvisionner;
 
     @Before
     public void setup() throws Exception {
         requestHandler = mock(RequestHandler.class);
-        JMAPServlet jmapServlet = new JMAPServlet(requestHandler, new RecordingMetricFactory());
+        mockedAuthFilter = mock(AuthenticationReactiveFilter.class);
+        mockedUserProvisionner = mock(UserProvisioner.class);
+        mockedMailboxesProvisionner = mock(DefaultMailboxesReactiveProvisioner.class);
 
-        server = JettyHttpServer.create(
-                Configuration.builder()
-                .serve("/*")
-                .with(jmapServlet)
-                .randomPort()
-                .build());
+        JMAPApiRoutes jmapApiRoutes = new JMAPApiRoutes(requestHandler, new RecordingMetricFactory(),
+            mockedAuthFilter, mockedUserProvisionner, mockedMailboxesProvisionner);
 
-        server.start();
+        server = HttpServer.create()
+            .port(RANDOM_PORT)
+            .route(jmapApiRoutes::define)
+            .bindNow();
 
         RestAssured.requestSpecification = new RequestSpecBuilder()
-                .setContentType(ContentType.JSON)
-                .setAccept(ContentType.JSON)
-                .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
-                .setPort(server.getPort())
-                .build();
+            .setContentType(ContentType.JSON)
+            .setAccept(ContentType.JSON)
+            .setConfig(newConfig().encoderConfig(encoderConfig().defaultContentCharset(StandardCharsets.UTF_8)))
+            .setPort(server.port())
+            .setBasePath(JMAP)
+            .build();
+
+        when(mockedAuthFilter.authenticate(any()))
+            .thenReturn(Mono.just(mock(MailboxSession.class)));
+        when(mockedUserProvisionner.provisionUser(any()))
+            .thenReturn(Mono.empty());
+        when(mockedMailboxesProvisionner.createMailboxesIfNeeded(any()))
+            .thenReturn(Mono.empty());
     }
 
     @After
-    public void teardown() throws Exception {
-        server.stop();
+    public void teardown() {
+        server.disposeNow();
     }
 
     @Test
@@ -90,7 +104,7 @@ public class JMAPServletTest {
         given()
             .body(missingAnOpeningBracket)
         .when()
-            .post("/")
+            .post()
         .then()
             .statusCode(400);
     }
@@ -106,7 +120,7 @@ public class JMAPServletTest {
         given()
             .body("[[\"getAccounts\", {\"state\":false}, \"#0\"]]")
         .when()
-            .post("/")
+            .post()
         .then()
             .statusCode(200)
             .body(equalTo("[[\"error\",{\"type\":\"invalidArgument\"},\"#0\"]]"));
@@ -128,7 +142,7 @@ public class JMAPServletTest {
         given()
             .body("[[\"getAccounts\", {}, \"#0\"]]")
         .when()
-            .post("/")
+            .post()
         .then()
             .statusCode(200)
             .body(equalTo("[[\"accounts\",{" +
@@ -142,4 +156,3 @@ public class JMAPServletTest {
                     "},\"#0\"]]"));
     }
 }
-*/
