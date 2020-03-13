@@ -37,16 +37,20 @@ Date 10/03/2020
 
 SHA-1 XXX
 
-JIRA: https://issues.apache.org/jira/browse/JAMES-XXXX
+JIRA: https://issues.apache.org/jira/browse/JAMES-3112
 
-Concerned products: JPA mailbox backend, Cassandra mailbox backend
+Concerned products: Guice products
 
-Non-Maildir backends could generate '0' uid validity with a low probability, which is invalid regarding RFC-3501. 
-We changed the generation mechanism to use valid UidValidity for newly created mailboxes. Regarding persisted mailboxes,
-we regenerate invalid UidValidity upon reads.
+We added strong typing for Domain aliases (exposed by this 
+[endpoint](https://github.com/apache/james-project/blob/master/src/site/markdown/server/manage-webadmin.md#get-the-list-of-aliases-for-a-domain))
+to distinguish them from domain mappings (exposed by this 
+[endpoint](https://github.com/apache/james-project/blob/master/src/site/markdown/server/manage-webadmin.md#creating-address-domain-aliases)).
 
-While this sanitizing is transparent to the end user and the admin, it might lead to rare IMAP client full mailbox
- resynchronisation. (one chance out of two billions).
+Read [this page](https://james.apache.org/server/config-recipientrewritetable.html) to understand the difference between 
+Domain Alias and Domain Mapping.
+
+As a consequence, existing value returned by the domain alias endpoint (before this fix this is domain mapping) will be 
+considered as domain mappings and might need to be deleted and re-created.
  
 ### UidValidity and JPA or Cassandra
 
