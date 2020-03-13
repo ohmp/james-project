@@ -34,15 +34,14 @@ import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
 
-public class NotConsistencyAllRetryPolicy implements RetryPolicy {
+public class LogConsistencyAllRetryPolicy implements RetryPolicy {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(NotConsistencyAllRetryPolicy.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(LogConsistencyAllRetryPolicy.class);
 
     @Override
     public RetryDecision onReadTimeout(Statement statement, ConsistencyLevel cl, int requiredResponses, int receivedResponses, boolean dataRetrieved, int nbRetry) {
         if (cl == ConsistencyLevel.ALL) {
             log(statement);
-            return RetryDecision.retry(ConsistencyLevel.QUORUM);
         }
         return DefaultRetryPolicy.INSTANCE.onReadTimeout(statement, cl, requiredResponses, receivedResponses, dataRetrieved, nbRetry);
     }
@@ -51,7 +50,6 @@ public class NotConsistencyAllRetryPolicy implements RetryPolicy {
     public RetryDecision onWriteTimeout(Statement statement, ConsistencyLevel cl, WriteType writeType, int requiredAcks, int receivedAcks, int nbRetry) {
         if (cl == ConsistencyLevel.ALL) {
             log(statement);
-            return RetryDecision.retry(ConsistencyLevel.QUORUM);
         }
         return DefaultRetryPolicy.INSTANCE.onWriteTimeout(statement, cl, writeType, requiredAcks, receivedAcks, nbRetry);
     }
@@ -60,13 +58,15 @@ public class NotConsistencyAllRetryPolicy implements RetryPolicy {
     public RetryDecision onUnavailable(Statement statement, ConsistencyLevel cl, int requiredReplica, int aliveReplica, int nbRetry) {
         if (cl == ConsistencyLevel.ALL) {
             log(statement);
-            return RetryDecision.retry(ConsistencyLevel.QUORUM);
         }
         return DefaultRetryPolicy.INSTANCE.onUnavailable(statement, cl, requiredReplica, aliveReplica, nbRetry);
     }
 
     @Override
     public RetryDecision onRequestError(Statement statement, ConsistencyLevel cl, DriverException e, int nbRetry) {
+        if (cl == ConsistencyLevel.ALL) {
+            log(statement);
+        }
         return DefaultRetryPolicy.INSTANCE.onRequestError(statement, cl, e, nbRetry);
     }
 
