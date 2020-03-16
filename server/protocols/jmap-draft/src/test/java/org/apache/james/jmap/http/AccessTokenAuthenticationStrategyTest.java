@@ -68,8 +68,8 @@ public class AccessTokenAuthenticationStrategyTest {
         when(mockedHeaders.getAll(AUTHORIZATION_HEADERS))
             .thenReturn(ImmutableList.of());
 
-        assertThat(testee.createMailboxSession(mockedRequest).block())
-            .isNull();
+        assertThat(testee.createMailboxSession(mockedRequest).blockOptional())
+            .isEmpty();
     }
 
     @Test
@@ -98,8 +98,8 @@ public class AccessTokenAuthenticationStrategyTest {
         when(mockedAccessTokenManager.isValid(accessToken))
             .thenReturn(Mono.just(false));
 
-        assertThat(testee.createMailboxSession(mockedRequest).block())
-            .isNull();
+        assertThat(testee.createMailboxSession(mockedRequest).blockOptional())
+            .isEmpty();
     }
 
     @Test
