@@ -17,12 +17,41 @@
  * under the License.                                           *
  * ***************************************************************/
 
-package org.apache.james.jmap.model
+package org.apache.james.jmap.mail
 
-final case class Id(value: String) {
-  require(Option(value).isDefined, "value cannot be null")
-  require(!value.isEmpty, "value cannot be empty")
-  require(value.length <= 255, "value length cannot exceed 255 characters")
-  require(value.matches("^[a-zA-Z0-9-_]*$"), "value should contains only 'URL and Filename Safe' base64 alphabet characters, " +
-    "see Section 5 of [@!RFC4648]")
+import java.util.Optional
+
+import org.apache.james.jmap.model.UnsignedInt
+import org.apache.james.mailbox.model.QuotaRoot
+
+object Quotas {
+  sealed trait Type {
+    def asString: String
+  }
+
+  case class Storage() extends Type {
+    override def asString: String = "Storage"
+  }
+
+  case class Message() extends Type {
+    override def asString: String = "Message"
+  }
+
+  def from(quotas: Map[QuotaId, Quota]) = new Quotas(quotas)
+
+  def from(quotaId: QuotaId, quota: Quota) = new Quotas(Map(quotaId -> quota))
 }
+
+object QuotaId {
+  def fromQuotaRoot(quotaRoot: QuotaRoot) = QuotaId(quotaRoot)
+}
+
+case class QuotaId(quotaRoot: QuotaRoot) extends AnyVal {
+  def getName: String = quotaRoot.getValue
+}
+
+case class Quota(quota: Map[Quotas.Type, Value]) extends AnyVal
+
+case class Value(used: UnsignedInt, max: Optional[UnsignedInt])
+
+case class Quotas(quotas: Map[QuotaId, Quota]) extends AnyVal
