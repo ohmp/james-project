@@ -70,4 +70,9 @@ public class Port {
         }
         return false;
     }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(value);
+    }
 }
