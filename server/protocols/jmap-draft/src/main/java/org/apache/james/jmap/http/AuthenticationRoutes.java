@@ -240,8 +240,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
 
     private Mono<Void> returnAccessTokenResponse(HttpServerResponse resp, Username username) {
         return Mono.from(accessTokenManager.grantAccessToken(username))
-            .map(accessToken -> AccessTokenResponse
-                .builder()
+            .map(accessToken -> AccessTokenResponse.builder()
                 .accessToken(accessToken)
                 .api(JMAPUrls.JMAP)
                 .eventSource("/notImplemented")

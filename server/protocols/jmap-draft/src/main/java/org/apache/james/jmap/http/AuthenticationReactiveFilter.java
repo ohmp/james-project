@@ -25,6 +25,8 @@ import javax.inject.Inject;
 import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.metrics.api.MetricFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -33,6 +35,8 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
 public class AuthenticationReactiveFilter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationReactiveFilter.class);
+
     private final List<AuthenticationStrategy> authMethods;
     private final MetricFactory metricFactory;
 
@@ -47,7 +51,7 @@ public class AuthenticationReactiveFilter {
         return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
             Flux.fromStream(authMethods.stream())
                 .flatMap(auth -> auth.createMailboxSession(request))
-                .onErrorContinue((throwable, nothing) -> { })
+                .onErrorContinue((throwable, nothing) -> LOGGER.error("Error while trying to authenticate with JMAP", throwable))
                 .singleOrEmpty()
                 .switchIfEmpty(Mono.error(new UnauthorizedException()))));
     }
