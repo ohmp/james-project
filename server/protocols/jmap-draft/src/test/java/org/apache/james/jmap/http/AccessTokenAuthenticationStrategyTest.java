@@ -30,7 +30,6 @@ import org.apache.james.core.Username;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.access.exceptions.NotAnAccessTokenException;
 import org.apache.james.jmap.draft.crypto.AccessTokenManagerImpl;
-import org.apache.james.jmap.draft.exceptions.NoValidAuthHeaderException;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.junit.Before;
@@ -65,12 +64,12 @@ public class AccessTokenAuthenticationStrategyTest {
     }
 
     @Test
-    public void createMailboxSessionShouldThrowWhenNoAuthProvided() {
+    public void createMailboxSessionShouldReturnEmptyWhenNoAuthProvided() {
         when(mockedHeaders.getAll(AUTHORIZATION_HEADERS))
             .thenReturn(ImmutableList.of());
 
-        assertThatThrownBy(() -> testee.createMailboxSession(mockedRequest).block())
-            .isExactlyInstanceOf(NoValidAuthHeaderException.class);
+        assertThat(testee.createMailboxSession(mockedRequest).block())
+            .isNull();
     }
 
     @Test
@@ -83,7 +82,7 @@ public class AccessTokenAuthenticationStrategyTest {
     }
 
     @Test
-    public void createMailboxSessionShouldThrowWhenAuthHeaderIsInvalid() {
+    public void createMailboxSessionShouldReturnEmptyWhenAuthHeaderIsInvalid() {
         Username username = Username.of("123456789");
         MailboxSession fakeMailboxSession = mock(MailboxSession.class);
 
@@ -99,8 +98,8 @@ public class AccessTokenAuthenticationStrategyTest {
         when(mockedAccessTokenManager.isValid(accessToken))
             .thenReturn(Mono.just(false));
 
-        assertThatThrownBy(() -> testee.createMailboxSession(mockedRequest).block())
-            .isExactlyInstanceOf(NoValidAuthHeaderException.class);
+        assertThat(testee.createMailboxSession(mockedRequest).block())
+            .isNull();
     }
 
     @Test
