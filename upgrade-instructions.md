@@ -49,7 +49,7 @@ to distinguish them from domain mappings (exposed by this
 Read [this page](https://james.apache.org/server/config-recipientrewritetable.html) to understand the difference between 
 Domain Alias and Domain Mapping.
 
-As a consequence, existing value returned by the domain alias endpoint (before this fix this is domain mapping) will be 
+As a consequence, existing values returned by the domain alias endpoint (before this fix this is domain mapping) will be 
 considered as domain mappings and might need to be deleted and re-created.
  
 ### UidValidity and JPA or Cassandra
