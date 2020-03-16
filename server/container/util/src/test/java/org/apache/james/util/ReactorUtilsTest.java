@@ -267,14 +267,17 @@ class ReactorUtilsTest {
         }
 
         @Test
-        void givenEmptyInputStreamShouldReturnNoChunks() {
-            InputStream source = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8));
+        void givenEmptyInputStreamShouldReturnEmptyChunk() {
+            byte[] bytes = "".getBytes(StandardCharsets.UTF_8);
+            InputStream source = new ByteArrayInputStream(bytes);
 
             List<ByteBuffer> chunks = ReactorUtils.toChunks(source, BUFFER_SIZE)
                 .collectList()
                 .block();
 
-            assertThat(chunks).isEmpty();
+            List<ByteBuffer> expected = ImmutableList.of(ByteBuffer.wrap(bytes));
+
+            assertThat(chunks).isEqualTo(expected);
         }
     }
 }

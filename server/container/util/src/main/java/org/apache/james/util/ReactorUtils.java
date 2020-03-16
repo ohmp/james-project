@@ -38,19 +38,19 @@ public class ReactorUtils {
     }
 
     public static Flux<ByteBuffer> toChunks(InputStream inputStream, int bufferSize) {
-        return Flux.generate(sink -> {
-            try {
-                byte[] buffer = new byte[bufferSize];
-                int read = inputStream.read(buffer);
-                if (read >= 0) {
-                    sink.next(ByteBuffer.wrap(buffer, 0, read));
-                } else {
-                    sink.complete();
+        return Flux.<ByteBuffer>generate(sink -> {
+                try {
+                    byte[] buffer = new byte[bufferSize];
+                    int read = inputStream.read(buffer);
+                    if (read >= 0) {
+                        sink.next(ByteBuffer.wrap(buffer, 0, read));
+                    } else {
+                        sink.complete();
+                    }
+                } catch (IOException e) {
+                    sink.error(e);
                 }
-            } catch (IOException e) {
-                sink.error(e);
-            }
-        });
+            }).defaultIfEmpty(ByteBuffer.wrap(new byte[0]));
     }
 
     private static class StreamInputStream extends InputStream {
