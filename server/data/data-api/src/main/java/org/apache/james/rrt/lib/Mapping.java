@@ -119,29 +119,25 @@ public interface Mapping {
     enum Type {
         /**
          * Applies the regex on the supplied address.
-         *
-         * User will not be allowed to use the source in their FROM address headers.
          */
         Regex("regex:", new UserRewritter.RegexRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToEmpty, TypeOrder.TYPE_ORDER_4),
         /**
          * Rewrites the domain of mail addresses.
          *
-         * Use it for technical purposes, user will not be allowed to use the source in their FROM address headers.
+         * Use it for technical purposes.
          */
         Domain("domain:", new UserRewritter.DomainRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToEmpty, TypeOrder.TYPE_ORDER_1),
         /**
          * Rewrites the domain of mail addresses.
          *
-         * User will be allowed to use the source in their FROM address headers.
+         * User will be able to use this domain as if it was the one of his mail address.
          */
         DomainAlias("domainAlias:", new UserRewritter.DomainRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToEmpty, TypeOrder.TYPE_ORDER_1),
         /**
          * Throws an error upon processing
-         *
-         * User will be allowed to use the source in their FROM address headers.
          */
         Error("error:", new UserRewritter.ThrowingRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToEmpty, TypeOrder.TYPE_ORDER_4),
@@ -149,10 +145,6 @@ public interface Mapping {
          * Replaces the source address by another one.
          *
          * Vehicles the intent of forwarding incoming mails to other users.
-         *
-         * Listing the forward source in the forward destinations keeps a local copy
-         *
-         * User will not be allowed to use the source in their FROM address headers.
          */
         Forward("forward:", new UserRewritter.ReplaceRewriter(), IdentityMappingPolicy.ReturnIdentity,
             MailAddressConversionPolicy.ToMailAddress, TypeOrder.TYPE_ORDER_3),
@@ -161,8 +153,6 @@ public interface Mapping {
          *
          * Vehicles the intent of a group registration: group address will be swapped by group member addresses.
          * (Feature poor mailing list)
-         *
-         * User will not be allowed to use the source in their FROM address headers.
          */
         Group("group:", new UserRewritter.ReplaceRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToMailAddress, TypeOrder.TYPE_ORDER_2),
@@ -170,8 +160,6 @@ public interface Mapping {
          * Replaces the source address by another one.
          *
          * Represents user owned mail address, with which he can interact as if it was his main mail address.
-         *
-         * User will be allowed to use the source in their FROM address headers.
          */
         Alias("alias:", new UserRewritter.ReplaceRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToMailAddress, TypeOrder.TYPE_ORDER_3),
@@ -180,8 +168,6 @@ public interface Mapping {
          *
          * Use for technical purposes, this mapping type do not hold specific intent. Prefer using one of the above
          * mapping types.
-         *
-         * User will not be allowed to use the source in their FROM address headers.
          */
         Address("", new UserRewritter.ReplaceRewriter(), IdentityMappingPolicy.Throw,
             MailAddressConversionPolicy.ToMailAddress, TypeOrder.TYPE_ORDER_4);
