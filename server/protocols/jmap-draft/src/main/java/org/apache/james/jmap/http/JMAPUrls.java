@@ -20,9 +20,9 @@
 package org.apache.james.jmap.http;
 
 public interface JMAPUrls {
-
     String JMAP = "/jmap";
     String AUTHENTICATION = "/authentication";
     String DOWNLOAD = "/download";
     String UPLOAD = "/upload";
+    String NOT_IMPLEMENTED = "/notImplemented";
 }

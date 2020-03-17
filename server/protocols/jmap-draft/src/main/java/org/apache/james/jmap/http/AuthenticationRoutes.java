@@ -132,7 +132,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                     .sendString(Mono.just(mapper.writeValueAsString(EndPointsResponse
                         .builder()
                         .api(JMAPUrls.JMAP)
-                        .eventSource("/notImplemented")
+                        .eventSource(JMAPUrls.NOT_IMPLEMENTED)
                         .upload(JMAPUrls.UPLOAD)
                         .download(JMAPUrls.DOWNLOAD)
                         .build())))
@@ -243,7 +243,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
             .map(accessToken -> AccessTokenResponse.builder()
                 .accessToken(accessToken)
                 .api(JMAPUrls.JMAP)
-                .eventSource("/notImplemented")
+                .eventSource(JMAPUrls.NOT_IMPLEMENTED)
                 .upload(JMAPUrls.UPLOAD)
                 .download(JMAPUrls.DOWNLOAD)
                 .build())
