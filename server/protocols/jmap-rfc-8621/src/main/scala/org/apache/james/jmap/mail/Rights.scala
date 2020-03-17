@@ -20,36 +20,65 @@
 package org.apache.james.jmap.mail
 
 import org.apache.james.core.Username
-import org.apache.james.mailbox.model.MailboxACL
-import org.apache.james.mailbox.model.MailboxACL.{EntryKey, Rfc4314Rights}
+import org.apache.james.mailbox.model.{MailboxACL => JavaMailboxACL}
+import org.apache.james.mailbox.model.MailboxACL.{EntryKey, Rfc4314Rights => JavaRfc4314Rights, Right => JavaRight}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
+
+object Rfc4314Rights {
+  def fromJava(rights: JavaRfc4314Rights) = Rfc4314Rights(rights.list().asScala.toSeq)
+
+  def fromRights(seq: Seq[Right]): Rfc4314Rights = Rfc4314Rights(seq.map(_.right))
+}
+
+case class Rfc4314Rights(rights: Seq[JavaRight]) {
+  val asJava: JavaRfc4314Rights = JavaRfc4314Rights.of(rights.asJava)
+
+  def toRights: Seq[Right] = rights.flatMap(Right.forRight)
+}
+
+object MailboxACL {
+  def fromJava(acl: JavaMailboxACL) = MailboxACL(acl.getEntries
+    .asScala
+    .view
+    .mapValues(Rfc4314Rights.fromJava)
+    .toMap)
+}
+
+case class MailboxACL(entries: Map[EntryKey, Rfc4314Rights]) {
+  val asJava: JavaMailboxACL = {
+    val map: Map[EntryKey, JavaRfc4314Rights] = entries.view
+    .mapValues(seq => seq.asJava)
+    .toMap
+
+    new JavaMailboxACL(map.asJava)
+  }
+}
 
 object Right {
   val UNSUPPORTED: Option[Boolean] = None
 
-  val Administer = Right(MailboxACL.Right.Administer)
-  val Expunge = Right(MailboxACL.Right.PerformExpunge)
-  val Insert = Right(MailboxACL.Right.Insert)
-  val Lookup = Right(MailboxACL.Right.Lookup)
-  val Read = Right(MailboxACL.Right.Read)
-  val Seen = Right(MailboxACL.Right.WriteSeenFlag)
-  val DeleteMessages = Right(MailboxACL.Right.DeleteMessages)
-  val Write = Right(MailboxACL.Right.Write)
+  val Administer = Right(JavaRight.Administer)
+  val Expunge = Right(JavaRight.PerformExpunge)
+  val Insert = Right(JavaRight.Insert)
+  val Lookup = Right(JavaRight.Lookup)
+  val Read = Right(JavaRight.Read)
+  val Seen = Right(JavaRight.WriteSeenFlag)
+  val DeleteMessages = Right(JavaRight.DeleteMessages)
+  val Write = Right(JavaRight.Write)
 
   private val allRights = Seq(Administer, Expunge, Insert, Lookup, Read, Seen, DeleteMessages, Write)
 
-  def forRight(right: MailboxACL.Right): Option[Right] = allRights.find(_.right.equals(right))
+  def forRight(right: JavaRight): Option[Right] = allRights.find(_.right.equals(right))
 
   def forChar(c: Char): Option[Right] = allRights.find(_.asCharacter == c)
 }
 
-sealed case class Right(right: MailboxACL.Right) {
+sealed case class Right(right: JavaRight) {
   val asCharacter: Char = right.asCharacter
 
-  val toMailboxRight: MailboxACL.Right = right
+  val toMailboxRight: JavaRight = right
 }
 
 object Rights {
@@ -65,7 +94,7 @@ object Rights {
     Rights(Map(username -> rights))
   }
 
-  def fromACL(acl: MailboxACL): Rights = acl.getEntries.asScala
+  def fromACL(acl: MailboxACL): Rights = acl.entries
     .filter {
       case (entryKey, _) => isSupported(entryKey)
     }
@@ -74,22 +103,17 @@ object Rights {
     }
     .fold(EMPTY)(_ combine _)
 
-  private def toRights(entryKey: MailboxACL.EntryKey, aclRights: MailboxACL.Rfc4314Rights): Rights =
-    of(Username.of(entryKey.getName), fromACL(aclRights))
+  private def toRights(entryKey: EntryKey, aclRights: Rfc4314Rights): Rights = of(Username.of(entryKey.getName), aclRights.toRights)
 
-  private def fromACL(rights: MailboxACL.Rfc4314Rights): Seq[Right] = rights.list.asScala
-      .toSeq
-      .flatMap(Right.forRight)
-
-  private def isSupported(key: MailboxACL.EntryKey): Boolean = {
+  private def isSupported(key: EntryKey): Boolean = {
     if (key.isNegative) {
       LOGGER.info("Negative keys are not supported")
       return false
     }
-    if (key == MailboxACL.OWNER_KEY) {
+    if (key == JavaMailboxACL.OWNER_KEY) {
       return false
     }
-    if (key.getNameType ne MailboxACL.NameType.user) {
+    if (key.getNameType ne JavaMailboxACL.NameType.user) {
       LOGGER.info("{} is not supported. Only 'user' is.", key.getNameType)
       return false
     }
@@ -103,12 +127,12 @@ case class Rights private(rights: Map[Username, Seq[Right]]) {
 
   def toMailboxAcl: MailboxACL = {
     val map: Map[EntryKey, Rfc4314Rights] = rights.view
-      .mapValues(seq => toJavaRights(seq))
+      .mapValues(Rfc4314Rights.fromRights)
       .toMap
       .map {
         case (user, rfc4314Rights) => (EntryKey.createUserEntryKey(user), rfc4314Rights)
       }
-    new MailboxACL(map.asJava)
+    MailboxACL(map)
   }
 
   def append(username: Username, right: Right): Rights = append(username, Seq(right))
@@ -120,8 +144,6 @@ case class Rights private(rights: Map[Username, Seq[Right]]) {
   }
 
   def combine(that: Rights): Rights = Rights(this.rights ++ that.rights)
-
-  private def toJavaRights(seq: Seq[Right]): Rfc4314Rights = Rfc4314Rights.of(seq.map(_.right).asJava)
 
   def mayReadItems(username: Username): Option[Boolean] = containsRight(username, Right.Read)
 

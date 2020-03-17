@@ -20,9 +20,9 @@
 package org.apache.james.jmap.mail
 
 import org.apache.james.core.Username
-import org.apache.james.mailbox.model.MailboxACL
-import org.apache.james.mailbox.model.MailboxACL.{EntryKey, Rfc4314Rights, Right => JavaRight}
 import org.scalatest.{MustMatchers, WordSpec}
+import org.apache.james.mailbox.model.{MailboxACL => JavaMailboxACL}
+import org.apache.james.mailbox.model.MailboxACL.{EntryKey, Rfc4314Rights => JavaRfc4314Rights, Right => JavaRight}
 
 import scala.jdk.CollectionConverters._
 
@@ -59,45 +59,45 @@ class RightsTest extends WordSpec with MustMatchers {
   }
   "From ACL" should  {
     "filter out group entries" in {
-      val acl = new MailboxACL(Map(
-        EntryKey.createGroupEntryKey("group") -> Rfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
+      val acl = new JavaMailboxACL(Map(
+        EntryKey.createGroupEntryKey("group") -> JavaRfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
 
-      Rights.fromACL(acl) must be(Rights.EMPTY)
+      Rights.fromACL(MailboxACL.fromJava(acl)) must be(Rights.EMPTY)
     }
     "filter out negative users" in {
-      val acl = new MailboxACL(Map(
-        EntryKey.createUserEntryKey(USERNAME, NEGATIVE) -> Rfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
+      val acl = new JavaMailboxACL(Map(
+        EntryKey.createUserEntryKey(USERNAME, NEGATIVE) -> JavaRfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
 
-      Rights.fromACL(acl) must be(Rights.EMPTY)
+      Rights.fromACL(MailboxACL.fromJava(acl)) must be(Rights.EMPTY)
     }
     "accept users" in {
-      val acl = new MailboxACL(Map(
-        EntryKey.createUserEntryKey(USERNAME) -> Rfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
+      val acl = new JavaMailboxACL(Map(
+        EntryKey.createUserEntryKey(USERNAME) -> JavaRfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
 
-      Rights.fromACL(acl) must be(Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages)))
+      Rights.fromACL(MailboxACL.fromJava(acl)) must be(Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages)))
     }
     "filter out unknown rights" in {
-      val acl = new MailboxACL(Map(
-        EntryKey.createUserEntryKey(USERNAME) -> Rfc4314Rights.fromSerializedRfc4314Rights("aetpk")).asJava)
+      val acl = new JavaMailboxACL(Map(
+        EntryKey.createUserEntryKey(USERNAME) -> JavaRfc4314Rights.fromSerializedRfc4314Rights("aetpk")).asJava)
 
-      Rights.fromACL(acl) must be(Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages)))
+      Rights.fromACL(MailboxACL.fromJava(acl)) must be(Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages)))
     }
   }
   "To ACL" should  {
     "return empty when empty" in {
-      Rights.EMPTY.toMailboxAcl must be(new MailboxACL())
+      Rights.EMPTY.toMailboxAcl.asJava must be(new JavaMailboxACL())
     }
     "return acl conversion" in {
       val user1 = Username.of("user1")
       val user2 = Username.of("user2")
-      val expected = new MailboxACL(Map(
-          EntryKey.createUserEntryKey(user1) -> new Rfc4314Rights(JavaRight.Administer, JavaRight.DeleteMessages),
-          EntryKey.createUserEntryKey(user2) -> new Rfc4314Rights(JavaRight.PerformExpunge, JavaRight.Lookup))
+      val expected = new JavaMailboxACL(Map(
+          EntryKey.createUserEntryKey(user1) -> new JavaRfc4314Rights(JavaRight.Administer, JavaRight.DeleteMessages),
+          EntryKey.createUserEntryKey(user2) -> new JavaRfc4314Rights(JavaRight.PerformExpunge, JavaRight.Lookup))
         .asJava)
       val jmapPojo = Rights.of(user1, Seq(Right.Administer, Right.DeleteMessages))
         .append(user2, Seq(Right.Expunge, Right.Lookup))
 
-      jmapPojo.toMailboxAcl must be(expected)
+      jmapPojo.toMailboxAcl.asJava must be(expected)
     }
   }
   "Remove entries" should  {
