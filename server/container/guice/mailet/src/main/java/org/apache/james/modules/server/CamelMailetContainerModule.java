@@ -57,6 +57,7 @@ import org.apache.mailet.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -135,7 +136,8 @@ public class CamelMailetContainerModule extends AbstractModule {
             .init(() -> mailetContext.configure(getMailetContextConfiguration(configurationProvider)));
     }
 
-    private HierarchicalConfiguration<ImmutableNode> getMailetContextConfiguration(ConfigurationProvider configurationProvider) throws ConfigurationException {
+    @VisibleForTesting
+    HierarchicalConfiguration<ImmutableNode> getMailetContextConfiguration(ConfigurationProvider configurationProvider) throws ConfigurationException {
         HierarchicalConfiguration<ImmutableNode> mailetContainerConfiguration = configurationProvider.getConfiguration("mailetcontainer");
         try {
             return mailetContainerConfiguration.configurationAt("context");
@@ -157,7 +159,8 @@ public class CamelMailetContainerModule extends AbstractModule {
         public MailetModuleInitializationOperation(ConfigurationProvider configurationProvider,
                                                    CamelCompositeProcessor camelCompositeProcessor,
                                                    Set<TransportProcessorCheck> transportProcessorCheckSet,
-                                                   DefaultProcessorsConfigurationSupplier defaultProcessorsConfigurationSupplier, DefaultCamelContext camelContext) {
+                                                   DefaultProcessorsConfigurationSupplier defaultProcessorsConfigurationSupplier,
+                                                   DefaultCamelContext camelContext) {
             this.configurationProvider = configurationProvider;
             this.camelCompositeProcessor = camelCompositeProcessor;
             this.transportProcessorCheckSet = transportProcessorCheckSet;
@@ -177,7 +180,8 @@ public class CamelMailetContainerModule extends AbstractModule {
             camelCompositeProcessor.init();
         }
 
-        private HierarchicalConfiguration<ImmutableNode> getProcessorConfiguration() throws ConfigurationException {
+        @VisibleForTesting
+        HierarchicalConfiguration<ImmutableNode> getProcessorConfiguration() throws ConfigurationException {
             HierarchicalConfiguration<ImmutableNode> mailetContainerConfiguration = configurationProvider.getConfiguration("mailetcontainer");
             try {
                 return mailetContainerConfiguration.configurationAt("processors");
