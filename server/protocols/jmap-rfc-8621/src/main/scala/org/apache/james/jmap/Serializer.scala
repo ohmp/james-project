@@ -20,9 +20,12 @@
 package org.apache.james.jmap
 
 import org.apache.james.core.Username
+import org.apache.james.jmap.mail.Quotas.Type
+import org.apache.james.jmap.mail.{DelegatedNamespace, Mailbox, MailboxName, MailboxNamespace, MailboxRights, PersonalNamespace, Quota, QuotaId, Quotas, Rights, SortOrder, Value, Right => MailboxRight}
 import org.apache.james.jmap.model.{Account, CapabilityIdentifier, CoreCapability, Id, MailCapability, Session, UnsignedInt}
-import play.api.libs.json.{JsNumber, JsObject, JsString, Json, Writes}
-import org.apache.james.jmap.model._
+import org.apache.james.mailbox.Role
+import org.apache.james.mailbox.model.MailboxId
+import play.api.libs.json.{JsArray, JsNull, JsNumber, JsObject, JsString, JsValue, Json, Writes}
 
 class Serializer {
   implicit val unsignedIntWrites: Writes[UnsignedInt] = size => JsNumber(size.value)
@@ -31,6 +34,14 @@ class Serializer {
   implicit val capabilityIdentifierWrites: Writes[CapabilityIdentifier] = identifier => JsString(identifier.value.toString)
   implicit val coreCapabilityWrites: Writes[CoreCapability] = Json.writes[CoreCapability]
   implicit val mailCapabilityWrites: Writes[MailCapability] = Json.writes[MailCapability]
+
+  implicit val mailboxNameWrites: Writes[MailboxName] = name => JsString(name.name)
+  implicit val sortOrderWrites: Writes[SortOrder] = sortOrder => JsNumber(sortOrder.sortOrder.value)
+  implicit val roleWrites: Writes[Role] = role => JsString(role.serialize())
+  implicit val quotaIdWrites: Writes[QuotaId] = quotaId => JsString(quotaId.quotaRoot.value)
+  implicit val mailboxIdWrites: Writes[MailboxId] = mailboxId => JsString(mailboxId.serialize())
+  implicit val quotaTypesWrites: Writes[Type] = `type` => JsString(`type`.asString)
+  implicit val rightWrites: Writes[MailboxRight] = right => JsString(right.asCharacter.toString)
 
   implicit def identifierMapWrite[Any](implicit coreWriter: Writes[CoreCapability],
                                        mailWriter: Writes[MailCapability],
@@ -48,9 +59,54 @@ class Serializer {
 
   implicit val accountWrites: Writes[Account] = Json.writes[Account]
   implicit val sessionWrites: Writes[Session] = Json.writes[Session]
+  implicit val personalNamespaceWrites: Writes[PersonalNamespace] = value => JsObject(Map(
+    "type" -> JsString(value.`type`),
+    "owner" -> JsNull))
+  implicit val delegatedNamespaceWrites: Writes[DelegatedNamespace] = value => JsObject(Map(
+    "type" -> JsString(value.`type`),
+    "owner" -> value.owner.map(_.asString()).map(JsString).getOrElse(JsNull)))
+  implicit val namespaceWrites: Writes[MailboxNamespace] = Writes[MailboxNamespace] {
+    case personal: PersonalNamespace => personalNamespaceWrites.writes(personal)
+    case delegated: DelegatedNamespace => delegatedNamespaceWrites.writes(delegated)
+  }
+  implicit val mailboxRightsWrites: Writes[MailboxRights] = Json.writes[MailboxRights]
+  implicit val quotaValueWrites: Writes[Value] = Json.writes[Value]
 
   implicit def idMapWrite[Any](implicit vr: Writes[Any]): Writes[Map[Id, Any]] =
     (m: Map[Id, Any]) => {
       JsObject(m.map { case (k, v) => (k.value, vr.writes(v)) }.toSeq)
     }
+
+  implicit def quotaIdMapWrite[Any](implicit vr: Writes[Any]): Writes[Map[QuotaId, Any]] =
+    (m: Map[QuotaId, Any]) => {
+      JsObject(m.map { case (k, v) => (k.quotaRoot.value, vr.writes(v)) }.toSeq)
+    }
+
+  implicit def userMapWrite[Any](implicit vr: Writes[Any]): Writes[Map[Username, Any]] =
+    (m: Map[Username, Any]) => {
+      JsObject(m.map { case (k, v) => (k.asString(), vr.writes(v)) }.toSeq)
+    }
+  implicit val rightsWrites: Writes[Rights] = rights => {
+    val map: Map[String, JsArray] = rights.rights
+      .map {
+        case (username, value) => (username.asString(), JsArray(value.map(_.asCharacter.toString).map(JsString)))
+      }
+    JsObject(map)
+  }
+  implicit val quotasWrites: Writes[Quotas] = quotas => {
+    val map: Map[String, JsValue] = quotas.quotas
+      .map {
+        case (id, value) => (id.quotaRoot.value, quotaWrites.writes(value))
+      }
+    JsObject(map)
+  }
+  implicit val quotaWrites: Writes[Quota] = quota => {
+    val map: Map[String, JsValue] = quota.quota
+      .map {
+        case (key, value) => (key.asString, quotaValueWrites.writes(value))
+      }
+    JsObject(map)
+  }
+
+  implicit val mailboxWrites: Writes[Mailbox] = Json.writes[Mailbox]
 }

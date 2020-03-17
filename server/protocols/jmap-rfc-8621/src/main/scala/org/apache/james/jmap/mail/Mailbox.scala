@@ -42,7 +42,7 @@ final case class MailboxRights(mayReadItems: Boolean,
 object MailboxNamespace {
   def delegated(owner: Username) = DelegatedNamespace(owner)
 
-  def personal = PersonalNamespace
+  def personal() = PersonalNamespace()
 }
 
 sealed trait MailboxNamespace {

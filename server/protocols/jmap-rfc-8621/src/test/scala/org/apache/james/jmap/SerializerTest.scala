@@ -21,12 +21,16 @@ package org.apache.james.jmap
 
 import java.net.URI
 
-import org.apache.james.core.Username
+import org.apache.james.core.{Domain, Username}
+import org.apache.james.jmap.SerializerTest.{MAILBOX_RIGHTS, QUOTAS, RIGHTS, SESSION, SESSION_JSON, USER_1}
+import org.apache.james.jmap.mail.{Mailbox, MailboxName, MailboxNamespace, MailboxRights, Quota, QuotaId, QuotaRoot, Quotas, Right, Rights, SortOrder, Value}
 import org.apache.james.jmap.model.{Account, CapabilityIdentifier, CoreCapability, Id, MailCapability, Session, UnsignedInt}
+import org.apache.james.mailbox.Role
+import org.apache.james.mailbox.model.TestId
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsObject, JsSuccess, Json}
-import org.apache.james.jmap.SerializerTest.{SESSION, SESSION_JSON}
-import org.apache.james.jmap.model._
+import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
+
+import scala.io.Source
 
 object SerializerTest {
   private val ALGO_1 = "i;ascii-numeric"
@@ -184,6 +188,29 @@ object SerializerTest {
       |  "eventSourceUrl": "$URL",
       |  "state": "$STATE"
       |}""".stripMargin
+
+  private val QUOTAS = Quotas(Map(
+    QuotaId(QuotaRoot("quotaRoot", None)) -> Quota(Map(
+      Quotas.Message() -> Value(18L, Some(42L)),
+      Quotas.Storage() -> Value(12L, None))),
+    QuotaId(QuotaRoot("quotaRoot2@localhost", Some(Domain.LOCALHOST))) -> Quota(Map(
+      Quotas.Message() -> Value(14L, Some(43L)),
+      Quotas.Storage() -> Value(19L, None)))))
+  private val MAILBOX_RIGHTS = MailboxRights(mayReadItems = true,
+    mayAddItems = true,
+    mayRemoveItems = true,
+    maySetSeen = true,
+    maySetKeywords = true,
+    mayCreateChild = true,
+    mayRename = true,
+    mayDelete = true,
+    maySubmit = true)
+  private val RIGHTS: Rights = Rights.of(USER_1, Seq(Right.Expunge, Right.Lookup))
+    .append(USER_2, Seq(Right.Read, Right.Write))
+
+  def readResource(resourceFileName: String): Source = {
+    Source.fromURL(getClass.getResource(resourceFileName), "UTF-8")
+  }
 }
 
 class SerializerTest extends PlaySpec {
@@ -191,6 +218,145 @@ class SerializerTest extends PlaySpec {
   "sessionWrites" should {
     "serialize session" in {
       new Serializer().sessionWrites.writes(SESSION) must equal(Json.parse(SESSION_JSON))
+    }
+  }
+
+  "mailboxIdWrites" should {
+    "serialize mailboxId" in {
+      new Serializer().mailboxIdWrites.writes(TestId.of(45)) must be(JsString("45"))
+    }
+  }
+  "mailboxNameWrites" should {
+    "serialize mailboxName" in {
+      new Serializer().mailboxNameWrites.writes(MailboxName("INBOX")) must be(JsString("INBOX"))
+    }
+  }
+  "roleWrites" should {
+    "serialize role" in {
+      new Serializer().roleWrites.writes(Role.INBOX) must be(JsString("inbox"))
+    }
+  }
+  "sortOrderWrites" should {
+    "serialize sortOrder" in {
+      new Serializer().sortOrderWrites.writes(SortOrder(3L)) must be(JsNumber(3L))
+    }
+  }
+  "rightsWrites" should {
+    "serialize empty rights" in {
+      new Serializer().rightsWrites.writes(Rights.EMPTY) must be(JsObject(Map[String, JsValue]()))
+    }
+  }
+  "namespaceWrites" should {
+    "serialize personal" in {
+      new Serializer().namespaceWrites.writes(MailboxNamespace.personal()) must equal(Json.parse(
+        """{"type":"Personal","owner":null}"""))
+    }
+    "serialize delegated" in {
+      new Serializer().namespaceWrites.writes(MailboxNamespace.delegated(USER_1)) must equal(Json.parse(
+        """{"type":"Delegated","owner":"user1@james.org"}"""))
+    }
+  }
+  "rightsWrites" should {
+    "serialize rights" in {
+      new Serializer().rightsWrites.writes(RIGHTS) must equal(Json.parse(
+        """{
+          |  "user1@james.org": ["e", "l"],
+          |  "user2@james.org": ["r", "w"]
+          |}""".stripMargin))
+    }
+  }
+  "mailboxRightsWrites" should {
+    "serialize rights" in {
+      new Serializer().mailboxRightsWrites.writes(MAILBOX_RIGHTS) must be(Json.parse(
+        """{
+          |  "mayReadItems":true,
+          |  "mayAddItems":true,
+          |  "mayRemoveItems":true,
+          |  "maySetSeen":true,
+          |  "maySetKeywords":true,
+          |  "mayCreateChild":true,
+          |  "mayRename":true,
+          |  "mayDelete":true,
+          |  "maySubmit":true
+          |}""".stripMargin))
+    }
+  }
+  "quotasWrites" should {
+    "serialize quotas" in {
+      new Serializer().quotasWrites.writes(QUOTAS) must be(Json.parse(
+        """{
+          |  "quotaRoot":{
+          |    "Message":{"used":18,"max":42},
+          |    "Storage":{"used":12}},
+          |  "quotaRoot2@localhost":{
+          |    "Message":{"used":14,"max":43},
+          |    "Storage":{"used":19}}
+          |}""".stripMargin))
+    }
+  }
+
+  "mailboxWrites" should {
+    "serialize mailbox" in {
+      val mailbox = Mailbox(
+        id = TestId.of(42L),
+        mailboxName = MailboxName("Inbox"),
+        parentId = None,
+        role = Some(Role.INBOX),
+        sortOrder = SortOrder.apply(7L),
+        totalEmails = 3L,
+        unreadEmails = 4L,
+        totalThreads = 5L,
+        unreadThreads = 6L,
+        mailboxRights = MailboxRights(mayReadItems = true,
+          mayAddItems = true,
+          mayRemoveItems = true,
+          maySetSeen = true,
+          maySetKeywords = true,
+          mayCreateChild = true,
+          mayRename = true,
+          mayDelete = true,
+          maySubmit = true),
+        isSubscribed = true,
+        namespace = MailboxNamespace.personal(),
+        rights = RIGHTS,
+        quotas = QUOTAS)
+
+      new Serializer().mailboxWrites.writes(mailbox) must be(Json.parse(
+        """{
+          |  "id":"42",
+          |  "mailboxName":"Inbox",
+          |  "role":"inbox",
+          |  "sortOrder":7,
+          |  "totalEmails":3,
+          |  "unreadEmails":4,
+          |  "totalThreads":5,
+          |  "unreadThreads":6,
+          |  "mailboxRights":{
+          |    "mayReadItems":true,
+          |    "mayAddItems":true,
+          |    "mayRemoveItems":true,
+          |    "maySetSeen":true,"maySetKeywords":true,
+          |    "mayCreateChild":true,"mayRename":true,
+          |    "mayDelete":true,
+          |    "maySubmit":true
+          |  },
+          |  "isSubscribed":true,
+          |  "namespace":{"type":"Personal","owner":null},
+          |  "rights":{
+          |    "user1@james.org":["e","l"],
+          |    "user2@james.org":["r","w"]
+          |  },
+          |  "quotas":{
+          |    "quotaRoot":{
+          |      "Message":{"used":18,"max":42},
+          |      "Storage":{"used":12}
+          |    },
+          |    "quotaRoot2@localhost":{
+          |      "Message":{"used":14,"max":43},
+          |      "Storage":{"used":19}
+          |    }
+          |  }
+          |}""".stripMargin))
     }
   }
 }
