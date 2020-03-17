@@ -67,8 +67,8 @@ public class DownloadRoutes implements JMAPRoutes {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRoutes.class);
     static final String BLOB_ID_PATH_PARAM = "blobId";
     private static final String NAME_PATH_PARAM = "name";
-    private static final String DOWNLOAD_ONE_PARAM = String.format("%s/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM);
-    private static final String DOWNLOAD_TWO_PARAM = String.format("%s/{%s}/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM, NAME_PATH_PARAM);
+    private static final String DOWNLOAD_FROM_ID = String.format("%s/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM);
+    private static final String DOWNLOAD_FROM_ID_AND_NAME = String.format("%s/{%s}/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM, NAME_PATH_PARAM);
     private static final int BUFFER_SIZE = 16 * 1024;
 
     private final BlobManager blobManager;
@@ -92,12 +92,12 @@ public class DownloadRoutes implements JMAPRoutes {
 
     @Override
     public HttpServerRoutes define(HttpServerRoutes builder) {
-        return builder.post(DOWNLOAD_ONE_PARAM, this::postOneParam)
-            .get(DOWNLOAD_ONE_PARAM, this::getOneParam)
-            .post(DOWNLOAD_TWO_PARAM, this::postTwoParam)
-            .get(DOWNLOAD_TWO_PARAM, this::getTwoParam)
-            .options(DOWNLOAD_ONE_PARAM, CORS_CONTROL)
-            .options(DOWNLOAD_TWO_PARAM, CORS_CONTROL);
+        return builder.post(DOWNLOAD_FROM_ID, this::postOneParam)
+            .get(DOWNLOAD_FROM_ID, this::getOneParam)
+            .post(DOWNLOAD_FROM_ID_AND_NAME, this::postTwoParam)
+            .get(DOWNLOAD_FROM_ID_AND_NAME, this::getTwoParam)
+            .options(DOWNLOAD_FROM_ID, CORS_CONTROL)
+            .options(DOWNLOAD_FROM_ID_AND_NAME, CORS_CONTROL);
     }
 
     private Mono<Void> postOneParam(HttpServerRequest request, HttpServerResponse response) {

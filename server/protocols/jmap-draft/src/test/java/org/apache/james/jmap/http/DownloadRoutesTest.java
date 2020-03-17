@@ -41,7 +41,7 @@ import reactor.netty.http.server.HttpServerResponse;
 public class DownloadRoutesTest {
 
     @Test
-    public void downloadMayFailWhenUnknownErrorOnAttachmentManager() throws Exception {
+    public void downloadShouldFailWhenUnknownErrorOnAttachmentManager() throws Exception {
         MailboxSession mailboxSession = MailboxSessionUtil.create(Username.of("User"));
         BlobManager mockedBlobManager = mock(BlobManager.class);
         when(mockedBlobManager.retrieve(any(), eq(mailboxSession)))
