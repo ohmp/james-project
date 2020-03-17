@@ -1,4 +1,4 @@
-/** **************************************************************
+/****************************************************************
  * Licensed to the Apache Software Foundation (ASF) under one   *
  * or more contributor license agreements.  See the NOTICE file *
  * distributed with this work for additional information        *
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the            *
  * "License"); you may not use this file except in compliance   *
  * with the License.  You may obtain a copy of the License at   *
- * *
- * http://www.apache.org/licenses/LICENSE-2.0                 *
- * *
+ *                                                              *
+ * http://www.apache.org/licenses/LICENSE-2.0                   *
+ *                                                              *
  * Unless required by applicable law or agreed to in writing,   *
  * software distributed under the License is distributed on an  *
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
@@ -26,7 +26,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 
 import scala.jdk.CollectionConverters._
 
-class RightTest extends WordSpec with MustMatchers {
+class RightsTest extends WordSpec with MustMatchers {
   val NEGATIVE = true
   val USERNAME: Username = Username.of("user")
   val OTHER_USERNAME: Username = Username.of("otherUser")
@@ -74,17 +74,13 @@ class RightTest extends WordSpec with MustMatchers {
       val acl = new MailboxACL(Map(
         EntryKey.createUserEntryKey(USERNAME) -> Rfc4314Rights.fromSerializedRfc4314Rights("aet")).asJava)
 
-      Rights.fromACL(acl) must be(Rights.builder
-        .delegateTo(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages))
-        .build)
+      Rights.fromACL(acl) must be(Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages)))
     }
     "filter out unknown rights" in {
       val acl = new MailboxACL(Map(
         EntryKey.createUserEntryKey(USERNAME) -> Rfc4314Rights.fromSerializedRfc4314Rights("aetpk")).asJava)
 
-      Rights.fromACL(acl) must be(Rights.builder
-        .delegateTo(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages))
-        .build)
+      Rights.fromACL(acl) must be(Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.DeleteMessages)))
     }
   }
   "To ACL" should  {
@@ -98,10 +94,8 @@ class RightTest extends WordSpec with MustMatchers {
           EntryKey.createUserEntryKey(user1) -> new Rfc4314Rights(JavaRight.Administer, JavaRight.DeleteMessages),
           EntryKey.createUserEntryKey(user2) -> new Rfc4314Rights(JavaRight.PerformExpunge, JavaRight.Lookup))
         .asJava)
-      val jmapPojo = Rights.builder
-        .delegateTo(user1, Seq(Right.Administer, Right.DeleteMessages))
-        .delegateTo(user2, Seq(Right.Expunge, Right.Lookup))
-        .build
+      val jmapPojo = Rights.of(user1, Seq(Right.Administer, Right.DeleteMessages))
+        .append(user2, Seq(Right.Expunge, Right.Lookup))
 
       jmapPojo.toMailboxAcl must be(expected)
     }
@@ -111,18 +105,14 @@ class RightTest extends WordSpec with MustMatchers {
       Rights.EMPTY.removeEntriesFor(USERNAME) must be(Rights.EMPTY)
     }
     "return empty when only user" in {
-      Rights.builder
-        .delegateTo(USERNAME, Right.Lookup)
-        .build
+      Rights.of(USERNAME, Right.Lookup)
         .removeEntriesFor(USERNAME) must be(Rights.EMPTY)
     }
     "only remove specified users" in {
-      val expected = Rights.builder.delegateTo(OTHER_USERNAME, Right.Lookup).build
+      val expected = Rights.of(OTHER_USERNAME, Right.Lookup)
 
-      Rights.builder
-        .delegateTo(USERNAME, Right.Lookup)
-        .delegateTo(OTHER_USERNAME, Right.Lookup)
-        .build
+      Rights.of(USERNAME, Right.Lookup)
+        .append(OTHER_USERNAME, Right.Lookup)
         .removeEntriesFor(USERNAME) must be(expected)
     }
   }
@@ -131,12 +121,12 @@ class RightTest extends WordSpec with MustMatchers {
       Rights.EMPTY.mayAddItems(USERNAME) must be(None)
     }
     "return false when no insert right" in {
-      Rights.builder.delegateTo(USERNAME, Seq(Right.Administer, Right.Expunge, Right.Lookup, Right.DeleteMessages, Right.Read, Right.Seen, Right.Write))
-        .build.mayAddItems(USERNAME) must be(Some(false))
+      Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.Lookup, Right.DeleteMessages, Right.Read, Right.Seen, Right.Write))
+        .mayAddItems(USERNAME) must be(Some(false))
     }
     "return true when insert right" in {
-      Rights.builder.delegateTo(USERNAME, Right.Insert)
-        .build.mayAddItems(USERNAME) must be(Some(true))
+      Rights.of(USERNAME, Right.Insert)
+        .mayAddItems(USERNAME) must be(Some(true))
     }
   }
   "mayReadItems" should  {
@@ -144,12 +134,12 @@ class RightTest extends WordSpec with MustMatchers {
       Rights.EMPTY.mayReadItems(USERNAME) must be(None)
     }
     "return false when no read right" in {
-      Rights.builder.delegateTo(USERNAME, Seq(Right.Administer, Right.Expunge, Right.Lookup, Right.DeleteMessages, Right.Administer, Right.Seen, Right.Write))
-        .build.mayReadItems(USERNAME) must be(Some(false))
+      Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.Lookup, Right.DeleteMessages, Right.Administer, Right.Seen, Right.Write))
+        .mayReadItems(USERNAME) must be(Some(false))
     }
     "return true when read right" in {
-      Rights.builder.delegateTo(USERNAME, Right.Read)
-        .build.mayReadItems(USERNAME) must be(Some(true))
+      Rights.of(USERNAME, Right.Read)
+        .mayReadItems(USERNAME) must be(Some(true))
     }
   }
   "mayRemoveItems" should  {
@@ -157,12 +147,12 @@ class RightTest extends WordSpec with MustMatchers {
       Rights.EMPTY.mayRemoveItems(USERNAME) must be(None)
     }
     "return false when no delete right" in {
-      Rights.builder.delegateTo(USERNAME, Seq(Right.Administer, Right.Expunge, Right.Lookup, Right.Read, Right.Administer, Right.Seen, Right.Write))
-        .build.mayRemoveItems(USERNAME) must be(Some(false))
+      Rights.of(USERNAME, Seq(Right.Administer, Right.Expunge, Right.Lookup, Right.Read, Right.Administer, Right.Seen, Right.Write))
+        .mayRemoveItems(USERNAME) must be(Some(false))
     }
     "return true when delete right" in {
-      Rights.builder.delegateTo(USERNAME, Right.DeleteMessages)
-        .build.mayRemoveItems(USERNAME) must be(Some(true))
+      Rights.of(USERNAME, Right.DeleteMessages)
+        .mayRemoveItems(USERNAME) must be(Some(true))
     }
   }
   "mayRename" should  {

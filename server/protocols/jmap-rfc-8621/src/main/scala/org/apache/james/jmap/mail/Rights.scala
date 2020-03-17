@@ -1,4 +1,4 @@
-/** *************************************************************
+/****************************************************************
  * Licensed to the Apache Software Foundation (ASF) under one   *
  * or more contributor license agreements.  See the NOTICE file *
  * distributed with this work for additional information        *
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the            *
  * "License"); you may not use this file except in compliance   *
  * with the License.  You may obtain a copy of the License at   *
- * *
- * http://www.apache.org/licenses/LICENSE-2.0                 *
- * *
+ *                                                              *
+ * http://www.apache.org/licenses/LICENSE-2.0                   *
+ *                                                              *
  * Unless required by applicable law or agreed to in writing,   *
  * software distributed under the License is distributed on an  *
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
@@ -47,9 +47,9 @@ object Right {
 }
 
 sealed case class Right(right: MailboxACL.Right) {
-  def asCharacter: Char = right.asCharacter
+  val asCharacter: Char = right.asCharacter
 
-  def toMailboxRight: MailboxACL.Right = right
+  val toMailboxRight: MailboxACL.Right = right
 }
 
 object Rights {
@@ -57,42 +57,25 @@ object Rights {
 
   val EMPTY = new Rights(Map())
 
-  class Builder() {
-    private var rights: Seq[(Username, Right)] = Seq()
+  def of(username: Username, right: Right): Rights = of(username, Seq(right))
 
-    def delegateTo(username: Username, rights: Right): Rights.Builder = {
-      this.rights = this.rights :+ (username, rights)
-      this
-    }
+  def of(username: Username, rights: Seq[Right]): Rights = {
+    require(rights.nonEmpty, "'rights' should not be empty")
 
-    def delegateTo(username: Username, rights: Seq[Right]): Rights.Builder = {
-      this.rights = this.rights ++ rights.map((username, _))
-      this
-    }
-
-    def combine(builder: Rights.Builder): Rights.Builder = {
-      this.rights = this.rights ++ builder.rights
-      this
-    }
-
-    def build: Rights = new Rights(rights.toSeq
-      .groupMap(_._1)(_._2))
+    Rights(Map(username -> rights))
   }
-
-  def builder: Rights.Builder = new Rights.Builder
 
   def fromACL(acl: MailboxACL): Rights = acl.getEntries.asScala
     .filter {
       case (entryKey, _) => isSupported(entryKey)
     }
-    .map(toRightsBuilder _)
-    .iterator
-    .reduceOption(_ combine _)
-    .getOrElse(builder)
-    .build
+    .map {
+      case (entryKey, aclRights) => toRights(entryKey, aclRights)
+    }
+    .fold(EMPTY)(_ combine _)
 
-  private def toRightsBuilder(entry: (MailboxACL.EntryKey, MailboxACL.Rfc4314Rights)): Rights.Builder = builder
-    .delegateTo(Username.of(entry._1.getName), fromACL(entry._2))
+  private def toRights(entryKey: MailboxACL.EntryKey, aclRights: MailboxACL.Rfc4314Rights): Rights =
+    of(Username.of(entryKey.getName), fromACL(aclRights))
 
   private def fromACL(rights: MailboxACL.Rfc4314Rights): Seq[Right] = rights.list.asScala
       .toSeq
@@ -116,7 +99,7 @@ object Rights {
 
 case class Rights private(rights: Map[Username, Seq[Right]]) {
 
-  def removeEntriesFor(username: Username) = new Rights(rights.filter(!_._1.equals(username)))
+  def removeEntriesFor(username: Username) = Rights(rights.filter(!_._1.equals(username)))
 
   def toMailboxAcl: MailboxACL = {
     val map: Map[EntryKey, Rfc4314Rights] = rights.view
@@ -127,6 +110,16 @@ case class Rights private(rights: Map[Username, Seq[Right]]) {
       }
     new MailboxACL(map.asJava)
   }
+
+  def append(username: Username, right: Right): Rights = append(username, Seq(right))
+
+  def append(username: Username, rights: Seq[Right]): Rights = {
+    require(rights.nonEmpty, "'rights' should not be empty")
+
+    Rights(this.rights + (username -> rights))
+  }
+
+  def combine(that: Rights): Rights = Rights(this.rights ++ that.rights)
 
   private def toJavaRights(seq: Seq[Right]): Rfc4314Rights = Rfc4314Rights.of(seq.map(_.right).asJava)
 
@@ -143,5 +136,5 @@ case class Rights private(rights: Map[Username, Seq[Right]]) {
   def mayDelete(username: Username): Option[Boolean] = Right.UNSUPPORTED
 
   private def containsRight(username: Username, right: Right): Option[Boolean] = rights.get(username)
-    .map(rights => rights.contains(right))
+    .map(_.contains(right))
 }
