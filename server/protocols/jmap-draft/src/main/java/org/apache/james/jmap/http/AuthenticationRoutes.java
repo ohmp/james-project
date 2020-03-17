@@ -202,7 +202,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
         SimpleTokenManager.TokenStatus validity = simpleTokenManager.getValidity(request.getToken());
         switch (validity) {
             case EXPIRED:
-                return returnRestartAuthentication(resp);
+                return returnForbiddenAuthentication(resp);
             case INVALID:
                 LOGGER.warn("Use of an invalid ContinuationToken : {}", request.getToken().serialize());
                 return returnUnauthorizedResponse(resp);
@@ -263,7 +263,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
         return resp.status(UNAUTHORIZED).send().then();
     }
 
-    private Mono<Void> returnRestartAuthentication(HttpServerResponse resp) {
+    private Mono<Void> returnForbiddenAuthentication(HttpServerResponse resp) {
         return resp.status(FORBIDDEN).send().then();
     }
 }

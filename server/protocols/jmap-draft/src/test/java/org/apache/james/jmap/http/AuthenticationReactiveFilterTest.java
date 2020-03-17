@@ -45,9 +45,10 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
 public class AuthenticationReactiveFilterTest {
+    private static final boolean AUTHORIZED = true;
     private static final String TOKEN = "df991d2a-1c5a-4910-a90f-808b6eda133e";
     private static final String AUTHORIZATION_HEADERS = "Authorization";
-    public static final Username USERNAME = Username.of("user@domain.tld");
+    private static final Username USERNAME = Username.of("user@domain.tld");
 
     private HttpServerRequest mockedRequest;
     private HttpHeaders mockedHeaders;
@@ -67,7 +68,7 @@ public class AuthenticationReactiveFilterTest {
         when(mockedRequest.requestHeaders())
             .thenReturn(mockedHeaders);
 
-        List<AuthenticationStrategy> fakeAuthenticationStrategies = ImmutableList.of(new FakeAuthenticationStrategy(false));
+        List<AuthenticationStrategy> fakeAuthenticationStrategies = ImmutableList.of(new FakeAuthenticationStrategy(!AUTHORIZED));
 
         testee = new AuthenticationReactiveFilter(fakeAuthenticationStrategies, new RecordingMetricFactory());
     }
@@ -117,7 +118,7 @@ public class AuthenticationReactiveFilterTest {
 
         accessTokenRepository.addToken(USERNAME, token).block();
 
-        AuthenticationReactiveFilter authFilter = new AuthenticationReactiveFilter(ImmutableList.of(new FakeAuthenticationStrategy(true)), new RecordingMetricFactory());
+        AuthenticationReactiveFilter authFilter = new AuthenticationReactiveFilter(ImmutableList.of(new FakeAuthenticationStrategy(AUTHORIZED)), new RecordingMetricFactory());
 
         assertThatCode(() -> authFilter.authenticate(mockedRequest).block())
             .doesNotThrowAnyException();
@@ -131,7 +132,7 @@ public class AuthenticationReactiveFilterTest {
 
         accessTokenRepository.addToken(USERNAME, token).block();
 
-        AuthenticationReactiveFilter authFilter = new AuthenticationReactiveFilter(ImmutableList.of(new FakeAuthenticationStrategy(false), new FakeAuthenticationStrategy(true)), new RecordingMetricFactory());
+        AuthenticationReactiveFilter authFilter = new AuthenticationReactiveFilter(ImmutableList.of(new FakeAuthenticationStrategy(!AUTHORIZED), new FakeAuthenticationStrategy(AUTHORIZED)), new RecordingMetricFactory());
 
         assertThatCode(() -> authFilter.authenticate(mockedRequest).block())
             .doesNotThrowAnyException();
@@ -148,7 +149,7 @@ public class AuthenticationReactiveFilterTest {
         @Override
         public Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest) {
             if (!isAuthorized) {
-                throw new MailboxSessionCreationException(null);
+                return Mono.error(new MailboxSessionCreationException(null));
             }
             return Mono.just(mock(MailboxSession.class));
         }
