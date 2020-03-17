@@ -92,21 +92,21 @@ public class DownloadRoutes implements JMAPRoutes {
 
     @Override
     public HttpServerRoutes define(HttpServerRoutes builder) {
-        return builder.post(DOWNLOAD_FROM_ID, this::postOneParam)
-            .get(DOWNLOAD_FROM_ID, this::getOneParam)
-            .post(DOWNLOAD_FROM_ID_AND_NAME, this::postTwoParam)
-            .get(DOWNLOAD_FROM_ID_AND_NAME, this::getTwoParam)
+        return builder.post(DOWNLOAD_FROM_ID, this::postFromId)
+            .get(DOWNLOAD_FROM_ID, this::getFromId)
+            .post(DOWNLOAD_FROM_ID_AND_NAME, this::postFromIdAndName)
+            .get(DOWNLOAD_FROM_ID_AND_NAME, this::getFromIdAndName)
             .options(DOWNLOAD_FROM_ID, CORS_CONTROL)
             .options(DOWNLOAD_FROM_ID_AND_NAME, CORS_CONTROL);
     }
 
-    private Mono<Void> postOneParam(HttpServerRequest request, HttpServerResponse response) {
+    private Mono<Void> postFromId(HttpServerRequest request, HttpServerResponse response) {
         String blobId = request.param(BLOB_ID_PATH_PARAM);
         DownloadPath downloadPath = DownloadPath.ofBlobId(blobId);
         return post(request, response, downloadPath);
     }
 
-    private Mono<Void> postTwoParam(HttpServerRequest request, HttpServerResponse response) {
+    private Mono<Void> postFromIdAndName(HttpServerRequest request, HttpServerResponse response) {
         String blobId = request.param(BLOB_ID_PATH_PARAM);
         String name = request.param(NAME_PATH_PARAM);
         DownloadPath downloadPath = DownloadPath.of(blobId, name);
@@ -122,13 +122,13 @@ public class DownloadRoutes implements JMAPRoutes {
             .subscribeOn(Schedulers.elastic());
     }
 
-    private Mono<Void> getOneParam(HttpServerRequest request, HttpServerResponse response) {
+    private Mono<Void> getFromId(HttpServerRequest request, HttpServerResponse response) {
         String blobId = request.param(BLOB_ID_PATH_PARAM);
         DownloadPath downloadPath = DownloadPath.ofBlobId(blobId);
         return get(request, response, downloadPath);
     }
 
-    private Mono<Void> getTwoParam(HttpServerRequest request, HttpServerResponse response) {
+    private Mono<Void> getFromIdAndName(HttpServerRequest request, HttpServerResponse response) {
         String blobId = request.param(BLOB_ID_PATH_PARAM);
         try {
             String name = URLDecoder.decode(request.param(NAME_PATH_PARAM), StandardCharsets.UTF_8.toString());
