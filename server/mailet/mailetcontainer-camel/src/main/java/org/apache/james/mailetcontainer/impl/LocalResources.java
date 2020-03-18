@@ -17,16 +17,16 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailetcontainer;
+package org.apache.james.mailetcontainer.impl;
 
 import java.util.EnumSet;
-import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.mail.internet.ParseException;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.rrt.api.RecipientRewriteTable;
@@ -48,13 +48,13 @@ public class LocalResources {
     private final RecipientRewriteTable recipientRewriteTable;
 
     @Inject
-    public LocalResources(UsersRepository localusers, DomainList domains, RecipientRewriteTable recipientRewriteTable) {
+    LocalResources(UsersRepository localusers, DomainList domains, RecipientRewriteTable recipientRewriteTable) {
         this.localusers = localusers;
         this.domains = domains;
         this.recipientRewriteTable = recipientRewriteTable;
     }
 
-    public boolean isLocalServer(Domain domain) {
+    boolean isLocalServer(Domain domain) {
         try {
             return domains.containsDomain(domain);
         } catch (DomainListException e) {
@@ -63,7 +63,7 @@ public class LocalResources {
         }
     }
 
-    public boolean isLocalUser(String name) {
+    boolean isLocalUser(String name) {
         if (name == null) {
             return false;
         }
@@ -84,7 +84,7 @@ public class LocalResources {
         }
     }
 
-    public boolean isLocalEmail(MailAddress mailAddress) {
+    boolean isLocalEmail(MailAddress mailAddress) {
         if (mailAddress != null) {
             if (!isLocalServer(mailAddress.getDomain())) {
                 return false;
