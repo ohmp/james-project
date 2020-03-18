@@ -19,6 +19,7 @@
 
 package org.apache.james.jmap;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -27,6 +28,10 @@ import javax.inject.Inject;
 
 import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.util.Port;
+
+import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
@@ -53,11 +58,52 @@ public class JMAPServer implements Startable {
 
     public void start() {
         if (configuration.isEnabled()) {
+            ImmutableListMultimap<JMAPRoutes.Endpoint, JMAPRoutes.JmapRoute> collect = jmapRoutes.stream()
+                .flatMap(JMAPRoutes::routes)
+                .collect(Guavate.toImmutableListMultimap(JMAPRoutes.JmapRoute::getEndpoint));
+
             server = Optional.of(HttpServer.create()
                 .port(configuration.getPort()
                     .map(Port::getValue)
                     .orElse(RANDOM_PORT))
-                .route(routes -> jmapRoutes.forEach(jmapRoute -> jmapRoute.define(routes)))
+                .route(routes -> collect.asMap().forEach(
+                    ((endpoint, r) -> {
+                        if (r.size() == 1) {
+                            JMAPRoutes.JmapRoute next = r.iterator().next();
+                            switch (endpoint.getVerb()) {
+                                case GET:
+                                    routes.get(endpoint.getPath(), (req, res) -> {
+                                        switch (next.getVersion()) {
+                                            case DRAFT:
+                                                // todo draft precondition
+                                            case RFC8621:
+                                                // todo rfc-8621 precondition
+                                        }
+                                        return next.getAction().apply(req, res);
+                                    });
+                                 // todo other verbs
+                            }
+                        } else if (r.size() == 2) {
+                            ImmutableList<JMAPRoutes.JmapRoute> sorted = r.stream()
+                                .sorted(Comparator.comparing(JMAPRoutes.JmapRoute::getVersion))
+                                .collect(Guavate.toImmutableList());
+                            JMAPRoutes.JmapRoute draftRoute = sorted.get(0);
+                            JMAPRoutes.JmapRoute rfc8621Route = sorted.get(1);
+
+                            switch (endpoint.getVerb()) {
+                                case GET:
+                                    if (hasDraftAcceptHeader()) {
+                                        return draftRoute.getAction().apply(req, res);
+                                    }
+                                    if (hasRfc8621AcceptHeader()) {
+                                        return rfc8621Route.getAction().apply(req, res);
+                                    }
+                                    // todo otherwize 400
+                            }
+                        }
+
+                    })
+                ))
                 .wiretap(configuration.wiretapEnabled())
                 .bindNow());
         }
