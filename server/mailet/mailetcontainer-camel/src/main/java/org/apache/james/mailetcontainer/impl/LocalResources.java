@@ -20,13 +20,13 @@
 package org.apache.james.mailetcontainer.impl;
 
 import java.util.EnumSet;
+import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.mail.internet.ParseException;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
-import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.rrt.api.RecipientRewriteTable;
@@ -39,17 +39,17 @@ import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 
-public class LocalResources {
+class LocalResources {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalResources.class);
     private static final EnumSet<Mapping.Type> ALIAS_TYPES = EnumSet.of(Mapping.Type.Alias, Mapping.Type.DomainAlias);
 
-    private final UsersRepository localusers;
+    private final UsersRepository localUsers;
     private final DomainList domains;
     private final RecipientRewriteTable recipientRewriteTable;
 
     @Inject
-    LocalResources(UsersRepository localusers, DomainList domains, RecipientRewriteTable recipientRewriteTable) {
-        this.localusers = localusers;
+    LocalResources(UsersRepository localUsers, DomainList domains, RecipientRewriteTable recipientRewriteTable) {
+        this.localUsers = localUsers;
         this.domains = domains;
         this.recipientRewriteTable = recipientRewriteTable;
     }
@@ -100,7 +100,7 @@ public class LocalResources {
     }
 
     private boolean isLocaluser(MailAddress mailAddress) throws UsersRepositoryException {
-        return localusers.contains(localusers.getUser(mailAddress));
+        return localUsers.contains(localUsers.getUser(mailAddress));
     }
 
     private boolean isLocalAlias(MailAddress mailAddress) throws UsersRepositoryException, RecipientRewriteTable.ErrorMappingException, RecipientRewriteTableException {
