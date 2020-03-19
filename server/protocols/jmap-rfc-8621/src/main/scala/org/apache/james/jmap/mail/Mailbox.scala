@@ -40,46 +40,50 @@ final case class MailboxRights(mayReadItems: Boolean,
                                maySubmit: Boolean)
 
 object MailboxNamespace {
-  sealed case class Type(value: String)
+  def delegated(owner: Username) = DelegatedNamespace(owner)
 
-  val Delegated = Type("Delegated")
-  val Personal = Type("Personal")
-
-  def delegated(owner: Username): MailboxNamespace = {
-    require(owner != null)
-
-    new MailboxNamespace(Delegated, Some(owner))
-  }
-
-  def personal = new MailboxNamespace(Personal, None)
+  def personal = PersonalNamespace
 }
 
-case class MailboxNamespace private(`type`: MailboxNamespace.Type, owner: Option[Username])
+sealed trait MailboxNamespace {
+  def `type`: String
+  def owner: Option[Username]
+}
+
+case class PersonalNamespace() extends MailboxNamespace {
+  @Override
+  def `type`: String = "Personal"
+
+  override def owner: Option[Username] = None
+}
+
+case class DelegatedNamespace(user: Username) extends MailboxNamespace {
+  require(user != null)
+
+  @Override
+  def `type`: String = "Delegated"
+
+  override def owner: Option[Username] = Some(user)
+}
 
 object SortOrder {
-  private val DEFAULT_SORT_ORDER = SortOrder.of(1000L)
+  private val DEFAULT_SORT_ORDER = SortOrder.apply(1000L)
   private val defaultSortOrders = Map(
-    Role.INBOX -> SortOrder.of(10L),
-    Role.ARCHIVE -> SortOrder.of(20L),
-    Role.DRAFTS -> SortOrder.of(30L),
-    Role.OUTBOX -> SortOrder.of(40L),
-    Role.SENT -> SortOrder.of(50L),
-    Role.TRASH -> SortOrder.of(60L),
-    Role.SPAM -> SortOrder.of(70L),
-    Role.TEMPLATES -> SortOrder.of(80L),
-    Role.RESTORED_MESSAGES -> SortOrder.of(90L))
+      Role.INBOX -> SortOrder.apply(10L),
+      Role.ARCHIVE -> SortOrder.apply(20L),
+      Role.DRAFTS -> SortOrder.apply(30L),
+      Role.OUTBOX -> SortOrder.apply(40L),
+      Role.SENT -> SortOrder.apply(50L),
+      Role.TRASH -> SortOrder.apply(60L),
+      Role.SPAM -> SortOrder.apply(70L),
+      Role.TEMPLATES -> SortOrder.apply(80L),
+      Role.RESTORED_MESSAGES -> SortOrder.apply(90L))
+    .withDefaultValue(DEFAULT_SORT_ORDER)
 
-  def getSortOrder(role: Option[Role]): SortOrder = role.flatMap(r => getDefaultSortOrder(r))
-    .getOrElse(DEFAULT_SORT_ORDER)
-
-  private def getDefaultSortOrder(role: Role) = defaultSortOrders.get(role)
-
-  def of(sortOrder: UnsignedInt): SortOrder = {
-    new SortOrder(sortOrder)
-  }
+  def getSortOrder(role: Role): SortOrder = defaultSortOrders.apply(role)
 }
 
-case class SortOrder private(sortOrder: UnsignedInt) extends Ordered[SortOrder] {
+case class SortOrder private(sortOrder: UnsignedInt) extends AnyVal with Ordered[SortOrder] {
   override def compare(that: SortOrder): Int = this.sortOrder.compare(that.sortOrder)
 }
 

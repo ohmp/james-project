@@ -29,9 +29,9 @@ import scala.compat.java8.OptionConverters._
 class MailboxTest extends WordSpec with MustMatchers {
   "sortOrder" should  {
     "be comparable" in {
-      SortOrder.of(4L).compare(SortOrder.of(3L)) must equal(1L)
-      SortOrder.of(4L).compare(SortOrder.of(4L)) must equal(0L)
-      SortOrder.of(4L).compare(SortOrder.of(5L)) must equal(-1L)
+      SortOrder.apply(4L).compare(SortOrder.apply(3L)) must equal(1L)
+      SortOrder.apply(4L).compare(SortOrder.apply(4L)) must equal(0L)
+      SortOrder.apply(4L).compare(SortOrder.apply(5L)) must equal(-1L)
     }
   }
 
@@ -42,13 +42,13 @@ class MailboxTest extends WordSpec with MustMatchers {
       } must have message "requirement failed"
     }
     "return personal when personal" in {
-      MailboxNamespace.personal.`type` must be(MailboxNamespace.Personal)
+      MailboxNamespace.personal().`type` must be("Personal")
     }
     "return None when personal" in {
-      MailboxNamespace.personal.owner.isEmpty must be(true)
+      MailboxNamespace.personal().owner.isEmpty must be(true)
     }
     "return delegated when delegated" in {
-      MailboxNamespace.delegated(Username.of("bob")).`type` must be(MailboxNamespace.Delegated)
+      MailboxNamespace.delegated(Username.of("bob")).`type` must be("Delegated")
     }
     "return owner when delegated" in {
       val username = Username.of("bob")
@@ -77,7 +77,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mailboxName = MailboxName("INBOX"),
           parentId = None,
           role = None,
-          sortOrder = SortOrder.of(3L),
+          sortOrder = SortOrder.apply(3L),
           totalEmails = 3L,
           unreadEmails = 4L,
           totalThreads = 5L,
@@ -92,7 +92,7 @@ class MailboxTest extends WordSpec with MustMatchers {
             mayDelete = true,
             maySubmit = true),
           isSubscribed = true,
-          namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+          namespace = MailboxNamespace.personal(),
           rights = Rights.EMPTY,
           quotas = Quotas(Map()))
       } must have message "requirement failed: 'id' is mandatory"
@@ -104,7 +104,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mailboxName = null,
           parentId = None,
           role = None,
-          sortOrder = SortOrder.of(3L),
+          sortOrder = SortOrder.apply(3L),
           totalEmails = 3L,
           unreadEmails = 4L,
           totalThreads = 5L,
@@ -119,7 +119,7 @@ class MailboxTest extends WordSpec with MustMatchers {
             mayDelete = true,
             maySubmit = true),
           isSubscribed = true,
-          namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+          namespace = MailboxNamespace.personal(),
           rights = Rights.EMPTY,
           quotas = Quotas(Map()))
       } must have message "requirement failed: 'mailboxName' is mandatory"
@@ -133,7 +133,7 @@ class MailboxTest extends WordSpec with MustMatchers {
         mailboxName = MailboxName("Inbox"),
         parentId = None,
         role = None,
-        sortOrder = SortOrder.of(3L),
+        sortOrder = SortOrder.apply(3L),
         totalEmails = 3L,
         unreadEmails = 4L,
         totalThreads = 5L,
@@ -148,7 +148,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+        namespace = MailboxNamespace.personal(),
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasRole(Role.INBOX) must be(false)
     }
@@ -158,7 +158,7 @@ class MailboxTest extends WordSpec with MustMatchers {
         mailboxName = MailboxName("Inbox"),
         parentId = None,
         role = Some(Role.OUTBOX),
-        sortOrder = SortOrder.of(3L),
+        sortOrder = SortOrder.apply(3L),
         totalEmails = 3L,
         unreadEmails = 4L,
         totalThreads = 5L,
@@ -173,7 +173,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+        namespace = MailboxNamespace.personal(),
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasRole(Role.INBOX) must be(false)
     }
@@ -183,7 +183,7 @@ class MailboxTest extends WordSpec with MustMatchers {
         mailboxName = MailboxName("Inbox"),
         parentId = None,
         role = Some(Role.INBOX),
-        sortOrder = SortOrder.of(3L),
+        sortOrder = SortOrder.apply(3L),
         totalEmails = 3L,
         unreadEmails = 4L,
         totalThreads = 5L,
@@ -198,7 +198,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+        namespace = MailboxNamespace.personal(),
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasRole(Role.INBOX) must be(true)
     }
@@ -211,7 +211,7 @@ class MailboxTest extends WordSpec with MustMatchers {
         mailboxName = MailboxName("Inbox"),
         parentId = None,
         role = None,
-        sortOrder = SortOrder.of(3L),
+        sortOrder = SortOrder.apply(3L),
         totalEmails = 3L,
         unreadEmails = 4L,
         totalThreads = 5L,
@@ -226,7 +226,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+        namespace = MailboxNamespace.personal(),
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasSystemRole must be(false)
     }
@@ -236,7 +236,7 @@ class MailboxTest extends WordSpec with MustMatchers {
         mailboxName = MailboxName("Inbox"),
         parentId = None,
         role = Role.from("any").asScala,
-        sortOrder = SortOrder.of(3L),
+        sortOrder = SortOrder.apply(3L),
         totalEmails = 3L,
         unreadEmails = 4L,
         totalThreads = 5L,
@@ -251,7 +251,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+        namespace = MailboxNamespace.personal(),
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasSystemRole must be(false)
     }
@@ -261,7 +261,7 @@ class MailboxTest extends WordSpec with MustMatchers {
         mailboxName = MailboxName("Inbox"),
         parentId = None,
         role = Some(Role.INBOX),
-        sortOrder = SortOrder.of(3L),
+        sortOrder = SortOrder.apply(3L),
         totalEmails = 3L,
         unreadEmails = 4L,
         totalThreads = 5L,
@@ -276,7 +276,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace(MailboxNamespace.Personal, None),
+        namespace = MailboxNamespace.personal(),
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasSystemRole must be(true)
     }
