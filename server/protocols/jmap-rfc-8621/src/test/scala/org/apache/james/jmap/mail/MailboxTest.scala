@@ -41,16 +41,6 @@ class MailboxTest extends WordSpec with MustMatchers {
         MailboxNamespace.delegated(null)
       } must have message "requirement failed"
     }
-    "throw when empty user " in {
-      the [IllegalArgumentException] thrownBy {
-        MailboxNamespace.delegated(Username.of(""))
-      } must have message "username should not be null or empty"
-    }
-    "throw when blank user" in {
-      the [IllegalArgumentException] thrownBy {
-        MailboxNamespace.delegated(Username.of(""))
-      } must have message "username should not be null or empty"
-    }
     "return personal when personal" in {
       MailboxNamespace.personal.`type` must be(MailboxNamespace.Personal)
     }

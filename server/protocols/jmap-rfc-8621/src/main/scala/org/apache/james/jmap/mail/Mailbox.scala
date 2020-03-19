@@ -47,7 +47,6 @@ object MailboxNamespace {
 
   def delegated(owner: Username): MailboxNamespace = {
     require(owner != null)
-    require(!owner.asString.trim.isEmpty)
 
     new MailboxNamespace(Delegated, Some(owner))
   }
