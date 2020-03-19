@@ -140,7 +140,7 @@ case class Rights private(rights: Map[Username, Seq[Right]]) {
   def append(username: Username, rights: Seq[Right]): Rights = {
     require(rights.nonEmpty, "'rights' should not be empty")
 
-    Rights(this.rights + (username -> rights))
+    copy(rights = this.rights + (username -> rights))
   }
 
   def combine(that: Rights): Rights = Rights(this.rights ++ that.rights)
