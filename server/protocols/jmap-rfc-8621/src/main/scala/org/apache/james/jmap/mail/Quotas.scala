@@ -25,10 +25,17 @@ import org.apache.james.jmap.model.UnsignedInt
 import org.apache.james.mailbox.model.QuotaRoot
 
 object Quotas {
-  sealed class Type()
+  sealed trait Type {
+    def asString: String
+  }
 
-  val Storage = new Type
-  val Message = new Type
+  case class Storage() extends Type {
+    override def asString: String = "Storage"
+  }
+
+  case class Message() extends Type {
+    override def asString: String = "Message"
+  }
 
   def from(quotas: Map[QuotaId, Quota]) = new Quotas(quotas)
 
@@ -39,12 +46,12 @@ object QuotaId {
   def fromQuotaRoot(quotaRoot: QuotaRoot) = QuotaId(quotaRoot)
 }
 
-case class QuotaId private(quotaRoot: QuotaRoot) {
+case class QuotaId(quotaRoot: QuotaRoot) extends AnyVal {
   def getName: String = quotaRoot.getValue
 }
 
-case class Quota private(quota: Map[Quotas.Type, Value])
+case class Quota(quota: Map[Quotas.Type, Value]) extends AnyVal
 
 case class Value(used: UnsignedInt, max: Optional[UnsignedInt])
 
-case class Quotas private(quotas: Map[QuotaId, Quota])
+case class Quotas(quotas: Map[QuotaId, Quota]) extends AnyVal
