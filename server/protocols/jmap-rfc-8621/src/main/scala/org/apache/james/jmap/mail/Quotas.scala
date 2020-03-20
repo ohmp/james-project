@@ -29,12 +29,12 @@ object Quotas {
     def asString: String
   }
 
-  case class Storage() extends Type {
-    override def asString: String = "Storage"
+  case object Storage extends Type {
+    override val asString: String = "Storage"
   }
 
-  case class Message() extends Type {
-    override def asString: String = "Message"
+  case object Message extends Type {
+    override val asString: String = "Message"
   }
 
   def from(quotas: Map[QuotaId, Quota]) = new Quotas(quotas)
