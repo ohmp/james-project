@@ -50,9 +50,8 @@ sealed trait MailboxNamespace {
   def owner: Option[Username]
 }
 
-case class PersonalNamespace() extends MailboxNamespace {
-  @Override
-  def `type`: String = "Personal"
+case object PersonalNamespace extends MailboxNamespace {
+  override def `type`: String = "Personal"
 
   override def owner: Option[Username] = None
 }
@@ -60,30 +59,28 @@ case class PersonalNamespace() extends MailboxNamespace {
 case class DelegatedNamespace(user: Username) extends MailboxNamespace {
   require(user != null)
 
-  @Override
-  def `type`: String = "Delegated"
+  override val `type`: String = "Delegated"
 
-  override def owner: Option[Username] = Some(user)
+  override val owner: Option[Username] = Some(user)
 }
 
 object SortOrder {
-  private val DEFAULT_SORT_ORDER = SortOrder.apply(1000L)
   private val defaultSortOrders = Map(
-      Role.INBOX -> SortOrder.apply(10L),
-      Role.ARCHIVE -> SortOrder.apply(20L),
-      Role.DRAFTS -> SortOrder.apply(30L),
-      Role.OUTBOX -> SortOrder.apply(40L),
-      Role.SENT -> SortOrder.apply(50L),
-      Role.TRASH -> SortOrder.apply(60L),
-      Role.SPAM -> SortOrder.apply(70L),
-      Role.TEMPLATES -> SortOrder.apply(80L),
-      Role.RESTORED_MESSAGES -> SortOrder.apply(90L))
-    .withDefaultValue(DEFAULT_SORT_ORDER)
+      Role.INBOX -> SortOrder(10L),
+      Role.ARCHIVE -> SortOrder(20L),
+      Role.DRAFTS -> SortOrder(30L),
+      Role.OUTBOX -> SortOrder(40L),
+      Role.SENT -> SortOrder(50L),
+      Role.TRASH -> SortOrder(60L),
+      Role.SPAM -> SortOrder(70L),
+      Role.TEMPLATES -> SortOrder(80L),
+      Role.RESTORED_MESSAGES -> SortOrder(90L))
+    .withDefaultValue( SortOrder(1000L))
 
-  def getSortOrder(role: Role): SortOrder = defaultSortOrders.apply(role)
+  def getSortOrder(role: Role): SortOrder = defaultSortOrders(role)
 }
 
-case class SortOrder private(sortOrder: UnsignedInt) extends AnyVal with Ordered[SortOrder] {
+case class SortOrder private(sortOrder: UnsignedInt) extends Ordered[SortOrder] {
   override def compare(that: SortOrder): Int = this.sortOrder.compare(that.sortOrder)
 }
 
@@ -104,7 +101,7 @@ case class Mailbox(id: MailboxId,
   require(id != null, "'id' is mandatory")
   require(mailboxName != null, "'mailboxName' is mandatory")
 
-  def hasRole(role: Role): Boolean = this.role.exists(_.equals(role))
+  def hasRole(role: Role): Boolean = this.role.contains(role)
 
-  def hasSystemRole: Boolean = role.exists(_.isSystemRole)
+  val hasSystemRole: Boolean = role.exists(_.isSystemRole)
 }
