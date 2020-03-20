@@ -36,7 +36,8 @@ public class Username {
     public static final int MAXIMUM_MAIL_ADDRESS_LENGTH = 255;
 
     public static Username of(String username) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(username.trim()), "username should not be null or empty");
+        Preconditions.checkArgument(username != null, "username should not be null or empty");
+        Preconditions.checkArgument(!username.trim().isEmpty(), "username should not be null or empty");
         Preconditions.checkArgument(username.length() <= MAXIMUM_MAIL_ADDRESS_LENGTH,
             "username length should not be longer than %s characters", MAXIMUM_MAIL_ADDRESS_LENGTH);
 
