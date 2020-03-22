@@ -110,7 +110,7 @@ public class SetMailboxesMethodTest {
 
         Stream<JmapResponse> actual =
             new SetMailboxesMethod(ImmutableSet.of(creatorProcessor), TIME_METRIC_FACTORY)
-                    .process(creationRequest, MethodCallId.of("methodCallId"), session);
+                    .processToStream(creationRequest, MethodCallId.of("methodCallId"), session);
 
         assertThat(actual).contains(jmapResponse);
     }
@@ -133,7 +133,7 @@ public class SetMailboxesMethodTest {
 
         Stream<JmapResponse> actual =
             new SetMailboxesMethod(ImmutableSet.of(destructorProcessor), TIME_METRIC_FACTORY)
-                    .process(destructionRequest, MethodCallId.of("methodCallId"), session);
+                    .processToStream(destructionRequest, MethodCallId.of("methodCallId"), session);
 
         assertThat(actual).contains(jmapResponse);
     }
