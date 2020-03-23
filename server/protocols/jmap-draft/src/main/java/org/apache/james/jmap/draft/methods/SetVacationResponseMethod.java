@@ -36,6 +36,7 @@ import org.apache.james.metrics.api.MetricFactory;
 import com.google.common.base.Preconditions;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class SetVacationResponseMethod implements Method {
 
@@ -101,7 +102,7 @@ public class SetVacationResponseMethod implements Method {
         if (vacationResponse.isValid()) {
             return vacationRepository.modifyVacation(accountId, vacationResponse.getPatch())
                 .then(notificationRegistry.flush(accountId))
-                .thenMany(Flux.just(JmapResponse.builder()
+                .thenMany(Mono.just(JmapResponse.builder()
                     .methodCallId(methodCallId)
                     .responseName(RESPONSE_NAME)
                     .response(SetVacationResponse.builder()
