@@ -148,7 +148,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
         } catch (NoResultException e) {
             return Mono.empty();
         } catch (PersistenceException e) {
-            return Mono.error(e);
+            return Mono.error(new MailboxException("Exception upon JPA execution", e));
         }
     }
 
