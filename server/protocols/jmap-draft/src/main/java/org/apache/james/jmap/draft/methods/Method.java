@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public interface Method {
@@ -128,12 +129,13 @@ public interface Method {
     Class<? extends JmapRequest> requestType();
 
     default Flux<JmapResponse> process(JmapRequest request, MethodCallId methodCallId, MailboxSession mailboxSession) {
-        return Flux.fromStream(processToStream(request, methodCallId, mailboxSession));
+        return Mono.fromCallable(() -> processToStream(request, methodCallId, mailboxSession))
+            .flatMapMany(Flux::fromStream)
+            .subscribeOn(Schedulers.elastic());
     }
 
     default Stream<JmapResponse> processToStream(JmapRequest request, MethodCallId methodCallId, MailboxSession mailboxSession) {
         return process(request, methodCallId, mailboxSession)
-            .subscribeOn(Schedulers.elastic())
             .toStream();
     }
 }
