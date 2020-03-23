@@ -36,14 +36,8 @@ class MailboxTest extends WordSpec with MustMatchers {
   }
 
   "namespace" should  {
-    "return personal when personal" in {
-      MailboxNamespace.personal.`type` must be("Personal")
-    }
     "return None when personal" in {
       MailboxNamespace.personal.owner.isEmpty must be(true)
-    }
-    "return delegated when delegated" in {
-      MailboxNamespace.delegated(Username.of("bob")).`type` must be("Delegated")
     }
     "return owner when delegated" in {
       val username = Username.of("bob")
@@ -63,7 +57,7 @@ class MailboxTest extends WordSpec with MustMatchers {
     "return false when None " in {
       Mailbox(
         id = TestId.of(42L),
-        mailboxName = MailboxName("Inbox"),
+        name = MailboxName("Inbox"),
         parentId = None,
         role = None,
         sortOrder = SortOrder.apply(3L),
@@ -88,7 +82,7 @@ class MailboxTest extends WordSpec with MustMatchers {
     "return false when different" in {
       Mailbox(
         id = TestId.of(42L),
-        mailboxName = MailboxName("Inbox"),
+        name = MailboxName("Inbox"),
         parentId = None,
         role = Some(Role.OUTBOX),
         sortOrder = SortOrder.apply(3L),
@@ -113,7 +107,7 @@ class MailboxTest extends WordSpec with MustMatchers {
     "return true when equals" in {
       Mailbox(
         id = TestId.of(42L),
-        mailboxName = MailboxName("Inbox"),
+        name = MailboxName("Inbox"),
         parentId = None,
         role = Some(Role.INBOX),
         sortOrder = SortOrder.apply(3L),
@@ -141,7 +135,7 @@ class MailboxTest extends WordSpec with MustMatchers {
     "return false when None" in {
       Mailbox(
         id = TestId.of(42L),
-        mailboxName = MailboxName("Inbox"),
+        name = MailboxName("Inbox"),
         parentId = None,
         role = None,
         sortOrder = SortOrder.apply(3L),
@@ -166,7 +160,7 @@ class MailboxTest extends WordSpec with MustMatchers {
     "return false when not system" in {
       Mailbox(
         id = TestId.of(42L),
-        mailboxName = MailboxName("Inbox"),
+        name = MailboxName("Inbox"),
         parentId = None,
         role = Role.from("any").asScala,
         sortOrder = SortOrder.apply(3L),
@@ -191,7 +185,7 @@ class MailboxTest extends WordSpec with MustMatchers {
     "return true when system" in {
       Mailbox(
         id = TestId.of(42L),
-        mailboxName = MailboxName("Inbox"),
+        name = MailboxName("Inbox"),
         parentId = None,
         role = Some(Role.INBOX),
         sortOrder = SortOrder.apply(3L),
