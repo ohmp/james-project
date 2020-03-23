@@ -199,7 +199,7 @@ public class SMTPServerTest {
     protected Configuration configuration;
     protected MockProtocolHandlerLoader chain;
     protected MemoryMailQueueFactory queueFactory;
-    protected MemoryMailQueueFactory.MemoryMailQueue queue;
+    protected MemoryMailQueueFactory.MemoryCacheableMailQueue queue;
     protected MemoryRecipientRewriteTable rewriteTable;
     private AliasReverseResolver aliasReverseResolver;
     protected CanSendFrom canSendFrom;
@@ -1460,7 +1460,7 @@ public class SMTPServerTest {
         String sender = "test_user_smtp@examplebis.local";
 
         usersRepository.addUser(Username.of(userName), "pwd");
-        rewriteTable.addAliasDomainMapping(MappingSource.fromDomain(Domain.of("examplebis.local")), Domain.of(LOCAL_DOMAIN));
+        rewriteTable.addDomainAliasMapping(MappingSource.fromDomain(Domain.of("examplebis.local")), Domain.of(LOCAL_DOMAIN));
 
         smtpProtocol.sendCommand("AUTH PLAIN");
         smtpProtocol.sendCommand(Base64.getEncoder().encodeToString(("\0" + userName + "\0pwd\0").getBytes(UTF_8)));

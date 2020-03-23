@@ -38,6 +38,7 @@ import org.apache.james.queue.api.DelayedPriorityMailQueueContract;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueMetricContract;
 import org.apache.james.queue.api.MailQueueMetricExtension;
+import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.PriorityManageableMailQueueContract;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
@@ -59,7 +60,7 @@ public class ActiveMQMailQueueBlobTest implements DelayedManageableMailQueueCont
     static final String BASE_DIR = "file://target/james-test";
     static final boolean USE_BLOB = true;
 
-    ActiveMQMailQueue mailQueue;
+    ActiveMQCacheableMailQueue mailQueue;
     MyFileSystem fileSystem;
 
     @BeforeEach
@@ -77,8 +78,8 @@ public class ActiveMQMailQueueBlobTest implements DelayedManageableMailQueueCont
         RawMailQueueItemDecoratorFactory mailQueueItemDecoratorFactory = new RawMailQueueItemDecoratorFactory();
         MetricFactory metricFactory = metricTestSystem.getMetricFactory();
         GaugeRegistry gaugeRegistry = metricTestSystem.getSpyGaugeRegistry();
-        String queueName = BrokerExtension.generateRandomQueueName(broker);
-        mailQueue = new ActiveMQMailQueue(connectionFactory, mailQueueItemDecoratorFactory, queueName, USE_BLOB, metricFactory, gaugeRegistry);
+        MailQueueName queueName = BrokerExtension.generateRandomQueueName(broker);
+        mailQueue = new ActiveMQCacheableMailQueue(connectionFactory, mailQueueItemDecoratorFactory, queueName, USE_BLOB, metricFactory, gaugeRegistry);
     }
 
     @AfterEach

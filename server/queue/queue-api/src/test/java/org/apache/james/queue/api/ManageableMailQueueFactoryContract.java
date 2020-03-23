@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 public interface ManageableMailQueueFactoryContract {
 
-    String NAME_1 = "name1";
+    MailQueueName NAME_1 = MailQueueName.of("name1");
 
     MailQueueFactory<ManageableMailQueue> getMailQueueFactory();
 

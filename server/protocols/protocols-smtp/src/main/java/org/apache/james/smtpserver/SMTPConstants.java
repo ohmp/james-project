@@ -19,12 +19,16 @@
 
 package org.apache.james.smtpserver;
 
+import org.apache.james.protocols.api.ProtocolSession;
+import org.apache.james.server.core.MimeMessageInputStreamSource;
+import org.apache.mailet.Mail;
+
 /**
  * Constants which are used within SMTP Session
  */
 public interface SMTPConstants {
 
-    String DATA_MIMEMESSAGE_STREAMSOURCE = "org.apache.james.core.DataCmdHandler.DATA_MIMEMESSAGE_STREAMSOURCE";
-    String MAIL = "MAIL";
+    ProtocolSession.AttachmentKey<MimeMessageInputStreamSource> DATA_MIMEMESSAGE_STREAMSOURCE = ProtocolSession.AttachmentKey.of("org.apache.james.core.DataCmdHandler.DATA_MIMEMESSAGE_STREAMSOURCE", MimeMessageInputStreamSource.class);
+    ProtocolSession.AttachmentKey<Mail> MAIL = ProtocolSession.AttachmentKey.of("MAIL", Mail.class);
 
 }

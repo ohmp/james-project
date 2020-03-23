@@ -25,12 +25,13 @@ import org.apache.james.metrics.api.GaugeRegistry;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
+import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.jms.JMSMailQueueFactory;
 
 /**
  * {@link MailQueueFactory} implementations which return
- * {@link ActiveMQMailQueue} instances
+ * {@link ActiveMQCacheableMailQueue} instances
  */
 public class ActiveMQMailQueueFactory extends JMSMailQueueFactory {
 
@@ -51,7 +52,7 @@ public class ActiveMQMailQueueFactory extends JMSMailQueueFactory {
     }
 
     @Override
-    protected ManageableMailQueue createMailQueue(String name) {
-        return new ActiveMQMailQueue(connectionFactory, mailQueueItemDecoratorFactory, name, useBlob, metricFactory, gaugeRegistry);
+    protected ManageableMailQueue createCacheableMailQueue(MailQueueName name) {
+        return new ActiveMQCacheableMailQueue(connectionFactory, mailQueueItemDecoratorFactory, name, useBlob, metricFactory, gaugeRegistry);
     }
 }

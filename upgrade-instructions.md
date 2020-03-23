@@ -29,6 +29,106 @@ Change list:
  - [New forbidden set of characters in Usernames local part](#new-forbidden-set-of-characters-in-usernames-local-part)
  - [UidValidity and maildir](#uid-validity-and-maildir)
  - [UidValidity and JPA or Cassandra](#uid-validity-and-jpa-or-cassandra)
+ - [Differentiation between domain alias and domain mapping](#differentiation-between-domain-alias-and-domain-mapping)
+ - [ProtocolSession storng typing](#protocolsession-storng-typing)
+ - [Tune Cassandra time serie tables options](#tune-cassandra-time-serie-tables-options)
+ - [LogEnabled removal](#logenabled-removal)
+
+### LogEnabled removal
+
+Date 20/03/2020
+
+SHA-1 XXX
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-3122
+
+Concerned product: Spring
+
+As Log4J 1.x is not compatible with Java 9+ runtime, we adopted Log4J2 as a logging solution for the Spring product.
+
+As a consequence, the deprecated `LogEnabled` API will be removed. We recommend extension developers to obtain their
+Logger instance using the SLF4J `LoggerFactory` class instead.
+
+### Tune Cassandra time serie tables options
+
+Date 18/03/2020
+
+SHA-1 XXX
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-3121
+
+Impacted product: Guice distributed James
+
+Our usage of Cassandra for the time series have been improved by fine tuning the compaction strategy and
+the read repair option.
+
+#### Upgrade procedure
+
+In order to unlock these improvements we advise you running the following commands on existing instalations
+
+```
+ALTER TABLE james_keyspace.deletedMailsV2 WITH compaction = { 'class' :  'TimeWindowCompactionStrategy'  };
+ALTER TABLE james_keyspace.enqueuedMailsV3 WITH  compaction = {'compaction_window_size': '1',
+                                                               'compaction_window_unit': 'HOURS',
+                                                               'class': 'org.apache.cassandra.db.compaction.TimeWindowCompaction' };
+ALTER TABLE james_keyspace.applicableFlag WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.attachmentMessageId WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.attachmentV2 WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.firstUnseen WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.mailboxCounters WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.mailboxRecents WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.messageCounter WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.messageDeleted WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.modseq WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.imapUidTable WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.messageIdTable WITH compaction = { 'class' :  'SizeTieredCompactionStrategy'  };
+ALTER TABLE james_keyspace.eventStore WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
+ALTER TABLE james_keyspace.attachmentOwners WITH bloom_filter_fp_chance = 0.01;
+ALTER TABLE james_keyspace.deletedMailsV2 WITH bloom_filter_fp_chance = 0.01;
+ALTER TABLE james_keyspace.firstUnseen WITH bloom_filter_fp_chance = 0.01;
+ALTER TABLE james_keyspace.mailboxCounters WITH bloom_filter_fp_chance = 0.01;
+ALTER TABLE james_keyspace.messageCounter WITH bloom_filter_fp_chance = 0.01;
+ALTER TABLE james_keyspace.deletedMailsV2 WITH read_repair_chance = 0.0;
+ALTER TABLE james_keyspace.enqueuedMailsV3 WITH read_repair_chance = 0.0;
+```
+
+### ProtocolSession storng typing
+
+Date 19/03/2020
+
+SHA-1 58b1d879ab
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-3119
+
+`ProtocolSession` have been reworked in order to increase type strengh
+and reduce errors.
+
+Now `setAttachment` and `getAttachment` are expecting an `AttachmentKey` as key
+and return an `Optional` instead of a `null`-able value.
+
+Moreover `setAttachment` do not allow `null` values and `removeAttachment`
+should be use now to remove elements.
+
+### Differentiation between domain alias and domain mapping
+
+Date 10/03/2020
+
+SHA-1 XXX
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-3112
+
+Concerned products: Guice products
+
+We added strong typing for Domain aliases (exposed by this 
+[endpoint](https://github.com/apache/james-project/blob/master/src/site/markdown/server/manage-webadmin.md#get-the-list-of-aliases-for-a-domain))
+to distinguish them from domain mappings (exposed by this 
+[endpoint](https://github.com/apache/james-project/blob/master/src/site/markdown/server/manage-webadmin.md#creating-address-domain-aliases)).
+
+Read [this page](https://james.apache.org/server/config-recipientrewritetable.html) to understand the difference between 
+Domain Alias and Domain Mapping.
+
+As a consequence, existing values returned by the domain alias endpoint (before this fix this is domain mapping) will be 
+considered as domain mappings and might need to be deleted and re-created.
  
 ### UidValidity and JPA or Cassandra
 
@@ -543,7 +643,7 @@ We will assume that Cassandra had been installed with a debian package. Upgrade 
 1. Update Cassandra dists in `/etc/apt/sources.list.d/cassandra.list` to match 311x repository
 
 ```
-deb http://www.apache.org/dist/cassandra/debian 311x main
+deb http://downloads.apache.org/cassandra/debian 311x main
 ```
 
 

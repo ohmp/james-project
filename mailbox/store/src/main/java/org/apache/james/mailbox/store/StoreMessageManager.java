@@ -465,6 +465,7 @@ public class StoreMessageManager implements MessageManager {
                     .addMetaData(message.metaData())
                     .build(),
                     new MailboxIdRegistrationKey(mailbox.getMailboxId()))
+                    .subscribeOn(Schedulers.elastic())
                     .block();
                 return new ComposedMessageId(mailbox.getMailboxId(), data.getMessageId(), data.getUid());
             }, MailboxPathLocker.LockType.Write);
@@ -545,8 +546,9 @@ public class StoreMessageManager implements MessageManager {
         MessageUid firstUnseen;
         switch (fetchGroup) {
         case UNSEEN_COUNT:
-            unseenCount = countUnseenMessagesInMailbox(mailboxSession);
-            messageCount = getMessageCount(mailboxSession);
+            MailboxCounters mailboxCounters = getMailboxCounters(mailboxSession);
+            unseenCount = mailboxCounters.getUnseen();
+            messageCount = mailboxCounters.getCount();
             firstUnseen = null;
             recent = recent(resetRecent, mailboxSession);
 
@@ -869,11 +871,6 @@ public class StoreMessageManager implements MessageManager {
             copiedMessages.put(data.getUid(), data);
         }
         return copiedMessages;
-    }
-
-    protected long countUnseenMessagesInMailbox(MailboxSession session) throws MailboxException {
-        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
-        return messageMapper.countUnseenMessagesInMailbox(getMailboxEntity());
     }
 
     /**

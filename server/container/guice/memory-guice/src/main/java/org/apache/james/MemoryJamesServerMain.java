@@ -47,6 +47,7 @@ import org.apache.james.modules.server.JmapTasksModule;
 import org.apache.james.modules.server.MailQueueRoutesModule;
 import org.apache.james.modules.server.MailRepositoriesRoutesModule;
 import org.apache.james.modules.server.MailboxRoutesModule;
+import org.apache.james.modules.server.MailboxesExportRoutesModule;
 import org.apache.james.modules.server.MemoryMailQueueModule;
 import org.apache.james.modules.server.RawPostDequeueDecoratorModule;
 import org.apache.james.modules.server.SieveRoutesModule;
@@ -70,6 +71,7 @@ public class MemoryJamesServerMain implements JamesServerMain {
         new DataRoutesModules(),
         new DeletedMessageVaultRoutesModule(),
         new DLPRoutesModule(),
+        new MailboxesExportRoutesModule(),
         new MailboxRoutesModule(),
         new MailQueueRoutesModule(),
         new MailRepositoriesRoutesModule(),

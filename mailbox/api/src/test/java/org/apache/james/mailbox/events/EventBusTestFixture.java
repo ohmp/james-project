@@ -19,7 +19,8 @@
 
 package org.apache.james.mailbox.events;
 
-import static org.awaitility.Awaitility.await;
+import static org.apache.james.mailbox.events.RetryBackoffConfiguration.DEFAULT_JITTER_FACTOR;
+import static org.apache.james.mailbox.events.RetryBackoffConfiguration.DEFAULT_MAX_RETRIES;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,8 +34,6 @@ import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.TestId;
-import org.awaitility.Duration;
-import org.awaitility.core.ConditionFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -116,8 +115,13 @@ public interface EventBusTestFixture {
     GroupC GROUP_C = new GroupC();
     List<Group> ALL_GROUPS = ImmutableList.of(GROUP_A, GROUP_B, GROUP_C);
 
-    ConditionFactory WAIT_CONDITION = await().timeout(Duration.FIVE_SECONDS);
-    ConditionFactory WAIT_CONDITION_LONG = await().timeout(Duration.ONE_MINUTE);
+    java.time.Duration DEFAULT_FIRST_BACKOFF = java.time.Duration.ofMillis(20);
+    //Retry backoff configuration for testing with a shorter first backoff to accommodate the shorter retry interval in tests
+    RetryBackoffConfiguration RETRY_BACKOFF_CONFIGURATION = RetryBackoffConfiguration.builder()
+        .maxRetries(DEFAULT_MAX_RETRIES)
+        .firstBackoff(DEFAULT_FIRST_BACKOFF)
+        .jitterFactor(DEFAULT_JITTER_FACTOR)
+        .build();
 
     static MailboxListener newListener() {
         MailboxListener listener = mock(MailboxListener.class);

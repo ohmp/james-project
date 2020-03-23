@@ -29,7 +29,6 @@ import static org.apache.james.queue.api.MailQueue.QUEUE_SIZE_METRIC_NAME_PREFIX
 import java.time.Clock;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -114,31 +113,13 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
 
         private void registerGaugeFor(RabbitMQMailQueue rabbitMQMailQueue) {
             if (configuration.isSizeMetricsEnabled()) {
-                this.gaugeRegistry.register(QUEUE_SIZE_METRIC_NAME_PREFIX + rabbitMQMailQueue.getName(), rabbitMQMailQueue::getSize);
+                this.gaugeRegistry.register(QUEUE_SIZE_METRIC_NAME_PREFIX + rabbitMQMailQueue.getName().asString(), rabbitMQMailQueue::getSize);
             }
-        }
-    }
-
-    /**
-     * RabbitMQMailQueue should have a single instance in a given JVM for a given MailQueueName.
-     * This class helps at keeping track of previously instantiated MailQueues.
-     */
-    private class RabbitMQMailQueueObjectPool {
-
-        private final ConcurrentHashMap<MailQueueName, RabbitMQMailQueue> instantiatedQueues;
-
-        RabbitMQMailQueueObjectPool() {
-            this.instantiatedQueues = new ConcurrentHashMap<>();
-        }
-
-        RabbitMQMailQueue retrieveInstanceFor(MailQueueName name) {
-            return instantiatedQueues.computeIfAbsent(name, privateFactory::create);
         }
     }
 
     private final RabbitMQMailQueueManagement mqManagementApi;
     private final PrivateFactory privateFactory;
-    private final RabbitMQMailQueueObjectPool mailQueueObjectPool;
     private final Sender sender;
 
     @VisibleForTesting
@@ -149,25 +130,25 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
         this.sender = sender;
         this.mqManagementApi = mqManagementApi;
         this.privateFactory = privateFactory;
-        this.mailQueueObjectPool = new RabbitMQMailQueueObjectPool();
     }
 
     @Override
-    public Optional<RabbitMQMailQueue> getQueue(String name) {
-        return getQueueFromRabbitServer(MailQueueName.fromString(name));
+    public Optional<RabbitMQMailQueue> getQueue(org.apache.james.queue.api.MailQueueName name) {
+        return getQueueFromRabbitServer(MailQueueName.fromString(name.asString()));
     }
 
     @Override
-    public RabbitMQMailQueue createQueue(String name) {
-        MailQueueName mailQueueName = MailQueueName.fromString(name);
+    public RabbitMQMailQueue createQueue(org.apache.james.queue.api.MailQueueName name) {
+        MailQueueName mailQueueName = MailQueueName.fromString(name.asString());
         return getQueueFromRabbitServer(mailQueueName)
             .orElseGet(() -> createQueueIntoRabbitServer(mailQueueName));
     }
 
     @Override
-    public Set<RabbitMQMailQueue> listCreatedMailQueues() {
+    public Set<org.apache.james.queue.api.MailQueueName> listCreatedMailQueues() {
         return mqManagementApi.listCreatedMailQueueNames()
-            .map(mailQueueObjectPool::retrieveInstanceFor)
+            .map(MailQueueName::asString)
+            .map(org.apache.james.queue.api.MailQueueName::of)
             .collect(ImmutableSet.toImmutableSet());
     }
 
@@ -188,13 +169,13 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
                 .routingKey(EMPTY_ROUTING_KEY)))
             .then()
             .block();
-        return mailQueueObjectPool.retrieveInstanceFor(mailQueueName);
+        return privateFactory.create(mailQueueName);
     }
 
     private Optional<RabbitMQMailQueue> getQueueFromRabbitServer(MailQueueName name) {
         return mqManagementApi.listCreatedMailQueueNames()
             .filter(name::equals)
-            .map(mailQueueObjectPool::retrieveInstanceFor)
+            .map(privateFactory::create)
             .findFirst();
     }
 }

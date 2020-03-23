@@ -19,16 +19,19 @@
 
 package org.apache.james.webadmin.service;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueue;
+import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.apache.james.util.OptionalUtils;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
@@ -37,7 +40,7 @@ import com.google.common.primitives.Booleans;
 public class DeleteMailsFromMailQueueTask implements Task {
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private final String mailQueueName;
+        private final MailQueueName mailQueueName;
         private final long remainingCount;
         private final long initialCount;
 
@@ -46,21 +49,21 @@ public class DeleteMailsFromMailQueueTask implements Task {
         private final Optional<String> recipient;
         private final Instant timestamp;
 
-        public AdditionalInformation(String mailQueueName, long initialCount, long remainingCount,
-                                     Optional<MailAddress> maybeSender, Optional<String> maybeName,
-                                     Optional<MailAddress> maybeRecipient, Instant timestamp) {
+        public AdditionalInformation(MailQueueName mailQueueName, long initialCount, long remainingCount,
+                                     Optional<MailAddress> optionalSender, Optional<String> optionalName,
+                                     Optional<MailAddress> optionalRecipient, Instant timestamp) {
             this.mailQueueName = mailQueueName;
             this.initialCount = initialCount;
             this.remainingCount = remainingCount;
 
-            sender = maybeSender.map(MailAddress::asString);
-            name = maybeName;
-            recipient = maybeRecipient.map(MailAddress::asString);
+            sender = optionalSender.map(MailAddress::asString);
+            name = optionalName;
+            recipient = optionalRecipient.map(MailAddress::asString);
             this.timestamp = timestamp;
         }
 
         public String getMailQueueName() {
-            return mailQueueName;
+            return mailQueueName.asString();
         }
 
         public long getRemainingCount() {
@@ -95,38 +98,66 @@ public class DeleteMailsFromMailQueueTask implements Task {
         }
     }
 
+    @FunctionalInterface
+    public interface MailQueueFactory {
+        ManageableMailQueue create(MailQueueName mailQueueName) throws MailQueue.MailQueueException;
+    }
+
     public static final TaskType TYPE = TaskType.of("delete-mails-from-mail-queue");
 
-    private final ManageableMailQueue queue;
-    private final Optional<MailAddress> maybeSender;
-    private final Optional<String> maybeName;
-    private final Optional<MailAddress> maybeRecipient;
+    private final Optional<MailAddress> optionalSender;
+    private final Optional<String> optionalName;
+    private final Optional<MailAddress> optionalRecipient;
+    private final MailQueueFactory factory;
+    private final MailQueueName queueName;
+    private Optional<Long> initialCount;
+    private Optional<ManageableMailQueue> queue;
+    private Optional<TaskExecutionDetails.AdditionalInformation> lastAdditionalInformation;
 
-    private final long initialCount;
-
-    public DeleteMailsFromMailQueueTask(ManageableMailQueue queue, Optional<MailAddress> maybeSender,
-                                        Optional<String> maybeName, Optional<MailAddress> maybeRecipient) {
+    public DeleteMailsFromMailQueueTask(MailQueueName queueName, MailQueueFactory factory,
+                                        Optional<MailAddress> optionalSender,
+                                        Optional<String> optionalName,
+                                        Optional<MailAddress> optionalRecipient) {
+        this.factory = factory;
+        this.queueName = queueName;
         Preconditions.checkArgument(
-            Booleans.countTrue(maybeSender.isPresent(), maybeName.isPresent(), maybeRecipient.isPresent()) == 1,
+            Booleans.countTrue(optionalSender.isPresent(), optionalName.isPresent(), optionalRecipient.isPresent()) == 1,
             "You should provide one and only one of the query parameters 'sender', 'name' or 'recipient'.");
 
-        this.queue = queue;
-        this.maybeSender = maybeSender;
-        this.maybeName = maybeName;
-        this.maybeRecipient = maybeRecipient;
-        this.initialCount = getRemainingSize();
+        this.optionalSender = optionalSender;
+        this.optionalName = optionalName;
+        this.optionalRecipient = optionalRecipient;
+        this.initialCount = Optional.empty();
+        this.queue = Optional.empty();
+        this.lastAdditionalInformation = Optional.empty();
+
     }
 
     @Override
     public Result run() {
-        maybeSender.ifPresent(Throwing.consumer(
-            (MailAddress sender) -> queue.remove(ManageableMailQueue.Type.Sender, sender.asString())));
-        maybeName.ifPresent(Throwing.consumer(
-            (String name) -> queue.remove(ManageableMailQueue.Type.Name, name)));
-        maybeRecipient.ifPresent(Throwing.consumer(
-            (MailAddress recipient) -> queue.remove(ManageableMailQueue.Type.Recipient, recipient.asString())));
+        try (ManageableMailQueue queue = factory.create(queueName)) {
+            this.initialCount = Optional.of(getRemainingSize(queue));
+            this.queue = Optional.of(queue);
+            optionalSender.ifPresent(Throwing.consumer(
+                (MailAddress sender) -> queue.remove(ManageableMailQueue.Type.Sender, sender.asString())));
+            optionalName.ifPresent(Throwing.consumer(
+                (String name) -> queue.remove(ManageableMailQueue.Type.Name, name)));
+            optionalRecipient.ifPresent(Throwing.consumer(
+                (MailAddress recipient) -> queue.remove(ManageableMailQueue.Type.Recipient, recipient.asString())));
 
-        return Result.COMPLETED;
+            this.lastAdditionalInformation = details();
+
+            return Result.COMPLETED;
+        } catch (IOException | MailQueue.MailQueueException e) {
+            LOGGER.error("Delete mails from MailQueue got an exception", e);
+            return Result.PARTIAL;
+        } finally {
+            this.queue = Optional.empty();
+        }
+    }
+
+    public MailQueueName getQueueName() {
+        return queueName;
     }
 
     @Override
@@ -134,31 +165,31 @@ public class DeleteMailsFromMailQueueTask implements Task {
         return TYPE;
     }
 
-    ManageableMailQueue getQueue() {
-        return queue;
-    }
-
     Optional<String> getMaybeName() {
-        return maybeName;
+        return optionalName;
     }
 
     Optional<MailAddress> getMaybeRecipient() {
-        return maybeRecipient;
+        return optionalRecipient;
     }
 
     Optional<MailAddress> getMaybeSender() {
-        return maybeSender;
+        return optionalSender;
     }
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(queue.getName(),
-            initialCount,
-            getRemainingSize(), maybeSender,
-            maybeName, maybeRecipient, Clock.systemUTC().instant()));
+        return OptionalUtils.orSuppliers(
+            () -> this.lastAdditionalInformation,
+            () -> this.queue.map(queue ->
+                new AdditionalInformation(
+                    queueName,
+                    initialCount.get(),
+                    getRemainingSize(queue), optionalSender,
+                    optionalName, optionalRecipient, Clock.systemUTC().instant())));
     }
 
-    public long getRemainingSize() {
+    public long getRemainingSize(ManageableMailQueue queue) {
         try {
             return queue.getSize();
         } catch (MailQueue.MailQueueException e) {

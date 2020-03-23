@@ -33,7 +33,12 @@ public class InVMEventBusTest implements KeyContract.SingleEventBusKeyContract, 
     void setUp() {
         deadLetters = new MemoryEventDeadLetters();
         eventBus = new InVMEventBus(
-            new InVmEventDelivery(new RecordingMetricFactory()), RetryBackoffConfiguration.DEFAULT, deadLetters);
+            new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, deadLetters);
+    }
+
+    @Override
+    public EnvironmentSpeedProfile getSpeedProfile() {
+        return EnvironmentSpeedProfile.FAST;
     }
 
     @Override

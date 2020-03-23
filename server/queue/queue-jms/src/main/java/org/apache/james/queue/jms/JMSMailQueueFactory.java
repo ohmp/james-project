@@ -25,6 +25,7 @@ import org.apache.james.metrics.api.GaugeRegistry;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
+import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.library.AbstractMailQueueFactory;
 
@@ -48,8 +49,8 @@ public class JMSMailQueueFactory extends AbstractMailQueueFactory<ManageableMail
     }
 
     @Override
-    protected ManageableMailQueue createMailQueue(String name) {
-        return new JMSMailQueue(connectionFactory, mailQueueItemDecoratorFactory, name, metricFactory, gaugeRegistry);
+    protected ManageableMailQueue createCacheableMailQueue(MailQueueName name) {
+        return new JMSCacheableMailQueue(connectionFactory, mailQueueItemDecoratorFactory, name, metricFactory, gaugeRegistry);
     }
-    
+
 }

@@ -19,27 +19,33 @@
 
 package org.apache.james.webadmin.service;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.james.queue.api.MailQueue;
+import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class ClearMailQueueTask implements Task {
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private final String mailQueueName;
+
+        private final MailQueueName mailQueueName;
         private final long initialCount;
         private final long remainingCount;
         private final Instant timestamp;
 
-        public AdditionalInformation(String mailQueueName, long initialCount, long remainingCount, Instant timestamp) {
+        public AdditionalInformation(MailQueueName mailQueueName, long initialCount, long remainingCount, Instant timestamp) {
             this.mailQueueName = mailQueueName;
             this.initialCount = initialCount;
             this.remainingCount = remainingCount;
@@ -47,7 +53,7 @@ public class ClearMailQueueTask implements Task {
         }
 
         public String getMailQueueName() {
-            return mailQueueName;
+            return mailQueueName.asString();
         }
 
         public long getInitialCount() {
@@ -62,32 +68,50 @@ public class ClearMailQueueTask implements Task {
         public Instant timestamp() {
             return timestamp;
         }
+
     }
 
     public static class UnknownSerializedQueue extends RuntimeException {
+
         public UnknownSerializedQueue(String queueName) {
             super("Unable to retrieve '" + queueName + "' queue");
         }
     }
 
+    @FunctionalInterface
+    public interface MailQueueFactory {
+        ManageableMailQueue create(MailQueueName mailQueueName) throws MailQueue.MailQueueException;
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ClearMailQueueTask.class);
     public static final TaskType TYPE = TaskType.of("clear-mail-queue");
 
-    private final ManageableMailQueue queue;
-    private final long initialCount;
+    private final MailQueueName queueName;
+    private final ClearMailQueueTask.MailQueueFactory factory;
+    private Optional<Long> initialCount;
+    private Optional<ManageableMailQueue> queue;
+    private Optional<TaskExecutionDetails.AdditionalInformation> lastAdditionalInformation;
 
-    public ClearMailQueueTask(ManageableMailQueue queue) {
-        this.queue = queue;
-        initialCount = getRemainingSize();
+    public ClearMailQueueTask(MailQueueName queueName, ClearMailQueueTask.MailQueueFactory factory) {
+        this.queueName = queueName;
+        this.factory = factory;
+        this.initialCount = Optional.empty();
+        this.queue = Optional.empty();
+        this.lastAdditionalInformation = Optional.empty();
     }
 
     @Override
     public Result run() {
-        try {
+        try (ManageableMailQueue queue = factory.create(queueName)) {
+            this.initialCount = Optional.of(getRemainingSize(queue));
+            this.queue = Optional.of(queue);
             queue.clear();
-        } catch (MailQueue.MailQueueException e) {
+            this.lastAdditionalInformation = details();
+        } catch (MailQueue.MailQueueException | IOException e) {
             LOGGER.error("Clear MailQueue got an exception", e);
             return Result.PARTIAL;
+        } finally {
+            this.queue = Optional.empty();
         }
 
         return Result.COMPLETED;
@@ -100,16 +124,24 @@ public class ClearMailQueueTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(queue.getName(), initialCount, getRemainingSize(), Clock.systemUTC().instant()));
+        return
+            OptionalUtils.orSuppliers(
+                () -> lastAdditionalInformation,
+                () -> queue.map(q -> new AdditionalInformation(queueName, initialCount.get(), getRemainingSize(q), Clock.systemUTC().instant())));
     }
 
-    ManageableMailQueue getQueue() {
-        return queue;
+    MailQueueName getQueueName() {
+        return queueName;
     }
 
-    private long getRemainingSize() {
+    @VisibleForTesting
+    Optional<Long> initialCount() {
+        return initialCount;
+    }
+
+    private long getRemainingSize(ManageableMailQueue mailQueue) {
         try {
-            return queue.getSize();
+            return mailQueue.getSize();
         } catch (MailQueue.MailQueueException e) {
             throw new RuntimeException(e);
         }

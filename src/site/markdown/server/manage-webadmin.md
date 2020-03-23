@@ -40,7 +40,7 @@ Finally, please note that in case of a malformed URL the 400 bad request respons
  - [Cassandra Schema upgrades](#Cassandra_Schema_upgrades)
  - [Correcting ghost mailbox](#Correcting_ghost_mailbox)
  - [Creating address aliases](#Creating_address_aliases)
- - [Creating address domain aliases](#Creating_address_domain_aliases)
+ - [Creating domain mappings](#Creating_domain_mappings)
  - [Creating address forwards](#Creating_address_forwards)
  - [Creating address group](#Creating_address_group)
  - [Creating regex mapping](#Creating_regex_mapping)
@@ -299,7 +299,7 @@ Response codes:
    - [Create a user](#Create_a_user)
    - [Testing a user existence](#Testing_a_user_existence)
    - [Updating a user password](#Updating_a_user_password)
-   - [Deleting a domain](#Deleting_a_user)
+   - [Deleting a user](#Deleting_a_user)
    - [Retrieving the user list](#Retrieving_the_user_list)
    - [Retrieving the list of allowed `From` headers for a given user](Retrieving_the_list_of_allowed_From_headers_for_a_given_user)
 
@@ -701,6 +701,7 @@ Warning: During the re-indexing, the result of search operations might be altere
  - [Testing existence of a mailbox](#Testing_existence_of_a_mailbox)
  - [Listing user mailboxes](#Listing_user_mailboxes)
  - [Deleting user mailboxes](#Deleting_user_mailboxes)
+ - [Exporting user mailboxes](#Exporting_user_mailboxes)
  - [ReIndexing a user mails](#ReIndexing_a_user_mails)
  - [Recomputing User JMAP fast message view projection](#Recomputing_User_JMAP_fast_message_view_projection)
 
@@ -743,11 +744,11 @@ Response codes:
 ### Testing existence of a mailbox
 
 ```
-curl -XGET http://ip:port/users/{usernameToBeUsed}/mailboxes/{mailboxNameToBeCreated}
+curl -XGET http://ip:port/users/{usernameToBeUsed}/mailboxes/{mailboxNameToBeTested}
 ```
 
 Resource name `usernameToBeUsed` should be an existing user
-Resource name `mailboxNameToBeCreated` should not be empty
+Resource name `mailboxNameToBeTested` should not be empty
 
 Response codes:
 
@@ -786,6 +787,30 @@ Response codes:
 
  - 204: The user do not have mailboxes anymore
  - 404: The user name does not exist
+
+### Exporting user mailboxes
+
+```
+curl -XPOST http://ip:port/users/{usernameToBeUsed}/mailboxes?action=export
+```
+
+Resource name `usernameToBeUsed` should be an existing user
+
+Response codes:
+
+ - 201: Success. Corresponding task id is returned
+ - 404: The user name does not exist
+
+The scheduled task will have the following type `MailboxesExportTask` and the following `additionalInformation`:
+
+```
+{
+  "type":"MailboxesExportTask",
+  "timestamp":"2007-12-03T10:15:30Z",
+  "username": "user",
+  "stage": "STARTING"
+}
+```
 
 ### ReIndexing a user mails
  
@@ -1859,7 +1884,7 @@ Response codes:
  - 400: Alias structure or member is not valid
  - 400: The alias source exists as an user already
  - 400: Source and destination can't be the same!
- - 400: Domain in the source is not managed by the DomainList
+ - 400: Domain in the destination or source is not managed by the DomainList
 
 ### Removing an alias of an user
 
@@ -1874,7 +1899,7 @@ Response codes:
  - 204: OK
  - 400: Alias structure or member is not valid
 
-## Creating address domain aliases
+## Creating domain mappings
 
 You can use **webadmin** to define domain mappings.
 

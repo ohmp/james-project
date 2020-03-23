@@ -21,7 +21,6 @@ package org.apache.james.rrt.lib;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.apache.james.core.Domain;
@@ -43,7 +42,7 @@ public interface AliasReverseResolverContract {
 
     void addAliasMapping(Username alias, Username user) throws Exception;
 
-    void addDomainMapping(Domain alias, Domain domain) throws Exception;
+    void addDomainAlias(Domain alias, Domain domain) throws Exception;
 
     void addGroupMapping(String group, Username user) throws Exception;
 
@@ -57,17 +56,14 @@ public interface AliasReverseResolverContract {
         void to(Domain domain) throws Exception;
     }
 
-    default CanSendFromContract.RequireUserName redirectUser(Username alias) {
+    default RequireUserName redirectUser(Username alias) {
         return user -> addAliasMapping(alias, user);
     }
 
-    default CanSendFromContract.RequireDomain redirectDomain(Domain alias) {
-        return domain -> addDomainMapping(alias, domain);
+    default RequireDomain redirectDomain(Domain alias) {
+        return domain -> addDomainAlias(alias, domain);
     }
 
-    default CanSendFromContract.RequireUserName redirectGroup(String group) {
-        return user -> addGroupMapping(group, user);
-    }
     @Test
     default void listAddressesShouldContainOnlyUserAddressWhenUserHasNoAlias() throws Exception {
         assertThat(aliasReverseResolver().listAddresses(USER))
@@ -101,7 +97,7 @@ public interface AliasReverseResolverContract {
 
     @Test
     default void listAddressesShouldContainUserAddressAndAnAliasOfTheDomainUser() throws Exception {
-        Username fromUser = USER.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username fromUser = USER.withOtherDomain(OTHER_DOMAIN);
 
         redirectDomain(OTHER_DOMAIN).to(DOMAIN);
 
@@ -111,13 +107,13 @@ public interface AliasReverseResolverContract {
 
     @Test
     default void listAddressesShouldContainUserAddressAndAnAliasOfTheDomainUserFromAnotherDomain() throws Exception {
-        Username userAliasOtherDomain = USER_ALIAS.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username userAliasOtherDomain = USER_ALIAS.withOtherDomain(OTHER_DOMAIN);
 
         redirectDomain(OTHER_DOMAIN).to(DOMAIN);
         redirectUser(userAliasOtherDomain).to(USER);
 
-        Username userAliasMainDomain = USER_ALIAS.withOtherDomain(Optional.of(DOMAIN));
-        Username userOtherDomain = USER.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username userAliasMainDomain = USER_ALIAS.withOtherDomain(DOMAIN);
+        Username userOtherDomain = USER.withOtherDomain(OTHER_DOMAIN);
         assertThat(aliasReverseResolver().listAddresses(USER))
             .containsExactlyInAnyOrder(USER.asMailAddress(), userAliasOtherDomain.asMailAddress(), userAliasMainDomain.asMailAddress(), userOtherDomain.asMailAddress());
     }

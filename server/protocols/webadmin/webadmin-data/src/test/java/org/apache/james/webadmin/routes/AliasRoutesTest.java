@@ -66,6 +66,7 @@ class AliasRoutesTest {
 
     private static final Domain DOMAIN = Domain.of("b.com");
     private static final Domain ALIAS_DOMAIN = Domain.of("alias");
+    private static final Domain DOMAIN_MAPPING = Domain.of("mapping");
     public static final String BOB = "bob@" + DOMAIN.name();
     public static final String BOB_WITH_SLASH = "bob/@" + DOMAIN.name();
     public static final String BOB_WITH_ENCODED_SLASH = "bob%2F@" + DOMAIN.name();
@@ -113,6 +114,7 @@ class AliasRoutesTest {
                 .autoDetectIp(false));
             domainList.addDomain(DOMAIN);
             domainList.addDomain(ALIAS_DOMAIN);
+            domainList.addDomain(DOMAIN_MAPPING);
             MappingSourceModule module = new MappingSourceModule();
             memoryRecipientRewriteTable.setDomainList(domainList);
 
@@ -123,7 +125,7 @@ class AliasRoutesTest {
             usersRepository.addUser(Username.of(BOB_WITH_SLASH), BOB_WITH_SLASH_PASSWORD);
             usersRepository.addUser(Username.of(ALICE), ALICE_PASSWORD);
 
-            createServer(new AliasRoutes(memoryRecipientRewriteTable, usersRepository, new JsonTransformer(module)));
+            createServer(new AliasRoutes(memoryRecipientRewriteTable, usersRepository, domainList, new JsonTransformer(module)));
         }
 
         @Test
@@ -406,7 +408,8 @@ class AliasRoutesTest {
             super.setUp();
             memoryRecipientRewriteTable.addErrorMapping(MappingSource.fromUser("error", DOMAIN), "disabled");
             memoryRecipientRewriteTable.addRegexMapping(MappingSource.fromUser("regex", DOMAIN), ".*@b\\.com");
-            memoryRecipientRewriteTable.addAliasDomainMapping(MappingSource.fromDomain(ALIAS_DOMAIN), DOMAIN);
+            memoryRecipientRewriteTable.addDomainAliasMapping(MappingSource.fromDomain(ALIAS_DOMAIN), DOMAIN);
+            memoryRecipientRewriteTable.addDomainMapping(MappingSource.fromDomain(DOMAIN_MAPPING), DOMAIN);
         }
 
     }
@@ -424,13 +427,13 @@ class AliasRoutesTest {
             domainList = mock(DomainList.class);
             memoryRecipientRewriteTable.setDomainList(domainList);
             Mockito.when(domainList.containsDomain(any())).thenReturn(true);
-            createServer(new AliasRoutes(memoryRecipientRewriteTable, userRepository, new JsonTransformer()));
+            createServer(new AliasRoutes(memoryRecipientRewriteTable, userRepository, domainList, new JsonTransformer()));
         }
 
         @Test
         void putAliasSourceContainingNotManagedDomainShouldReturnBadRequest() throws Exception {
             Mockito.when(domainList.containsDomain(any()))
-                .thenReturn(false);
+                .thenAnswer(invocation -> invocation.getArgument(0, Domain.class).equals(DOMAIN));
 
             Map<String, Object> errors = when()
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + "bob@not-managed-domain.tld")
@@ -446,6 +449,27 @@ class AliasRoutesTest {
                 .containsEntry("statusCode", HttpStatus.BAD_REQUEST_400)
                 .containsEntry("type", "InvalidArgument")
                 .containsEntry("message", "Source domain 'not-managed-domain.tld' is not managed by the domainList");
+        }
+
+        @Test
+        void putAliasDestinationContainingNotManagedDomainShouldReturnBadRequest() throws Exception {
+            Mockito.when(domainList.containsDomain(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0, Domain.class).equals(DOMAIN));
+
+            Map<String, Object> errors = when()
+                .put("bob@not-managed-domain.tld" + SEPARATOR + "sources" + SEPARATOR + BOB)
+            .then()
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .contentType(ContentType.JSON)
+                .extract()
+                .body()
+                .jsonPath()
+                .getMap(".");
+
+            assertThat(errors)
+                .containsEntry("statusCode", HttpStatus.BAD_REQUEST_400)
+                .containsEntry("type", "InvalidArgument")
+                .containsEntry("message", "Domain in the destination is not managed by the DomainList");
         }
 
         @Test

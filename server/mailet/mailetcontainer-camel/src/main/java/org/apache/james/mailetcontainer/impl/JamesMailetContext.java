@@ -19,6 +19,7 @@
 
 package org.apache.james.mailetcontainer.impl;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.mail.Address;
 import javax.mail.Message;
@@ -37,7 +39,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.ParseException;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -50,12 +51,11 @@ import org.apache.james.dnsservice.library.MXHostAddressIterator;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.lifecycle.api.Configurable;
+import org.apache.james.lifecycle.api.Disposable;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.server.core.MailImpl;
-import org.apache.james.user.api.UsersRepository;
-import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.mailet.LookupException;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-public class JamesMailetContext implements MailetContext, Configurable {
+public class JamesMailetContext implements MailetContext, Configurable, Disposable {
     private static final Logger LOGGER = LoggerFactory.getLogger(JamesMailetContext.class);
 
     /**
@@ -75,18 +75,28 @@ public class JamesMailetContext implements MailetContext, Configurable {
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     protected final DNSService dns;
-    private final UsersRepository localusers;
     private final DomainList domains;
+    private final LocalResources localResources;
     private final MailQueueFactory<?> mailQueueFactory;
     private MailQueue rootMailQueue;
     private MailAddress postmaster;
 
     @Inject
-    public JamesMailetContext(DNSService dns, UsersRepository localusers, DomainList domains, MailQueueFactory<?> mailQueueFactory) {
+    public JamesMailetContext(DNSService dns, DomainList domains, LocalResources localResources, MailQueueFactory<?> mailQueueFactory) {
         this.dns = dns;
-        this.localusers = localusers;
         this.domains = domains;
+        this.localResources = localResources;
         this.mailQueueFactory = mailQueueFactory;
+    }
+
+    @PreDestroy
+    @Override
+    public void dispose() {
+        try {
+            rootMailQueue.close();
+        } catch (IOException e) {
+            LOGGER.debug("error closing queue", e);
+        }
     }
 
     @Override
@@ -221,39 +231,12 @@ public class JamesMailetContext implements MailetContext, Configurable {
 
     @Override
     public boolean isLocalUser(String name) {
-        if (name == null) {
-            return false;
-        }
-        try {
-            if (!name.contains("@")) {
-                try {
-                    return isLocalEmail(new MailAddress(name.toLowerCase(Locale.US), domains.getDefaultDomain().asString()));
-                } catch (DomainListException e) {
-                    LOGGER.error("Unable to access DomainList", e);
-                    return false;
-                }
-            } else {
-                return isLocalEmail(new MailAddress(name.toLowerCase(Locale.US)));
-            }
-        } catch (ParseException e) {
-            LOGGER.info("Error checking isLocalUser for user {}", name, e);
-            return false;
-        }
+        return localResources.isLocalUser(name);
     }
 
     @Override
     public boolean isLocalEmail(MailAddress mailAddress) {
-        if (mailAddress != null) {
-            if (!isLocalServer(mailAddress.getDomain())) {
-                return false;
-            }
-            try {
-                return localusers.contains(localusers.getUser(mailAddress));
-            } catch (UsersRepositoryException e) {
-                LOGGER.error("Unable to access UsersRepository", e);
-            }
-        }
-        return false;
+        return localResources.isLocalEmail(mailAddress);
     }
 
     @Override
@@ -304,12 +287,7 @@ public class JamesMailetContext implements MailetContext, Configurable {
 
     @Override
     public boolean isLocalServer(Domain domain) {
-        try {
-            return domains.containsDomain(domain);
-        } catch (DomainListException e) {
-            LOGGER.error("Unable to retrieve domains", e);
-            return false;
-        }
+        return localResources.isLocalServer(domain);
     }
 
     @Override
@@ -425,24 +403,6 @@ public class JamesMailetContext implements MailetContext, Configurable {
         } finally {
             LifecycleUtil.dispose(mail);
         }
-    }
-
-    /**
-     * <p>
-     * This method has been moved to LocalDelivery (the only client of the
-     * method). Now we can safely remove it from the Mailet API and from this
-     * implementation of MailetContext.
-     * </p>
-     * <p>
-     * The local field localDeliveryMailet will be removed when we remove the
-     * storeMail method.
-     * </p>
-     *
-     * @deprecated since 2.2.0 look at the LocalDelivery code to find out how to
-     *             do the local delivery.
-     */
-    public void storeMail(MailAddress sender, MailAddress recipient, MimeMessage msg) {
-        throw new UnsupportedOperationException("Was removed");
     }
 
     @Override

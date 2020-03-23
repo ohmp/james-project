@@ -20,13 +20,11 @@ package org.apache.james.rrt.lib;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.Username;
 import org.apache.james.rrt.api.CanSendFrom;
-
 import org.junit.jupiter.api.Test;
 
 import com.github.fge.lambdas.Throwing;
@@ -43,7 +41,7 @@ public interface CanSendFromContract {
 
     void addAliasMapping(Username alias, Username user) throws Exception;
 
-    void addDomainMapping(Domain alias, Domain domain) throws Exception;
+    void addDomainMapping(Domain alias, Domain domain, Mapping.Type type) throws Exception;
 
     void addGroupMapping(String group, Username user) throws Exception;
 
@@ -54,7 +52,20 @@ public interface CanSendFromContract {
 
     @FunctionalInterface
     interface RequireDomain {
-        void to(Domain domain) throws Exception;
+        RequireType to(Domain domain) throws Exception;
+    }
+
+    @FunctionalInterface
+    interface RequireType {
+        void withType(Mapping.Type mappingType) throws Exception;
+
+        default void asAlias() throws Exception {
+            withType(Mapping.Type.DomainAlias);
+        };
+
+        default void asMapping() throws Exception {
+            withType(Mapping.Type.Domain);
+        }
     }
 
     default RequireUserName redirectUser(Username alias) {
@@ -62,7 +73,7 @@ public interface CanSendFromContract {
     }
 
     default RequireDomain redirectDomain(Domain alias) {
-        return domain -> addDomainMapping(alias, domain);
+        return domain -> type -> addDomainMapping(alias, domain, type);
     }
 
     default RequireUserName redirectGroup(String group) {
@@ -134,11 +145,20 @@ public interface CanSendFromContract {
 
     @Test
     default void userCanSendFromShouldBeTrueWhenSenderIsAnAliasOfTheDomainUser() throws Exception {
-        Username fromUser = USER.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username fromUser = USER.withOtherDomain(OTHER_DOMAIN);
 
-        redirectDomain(OTHER_DOMAIN).to(DOMAIN);
+        redirectDomain(OTHER_DOMAIN).to(DOMAIN).asAlias();
 
         assertThat(canSendFrom().userCanSendFrom(USER, fromUser)).isTrue();
+    }
+
+    @Test
+    default void userCanSendFromShouldBeFalseWhenDomainMapping() throws Exception {
+        Username fromUser = USER.withOtherDomain(OTHER_DOMAIN);
+
+        redirectDomain(OTHER_DOMAIN).to(DOMAIN).asMapping();
+
+        assertThat(canSendFrom().userCanSendFrom(USER, fromUser)).isFalse();
     }
 
     @Test
@@ -184,9 +204,9 @@ public interface CanSendFromContract {
 
     @Test
     default void allValidFromAddressesShouldContainUserAddressAndAnAliasOfTheDomainUser() throws Exception {
-        Username fromUser = USER.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username fromUser = USER.withOtherDomain(OTHER_DOMAIN);
 
-        redirectDomain(OTHER_DOMAIN).to(DOMAIN);
+        redirectDomain(OTHER_DOMAIN).to(DOMAIN).asAlias();
 
         assertThat(canSendFrom().allValidFromAddressesForUser(USER))
             .containsExactlyInAnyOrder(USER.asMailAddress(), fromUser.asMailAddress());
@@ -194,13 +214,13 @@ public interface CanSendFromContract {
 
     @Test
     default void allValidFromAddressesShouldContainUserAddressAndAnAliasOfTheDomainUserFromAnotherDomain() throws Exception {
-        Username userAliasOtherDomain = USER_ALIAS.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username userAliasOtherDomain = USER_ALIAS.withOtherDomain(OTHER_DOMAIN);
 
-        redirectDomain(OTHER_DOMAIN).to(DOMAIN);
+        redirectDomain(OTHER_DOMAIN).to(DOMAIN).asAlias();
         redirectUser(userAliasOtherDomain).to(USER);
 
-        Username userAliasMainDomain = USER_ALIAS.withOtherDomain(Optional.of(DOMAIN));
-        Username userOtherDomain = USER.withOtherDomain(Optional.of(OTHER_DOMAIN));
+        Username userAliasMainDomain = USER_ALIAS.withOtherDomain(DOMAIN);
+        Username userOtherDomain = USER.withOtherDomain(OTHER_DOMAIN);
         assertThat(canSendFrom().allValidFromAddressesForUser(USER))
             .containsExactlyInAnyOrder(USER.asMailAddress(), userAliasOtherDomain.asMailAddress(), userAliasMainDomain.asMailAddress(), userOtherDomain.asMailAddress());
     }

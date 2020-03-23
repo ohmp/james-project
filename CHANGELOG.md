@@ -15,6 +15,7 @@ of tasks being currently executed.
 - JAMES-3062 EventDeadLettersHealthCheck
 - JAMES-3058 WebAdmin offline task to correct mailbox inconsistencies on top of Cassandra products
 - JAMES-3105 WebAdmin offline task to recompute mailbox counters on top of Cassandra products
+- JAMES-3072 Webadmin endpoint to export mailbox backup
 - JAMES-3117 Add PeriodicalHealthChecks for periodical calling all health checks
 
 ### Changed
@@ -31,6 +32,7 @@ of tasks being currently executed.
 - In order to fasten JMAP-draft message retrieval upon calls on properties expected to be fast to fetch, we now compute the preview and hasAttachment properties asynchronously and persist them in Cassandra to improve performance. See JAMES-2919.
 - It is now forbidden to create new Usernames with the following set of characters in its local part : `"(),:; <>@\[]`, as we prefer it to stay simple to handle. However, the read of Usernames already existing with some of those characters is still allowed, to not introduce any breaking change. See JAMES-2950.
 - Linshare blob export configuration and mechanism change. See JAMES-3040.
+- Differentiation between domain alias and domain mapping. Read upgrade instructions.
 
 ### Fixed
 - JAMES-2828 & JAMES-2929 bugs affecting JDBCMailRepository usage with PostgresSQL thanks to Jörg Thomas & Sergey B
@@ -64,7 +66,8 @@ of tasks being currently executed.
 - JAMES-3016 RemoteDelivery now doesn't enable `allow8bitmime` property by default. 
 This parameter could cause body content alteration leading to DKIM invalid DKIM signatures to be positioned. 
 Thanks to Sergey B. for the report. 
-More details about the property is at [java mail doc](https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html) 
+More details about the property is at [java mail doc](https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html)
+ - JAMES-3122 LogEnabled API in Spring product had been removed for Log4J2 adoption for Java 9+ runtime compatibility. 
  
 ### Third party softwares
  - The distributed James server product (relying on Guice, Cassandra, ElasticSearch, RabbitMQ and optionally Swift) now needs at least RabbitMQ 3.8.

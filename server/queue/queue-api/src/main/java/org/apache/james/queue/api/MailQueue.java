@@ -19,6 +19,7 @@
 
 package org.apache.james.queue.api;
 
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -58,7 +59,7 @@ import org.threeten.extra.Temporals;
  * </ul>
  * </p>
  */
-public interface MailQueue {
+public interface MailQueue extends Closeable {
 
     String ENQUEUED_METRIC_NAME_PREFIX = "enqueuedMail:";
     String DEQUEUED_METRIC_NAME_PREFIX = "dequeuedMail:";
@@ -70,7 +71,7 @@ public interface MailQueue {
      */
     int NO_DELAY = -1;
 
-    String getName();
+    MailQueueName getName();
 
     /**
      * Enqueue the Mail to the queue. The given delay and unit are used to
