@@ -56,8 +56,7 @@ public class QueryParameterAccessTokenAuthenticationStrategy implements Authenti
             .filter(tokenManager::isValid)
             .map(AttachmentAccessToken::getUsername)
             .map(Username::of)
-            .map(mailboxManager::createSystemSession)
-            .switchIfEmpty(Mono.error(new UnauthorizedException()));
+            .map(mailboxManager::createSystemSession);
     }
 
     private Optional<AttachmentAccessToken> getAccessToken(HttpServerRequest httpRequest) {
