@@ -25,17 +25,9 @@ import org.apache.james.jmap.model.UnsignedInt
 import org.apache.james.mailbox.model.QuotaRoot
 
 object Quotas {
-  sealed trait Type {
-    def asString: String
-  }
-
-  case object Storage extends Type {
-    override val asString: String = "Storage"
-  }
-
-  case object Message extends Type {
-    override val asString: String = "Message"
-  }
+  sealed trait Type
+  case object Storage extends Type
+  case object Message extends Type
 
   def from(quotas: Map[QuotaId, Quota]) = new Quotas(quotas)
 
