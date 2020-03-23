@@ -45,19 +45,14 @@ object MailboxNamespace {
 }
 
 sealed trait MailboxNamespace {
-  def `type`: String
   def owner: Option[Username]
 }
 
 case object PersonalNamespace extends MailboxNamespace {
-  override def `type`: String = "Personal"
-
   override def owner: Option[Username] = None
 }
 
 case class DelegatedNamespace(user: Username) extends MailboxNamespace {
-  override val `type`: String = "Delegated"
-
   override val owner: Option[Username] = Some(user)
 }
 
@@ -82,7 +77,7 @@ case class SortOrder private(sortOrder: UnsignedInt) extends Ordered[SortOrder] 
 }
 
 case class Mailbox(id: MailboxId,
-                   mailboxName: MailboxName,
+                   name: MailboxName,
                    parentId: Option[MailboxId],
                    role: Option[Role],
                    sortOrder: SortOrder,
