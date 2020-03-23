@@ -49,7 +49,7 @@
 
                     <dt><strong>jmap.wiretap</strong></dt>
                     <dd>Optional boolean. Defaults to false. Enables reactor-netty wiretap, logging of all incoming and
-                    outgoing requests.</dd>
+                    outgoing requests. This will log also potentially sensible information like authentication credentials.</dd>
 
                     <dt><strong>tls.keystoreURL</strong></dt>
                     <dd>Keystore to be used for generating authentication tokens for password authentication mechanism.
