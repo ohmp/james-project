@@ -36,11 +36,6 @@ class MailboxTest extends WordSpec with MustMatchers {
   }
 
   "namespace" should  {
-    "throw when null user" in {
-      the [IllegalArgumentException] thrownBy {
-        MailboxNamespace.delegated(null)
-      } must have message "requirement failed"
-    }
     "return personal when personal" in {
       MailboxNamespace.personal.`type` must be("Personal")
     }
@@ -61,68 +56,6 @@ class MailboxTest extends WordSpec with MustMatchers {
       the [IllegalArgumentException] thrownBy {
         MailboxName("")
       } must have message "requirement failed: 'name' is mandatory"
-    }
-    "throw when null" in {
-      the [IllegalArgumentException] thrownBy {
-        MailboxName(null)
-      } must have message "requirement failed: 'name' is mandatory"
-    }
-  }
-
-  "mailbox" should  {
-    "throw when id is null" in {
-      the [IllegalArgumentException] thrownBy {
-        Mailbox(
-          id = null,
-          mailboxName = MailboxName("INBOX"),
-          parentId = None,
-          role = None,
-          sortOrder = SortOrder.apply(3L),
-          totalEmails = 3L,
-          unreadEmails = 4L,
-          totalThreads = 5L,
-          unreadThreads = 6L,
-          mailboxRights = MailboxRights(mayReadItems = true,
-            mayAddItems = true,
-            mayRemoveItems = true,
-            maySetSeen = true,
-            maySetKeywords = true,
-            mayCreateChild = true,
-            mayRename = true,
-            mayDelete = true,
-            maySubmit = true),
-          isSubscribed = true,
-          namespace = MailboxNamespace.personal,
-          rights = Rights.EMPTY,
-          quotas = Quotas(Map()))
-      } must have message "requirement failed: 'id' is mandatory"
-    }
-    "throw when name is null" in {
-      the [IllegalArgumentException] thrownBy {
-        Mailbox(
-          id = TestId.of(42L),
-          mailboxName = null,
-          parentId = None,
-          role = None,
-          sortOrder = SortOrder.apply(3L),
-          totalEmails = 3L,
-          unreadEmails = 4L,
-          totalThreads = 5L,
-          unreadThreads = 6L,
-          mailboxRights = MailboxRights(mayReadItems = true,
-            mayAddItems = true,
-            mayRemoveItems = true,
-            maySetSeen = true,
-            maySetKeywords = true,
-            mayCreateChild = true,
-            mayRename = true,
-            mayDelete = true,
-            maySubmit = true),
-          isSubscribed = true,
-          namespace = MailboxNamespace.personal,
-          rights = Rights.EMPTY,
-          quotas = Quotas(Map()))
-      } must have message "requirement failed: 'mailboxName' is mandatory"
     }
   }
 

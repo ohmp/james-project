@@ -25,7 +25,6 @@ import org.apache.james.mailbox.Role
 import org.apache.james.mailbox.model.MailboxId
 
 final case class MailboxName(name: String) {
-  require(name != null, "'name' is mandatory")
   require(!name.isEmpty, "'name' is mandatory")
 }
 
@@ -57,8 +56,6 @@ case object PersonalNamespace extends MailboxNamespace {
 }
 
 case class DelegatedNamespace(user: Username) extends MailboxNamespace {
-  require(user != null)
-
   override val `type`: String = "Delegated"
 
   override val owner: Option[Username] = Some(user)
@@ -98,9 +95,6 @@ case class Mailbox(id: MailboxId,
                    namespace: MailboxNamespace,
                    rights: Rights,
                    quotas: Quotas){
-  require(id != null, "'id' is mandatory")
-  require(mailboxName != null, "'mailboxName' is mandatory")
-
   def hasRole(role: Role): Boolean = this.role.contains(role)
 
   val hasSystemRole: Boolean = role.exists(_.isSystemRole)
