@@ -42,10 +42,10 @@ class MailboxTest extends WordSpec with MustMatchers {
       } must have message "requirement failed"
     }
     "return personal when personal" in {
-      MailboxNamespace.personal().`type` must be("Personal")
+      MailboxNamespace.personal.`type` must be("Personal")
     }
     "return None when personal" in {
-      MailboxNamespace.personal().owner.isEmpty must be(true)
+      MailboxNamespace.personal.owner.isEmpty must be(true)
     }
     "return delegated when delegated" in {
       MailboxNamespace.delegated(Username.of("bob")).`type` must be("Delegated")
@@ -92,7 +92,7 @@ class MailboxTest extends WordSpec with MustMatchers {
             mayDelete = true,
             maySubmit = true),
           isSubscribed = true,
-          namespace = MailboxNamespace.personal(),
+          namespace = MailboxNamespace.personal,
           rights = Rights.EMPTY,
           quotas = Quotas(Map()))
       } must have message "requirement failed: 'id' is mandatory"
@@ -119,7 +119,7 @@ class MailboxTest extends WordSpec with MustMatchers {
             mayDelete = true,
             maySubmit = true),
           isSubscribed = true,
-          namespace = MailboxNamespace.personal(),
+          namespace = MailboxNamespace.personal,
           rights = Rights.EMPTY,
           quotas = Quotas(Map()))
       } must have message "requirement failed: 'mailboxName' is mandatory"
@@ -148,7 +148,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace.personal(),
+        namespace = MailboxNamespace.personal,
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasRole(Role.INBOX) must be(false)
     }
@@ -173,7 +173,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace.personal(),
+        namespace = MailboxNamespace.personal,
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasRole(Role.INBOX) must be(false)
     }
@@ -198,7 +198,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace.personal(),
+        namespace = MailboxNamespace.personal,
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasRole(Role.INBOX) must be(true)
     }
@@ -226,7 +226,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace.personal(),
+        namespace = MailboxNamespace.personal,
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasSystemRole must be(false)
     }
@@ -251,7 +251,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace.personal(),
+        namespace = MailboxNamespace.personal,
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasSystemRole must be(false)
     }
@@ -276,7 +276,7 @@ class MailboxTest extends WordSpec with MustMatchers {
           mayDelete = true,
           maySubmit = true),
         isSubscribed = true,
-        namespace = MailboxNamespace.personal(),
+        namespace = MailboxNamespace.personal,
         rights = Rights.EMPTY,
         quotas = Quotas(Map())).hasSystemRole must be(true)
     }
