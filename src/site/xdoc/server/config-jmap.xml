@@ -43,6 +43,14 @@
                     <dt><strong>enabled</strong></dt>
                     <dd>true/false. Governs whether JMAP should be enabled</dd>
 
+                    <dt><strong>jmap.port</strong></dt>
+                    <dd>Optional. Defaults to 80. The port this server will be listening on. This value must be a valid
+                    port, ranging between 1 and 65535 (inclusive)</dd>
+
+                    <dt><strong>jmap.wiretap</strong></dt>
+                    <dd>Optional boolean. Defaults to false. Enables reactor-netty wiretap, logging of all incoming and
+                    outgoing requests.</dd>
+
                     <dt><strong>tls.keystoreURL</strong></dt>
                     <dd>Keystore to be used for generating authentication tokens for password authentication mechanism.
                     This should not be the same keystore than the ones used by TLS based protocols.</dd>

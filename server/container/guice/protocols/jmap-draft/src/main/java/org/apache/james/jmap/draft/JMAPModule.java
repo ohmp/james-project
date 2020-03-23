@@ -65,6 +65,7 @@ import com.google.inject.multibindings.Multibinder;
 
 public class JMAPModule extends AbstractModule {
     private static final int DEFAULT_JMAP_PORT = 80;
+    private static final boolean WIRETAP = true;
     private static final Logger LOGGER = LoggerFactory.getLogger(JMAPModule.class);
     public static final CamelMailetContainerModule.DefaultProcessorsConfigurationSupplier DEFAULT_JMAP_PROCESSORS_CONFIGURATION_SUPPLIER =
         () -> {
@@ -115,6 +116,7 @@ public class JMAPModule extends AbstractModule {
             return JMAPConfiguration.builder()
                 .enabled(configuration.getBoolean("enabled", true))
                 .port(Port.of(configuration.getInt("jmap.port", DEFAULT_JMAP_PORT)))
+                .wiretap(configuration.getBoolean("jmap.wiretap", !WIRETAP))
                 .build();
         } catch (FileNotFoundException e) {
             LOGGER.warn("Could not find JMAP configuration file. JMAP server will not be enabled.");
