@@ -50,7 +50,7 @@ public class AuthenticationReactiveFilter {
     public Mono<MailboxSession> authenticate(HttpServerRequest request) {
         return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
             Flux.fromStream(authMethods.stream())
-                .flatMap(auth -> auth.createMailboxSession(request))
+                .concatMap(auth -> auth.createMailboxSession(request))
                 .onErrorContinue((throwable, nothing) -> LOGGER.error("Error while trying to authenticate with JMAP", throwable))
                 .singleOrEmpty()
                 .switchIfEmpty(Mono.error(new UnauthorizedException()))));
