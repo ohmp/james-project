@@ -20,8 +20,8 @@
 package org.apache.james.jmap.mail
 
 import org.apache.james.core.Username
-import org.apache.james.mailbox.model.{MailboxACL => JavaMailboxACL}
 import org.apache.james.mailbox.model.MailboxACL.{EntryKey, Rfc4314Rights => JavaRfc4314Rights, Right => JavaRight}
+import org.apache.james.mailbox.model.{MailboxACL => JavaMailboxACL}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.jdk.CollectionConverters._
@@ -75,7 +75,7 @@ object Right {
   def forChar(c: Char): Option[Right] = allRights.find(_.asCharacter == c)
 }
 
-sealed case class Right(right: JavaRight) {
+final case class Right(right: JavaRight) {
   val asCharacter: Char = right.asCharacter
 
   val toMailboxRight: JavaRight = right
@@ -84,7 +84,7 @@ sealed case class Right(right: JavaRight) {
 object Rights {
   private val LOGGER: Logger = LoggerFactory.getLogger(classOf[Rights])
 
-  val EMPTY = new Rights(Map())
+  val EMPTY = Rights(Map())
 
   def of(username: Username, right: Right): Rights = of(username, Seq(right))
 
@@ -105,25 +105,20 @@ object Rights {
 
   private def toRights(entryKey: EntryKey, aclRights: Rfc4314Rights): Rights = of(Username.of(entryKey.getName), aclRights.toRights)
 
-  private def isSupported(key: EntryKey): Boolean = {
-    if (key.isNegative) {
+  private def isSupported(key: EntryKey): Boolean = key match {
+    case k if k.isNegative =>
       LOGGER.info("Negative keys are not supported")
-      return false
-    }
-    if (key == JavaMailboxACL.OWNER_KEY) {
-      return false
-    }
-    if (key.getNameType ne JavaMailboxACL.NameType.user) {
+      false
+    case JavaMailboxACL.OWNER_KEY => false
+    case k if k.getNameType ne JavaMailboxACL.NameType.user =>
       LOGGER.info("{} is not supported. Only 'user' is.", key.getNameType)
-      return false
-    }
-    true
+      false
+    case _ => true
   }
 }
 
 case class Rights private(rights: Map[Username, Seq[Right]]) {
-
-  def removeEntriesFor(username: Username) = Rights(rights.filter(!_._1.equals(username)))
+  def removeEntriesFor(username: Username) = copy(rights = rights - username)
 
   def toMailboxAcl: MailboxACL = {
     val map: Map[EntryKey, Rfc4314Rights] = rights.view
@@ -137,11 +132,7 @@ case class Rights private(rights: Map[Username, Seq[Right]]) {
 
   def append(username: Username, right: Right): Rights = append(username, Seq(right))
 
-  def append(username: Username, rights: Seq[Right]): Rights = {
-    require(rights.nonEmpty, "'rights' should not be empty")
-
-    copy(rights = this.rights + (username -> rights))
-  }
+  def append(username: Username, rights: Seq[Right]): Rights = copy(rights = this.rights + (username -> rights))
 
   def combine(that: Rights): Rights = Rights(this.rights ++ that.rights)
 
