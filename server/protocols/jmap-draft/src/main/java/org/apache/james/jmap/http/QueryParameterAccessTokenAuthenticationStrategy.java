@@ -20,7 +20,6 @@ package org.apache.james.jmap.http;
 
 import static org.apache.james.jmap.http.DownloadRoutes.BLOB_ID_PATH_PARAM;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -66,7 +65,7 @@ public class QueryParameterAccessTokenAuthenticationStrategy implements Authenti
 
             return Optional.ofNullable(httpRequest.param(BLOB_ID_PATH_PARAM))
                 .flatMap(blobId -> queryParam(httpRequest, AUTHENTICATION_PARAMETER)
-                    .map(serializedAttachmentAccessToken-> AttachmentAccessToken.from(serializedAttachmentAccessToken, blobId)));
+                    .map(serializedAttachmentAccessToken -> AttachmentAccessToken.from(serializedAttachmentAccessToken, blobId)));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
