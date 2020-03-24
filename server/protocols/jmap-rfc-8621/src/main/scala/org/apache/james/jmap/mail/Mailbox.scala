@@ -28,15 +28,25 @@ final case class MailboxName(name: String) {
   require(!name.isEmpty, "'name' is mandatory")
 }
 
-final case class MailboxRights(mayReadItems: Boolean,
-                               mayAddItems: Boolean,
-                               mayRemoveItems: Boolean,
-                               maySetSeen: Boolean,
-                               maySetKeywords: Boolean,
-                               mayCreateChild: Boolean,
-                               mayRename: Boolean,
-                               mayDelete: Boolean,
-                               maySubmit: Boolean)
+case class MayReadItems(value: Boolean) extends AnyVal
+case class MayAddItems(value: Boolean) extends AnyVal
+case class MayRemoveItems(value: Boolean) extends AnyVal
+case class MaySetSeen(value: Boolean) extends AnyVal
+case class MaySetKeywords(value: Boolean) extends AnyVal
+case class MayCreateChild(value: Boolean) extends AnyVal
+case class MayRename(value: Boolean) extends AnyVal
+case class MayDelete(value: Boolean) extends AnyVal
+case class MaySubmit(value: Boolean) extends AnyVal
+
+case class MailboxRights(mayReadItems: MayReadItems,
+                               mayAddItems: MayAddItems,
+                               mayRemoveItems: MayRemoveItems,
+                               maySetSeen: MaySetSeen,
+                               maySetKeywords: MaySetKeywords,
+                               mayCreateChild: MayCreateChild,
+                               mayRename: MayRename,
+                               mayDelete: MayDelete,
+                               maySubmit: MaySubmit)
 
 object MailboxNamespace {
   def delegated(owner: Username) = DelegatedNamespace(owner)
@@ -76,17 +86,23 @@ case class SortOrder private(sortOrder: UnsignedInt) extends Ordered[SortOrder] 
   override def compare(that: SortOrder): Int = this.sortOrder.compare(that.sortOrder)
 }
 
+case class TotalEmails(value: UnsignedInt) extends AnyVal
+case class UnreadEmails(value: UnsignedInt) extends AnyVal
+case class TotalThreads(value: UnsignedInt) extends AnyVal
+case class UnreadThreads(value: UnsignedInt) extends AnyVal
+case class IsSubscribed(value: Boolean) extends AnyVal
+
 case class Mailbox(id: MailboxId,
                    name: MailboxName,
                    parentId: Option[MailboxId],
                    role: Option[Role],
                    sortOrder: SortOrder,
-                   totalEmails: UnsignedInt,
-                   unreadEmails: UnsignedInt,
-                   totalThreads: UnsignedInt,
-                   unreadThreads: UnsignedInt,
+                   totalEmails: TotalEmails,
+                   unreadEmails: UnreadEmails,
+                   totalThreads: TotalThreads,
+                   unreadThreads: UnreadThreads,
                    mailboxRights: MailboxRights,
-                   isSubscribed: Boolean,
+                   isSubscribed: IsSubscribed,
                    namespace: MailboxNamespace,
                    rights: Rights,
                    quotas: Quotas){
