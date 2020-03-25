@@ -29,6 +29,7 @@ import org.apache.james.utils.InitilizationOperationBuilder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 
@@ -37,14 +38,14 @@ public class CassandraUsersRepositoryModule extends AbstractModule {
     public void configure() {
         bind(CassandraUsersDAO.class).in(Scopes.SINGLETON);
         bind(UsersDAO.class).to(CassandraUsersDAO.class);
-        bind(UsersRepositoryImpl.class).in(Scopes.SINGLETON);
-        bind(UsersRepository.class).to(UsersRepositoryImpl.class);
+        bind(new TypeLiteral<UsersRepositoryImpl<CassandraUsersDAO>>() {}).in(Scopes.SINGLETON);
+        bind(UsersRepository.class).to(new TypeLiteral<UsersRepositoryImpl<CassandraUsersDAO>>() {});
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
         cassandraDataDefinitions.addBinding().toInstance(org.apache.james.user.cassandra.CassandraUsersRepositoryModule.MODULE);
     }
 
     @ProvidesIntoSet
-    InitializationOperation configureUsersRepository(ConfigurationProvider configurationProvider, UsersRepositoryImpl usersRepository) {
+    InitializationOperation configureUsersRepository(ConfigurationProvider configurationProvider, UsersRepositoryImpl<CassandraUsersDAO> usersRepository) {
         return InitilizationOperationBuilder
             .forClass(UsersRepositoryImpl.class)
             .init(() -> usersRepository.configure(configurationProvider.getConfiguration("usersrepository")));
