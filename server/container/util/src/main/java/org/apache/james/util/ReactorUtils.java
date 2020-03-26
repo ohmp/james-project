@@ -18,16 +18,25 @@
  ****************************************************************/
 package org.apache.james.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Consumer;
+
+import com.google.common.base.Preconditions;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Signal;
+import reactor.util.context.Context;
 
 public class ReactorUtils {
+
+    public static final String MDC_KEY_PREFIX = "MDC-";
+
     public static <T> Mono<T> executeAndEmpty(Runnable runnable) {
         return Mono.fromRunnable(runnable).then(Mono.empty());
     }
@@ -100,4 +109,61 @@ public class ReactorUtils {
     private static int byteToInt(ByteBuffer buffer) {
         return buffer.get() & 0xff;
     }
+
+    public static Consumer<Signal<?>> logOnError(Consumer<Throwable> errorLogStatement) {
+        return signal -> {
+            if (!signal.isOnError()) {
+                return;
+            }
+            Optional<MDCBuilder> maybeMDC = retrieveMDCBuilder(signal);
+
+            if (maybeMDC.isPresent()) {
+                try {
+                    try (Closeable mdc = maybeMDC.get().build()) {
+                        errorLogStatement.accept(signal.getThrowable());
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                errorLogStatement.accept(signal.getThrowable());
+            }
+        };
+    }
+
+    public static Consumer<Signal<?>> log(Runnable logStatement) {
+        return signal -> {
+            Optional<MDCBuilder> maybeMDC = retrieveMDCBuilder(signal);
+
+            if (maybeMDC.isPresent()) {
+                try {
+                    try (Closeable mdc = maybeMDC.get().build()) {
+                        logStatement.run();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                logStatement.run();
+            }
+        };
+    }
+
+    public static Context context(String keySuffix, MDCBuilder mdcBuilder) {
+        return Context.of(mdcKey(keySuffix), mdcBuilder);
+    }
+
+    public static String mdcKey(String value) {
+        return MDC_KEY_PREFIX + value;
+    }
+
+    private static Optional<MDCBuilder> retrieveMDCBuilder(Signal<?> signal) {
+        return signal.getContext().stream()
+                    .filter(entry -> entry.getKey() instanceof String)
+                    .filter(entry -> entry.getValue() instanceof MDCBuilder)
+                    .filter(entry -> ((String) entry.getValue()).startsWith(MDC_KEY_PREFIX))
+                    .map(entry -> (MDCBuilder) entry.getValue())
+                    .reduce(MDCBuilder::addContext);
+    }
+
 }

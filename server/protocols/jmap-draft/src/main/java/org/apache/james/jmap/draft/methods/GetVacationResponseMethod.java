@@ -19,6 +19,9 @@
 
 package org.apache.james.jmap.draft.methods;
 
+import static org.apache.james.jmap.http.LoggingHelper.jmapAction;
+import static org.apache.james.util.ReactorUtils.context;
+
 import javax.inject.Inject;
 
 import org.apache.james.jmap.api.vacation.AccountId;
@@ -76,7 +79,8 @@ public class GetVacationResponseMethod implements Method {
                     .methodCallId(methodCallId)
                     .responseName(RESPONSE_NAME)
                     .response(response)
-                    .build()))));
+                    .build()))))
+            .subscriberContext(jmapAction("VACATION"));
     }
 
     private Mono<GetVacationResponse> process(MailboxSession mailboxSession) {

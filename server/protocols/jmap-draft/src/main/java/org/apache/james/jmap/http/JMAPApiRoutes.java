@@ -22,6 +22,10 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
 import static org.apache.james.jmap.http.JMAPUrls.JMAP;
+import static org.apache.james.jmap.http.LoggingHelper.jmapAuthContext;
+import static org.apache.james.jmap.http.LoggingHelper.jmapContext;
+import static org.apache.james.util.ReactorUtils.context;
+import static org.apache.james.util.ReactorUtils.logOnError;
 
 import java.io.IOException;
 
@@ -37,6 +41,7 @@ import org.apache.james.jmap.draft.model.InvocationRequest;
 import org.apache.james.jmap.draft.model.InvocationResponse;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +56,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 import reactor.netty.http.server.HttpServerRoutes;
+import reactor.util.context.Context;
 
 public class JMAPApiRoutes implements JMAPRoutes {
     public static final Logger LOGGER = LoggerFactory.getLogger(JMAPApiRoutes.class);
@@ -87,15 +93,16 @@ public class JMAPApiRoutes implements JMAPRoutes {
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
         return authenticator.authenticate(request)
             .flatMap(session -> Flux.merge(
-                    userProvisioner.provisionUser(session),
-                    defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
-                .then()
-                .thenReturn(session))
-            .flatMap(session -> Mono.from(metricFactory.runPublishingTimerMetric("JMAP-request",
-                post(request, response, session))))
+                userProvisioner.provisionUser(session),
+                defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
+                .then(Mono.from(metricFactory.runPublishingTimerMetric("JMAP-request",
+                    post(request, response, session)))
+                    .subscriberContext(jmapAuthContext(session))))
             .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
+            .doOnEach(logOnError(e -> LOGGER.error("Unexpected error", e)))
             .onErrorResume(e -> handleInternalError(response, e))
+            .subscriberContext(jmapContext(request))
             .subscribeOn(Schedulers.elastic());
     }
 
