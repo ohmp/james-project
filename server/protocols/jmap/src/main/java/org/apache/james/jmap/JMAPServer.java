@@ -65,7 +65,7 @@ public class JMAPServer implements Startable {
     }
 
     private boolean wireTapEnabled() {
-        return LoggerFactory.getLogger( "org.apache.james.jmap.wire").isTraceEnabled();
+        return LoggerFactory.getLogger("org.apache.james.jmap.wire").isTraceEnabled();
     }
 
     @PreDestroy
