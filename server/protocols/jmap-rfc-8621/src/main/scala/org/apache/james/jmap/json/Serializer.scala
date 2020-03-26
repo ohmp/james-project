@@ -110,6 +110,8 @@ class Serializer {
       )
     }
 
+  private implicit val isPersonalWrites: Format[IsPersonal] = Json.valueFormat[IsPersonal]
+  private implicit val isReadOnlyWrites: Format[IsReadOnly] = Json.valueFormat[IsReadOnly]
   private implicit val accountWrites: Writes[Account] = Json.writes[Account]
   private implicit val sessionWrites: Writes[Session] = Json.writes[Session]
 
