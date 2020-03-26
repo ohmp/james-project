@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
@@ -112,13 +113,12 @@ public class CassandraUsersDAO implements UsersDAO {
     }
 
     @Override
-    public User getUserByName(Username name) {
+    public Optional<DefaultUser> getUserByName(Username name) {
         return executor.executeSingleRow(
                 getUserStatement.bind()
                     .setString(NAME, name.asString()))
             .map(row -> new DefaultUser(Username.of(row.getString(NAME)), row.getString(PASSWORD), row.getString(ALGORITHM)))
-            .blockOptional()
-            .orElse(null);
+            .blockOptional();
     }
 
     @Override
@@ -153,16 +153,6 @@ public class CassandraUsersDAO implements UsersDAO {
     @Override
     public boolean contains(Username name) {
         return getUserByName(name) != null;
-    }
-
-    @Override
-    public boolean test(Username name, String password) {
-        return Optional.ofNullable(getUserByName(name))
-                .map(x -> x.verifyPassword(password))
-            .orElseGet(() -> {
-                LOGGER.info("Could not retrieve user {}. Password is unverified.", name);
-                return false;
-            });
     }
 
     @Override
