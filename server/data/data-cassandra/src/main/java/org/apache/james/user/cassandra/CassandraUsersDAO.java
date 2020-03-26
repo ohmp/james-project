@@ -44,8 +44,6 @@ import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.user.api.model.User;
 import org.apache.james.user.lib.UsersDAO;
 import org.apache.james.user.lib.model.DefaultUser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -53,7 +51,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 
 public class CassandraUsersDAO implements UsersDAO {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraUsersDAO.class);
     private static final String DEFAULT_ALGO_VALUE = "SHA1";
 
     private final CassandraAsyncExecutor executor;
@@ -151,7 +148,7 @@ public class CassandraUsersDAO implements UsersDAO {
 
     @Override
     public boolean contains(Username name) {
-        return getUserByName(name) != null;
+        return getUserByName(name).isPresent();
     }
 
     @Override
