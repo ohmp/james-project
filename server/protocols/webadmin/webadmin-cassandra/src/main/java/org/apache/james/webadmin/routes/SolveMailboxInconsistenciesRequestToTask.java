@@ -26,12 +26,21 @@ import org.apache.james.mailbox.cassandra.mail.task.SolveMailboxInconsistenciesT
 import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 
+import com.google.common.base.Preconditions;
+
 public class SolveMailboxInconsistenciesRequestToTask extends TaskFromRequestRegistry.TaskRegistration {
     private static final TaskRegistrationKey REGISTRATION_KEY = TaskRegistrationKey.of("SolveInconsistencies");
 
     @Inject
     public SolveMailboxInconsistenciesRequestToTask(SolveMailboxInconsistenciesService service) {
         super(REGISTRATION_KEY,
-            request -> new SolveMailboxInconsistenciesTask(service));
+            request -> {
+                Preconditions.checkArgument(request.headers("Confirmation").equalsIgnoreCase("true"),
+                    "Due to concurrency risks, a `Confirmation` header should be positioned to `true` in " +
+                        "order to prevent accidental calls. " +
+                        "Check the documentation for details.");
+
+                return new SolveMailboxInconsistenciesTask(service);
+            });
     }
 }

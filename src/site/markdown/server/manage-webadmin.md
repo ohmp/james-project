@@ -412,7 +412,7 @@ The kind of task scheduled depends on the action parameter. See below for detail
 This task is only available on top of Guice Cassandra products.
 
 ```
-curl -XPOST /mailboxes?task=SolveInconsistencies
+curl -XPOST -H "Confirmation: true" /mailboxes?task=SolveInconsistencies
 ```
 
 Will schedule a task for fixing inconsistencies for the mailbox deduplicated object stored in Cassandra.
@@ -452,6 +452,8 @@ A dirty read is when data is read between the two writes of the denormalization 
 
 In order to ensure being offline, stop the traffic on SMTP, JMAP and IMAP ports, for example via re-configuration or 
 firewall rules.
+
+Due to all of those risks, a `Confirmation` header should be positioned to `true` in order to prevent accidental calls.
 
 #### Recomputing mailbox counters
 
