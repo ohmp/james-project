@@ -29,8 +29,8 @@ import reactor.util.context.Context;
 
 public interface LoggingHelper {
     static Context jmapAuthContext(MailboxSession session) {
-        return context("JMAP_AUTH", MDCBuilder.create()
-            .addContext(MDCBuilder.USER, session.getUser().asString()));
+        return context("JMAP_AUTH",
+            MDCBuilder.of(MDCBuilder.USER, session.getUser().asString()));
     }
 
     static Context jmapContext(HttpServerRequest req) {
@@ -40,7 +40,7 @@ public interface LoggingHelper {
     }
 
     static Context jmapAction(String action) {
-        return context("JMAP_ACTION", MDCBuilder.create()
-            .addContext(MDCBuilder.ACTION, action));
+        return context("JMAP_ACTION",
+            MDCBuilder.of(MDCBuilder.ACTION, action));
     }
 }

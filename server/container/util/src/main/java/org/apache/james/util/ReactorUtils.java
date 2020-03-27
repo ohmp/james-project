@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.google.common.base.Preconditions;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
@@ -115,36 +113,24 @@ public class ReactorUtils {
             if (!signal.isOnError()) {
                 return;
             }
-            Optional<MDCBuilder> maybeMDC = retrieveMDCBuilder(signal);
-
-            if (maybeMDC.isPresent()) {
-                try {
-                    try (Closeable mdc = maybeMDC.get().build()) {
-                        errorLogStatement.accept(signal.getThrowable());
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            try {
+                try (Closeable mdc = retrieveMDCBuilder(signal).build()) {
+                    errorLogStatement.accept(signal.getThrowable());
                 }
-            } else {
-                errorLogStatement.accept(signal.getThrowable());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         };
     }
 
     public static Consumer<Signal<?>> log(Runnable logStatement) {
         return signal -> {
-            Optional<MDCBuilder> maybeMDC = retrieveMDCBuilder(signal);
-
-            if (maybeMDC.isPresent()) {
-                try {
-                    try (Closeable mdc = maybeMDC.get().build()) {
-                        logStatement.run();
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            try {
+                try (Closeable mdc = retrieveMDCBuilder(signal).build()) {
+                    logStatement.run();
                 }
-            } else {
-                logStatement.run();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         };
     }
@@ -157,13 +143,13 @@ public class ReactorUtils {
         return MDC_KEY_PREFIX + value;
     }
 
-    private static Optional<MDCBuilder> retrieveMDCBuilder(Signal<?> signal) {
+    private static MDCBuilder retrieveMDCBuilder(Signal<?> signal) {
         return signal.getContext().stream()
-                    .filter(entry -> entry.getKey() instanceof String)
-                    .filter(entry -> entry.getValue() instanceof MDCBuilder)
-                    .filter(entry -> ((String) entry.getValue()).startsWith(MDC_KEY_PREFIX))
-                    .map(entry -> (MDCBuilder) entry.getValue())
-                    .reduce(MDCBuilder::addContext);
+            .filter(entry -> entry.getKey() instanceof String)
+            .filter(entry -> entry.getValue() instanceof MDCBuilder)
+            .filter(entry -> ((String) entry.getKey()).startsWith(MDC_KEY_PREFIX))
+            .map(entry -> (MDCBuilder) entry.getValue())
+            .reduce(MDCBuilder.create(), MDCBuilder::addContext);
     }
 
 }
