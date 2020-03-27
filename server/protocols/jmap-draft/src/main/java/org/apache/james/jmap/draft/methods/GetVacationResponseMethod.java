@@ -20,7 +20,6 @@
 package org.apache.james.jmap.draft.methods;
 
 import static org.apache.james.jmap.http.LoggingHelper.jmapAction;
-import static org.apache.james.util.ReactorUtils.context;
 
 import javax.inject.Inject;
 
