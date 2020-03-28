@@ -24,7 +24,6 @@ import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
 import static org.apache.james.jmap.http.JMAPUrls.JMAP;
 import static org.apache.james.jmap.http.LoggingHelper.jmapAuthContext;
 import static org.apache.james.jmap.http.LoggingHelper.jmapContext;
-import static org.apache.james.util.ReactorUtils.context;
 import static org.apache.james.util.ReactorUtils.logOnError;
 
 import java.io.IOException;
@@ -41,7 +40,6 @@ import org.apache.james.jmap.draft.model.InvocationRequest;
 import org.apache.james.jmap.draft.model.InvocationResponse;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.metrics.api.MetricFactory;
-import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +54,6 @@ import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 import reactor.netty.http.server.HttpServerRoutes;
-import reactor.util.context.Context;
 
 public class JMAPApiRoutes implements JMAPRoutes {
     public static final Logger LOGGER = LoggerFactory.getLogger(JMAPApiRoutes.class);
