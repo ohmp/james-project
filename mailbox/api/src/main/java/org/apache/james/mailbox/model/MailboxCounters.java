@@ -87,6 +87,28 @@ public class MailboxCounters {
         return unseen;
     }
 
+    public MailboxCounters sanitize() {
+        if (isValid()) {
+            return this;
+        }
+        LOGGER.warn("Invalid mailbox counters for {} : {} / {}", mailboxId, unseen, count);
+        long sanitizedCount = Math.max(count, 0);
+        long positiveUnseen = Math.max(unseen, 0);
+        long sanitizedUnseen = Math.min(positiveUnseen, sanitizedCount);
+
+        return builder()
+            .mailboxId(mailboxId)
+            .count(sanitizedCount)
+            .unseen(sanitizedUnseen)
+            .build();
+    }
+
+    private boolean isValid() {
+        return count >= 0
+            && unseen >= 0
+            && count >= unseen;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (o instanceof MailboxCounters) {

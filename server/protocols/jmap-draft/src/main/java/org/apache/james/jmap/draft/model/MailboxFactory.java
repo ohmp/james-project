@@ -111,7 +111,8 @@ public class MailboxFactory {
                     .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxPath()).sneakyThrow());
 
                 MailboxCounters mailboxCounters = mailboxMetaData.map(MailboxMetaData::getCounters)
-                    .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxCounters(session)).sneakyThrow());
+                    .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxCounters(session)).sneakyThrow())
+                    .sanitize();
 
                 return Optional.of(mailboxFactory.from(
                     mailboxId,
