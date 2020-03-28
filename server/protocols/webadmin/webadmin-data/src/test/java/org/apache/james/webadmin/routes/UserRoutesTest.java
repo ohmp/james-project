@@ -109,8 +109,7 @@ class UserRoutesTest {
         UserRoutesExtension(MemoryUsersRepository usersRepository, SimpleDomainList domainList) {
             this.usersRepository = spy(usersRepository);
             this.domainList = domainList;
-            this.recipientRewriteTable = new MemoryRecipientRewriteTable();
-            this.recipientRewriteTable.setDomainList(domainList);
+            this.recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
             this.recipientRewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
             this.aliasReverseResolver = new AliasReverseResolverImpl(recipientRewriteTable);
             this.canSendFrom = new CanSendFromImpl(recipientRewriteTable, aliasReverseResolver);

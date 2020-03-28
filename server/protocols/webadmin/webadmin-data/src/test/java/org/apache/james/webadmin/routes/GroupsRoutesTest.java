@@ -102,13 +102,12 @@ class GroupsRoutesTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            memoryRecipientRewriteTable = new MemoryRecipientRewriteTable();
             DNSService dnsService = mock(DNSService.class);
             domainList = new MemoryDomainList(dnsService);
             domainList.addDomain(DOMAIN);
             domainList.addDomain(ALIAS_DOMAIN);
             domainList.addDomain(DOMAIN_MAPPING);
-            memoryRecipientRewriteTable.setDomainList(domainList);
+            memoryRecipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
             usersRepository = MemoryUsersRepository.withVirtualHosting(domainList);
             MappingSourceModule mappingSourceModule = new MappingSourceModule();
             createServer(new GroupsRoutes(memoryRecipientRewriteTable, usersRepository, new JsonTransformer(mappingSourceModule)));
@@ -195,7 +194,7 @@ class GroupsRoutesTest {
         }
 
         @Test
-        void getGroupShouldReturnNotFoundWhenNonGroupMappings() {
+        void getGroupShouldReturnNotFoundWhenNonGroupMappings() throws Exception {
             memoryRecipientRewriteTable.addMapping(
                 MappingSource.fromDomain(DOMAIN),
                 Mapping.domain(Domain.of("target.tld")));
@@ -443,10 +442,9 @@ class GroupsRoutesTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            memoryRecipientRewriteTable = spy(new MemoryRecipientRewriteTable());
-            UsersRepository userRepository = mock(UsersRepository.class);
             domainList = mock(DomainList.class);
-            memoryRecipientRewriteTable.setDomainList(domainList);
+            memoryRecipientRewriteTable = spy(new MemoryRecipientRewriteTable(domainList));
+            UsersRepository userRepository = mock(UsersRepository.class);
             Mockito.when(domainList.containsDomain(any())).thenReturn(true);
             createServer(new GroupsRoutes(memoryRecipientRewriteTable, userRepository, new JsonTransformer()));
         }
@@ -674,7 +672,7 @@ class GroupsRoutesTest {
         }
 
         @Test
-        void getShouldReturnErrorWhenRuntimeExceptionIsThrown() {
+        void getShouldReturnErrorWhenRuntimeExceptionIsThrown() throws Exception {
             doThrow(RuntimeException.class)
                 .when(memoryRecipientRewriteTable)
                 .getStoredMappings(any());

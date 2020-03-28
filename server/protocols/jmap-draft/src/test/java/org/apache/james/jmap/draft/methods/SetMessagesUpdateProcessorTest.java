@@ -160,7 +160,6 @@ public class SetMessagesUpdateProcessorTest {
         BlobManager blobManager = mock(BlobManager.class);
         when(blobManager.toBlobId(any(MessageId.class))).thenReturn(org.apache.james.mailbox.model.BlobId.fromString("fake"));
         MessageIdManager messageIdManager = mock(MessageIdManager.class);
-        recipientRewriteTable = new MemoryRecipientRewriteTable();
 
         DNSService dnsService = mock(DNSService.class);
         MemoryDomainList domainList = new MemoryDomainList(dnsService);
@@ -169,7 +168,7 @@ public class SetMessagesUpdateProcessorTest {
             .autoDetectIp(false));
         domainList.addDomain(Domain.of("example.com"));
         domainList.addDomain(Domain.of("other.org"));
-        recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
         recipientRewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
         AliasReverseResolver aliasReverseResolver = new AliasReverseResolverImpl(recipientRewriteTable);
         canSendFrom = new CanSendFromImpl(recipientRewriteTable, aliasReverseResolver);

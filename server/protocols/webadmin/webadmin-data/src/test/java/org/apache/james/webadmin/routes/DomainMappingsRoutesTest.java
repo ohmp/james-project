@@ -86,9 +86,8 @@ class DomainMappingsRoutesTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        recipientRewriteTable = spy(new MemoryRecipientRewriteTable());
         domainList = mock(DomainList.class);
-        recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable = spy(new MemoryRecipientRewriteTable(domainList));
         Mockito.when(domainList.containsDomain(any())).thenReturn(true);
         createServer(new DomainMappingsRoutes(recipientRewriteTable, new JsonTransformer()));
     }

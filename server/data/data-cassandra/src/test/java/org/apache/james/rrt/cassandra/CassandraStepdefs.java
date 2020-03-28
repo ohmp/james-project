@@ -24,7 +24,7 @@ import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.rrt.lib.RecipientRewriteTableFixture;
 import org.apache.james.rrt.lib.RewriteTablesStepdefs;
 import org.junit.Rule;
@@ -59,12 +59,11 @@ public class CassandraStepdefs {
         cassandra.close();
     }
 
-    private AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception {
+    private RecipientRewriteTableImpl getRecipientRewriteTable() throws Exception {
         CassandraRecipientRewriteTable rrt = new CassandraRecipientRewriteTable(
             new CassandraRecipientRewriteTableDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION),
             new CassandraMappingsSourcesDAO(cassandra.getConf()),
             new CassandraSchemaVersionDAO(cassandra.getConf()));
-        rrt.setDomainList(RecipientRewriteTableFixture.domainListForCucumberTests());
-        return rrt;
+        return new RecipientRewriteTableImpl(rrt, RecipientRewriteTableFixture.domainListForCucumberTests());
     }
 }

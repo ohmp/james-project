@@ -18,8 +18,12 @@
  ****************************************************************/
 package org.apache.james.rrt.file;
 
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
+import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.rrt.lib.RecipientRewriteTableFixture;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.rrt.lib.RewriteTablesStepdefs;
+
+import com.github.fge.lambdas.Throwing;
 
 import cucumber.api.java.Before;
 
@@ -33,10 +37,10 @@ public class XMLStepdefs {
 
     @Before
     public void setup() throws Throwable {
-        mainStepdefs.setUp(this::getRecipientRewriteTable);
+        mainStepdefs.setUp(Throwing.supplier(this::getRecipientRewriteTable));
     }
 
-    private AbstractRecipientRewriteTable getRecipientRewriteTable() {
-        return new XMLRecipientRewriteTable();
+    private RecipientRewriteTableImpl getRecipientRewriteTable() throws DomainListException {
+        return new XMLRecipientRewriteTable(RecipientRewriteTableFixture.domainListForCucumberTests());
     }
 }

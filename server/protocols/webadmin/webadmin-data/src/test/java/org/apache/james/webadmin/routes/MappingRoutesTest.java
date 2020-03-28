@@ -64,7 +64,6 @@ class MappingRoutesTest {
     @BeforeEach
     void setUp() throws DomainListException {
         JsonTransformer jsonTransformer = new JsonTransformer();
-        recipientRewriteTable = new MemoryRecipientRewriteTable();
         DNSService dnsService = mock(DNSService.class);
         DomainList domainList = new MemoryDomainList(dnsService);
         domainList.addDomain(Domain.of("domain.tld"));
@@ -72,8 +71,7 @@ class MappingRoutesTest {
         domainList.addDomain(Domain.of("domain.mapping.tld"));
         domainList.addDomain(Domain.of("abc"));
         domainList.addDomain(Domain.of("xyz"));
-
-        recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
 
         webAdminServer = WebAdminUtils.createWebAdminServer(new MappingRoutes(jsonTransformer, recipientRewriteTable))
             .start();

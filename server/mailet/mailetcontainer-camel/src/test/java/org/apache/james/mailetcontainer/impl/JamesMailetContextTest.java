@@ -89,7 +89,7 @@ public class JamesMailetContextTest {
             .build());
 
         usersRepository = spy(MemoryUsersRepository.withVirtualHosting(domainList));
-        recipientRewriteTable = spy(new MemoryRecipientRewriteTable());
+        recipientRewriteTable = spy(new MemoryRecipientRewriteTable(domainList));
         recipientRewriteTable.configure(new BaseHierarchicalConfiguration());
         MailQueueFactory<MailQueue> mailQueueFactory = mock(MailQueueFactory.class);
         spoolMailQueue = mock(MailQueue.class);

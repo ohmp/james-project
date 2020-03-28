@@ -20,11 +20,12 @@ package org.apache.james.rrt.jpa;
 
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.rrt.jpa.model.JPARecipientRewrite;
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
 import org.apache.james.rrt.lib.RecipientRewriteTableFixture;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.rrt.lib.RewriteTablesStepdefs;
 
 import com.github.fge.lambdas.Throwing;
+
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 
@@ -48,10 +49,9 @@ public class JPAStepdefs {
         JPA_TEST_CLUSTER.clear(JPARecipientRewrite.JAMES_RECIPIENT_REWRITE);
     }
 
-    private AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception {
-        JPARecipientRewriteTable localVirtualUserTable = new JPARecipientRewriteTable();
+    private RecipientRewriteTableImpl getRecipientRewriteTable() throws Exception {
+        JPARecipientRewriteTable localVirtualUserTable = new JPARecipientRewriteTable(RecipientRewriteTableFixture.domainListForCucumberTests());
         localVirtualUserTable.setEntityManagerFactory(JPA_TEST_CLUSTER.getEntityManagerFactory());
-        localVirtualUserTable.setDomainList(RecipientRewriteTableFixture.domainListForCucumberTests());
         return localVirtualUserTable;
     }
 }

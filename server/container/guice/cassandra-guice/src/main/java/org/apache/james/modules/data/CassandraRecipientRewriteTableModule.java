@@ -28,12 +28,15 @@ import org.apache.james.rrt.cassandra.CassandraRecipientRewriteTable;
 import org.apache.james.rrt.cassandra.CassandraRecipientRewriteTableDAO;
 import org.apache.james.rrt.lib.AliasReverseResolverImpl;
 import org.apache.james.rrt.lib.CanSendFromImpl;
+import org.apache.james.rrt.lib.RecipientRewriteTableDAO;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.server.core.configuration.ConfigurationProvider;
 import org.apache.james.utils.InitializationOperation;
 import org.apache.james.utils.InitilizationOperationBuilder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 
@@ -41,9 +44,12 @@ public class CassandraRecipientRewriteTableModule extends AbstractModule {
     @Override
     public void configure() {
         bind(CassandraRecipientRewriteTable.class).in(Scopes.SINGLETON);
+        bind(RecipientRewriteTableImpl.class).in(Scopes.SINGLETON);
         bind(CassandraRecipientRewriteTableDAO.class).in(Scopes.SINGLETON);
         bind(CassandraMappingsSourcesDAO.class).in(Scopes.SINGLETON);
-        bind(RecipientRewriteTable.class).to(CassandraRecipientRewriteTable.class);
+        bind(RecipientRewriteTable.class).to(new TypeLiteral<RecipientRewriteTableImpl<CassandraRecipientRewriteTable>>() {});
+        bind(RecipientRewriteTableDAO.class).to(CassandraRecipientRewriteTable.class);
+
         bind(AliasReverseResolverImpl.class).in(Scopes.SINGLETON);
         bind(AliasReverseResolver.class).to(AliasReverseResolverImpl.class);
         bind(CanSendFromImpl.class).in(Scopes.SINGLETON);
@@ -53,9 +59,9 @@ public class CassandraRecipientRewriteTableModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    InitializationOperation configureRecipientRewriteTable(ConfigurationProvider configurationProvider, CassandraRecipientRewriteTable recipientRewriteTable) {
+    InitializationOperation configureRecipientRewriteTable(ConfigurationProvider configurationProvider, RecipientRewriteTableImpl<CassandraRecipientRewriteTable> recipientRewriteTable) {
         return InitilizationOperationBuilder
-            .forClass(CassandraRecipientRewriteTable.class)
+            .forClass(RecipientRewriteTableImpl.class)
             .init(() -> recipientRewriteTable.configure(configurationProvider.getConfiguration("recipientrewritetable")));
     }
 }

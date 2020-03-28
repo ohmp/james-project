@@ -19,7 +19,6 @@
 
 package org.apache.james.rrt.cassandra;
 
-import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.DockerCassandraRule;
 import org.apache.james.backends.cassandra.components.CassandraModule;
@@ -27,7 +26,9 @@ import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
+import org.apache.james.domainlist.api.DomainList;
+import org.apache.james.rrt.lib.RecipientRewriteTableFixture;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTableTest;
 import org.junit.After;
 import org.junit.Before;
@@ -60,10 +61,9 @@ public class CassandraRecipientRewriteTableV6Test extends AbstractRecipientRewri
     }
 
     @Override
-    protected AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception {
+    protected RecipientRewriteTableImpl createRecipientRewriteTable(DomainList domainList) throws Exception {
         CassandraSchemaVersionDAO cassandraSchemaVersionDAO = new CassandraSchemaVersionDAO(
-            cassandra.getConf()
-        );
+            cassandra.getConf());
 
         CassandraRecipientRewriteTable rrt = new CassandraRecipientRewriteTable(
             new CassandraRecipientRewriteTableDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION),
@@ -72,6 +72,6 @@ public class CassandraRecipientRewriteTableV6Test extends AbstractRecipientRewri
 
         cassandraSchemaVersionDAO.updateVersion(SCHEMA_VERSION_V6);
 
-        return rrt;
+        return new RecipientRewriteTableImpl(rrt, RecipientRewriteTableFixture.domainListForCucumberTests());
     }
 }

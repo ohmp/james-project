@@ -52,12 +52,11 @@ class AddressMappingRoutesTest {
 
     @BeforeEach
     void setUp() throws DomainListException {
-        recipientRewriteTable = new MemoryRecipientRewriteTable();
         DNSService dnsService = mock(DNSService.class);
         DomainList domainList = new MemoryDomainList(dnsService);
         domainList.addDomain(Domain.of("domain.tld"));
 
-        recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
 
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new AddressMappingRoutes(recipientRewriteTable))
@@ -75,7 +74,7 @@ class AddressMappingRoutesTest {
     }
 
     @Test
-    void addAddressMappingShouldAddMappingOnRecipientRewriteTable() {
+    void addAddressMappingShouldAddMappingOnRecipientRewriteTable() throws Exception {
         when()
             .post(MAPPING_SOURCE + "/targets/" + ALICE_ADDRESS);
 
@@ -145,7 +144,7 @@ class AddressMappingRoutesTest {
     }
 
     @Test
-    void removeAddressMappingShouldRemoveDestinationAddress() {
+    void removeAddressMappingShouldRemoveDestinationAddress() throws Exception {
         when()
             .post(MAPPING_SOURCE + "/targets/" + ALICE_ADDRESS);
 

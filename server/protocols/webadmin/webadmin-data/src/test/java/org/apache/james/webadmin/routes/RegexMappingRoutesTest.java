@@ -51,8 +51,7 @@ class RegexMappingRoutesTest {
     void beforeEach() throws Exception {
         DNSService dnsService = mock(DNSService.class);
         DomainList domainList = new MemoryDomainList(dnsService);
-        memoryRecipientRewriteTable = new MemoryRecipientRewriteTable();
-        memoryRecipientRewriteTable.setDomainList(domainList);
+        memoryRecipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
         domainList.addDomain(Domain.of("domain.tld"));
 
         webAdminServer = WebAdminUtils
@@ -71,7 +70,7 @@ class RegexMappingRoutesTest {
     }
 
     @Test
-    void addRegexMappingShouldReturnNoContentWhenSuccess() {
+    void addRegexMappingShouldReturnNoContentWhenSuccess() throws Exception {
         with()
             .post("james@domain.tld/targets/bis.*@apache.org")
         .then()
@@ -84,7 +83,7 @@ class RegexMappingRoutesTest {
     }
 
     @Test
-    void addRegexMappingShouldAllowUserWithoutDomain() {
+    void addRegexMappingShouldAllowUserWithoutDomain() throws Exception {
         with()
             .post("jamesdomaintld/targets/bis.*@apache.org")
         .then()
@@ -145,7 +144,7 @@ class RegexMappingRoutesTest {
     }
 
     @Test
-    void addRegexMappingShouldReturnNoContentWhenRegexContainsQuestionMark() {
+    void addRegexMappingShouldReturnNoContentWhenRegexContainsQuestionMark() throws Exception {
         with()
             .post("james@domain.tld/targets/^[aei%3Fou].*james@domain.tld")
         .then()

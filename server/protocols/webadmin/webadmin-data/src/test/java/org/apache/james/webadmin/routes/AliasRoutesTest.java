@@ -105,7 +105,6 @@ class AliasRoutesTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            memoryRecipientRewriteTable = new MemoryRecipientRewriteTable();
             DNSService dnsService = mock(DNSService.class);
             domainList = new MemoryDomainList(dnsService);
             domainList.configure(DomainListConfiguration.builder()
@@ -115,7 +114,7 @@ class AliasRoutesTest {
             domainList.addDomain(ALIAS_DOMAIN);
             domainList.addDomain(DOMAIN_MAPPING);
             MappingSourceModule module = new MappingSourceModule();
-            memoryRecipientRewriteTable.setDomainList(domainList);
+            memoryRecipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
 
             usersRepository = MemoryUsersRepository.withVirtualHosting(domainList);
 
@@ -420,10 +419,9 @@ class AliasRoutesTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            memoryRecipientRewriteTable = spy(new MemoryRecipientRewriteTable());
             UsersRepository userRepository = mock(UsersRepository.class);
             domainList = mock(DomainList.class);
-            memoryRecipientRewriteTable.setDomainList(domainList);
+            memoryRecipientRewriteTable = spy(new MemoryRecipientRewriteTable(domainList));
             Mockito.when(domainList.containsDomain(any())).thenReturn(true);
             createServer(new AliasRoutes(memoryRecipientRewriteTable, userRepository, domainList, new JsonTransformer()));
         }

@@ -19,7 +19,8 @@
 
 package org.apache.james.rrt.memory;
 
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
+import org.apache.james.domainlist.api.DomainList;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTableTest;
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +40,7 @@ public class MemoryRecipientRewriteTableTest extends AbstractRecipientRewriteTab
     }
 
     @Override
-    protected AbstractRecipientRewriteTable getRecipientRewriteTable() {
-        return new MemoryRecipientRewriteTable();
+    protected RecipientRewriteTableImpl createRecipientRewriteTable(DomainList domainList) {
+        return new MemoryRecipientRewriteTable(domainList);
     }
 }

@@ -35,11 +35,11 @@ import cucumber.api.java.en.When;
 
 public class RewriteTablesStepdefs {
 
-    private Supplier<AbstractRecipientRewriteTable> recipientRewriteTableSupplier;
-    private AbstractRecipientRewriteTable rewriteTable;
+    private Supplier<RecipientRewriteTableImpl> recipientRewriteTableSupplier;
+    private RecipientRewriteTableImpl rewriteTable;
     private Exception exception;
 
-    public void setUp(Supplier<AbstractRecipientRewriteTable> recipientRewriteTableSupplier) {
+    public void setUp(Supplier<RecipientRewriteTableImpl> recipientRewriteTableSupplier) {
         this.recipientRewriteTableSupplier = recipientRewriteTableSupplier;
         this.rewriteTable = this.recipientRewriteTableSupplier.get();
         this.rewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);

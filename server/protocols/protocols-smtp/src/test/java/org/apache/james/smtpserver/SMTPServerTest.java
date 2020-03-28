@@ -276,10 +276,10 @@ public class SMTPServerTest {
         smtpServer.init();
     }
 
-    protected void setUpFakeLoader() throws Exception {
+    protected void setUpFakeLoader() {
         dnsServer = new AlterableDNSServer();
 
-        rewriteTable = new MemoryRecipientRewriteTable();
+        rewriteTable = new MemoryRecipientRewriteTable(domainList);
         rewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
         aliasReverseResolver = new AliasReverseResolverImpl(rewriteTable);
         canSendFrom = new CanSendFromImpl(rewriteTable, aliasReverseResolver);

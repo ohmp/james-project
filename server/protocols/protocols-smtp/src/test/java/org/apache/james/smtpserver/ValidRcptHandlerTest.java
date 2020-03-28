@@ -70,8 +70,7 @@ public class ValidRcptHandlerTest {
         UsersRepository users = MemoryUsersRepository.withoutVirtualHosting(memoryDomainList);
         users.addUser(VALID_USER, PASSWORD);
 
-        memoryRecipientRewriteTable = new MemoryRecipientRewriteTable();
-        memoryRecipientRewriteTable.setDomainList(memoryDomainList);
+        memoryRecipientRewriteTable = new MemoryRecipientRewriteTable(memoryDomainList);
         memoryRecipientRewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
         handler = new ValidRcptHandler(users, memoryRecipientRewriteTable, memoryDomainList);
 

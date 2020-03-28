@@ -52,30 +52,47 @@ import org.slf4j.LoggerFactory;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
 
-public abstract class AbstractRecipientRewriteTable implements RecipientRewriteTable, Configurable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRecipientRewriteTable.class);
+public class RecipientRewriteTableImpl<T extends RecipientRewriteTableDAO> implements RecipientRewriteTable, Configurable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientRewriteTableImpl.class);
 
+    protected final T rrtDAO;
+    private final DomainList domainList;
     private RecipientRewriteTableConfiguration configuration;
-    private DomainList domainList;
+
+    @Inject
+    public RecipientRewriteTableImpl(T rrtDAO, DomainList domainList) {
+        this.rrtDAO = rrtDAO;
+        this.domainList = domainList;
+    }
 
     public void setConfiguration(RecipientRewriteTableConfiguration configuration) {
         Preconditions.checkState(this.configuration == null, "A configuration cannot be set twice");
         this.configuration = configuration;
     }
 
-    @Inject
-    public void setDomainList(DomainList domainList) {
-        this.domainList = domainList;
-    }
-
     @Override
     public void configure(HierarchicalConfiguration<ImmutableNode> config) throws ConfigurationException {
         setConfiguration(RecipientRewriteTableConfiguration.fromConfiguration(config));
-        doConfigure(config);
     }
 
-    protected void doConfigure(HierarchicalConfiguration<ImmutableNode> arg0) throws ConfigurationException {
+    @Override
+    public void addMapping(MappingSource source, Mapping mapping) throws RecipientRewriteTableException {
+        rrtDAO.addMapping(source, mapping);
+    }
 
+    @Override
+    public void removeMapping(MappingSource source, Mapping mapping) throws RecipientRewriteTableException {
+        rrtDAO.removeMapping(source, mapping);
+    }
+
+    @Override
+    public Mappings getStoredMappings(MappingSource source) throws RecipientRewriteTableException {
+        return rrtDAO.getStoredMappings(source);
+    }
+
+    @Override
+    public Map<MappingSource, Mappings> getAllMappings() throws RecipientRewriteTableException {
+        return rrtDAO.getAllMappings();
     }
 
     @Override
@@ -99,7 +116,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
 
         Domain domain = username.getDomainPart().get();
         String localPart = username.getLocalPart();
-        Stream<Mapping> targetMappings = mapAddress(localPart, domain).asStream()
+        Stream<Mapping> targetMappings = rrtDAO.mapAddress(localPart, domain).asStream()
                 .filter(mapping -> mappingTypes.contains(mapping.getType()));
 
         try {
@@ -336,20 +353,6 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         LOGGER.info("Remove alias source => {} for destination mapping: {}", source.asString(), mapping.asString());
         removeMapping(source, mapping);
     }
-
-    /**
-     * Return a Map which holds all Mappings
-     * 
-     * @return Map
-     */
-    public abstract Map<MappingSource, Mappings> getAllMappings() throws RecipientRewriteTableException;
-
-    /**
-     * This method must return stored Mappings for the given user.
-     * It must never return null but throw RecipientRewriteTableException on errors and return an empty Mappings
-     * object if no mapping is found.
-     */
-    protected abstract Mappings mapAddress(String user, Domain domain) throws RecipientRewriteTableException;
 
     private void checkDomainMappingSourceIsManaged(MappingSource source) throws RecipientRewriteTableException {
         Optional<Domain> notManagedSourceDomain = OptionalUtils.toStream(source.availableDomain())

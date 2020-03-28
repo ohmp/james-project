@@ -33,12 +33,11 @@ import org.junit.jupiter.api.BeforeEach;
 
 public class AliasReverseResolverImplTest implements AliasReverseResolverContract {
 
-    AbstractRecipientRewriteTable recipientRewriteTable;
+    RecipientRewriteTableImpl recipientRewriteTable;
     AliasReverseResolverImpl aliasReverseResolver;
 
     @BeforeEach
     void setup() throws Exception {
-        recipientRewriteTable = new MemoryRecipientRewriteTable();
 
         DNSService dnsService = mock(DNSService.class);
         MemoryDomainList domainList = new MemoryDomainList(dnsService);
@@ -47,7 +46,7 @@ public class AliasReverseResolverImplTest implements AliasReverseResolverContrac
             .autoDetectIp(false));
         domainList.addDomain(DOMAIN);
         domainList.addDomain(OTHER_DOMAIN);
-        recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
         recipientRewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
 
         this.aliasReverseResolver = new AliasReverseResolverImpl(recipientRewriteTable);

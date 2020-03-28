@@ -20,7 +20,8 @@ package org.apache.james.rrt.file;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
+import org.apache.james.domainlist.api.DomainList;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTableTest;
 import org.junit.After;
 import org.junit.Before;
@@ -45,8 +46,8 @@ public class XMLRecipientRewriteTableTest extends AbstractRecipientRewriteTableT
     }
 
     @Override
-    protected AbstractRecipientRewriteTable getRecipientRewriteTable() {
-        return new XMLRecipientRewriteTable();
+    protected RecipientRewriteTableImpl createRecipientRewriteTable(DomainList domainList) {
+        return new XMLRecipientRewriteTable(domainList);
     }
 
     @Test

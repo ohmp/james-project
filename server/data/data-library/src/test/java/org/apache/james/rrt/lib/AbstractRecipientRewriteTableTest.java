@@ -23,9 +23,11 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Domain;
+import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.mock.SimpleDomainList;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.rrt.api.RecipientRewriteTable.ErrorMappingException;
@@ -53,11 +55,11 @@ public abstract class AbstractRecipientRewriteTableTest {
     private static final Domain NOT_SUPPORTED_DOMAIN = Domain.of("notAManagedDomain");
     private static final MappingSource SOURCE_WITH_DOMAIN_NOT_IN_DOMAIN_LIST = MappingSource.fromUser(USER, NOT_SUPPORTED_DOMAIN);
 
-    protected abstract AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception;
+    protected abstract RecipientRewriteTableImpl createRecipientRewriteTable(DomainList domainList) throws Exception;
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    protected AbstractRecipientRewriteTable virtualUserTable;
+    protected RecipientRewriteTableImpl virtualUserTable;
 
     public void setUp() throws Exception {
         setRecursiveRecipientRewriteTable();
@@ -74,18 +76,18 @@ public abstract class AbstractRecipientRewriteTableTest {
     }
 
     private void setNotConfiguredRecipientRewriteTable() throws Exception {
-        virtualUserTable = getRecipientRewriteTable();
 
         SimpleDomainList domainList = new SimpleDomainList();
         domainList.addDomain(SUPPORTED_DOMAIN);
-        virtualUserTable.setDomainList(domainList);
+        virtualUserTable = createRecipientRewriteTable(domainList);
     }
 
     public void tearDown() throws Exception {
         Map<MappingSource, Mappings> mappings = virtualUserTable.getAllMappings();
 
         if (mappings != null) {
-            for (MappingSource key : virtualUserTable.getAllMappings().keySet()) {
+            Set<MappingSource> keys = virtualUserTable.getAllMappings().keySet();
+            for (MappingSource key : keys) {
                 Mappings map = mappings.get(key);
 
                 map.asStream()

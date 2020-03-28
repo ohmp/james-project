@@ -104,7 +104,6 @@ class ForwardRoutesTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            memoryRecipientRewriteTable = new MemoryRecipientRewriteTable();
             DNSService dnsService = mock(DNSService.class);
             domainList = new MemoryDomainList(dnsService);
             domainList.configure(DomainListConfiguration.builder()
@@ -113,7 +112,7 @@ class ForwardRoutesTest {
             domainList.addDomain(DOMAIN);
             domainList.addDomain(ALIAS_DOMAIN);
             domainList.addDomain(DOMAIN_MAPPING);
-            memoryRecipientRewriteTable.setDomainList(domainList);
+            memoryRecipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
             MappingSourceModule mappingSourceModule = new MappingSourceModule();
 
             usersRepository = MemoryUsersRepository.withVirtualHosting(domainList);
@@ -193,7 +192,7 @@ class ForwardRoutesTest {
         }
 
         @Test
-        void getForwardShouldReturnNotFoundWhenNonForwardMappings() {
+        void getForwardShouldReturnNotFoundWhenNonForwardMappings() throws Exception {
             memoryRecipientRewriteTable.addMapping(
                 MappingSource.fromDomain(DOMAIN),
                 Mapping.domain(Domain.of("target.tld")));
@@ -450,13 +449,12 @@ class ForwardRoutesTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            memoryRecipientRewriteTable = spy(new MemoryRecipientRewriteTable());
             UsersRepository userRepository = mock(UsersRepository.class);
             doReturn(true)
                 .when(userRepository).contains(any());
 
             domainList = mock(DomainList.class);
-            memoryRecipientRewriteTable.setDomainList(domainList);
+            memoryRecipientRewriteTable = spy(new MemoryRecipientRewriteTable(domainList));
             Mockito.when(domainList.containsDomain(any())).thenReturn(true);
             createServer(new ForwardRoutes(memoryRecipientRewriteTable, userRepository, new JsonTransformer()));
         }

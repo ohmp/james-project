@@ -68,7 +68,7 @@ class DomainsRoutesTest {
     private WebAdminServer webAdminServer;
 
     private void createServer(DomainList domainList) {
-        DomainAliasService domainAliasService = new DomainAliasService(new MemoryRecipientRewriteTable(), domainList);
+        DomainAliasService domainAliasService = new DomainAliasService(new MemoryRecipientRewriteTable(domainList), domainList);
         webAdminServer = WebAdminUtils.createWebAdminServer(new DomainsRoutes(domainList, domainAliasService, new JsonTransformer()))
             .start();
 

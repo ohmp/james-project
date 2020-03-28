@@ -34,12 +34,11 @@ import org.junit.jupiter.api.BeforeEach;
 
 public class CanSendFromImplTest implements CanSendFromContract {
 
-    AbstractRecipientRewriteTable recipientRewriteTable;
+    RecipientRewriteTableImpl recipientRewriteTable;
     CanSendFrom canSendFrom;
 
     @BeforeEach
     void setup() throws Exception {
-        recipientRewriteTable = new MemoryRecipientRewriteTable();
 
         DNSService dnsService = mock(DNSService.class);
         MemoryDomainList domainList = new MemoryDomainList(dnsService);
@@ -48,7 +47,7 @@ public class CanSendFromImplTest implements CanSendFromContract {
             .autoDetectIp(false));
         domainList.addDomain(DOMAIN);
         domainList.addDomain(OTHER_DOMAIN);
-        recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
         recipientRewriteTable.setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
 
         AliasReverseResolver aliasReverseResolver = new AliasReverseResolverImpl(recipientRewriteTable);

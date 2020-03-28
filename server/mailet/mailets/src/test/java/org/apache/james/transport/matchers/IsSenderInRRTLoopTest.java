@@ -44,10 +44,9 @@ public class IsSenderInRRTLoopTest {
 
     @Before
     public void setUp() throws Exception {
-        recipientRewriteTable = new MemoryRecipientRewriteTable();
         SimpleDomainList domainList = new SimpleDomainList();
         domainList.addDomain(JAMES_LOCAL_DOMAIN);
-        ((MemoryRecipientRewriteTable) recipientRewriteTable).setDomainList(domainList);
+        recipientRewriteTable = new MemoryRecipientRewriteTable(domainList);
         ((MemoryRecipientRewriteTable) recipientRewriteTable).setConfiguration(RecipientRewriteTableConfiguration.DEFAULT_ENABLED);
         testee = new IsSenderInRRTLoop(recipientRewriteTable);
     }

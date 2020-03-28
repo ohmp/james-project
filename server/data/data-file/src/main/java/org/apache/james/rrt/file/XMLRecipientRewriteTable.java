@@ -18,84 +18,27 @@
  ****************************************************************/
 package org.apache.james.rrt.file;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import javax.inject.Inject;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
-import org.apache.james.core.Domain;
-import org.apache.james.rrt.api.RecipientRewriteTableException;
-import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
-import org.apache.james.rrt.lib.Mapping;
-import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.rrt.lib.Mappings;
-import org.apache.james.rrt.lib.MappingsImpl;
-import org.apache.james.rrt.lib.RecipientRewriteTableUtil;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import org.apache.james.domainlist.api.DomainList;
+import org.apache.james.lifecycle.api.Configurable;
+import org.apache.james.rrt.lib.RecipientRewriteTableImpl;
 
 /**
  * Class responsible to implement the Virtual User Table in XML disk file.
  */
-public class XMLRecipientRewriteTable extends AbstractRecipientRewriteTable {
-
-    /**
-     * Holds the configured mappings
-     */
-    private Map<MappingSource, String> mappings;
-
-    @Override
-    protected void doConfigure(HierarchicalConfiguration<ImmutableNode> arg0) throws ConfigurationException {
-        String[] mapConf = arg0.getStringArray("mapping");
-        mappings = Maps.newHashMap();
-        if (mapConf != null && mapConf.length > 0) {
-            for (String aMapConf : mapConf) {
-                mappings.putAll(RecipientRewriteTableUtil.getXMLMappings(aMapConf));
-            }
-        } else {
-            throw new ConfigurationException("No mapping configured");
-        }
+public class XMLRecipientRewriteTable extends RecipientRewriteTableImpl<XMLRecipientRewriteTableDAO> implements Configurable {
+    @Inject
+    public XMLRecipientRewriteTable(DomainList domainList) {
+        super(new XMLRecipientRewriteTableDAO(), domainList);
     }
 
     @Override
-    protected Mappings mapAddress(String user, Domain domain) {
-        return Optional.ofNullable(mappings)
-            .map(mappings -> RecipientRewriteTableUtil.getTargetString(user, domain, mappings))
-            .map(MappingsImpl::fromRawString)
-            .orElse(MappingsImpl.empty());
-    }
-
-    @Override
-    public Mappings getStoredMappings(MappingSource source) {
-        return Optional.ofNullable(mappings)
-            .map(mappings -> mappings.get(source))
-            .map(MappingsImpl::fromRawString)
-            .orElse(MappingsImpl.empty());
-    }
-
-    @Override
-    public Map<MappingSource, Mappings> getAllMappings() {
-        if (mappings != null && mappings.size() > 0) {
-            Map<MappingSource, Mappings> mappingsNew = new HashMap<>();
-            for (MappingSource key : mappings.keySet()) {
-                mappingsNew.put(key, MappingsImpl.fromRawString(mappings.get(key)));
-            }
-            return mappingsNew;
-        } else {
-            return ImmutableMap.of();
-        }
-    }
-
-    @Override
-    public void addMapping(MappingSource source, Mapping mapping) throws RecipientRewriteTableException {
-        throw new RecipientRewriteTableException("Read-Only implementation");
-    }
-
-    @Override
-    public void removeMapping(MappingSource source, Mapping mapping) throws RecipientRewriteTableException {
-        throw new RecipientRewriteTableException("Read-Only implementation");
+    public void configure(HierarchicalConfiguration<ImmutableNode> arg0) throws ConfigurationException {
+        this.rrtDAO.configure(arg0);
+        super.configure(arg0);
     }
 }
