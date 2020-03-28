@@ -21,8 +21,10 @@ package org.apache.james.modules.data;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.domainlist.api.DomainList;
-import org.apache.james.domainlist.cassandra.CassandraDomainList;
+import org.apache.james.domainlist.cassandra.CassandraDomainListDAO;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
+import org.apache.james.domainlist.lib.DomainListDAO;
+import org.apache.james.domainlist.lib.DomainListImpl;
 import org.apache.james.server.core.configuration.ConfigurationProvider;
 import org.apache.james.utils.InitializationOperation;
 import org.apache.james.utils.InitilizationOperationBuilder;
@@ -31,6 +33,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 
@@ -38,8 +41,10 @@ public class CassandraDomainListModule extends AbstractModule {
 
     @Override
     public void configure() {
-        bind(CassandraDomainList.class).in(Scopes.SINGLETON);
-        bind(DomainList.class).to(CassandraDomainList.class);
+        bind(CassandraDomainListDAO.class).in(Scopes.SINGLETON);
+        bind(CassandraDomainListDAO.class).in(Scopes.SINGLETON);
+        bind(DomainListDAO.class).to(CassandraDomainListDAO.class);
+        bind(DomainList.class).to(new TypeLiteral<DomainListImpl<CassandraDomainListDAO>>() {});
         Multibinder.newSetBinder(binder(), CassandraModule.class).addBinding().toInstance(org.apache.james.domainlist.cassandra.CassandraDomainListModule.MODULE);
     }
 
@@ -50,9 +55,9 @@ public class CassandraDomainListModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    InitializationOperation configureDomainList(DomainListConfiguration configuration, CassandraDomainList cassandraDomainList) {
+    InitializationOperation configureDomainList(DomainListConfiguration configuration, DomainListImpl<CassandraDomainListDAO> cassandraDomainList) {
         return InitilizationOperationBuilder
-            .forClass(CassandraDomainList.class)
+            .forClass(DomainListImpl.class)
             .init(() -> cassandraDomainList.configure(configuration));
     }
 }

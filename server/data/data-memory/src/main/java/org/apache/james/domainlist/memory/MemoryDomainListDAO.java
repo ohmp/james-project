@@ -17,43 +17,47 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.domainlist.cassandra;
+package org.apache.james.domainlist.memory;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
-import org.apache.james.domainlist.api.DomainList;
-import org.apache.james.domainlist.lib.AbstractDomainListTest;
-import org.apache.james.domainlist.lib.DomainListImpl;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class CassandraDomainListTest extends AbstractDomainListTest {
+import org.apache.james.core.Domain;
+import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.domainlist.lib.DomainListDAO;
 
-    @Rule
-    public DockerCassandraRule cassandraServer = new DockerCassandraRule();
+import com.google.common.collect.ImmutableList;
 
-    private CassandraCluster cassandra;
+public class MemoryDomainListDAO implements DomainListDAO {
+    private final ConcurrentLinkedDeque<Domain> domains;
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        cassandra = CassandraCluster.create(CassandraDomainListModule.MODULE, cassandraServer.getHost());
-        super.setUp();
-    }
-
-    @After
-    public void tearDown() {
-        cassandra.close();
+    MemoryDomainListDAO() {
+        this.domains = new ConcurrentLinkedDeque<>();
     }
 
     @Override
-    protected DomainList createDomainList() throws Exception {
-        CassandraDomainListDAO dao = new CassandraDomainListDAO(cassandra.getConf());
-        DomainListImpl testee = new DomainListImpl(getDNSServer("localhost"), dao);
-        testee.setAutoDetect(false);
-        testee.setAutoDetectIP(false);
-        return testee;
+    public List<Domain> getDomainListInternal() {
+        return ImmutableList.copyOf(domains);
     }
 
+    @Override
+    public boolean containsDomainInternal(Domain domain) {
+        return domains.contains(domain);
+    }
+
+    @Override
+    public void addDomain(Domain domain) throws DomainListException {
+        boolean applied = domains.add(domain);
+
+        if (!applied) {
+            throw new DomainListException(domain.name() + " already exists.");
+        }
+    }
+
+    @Override
+    public void removeDomain(Domain domain) throws DomainListException {
+        if (!domains.remove(domain)) {
+            throw new DomainListException(domain.name() + " was not found");
+        }
+    }
 }

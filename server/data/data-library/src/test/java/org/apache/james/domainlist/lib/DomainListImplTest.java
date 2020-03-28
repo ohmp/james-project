@@ -32,35 +32,24 @@ import java.util.List;
 import org.apache.james.core.Domain;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.api.AutoDetectedDomainRemovalException;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-public class AbstractDomainListPrivateMethodsTest {
-    private MyDomainList domainList;
-    private DNSService dnsService;
-    private EnvDetector envDetector;
+public class DomainListImplTest {
+    static class DAO implements DomainListDAO {
+        private final List<Domain> domains;
 
-    @Before
-    public void setup() {
-        dnsService = mock(DNSService.class);
-        envDetector = mock(EnvDetector.class);
-        domainList = new MyDomainList(dnsService, envDetector);
-    }
-
-    private static class MyDomainList extends AbstractDomainList {
-
-        private List<Domain> domains;
-
-        MyDomainList(DNSService dns, EnvDetector envDetector) {
-            super(dns, envDetector);
+        DAO() {
             this.domains = Lists.newArrayList();
         }
 
         @Override
-        protected boolean containsDomainInternal(Domain domain) {
+        public boolean containsDomainInternal(Domain domain) {
             return domains.contains(domain);
         }
 
@@ -70,14 +59,28 @@ public class AbstractDomainListPrivateMethodsTest {
         }
 
         @Override
-        public void doRemoveDomain(Domain domain) {
+        public void removeDomain(Domain domain) {
             domains.remove(domain);
         }
 
         @Override
-        protected List<Domain> getDomainListInternal() {
+        public List<Domain> getDomainListInternal() {
             return domains;
         }
+
+    }
+
+    private DAO dao;
+    private DomainListImpl domainList;
+    private DNSService dnsService;
+    private EnvDetector envDetector;
+
+    @Before
+    public void setup() {
+        dnsService = mock(DNSService.class);
+        envDetector = mock(EnvDetector.class);
+        dao = new DAO();
+        domainList = new DomainListImpl(dnsService, dao, envDetector);
     }
 
     @Test
@@ -102,7 +105,7 @@ public class AbstractDomainListPrivateMethodsTest {
         Domain expectedDefaultDomain = Domain.of(InetAddress.getLocalHost().getHostName());
         domainList.configureDefaultDomain(expectedDefaultDomain);
 
-        assertThat(domainList.getDomainListInternal()).contains(expectedDefaultDomain);
+        assertThat(dao.getDomainListInternal()).contains(expectedDefaultDomain);
     }
 
     @Test
@@ -111,7 +114,7 @@ public class AbstractDomainListPrivateMethodsTest {
         domainList.configureDefaultDomain(expectedDefaultDomain);
         domainList.configureDefaultDomain(expectedDefaultDomain);
 
-        assertThat(domainList.getDomainListInternal()).containsOnlyOnce(expectedDefaultDomain);
+        assertThat(dao.getDomainListInternal()).containsOnlyOnce(expectedDefaultDomain);
     }
 
     @Test
@@ -120,7 +123,7 @@ public class AbstractDomainListPrivateMethodsTest {
 
         domainList.configureDefaultDomain(expectedDefaultDomain);
 
-        assertThat(domainList.getDomainListInternal()).contains(expectedDefaultDomain);
+        assertThat(dao.getDomainListInternal()).contains(expectedDefaultDomain);
     }
 
     @Test
@@ -130,7 +133,7 @@ public class AbstractDomainListPrivateMethodsTest {
         domainList.addDomain(expectedDefaultDomain);
         domainList.configureDefaultDomain(expectedDefaultDomain);
 
-        assertThat(domainList.getDomainListInternal()).contains(expectedDefaultDomain);
+        assertThat(dao.getDomainListInternal()).contains(expectedDefaultDomain);
     }
 
     @Test
@@ -204,8 +207,9 @@ public class AbstractDomainListPrivateMethodsTest {
         when(dnsService.getAllByName(added)).thenReturn(ImmutableList.of(detectedAddress2));
         domainList.addDomain(Domain.of(added));
 
-        assertThat(domainList.getDomains())
-            .extracting(Domain::name)
+        ThrowingExtractor<Domain, String, Exception> ex = Domain::name;
+        Assertions.<Domain>assertThat(domainList.getDomains())
+            .extracting(ex)
             .contains(detected, detectedIp1, added, detectedIp2);
     }
 
@@ -228,8 +232,9 @@ public class AbstractDomainListPrivateMethodsTest {
         domainList.addDomain(Domain.of(added));
         domainList.addDomain(Domain.of(ip));
 
-        assertThat(domainList.getDomains())
-            .extracting(Domain::name)
+        ThrowingExtractor<Domain, String, Exception> ex = Domain::name;
+        Assertions.<Domain>assertThat(domainList.getDomains())
+            .extracting(ex)
             .containsOnlyOnce(added, detected, ip);
     }
 
@@ -309,7 +314,7 @@ public class AbstractDomainListPrivateMethodsTest {
     @Test
     public void envDomainShouldBeAddedUponConfiguration() throws Exception {
         String envDomain = "env.tld";
-        when(envDetector.getEnv(AbstractDomainList.ENV_DOMAIN)).thenReturn(envDomain);
+        when(envDetector.getEnv(DomainListImpl.ENV_DOMAIN)).thenReturn(envDomain);
 
 
         domainList.configure(DomainListConfiguration.builder()

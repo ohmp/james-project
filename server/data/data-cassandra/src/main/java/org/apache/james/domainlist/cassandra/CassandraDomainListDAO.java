@@ -33,14 +33,13 @@ import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.core.Domain;
-import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.api.DomainListException;
-import org.apache.james.domainlist.lib.AbstractDomainList;
+import org.apache.james.domainlist.lib.DomainListDAO;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
-public class CassandraDomainList extends AbstractDomainList {
+public class CassandraDomainListDAO implements DomainListDAO {
     private final CassandraAsyncExecutor executor;
     private final PreparedStatement readAllStatement;
     private final PreparedStatement readStatement;
@@ -48,8 +47,7 @@ public class CassandraDomainList extends AbstractDomainList {
     private final PreparedStatement removeStatement;
 
     @Inject
-    public CassandraDomainList(DNSService dnsService, Session session) {
-        super(dnsService);
+    CassandraDomainListDAO(Session session) {
         this.executor = new CassandraAsyncExecutor(session);
         this.readAllStatement = prepareReadAllStatement(session);
         this.readStatement = prepareReadStatement(session);
@@ -82,7 +80,7 @@ public class CassandraDomainList extends AbstractDomainList {
     }
 
     @Override
-    protected List<Domain> getDomainListInternal() throws DomainListException {
+    public List<Domain> getDomainListInternal() throws DomainListException {
         return executor.executeRows(readAllStatement.bind())
             .map(row -> Domain.of(row.getString(DOMAIN)))
             .collectList()
@@ -90,7 +88,7 @@ public class CassandraDomainList extends AbstractDomainList {
     }
 
     @Override
-    protected boolean containsDomainInternal(Domain domain) throws DomainListException {
+    public boolean containsDomainInternal(Domain domain) throws DomainListException {
         return executor.executeSingleRowOptional(readStatement.bind()
                 .setString(DOMAIN, domain.asString()))
             .block()
@@ -108,7 +106,7 @@ public class CassandraDomainList extends AbstractDomainList {
     }
 
     @Override
-    public void doRemoveDomain(Domain domain) throws DomainListException {
+    public void removeDomain(Domain domain) throws DomainListException {
         boolean executed = executor.executeReturnApplied(removeStatement.bind()
             .setString(DOMAIN, domain.asString()))
             .block();

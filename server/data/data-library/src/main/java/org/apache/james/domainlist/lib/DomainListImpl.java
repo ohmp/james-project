@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -47,13 +49,8 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-/**
- * All implementations of the DomainList interface should extends this abstract
- * class
- */
-public abstract class AbstractDomainList implements DomainList, Configurable {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDomainList.class);
+public class DomainListImpl<T extends DomainListDAO> implements DomainList, Configurable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DomainListImpl.class);
 
     enum DomainType {
         DefaultDomain,
@@ -62,25 +59,32 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
         DetectedIp
     }
 
-    public static final String CONFIGURE_AUTODETECT = "autodetect";
-    public static final String CONFIGURE_AUTODETECT_IP = "autodetectIP";
-    public static final String CONFIGURE_DEFAULT_DOMAIN = "defaultDomain";
-    public static final String CONFIGURE_DOMAIN_NAMES = "domainnames.domainname";
-    public static final String ENV_DOMAIN = "DOMAIN";
+    static final String ENV_DOMAIN = "DOMAIN";
 
     private final DNSService dns;
+    protected final T domainListDAO;
     private final EnvDetector envDetector;
     private boolean autoDetect = true;
     private boolean autoDetectIP = true;
     private Domain defaultDomain;
 
-    public AbstractDomainList(DNSService dns, EnvDetector envDetector) {
+    @Inject
+    DomainListImpl(DNSService dns, T domainListDAO, EnvDetector envDetector) {
         this.dns = dns;
+        this.domainListDAO = domainListDAO;
         this.envDetector = envDetector;
     }
 
-    public AbstractDomainList(DNSService dns) {
-        this(dns, new EnvDetector());
+    public DomainListImpl(DNSService dns, T domainListDAO) {
+        this(dns, domainListDAO, new EnvDetector());
+    }
+
+    @Override
+    public void addDomain(Domain domain) throws DomainListException {
+        if (containsDomain(domain)) {
+            throw new DomainListException(domain.name() + " already exists.");
+        }
+        domainListDAO.addDomain(domain);
     }
 
     @Override
@@ -104,12 +108,11 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
         configure(configurationBuilder.build());
     }
 
-    protected void addConfiguredDomains(List<Domain> domains) {
+    private void addConfiguredDomains(List<Domain> domains) {
         domains.stream()
-            .filter(Throwing.predicate((Domain domain) -> !containsDomainInternal(domain)).sneakyThrow())
+            .filter(Throwing.predicate((Domain domain) -> !domainListDAO.containsDomainInternal(domain)).sneakyThrow())
             .forEach(Throwing.consumer(this::addDomain).sneakyThrow());
     }
-
 
     private void addEnvDomain() {
         String envDomain = envDetector.getEnv(ENV_DOMAIN);
@@ -123,7 +126,7 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
         }
     }
 
-    @VisibleForTesting void configureDefaultDomain(Domain defaultDomain) throws ConfigurationException {
+    @VisibleForTesting void configureDefaultDomain(Domain defaultDomain) {
         try {
             setDefaultDomain(defaultDomain);
 
@@ -160,12 +163,12 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
 
     @Override
     public boolean containsDomain(Domain domain) throws DomainListException {
-        boolean internalAnswer = containsDomainInternal(domain);
+        boolean internalAnswer = domainListDAO.containsDomainInternal(domain);
         return internalAnswer || getDomains().contains(domain);
     }
 
     @Override
-    public ImmutableList<Domain> getDomains() throws DomainListException {
+    public List<Domain> getDomains() throws DomainListException {
         ImmutableSet<Domain> allDomains = getDomainsWithType().values()
             .stream()
             .collect(Guavate.toImmutableSet());
@@ -180,7 +183,7 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
     }
 
     private Multimap<DomainType, Domain> getDomainsWithType() throws DomainListException {
-        List<Domain> domains = getDomainListInternal();
+        List<Domain> domains = domainListDAO.getDomainListInternal();
         ImmutableList<Domain> detectedDomains = detectDomains();
 
         ImmutableList<Domain> domainsWithoutIp = ImmutableList.<Domain>builder()
@@ -200,7 +203,7 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
 
     private ImmutableList<Domain> detectIps(Collection<Domain> domains) {
         if (autoDetectIP) {
-            return getDomainsIpStream(domains, dns, LOGGER)
+            return getDomainsIpStream(domains)
                 .collect(Guavate.toImmutableList());
         }
         return ImmutableList.of();
@@ -230,20 +233,20 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
      *            Iterable of domains
      * @return Stream of ipaddress for domains
      */
-    private static Stream<Domain> getDomainsIpStream(Collection<Domain> domains, DNSService dns, Logger log) {
+    private Stream<Domain> getDomainsIpStream(Collection<Domain> domains) {
         return domains.stream()
-            .flatMap(domain -> getDomainIpStream(domain, dns, log))
+            .flatMap(this::getDomainIpStream)
             .distinct();
     }
 
-    private static Stream<Domain> getDomainIpStream(Domain domain, DNSService dns, Logger log) {
+    private Stream<Domain> getDomainIpStream(Domain domain) {
         try {
             return dns.getAllByName(domain.name()).stream()
                 .map(InetAddress::getHostAddress)
                 .map(Domain::of)
                 .distinct();
         } catch (UnknownHostException e) {
-            log.error("Cannot get IP address(es) for {}", domain);
+            LOGGER.error("Cannot get IP address(es) for {}", domain);
             return Stream.of();
         }
     }
@@ -278,7 +281,7 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
             throw new AutoDetectedDomainRemovalException(domain);
         }
 
-        doRemoveDomain(domain);
+        domainListDAO.removeDomain(domain);
     }
 
     private boolean isAutoDetected(Domain domain) throws DomainListException {
@@ -288,16 +291,4 @@ public abstract class AbstractDomainList implements DomainList, Configurable {
             || domainsWithType.get(DomainType.DetectedIp).contains(domain)
             || domainsWithType.get(DomainType.DefaultDomain).contains(domain);
     }
-
-    /**
-     * Return domainList
-     * 
-     * @return List
-     */
-    protected abstract List<Domain> getDomainListInternal() throws DomainListException;
-
-    protected abstract boolean containsDomainInternal(Domain domain) throws DomainListException;
-
-    protected abstract void doRemoveDomain(Domain domain) throws DomainListException;
-
 }

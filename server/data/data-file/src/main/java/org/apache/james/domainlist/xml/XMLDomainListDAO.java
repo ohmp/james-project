@@ -19,28 +19,51 @@
 
 package org.apache.james.domainlist.xml;
 
-import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Singleton;
 
-import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.domainlist.lib.DomainListConfiguration;
-import org.apache.james.domainlist.lib.DomainListImpl;
-import org.apache.james.lifecycle.api.Configurable;
+import org.apache.james.core.Domain;
+import org.apache.james.domainlist.api.DomainListException;
+import org.apache.james.domainlist.lib.DomainListDAO;
 
 /**
  * Mimic the old behavior of JAMES
  */
 @Singleton
-public class XMLDomainList extends DomainListImpl<XMLDomainListDAO> implements Configurable {
-    @Inject
-    public XMLDomainList(DNSService dns) {
-        super(dns, new XMLDomainListDAO());
+public class XMLDomainListDAO implements DomainListDAO {
+    private final List<Domain> domainNames = new ArrayList<>();
+    private boolean modifiable = true;
+
+    public void markAsUnmodifiable() {
+        modifiable = false;
     }
 
     @Override
-    public void configure(DomainListConfiguration domainListConfiguration) throws ConfigurationException {
-        super.configure(domainListConfiguration);
-        domainListDAO.markAsUnmodifiable();
+    public List<Domain> getDomainListInternal() {
+        return new ArrayList<>(domainNames);
     }
+
+    @Override
+    public boolean containsDomainInternal(Domain domain) throws DomainListException {
+        return domainNames.contains(domain);
+    }
+
+    @Override
+    public void addDomain(Domain domain) throws DomainListException {
+        if (!modifiable) {
+            throw new DomainListException("Read-Only DomainList implementation");
+        }
+        domainNames.add(domain);
+    }
+
+    @Override
+    public void removeDomain(Domain domain) throws DomainListException {
+        if (!modifiable) {
+            throw new DomainListException("Read-Only DomainList implementation");
+        }
+        domainNames.remove(domain);
+    }
+
 }

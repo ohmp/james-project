@@ -149,7 +149,7 @@ public class XMLDomainListTest {
             .defaultDomain(Domain.LOCALHOST)
             .addConfiguredDomain(DOMAIN_1));
 
-        assertThat(testee.getDomainListInternal())
+        assertThat(testee.getDomains())
             .containsOnly(DOMAIN_1, Domain.LOCALHOST);
     }
 }

@@ -17,30 +17,24 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.domainlist.xml;
+package org.apache.james.domainlist.lib;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import java.util.List;
 
-import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.domainlist.lib.DomainListConfiguration;
-import org.apache.james.domainlist.lib.DomainListImpl;
-import org.apache.james.lifecycle.api.Configurable;
+import org.apache.james.core.Domain;
+import org.apache.james.domainlist.api.DomainListException;
 
-/**
- * Mimic the old behavior of JAMES
- */
-@Singleton
-public class XMLDomainList extends DomainListImpl<XMLDomainListDAO> implements Configurable {
-    @Inject
-    public XMLDomainList(DNSService dns) {
-        super(dns, new XMLDomainListDAO());
-    }
+public interface DomainListDAO {
+    void addDomain(Domain domain) throws DomainListException;
 
-    @Override
-    public void configure(DomainListConfiguration domainListConfiguration) throws ConfigurationException {
-        super.configure(domainListConfiguration);
-        domainListDAO.markAsUnmodifiable();
-    }
+    /**
+     * Return domainList
+     *
+     * @return List
+     */
+    List<Domain> getDomainListInternal() throws DomainListException;
+
+    boolean containsDomainInternal(Domain domain) throws DomainListException;
+
+    void removeDomain(Domain domain) throws DomainListException;
 }

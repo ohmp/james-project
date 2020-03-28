@@ -19,50 +19,14 @@
 
 package org.apache.james.domainlist.memory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
 
-import org.apache.james.core.Domain;
 import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.domainlist.api.DomainListException;
-import org.apache.james.domainlist.lib.AbstractDomainList;
+import org.apache.james.domainlist.lib.DomainListImpl;
 
-import com.google.common.collect.ImmutableList;
-
-public class MemoryDomainList extends AbstractDomainList {
-
-    private final List<Domain> domains;
-
+public class MemoryDomainList extends DomainListImpl<MemoryDomainListDAO> {
     @Inject
     public MemoryDomainList(DNSService dns) {
-        super(dns);
-        this.domains = new ArrayList<>();
-    }
-
-    @Override
-    protected List<Domain> getDomainListInternal() {
-        return ImmutableList.copyOf(domains);
-    }
-
-    @Override
-    protected boolean containsDomainInternal(Domain domain) {
-        return domains.contains(domain);
-    }
-
-    @Override
-    public void addDomain(Domain domain) throws DomainListException {
-        if (containsDomain(domain)) {
-            throw new DomainListException(domain.name() + " already exists.");
-        }
-        domains.add(domain);
-    }
-
-    @Override
-    public void doRemoveDomain(Domain domain) throws DomainListException {
-        if (!domains.remove(domain)) {
-            throw new DomainListException(domain.name() + " was not found");
-        }
+        super(dns, new MemoryDomainListDAO());
     }
 }
