@@ -230,10 +230,14 @@ public class DomainListImplTest {
         when(dnsService.getAllByName(any())).thenReturn(ImmutableList.of(address));
 
         domainList.addDomain(Domain.of(added));
-        domainList.addDomain(Domain.of(ip));
+        try {
+            domainList.addDomain(Domain.of(ip));
+        } catch (Exception e) {
+            // fails as ip is already added
+        }
 
         ThrowingExtractor<Domain, String, Exception> ex = Domain::name;
-        Assertions.<Domain>assertThat(domainList.getDomains())
+        assertThat(domainList.getDomains())
             .extracting(ex)
             .containsOnlyOnce(added, detected, ip);
     }
