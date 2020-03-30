@@ -178,7 +178,7 @@ class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegrationTes
             .body("status", is("completed"));
 
         taskId = with()
-            .header("Confirmation", "true")
+            .header("I-KNOW-WHAT-I-M-DOING", "ALL-SERVICES-ARE-OFFLINE")
             .queryParam("task", "SolveInconsistencies")
         .post("/mailboxes")
             .jsonPath()
