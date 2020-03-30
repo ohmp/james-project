@@ -43,11 +43,13 @@ import com.google.inject.multibindings.ProvidesIntoSet;
 public class CassandraRecipientRewriteTableModule extends AbstractModule {
     @Override
     public void configure() {
+        TypeLiteral<RecipientRewriteTableImpl<CassandraRecipientRewriteTable>> rrtTypeLiteral = new TypeLiteral<RecipientRewriteTableImpl<CassandraRecipientRewriteTable>>() {};
+
         bind(CassandraRecipientRewriteTable.class).in(Scopes.SINGLETON);
-        bind(RecipientRewriteTableImpl.class).in(Scopes.SINGLETON);
+        bind(rrtTypeLiteral).in(Scopes.SINGLETON);
         bind(CassandraRecipientRewriteTableDAO.class).in(Scopes.SINGLETON);
         bind(CassandraMappingsSourcesDAO.class).in(Scopes.SINGLETON);
-        bind(RecipientRewriteTable.class).to(new TypeLiteral<RecipientRewriteTableImpl<CassandraRecipientRewriteTable>>() {});
+        bind(RecipientRewriteTable.class).to(rrtTypeLiteral);
         bind(RecipientRewriteTableDAO.class).to(CassandraRecipientRewriteTable.class);
 
         bind(AliasReverseResolverImpl.class).in(Scopes.SINGLETON);
