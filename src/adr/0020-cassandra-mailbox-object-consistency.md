@@ -57,7 +57,8 @@ legitimate concurrent user actions.
 Hence this task must be run offline (meaning absence of user traffic via for exemple SMTP, IMAP or JMAP). This can be
 achieved via reconfiguration (disabling the given protocols and restarting James) or via firewall rules.
 
-Due to all of those risks, a `Confirmation` header should be positioned to `true` in order to prevent accidental calls.
+Due to all of those risks, a Confirmation header `I-KNOW-WHAT-I-M-DOING` should be positioned to 
+`ALL-SERVICES-ARE-OFFLINE` in order to prevent accidental calls.
 
 In the future, we should revisit the mailbox object data-model and restructure it, to identify a source of truth to 
 base the inconsistency fixing task on. Event sourcing is a good candidate for this.
