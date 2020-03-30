@@ -125,10 +125,8 @@ public class ReactorUtils {
 
     public static Consumer<Signal<?>> log(Runnable logStatement) {
         return signal -> {
-            try {
-                try (Closeable mdc = retrieveMDCBuilder(signal).build()) {
-                    logStatement.run();
-                }
+            try (Closeable mdc = retrieveMDCBuilder(signal).build()) {
+                logStatement.run();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -139,7 +137,7 @@ public class ReactorUtils {
         return Context.of(mdcKey(keySuffix), mdcBuilder);
     }
 
-    public static String mdcKey(String value) {
+    private static String mdcKey(String value) {
         return MDC_KEY_PREFIX + value;
     }
 
