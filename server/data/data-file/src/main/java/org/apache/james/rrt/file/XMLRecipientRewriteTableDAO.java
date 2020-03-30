@@ -62,7 +62,7 @@ public class XMLRecipientRewriteTableDAO implements RecipientRewriteTableDAO, Co
     }
 
     @Override
-    public Mappings mapAddress(String user, Domain domain) {
+    public Mappings getMappings(String user, Domain domain) {
         return Optional.ofNullable(mappings)
             .map(mappings -> RecipientRewriteTableUtil.getTargetString(user, domain, mappings))
             .map(MappingsImpl::fromRawString)

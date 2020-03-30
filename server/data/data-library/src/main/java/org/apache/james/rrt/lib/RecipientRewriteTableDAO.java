@@ -49,7 +49,7 @@ public interface RecipientRewriteTableDAO {
      * It must never return null but throw RecipientRewriteTableException on errors and return an empty Mappings
      * object if no mapping is found.
      */
-    Mappings mapAddress(String user, Domain domain) throws RecipientRewriteTableException;
+    Mappings getMappings(String user, Domain domain) throws RecipientRewriteTableException;
 
     default Stream<MappingSource> listSources(Mapping mapping) throws RecipientRewriteTableException {
         Preconditions.checkArgument(RecipientRewriteTable.listSourcesSupportedType.contains(mapping.getType()),

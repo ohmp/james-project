@@ -87,7 +87,7 @@ public class CassandraRecipientRewriteTable implements RecipientRewriteTableDAO 
     }
 
     @Override
-    public Mappings mapAddress(String user, Domain domain) {
+    public Mappings getMappings(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
             () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromUser(user, domain)).blockOptional(),
             () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromDomain(domain)).blockOptional())

@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.rrt.api;
 
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -27,10 +26,6 @@ import org.apache.james.core.Domain;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.lib.Mappings;
-import org.apache.james.rrt.lib.MappingsImpl;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Interface which should be implemented of classes which map recipients.
@@ -129,31 +124,10 @@ public interface RecipientRewriteTable {
 
     RecipientRewriteTableConfiguration getConfiguration();
 
-    default Stream<MappingSource> listSources(Mapping mapping) throws RecipientRewriteTableException {
-        Preconditions.checkArgument(listSourcesSupportedType.contains(mapping.getType()),
-            "Not supported mapping of type %s", mapping.getType());
+    Stream<MappingSource> listSources(Mapping mapping) throws RecipientRewriteTableException;
 
-        return getAllMappings()
-            .entrySet().stream()
-            .filter(entry -> entry.getValue().contains(mapping))
-            .map(Map.Entry::getKey);
-    }
+    Stream<MappingSource> getSourcesForType(Mapping.Type type) throws RecipientRewriteTableException;
 
-    default Stream<MappingSource> getSourcesForType(Mapping.Type type) throws RecipientRewriteTableException {
-        return getAllMappings()
-            .entrySet().stream()
-            .filter(e -> e.getValue().contains(type))
-            .map(Map.Entry::getKey)
-            .sorted(Comparator.comparing(MappingSource::asMailAddressString));
-    }
-
-    default Stream<Mapping> getMappingsForType(Mapping.Type type) throws RecipientRewriteTableException {
-        return ImmutableSet.copyOf(getAllMappings()
-            .values().stream()
-            .map(mappings -> mappings.select(type))
-            .reduce(Mappings::union)
-            .orElse(MappingsImpl.empty()))
-            .stream();
-    }
+    Stream<Mapping> getMappingsForType(Mapping.Type type) throws RecipientRewriteTableException;
 
 }

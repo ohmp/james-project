@@ -100,7 +100,7 @@ public class MemoryRecipientRewriteTableDAO implements RecipientRewriteTableDAO 
     }
 
     @Override
-    public Mappings mapAddress(String user, Domain domain) {
+    public Mappings getMappings(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
             () -> retrieveMappings(MappingSource.fromUser(Username.fromLocalPartWithDomain(user, domain))),
             () -> retrieveMappings(MappingSource.fromDomain(domain)))

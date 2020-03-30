@@ -67,7 +67,7 @@ public class JPARecipientRewriteTableDAO implements RecipientRewriteTableDAO {
     }
 
     @Override
-    public Mappings mapAddress(String user, Domain domain) throws RecipientRewriteTableException {
+    public Mappings getMappings(String user, Domain domain) throws RecipientRewriteTableException {
         Mappings userDomainMapping = getStoredMappings(MappingSource.fromUser(user, domain));
         if (userDomainMapping != null && !userDomainMapping.isEmpty()) {
             return userDomainMapping;

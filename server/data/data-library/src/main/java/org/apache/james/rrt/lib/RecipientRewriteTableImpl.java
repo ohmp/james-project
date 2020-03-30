@@ -116,7 +116,7 @@ public class RecipientRewriteTableImpl<T extends RecipientRewriteTableDAO> imple
 
         Domain domain = username.getDomainPart().get();
         String localPart = username.getLocalPart();
-        Stream<Mapping> targetMappings = rrtDAO.mapAddress(localPart, domain).asStream()
+        Stream<Mapping> targetMappings = rrtDAO.getMappings(localPart, domain).asStream()
                 .filter(mapping -> mappingTypes.contains(mapping.getType()));
 
         try {
@@ -383,5 +383,20 @@ public class RecipientRewriteTableImpl<T extends RecipientRewriteTableDAO> imple
         if (source.asMailAddress().map(mailAddress -> mailAddress.asString().equals(address)).orElse(false)) {
             throw new SameSourceAndDestinationException("Source and destination can't be the same!");
         }
+    }
+
+    @Override
+    public Stream<MappingSource> listSources(Mapping mapping) throws RecipientRewriteTableException {
+        return rrtDAO.listSources(mapping);
+    }
+
+    @Override
+    public Stream<MappingSource> getSourcesForType(Type type) throws RecipientRewriteTableException {
+        return rrtDAO.getSourcesForType(type);
+    }
+
+    @Override
+    public Stream<Mapping> getMappingsForType(Type type) throws RecipientRewriteTableException {
+        return rrtDAO.getMappingsForType(type);
     }
 }
