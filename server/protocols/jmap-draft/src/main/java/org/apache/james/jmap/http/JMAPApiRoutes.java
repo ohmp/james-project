@@ -93,8 +93,8 @@ public class JMAPApiRoutes implements JMAPRoutes {
                 userProvisioner.provisionUser(session),
                 defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
                 .then(Mono.from(metricFactory.runPublishingTimerMetric("JMAP-request",
-                    post(request, response, session)))
-                    .subscriberContext(jmapAuthContext(session))))
+                    post(request, response, session))))
+                .subscriberContext(jmapAuthContext(session)))
             .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
             .doOnEach(logOnError(e -> LOGGER.error("Unexpected error", e)))
