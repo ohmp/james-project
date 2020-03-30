@@ -34,6 +34,7 @@ import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 
@@ -41,10 +42,13 @@ public class CassandraDomainListModule extends AbstractModule {
 
     @Override
     public void configure() {
+        TypeLiteral<DomainListImpl<CassandraDomainListDAO>> domailListTypeLiteral = new TypeLiteral<DomainListImpl<CassandraDomainListDAO>>() {};
+
+        bind(domailListTypeLiteral).in(Scopes.SINGLETON);
         bind(CassandraDomainListDAO.class).in(Scopes.SINGLETON);
         bind(CassandraDomainListDAO.class).in(Scopes.SINGLETON);
         bind(DomainListDAO.class).to(CassandraDomainListDAO.class);
-        bind(DomainList.class).to(new TypeLiteral<DomainListImpl<CassandraDomainListDAO>>() {});
+        bind(DomainList.class).to(domailListTypeLiteral);
         Multibinder.newSetBinder(binder(), CassandraModule.class).addBinding().toInstance(org.apache.james.domainlist.cassandra.CassandraDomainListModule.MODULE);
     }
 
