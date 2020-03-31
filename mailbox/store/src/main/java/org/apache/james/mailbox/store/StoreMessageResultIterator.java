@@ -59,11 +59,8 @@ public class StoreMessageResultIterator implements MessageResultIterator {
     private MailboxException exception;
     private final Mailbox mailbox;
     private final FetchGroup group;
-    private final MessageUid from;
-    private MessageUid cursor;
-    private final MessageUid to;
+    private final MessageRange range;
     private final BatchSizes batchSizes;
-    private final Type type;
     private final MessageMapper mapper;
     private final FetchType ftype;
 
@@ -71,24 +68,17 @@ public class StoreMessageResultIterator implements MessageResultIterator {
         this.mailbox = mailbox;
         this.group = group;
         this.mapper = mapper;
-        this.from = range.getUidFrom();
-        this.cursor = this.from;
-        this.to = range.getUidTo();
+        this.range = range;
         this.batchSizes = batchSizes;
-        this.type = range.getType();
         this.ftype = getFetchType(group);
         LOGGER.debug("batchSizes used: {}", batchSizes);
     }
 
     @Override
     public boolean hasNext() {
-        if (cursor.compareTo(to) > 0) {
-            return false;
-        }
-
-        if (next == null || !next.hasNext()) {
+        if (next == null) {
             try {
-                readBatch();
+                next = mapper.findInMailbox(mailbox, range, ftype, batchSizeFromFetchType(ftype));
             } catch (MailboxException e) {
                 this.exception = e;
                 return false;
@@ -96,27 +86,6 @@ public class StoreMessageResultIterator implements MessageResultIterator {
         }
         
         return next.hasNext();
-    }
-
-    private void readBatch() throws MailboxException {
-        MessageRange range;
-        switch (type) {
-        default:
-        case ALL:
-            // In case of all, we start on cursor and don't specify a to
-            range = MessageRange.from(cursor);
-            break;
-        case FROM:
-            range = MessageRange.from(cursor);
-            break;
-        case ONE:
-            range = MessageRange.one(cursor);
-            break;
-        case RANGE:
-            range = MessageRange.range(cursor, to);
-            break;
-        }
-        next = mapper.findInMailbox(mailbox, range, ftype, batchSizeFromFetchType(ftype));
     }
 
     private int batchSizeFromFetchType(FetchType fetchType) {
@@ -136,20 +105,17 @@ public class StoreMessageResultIterator implements MessageResultIterator {
     @Override
     public MessageResult next() {
         if (!hasNext()) {
-          throw new NoSuchElementException();
+            throw new NoSuchElementException();
         }
-        
-        final MailboxMessage message = next.next();
-        MessageResult result;
-        try {
-            result = ResultUtils.loadMessageResult(message, group);
-            cursor = result.getUid();
-        } catch (MailboxException e) {
-            result = new UnloadedMessageResult(message, e);
-        }
+        return loadMessageResult(next.next());
+    }
 
-        cursor = cursor.next();
-        return result;
+    private MessageResult loadMessageResult(MailboxMessage message) {
+        try {
+            return ResultUtils.loadMessageResult(message, group);
+        } catch (MailboxException e) {
+            return new UnloadedMessageResult(message, e);
+        }
     }
 
     @Override
