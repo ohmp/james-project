@@ -31,7 +31,6 @@ import org.apache.james.queue.api.MailQueue.MailQueueItem;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.RawMailQueueItem;
-import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 
 public class PostDequeueDecoratorFactory implements MailQueueItemDecoratorFactory {
     private final MailboxManager mailboxManager;
