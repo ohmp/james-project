@@ -110,7 +110,7 @@ public class MailboxFactory {
                 MailboxPath mailboxPath = mailboxMetaData.map(MailboxMetaData::getPath)
                     .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxPath()).sneakyThrow());
 
-                MailboxCounters mailboxCounters = mailboxMetaData.map(MailboxMetaData::getCounters)
+                MailboxCounters.Sanitized mailboxCounters = mailboxMetaData.map(MailboxMetaData::getCounters)
                     .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxCounters(session)).sneakyThrow())
                     .sanitize();
 
@@ -164,7 +164,7 @@ public class MailboxFactory {
 
     private Mailbox from(MailboxId mailboxId,
                          MailboxPath mailboxPath,
-                         MailboxCounters mailboxCounters,
+                         MailboxCounters.Sanitized mailboxCounters,
                          MailboxACL resolvedAcl,
                          Optional<List<MailboxMetaData>> userMailboxesMetadata,
                          QuotaLoader quotaLoader,
