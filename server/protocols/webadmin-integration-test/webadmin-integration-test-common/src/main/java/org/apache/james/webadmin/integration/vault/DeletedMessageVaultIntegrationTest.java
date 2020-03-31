@@ -30,7 +30,7 @@ import static org.apache.james.jmap.JMAPTestingConstants.calmlyAwait;
 import static org.apache.james.jmap.JMAPTestingConstants.jmapRequestSpecBuilder;
 import static org.apache.james.jmap.JmapCommonRequests.deleteMessages;
 import static org.apache.james.jmap.JmapCommonRequests.getAllMailboxesIds;
-import static org.apache.james.jmap.JmapCommonRequests.getLastMessageId;
+import static org.apache.james.jmap.JmapCommonRequests.getLatestMessageId;
 import static org.apache.james.jmap.JmapCommonRequests.getOutboxId;
 import static org.apache.james.jmap.JmapCommonRequests.listMessageIdsForAccount;
 import static org.apache.james.jmap.LocalHostURIBuilder.baseUri;
@@ -823,7 +823,7 @@ public abstract class DeletedMessageVaultIntegrationTest {
         exportVaultContent(webAdminApi, exportRequest);
 
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(shareeAccessToken).size() == currentNumberOfMessages + 1);
-        String exportingMessageId = getLastMessageId(shareeAccessToken);
+        String exportingMessageId = getLatestMessageId(shareeAccessToken, Role.INBOX);
 
         return exportedFileLocationFromMailHeader(exportingMessageId, shareeAccessToken);
     }
@@ -832,7 +832,7 @@ public abstract class DeletedMessageVaultIntegrationTest {
         return with()
                 .header("Authorization", accessToken.asString())
                 .body("[[\"getMessages\", {\"ids\": [\"" + messageId + "\"]}, \"#0\"]]")
-                .post("/jmap")
+                .post("/jmap").prettyPeek()
             .jsonPath()
                 .getList(ARGUMENTS + ".list.headers.corresponding-file", String.class)
                 .get(0);
