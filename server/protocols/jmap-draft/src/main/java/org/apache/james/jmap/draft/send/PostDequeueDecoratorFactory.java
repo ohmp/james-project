@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.draft.send;
 
+import static org.apache.james.queue.api.MailQueueFactory.SPOOL;
+
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.MailboxManager;
@@ -27,6 +29,9 @@ import org.apache.james.mailbox.SystemMailboxesProvider;
 import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
+import org.apache.james.queue.api.MailQueueName;
+import org.apache.james.queue.api.RawMailQueueItem;
+import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 
 public class PostDequeueDecoratorFactory implements MailQueueItemDecoratorFactory {
     private final MailboxManager mailboxManager;
@@ -44,8 +49,11 @@ public class PostDequeueDecoratorFactory implements MailQueueItemDecoratorFactor
     }
 
     @Override
-    public MailQueueItemDecorator decorate(MailQueueItem mailQueueItem) {
-        return new PostDequeueDecorator(mailQueueItem, mailboxManager, messageIdFactory, messageIdManager, systemMailboxesProvider);
+    public MailQueueItemDecorator decorate(MailQueueItem mailQueueItem, MailQueueName name) {
+        if (name.equals(SPOOL)) {
+            return new PostDequeueDecorator(mailQueueItem, mailboxManager, messageIdFactory, messageIdManager, systemMailboxesProvider);
+        }
+        return new RawMailQueueItem(mailQueueItem);
     }
 
 }
