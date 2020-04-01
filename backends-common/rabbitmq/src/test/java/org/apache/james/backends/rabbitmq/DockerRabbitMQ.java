@@ -190,14 +190,10 @@ public class DockerRabbitMQ {
     }
 
     public void reset() throws Exception {
-        stopApp();
-
         String stdout = container()
             .execInContainer("rabbitmqctl", "reset")
             .getStdout();
         LOGGER.debug("reset: {}", stdout);
-
-        startApp();
     }
 
     public void forgetNode(String removalClusterNodeName) throws Exception {
