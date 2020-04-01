@@ -832,7 +832,7 @@ public abstract class DeletedMessageVaultIntegrationTest {
         return with()
                 .header("Authorization", accessToken.asString())
                 .body("[[\"getMessages\", {\"ids\": [\"" + messageId + "\"]}, \"#0\"]]")
-                .post("/jmap").prettyPeek()
+                .post("/jmap")
             .jsonPath()
                 .getList(ARGUMENTS + ".list.headers.corresponding-file", String.class)
                 .get(0);
