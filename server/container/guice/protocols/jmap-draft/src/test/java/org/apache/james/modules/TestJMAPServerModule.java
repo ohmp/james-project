@@ -20,6 +20,7 @@
 package org.apache.james.modules;
 
 import java.io.FileNotFoundException;
+import java.time.Duration;
 import java.util.Optional;
 
 import javax.inject.Singleton;
@@ -28,6 +29,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.jmap.JMAPConfiguration;
 import org.apache.james.jmap.draft.JMAPDraftConfiguration;
 import org.apache.james.jmap.draft.methods.GetMessageListMethod;
+import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -107,6 +109,13 @@ public class TestJMAPServerModule extends AbstractModule {
     @Override
     protected void configure() {
         bindConstant().annotatedWith(Names.named(GetMessageListMethod.MAXIMUM_LIMIT)).to(maximumLimit);
+
+        bind(RetryBackoffConfiguration.class)
+            .toInstance(RetryBackoffConfiguration.builder()
+                .maxRetries(3)
+                .firstBackoff(Duration.ofMillis(10))
+                .jitterFactor(0.2)
+                .build());
     }
 
     @Provides
