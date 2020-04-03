@@ -18,20 +18,20 @@ As an example:
  - Mailbox message body are expected to have sizes ranging from small to big but are unfrequently accessed
  - DeletedMessageVault message headers are expected to be small and unfrequently accessed
 
-The access pattern of some of these kind of blobs do not fit Object Storage caracteristics: good at storing big blobs, but 
+The access pattern of some of these kind of blobs does not fit Object Storage characteristics: good at storing big blobs, but 
 it induces high latencies for reading small blobs.
 
-This get's some operations slow (for instance IMAP FETCH headers, or listing JMAP messages).
+This gets some operations slow (for instance IMAP FETCH headers, or listing JMAP messages).
 
 ## Decision
 
-We need to implement a write through cache to decrease the amount of object read from object storage.
+We need to implement a write through cache to decrease the amount of objects read from object storage.
 
 Such a cache needs to be distributed in order to be more efficient.
 
 Given that we don't want to introduce new technologies, we will implement it using Cassandra.
 
-The cache should be implemented as a key-value table on a dedicated 'cache' keyspace, with a reprication factor of 1, 
+The cache should be implemented as a key-value table on a dedicated 'cache' keyspace, with a replication factor of 1, 
 and be queried with a consistency level of ONE. 
 
 We will leverage a configurable TTL as an eviction policy. Cache will be populated upon writes and missed read, if the 
@@ -44,7 +44,7 @@ Failure to read the cache, or cache miss will result in a read in the object sto
 Metadata queries are expected not to query the object storage anymore.
 
 [Performance tests](https://github.com/linagora/james-project/pull/3031#issuecomment-572865478) proved such strategies
-to be highly effective. We expect comparable performance improvments compared to an uncache ObjectStorage blob store.
+to be highly effective. We expect comparable performance improvements compared to an un-cached ObjectStorage blob store.
 
 HybridBlobStore should be removed.
 
@@ -55,12 +55,12 @@ mimic a cache.
 
 This solution needed further work as we decided to add an option to write all blobs to the object storage in order:
  - To get a centralized source of truth
- - Being able to instantly rollback Hybrid blob store adotpion
+ - Being able to instantly rollback Hybrid blob store adoption
  
 See [this pull request](https://github.com/linagora/james-project/pull/3162)
 
-With such a proposal there is no eviction policy. Also, the storage is done on the main keysapce with a high replication
+With such a proposal there is no eviction policy. Also, the storage is done on the main keyspace with a high replication
 factor, and QUORUM consistency level (high cost).
 
-To be noted, as cached entries are small, we can assume they are small enough to fit in a signle Cassandra row. This is more 
+To be noted, as cached entries are small, we can assume they are small enough to fit in a single Cassandra row. This is more 
 optimized than the large blob handling through blobParts the CassandraBlobStore is doing.
