@@ -1,4 +1,4 @@
-# 26. EventBus error handling upon dispatch
+# 27. EventBus error handling upon dispatch
 
 Date: 2020-04-03
 
