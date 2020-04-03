@@ -21,8 +21,13 @@ unbounded queue growth eventually causing RabbitMQ resource exhaustion and failu
 
 ## Decision
 
-We need, upon start, to sanitize bindings, and remove the ones corresponding to mailboxListeners that are not configured,
-using a name matching strategy.
+For rabbitMQ, configuration changes of additional mailbox listeners should be tracked via event sourcing. Event sourcing is 
+desirable as it allows:
+ - Detecting previously removed MailboxListener upon start
+ - Audit of unbind decisions
+ - Enables writing more complex business rules in the future
+
+We need, upon start, to sanitize bindings, and remove the ones corresponding to mailboxListeners that were removed not configured.
 
 The queue should not be deleted to prevent message loss.
 
