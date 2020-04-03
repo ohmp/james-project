@@ -17,7 +17,7 @@ is exceeded, the event is stored in deadLetter and no further processing is atte
 The administrator can then look at the content of deadLetter to diagnose processing issues and schedule a reDelivery in 
 order to retry their processing via webAdmin APIs.
 
-However no such capabilities are supported upon dispatch. A failed dispatch will result in message loss.
+However no such capabilities are supported upon dispatching the event on the eventbus. A failed dispatch will result in message loss.
 
 ## Decision
 
@@ -27,3 +27,7 @@ Reprocessing this group an admin can re-trigger these events dispatch.
 
 In order to ensure auto healing, James will periodically check the corresponding group in deadLetter is empty. If not a
 re-dispatching of these events will be attempted. 
+
+## Consequence
+
+In distributed James Guice project an administrator have a way to be eventually consistent upon rabbitMQ failure.
