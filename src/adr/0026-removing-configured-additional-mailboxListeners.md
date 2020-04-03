@@ -16,12 +16,12 @@ per listener.
 The distributed James server then declares a queue upon start for each one of these user registered listeners, that it
 binds to the main event exchange. 
 
-If the user unconfigures the listener, the queue and the binding are still present but not consumed. This result in 
+If the user unconfigures the listener, the queue and the binding are still present but not consumed. This results in 
 unbounded queue growth eventually causing RabbitMQ resource exhaustion and failure.
 
 ## Decision
 
-We need, upon start, to sanitize bindings, and removes the ones corresponding to mailboxListeners that are not configured,
+We need, upon start, to sanitize bindings, and remove the ones corresponding to mailboxListeners that are not configured,
 using a name matching strategy.
 
 The queue should not be deleted to prevent message loss.
@@ -31,5 +31,5 @@ started James server.
 
 ## Alternatives
 
-We could also considering adding a webadmin endpoint to sanitize eventBus bindings, allowing more predictability than the
-above solution but it would require admin intervention/
+We could also consider adding a webadmin endpoint to sanitize eventBus bindings, allowing more predictability than the
+above solution but it would require admin intervention.
