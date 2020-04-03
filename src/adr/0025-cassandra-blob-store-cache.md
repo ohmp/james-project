@@ -19,13 +19,13 @@ As an example:
  - DeletedMessageVault message headers are expected to be small and unfrequently accessed
 
 The access pattern of some of these kind of blobs does not fit Object Storage characteristics: good at storing big blobs, but 
-it induces high latencies for reading small blobs.
+it induces high latencies for reading small blobs. We observe latencies of around 50-100ms while Cassandra latency is of 4ms.
 
 This gets some operations slow (for instance IMAP FETCH headers, or listing JMAP messages).
 
 ## Decision
 
-We need to implement a write through cache to decrease the amount of objects read from object storage.
+Implement a write through cache to have better read latency for smaller objects.
 
 Such a cache needs to be distributed in order to be more efficient.
 
@@ -35,7 +35,7 @@ The cache should be implemented as a key-value table on a dedicated 'cache' keys
 and be queried with a consistency level of ONE. 
 
 We will leverage a configurable TTL as an eviction policy. Cache will be populated upon writes and missed read, if the 
-blob size is below a configurable threashold.
+blob size is below a configurable threashold. We will use the TimeWindow compaction strategy.
 
 Failure to read the cache, or cache miss will result in a read in the object storage.
 
