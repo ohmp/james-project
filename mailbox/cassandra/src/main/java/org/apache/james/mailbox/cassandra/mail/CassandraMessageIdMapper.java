@@ -129,9 +129,8 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     @Override
     public void save(MailboxMessage mailboxMessage) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailboxMessage.getMailboxId();
-        mailboxMapper.findMailboxById(mailboxId);
-
-        messageDAO.save(mailboxMessage)
+        mailboxMapper.findMailboxByIdReactive(mailboxId)
+            .then(messageDAO.save(mailboxMessage))
             .thenEmpty(saveMessageMetadata(mailboxMessage, mailboxId))
             .block();
     }
@@ -139,9 +138,8 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     @Override
     public void copyInMailbox(MailboxMessage mailboxMessage) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailboxMessage.getMailboxId();
-        mailboxMapper.findMailboxById(mailboxId);
-
-        saveMessageMetadata(mailboxMessage, mailboxId)
+        mailboxMapper.findMailboxByIdReactive(mailboxId)
+            .then(saveMessageMetadata(mailboxMessage, mailboxId))
             .block();
     }
 
