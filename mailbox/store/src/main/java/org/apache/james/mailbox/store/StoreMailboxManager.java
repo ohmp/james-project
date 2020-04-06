@@ -687,10 +687,26 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private Stream<MailboxId> getInMailboxes(ImmutableSet<MailboxId> inMailboxes, MailboxSession session) throws MailboxException {
-       if (inMailboxes.isEmpty()) {
+        if (inMailboxes.isEmpty()) {
             return getAllReadableMailbox(session);
         } else {
+            if (inMailboxes.size() == 1) {
+                MailboxId mailboxId = inMailboxes.stream().findAny().get();
+                return filterReadable(mailboxId, session);
+            }
             return getAllReadableMailbox(session).filter(inMailboxes::contains);
+        }
+    }
+
+    private Stream<MailboxId> filterReadable(MailboxId mailboxId, MailboxSession session) throws MailboxException {
+        try {
+            MessageManager mailbox = getMailbox(mailboxId, session);
+            if (storeRightManager.hasRight(mailbox.getMailboxEntity(), Right.Read, session)) {
+                return Stream.of(mailbox.getMailboxEntity().getMailboxId());
+            }
+            return Stream.empty();
+        } catch (MailboxNotFoundException e) {
+            return Stream.empty();
         }
     }
 
