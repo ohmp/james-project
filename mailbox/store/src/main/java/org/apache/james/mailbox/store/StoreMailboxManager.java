@@ -691,7 +691,7 @@ public class StoreMailboxManager implements MailboxManager {
             return getAllReadableMailbox(session);
         } else {
             if (inMailboxes.size() == 1) {
-                MailboxId mailboxId = inMailboxes.stream().findAny().get();
+                MailboxId mailboxId = Iterables.getOnlyElement(inMailboxes);
                 return filterReadable(mailboxId, session);
             }
             return getAllReadableMailbox(session).filter(inMailboxes::contains);
