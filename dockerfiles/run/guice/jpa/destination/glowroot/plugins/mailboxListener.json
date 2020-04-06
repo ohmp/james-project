@@ -1,6 +1,6 @@
 {
   "name": "MailboxListener Plugin",
-  "id": "jmap",
+  "id": "mailboxListener",
   "instrumentation": [
     {
       "className": "org.apache.james.mailbox.events.MailboxListener",

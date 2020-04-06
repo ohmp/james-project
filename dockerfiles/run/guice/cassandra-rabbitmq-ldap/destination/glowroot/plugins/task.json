@@ -1,6 +1,6 @@
 {
-  "name": "JMAP Plugin",
-  "id": "jmap",
+  "name": "Task Plugin",
+  "id": "task",
   "instrumentation": [
     {
       "className": "org.apache.james.task.Task",
