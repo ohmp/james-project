@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [3.5.0] - 2020-04-06
+
 ### Added
 - Distributed task management for Guice cassandra-rabbitmq product. This enables several James servers to share a consistent view
 of tasks being currently executed.
