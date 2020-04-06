@@ -12,7 +12,7 @@ JMAP custom quota extension, as well as IMAP [RFC-2087](https://tools.ietf.org/h
 the amount of space and message count he is allowed to use, and that he is effectively using.
 
 To track the quota values a user is effectively using, James relies on the 
-[enventBus](../site/markdown/server/manage-guice-distributed-james.md#mailbox-event-bus) to increment a Cassandra counter
+[eventBus](../site/markdown/server/manage-guice-distributed-james.md#mailbox-event-bus) to increment a Cassandra counter
 corresponding to this user.
 
 However, upon Cassandra failure, this value can be incorrect, hence the need of correcting it.
