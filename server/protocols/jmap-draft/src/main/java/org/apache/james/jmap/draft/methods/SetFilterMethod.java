@@ -135,6 +135,9 @@ public class SetFilterMethod implements Method {
         }  catch (DuplicatedRuleException e) {
             LOGGER.debug("Duplicated rules", e);
             return Mono.just(duplicatedIdsError(methodCallId, e));
+        }  catch (Exception e) {
+            LOGGER.warn("Failed setting Rules", e);
+            return Mono.just(unKnownError(methodCallId));
         }
     }
 
