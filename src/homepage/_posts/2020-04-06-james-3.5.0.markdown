@@ -13,8 +13,8 @@ Early adopters can [download it][download], any issue can be reported on our iss
 
 ### Distributed James guice product beta
 
-Furthermore, recent work of the Apache James project did lead to a James product that leverage a distributed mail server,
-leveraging storage technologies like [Cassandra], [ElasticSearch], [RabbitMQ], and [objectStorage (S3/Swift)].
+Furthermore, recent work of the Apache James project did lead to a James product that leverages a distributed mail server,
+using storage technologies like [Cassandra], [ElasticSearch], [RabbitMQ], and [objectStorage (S3/Swift)].
 
 Feedback on this product, announced as a beta since 3.5.0 is welcome.
 
