@@ -43,7 +43,8 @@ JIRA: https://issues.apache.org/jira/browse/JAMES-2997
 
 In an effort to simplify the code base, we dropped support for Cassandra schema version prior version 5.
 
-Installation running older schema version needs to rely on release 3.5.0 to upgrade to schema version 7.
+Installation running older schema version than version 5 needs to rely on release 3.5.0 to upgrade to schema version 7,
+before upgrading to an eventual newer version.
 
 ### Log4J2 Adoption
 
