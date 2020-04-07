@@ -8,19 +8,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [3.5.0] - 2020-04-06
 
 ### Added
-- Distributed task management for Guice cassandra-rabbitmq product. This enables several James servers to share a consistent view
+- Distributed task management for Distributed James product. This enables several James servers to share a consistent view
 of tasks being currently executed.
 - JAMES-2563 Health check for ElasticSearch
 - JAMES-2904 Authentication and SSL support for Cassandra backend
 - JAMES-2904 Authentication and SSL support for ElasticSearch backend
-- JAMES-3066 Add "allowed From headers" webadmin endpoint
-- JAMES-3062 EventDeadLettersHealthCheck
+- JAMES-3066 Add support alias when sending emails, with a "allowed From headers" webadmin endpoint
+- JAMES-3062 HealthCheck for EventDeadLetters
 - JAMES-3058 WebAdmin offline task to correct mailbox inconsistencies on top of Cassandra products
 - JAMES-3105 WebAdmin offline task to recompute mailbox counters on top of Cassandra products
 - JAMES-3072 Webadmin endpoint to export mailbox backup
 
 ### Changed
-- Multiple changes have been made to enhance ElasticSearch performance:
+- Multiple changes have been made to enhance Distributed James indexing performance:
   - Use of routing keys to collocate documents per mailbox
   - Under some configuration, html was not extracted before document indexing
   - Removed unnecessary fields from mailbox mapping
