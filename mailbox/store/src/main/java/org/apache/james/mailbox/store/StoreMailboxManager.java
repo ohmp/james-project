@@ -690,29 +690,20 @@ public class StoreMailboxManager implements MailboxManager {
         if (inMailboxes.isEmpty()) {
             return getAllReadableMailbox(session);
         } else {
-            if (inMailboxes.size() == 1) {
-                MailboxId mailboxId = Iterables.getOnlyElement(inMailboxes);
-                return filterReadable(mailboxId, session);
-            }
-            return getAllReadableMailbox(session).filter(inMailboxes::contains);
-        }
-    }
-
-    private Stream<MailboxId> filterReadable(MailboxId mailboxId, MailboxSession session) throws MailboxException {
-        try {
-            MessageManager mailbox = getMailbox(mailboxId, session);
-            if (storeRightManager.hasRight(mailbox.getMailboxEntity(), Right.Read, session)) {
-                return Stream.of(mailbox.getMailboxEntity().getMailboxId());
-            }
-            return Stream.empty();
-        } catch (MailboxNotFoundException e) {
-            return Stream.empty();
+            return filterReadable(inMailboxes, session);
         }
     }
 
     private Stream<MailboxId> getAllReadableMailbox(MailboxSession session) throws MailboxException {
         return searchMailboxes(MailboxQuery.builder().matchesAllMailboxNames().build(), session, Right.Read)
             .stream()
+            .map(Mailbox::getMailboxId);
+    }
+
+    private Stream<MailboxId> filterReadable(ImmutableSet<MailboxId> inMailboxes, MailboxSession session) throws MailboxException {
+        return mailboxSessionMapperFactory.getMailboxMapper(session)
+            .findMailboxesById(inMailboxes)
+            .filter(Throwing.<Mailbox>predicate(mailbox -> storeRightManager.hasRight(mailbox, Right.Read, session)).sneakyThrow())
             .map(Mailbox::getMailboxId);
     }
 
