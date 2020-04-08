@@ -96,7 +96,7 @@ public interface MailboxMapper extends Mapper {
                     return Stream.empty();
                 }
             }).sneakyThrow());
-    };
+    }
 
     /**
      * Return a List of {@link Mailbox} for the given userName and matching the right
