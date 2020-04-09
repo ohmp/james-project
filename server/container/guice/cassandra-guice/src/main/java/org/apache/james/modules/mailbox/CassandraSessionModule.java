@@ -72,9 +72,8 @@ public class CassandraSessionModule extends AbstractModule {
         bind(Cluster.class).toProvider(ResilientClusterProvider.class);
 
         bind(InitializedCluster.class).in(Scopes.SINGLETON);
-        bind(MainSessionWithInitializedTablesFactory.class).in(Scopes.SINGLETON);
 
-        bind(Session.class).toProvider(MainSessionWithInitializedTablesFactory.class);
+        bind(Session.class).toProvider(SessionWithInitializedTablesFactory.class);
 
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
         cassandraDataDefinitions.addBinding().toInstance(CassandraZonedDateTimeModule.MODULE);
@@ -89,6 +88,14 @@ public class CassandraSessionModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), GuiceProbe.class).addBinding().to(CassandraProbe.class);
 
         Multibinder.newSetBinder(binder(), HealthCheck.class).addBinding().to(CassandraHealthCheck.class);
+    }
+
+    @Singleton
+    @Provides
+    SessionWithInitializedTablesFactory provideSessionFactory(KeyspaceConfiguration keyspaceConfiguration,
+                                               InitializedCluster cluster,
+                                               CassandraModule module) {
+        return new SessionWithInitializedTablesFactory(keyspaceConfiguration, cluster.cluster, module);
     }
 
     @Provides
@@ -157,15 +164,6 @@ public class CassandraSessionModule extends AbstractModule {
     @Singleton
     KeyspaceConfiguration provideMainKeyspaceConfiguration(KeyspacesConfiguration keyspacesConfiguration) {
         return keyspacesConfiguration.mainKeyspaceConfiguration();
-    }
-
-    private static class MainSessionWithInitializedTablesFactory extends SessionWithInitializedTablesFactory {
-        @Inject
-        public MainSessionWithInitializedTablesFactory(KeyspaceConfiguration keyspaceConfiguration,
-                                                       InitializedCluster cluster,
-                                                       CassandraModule module) {
-            super(keyspaceConfiguration, cluster.cluster, module);
-        }
     }
 
     static class InitializedCluster implements Startable {

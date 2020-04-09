@@ -28,9 +28,7 @@ import org.apache.james.backends.cassandra.init.configuration.KeyspaceConfigurat
 
 import com.datastax.driver.core.Session;
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Provides;
-import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
@@ -39,10 +37,6 @@ import com.google.inject.name.Names;
 public class CassandraCacheSessionModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(CacheSessionWithInitializedTablesFactory.class).in(Scopes.SINGLETON);
-        bind(Session.class).annotatedWith(Names.named(InjectionNames.CACHE))
-            .toProvider(CacheSessionWithInitializedTablesFactory.class);
-
         Multibinder.newSetBinder(binder(), CassandraModule.class, Names.named(InjectionNames.CACHE));
     }
 
@@ -53,20 +47,27 @@ public class CassandraCacheSessionModule extends AbstractModule {
         return keyspacesConfiguration.cacheKeyspaceConfiguration();
     }
 
+    @Singleton
+    @Named(InjectionNames.CACHE)
+    @Provides
+    SessionWithInitializedTablesFactory provideSessionFactory(@Named(InjectionNames.CACHE) KeyspaceConfiguration keyspaceConfiguration,
+                                               CassandraSessionModule.InitializedCluster cluster,
+                                               @Named(InjectionNames.CACHE) CassandraModule module) {
+        return new SessionWithInitializedTablesFactory(keyspaceConfiguration, cluster.getCluster(), module);
+    }
+
+
+    @Singleton
+    @Named(InjectionNames.CACHE)
+    @Provides
+    Session provideSession(@Named(InjectionNames.CACHE) SessionWithInitializedTablesFactory sessionFactory) {
+        return sessionFactory.get();
+    }
 
     @Named(InjectionNames.CACHE)
     @Provides
     @Singleton
     CassandraModule composeCacheDefinitions(@Named(InjectionNames.CACHE) Set<CassandraModule> modules) {
         return CassandraModule.aggregateModules(modules);
-    }
-
-    private static class CacheSessionWithInitializedTablesFactory extends SessionWithInitializedTablesFactory {
-        @Inject
-        public CacheSessionWithInitializedTablesFactory(@Named(InjectionNames.CACHE) KeyspaceConfiguration keyspaceConfiguration,
-                                                        CassandraSessionModule.InitializedCluster cluster,
-                                                        @Named(InjectionNames.CACHE) CassandraModule module) {
-            super(keyspaceConfiguration, cluster.getCluster(), module);
-        }
     }
 }
