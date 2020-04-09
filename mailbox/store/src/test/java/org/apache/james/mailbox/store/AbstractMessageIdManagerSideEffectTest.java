@@ -49,6 +49,7 @@ import org.apache.james.mailbox.ModSeq;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
+import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.MessageMoveEvent;
@@ -139,7 +140,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageResult messageResult = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session).get(0);
         MessageMetaData simpleMessageMetaData = messageResult.messageMetaData();
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents())
@@ -165,7 +166,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageResult messageResult2 = messageIdManager.getMessage(messageId2, FetchGroup.MINIMAL, session).get(0);
         MessageMetaData simpleMessageMetaData2 = messageResult2.messageMetaData();
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.delete(ImmutableList.of(messageId1, messageId2), session);
 
         AbstractListAssert<?, List<? extends MailboxListener.Expunged>, MailboxListener.Expunged, ObjectAssert<MailboxListener.Expunged>> events =
@@ -184,7 +185,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -317,7 +318,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -328,7 +329,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).filteredOn(event -> event instanceof MessageMoveEvent).hasSize(1);
@@ -342,7 +343,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox3.getMailboxId()));
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), session);
 
         messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
@@ -378,7 +381,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         List<MessageResult> messageResults = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, session);
         assertThat(messageResults).hasSize(2);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox3.getMailboxId()));
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox3.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).filteredOn(event -> event instanceof MessageMoveEvent).hasSize(1);
@@ -396,7 +401,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), messageUid1, newFlags, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
         messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(mailbox2.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -409,7 +414,8 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), messageUid1, newFlags, session);
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox2.getMailboxId()), session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
         messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -421,7 +427,8 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
         messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(mailbox2.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -433,7 +440,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -446,7 +453,8 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         MessageId messageId = testingData.persist(mailbox1.getMailboxId(), messageUid1, FLAGS, session);
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
         messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).hasSize(2).allSatisfy(event -> assertThat(event).isInstanceOf(MailboxListener.FlagsUpdated.class));
@@ -457,7 +465,8 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.persist(mailbox2.getMailboxId(), messageUid1, FLAGS, session);
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(mailbox1.getMailboxId(), mailbox2.getMailboxId()), session);
 
@@ -486,7 +495,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.createNotUsedMessageId();
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
         messageIdManager.delete(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -497,7 +506,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.createNotUsedMessageId();
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox3.getMailboxId()));
         messageIdManager.delete(ImmutableList.of(messageId), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -508,7 +519,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.createNotUsedMessageId();
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox3.getMailboxId()));
         messageIdManager.setFlags(FLAGS, FlagsUpdateMode.ADD, messageId, ImmutableList.of(mailbox2.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
@@ -519,7 +532,9 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         givenUnlimitedQuota();
         MessageId messageId = testingData.createNotUsedMessageId();
 
-        eventBus.register(eventCollector);
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox1.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox2.getMailboxId()));
+        eventBus.register(eventCollector, new MailboxIdRegistrationKey(mailbox3.getMailboxId()));
         messageIdManager.setInMailboxes(messageId, ImmutableList.of(mailbox1.getMailboxId()), session);
 
         assertThat(eventCollector.getEvents()).isEmpty();
