@@ -20,11 +20,8 @@
 package org.apache.james.jmap.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
@@ -44,7 +41,6 @@ import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.FetchGroup;
@@ -53,8 +49,6 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.store.FakeAuthenticator;
-import org.apache.james.mailbox.store.FakeAuthorizator;
-import org.apache.james.mailbox.store.SessionProviderImpl;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.apache.james.mime4j.dom.Message;
@@ -96,7 +90,6 @@ class ComputeMessageFastViewProjectionListenerTest {
 
     MessageManager inboxMessageManager;
     MessageManager otherBoxMessageManager;
-    ComputeMessageFastViewProjectionListener listener;
     MessageIdManager messageIdManager;
     MemoryEventDeadLetters eventDeadLetters;
 
@@ -110,6 +103,11 @@ class ComputeMessageFastViewProjectionListenerTest {
             .firstBackoff(Duration.ofMillis(1))
             .jitterFactor(0.5)
             .build();
+
+        messageFastViewProjection = new MemoryMessageFastViewProjection(new RecordingMetricFactory());
+        MessageContentExtractor messageContentExtractor = new MessageContentExtractor();
+        HtmlTextExtractor htmlTextExtractor = new JsoupHtmlTextExtractor();
+
         InMemoryIntegrationResources resources = InMemoryIntegrationResources.builder()
             .preProvisionnedFakeAuthenticator()
             .fakeAuthorizator()
@@ -119,28 +117,20 @@ class ComputeMessageFastViewProjectionListenerTest {
             .scanningSearchIndex()
             .noPreDeletionHooks()
             .storeQuotaManager()
+            .registerListener((mailboxManager, messageIdManager) ->
+                new ComputeMessageFastViewProjectionListener(mailboxManager, messageIdManager,
+                    messageFastViewProjection,
+                    new MessageFastViewPrecomputedProperties.Factory(new Preview.Factory(messageContentExtractor, htmlTextExtractor))))
             .build();
 
         mailboxManager = resources.getMailboxManager();
         messageIdManager = spy(resources.getMessageIdManager());
 
-        messageFastViewProjection = new MemoryMessageFastViewProjection(new RecordingMetricFactory());
-
-        MessageContentExtractor messageContentExtractor = new MessageContentExtractor();
-        HtmlTextExtractor htmlTextExtractor = new JsoupHtmlTextExtractor();
 
         messageFullViewFactory = new MessageFullViewFactory(resources.getBlobManager(), messageContentExtractor, htmlTextExtractor, messageIdManager, messageFastViewProjection);
 
         FakeAuthenticator authenticator = new FakeAuthenticator();
         authenticator.addUser(BOB, "12345");
-
-        SessionProviderImpl sessionProvider = new SessionProviderImpl(authenticator, FakeAuthorizator.defaultReject());
-
-        listener = spy(new ComputeMessageFastViewProjectionListener(sessionProvider, messageIdManager,
-            messageFastViewProjection,
-            new MessageFastViewPrecomputedProperties.Factory(new Preview.Factory(messageContentExtractor, htmlTextExtractor))));
-
-        resources.getEventBus().register(listener);
 
         mailboxSession = MailboxSessionUtil.create(BOB);
 
@@ -247,36 +237,6 @@ class ComputeMessageFastViewProjectionListenerTest {
         MessageResult result = otherBoxMessageManager.getMessages(MessageRange.all(), FetchGroup.MINIMAL, mailboxSession).next();
         assertThat(Mono.from(messageFastViewProjection.retrieve(result.getMessageId())).block())
             .isEqualTo(PRECOMPUTED_PROPERTIES_PREVIEW);
-    }
-
-    @Test
-    void shouldStoreEventInDeadLettersWhenComputeFastViewPrecomputedPropertiesException() throws Exception {
-        doThrow(new IOException())
-            .when(listener)
-            .computeFastViewPrecomputedProperties(any());
-
-        inboxMessageManager.appendMessage(
-            MessageManager.AppendCommand.builder()
-                .build(previewMessage()),
-            mailboxSession);
-
-        assertThat(eventDeadLetters.failedIds(ComputeMessageFastViewProjectionListener.GROUP).collectList().block())
-            .hasSize(1);
-    }
-
-    @Test
-    void shouldStoreEventInDeadLettersWhenGetMessagesException() throws Exception {
-        doThrow(new MailboxException())
-            .when(messageIdManager)
-            .getMessages(any(), any(), any());
-
-        inboxMessageManager.appendMessage(
-            MessageManager.AppendCommand.builder()
-                .build(previewMessage()),
-            mailboxSession);
-
-        assertThat(eventDeadLetters.failedIds(ComputeMessageFastViewProjectionListener.GROUP).collectList().block())
-            .hasSize(1);
     }
 
     private Message previewMessage() throws Exception {

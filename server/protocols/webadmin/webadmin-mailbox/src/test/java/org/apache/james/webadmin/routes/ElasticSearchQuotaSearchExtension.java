@@ -67,7 +67,6 @@ public class ElasticSearchQuotaSearchExtension implements ParameterResolver, Bef
                     .addHost(elasticSearch.getHttpHost())
                     .build());
 
-            InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultResources();
 
 
             DNSService dnsService = mock(DNSService.class);
@@ -79,7 +78,9 @@ public class ElasticSearchQuotaSearchExtension implements ParameterResolver, Bef
                 new QuotaRatioToElasticSearchJson(),
                 new UserRoutingKeyFactory());
 
-            resources.getMailboxManager().getEventBus().register(listener);
+            InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultBuilder()
+                .registerListener((manager, messageIdManager) -> listener)
+                .build();
 
             QuotaComponents quotaComponents = resources.getMailboxManager().getQuotaComponents();
 

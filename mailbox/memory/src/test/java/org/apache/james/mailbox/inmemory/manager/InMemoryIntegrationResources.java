@@ -21,6 +21,7 @@ package org.apache.james.mailbox.inmemory.manager;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.apache.james.mailbox.MessageIdManager;
@@ -172,6 +173,13 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
         }
 
         interface FinalStage {
+            @FunctionalInterface
+            interface InstanciateListener {
+                MailboxListener.GroupMailboxListener instanciate(InMemoryMailboxManager mailboxManager, MessageIdManager messageIdManager);
+            }
+
+            FinalStage registerListener(InstanciateListener listenerFunction);
+
             InMemoryIntegrationResources build();
         }
     }
@@ -181,6 +189,11 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
     }
 
     public static InMemoryIntegrationResources defaultResources() {
+        return defaultBuilder()
+            .build();
+    }
+
+    public static Stages.FinalStage defaultBuilder() {
         return builder()
             .preProvisionnedFakeAuthenticator()
             .fakeAuthorizator()
@@ -189,8 +202,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
             .defaultMessageParser()
             .scanningSearchIndex()
             .noPreDeletionHooks()
-            .storeQuotaManager()
-            .build();
+            .storeQuotaManager();
     }
 
     public static class Builder implements Stages.RequireAuthenticator, Stages.RequireAuthorizator, Stages.RequireEventBus,
@@ -206,6 +218,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
         private Optional<MessageParser> messageParser;
         private Optional<Function<MailboxManagerPreInstanciationStage, MessageSearchIndex>> searchIndexFactory;
         private ImmutableSet.Builder<Function<MailboxManagerPreInstanciationStage, PreDeletionHook>> preDeletionHooksFactories;
+        private ImmutableList.Builder<BiConsumer<InMemoryMailboxManager, MessageIdManager>> groupListenerFactory;
         private ImmutableList.Builder<MailboxListener.GroupMailboxListener> listenersToBeRegistered;
 
         private Builder() {
@@ -217,6 +230,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
             this.searchIndexFactory = Optional.empty();
             this.messageParser = Optional.empty();
             this.quotaManager = Optional.empty();
+            this.groupListenerFactory = ImmutableList.builder();
             this.preDeletionHooksFactories = ImmutableSet.builder();
             this.listenersToBeRegistered = ImmutableList.builder();
         }
@@ -281,6 +295,15 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
         }
 
         @Override
+        public Builder registerListener(InstanciateListener listenerFunction) {
+           groupListenerFactory.add((mailboxManager, messageIdManager) -> {
+                MailboxListener.GroupMailboxListener listener = listenerFunction.instanciate(mailboxManager, messageIdManager);
+                listenersToBeRegistered.add(listener);
+            });
+            return this;
+        }
+
+        @Override
         public InMemoryIntegrationResources build() {
             Preconditions.checkState(authenticator.isPresent());
             Preconditions.checkState(authorizator.isPresent());
@@ -325,12 +348,23 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
                 index,
                 createHooks(preInstanciationStage));
 
+            InMemoryMessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
+            StoreMessageIdManager messageIdManager = new StoreMessageIdManager(
+                manager,
+                mailboxSessionMapperFactory,
+                eventBus,
+                messageIdFactory,
+                quotaManager,
+                quotaRootResolver,
+                manager.getPreDeletionHooks());
+
             eventBus.register(listeningCurrentQuotaUpdater);
             eventBus.register(new MailboxAnnotationListener(mailboxSessionMapperFactory, sessionProvider));
-
+            groupListenerFactory.build().forEach(c -> c.accept(manager, messageIdManager));
             listenersToBeRegistered.build().forEach(eventBus::register);
 
-            return new InMemoryIntegrationResources(manager, storeRightManager, new InMemoryMessageId.Factory(), currentQuotaManager, quotaRootResolver, maxQuotaManager, quotaManager, index, eventBus);
+            return new InMemoryIntegrationResources(manager, storeRightManager, messageIdFactory, currentQuotaManager,
+                quotaRootResolver, maxQuotaManager, quotaManager, index, eventBus, messageIdManager);
         }
 
         private PreDeletionHooks createHooks(MailboxManagerPreInstanciationStage preInstanciationStage) {
@@ -390,7 +424,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
     private final EventBus eventBus;
     private final StoreBlobManager blobManager;
 
-    InMemoryIntegrationResources(InMemoryMailboxManager mailboxManager, StoreRightManager storeRightManager, MessageId.Factory messageIdFactory, InMemoryCurrentQuotaManager currentQuotaManager, DefaultUserQuotaRootResolver defaultUserQuotaRootResolver, InMemoryPerUserMaxQuotaManager maxQuotaManager, QuotaManager quotaManager, MessageSearchIndex searchIndex, EventBus eventBus) {
+    InMemoryIntegrationResources(InMemoryMailboxManager mailboxManager, StoreRightManager storeRightManager, MessageId.Factory messageIdFactory, InMemoryCurrentQuotaManager currentQuotaManager, DefaultUserQuotaRootResolver defaultUserQuotaRootResolver, InMemoryPerUserMaxQuotaManager maxQuotaManager, QuotaManager quotaManager, MessageSearchIndex searchIndex, EventBus eventBus, StoreMessageIdManager messageIdManager) {
         this.mailboxManager = mailboxManager;
         this.storeRightManager = storeRightManager;
         this.messageIdFactory = messageIdFactory;
@@ -400,15 +434,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
         this.quotaManager = quotaManager;
         this.searchIndex = searchIndex;
         this.eventBus = eventBus;
-
-        this.storeMessageIdManager = new StoreMessageIdManager(
-            mailboxManager,
-            mailboxManager.getMapperFactory(),
-            mailboxManager.getEventBus(),
-            messageIdFactory,
-            quotaManager,
-            defaultUserQuotaRootResolver,
-            mailboxManager.getPreDeletionHooks());
+        this.storeMessageIdManager = messageIdManager;
 
         this.blobManager = new StoreBlobManager(
             new StoreAttachmentManager((InMemoryMailboxSessionMapperFactory) mailboxManager.getMapperFactory(), storeMessageIdManager),

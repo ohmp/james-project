@@ -58,7 +58,6 @@ public class PropagateLookupRightListenerTest {
 
     private StoreRightManager storeRightManager;
     private StoreMailboxManager storeMailboxManager;
-    private PropagateLookupRightListener testee;
 
     private MailboxSession mailboxSession = MailboxSessionUtil.create(OWNER_USER);
 
@@ -73,13 +72,12 @@ public class PropagateLookupRightListenerTest {
 
     @Before
     public void setup() throws Exception {
-        InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultResources();
+        InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultBuilder()
+            .registerListener((manager, messageIdManager) -> new PropagateLookupRightListener(manager, manager))
+            .build();
         storeMailboxManager = resources.getMailboxManager();
         storeRightManager = resources.getStoreRightManager();
         mailboxMapper = storeMailboxManager.getMapperFactory();
-
-        testee = new PropagateLookupRightListener(storeRightManager, storeMailboxManager);
-        storeMailboxManager.getEventBus().register(testee);
 
         parentMailboxId = storeMailboxManager.createMailbox(PARENT_MAILBOX, mailboxSession).get();
         parentMailboxId1 = storeMailboxManager.createMailbox(PARENT_MAILBOX1, mailboxSession).get();
@@ -98,7 +96,9 @@ public class PropagateLookupRightListenerTest {
 
     @Test
     public void getExecutionModeShouldReturnAsynchronous() throws Exception {
-        assertThat(testee.getExecutionMode()).isEqualTo(MailboxListener.ExecutionMode.SYNCHRONOUS);
+        assertThat(new PropagateLookupRightListener(storeRightManager, storeMailboxManager)
+            .getExecutionMode())
+            .isEqualTo(MailboxListener.ExecutionMode.SYNCHRONOUS);
     }
 
     @Test

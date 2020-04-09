@@ -57,7 +57,6 @@ class SetCustomFlagOnBigMessagesTest {
     private static final Event.EventId RANDOM_EVENT_ID = Event.EventId.random();
     private static final MailboxPath INBOX_PATH = MailboxPath.inbox(USER);
 
-    private SetCustomFlagOnBigMessages testee;
     private MessageManager inboxMessageManager;
     private MailboxId inboxId;
     private MailboxSession mailboxSession;
@@ -65,15 +64,14 @@ class SetCustomFlagOnBigMessagesTest {
 
     @BeforeEach
     void beforeEach() throws Exception {
-        InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultResources();
+        InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultBuilder()
+            .registerListener((manager, messageIdManager) -> new SetCustomFlagOnBigMessages(manager))
+            .build();
+
         mailboxManager = resources.getMailboxManager();
         mailboxSession = MailboxSessionUtil.create(USER);
         inboxId = mailboxManager.createMailbox(INBOX_PATH, mailboxSession).get();
         inboxMessageManager = mailboxManager.getMailbox(inboxId, mailboxSession);
-
-        testee = new SetCustomFlagOnBigMessages(mailboxManager);
-
-        resources.getEventBus().register(testee);
     }
 
     @Test
@@ -138,7 +136,7 @@ class SetCustomFlagOnBigMessagesTest {
             .addMetaData(oneMBMetaData)
             .build();
 
-        testee.event(eventWithAFakeMessageSize);
+        new SetCustomFlagOnBigMessages(mailboxManager).event(eventWithAFakeMessageSize);
 
         assertThat(getMessageFlags(composedIdOfSmallMessage.getUid()))
             .allSatisfy(flags -> assertThat(flags.contains(BIG_MESSAGE)).isTrue());
