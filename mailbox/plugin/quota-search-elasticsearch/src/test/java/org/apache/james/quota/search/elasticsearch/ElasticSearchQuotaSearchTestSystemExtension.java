@@ -59,19 +59,17 @@ public class ElasticSearchQuotaSearchTestSystemExtension implements ParameterRes
                 elasticSearch.clientProvider().get(),
                 elasticSearch.configuration());
 
-            InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultResources();
+            InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultBuilder()
+                .registerListener((m, m2) -> new ElasticSearchQuotaMailboxListener(
+                    new ElasticSearchIndexer(client,
+                        QuotaRatioElasticSearchConstants.DEFAULT_QUOTA_RATIO_WRITE_ALIAS),
+                    new QuotaRatioToElasticSearchJson(),
+                    new UserRoutingKeyFactory()))
+                .build();
 
             DNSService dnsService = mock(DNSService.class);
             MemoryDomainList domainList = new MemoryDomainList(dnsService);
             MemoryUsersRepository usersRepository = MemoryUsersRepository.withVirtualHosting(domainList);
-
-            ElasticSearchQuotaMailboxListener listener = new ElasticSearchQuotaMailboxListener(
-                new ElasticSearchIndexer(client,
-                    QuotaRatioElasticSearchConstants.DEFAULT_QUOTA_RATIO_WRITE_ALIAS),
-                new QuotaRatioToElasticSearchJson(),
-                new UserRoutingKeyFactory());
-
-            resources.getMailboxManager().getEventBus().register(listener);
 
             QuotaComponents quotaComponents = resources.getMailboxManager().getQuotaComponents();
 
