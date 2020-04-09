@@ -699,6 +699,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
     class EventTests {
         private final QuotaRoot quotaRoot = QuotaRoot.quotaRoot("#private&user_1", Optional.empty());
         private EventCollector listener;
+        private EventCollector groupListener;
         private MailboxPath inbox;
         private MailboxId inboxId;
         private MessageManager inboxManager;
@@ -711,8 +712,11 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             newPath = MailboxPath.forUser(USER_1, "specialMailbox");
 
             listener = new EventCollector();
+            groupListener = new EventCollector();
             inboxId = mailboxManager.createMailbox(inbox, session).get();
             inboxManager = mailboxManager.getMailbox(inbox, session);
+
+            retrieveEventBus(mailboxManager).register(groupListener);
         }
 
         @Test
@@ -753,11 +757,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
         @Test
         void createMailboxShouldFireMailboxAddedEvent() throws Exception {
-            retrieveEventBus(mailboxManager).register(listener);
-
             Optional<MailboxId> newId = mailboxManager.createMailbox(newPath, session);
 
-            assertThat(listener.getEvents())
+            assertThat(groupListener.getEvents())
                 .filteredOn(event -> event instanceof MailboxListener.MailboxAdded)
                 .hasSize(1)
                 .extracting(event -> (MailboxListener.MailboxAdded) event)
@@ -768,12 +770,11 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         @Test
         void addingMessageShouldFireQuotaUpdateEvent() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Quota));
-            retrieveEventBus(mailboxManager).register(listener);
 
             inboxManager.appendMessage(MessageManager.AppendCommand.builder()
                     .build(message), session);
 
-            assertThat(listener.getEvents())
+            assertThat(groupListener.getEvents())
                 .filteredOn(event -> event instanceof MailboxListener.QuotaUsageUpdatedEvent)
                 .hasSize(1)
                 .extracting(event -> (MailboxListener.QuotaUsageUpdatedEvent) event)
@@ -981,10 +982,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             mailboxManager.createMailbox(newPath, session);
             inboxManager.appendMessage(AppendCommand.builder().build(message), session);
 
-            retrieveEventBus(mailboxManager).register(listener);
             mailboxManager.copyMessages(MessageRange.all(), inbox, newPath, session);
 
-            assertThat(listener.getEvents())
+            assertThat(groupListener.getEvents())
                 .filteredOn(event -> event instanceof MailboxListener.Expunged)
                 .isEmpty();
         }
