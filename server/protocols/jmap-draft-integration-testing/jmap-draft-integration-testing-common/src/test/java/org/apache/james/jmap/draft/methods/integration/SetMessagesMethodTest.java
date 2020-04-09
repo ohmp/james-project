@@ -66,7 +66,6 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -90,6 +89,7 @@ import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.events.Event;
+import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Attachment;
@@ -132,6 +132,7 @@ import org.junit.experimental.categories.Category;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -2463,7 +2464,9 @@ public abstract class SetMessagesMethodTest {
             "]";
 
         EventCollector eventCollector = new EventCollector();
-        jmapServer.getProbe(JmapGuiceProbe.class).addMailboxListener(eventCollector);
+        jmapServer.getProbe(JmapGuiceProbe.class).addMailboxListener(eventCollector,
+            new MailboxIdRegistrationKey(jmapServer.getProbe(MailboxProbeImpl.class)
+                .getMailboxId(MailboxConstants.USER_NAMESPACE, USERNAME.asString(), DefaultMailboxes.OUTBOX)));
 
         String messageId = with()
             .header("Authorization", accessToken.asString())

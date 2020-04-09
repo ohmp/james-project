@@ -35,6 +35,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.MailboxListener;
+import org.apache.james.mailbox.events.RegistrationKey;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
@@ -66,8 +67,8 @@ public class JmapGuiceProbe implements GuiceProbe {
         return jmapServer.getPort();
     }
 
-    public void addMailboxListener(MailboxListener.GroupMailboxListener listener) {
-        eventBus.register(listener);
+    public void addMailboxListener(MailboxListener listener, RegistrationKey registrationKey) {
+        eventBus.register(listener, registrationKey);
     }
 
     public void modifyVacation(AccountId accountId, VacationPatch vacationPatch) {
