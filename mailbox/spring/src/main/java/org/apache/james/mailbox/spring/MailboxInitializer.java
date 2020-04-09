@@ -24,12 +24,15 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
 import org.apache.james.mailbox.store.quota.ListeningCurrentQuotaUpdater;
 import org.apache.james.mailbox.store.quota.QuotaUpdater;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
+
+import com.google.common.collect.ImmutableList;
 
 public class MailboxInitializer {
     private final SessionProvider sessionProvider;
@@ -50,18 +53,20 @@ public class MailboxInitializer {
     }
 
     public void init() {
+        ImmutableList.Builder<MailboxListener.GroupMailboxListener> registrationBuilder = ImmutableList.<MailboxListener.GroupMailboxListener>builder();
         if (messageSearchIndex instanceof ListeningMessageSearchIndex) {
             ListeningMessageSearchIndex index = (ListeningMessageSearchIndex) messageSearchIndex;
-            eventBus.register(index);
+            registrationBuilder.add(index);
         }
 
         if (quotaUpdater instanceof ListeningCurrentQuotaUpdater) {
             ListeningCurrentQuotaUpdater listeningCurrentQuotaUpdater = (ListeningCurrentQuotaUpdater) quotaUpdater;
-            eventBus.register(listeningCurrentQuotaUpdater);
+            registrationBuilder.add(listeningCurrentQuotaUpdater);
         }
 
         if (mailboxManager.getSupportedMailboxCapabilities().contains(MailboxManager.MailboxCapabilities.Annotation)) {
-            eventBus.register(new MailboxAnnotationListener(mapperFactory, sessionProvider));
+            registrationBuilder.add(new MailboxAnnotationListener(mapperFactory, sessionProvider));
         }
+        eventBus.initialize(registrationBuilder.build());
     }
 }

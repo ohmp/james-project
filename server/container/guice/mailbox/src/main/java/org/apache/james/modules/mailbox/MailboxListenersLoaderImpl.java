@@ -64,7 +64,8 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
         ImmutableMap<Group, MailboxListener.GroupMailboxListener> guiceListenersAsMap = guiceDefinedListeners.stream()
             .collect(Guavate.toImmutableMap(MailboxListener.GroupMailboxListener::getDefaultGroup));
 
-        ImmutableMap<Group, MailboxListener> registeredListenersAsMap = listenersConfiguration.getListenersConfiguration().stream()
+        ImmutableMap<Group, MailboxListener> registeredListenersAsMap = listenersConfiguration.getListenersConfiguration()
+            .stream()
             .map(this::createListener)
             .collect(Guavate.toImmutableMap(
                 Pair::getLeft,
@@ -78,7 +79,7 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
 
     @Override
     public void register(Map<Group, MailboxListener> listeners) {
-        listeners.forEach((key, value) -> eventBus.register(value, key));
+        eventBus.initialize(listeners);
     }
 
     @Override

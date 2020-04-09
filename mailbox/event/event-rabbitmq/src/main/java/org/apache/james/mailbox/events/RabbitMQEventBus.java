@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.events;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PreDestroy;
@@ -57,6 +58,7 @@ public class RabbitMQEventBus implements EventBus, Startable {
     private GroupRegistrationHandler groupRegistrationHandler;
     private KeyRegistrationHandler keyRegistrationHandler;
     private EventDispatcher eventDispatcher;
+    private boolean groupsInitialized;
 
     @Inject
     public RabbitMQEventBus(Sender sender, ReceiverProvider receiverProvider, EventSerializer eventSerializer,
@@ -73,6 +75,7 @@ public class RabbitMQEventBus implements EventBus, Startable {
         this.eventDeadLetters = eventDeadLetters;
         this.isRunning = false;
         this.isStopping = false;
+        this.groupsInitialized = false;
     }
 
     public void start() {
@@ -127,9 +130,13 @@ public class RabbitMQEventBus implements EventBus, Startable {
     }
 
     @Override
-    public Registration register(MailboxListener listener, Group group) {
+    public void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
         Preconditions.checkState(isRunning, NOT_RUNNING_ERROR_MESSAGE);
-        return groupRegistrationHandler.register(listener, group);
+        if (groupsInitialized) {
+            throw new GroupsAlreadyRegistered();
+        }
+        listeners.forEach((group, listener) -> groupRegistrationHandler.register(listener, group));
+        groupsInitialized = true;
     }
 
     @Override

@@ -35,6 +35,8 @@ import org.apache.james.mailbox.model.MessageRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
  * A Listener to determine the size of added messages.
  *
@@ -58,6 +60,7 @@ class SetCustomFlagOnBigMessages implements MailboxListener.GroupMailboxListener
 
     @Inject
     SetCustomFlagOnBigMessages(MailboxManager mailboxManager) {
+        Preconditions.checkNotNull(mailboxManager);
         this.mailboxManager = mailboxManager;
     }
 

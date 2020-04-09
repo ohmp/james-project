@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.events;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,7 @@ public class InVMEventBus implements EventBus {
     private final EventDelivery eventDelivery;
     private final RetryBackoffConfiguration retryBackoff;
     private final EventDeadLetters eventDeadLetters;
+    private boolean initialized;
 
     @Inject
     public InVMEventBus(EventDelivery eventDelivery, RetryBackoffConfiguration retryBackoff, EventDeadLetters eventDeadLetters) {
@@ -53,6 +55,7 @@ public class InVMEventBus implements EventBus {
         this.eventDeadLetters = eventDeadLetters;
         this.registrations = Multimaps.synchronizedSetMultimap(HashMultimap.create());
         this.groups = new ConcurrentHashMap<>();
+        this.initialized = false;
     }
 
     @Override
@@ -62,12 +65,14 @@ public class InVMEventBus implements EventBus {
     }
 
     @Override
-    public Registration register(MailboxListener listener, Group group) {
-        MailboxListener previous = groups.putIfAbsent(group, listener);
-        if (previous == null) {
-            return () -> groups.remove(group, listener);
+    public void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
+        synchronized (groups) {
+            if (initialized) {
+                throw new GroupsAlreadyRegistered();
+            }
+            groups.putAll(listeners);
+            initialized = true;
         }
-        throw new GroupAlreadyRegistered(group);
     }
 
     @Override

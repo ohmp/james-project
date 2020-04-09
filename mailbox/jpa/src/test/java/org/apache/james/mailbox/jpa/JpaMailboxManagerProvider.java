@@ -28,6 +28,7 @@ import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.jpa.mail.JPAModSeqProvider;
@@ -46,12 +47,14 @@ import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 
+import com.google.common.collect.ImmutableList;
+
 public class JpaMailboxManagerProvider {
 
     private static final int LIMIT_ANNOTATIONS = 3;
     private static final int LIMIT_ANNOTATION_SIZE = 30;
 
-    public static OpenJPAMailboxManager provideMailboxManager(JpaTestCluster jpaTestCluster) {
+    public static OpenJPAMailboxManager provideMailboxManager(JpaTestCluster jpaTestCluster, ImmutableList<MailboxListener.GroupMailboxListener> listeners) {
         EntityManagerFactory entityManagerFactory = jpaTestCluster.getEntityManagerFactory();
         JPAMailboxSessionMapperFactory mf = new JPAMailboxSessionMapperFactory(entityManagerFactory, new JPAUidProvider(entityManagerFactory), new JPAModSeqProvider(entityManagerFactory));
 
@@ -69,6 +72,8 @@ public class JpaMailboxManagerProvider {
         SessionProviderImpl sessionProvider = new SessionProviderImpl(noAuthenticator, noAuthorizator);
         QuotaComponents quotaComponents = QuotaComponents.disabled(sessionProvider, mf);
         MessageSearchIndex index = new SimpleMessageSearchIndex(mf, mf, new DefaultTextExtractor());
+
+        eventBus.initialize(listeners);
 
         return new OpenJPAMailboxManager(mf, sessionProvider,
             messageParser, new DefaultMessageId.Factory(),

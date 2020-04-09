@@ -118,8 +118,8 @@ public class JPAHostSystem extends JamesImapHostSystem {
         mailboxManager = new OpenJPAMailboxManager(mapperFactory, sessionProvider, messageParser, new DefaultMessageId.Factory(),
             eventBus, annotationManager, storeRightManager, quotaComponents, index);
 
-        eventBus.register(quotaUpdater);
-        eventBus.register(new MailboxAnnotationListener(mapperFactory, sessionProvider));
+        eventBus.initialize(quotaUpdater,
+            new MailboxAnnotationListener(mapperFactory, sessionProvider));
 
         SubscriptionManager subscriptionManager = new StoreSubscriptionManager(mapperFactory);
         

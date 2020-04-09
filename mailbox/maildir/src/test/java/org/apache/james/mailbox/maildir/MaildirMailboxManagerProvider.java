@@ -27,6 +27,7 @@ import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.store.Authenticator;
@@ -46,9 +47,11 @@ import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 
+import com.google.common.collect.ImmutableList;
+
 public class MaildirMailboxManagerProvider {
 
-    public static StoreMailboxManager createMailboxManager(String configuration, File tempFile) {
+    public static StoreMailboxManager createMailboxManager(String configuration, File tempFile, ImmutableList<MailboxListener.GroupMailboxListener> listeners) {
         MaildirStore store = new MaildirStore(tempFile.getPath() + configuration, new JVMMailboxPathLocker());
         MaildirMailboxSessionMapperFactory mf = new MaildirMailboxSessionMapperFactory(store);
 
@@ -70,6 +73,8 @@ public class MaildirMailboxManagerProvider {
         StoreMailboxManager manager = new StoreMailboxManager(mf, sessionProvider, new JVMMailboxPathLocker(),
             messageParser, new DefaultMessageId.Factory(), annotationManager, eventBus, storeRightManager,
             quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
+
+        eventBus.initialize(listeners);
 
         return manager;
     }

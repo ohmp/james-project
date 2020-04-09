@@ -53,7 +53,7 @@ class QuotaThresholdListenersTestSystem {
         QuotaThresholdCrossingListener thresholdCrossingListener =
             new QuotaThresholdCrossingListener(mailetContext, MemoryUsersRepository.withVirtualHosting(NO_DOMAIN_LIST), fileSystem, eventStore, configuration);
 
-        eventBus.register(thresholdCrossingListener);
+        eventBus.initialize(thresholdCrossingListener);
     }
 
     void event(Event event) {

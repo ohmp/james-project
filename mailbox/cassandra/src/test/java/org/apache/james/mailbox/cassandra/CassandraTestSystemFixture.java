@@ -73,18 +73,18 @@ class CassandraTestSystemFixture {
 
         QuotaComponents quotaComponents = QuotaComponents.disabled(sessionProvider, mapperFactory);
         MessageSearchIndex index = new SimpleMessageSearchIndex(mapperFactory, mapperFactory, new DefaultTextExtractor());
-        CassandraMailboxManager cassandraMailboxManager = new CassandraMailboxManager(mapperFactory, sessionProvider,
+
+        return new CassandraMailboxManager(mapperFactory, sessionProvider,
             new NoMailboxPathLocker(), new MessageParser(), new CassandraMessageId.Factory(),
             eventBus, annotationManager, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
-
-        eventBus.register(new MailboxAnnotationListener(mapperFactory, sessionProvider));
-
-        return cassandraMailboxManager;
     }
 
     static StoreMessageIdManager createMessageIdManager(CassandraMailboxSessionMapperFactory mapperFactory, QuotaManager quotaManager, EventBus eventBus,
                                                         PreDeletionHooks preDeletionHooks) {
         CassandraMailboxManager mailboxManager = createMailboxManager(mapperFactory);
+
+        mailboxManager.getEventBus().initialize(new MailboxAnnotationListener(mapperFactory, mailboxManager));
+
         return new StoreMessageIdManager(
             mailboxManager,
             mapperFactory,

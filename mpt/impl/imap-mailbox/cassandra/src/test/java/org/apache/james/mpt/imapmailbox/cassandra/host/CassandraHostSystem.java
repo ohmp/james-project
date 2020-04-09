@@ -115,7 +115,7 @@ public class CassandraHostSystem extends JamesImapHostSystem {
             new JVMMailboxPathLocker(), new MessageParser(), messageIdFactory,
             eventBus, annotationManager, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
 
-        eventBus.register(quotaUpdater);
+        eventBus.initialize(quotaUpdater);
 
         SubscriptionManager subscriptionManager = new StoreSubscriptionManager(mapperFactory);
 

@@ -27,6 +27,7 @@ import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.cassandra.mail.MailboxAggregateModule;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.search.MailboxQuery;
@@ -41,6 +42,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.runnable.ThrowingRunnable;
+import com.google.common.collect.ImmutableList;
 
 class CassandraMailboxManagerConsistencyTest {
 
@@ -48,6 +50,7 @@ class CassandraMailboxManagerConsistencyTest {
     private static final String INBOX = "INBOX";
     private static final String INBOX_RENAMED = "INBOX_RENAMED";
     private static final int TRY_COUNT_BEFORE_FAILURE = 6;
+    public static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENER = ImmutableList.of();
 
     @RegisterExtension
     static CassandraClusterExtension cassandra = new CassandraClusterExtension(MailboxAggregateModule.MODULE_WITH_QUOTA);
@@ -63,7 +66,8 @@ class CassandraMailboxManagerConsistencyTest {
     void setUp(CassandraCluster cassandra) {
         testee = CassandraMailboxManagerProvider.provideMailboxManager(
             cassandra,
-            PreDeletionHooks.NO_PRE_DELETION_HOOK);
+            PreDeletionHooks.NO_PRE_DELETION_HOOK,
+            NO_ADDITIONAL_LISTENER);
 
         mailboxSession = testee.createSystemSession(USER);
 

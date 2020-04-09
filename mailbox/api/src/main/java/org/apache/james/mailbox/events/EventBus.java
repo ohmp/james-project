@@ -19,8 +19,13 @@
 
 package org.apache.james.mailbox.events;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
+import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Mono;
@@ -46,7 +51,7 @@ public interface EventBus {
 
     Registration register(MailboxListener listener, RegistrationKey key);
 
-    Registration register(MailboxListener listener, Group group) throws GroupAlreadyRegistered;
+    void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered;
 
     Mono<Void> dispatch(Event event, Set<RegistrationKey> key);
 
@@ -56,7 +61,28 @@ public interface EventBus {
         return dispatch(event, ImmutableSet.of(key));
     }
 
-    default Registration register(MailboxListener.GroupMailboxListener groupMailboxListener) {
-        return register(groupMailboxListener, groupMailboxListener.getDefaultGroup());
+    /**
+     * @throws GroupsAlreadyRegistered when any initialize method had already been called
+     */
+    default void initialize(MailboxListener listener, Group group) throws GroupsAlreadyRegistered {
+        initialize(ImmutableMap.of(group, listener));
+    }
+
+    /**
+     * @throws GroupsAlreadyRegistered when any initialize method had already been called
+     */
+    default void initialize(MailboxListener.GroupMailboxListener... groupMailboxListeners) throws GroupsAlreadyRegistered {
+        initialize(ImmutableList.copyOf(groupMailboxListeners));
+    }
+
+    /**
+     * @throws GroupsAlreadyRegistered when any initialize method had already been called
+     */
+    default void initialize(Collection<MailboxListener.GroupMailboxListener> groupMailboxListeners) throws GroupsAlreadyRegistered {
+        Map<Group, MailboxListener> collect = groupMailboxListeners.stream()
+            .collect(Guavate.toImmutableMap(
+                MailboxListener.GroupMailboxListener::getDefaultGroup,
+                MailboxListener.class::cast));
+        initialize(collect);
     }
 }

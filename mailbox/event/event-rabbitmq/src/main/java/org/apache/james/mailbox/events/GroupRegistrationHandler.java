@@ -58,11 +58,11 @@ class GroupRegistrationHandler {
         groupRegistrations.values().forEach(GroupRegistration::unregister);
     }
 
-    Registration register(MailboxListener listener, Group group) {
-        return groupRegistrations
+    void register(MailboxListener listener, Group group) {
+        groupRegistrations
             .compute(group, (groupToRegister, oldGroupRegistration) -> {
                 if (oldGroupRegistration != null) {
-                    throw new GroupAlreadyRegistered(group);
+                    throw new GroupsAlreadyRegistered();
                 }
                 return newGroupRegistration(listener, groupToRegister);
             })

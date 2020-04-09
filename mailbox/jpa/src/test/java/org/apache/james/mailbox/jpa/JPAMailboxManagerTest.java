@@ -23,13 +23,18 @@ import java.util.Optional;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.ImmutableList;
+
 class JPAMailboxManagerTest extends MailboxManagerTest<OpenJPAMailboxManager> {
+
+    public static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
 
     @Disabled("JPAMailboxManager is using DefaultMessageId which doesn't support full feature of a messageId, which is an essential" +
         " element of the Vault")
@@ -42,8 +47,13 @@ class JPAMailboxManagerTest extends MailboxManagerTest<OpenJPAMailboxManager> {
     
     @Override
     protected OpenJPAMailboxManager provideMailboxManager() {
+        return JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, NO_ADDITIONAL_LISTENERS);
+    }
+
+    @Override
+    protected OpenJPAMailboxManager provideMailboxManager(MailboxListener.GroupMailboxListener mailboxListener) {
         if (!openJPAMailboxManager.isPresent()) {
-            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER));
+            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, ImmutableList.of(mailboxListener)));
         }
         return openJPAMailboxManager.get();
     }

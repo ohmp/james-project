@@ -122,6 +122,8 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
     protected abstract EventBus retrieveEventBus(T mailboxManager);
 
+    protected abstract T provideMailboxManager(MailboxListener.GroupMailboxListener mailboxListener);
+
     protected Set<PreDeletionHook> preDeletionHooks() {
         return ImmutableSet.of(preDeletionHook1, preDeletionHook2);
     }
@@ -708,16 +710,15 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
         @BeforeEach
         void setUp() throws Exception {
+            groupListener = new EventCollector();
+            mailboxManager = provideMailboxManager(groupListener);
             session = mailboxManager.createSystemSession(USER_1);
             inbox = MailboxPath.inbox(session);
             newPath = MailboxPath.forUser(USER_1, "specialMailbox");
 
             listener = new EventCollector();
-            groupListener = new EventCollector();
             inboxId = mailboxManager.createMailbox(inbox, session).get();
             inboxManager = mailboxManager.getMailbox(inbox, session);
-
-            retrieveEventBus(mailboxManager).register(groupListener);
         }
 
         @Test
@@ -758,6 +759,8 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
         @Test
         void createMailboxShouldFireMailboxAddedEvent() throws Exception {
+            groupListener.reset(); //needed as setUp did lead to events being dispatched
+
             Optional<MailboxId> newId = mailboxManager.createMailbox(newPath, session);
 
             assertThat(groupListener.getEvents())

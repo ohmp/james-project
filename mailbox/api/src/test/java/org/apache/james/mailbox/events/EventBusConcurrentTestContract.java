@@ -37,6 +37,7 @@ import org.awaitility.core.ConditionFactory;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 public interface EventBusConcurrentTestContract {
@@ -68,9 +69,10 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus().register(countingListener1, new EventBusTestFixture.GroupA());
-            eventBus().register(countingListener2, new EventBusTestFixture.GroupB());
-            eventBus().register(countingListener3, new EventBusTestFixture.GroupC());
+            eventBus().initialize(ImmutableMap.of(
+                new GroupTest.GroupA(), countingListener1,
+                new GroupTest.GroupB(), countingListener2,
+                new GroupTest.GroupC(), countingListener3));
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
 
             ConcurrentTestRunner.builder()
@@ -113,9 +115,10 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus().register(countingListener1, new EventBusTestFixture.GroupA());
-            eventBus().register(countingListener2, new EventBusTestFixture.GroupB());
-            eventBus().register(countingListener3, new EventBusTestFixture.GroupC());
+            eventBus().initialize(ImmutableMap.of(
+                new GroupTest.GroupA(), countingListener1,
+                new GroupTest.GroupB(), countingListener2,
+                new GroupTest.GroupC(), countingListener3));
 
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
             int totalEventDeliveredGlobally = totalGlobalRegistrations * TOTAL_DISPATCH_OPERATIONS;
@@ -148,13 +151,15 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus().register(countingListener1, new EventBusTestFixture.GroupA());
-            eventBus().register(countingListener2, new EventBusTestFixture.GroupB());
-            eventBus().register(countingListener3, new EventBusTestFixture.GroupC());
+            eventBus().initialize(ImmutableMap.of(
+                new GroupTest.GroupA(), countingListener1,
+                new GroupTest.GroupB(), countingListener2,
+                new GroupTest.GroupC(), countingListener3));
 
-            eventBus2().register(countingListener1, new EventBusTestFixture.GroupA());
-            eventBus2().register(countingListener2, new EventBusTestFixture.GroupB());
-            eventBus2().register(countingListener3, new EventBusTestFixture.GroupC());
+            eventBus2().initialize(ImmutableMap.of(
+                new GroupTest.GroupA(), countingListener1,
+                new GroupTest.GroupB(), countingListener2,
+                new GroupTest.GroupC(), countingListener3));
 
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
 
@@ -203,9 +208,10 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus2().register(countingListener1, GROUP_A);
-            eventBus2().register(countingListener2, new EventBusTestFixture.GroupB());
-            eventBus2().register(countingListener3, new EventBusTestFixture.GroupC());
+            eventBus2().initialize(ImmutableMap.of(
+                GROUP_A, countingListener1,
+                new EventBusTestFixture.GroupB(), countingListener2,
+                new EventBusTestFixture.GroupC(), countingListener3));
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
             int totalEventDeliveredGlobally = totalGlobalRegistrations * TOTAL_DISPATCH_OPERATIONS;
 
