@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.modules.mailbox;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -32,7 +33,9 @@ import org.apache.james.utils.ClassName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 public class MailboxListenersLoaderImpl implements Configurable, MailboxListenersLoader {
@@ -58,16 +61,24 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
     public void configure(ListenersConfiguration listenersConfiguration) {
         LOGGER.info("Loading user registered mailbox listeners");
 
-        guiceDefinedListeners.forEach(eventBus::register);
+        ImmutableMap<Group, MailboxListener.GroupMailboxListener> guiceListenersAsMap = guiceDefinedListeners.stream()
+            .collect(Guavate.toImmutableMap(MailboxListener.GroupMailboxListener::getDefaultGroup));
 
-        listenersConfiguration.getListenersConfiguration().stream()
+        ImmutableMap<Group, MailboxListener> registeredListenersAsMap = listenersConfiguration.getListenersConfiguration().stream()
             .map(this::createListener)
-            .forEach(this::register);
+            .collect(Guavate.toImmutableMap(
+                Pair::getLeft,
+                Pair::getRight));
+
+        register(ImmutableMap.<Group, MailboxListener>builder()
+            .putAll(guiceListenersAsMap)
+            .putAll(registeredListenersAsMap)
+            .build());
     }
 
     @Override
-    public void register(Pair<Group, MailboxListener> listener) {
-        eventBus.register(listener.getRight(), listener.getLeft());
+    public void register(Map<Group, MailboxListener> listeners) {
+        listeners.forEach((key, value) -> eventBus.register(value, key));
     }
 
     @Override
