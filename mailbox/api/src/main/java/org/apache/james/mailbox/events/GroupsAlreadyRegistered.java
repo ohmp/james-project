@@ -19,15 +19,6 @@
 
 package org.apache.james.mailbox.events;
 
-public class GroupAlreadyRegistered extends RuntimeException {
-    private final Group group;
+public class GroupsAlreadyRegistered extends RuntimeException {
 
-    public GroupAlreadyRegistered(Group group) {
-        super(group.asString() + " is already Registered and thus can not be used.");
-        this.group = group;
-    }
-
-    public Group getGroup() {
-        return group;
-    }
 }

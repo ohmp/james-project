@@ -357,11 +357,13 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
                 quotaManager,
                 quotaRootResolver,
                 manager.getPreDeletionHooks());
-
-            eventBus.register(listeningCurrentQuotaUpdater);
-            eventBus.register(new MailboxAnnotationListener(mailboxSessionMapperFactory, sessionProvider));
             groupListenerFactory.build().forEach(c -> c.accept(manager, messageIdManager));
-            listenersToBeRegistered.build().forEach(eventBus::register);
+
+            eventBus.initialize(ImmutableList.<MailboxListener.GroupMailboxListener>builder()
+                .addAll(listenersToBeRegistered.build())
+                .add(listeningCurrentQuotaUpdater)
+                .add(new MailboxAnnotationListener(mailboxSessionMapperFactory, sessionProvider))
+                .build());
 
             return new InMemoryIntegrationResources(manager, storeRightManager, messageIdFactory, currentQuotaManager,
                 quotaRootResolver, maxQuotaManager, quotaManager, index, eventBus, messageIdManager);

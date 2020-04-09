@@ -98,7 +98,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().shortWaitCondition()
@@ -120,7 +120,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().longWaitCondition()
@@ -144,7 +144,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         TimeUnit.SECONDS.sleep(1);
@@ -156,7 +156,7 @@ interface ErrorHandlingContract extends EventBusContract {
     default void exceedingMaxRetriesShouldStopConsumingFailedEvent() throws Exception {
         ThrowingListener throwingListener = throwingListener();
 
-        eventBus().register(throwingListener, GROUP_A);
+        eventBus().initialize(throwingListener, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         Thread.sleep(getSpeedProfile().getLongWaitTime().toMillis());
@@ -171,7 +171,7 @@ interface ErrorHandlingContract extends EventBusContract {
     default void retriesBackOffShouldDelayByExponentialGrowth() throws Exception {
         ThrowingListener throwingListener = throwingListener();
 
-        eventBus().register(throwingListener, GROUP_A);
+        eventBus().initialize(throwingListener, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         Thread.sleep(getSpeedProfile().getLongWaitTime().toMillis());
@@ -209,7 +209,7 @@ interface ErrorHandlingContract extends EventBusContract {
             }
         };
 
-        eventBus().register(listener, GROUP_A);
+        eventBus().initialize(listener, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().shortWaitCondition().until(successfulRetry::get);
@@ -252,7 +252,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, new EventBusTestFixture.GroupA());
+        eventBus().initialize(eventCollector, new EventBusTestFixture.GroupA());
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().shortWaitCondition()
@@ -278,7 +278,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().longWaitCondition()
@@ -307,7 +307,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().reDeliver(GROUP_A, EVENT).block();
 
         getSpeedProfile().longWaitCondition()
@@ -339,7 +339,7 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().reDeliver(GROUP_A, EVENT).block();
 
         getSpeedProfile().longWaitCondition()
@@ -351,7 +351,7 @@ interface ErrorHandlingContract extends EventBusContract {
         EventCollector eventCollector = eventCollector();
         EventCollector eventCollector2 = eventCollector();
 
-        eventBus().register(eventCollector, GROUP_A);
+        eventBus().initialize(eventCollector, GROUP_A);
         eventBus().register(eventCollector2, KEY_1);
         eventBus().reDeliver(GROUP_A, EVENT).block();
 

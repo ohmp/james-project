@@ -67,6 +67,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -384,8 +385,8 @@ class EventDeadLettersRoutesTest {
             eventCollectorB = new EventCollector();
             groupA = new EventBusTestFixture.GroupA();
             groupB = new EventBusTestFixture.GroupB();
-            eventBus.register(eventCollectorA, groupA);
-            eventBus.register(eventCollectorB, groupB);
+            eventBus.initialize(ImmutableMap.of(groupA, eventCollectorA,
+                groupB, eventCollectorB));
         }
 
         @Test
@@ -572,7 +573,7 @@ class EventDeadLettersRoutesTest {
         void nestedBeforeEach() {
             eventCollector = new EventCollector();
             groupA = new EventBusTestFixture.GroupA();
-            eventBus.register(eventCollector, groupA);
+            eventBus.initialize(eventCollector, groupA);
         }
 
         @Test
@@ -792,7 +793,7 @@ class EventDeadLettersRoutesTest {
         void nestedBeforeEach() {
             eventCollector = new EventCollector();
             groupA = new EventBusTestFixture.GroupA();
-            eventBus.register(eventCollector, groupA);
+            eventBus.initialize(eventCollector, groupA);
         }
 
         @Test

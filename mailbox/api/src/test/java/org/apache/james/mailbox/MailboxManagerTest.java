@@ -716,7 +716,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             inboxId = mailboxManager.createMailbox(inbox, session).get();
             inboxManager = mailboxManager.getMailbox(inbox, session);
 
-            retrieveEventBus(mailboxManager).register(groupListener);
+            retrieveEventBus(mailboxManager).initialize(groupListener);
         }
 
         @Test

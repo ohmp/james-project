@@ -103,8 +103,8 @@ public class CassandraMailboxManagerProvider {
             messageParser, messageIdFactory, eventBus, annotationManager, storeRightManager,
             quotaComponents, index, MailboxManagerConfiguration.DEFAULT, preDeletionHooks);
 
-        eventBus.register(quotaUpdater);
-        eventBus.register(new MailboxAnnotationListener(mapperFactory, sessionProvider));
+        eventBus.initialize(quotaUpdater,
+            new MailboxAnnotationListener(mapperFactory, sessionProvider));
 
         return manager;
     }

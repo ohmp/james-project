@@ -176,7 +176,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
     void registerGroupShouldCreateRetryExchange() throws Exception {
         MailboxListener listener = newListener();
         EventBusTestFixture.GroupA registeredGroup = new EventBusTestFixture.GroupA();
-        eventBus.register(listener, registeredGroup);
+        eventBus.initialize(listener, registeredGroup);
 
         GroupConsumerRetry.RetryExchangeName retryExchangeName = GroupConsumerRetry.RetryExchangeName.of(registeredGroup);
         assertThat(rabbitMQExtension.managementAPI().listExchanges())
@@ -194,7 +194,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void rabbitMQEventBusShouldHandleBulksGracefully() throws Exception {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener1 = newCountingListener();
-            eventBus().register(countingListener1, new EventBusTestFixture.GroupA());
+            eventBus().initialize(countingListener1, new EventBusTestFixture.GroupA());
             int totalGlobalRegistrations = 1; // GroupA
 
             int threadCount = 10;
@@ -246,9 +246,9 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             doAnswer(callEventAndSleepForever).when(eventBusListener).event(any());
             doAnswer(callEventAndSleepForever).when(eventBus2Listener).event(any());
 
-            eventBus.register(eventBusListener, GROUP_A);
-            eventBus2.register(eventBus2Listener, GROUP_A);
-            eventBus3.register(eventBus3Listener, GROUP_A);
+            eventBus.initialize(eventBusListener, GROUP_A);
+            eventBus2.initialize(eventBus2Listener, GROUP_A);
+            eventBus3.initialize(eventBus3Listener, GROUP_A);
 
             eventBus.dispatch(EVENT, NO_KEYS).block();
             getSpeedProfile().shortWaitCondition()
@@ -349,7 +349,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 void dispatchShouldWorkAfterNetworkIssuesForOldRegistration() {
                     rabbitMQEventBusWithNetWorkIssue.start();
                     MailboxListener listener = newListener();
-                    rabbitMQEventBusWithNetWorkIssue.register(listener, GROUP_A);
+                    rabbitMQEventBusWithNetWorkIssue.initialize(listener, GROUP_A);
 
                     rabbitMQNetWorkIssueExtension.getRabbitMQ().pause();
 
@@ -397,7 +397,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             void dispatchShouldWorkAfterRestartForOldRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
 
                 rabbitMQExtension.getRabbitMQ().restart();
 
@@ -412,7 +412,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
                 rabbitMQExtension.getRabbitMQ().restart();
 
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
 
                 eventBus.dispatch(EVENT, NO_KEYS).block();
 
@@ -424,7 +424,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             void redeliverShouldWorkAfterRestartForOldRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
 
                 rabbitMQExtension.getRabbitMQ().restart();
 
@@ -439,7 +439,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
                 rabbitMQExtension.getRabbitMQ().restart();
 
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
 
                 eventBus.reDeliver(GROUP_A, EVENT).block();
                 assertThatListenerReceiveOneEvent(listener);
@@ -498,7 +498,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
                 eventBus.dispatch(EVENT, NO_KEYS).block();
                 assertThatListenerReceiveOneEvent(listener);
             }
@@ -515,7 +515,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
                 eventBus.reDeliver(GROUP_A, EVENT).block();
                 assertThatListenerReceiveOneEvent(listener);
             }
@@ -570,7 +570,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             @Test
             void stopShouldNotDeleteGroupRegistrationWorkQueue() {
                 eventBus.start();
-                eventBus.register(mock(MailboxListener.class), GROUP_A);
+                eventBus.initialize(mock(MailboxListener.class), GROUP_A);
                 eventBus.stop();
 
                 assertThat(rabbitManagementAPI.listQueues())
@@ -596,7 +596,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 eventBus.start();
 
                 MailboxListenerCountingSuccessfulExecution listener = new MailboxListenerCountingSuccessfulExecution();
-                eventBus.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
 
                 try (Closeable closeable = ConcurrentTestRunner.builder()
                     .operation((threadNumber, step) -> eventBus.dispatch(EVENT, KEY_1).block())
@@ -662,7 +662,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
             @Test
             void multipleEventBusStopShouldNotDeleteGroupRegistrationWorkQueue() {
-                eventBus.register(mock(MailboxListener.class), GROUP_A);
+                eventBus.initialize(mock(MailboxListener.class), GROUP_A);
 
                 eventBus.stop();
                 eventBus2.stop();
@@ -691,8 +691,8 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 eventBus2.start();
 
                 MailboxListenerCountingSuccessfulExecution listener = new MailboxListenerCountingSuccessfulExecution();
-                eventBus.register(listener, GROUP_A);
-                eventBus2.register(listener, GROUP_A);
+                eventBus.initialize(listener, GROUP_A);
+                eventBus2.initialize(listener, GROUP_A);
 
                 try (Closeable closeable = ConcurrentTestRunner.builder()
                     .operation((threadNumber, step) -> eventBus.dispatch(EVENT, KEY_1).block())

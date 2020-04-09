@@ -77,7 +77,7 @@ class CassandraTestSystemFixture {
             new NoMailboxPathLocker(), new MessageParser(), new CassandraMessageId.Factory(),
             eventBus, annotationManager, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
 
-        eventBus.register(new MailboxAnnotationListener(mapperFactory, sessionProvider));
+        eventBus.initialize(new MailboxAnnotationListener(mapperFactory, sessionProvider));
 
         return cassandraMailboxManager;
     }

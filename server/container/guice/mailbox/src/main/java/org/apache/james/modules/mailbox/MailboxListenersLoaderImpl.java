@@ -78,7 +78,7 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
 
     @Override
     public void register(Map<Group, MailboxListener> listeners) {
-        listeners.forEach((key, value) -> eventBus.register(value, key));
+        eventBus.initialize(listeners);
     }
 
     @Override
