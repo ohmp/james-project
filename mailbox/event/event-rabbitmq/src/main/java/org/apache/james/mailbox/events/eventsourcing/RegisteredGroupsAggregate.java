@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import java.time.Clock;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.apache.james.eventsourcing.AggregateId;
@@ -68,20 +70,26 @@ public class RegisteredGroupsAggregate {
             .forEach(this::apply);
     }
 
-    public List<RegisteredGroupListenerChangeEvent> handleStart(StartCommand startCommand) {
-        List<RegisteredGroupListenerChangeEvent> detectedChanges = detectChanges(startCommand);
+    public List<RegisteredGroupListenerChangeEvent> handleStart(StartCommand startCommand, Clock clock) {
+        List<RegisteredGroupListenerChangeEvent> detectedChanges = detectChanges(startCommand, clock);
 
         detectedChanges.forEach(this::apply);
 
         return detectedChanges;
     }
 
-    private List<RegisteredGroupListenerChangeEvent> detectChanges(StartCommand startCommand) {
+    private List<RegisteredGroupListenerChangeEvent> detectChanges(StartCommand startCommand, Clock clock) {
         ImmutableSet<Group> addedGroups = ImmutableSet.copyOf(Sets.difference(startCommand.getRegisteredGroups(), state.groups));
         ImmutableSet<Group> removedGroups = ImmutableSet.copyOf(Sets.difference(state.groups, startCommand.getRegisteredGroups()));
 
         if (!addedGroups.isEmpty() || !removedGroups.isEmpty()) {
-            return ImmutableList.of(new RegisteredGroupListenerChangeEvent(history.getNextEventId(), addedGroups, removedGroups));
+            ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());
+            RegisteredGroupListenerChangeEvent event = new RegisteredGroupListenerChangeEvent(history.getNextEventId(),
+                Hostname.localHost(),
+                now,
+                addedGroups,
+                removedGroups);
+            return ImmutableList.of(event);
         }
         return ImmutableList.of();
     }

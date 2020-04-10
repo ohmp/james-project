@@ -19,35 +19,49 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
-import java.time.Clock;
-import java.util.List;
+import java.io.UncheckedIOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Objects;
 
-import org.apache.james.eventsourcing.CommandHandler;
-import org.apache.james.eventsourcing.Event;
-import org.apache.james.eventsourcing.eventstore.EventStore;
-import org.reactivestreams.Publisher;
+import org.apache.commons.lang3.StringUtils;
 
-import reactor.core.publisher.Mono;
+import com.google.common.base.Preconditions;
 
-public class StartCommandHandler implements CommandHandler<StartCommand> {
+public class Hostname {
+    public static Hostname of(String value) {
+        Preconditions.checkNotNull(value, "'value' should not be null");
+        Preconditions.checkArgument(StringUtils.isBlank(value), "'value' ");
 
-    private final EventStore eventStore;
-    private final Clock clock;
+        return new Hostname(value);
+    }
 
-    public StartCommandHandler(EventStore eventStore, Clock clock) {
-        this.eventStore = eventStore;
-        this.clock = clock;
+    public static Hostname localHost() {
+        try {
+            return new Hostname(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private final String value;
+
+    private Hostname(String value) {
+        this.value = value;
     }
 
     @Override
-    public Class<StartCommand> handledClass() {
-        return StartCommand.class;
+    public final boolean equals(Object o) {
+        if (o instanceof Hostname) {
+            Hostname hostname = (Hostname) o;
+
+            return Objects.equals(this.value, hostname.value);
+        }
+        return false;
     }
 
     @Override
-    public Publisher<List<? extends Event>> handle(StartCommand command) {
-        return Mono.from(eventStore.getEventsOfAggregate(RegisteredGroupsAggregate.AGGREGATE_ID))
-            .map(RegisteredGroupsAggregate::load)
-            .map(aggregate -> aggregate.handleStart(command, clock));
+    public final int hashCode() {
+        return Objects.hash(value);
     }
 }
