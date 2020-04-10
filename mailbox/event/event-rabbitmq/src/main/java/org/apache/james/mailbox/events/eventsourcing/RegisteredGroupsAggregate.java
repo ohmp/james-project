@@ -22,36 +22,88 @@ package org.apache.james.mailbox.events.eventsourcing;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.james.eventsourcing.AggregateId;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.History;
 import org.apache.james.mailbox.events.Group;
 
+import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class RegisteredGroupsAggregate {
     static AggregateId AGGREGATE_ID = () -> "RegisteredGroupListenerChangeEvent";
 
+    enum Status {
+        USED,
+        UNUSED_BUT_BINDED
+    }
+
     private static class State {
         static State initial() {
-            return new State(ImmutableSet.of());
+            return new State(ImmutableMap.of());
         }
 
-        final ImmutableSet<Group> groups;
+        final ImmutableMap<Group, Status> groups;
 
-        private State(ImmutableSet<Group> groups) {
+        private State(ImmutableMap<Group, Status> groups) {
             this.groups = groups;
         }
 
         private State apply(RegisteredGroupListenerChangeEvent event) {
-            return new State(ImmutableSet.<Group>builder()
-                .addAll(Sets.difference(groups, event.getRemovedGroups()))
-                .addAll(event.getAddedGroups())
+            Preconditions.checkArgument(Sets.intersection(usedGroups(), event.getAddedGroups()).isEmpty(),
+                "Trying to add an already existing group");
+            Preconditions.checkArgument(Sets.difference(event.getRemovedGroups(), groups.keySet()).isEmpty(),
+                "Trying to remove a non existing group");
+
+            return new State(ImmutableMap.<Group, Status>builder()
+                .putAll(event.getAddedGroups()
+                    .stream()
+                    .collect(Guavate.toImmutableMap(Functions.identity(), any -> Status.USED)))
+                .putAll(notIn(Sets.union(event.getAddedGroups(), event.getRemovedGroups())))
+                .putAll(event.getRemovedGroups()
+                    .stream()
+                    .collect(Guavate.toImmutableMap(Functions.identity(), any -> Status.UNUSED_BUT_BINDED)))
                 .build());
+        }
+
+        private State apply(UnbindSucceededEvent event) {
+            Preconditions.checkArgument(bindedGroups().contains(event.getGroup()), "unbing a non binded group," +
+                " or a used group");
+
+            return new State(ImmutableMap.<Group, Status>builder()
+                .putAll(notIn(ImmutableSet.of(event.getGroup())))
+                .build());
+        }
+
+        private ImmutableSet<Group> usedGroups() {
+            return groups.entrySet()
+                    .stream()
+                    .filter(group -> group.getValue() == Status.USED)
+                    .map(Map.Entry::getKey)
+                    .collect(Guavate.toImmutableSet());
+        }
+
+        private ImmutableSet<Group> bindedGroups() {
+            return groups.entrySet()
+                    .stream()
+                    .filter(group -> group.getValue() == Status.UNUSED_BUT_BINDED)
+                    .map(Map.Entry::getKey)
+                    .collect(Guavate.toImmutableSet());
+        }
+
+        private ImmutableMap<Group, Status> notIn(Set<Group> toBeFilteredOut) {
+            return groups.entrySet()
+                    .stream()
+                    .filter(group -> !toBeFilteredOut.contains(group.getKey()))
+                    .collect(Guavate.entriesToImmutableMap());
         }
     }
 
@@ -72,15 +124,22 @@ public class RegisteredGroupsAggregate {
 
     public List<RegisteredGroupListenerChangeEvent> handle(RequireGroupsCommand requireGroupsCommand, Clock clock) {
         List<RegisteredGroupListenerChangeEvent> detectedChanges = detectChanges(requireGroupsCommand, clock);
-
         detectedChanges.forEach(this::apply);
-
         return detectedChanges;
     }
 
+    public List<UnbindSucceededEvent> handle(MarkUnbindAsSucceededCommand command) {
+        UnbindSucceededEvent event = new UnbindSucceededEvent(history.getNextEventId(), command.getSucceededGroup());
+        apply(event);
+        return ImmutableList.of(event);
+    }
+
     private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand requireGroupsCommand, Clock clock) {
-        ImmutableSet<Group> addedGroups = ImmutableSet.copyOf(Sets.difference(requireGroupsCommand.getRegisteredGroups(), state.groups));
-        ImmutableSet<Group> removedGroups = ImmutableSet.copyOf(Sets.difference(state.groups, requireGroupsCommand.getRegisteredGroups()));
+        ImmutableSet<Group> addedGroups = ImmutableSet.copyOf(Sets.difference(requireGroupsCommand.getRegisteredGroups(), state.usedGroups()));
+        ImmutableSet<Group> removedGroups = ImmutableSet.<Group>builder()
+            .addAll(Sets.difference(state.usedGroups(), requireGroupsCommand.getRegisteredGroups()))
+            .addAll(state.bindedGroups())
+            .build();
 
         if (!addedGroups.isEmpty() || !removedGroups.isEmpty()) {
             ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());
@@ -95,8 +154,12 @@ public class RegisteredGroupsAggregate {
     }
 
     private void apply(Event event) {
-        Preconditions.checkArgument(event instanceof RegisteredGroupListenerChangeEvent);
-
-        state = state.apply((RegisteredGroupListenerChangeEvent) event);
+        if (event instanceof RegisteredGroupListenerChangeEvent) {
+            state = state.apply((RegisteredGroupListenerChangeEvent) event);
+        } else if (event instanceof UnbindSucceededEvent) {
+            state = state.apply((UnbindSucceededEvent) event);
+        } else {
+            throw new RuntimeException("Unsupported event class " + event.getClass());
+        }
     }
 }

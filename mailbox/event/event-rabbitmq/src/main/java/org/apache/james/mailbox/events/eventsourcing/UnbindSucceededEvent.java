@@ -19,47 +19,31 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import org.apache.james.eventsourcing.AggregateId;
 import org.apache.james.eventsourcing.Event;
-import org.apache.james.eventsourcing.Subscriber;
+import org.apache.james.eventsourcing.EventId;
 import org.apache.james.mailbox.events.Group;
-import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+public class UnbindSucceededEvent implements Event {
+    private final EventId eventId;
+    private final Group group;
 
-public class UnregisterRemovedGroupsSubscriber implements Subscriber {
-    @FunctionalInterface
-    public interface Unregisterer {
-        Mono<Void> unregister(Group group);
-    }
-
-    @FunctionalInterface
-    public interface SuccessNotifier {
-        Mono<Void> notifySuccess(Group group);
-    }
-
-    private final Unregisterer unregisterer;
-    private final SuccessNotifier successNotifier;
-
-    public UnregisterRemovedGroupsSubscriber(Unregisterer unregisterer, SuccessNotifier successNotifier) {
-        this.unregisterer = unregisterer;
-        this.successNotifier = successNotifier;
+    public UnbindSucceededEvent(EventId eventId, Group group) {
+        this.eventId = eventId;
+        this.group = group;
     }
 
     @Override
-    public void handle(Event event) {
-        if (event instanceof RegisteredGroupListenerChangeEvent) {
-            RegisteredGroupListenerChangeEvent changeEvent = (RegisteredGroupListenerChangeEvent) event;
-
-            Flux.fromIterable(changeEvent.getRemovedGroups())
-                .concatMap(this::unregister)
-                .then()
-                .block();
-        }
+    public EventId eventId() {
+        return eventId;
     }
 
-    private Publisher<Void> unregister(Group group) {
-        return unregisterer.unregister(group)
-            .then(successNotifier.notifySuccess(group));
+    public Group getGroup() {
+        return group;
+    }
+
+    @Override
+    public AggregateId getAggregateId() {
+        return RegisteredGroupsAggregate.AGGREGATE_ID;
     }
 }

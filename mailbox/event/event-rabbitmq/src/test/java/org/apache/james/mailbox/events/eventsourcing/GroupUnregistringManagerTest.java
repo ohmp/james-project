@@ -20,6 +20,7 @@
 package org.apache.james.mailbox.events.eventsourcing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Clock;
 
@@ -28,7 +29,6 @@ import org.apache.james.mailbox.events.GenericGroup;
 import org.apache.james.mailbox.events.Group;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reactivestreams.Publisher;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -39,11 +39,29 @@ class GroupUnregistringManagerTest {
     private static final GenericGroup GROUP_A = new GenericGroup("a");
     private static final GenericGroup GROUP_B = new GenericGroup("b");
 
-    static class TestUnregisterer implements UnregisterRemovedGroupsSubscriber.Unregisterer {
+    static class TestUnregisterer implements GroupUnregistringManager.Unregisterer {
         private ImmutableList.Builder<Group> unregisteredGroups = ImmutableList.builder();
 
         @Override
-        public Publisher<Void> unregister(Group group) {
+        public Mono<Void> unregister(Group group) {
+            return Mono.fromRunnable(() -> unregisteredGroups.add(group));
+        }
+
+        ImmutableList<Group> unregisteredGroups() {
+            return unregisteredGroups.build();
+        }
+    }
+
+    static class FailOnceUnregisterer implements GroupUnregistringManager.Unregisterer {
+        private boolean shouldFail = true;
+        private ImmutableList.Builder<Group> unregisteredGroups = ImmutableList.builder();
+
+        @Override
+        public Mono<Void> unregister(Group group) {
+            if (shouldFail) {
+                shouldFail = false;
+                return Mono.error(new RuntimeException());
+            }
             return Mono.fromRunnable(() -> unregisteredGroups.add(group));
         }
 
@@ -90,6 +108,29 @@ class GroupUnregistringManagerTest {
     @Test
     void startShouldUnregisterGroupsWhenRemoval() {
         testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+        testee.start(ImmutableSet.of(GROUP_A)).block();
+
+        assertThat(unregisterer.unregisteredGroups())
+            .containsExactly(GROUP_B);
+    }
+
+    @Test
+    void startShouldNotFailWhenUnbindDidFail() {
+        GroupUnregistringManager.Unregisterer unregisterer = new FailOnceUnregisterer();
+        GroupUnregistringManager testee = new GroupUnregistringManager(new InMemoryEventStore(), unregisterer, Clock.systemUTC());
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+        testee.start(ImmutableSet.of(GROUP_A)).block();
+
+        assertThatCode(() -> testee.start(ImmutableSet.of(GROUP_A)).block());
+    }
+
+    @Test
+    void failedUnregisterShouldBeRetried() {
+        FailOnceUnregisterer unregisterer = new FailOnceUnregisterer();
+        GroupUnregistringManager testee = new GroupUnregistringManager(new InMemoryEventStore(), unregisterer, Clock.systemUTC());
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+        testee.start(ImmutableSet.of(GROUP_A)).block();
+
         testee.start(ImmutableSet.of(GROUP_A)).block();
 
         assertThat(unregisterer.unregisteredGroups())

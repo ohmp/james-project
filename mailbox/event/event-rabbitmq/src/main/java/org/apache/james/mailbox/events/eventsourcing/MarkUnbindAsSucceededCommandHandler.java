@@ -19,47 +19,31 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import java.util.List;
+
+import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Event;
-import org.apache.james.eventsourcing.Subscriber;
-import org.apache.james.mailbox.events.Group;
+import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class UnregisterRemovedGroupsSubscriber implements Subscriber {
-    @FunctionalInterface
-    public interface Unregisterer {
-        Mono<Void> unregister(Group group);
-    }
+public class MarkUnbindAsSucceededCommandHandler implements CommandHandler<MarkUnbindAsSucceededCommand> {
+    private final EventStore eventStore;
 
-    @FunctionalInterface
-    public interface SuccessNotifier {
-        Mono<Void> notifySuccess(Group group);
-    }
-
-    private final Unregisterer unregisterer;
-    private final SuccessNotifier successNotifier;
-
-    public UnregisterRemovedGroupsSubscriber(Unregisterer unregisterer, SuccessNotifier successNotifier) {
-        this.unregisterer = unregisterer;
-        this.successNotifier = successNotifier;
+    public MarkUnbindAsSucceededCommandHandler(EventStore eventStore) {
+        this.eventStore = eventStore;
     }
 
     @Override
-    public void handle(Event event) {
-        if (event instanceof RegisteredGroupListenerChangeEvent) {
-            RegisteredGroupListenerChangeEvent changeEvent = (RegisteredGroupListenerChangeEvent) event;
-
-            Flux.fromIterable(changeEvent.getRemovedGroups())
-                .concatMap(this::unregister)
-                .then()
-                .block();
-        }
+    public Class<MarkUnbindAsSucceededCommand> handledClass() {
+        return MarkUnbindAsSucceededCommand.class;
     }
 
-    private Publisher<Void> unregister(Group group) {
-        return unregisterer.unregister(group)
-            .then(successNotifier.notifySuccess(group));
+    @Override
+    public Publisher<List<? extends Event>> handle(MarkUnbindAsSucceededCommand command) {
+        return Mono.from(eventStore.getEventsOfAggregate(RegisteredGroupsAggregate.AGGREGATE_ID))
+            .map(RegisteredGroupsAggregate::load)
+            .map(aggregate -> aggregate.handle(command));
     }
 }
