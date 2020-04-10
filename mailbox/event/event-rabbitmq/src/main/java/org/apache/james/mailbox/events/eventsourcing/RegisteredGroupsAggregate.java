@@ -70,17 +70,17 @@ public class RegisteredGroupsAggregate {
             .forEach(this::apply);
     }
 
-    public List<RegisteredGroupListenerChangeEvent> handleStart(StartCommand startCommand, Clock clock) {
-        List<RegisteredGroupListenerChangeEvent> detectedChanges = detectChanges(startCommand, clock);
+    public List<RegisteredGroupListenerChangeEvent> handle(RequireGroupsCommand requireGroupsCommand, Clock clock) {
+        List<RegisteredGroupListenerChangeEvent> detectedChanges = detectChanges(requireGroupsCommand, clock);
 
         detectedChanges.forEach(this::apply);
 
         return detectedChanges;
     }
 
-    private List<RegisteredGroupListenerChangeEvent> detectChanges(StartCommand startCommand, Clock clock) {
-        ImmutableSet<Group> addedGroups = ImmutableSet.copyOf(Sets.difference(startCommand.getRegisteredGroups(), state.groups));
-        ImmutableSet<Group> removedGroups = ImmutableSet.copyOf(Sets.difference(state.groups, startCommand.getRegisteredGroups()));
+    private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand requireGroupsCommand, Clock clock) {
+        ImmutableSet<Group> addedGroups = ImmutableSet.copyOf(Sets.difference(requireGroupsCommand.getRegisteredGroups(), state.groups));
+        ImmutableSet<Group> removedGroups = ImmutableSet.copyOf(Sets.difference(state.groups, requireGroupsCommand.getRegisteredGroups()));
 
         if (!addedGroups.isEmpty() || !removedGroups.isEmpty()) {
             ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());

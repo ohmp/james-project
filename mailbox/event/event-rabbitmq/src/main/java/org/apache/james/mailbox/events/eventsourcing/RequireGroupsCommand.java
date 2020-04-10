@@ -24,10 +24,10 @@ import org.apache.james.mailbox.events.Group;
 
 import com.google.common.collect.ImmutableSet;
 
-public class StartCommand implements Command {
+public class RequireGroupsCommand implements Command {
     private final ImmutableSet<Group> registeredGroups;
 
-    public StartCommand(ImmutableSet<Group> registeredGroups) {
+    public RequireGroupsCommand(ImmutableSet<Group> registeredGroups) {
         this.registeredGroups = registeredGroups;
     }
 
