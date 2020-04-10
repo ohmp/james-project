@@ -21,6 +21,7 @@ package org.apache.james.mailbox.events.eventsourcing;
 
 import static org.apache.james.mailbox.events.eventsourcing.RegisteredGroupsAggregate.AGGREGATE_ID;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import org.apache.james.eventsourcing.AggregateId;
@@ -33,12 +34,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class RegisteredGroupListenerChangeEvent implements Event {
-
     private final EventId eventId;
+    private final Hostname hostname;
+    private final ZonedDateTime zonedDateTime;
     private final ImmutableSet<Group> addedGroups;
     private final ImmutableSet<Group> removedGroups;
 
-    public RegisteredGroupListenerChangeEvent(EventId eventId, ImmutableSet<Group> addedGroups, ImmutableSet<Group> removedGroups) {
+    public RegisteredGroupListenerChangeEvent(EventId eventId, Hostname hostname, ZonedDateTime zonedDateTime, ImmutableSet<Group> addedGroups, ImmutableSet<Group> removedGroups) {
+        this.hostname = hostname;
+        this.zonedDateTime = zonedDateTime;
         Preconditions.checkArgument(Sets.intersection(addedGroups, removedGroups).isEmpty(),
             "'addedGroups' and 'removedGroups' elements needs to be distinct");
 
@@ -64,6 +68,18 @@ public class RegisteredGroupListenerChangeEvent implements Event {
 
     public ImmutableSet<Group> getRemovedGroups() {
         return removedGroups;
+    }
+
+    public EventId getEventId() {
+        return eventId;
+    }
+
+    public Hostname getHostname() {
+        return hostname;
+    }
+
+    public ZonedDateTime getZonedDateTime() {
+        return zonedDateTime;
     }
 
     @Override

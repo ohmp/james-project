@@ -21,6 +21,8 @@ package org.apache.james.mailbox.events.eventsourcing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Clock;
+
 import org.apache.james.eventsourcing.eventstore.memory.InMemoryEventStore;
 import org.apache.james.mailbox.events.GenericGroup;
 import org.apache.james.mailbox.events.Group;
@@ -56,7 +58,7 @@ class GroupUnregistringManagerTest {
     @BeforeEach
     void setUp() {
         unregisterer = new TestUnregisterer();
-        testee = new GroupUnregistringManager(new InMemoryEventStore(), unregisterer);
+        testee = new GroupUnregistringManager(new InMemoryEventStore(), unregisterer, Clock.systemUTC());
     }
 
     @Test

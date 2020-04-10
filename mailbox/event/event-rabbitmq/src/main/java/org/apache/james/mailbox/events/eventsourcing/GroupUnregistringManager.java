@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import java.time.Clock;
+
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.mailbox.events.Group;
@@ -30,8 +32,8 @@ import reactor.core.publisher.Mono;
 public class GroupUnregistringManager {
     private final EventSourcingSystem eventSourcingSystem;
 
-    public GroupUnregistringManager(EventStore eventStore, UnregisterRemovedGroupsSubscriber.Unregisterer unregisterer) {
-        this.eventSourcingSystem = EventSourcingSystem.fromJava(ImmutableSet.of(new StartCommandHandler(eventStore)),
+    public GroupUnregistringManager(EventStore eventStore, UnregisterRemovedGroupsSubscriber.Unregisterer unregisterer, Clock clock) {
+        this.eventSourcingSystem = EventSourcingSystem.fromJava(ImmutableSet.of(new StartCommandHandler(eventStore, clock)),
             ImmutableSet.of(new UnregisterRemovedGroupsSubscriber(unregisterer)),
             eventStore);
     }
