@@ -43,9 +43,6 @@ public class RegisteredGroupListenerChangeEvent implements Event {
     public RegisteredGroupListenerChangeEvent(EventId eventId, Hostname hostname, ZonedDateTime zonedDateTime, ImmutableSet<Group> addedGroups, ImmutableSet<Group> removedGroups) {
         this.hostname = hostname;
         this.zonedDateTime = zonedDateTime;
-        Preconditions.checkArgument(Sets.intersection(addedGroups, removedGroups).isEmpty(),
-            "'addedGroups' and 'removedGroups' elements needs to be distinct");
-
         this.eventId = eventId;
         this.addedGroups = addedGroups;
         this.removedGroups = removedGroups;
