@@ -29,25 +29,25 @@ import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Mono;
 
-public class StartCommandHandler implements CommandHandler<StartCommand> {
+public class RequireGroupsCommandHandler implements CommandHandler<RequireGroupsCommand> {
 
     private final EventStore eventStore;
     private final Clock clock;
 
-    public StartCommandHandler(EventStore eventStore, Clock clock) {
+    public RequireGroupsCommandHandler(EventStore eventStore, Clock clock) {
         this.eventStore = eventStore;
         this.clock = clock;
     }
 
     @Override
-    public Class<StartCommand> handledClass() {
-        return StartCommand.class;
+    public Class<RequireGroupsCommand> handledClass() {
+        return RequireGroupsCommand.class;
     }
 
     @Override
-    public Publisher<List<? extends Event>> handle(StartCommand command) {
+    public Publisher<List<? extends Event>> handle(RequireGroupsCommand command) {
         return Mono.from(eventStore.getEventsOfAggregate(RegisteredGroupsAggregate.AGGREGATE_ID))
             .map(RegisteredGroupsAggregate::load)
-            .map(aggregate -> aggregate.handleStart(command, clock));
+            .map(aggregate -> aggregate.handle(command, clock));
     }
 }

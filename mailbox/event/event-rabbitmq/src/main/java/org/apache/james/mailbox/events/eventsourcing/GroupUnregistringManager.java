@@ -33,14 +33,14 @@ public class GroupUnregistringManager {
     private final EventSourcingSystem eventSourcingSystem;
 
     public GroupUnregistringManager(EventStore eventStore, UnregisterRemovedGroupsSubscriber.Unregisterer unregisterer, Clock clock) {
-        this.eventSourcingSystem = EventSourcingSystem.fromJava(ImmutableSet.of(new StartCommandHandler(eventStore, clock)),
+        this.eventSourcingSystem = EventSourcingSystem.fromJava(ImmutableSet.of(new RequireGroupsCommandHandler(eventStore, clock)),
             ImmutableSet.of(new UnregisterRemovedGroupsSubscriber(unregisterer)),
             eventStore);
     }
 
     public Mono<Void> start(ImmutableSet<Group> groups) {
-        StartCommand startCommand = new StartCommand(groups);
+        RequireGroupsCommand requireGroupsCommand = new RequireGroupsCommand(groups);
 
-        return Mono.from(eventSourcingSystem.dispatch(startCommand));
+        return Mono.from(eventSourcingSystem.dispatch(requireGroupsCommand));
     }
 }
