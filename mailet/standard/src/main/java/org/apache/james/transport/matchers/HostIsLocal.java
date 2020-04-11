@@ -21,17 +21,31 @@
 
 package org.apache.james.transport.matchers;
 
+import java.util.Collection;
+
+import javax.mail.MessagingException;
+
 import org.apache.james.core.MailAddress;
-import org.apache.mailet.base.GenericRecipientMatcher;
+import org.apache.mailet.Mail;
+import org.apache.mailet.base.GenericMatcher;
+
+import com.github.steveash.guavate.Guavate;
 
 /**
  * Matches mail to Domains which are local
  * .
  */
-public class HostIsLocal extends GenericRecipientMatcher {
-
+public class HostIsLocal extends GenericMatcher {
     @Override
-    public boolean matchRecipient(MailAddress recipient) {
-        return getMailetContext().isLocalServer(recipient.getDomain());
+    public Collection<MailAddress> match(Mail mail) throws MessagingException {
+        return mail.getRecipients()
+            .stream()
+            .collect(Guavate.toImmutableListMultimap(MailAddress::getDomain))
+            .asMap()
+            .entrySet()
+            .stream()
+            .filter(entry -> getMailetContext().isLocalServer(entry.getKey()))
+            .flatMap(entry -> entry.getValue().stream())
+            .collect(Guavate.toImmutableList());
     }
 }
