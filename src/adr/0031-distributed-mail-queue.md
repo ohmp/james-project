@@ -77,7 +77,7 @@ and of the mailQueue throughput:
  - **sliceWindow** is the time period of a slice. All the elements of **enqueuedMailsV3** sharing the same slice are 
 retrieved at once. The bigger, the more elements are going to be read at once, the less frequent browse start update 
 will be. Lower values might result in many almost empty slices to be read, generating higher read load. We recommend 
-**sliceWindow** to be chose from users maximum throughput so that approximately 10.000 emails be contained in a slice.
+**sliceWindow** to be chosen from users maximum throughput so that approximately 10.000 emails be contained in a slice.
 Only values dividing the current *sliceWindow* are allowed as new values (otherwize previous slices might not be found).
  - **bucketCount** enables spreading the writes in your Cassandra cluster using a bucketting strategy. Low values will 
 lead to workload not to be spread evenly, higher values might result in uneeded reads upon browse. The count of Cassandra 
