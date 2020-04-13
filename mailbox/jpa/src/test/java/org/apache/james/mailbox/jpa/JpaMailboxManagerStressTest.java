@@ -24,13 +24,18 @@ import java.util.Optional;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.mailbox.MailboxManagerStressContract;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import com.google.common.collect.ImmutableList;
+
 class JpaMailboxManagerStressTest implements MailboxManagerStressContract<OpenJPAMailboxManager> {
 
     static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES);
+    static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
+
     Optional<OpenJPAMailboxManager> openJPAMailboxManager = Optional.empty();
 
     @Override
@@ -46,7 +51,7 @@ class JpaMailboxManagerStressTest implements MailboxManagerStressContract<OpenJP
     @BeforeEach
     void setUp() {
         if (!openJPAMailboxManager.isPresent()) {
-            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER));
+            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, NO_ADDITIONAL_LISTENERS));
         }
     }
 

@@ -23,12 +23,17 @@ import java.io.File;
 
 import org.apache.james.mailbox.MailboxManagerStressContract;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.google.common.collect.ImmutableList;
+
 class UserMaildirMailboxManagerStressTest implements MailboxManagerStressContract<StoreMailboxManager> {
+    private static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
+
     @TempDir
     File tmpFolder;
 
@@ -46,6 +51,6 @@ class UserMaildirMailboxManagerStressTest implements MailboxManagerStressContrac
 
     @BeforeEach
     void setUp() throws MailboxException {
-        this.mailboxManager = MaildirMailboxManagerProvider.createMailboxManager("/%user", tmpFolder);
+        this.mailboxManager = MaildirMailboxManagerProvider.createMailboxManager("/%user", tmpFolder, NO_ADDITIONAL_LISTENERS);
     }
 }

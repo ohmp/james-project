@@ -36,6 +36,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.cassandra.CassandraMailboxManager;
 import org.apache.james.mailbox.cassandra.CassandraMailboxManagerProvider;
 import org.apache.james.mailbox.cassandra.mail.MailboxAggregateModule;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxId;
@@ -50,10 +51,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 public class CassandraReIndexerImplTest {
     private static final Username USERNAME = Username.of("benwa@apache.org");
     public static final MailboxPath INBOX = MailboxPath.inbox(USERNAME);
+    private static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_MAILBOX_LISTENERS = ImmutableList.of();
+
     private CassandraMailboxManager mailboxManager;
     private ListeningMessageSearchIndex messageSearchIndex;
 
@@ -64,7 +68,7 @@ public class CassandraReIndexerImplTest {
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        mailboxManager = CassandraMailboxManagerProvider.provideMailboxManager(cassandra, PreDeletionHooks.NO_PRE_DELETION_HOOK);
+        mailboxManager = CassandraMailboxManagerProvider.provideMailboxManager(cassandra, PreDeletionHooks.NO_PRE_DELETION_HOOK, NO_ADDITIONAL_MAILBOX_LISTENERS);
         MailboxSessionMapperFactory mailboxSessionMapperFactory = mailboxManager.getMapperFactory();
         messageSearchIndex = mock(ListeningMessageSearchIndex.class);
         reIndexer = new ReIndexerImpl(new ReIndexerPerformer(mailboxManager, messageSearchIndex, mailboxSessionMapperFactory),
