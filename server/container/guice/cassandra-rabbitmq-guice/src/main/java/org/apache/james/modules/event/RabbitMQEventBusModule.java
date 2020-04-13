@@ -20,11 +20,11 @@
 package org.apache.james.modules.event;
 
 import org.apache.james.event.json.EventSerializer;
-import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.events.RabbitMQEventBus;
 import org.apache.james.mailbox.events.RegistrationKey;
 import org.apache.james.mailbox.events.RetryBackoffConfiguration;
+import org.apache.james.mailbox.events.UninitializedEventBus;
 import org.apache.james.utils.InitializationOperation;
 import org.apache.james.utils.InitilizationOperationBuilder;
 
@@ -40,7 +40,7 @@ public class RabbitMQEventBusModule extends AbstractModule {
         bind(EventSerializer.class).in(Scopes.SINGLETON);
 
         bind(RabbitMQEventBus.class).in(Scopes.SINGLETON);
-        bind(EventBus.class).to(RabbitMQEventBus.class);
+        bind(UninitializedEventBus.class).to(RabbitMQEventBus.class);
 
         Multibinder.newSetBinder(binder(), RegistrationKey.Factory.class)
             .addBinding().to(MailboxIdRegistrationKey.Factory.class);

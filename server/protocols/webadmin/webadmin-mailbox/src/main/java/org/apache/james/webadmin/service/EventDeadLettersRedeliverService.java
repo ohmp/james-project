@@ -22,7 +22,7 @@ package org.apache.james.webadmin.service;
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.events.Event;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventDeadLetters;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.task.Task;
@@ -38,12 +38,12 @@ public class EventDeadLettersRedeliverService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventDeadLettersRedeliverService.class);
 
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final EventDeadLetters deadLetters;
 
     @Inject
     @VisibleForTesting
-    public EventDeadLettersRedeliverService(EventBus eventBus, EventDeadLetters deadLetters) {
+    public EventDeadLettersRedeliverService(EventBusSupplier eventBus, EventDeadLetters deadLetters) {
         this.eventBus = eventBus;
         this.deadLetters = deadLetters;
     }
@@ -54,7 +54,7 @@ public class EventDeadLettersRedeliverService {
     }
 
     private Mono<Task.Result> redeliverGroupEvents(Group group, Event event, EventDeadLetters.InsertionId insertionId) {
-        return eventBus.reDeliver(group, event)
+        return eventBus.get().reDeliver(group, event)
             .then(deadLetters.remove(group, insertionId))
             .thenReturn(Task.Result.COMPLETED)
             .onErrorResume(e -> {

@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.quota.CurrentQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
@@ -36,7 +36,7 @@ import org.apache.james.metrics.tests.RecordingMetricFactory;
 
 class CassandraMessageIdManagerTestSystem {
 
-    static MessageIdManagerTestSystem createTestingData(CassandraCluster cassandra, QuotaManager quotaManager, EventBus eventBus,
+    static MessageIdManagerTestSystem createTestingData(CassandraCluster cassandra, QuotaManager quotaManager, EventBusSupplier eventBus,
                                                         Set<PreDeletionHook> preDeletionHooks) {
         CassandraMailboxSessionMapperFactory mapperFactory = CassandraTestSystemFixture.createMapperFactory(cassandra);
 
@@ -63,8 +63,8 @@ class CassandraMessageIdManagerTestSystem {
             listeningCurrentQuotaUpdater,
             new MailboxAnnotationListener(mapperFactory, mailboxManager));
 
-        return new MessageIdManagerTestSystem(CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, mailboxManager.getEventBus(),
-            PreDeletionHooks.NO_PRE_DELETION_HOOK),
+        return new MessageIdManagerTestSystem(
+            CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, mailboxManager.getEventBus(), PreDeletionHooks.NO_PRE_DELETION_HOOK),
             new CassandraMessageId.Factory(),
             mapperFactory,
             mailboxManager);

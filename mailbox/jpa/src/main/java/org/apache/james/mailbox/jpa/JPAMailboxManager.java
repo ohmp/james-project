@@ -22,7 +22,7 @@ import java.util.EnumSet;
 
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.SessionProvider;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.MailboxManagerConfiguration;
 import org.apache.james.mailbox.store.PreDeletionHooks;
@@ -48,7 +48,7 @@ public abstract class JPAMailboxManager extends StoreMailboxManager {
                              MailboxPathLocker locker,
                              MessageParser messageParser,
                              MessageId.Factory messageIdFactory,
-                             EventBus eventBus,
+                             EventBusSupplier eventBus,
                              StoreMailboxAnnotationManager annotationManager,
                              StoreRightManager storeRightManager,
                              QuotaComponents quotaComponents,

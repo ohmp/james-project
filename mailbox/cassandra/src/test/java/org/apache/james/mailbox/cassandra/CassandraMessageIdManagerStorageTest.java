@@ -21,6 +21,7 @@ package org.apache.james.mailbox.cassandra;
 
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.mailbox.cassandra.mail.MailboxAggregateModule;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
@@ -39,6 +40,8 @@ class CassandraMessageIdManagerStorageTest extends AbstractMessageIdManagerStora
     @Override
     protected MessageIdManagerTestSystem createTestingData() {
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        return CassandraMessageIdManagerTestSystem.createTestingData(cassandraCluster.getCassandraCluster(), new NoQuotaManager(), eventBus, PreDeletionHook.NO_PRE_DELETION_HOOK);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        eventBusSupplier.initialize();
+        return CassandraMessageIdManagerTestSystem.createTestingData(cassandraCluster.getCassandraCluster(), new NoQuotaManager(), eventBusSupplier, PreDeletionHook.NO_PRE_DELETION_HOOK);
     }
 }

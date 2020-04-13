@@ -28,6 +28,7 @@ import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.RegistrationKey;
+import org.apache.james.mailbox.events.UninitializedEventBus;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.quota.mailing.QuotaMailingListenerConfiguration;
@@ -46,14 +47,14 @@ class QuotaThresholdListenersTestSystem {
     private final EventBus eventBus;
 
     QuotaThresholdListenersTestSystem(MailetContext mailetContext, EventStore eventStore, QuotaMailingListenerConfiguration configuration) throws MailboxException {
-        eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        UninitializedEventBus uninitializedEventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
 
         FileSystem fileSystem = new FileSystemImpl(new JamesServerResourceLoader("."));
 
         QuotaThresholdCrossingListener thresholdCrossingListener =
             new QuotaThresholdCrossingListener(mailetContext, MemoryUsersRepository.withVirtualHosting(NO_DOMAIN_LIST), fileSystem, eventStore, configuration);
 
-        eventBus.initialize(thresholdCrossingListener);
+        eventBus = uninitializedEventBus.initialize(thresholdCrossingListener);
     }
 
     void event(Event event) {

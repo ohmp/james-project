@@ -30,7 +30,7 @@ import org.apache.james.mailbox.cassandra.quota.CassandraGlobalMaxQuotaDao;
 import org.apache.james.mailbox.cassandra.quota.CassandraPerDomainMaxQuotaDao;
 import org.apache.james.mailbox.cassandra.quota.CassandraPerUserMaxQuotaDao;
 import org.apache.james.mailbox.cassandra.quota.CassandraPerUserMaxQuotaManager;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
@@ -47,7 +47,6 @@ import org.apache.james.mailbox.store.SessionProviderImpl;
 import org.apache.james.mailbox.store.StoreMailboxAnnotationManager;
 import org.apache.james.mailbox.store.StoreMessageIdManager;
 import org.apache.james.mailbox.store.StoreRightManager;
-import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
 import org.apache.james.mailbox.store.extractor.DefaultTextExtractor;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.quota.DefaultUserQuotaRootResolver;
@@ -66,7 +65,12 @@ class CassandraTestSystemFixture {
 
     static CassandraMailboxManager createMailboxManager(CassandraMailboxSessionMapperFactory mapperFactory) {
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, new UnionMailboxACLResolver(), new SimpleGroupMembershipResolver(), eventBus);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        return createMailboxManager(mapperFactory, eventBusSupplier);
+    }
+
+    static CassandraMailboxManager createMailboxManager(CassandraMailboxSessionMapperFactory mapperFactory, EventBusSupplier eventBusSupplier) {
+        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, new UnionMailboxACLResolver(), new SimpleGroupMembershipResolver(), eventBusSupplier);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
 
         SessionProviderImpl sessionProvider = new SessionProviderImpl(mock(Authenticator.class), mock(Authorizator.class));
@@ -76,14 +80,12 @@ class CassandraTestSystemFixture {
 
         return new CassandraMailboxManager(mapperFactory, sessionProvider,
             new NoMailboxPathLocker(), new MessageParser(), new CassandraMessageId.Factory(),
-            eventBus, annotationManager, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
+            eventBusSupplier, annotationManager, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
     }
 
-    static StoreMessageIdManager createMessageIdManager(CassandraMailboxSessionMapperFactory mapperFactory, QuotaManager quotaManager, EventBus eventBus,
-                                                        PreDeletionHooks preDeletionHooks) {
+    static StoreMessageIdManager createMessageIdManager(CassandraMailboxSessionMapperFactory mapperFactory, QuotaManager quotaManager,
+                                                        EventBusSupplier eventBus, PreDeletionHooks preDeletionHooks) {
         CassandraMailboxManager mailboxManager = createMailboxManager(mapperFactory);
-
-        mailboxManager.getEventBus().initialize(new MailboxAnnotationListener(mapperFactory, mailboxManager));
 
         return new StoreMessageIdManager(
             mailboxManager,

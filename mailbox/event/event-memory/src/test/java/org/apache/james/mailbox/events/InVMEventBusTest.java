@@ -42,7 +42,7 @@ public class InVMEventBusTest implements KeyContract.SingleEventBusKeyContract, 
     }
 
     @Override
-    public EventBus eventBus() {
+    public UninitializedEventBus eventBus() {
         return eventBus;
     }
 

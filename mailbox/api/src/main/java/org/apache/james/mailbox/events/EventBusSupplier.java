@@ -17,40 +17,36 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.maildir;
+package org.apache.james.mailbox.events;
 
-import java.io.File;
+import java.util.Map;
+import java.util.Optional;
 
-import org.apache.james.mailbox.MailboxManagerStressContract;
-import org.apache.james.mailbox.events.EventBus;
-import org.apache.james.mailbox.events.MailboxListener;
-import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.store.StoreMailboxManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Preconditions;
 
-class DomainUserMaildirMailboxManagerStressTest implements MailboxManagerStressContract<StoreMailboxManager> {
-    private static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
+public class EventBusSupplier implements UninitializedEventBus, Provider<EventBus> {
+    private final UninitializedEventBus uninitializedEventBus;
+    private Optional<EventBus> eventBus;
 
-    @TempDir
-    File tmpFolder;
+    @Inject
+    public EventBusSupplier(UninitializedEventBus uninitializedEventBus) {
+        this.uninitializedEventBus = uninitializedEventBus;
+        this.eventBus = Optional.empty();
+    }
 
-    StoreMailboxManager mailboxManager;
-
-    @Override
-    public StoreMailboxManager getManager() {
-        return mailboxManager;
+    public EventBus initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
+        EventBus eventBus = uninitializedEventBus.initialize(listeners);
+        this.eventBus = Optional.of(eventBus);
+        return eventBus;
     }
 
     @Override
-    public EventBus retrieveEventBus() {
-        return mailboxManager.getEventBus().get();
-    }
+    public EventBus get() {
+        Preconditions.checkState(eventBus.isPresent());
 
-    @BeforeEach
-    void setUp() throws MailboxException {
-        this.mailboxManager = MaildirMailboxManagerProvider.createMailboxManager("/%domain/%user", tmpFolder, NO_ADDITIONAL_LISTENERS);
+        return eventBus.get();
     }
 }

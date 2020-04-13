@@ -46,13 +46,13 @@ import org.apache.james.mailbox.MessageManager.FlagsUpdateMode;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.ModSeq;
-import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.MessageMoveEvent;
+import org.apache.james.mailbox.events.UninitializedEventBus;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.OverQuotaException;
@@ -100,11 +100,11 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     private QuotaManager quotaManager;
     private MessageIdManagerTestSystem testingData;
     private EventCollector eventCollector;
-    private EventBus eventBus;
+    private InVMEventBus eventBus;
     private PreDeletionHook preDeletionHook1;
     private PreDeletionHook preDeletionHook2;
 
-    protected abstract MessageIdManagerTestSystem createTestSystem(QuotaManager quotaManager, EventBus eventBus, Set<PreDeletionHook> preDeletionHooks) throws Exception;
+    protected abstract MessageIdManagerTestSystem createTestSystem(QuotaManager quotaManager, UninitializedEventBus eventBus, Set<PreDeletionHook> preDeletionHooks) throws Exception;
 
     @BeforeEach
     void setUp() throws Exception {

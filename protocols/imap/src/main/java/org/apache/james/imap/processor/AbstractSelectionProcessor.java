@@ -49,7 +49,7 @@ import org.apache.james.mailbox.MessageManager.MetaData;
 import org.apache.james.mailbox.MessageManager.MetaData.FetchGroup;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.ModSeq;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.MessageRangeException;
@@ -68,10 +68,11 @@ abstract class AbstractSelectionProcessor<R extends AbstractMailboxSelectionRequ
 
     private final StatusResponseFactory statusResponseFactory;
     private final boolean openReadOnly;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     
-    public AbstractSelectionProcessor(Class<R> acceptableClass, ImapProcessor next, MailboxManager mailboxManager, StatusResponseFactory statusResponseFactory, boolean openReadOnly,
-                                      MetricFactory metricFactory, EventBus eventBus) {
+    public AbstractSelectionProcessor(Class<R> acceptableClass, ImapProcessor next, MailboxManager mailboxManager,
+                                      StatusResponseFactory statusResponseFactory, boolean openReadOnly,
+                                      MetricFactory metricFactory, EventBusSupplier eventBus) {
         super(acceptableClass, next, mailboxManager, statusResponseFactory, metricFactory);
         this.statusResponseFactory = statusResponseFactory;
         this.openReadOnly = openReadOnly;
@@ -399,7 +400,7 @@ abstract class AbstractSelectionProcessor<R extends AbstractMailboxSelectionRequ
             if (currentMailbox != null) {
                 getStatusResponseFactory().untaggedOk(HumanReadableText.QRESYNC_CLOSED, ResponseCode.closed());
             }
-            session.selected(new SelectedMailboxImpl(getMailboxManager(), eventBus, session, mailbox));
+            session.selected(new SelectedMailboxImpl(getMailboxManager(), eventBus.get(), session, mailbox));
 
             sessionMailbox = session.getSelected();
             

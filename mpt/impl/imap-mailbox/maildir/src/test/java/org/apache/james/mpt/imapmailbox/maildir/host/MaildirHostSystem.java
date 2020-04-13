@@ -33,6 +33,7 @@ import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
@@ -80,20 +81,23 @@ public class MaildirHostSystem extends JamesImapHostSystem {
         MessageParser messageParser = new MessageParser();
 
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        StoreRightManager storeRightManager = new StoreRightManager(mailboxSessionMapperFactory, aclResolver, groupMembershipResolver, eventBus);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        StoreRightManager storeRightManager = new StoreRightManager(mailboxSessionMapperFactory, aclResolver, groupMembershipResolver, eventBusSupplier);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mailboxSessionMapperFactory, storeRightManager);
         SessionProviderImpl sessionProvider = new SessionProviderImpl(authenticator, authorizator);
         QuotaComponents quotaComponents = QuotaComponents.disabled(sessionProvider, mailboxSessionMapperFactory);
         MessageSearchIndex index = new SimpleMessageSearchIndex(mailboxSessionMapperFactory, mailboxSessionMapperFactory, new DefaultTextExtractor());
 
         mailboxManager = new StoreMailboxManager(mailboxSessionMapperFactory, sessionProvider, locker,
-            messageParser, new DefaultMessageId.Factory(), annotationManager, eventBus, storeRightManager, quotaComponents,
+            messageParser, new DefaultMessageId.Factory(), annotationManager, eventBusSupplier, storeRightManager, quotaComponents,
             index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
+
+        eventBusSupplier.initialize();
 
         ImapProcessor defaultImapProcessorFactory =
                 DefaultImapProcessorFactory.createDefaultProcessor(
                         mailboxManager,
-                        eventBus,
+                        eventBusSupplier,
                         sm, 
                         quotaComponents.getQuotaManager(),
                         quotaComponents.getQuotaRootResolver(),

@@ -26,7 +26,7 @@ import javax.inject.Inject;
 import org.apache.james.core.quota.QuotaCountUsage;
 import org.apache.james.core.quota.QuotaSizeUsage;
 import org.apache.james.mailbox.events.Event;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.RegistrationKey;
@@ -50,11 +50,11 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
 
     private final StoreCurrentQuotaManager currentQuotaManager;
     private final QuotaRootResolver quotaRootResolver;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final QuotaManager quotaManager;
 
     @Inject
-    public ListeningCurrentQuotaUpdater(StoreCurrentQuotaManager currentQuotaManager, QuotaRootResolver quotaRootResolver, EventBus eventBus, QuotaManager quotaManager) {
+    public ListeningCurrentQuotaUpdater(StoreCurrentQuotaManager currentQuotaManager, QuotaRootResolver quotaRootResolver, EventBusSupplier eventBus, QuotaManager quotaManager) {
         this.currentQuotaManager = currentQuotaManager;
         this.quotaRootResolver = quotaRootResolver;
         this.eventBus = eventBus;
@@ -91,7 +91,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
         computeQuotaOperation(expunged, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
             currentQuotaManager.decrease(quotaOperation);
 
-            eventBus.dispatch(
+            eventBus.get().dispatch(
                 EventFactory.quotaUpdated()
                     .randomEventId()
                     .user(expunged.getUsername())
@@ -109,7 +109,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
         computeQuotaOperation(added, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
             currentQuotaManager.increase(quotaOperation);
 
-            eventBus.dispatch(
+            eventBus.get().dispatch(
                 EventFactory.quotaUpdated()
                     .randomEventId()
                     .user(added.getUsername())

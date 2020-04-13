@@ -25,6 +25,7 @@ import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MailboxListener;
@@ -60,7 +61,8 @@ public class MaildirMailboxManagerProvider {
         MessageParser messageParser = new MessageParser();
 
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, groupMembershipResolver, eventBus);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, groupMembershipResolver, eventBusSupplier);
 
         Authenticator noAuthenticator = null;
         Authorizator noAuthorizator = null;
@@ -71,10 +73,10 @@ public class MaildirMailboxManagerProvider {
         MessageSearchIndex index = new SimpleMessageSearchIndex(mf, mf, new DefaultTextExtractor());
 
         StoreMailboxManager manager = new StoreMailboxManager(mf, sessionProvider, new JVMMailboxPathLocker(),
-            messageParser, new DefaultMessageId.Factory(), annotationManager, eventBus, storeRightManager,
+            messageParser, new DefaultMessageId.Factory(), annotationManager, eventBusSupplier, storeRightManager,
             quotaComponents, index, MailboxManagerConfiguration.DEFAULT, PreDeletionHooks.NO_PRE_DELETION_HOOK);
 
-        eventBus.initialize(listeners);
+        eventBusSupplier.initialize(listeners);
 
         return manager;
     }

@@ -35,7 +35,7 @@ import org.apache.james.core.Username;
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.events.Event;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.EventDeadLetters;
 import org.apache.james.mailbox.events.Group;
@@ -109,7 +109,7 @@ class EventDeadLettersRoutesTest {
 
     private WebAdminServer webAdminServer;
     private EventDeadLetters deadLetters;
-    private EventBus eventBus;
+    private EventBusSupplier eventBus;
     private MemoryTaskManager taskManager;
 
     @BeforeEach
@@ -117,7 +117,8 @@ class EventDeadLettersRoutesTest {
         deadLetters = new MemoryEventDeadLetters();
         JsonTransformer jsonTransformer = new JsonTransformer();
         EventSerializer eventSerializer = new EventSerializer(new InMemoryId.Factory(), new InMemoryMessageId.Factory(), new DefaultUserQuotaRootResolver.DefaultQuotaRootDeserializer());
-        eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), RetryBackoffConfiguration.DEFAULT, deadLetters);
+        InVMEventBus inVMEventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), RetryBackoffConfiguration.DEFAULT, deadLetters);
+        eventBus = new EventBusSupplier(inVMEventBus);
         EventDeadLettersRedeliverService redeliverService = new EventDeadLettersRedeliverService(eventBus, deadLetters);
         EventDeadLettersService service = new EventDeadLettersService(redeliverService, deadLetters);
 

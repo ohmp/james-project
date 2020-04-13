@@ -26,7 +26,7 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SessionProvider;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.MailboxManagerConfiguration;
@@ -39,6 +39,8 @@ import org.apache.james.mailbox.store.StoreRightManager;
 import org.apache.james.mailbox.store.mail.model.impl.MessageParser;
 import org.apache.james.mailbox.store.quota.QuotaComponents;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class InMemoryMailboxManager extends StoreMailboxManager {
 
@@ -53,7 +55,7 @@ public class InMemoryMailboxManager extends StoreMailboxManager {
     @Inject
     public InMemoryMailboxManager(MailboxSessionMapperFactory mailboxSessionMapperFactory, SessionProvider sessionProvider,
                                   MailboxPathLocker locker, MessageParser messageParser, MessageId.Factory messageIdFactory,
-                                  EventBus eventBus,
+                                  EventBusSupplier eventBus,
                                   StoreMailboxAnnotationManager annotationManager,
                                   StoreRightManager storeRightManager,
                                   QuotaComponents quotaComponents,
@@ -74,11 +76,12 @@ public class InMemoryMailboxManager extends StoreMailboxManager {
         return MESSAGE_CAPABILITIES;
     }
 
+    @VisibleForTesting
     @Override
-    protected StoreMessageManager createMessageManager(Mailbox mailbox, MailboxSession session) {
+    public StoreMessageManager createMessageManager(Mailbox mailbox, MailboxSession session) {
         return new InMemoryMessageManager(getMapperFactory(),
             getMessageSearchIndex(),
-            getEventBus(),
+            getEventBus().get(),
             getLocker(),
             mailbox,
             getQuotaComponents().getQuotaManager(),

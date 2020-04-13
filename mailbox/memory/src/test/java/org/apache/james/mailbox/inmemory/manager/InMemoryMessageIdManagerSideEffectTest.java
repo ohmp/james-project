@@ -21,7 +21,7 @@ package org.apache.james.mailbox.inmemory.manager;
 
 import java.util.Set;
 
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.UninitializedEventBus;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.quota.QuotaManager;
@@ -31,7 +31,7 @@ import org.apache.james.mailbox.store.MessageIdManagerTestSystem;
 class InMemoryMessageIdManagerSideEffectTest extends AbstractMessageIdManagerSideEffectTest {
 
     @Override
-    protected MessageIdManagerTestSystem createTestSystem(QuotaManager quotaManager, EventBus eventBus, Set<PreDeletionHook> preDeletionHooks) {
+    protected MessageIdManagerTestSystem createTestSystem(QuotaManager quotaManager, UninitializedEventBus eventBus, Set<PreDeletionHook> preDeletionHooks) {
         InMemoryMessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
 
         InMemoryIntegrationResources resources = InMemoryIntegrationResources.builder()

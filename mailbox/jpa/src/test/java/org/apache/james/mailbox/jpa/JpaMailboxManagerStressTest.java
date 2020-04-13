@@ -45,7 +45,7 @@ class JpaMailboxManagerStressTest implements MailboxManagerStressContract<OpenJP
 
     @Override
     public EventBus retrieveEventBus() {
-        return getManager().getEventBus();
+        return getManager().getEventBus().get();
     }
 
     @BeforeEach

@@ -23,8 +23,6 @@ import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.MailboxListener;
 
-import com.google.common.collect.ImmutableList;
-
 class MemoryMailboxManagerTest extends MailboxManagerTest<InMemoryMailboxManager> {
 
     @Override
@@ -34,7 +32,7 @@ class MemoryMailboxManagerTest extends MailboxManagerTest<InMemoryMailboxManager
 
     @Override
     protected EventBus retrieveEventBus(InMemoryMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 
     @Override

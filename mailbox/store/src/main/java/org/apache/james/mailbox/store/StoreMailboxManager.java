@@ -42,6 +42,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.exception.InboxAlreadyCreated;
 import org.apache.james.mailbox.exception.InsufficientRightsException;
@@ -86,6 +87,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -108,7 +110,7 @@ public class StoreMailboxManager implements MailboxManager {
     public static final EnumSet<MessageCapabilities> DEFAULT_NO_MESSAGE_CAPABILITIES = EnumSet.noneOf(MessageCapabilities.class);
 
     private final StoreRightManager storeRightManager;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
     private final MailboxAnnotationManager annotationManager;
     private final MailboxPathLocker locker;
@@ -126,7 +128,7 @@ public class StoreMailboxManager implements MailboxManager {
     public StoreMailboxManager(MailboxSessionMapperFactory mailboxSessionMapperFactory, SessionProvider sessionProvider,
                                MailboxPathLocker locker, MessageParser messageParser,
                                MessageId.Factory messageIdFactory, MailboxAnnotationManager annotationManager,
-                               EventBus eventBus, StoreRightManager storeRightManager,
+                               EventBusSupplier eventBus, StoreRightManager storeRightManager,
                                QuotaComponents quotaComponents, MessageSearchIndex searchIndex, MailboxManagerConfiguration configuration,
                                PreDeletionHooks preDeletionHooks) {
         Preconditions.checkNotNull(eventBus);
@@ -180,7 +182,7 @@ public class StoreMailboxManager implements MailboxManager {
      *
      * @return delegatingListener
      */
-    public EventBus getEventBus() {
+    public EventBusSupplier getEventBus() {
         return eventBus;
     }
 
@@ -202,7 +204,8 @@ public class StoreMailboxManager implements MailboxManager {
         return locker;
     }
 
-    protected StoreRightManager getStoreRightManager() {
+    @VisibleForTesting
+    public StoreRightManager getStoreRightManager() {
         return storeRightManager;
     }
 
@@ -246,7 +249,7 @@ public class StoreMailboxManager implements MailboxManager {
      * @return storeMailbox
      */
     protected StoreMessageManager createMessageManager(Mailbox mailbox, MailboxSession session) throws MailboxException {
-        return new StoreMessageManager(DEFAULT_NO_MESSAGE_CAPABILITIES, getMapperFactory(), getMessageSearchIndex(), getEventBus(),
+        return new StoreMessageManager(DEFAULT_NO_MESSAGE_CAPABILITIES, getMapperFactory(), getMessageSearchIndex(), eventBus.get(),
                 getLocker(), mailbox, quotaManager,
             getQuotaComponents().getQuotaRootResolver(), getMessageParser(), getMessageIdFactory(), configuration.getBatchSizes(),
             getStoreRightManager(), preDeletionHooks);
@@ -376,7 +379,7 @@ public class StoreMailboxManager implements MailboxManager {
                         Mailbox mailbox = mapper.create(mailboxPath, UidValidity.generate());
                         mailboxIds.add(mailbox.getMailboxId());
                         // notify listeners
-                        eventBus.dispatch(EventFactory.mailboxAdded()
+                        eventBus.get().dispatch(EventFactory.mailboxAdded()
                                 .randomEventId()
                                 .mailboxSession(mailboxSession)
                                 .mailbox(mailbox)
@@ -450,7 +453,7 @@ public class StoreMailboxManager implements MailboxManager {
         // mailbox once we remove it
         Mailbox m = new Mailbox(mailbox);
         mailboxMapper.delete(mailbox);
-        eventBus.dispatch(EventFactory.mailboxDeleted()
+        eventBus.get().dispatch(EventFactory.mailboxDeleted()
             .randomEventId()
             .mailboxSession(session)
             .mailbox(mailbox)
@@ -518,7 +521,7 @@ public class StoreMailboxManager implements MailboxManager {
         mailbox.setName(newMailboxPath.getName());
         mapper.rename(mailbox);
 
-        eventBus.dispatch(EventFactory.mailboxRenamed()
+        eventBus.get().dispatch(EventFactory.mailboxRenamed()
             .randomEventId()
             .mailboxSession(session)
             .mailboxId(mailbox.getMailboxId())
@@ -542,7 +545,7 @@ public class StoreMailboxManager implements MailboxManager {
                 MailboxPath fromPath = new MailboxPath(from, subOriginalName);
                 sub.setName(subNewName);
                 mapper.rename(sub);
-                eventBus.dispatch(EventFactory.mailboxRenamed()
+                eventBus.get().dispatch(EventFactory.mailboxRenamed()
                     .randomEventId()
                     .mailboxSession(session)
                     .mailboxId(sub.getMailboxId())

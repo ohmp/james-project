@@ -25,7 +25,7 @@ import org.apache.james.imap.api.process.MailboxTyper;
 import org.apache.james.imap.processor.fetch.FetchProcessor;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.SubscriptionManager;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.metrics.api.MetricFactory;
@@ -37,7 +37,7 @@ public class DefaultProcessorChain {
 
     public static ImapProcessor createDefaultChain(ImapProcessor chainEndProcessor,
                                                    MailboxManager mailboxManager,
-                                                   EventBus eventBus,
+                                                   EventBusSupplier eventBus,
                                                    SubscriptionManager subscriptionManager,
                                                    StatusResponseFactory statusResponseFactory,
                                                    MailboxTyper mailboxTyper,

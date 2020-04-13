@@ -46,7 +46,7 @@ class FullUserMaildirMailboxManagerStressTest implements MailboxManagerStressCon
 
     @Override
     public EventBus retrieveEventBus() {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 
     @BeforeEach

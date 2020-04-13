@@ -69,14 +69,14 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus().initialize(ImmutableMap.of(
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(
                 new GroupTest.GroupA(), countingListener1,
                 new GroupTest.GroupB(), countingListener2,
                 new GroupTest.GroupC(), countingListener3));
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
 
             ConcurrentTestRunner.builder()
-                .operation((threadNumber, operationNumber) -> eventBus().dispatch(EVENT, NO_KEYS).block())
+                .operation((threadNumber, operationNumber) -> eventBus.dispatch(EVENT, NO_KEYS).block())
                 .threadCount(THREAD_COUNT)
                 .operationCount(OPERATION_COUNT)
                 .runSuccessfullyWithin(FIVE_SECONDS);
@@ -91,15 +91,16 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener1 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
-            eventBus().register(countingListener1, KEY_1);
-            eventBus().register(countingListener2, KEY_2);
-            eventBus().register(countingListener3, KEY_3);
+            EventBus eventBus = eventBus().initialize();
+            eventBus.register(countingListener1, KEY_1);
+            eventBus.register(countingListener2, KEY_2);
+            eventBus.register(countingListener3, KEY_3);
 
             int totalKeyListenerRegistrations = 3; // KEY1 + KEY2 + KEY3
             int totalEventBus = 1;
 
             ConcurrentTestRunner.builder()
-                .operation((threadNumber, operationNumber) -> eventBus().dispatch(EVENT, ALL_KEYS).block())
+                .operation((threadNumber, operationNumber) -> eventBus.dispatch(EVENT, ALL_KEYS).block())
                 .threadCount(THREAD_COUNT)
                 .operationCount(OPERATION_COUNT)
                 .runSuccessfullyWithin(FIVE_SECONDS);
@@ -115,7 +116,7 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus().initialize(ImmutableMap.of(
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(
                 new GroupTest.GroupA(), countingListener1,
                 new GroupTest.GroupB(), countingListener2,
                 new GroupTest.GroupC(), countingListener3));
@@ -123,14 +124,14 @@ public interface EventBusConcurrentTestContract {
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
             int totalEventDeliveredGlobally = totalGlobalRegistrations * TOTAL_DISPATCH_OPERATIONS;
 
-            eventBus().register(countingListener1, KEY_1);
-            eventBus().register(countingListener2, KEY_2);
-            eventBus().register(countingListener3, KEY_3);
+            eventBus.register(countingListener1, KEY_1);
+            eventBus.register(countingListener2, KEY_2);
+            eventBus.register(countingListener3, KEY_3);
             int totalKeyListenerRegistrations = 3; // KEY1 + KEY2 + KEY3
             int totalEventDeliveredByKeys = totalKeyListenerRegistrations * TOTAL_DISPATCH_OPERATIONS;
 
             ConcurrentTestRunner.builder()
-                .operation((threadNumber, operationNumber) -> eventBus().dispatch(EVENT, ALL_KEYS).block())
+                .operation((threadNumber, operationNumber) -> eventBus.dispatch(EVENT, ALL_KEYS).block())
                 .threadCount(THREAD_COUNT)
                 .operationCount(OPERATION_COUNT)
                 .runSuccessfullyWithin(FIVE_SECONDS);
@@ -143,7 +144,7 @@ public interface EventBusConcurrentTestContract {
 
     interface MultiEventBusConcurrentContract extends EventBusContract.MultipleEventBusContract {
 
-        EventBus eventBus3();
+        UninitializedEventBus eventBus3();
 
         @Test
         default void concurrentDispatchGroupShouldDeliverAllEventsToListenersWithMultipleEventBus() throws Exception {
@@ -151,12 +152,12 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
 
-            eventBus().initialize(ImmutableMap.of(
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(
                 new GroupTest.GroupA(), countingListener1,
                 new GroupTest.GroupB(), countingListener2,
                 new GroupTest.GroupC(), countingListener3));
 
-            eventBus2().initialize(ImmutableMap.of(
+            EventBus eventBus2 = eventBus2().initialize(ImmutableMap.of(
                 new GroupTest.GroupA(), countingListener1,
                 new GroupTest.GroupB(), countingListener2,
                 new GroupTest.GroupC(), countingListener3));
@@ -164,7 +165,7 @@ public interface EventBusConcurrentTestContract {
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
 
             ConcurrentTestRunner.builder()
-                .operation((threadNumber, operationNumber) -> eventBus().dispatch(EVENT, NO_KEYS).block())
+                .operation((threadNumber, operationNumber) -> eventBus.dispatch(EVENT, NO_KEYS).block())
                 .threadCount(THREAD_COUNT)
                 .operationCount(OPERATION_COUNT)
                 .runSuccessfullyWithin(FIVE_SECONDS);
@@ -179,20 +180,22 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener1 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
+            EventBus eventBus = eventBus().initialize();
+            EventBus eventBus2 = eventBus2().initialize();
 
-            eventBus().register(countingListener1, KEY_1);
-            eventBus().register(countingListener2, KEY_2);
-            eventBus().register(countingListener3, KEY_3);
+            eventBus.register(countingListener1, KEY_1);
+            eventBus.register(countingListener2, KEY_2);
+            eventBus.register(countingListener3, KEY_3);
 
-            eventBus2().register(countingListener1, KEY_1);
-            eventBus2().register(countingListener2, KEY_2);
-            eventBus2().register(countingListener3, KEY_3);
+            eventBus2.register(countingListener1, KEY_1);
+            eventBus2.register(countingListener2, KEY_2);
+            eventBus2.register(countingListener3, KEY_3);
 
             int totalKeyListenerRegistrations = 3; // KEY1 + KEY2 + KEY3
             int totalEventBus = 2; // eventBus1 + eventBus2
 
             ConcurrentTestRunner.builder()
-                .operation((threadNumber, operationNumber) -> eventBus().dispatch(EVENT, ALL_KEYS).block())
+                .operation((threadNumber, operationNumber) -> eventBus.dispatch(EVENT, ALL_KEYS).block())
                 .threadCount(THREAD_COUNT)
                 .operationCount(OPERATION_COUNT)
                 .runSuccessfullyWithin(FIVE_SECONDS);
@@ -207,29 +210,31 @@ public interface EventBusConcurrentTestContract {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener1 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener2 = newCountingListener();
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution countingListener3 = newCountingListener();
-
-            eventBus2().initialize(ImmutableMap.of(
+            EventBus eventBus = eventBus().initialize();
+            EventBus eventBus2 =  eventBus2().initialize(ImmutableMap.of(
                 GROUP_A, countingListener1,
                 new EventBusTestFixture.GroupB(), countingListener2,
                 new EventBusTestFixture.GroupC(), countingListener3));
+            EventBus eventBus3 = eventBus3().initialize();
+
             int totalGlobalRegistrations = 3; // GroupA + GroupB + GroupC
             int totalEventDeliveredGlobally = totalGlobalRegistrations * TOTAL_DISPATCH_OPERATIONS;
 
-            eventBus().register(countingListener1, KEY_1);
-            eventBus().register(countingListener2, KEY_2);
+            eventBus.register(countingListener1, KEY_1);
+            eventBus.register(countingListener2, KEY_2);
 
-            eventBus2().register(countingListener1, KEY_1);
-            eventBus2().register(countingListener2, KEY_2);
+            eventBus2.register(countingListener1, KEY_1);
+            eventBus2.register(countingListener2, KEY_2);
 
-            eventBus3().register(countingListener3, KEY_1);
-            eventBus3().register(countingListener3, KEY_2);
+            eventBus3.register(countingListener3, KEY_1);
+            eventBus3.register(countingListener3, KEY_2);
 
             int totalKeyListenerRegistrations = 2; // KEY1 + KEY2
             int totalEventBus = 3; // eventBus1 + eventBus2 + eventBus3
             int totalEventDeliveredByKeys = totalKeyListenerRegistrations * totalEventBus * TOTAL_DISPATCH_OPERATIONS;
 
             ConcurrentTestRunner.builder()
-                .operation((threadNumber, operationNumber) -> eventBus().dispatch(EVENT, ALL_KEYS).block())
+                .operation((threadNumber, operationNumber) -> eventBus.dispatch(EVENT, ALL_KEYS).block())
                 .threadCount(THREAD_COUNT)
                 .operationCount(OPERATION_COUNT)
                 .runSuccessfullyWithin(FIVE_SECONDS);

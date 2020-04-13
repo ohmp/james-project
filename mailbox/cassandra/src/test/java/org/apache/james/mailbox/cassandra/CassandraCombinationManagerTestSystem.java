@@ -20,11 +20,10 @@
 package org.apache.james.mailbox.cassandra;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.Mailbox;
@@ -32,21 +31,22 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.store.CombinationManagerTestSystem;
 import org.apache.james.mailbox.store.PreDeletionHooks;
+import org.apache.james.mailbox.store.StoreMailboxManager;
 
 public class CassandraCombinationManagerTestSystem extends CombinationManagerTestSystem {
 
     private final CassandraMailboxSessionMapperFactory mapperFactory;
     private final CassandraMailboxManager cassandraMailboxManager;
 
-    public static CombinationManagerTestSystem createTestingData(CassandraCluster cassandra, QuotaManager quotaManager, EventBus eventBus) {
+    public static CombinationManagerTestSystem createTestingData(CassandraCluster cassandra, QuotaManager quotaManager, EventBusSupplier eventBus) {
         CassandraMailboxSessionMapperFactory mapperFactory = CassandraTestSystemFixture.createMapperFactory(cassandra);
 
         return new CassandraCombinationManagerTestSystem(CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, eventBus, PreDeletionHooks.NO_PRE_DELETION_HOOK),
             mapperFactory,
-            CassandraTestSystemFixture.createMailboxManager(mapperFactory));
+            CassandraTestSystemFixture.createMailboxManager(mapperFactory, eventBus));
     }
 
-    private CassandraCombinationManagerTestSystem(MessageIdManager messageIdManager, CassandraMailboxSessionMapperFactory mapperFactory, MailboxManager cassandraMailboxManager) {
+    private CassandraCombinationManagerTestSystem(MessageIdManager messageIdManager, CassandraMailboxSessionMapperFactory mapperFactory, StoreMailboxManager cassandraMailboxManager) {
         super(cassandraMailboxManager, messageIdManager);
         this.mapperFactory = mapperFactory;
         this.cassandraMailboxManager = (CassandraMailboxManager) cassandraMailboxManager;

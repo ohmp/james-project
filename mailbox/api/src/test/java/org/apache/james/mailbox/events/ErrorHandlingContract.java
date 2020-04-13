@@ -21,8 +21,6 @@ package org.apache.james.mailbox.events;
 
 import static org.apache.james.mailbox.events.EventBusTestFixture.DEFAULT_FIRST_BACKOFF;
 import static org.apache.james.mailbox.events.EventBusTestFixture.EVENT;
-import static org.apache.james.mailbox.events.EventBusTestFixture.EVENT_2;
-import static org.apache.james.mailbox.events.EventBusTestFixture.EVENT_ID;
 import static org.apache.james.mailbox.events.EventBusTestFixture.GROUP_A;
 import static org.apache.james.mailbox.events.EventBusTestFixture.KEY_1;
 import static org.apache.james.mailbox.events.EventBusTestFixture.NO_KEYS;
@@ -35,7 +33,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.james.mailbox.util.EventCollector;
 import org.assertj.core.api.SoftAssertions;
@@ -78,12 +75,13 @@ interface ErrorHandlingContract extends EventBusContract {
     @Test
     default void retryingIsNotAppliedForKeyRegistrations() {
         EventCollector eventCollector = eventCollector();
+        EventBus eventBus = eventBus().initialize();
 
         doThrow(new RuntimeException())
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, KEY_1);
-        eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
+        eventBus.register(eventCollector, KEY_1);
+        eventBus.dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
         assertThat(eventCollector.getEvents())
             .isEmpty();
@@ -98,8 +96,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().shortWaitCondition()
             .untilAsserted(() -> assertThat(eventCollector.getEvents()).hasSize(1));
@@ -120,8 +118,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().longWaitCondition()
             .untilAsserted(() -> assertThat(eventCollector.getEvents()).hasSize(1));
@@ -144,8 +142,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         TimeUnit.SECONDS.sleep(1);
         assertThat(eventCollector.getEvents())
@@ -156,8 +154,8 @@ interface ErrorHandlingContract extends EventBusContract {
     default void exceedingMaxRetriesShouldStopConsumingFailedEvent() throws Exception {
         ThrowingListener throwingListener = throwingListener();
 
-        eventBus().initialize(throwingListener, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(throwingListener, GROUP_A);
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         Thread.sleep(getSpeedProfile().getLongWaitTime().toMillis());
         int numberOfCallsAfterExceedMaxRetries = throwingListener.timeElapsed.size();
@@ -171,8 +169,8 @@ interface ErrorHandlingContract extends EventBusContract {
     default void retriesBackOffShouldDelayByExponentialGrowth() throws Exception {
         ThrowingListener throwingListener = throwingListener();
 
-        eventBus().initialize(throwingListener, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(throwingListener, GROUP_A);
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         Thread.sleep(getSpeedProfile().getLongWaitTime().toMillis());
         SoftAssertions.assertSoftly(softly -> {
@@ -195,27 +193,6 @@ interface ErrorHandlingContract extends EventBusContract {
     }
 
     @Test
-    default void retryingListenerCallingDispatchShouldNotFail() {
-        AtomicBoolean firstExecution = new AtomicBoolean(true);
-        AtomicBoolean successfulRetry = new AtomicBoolean(false);
-        MailboxListener listener = event -> {
-            if (event.getEventId().equals(EVENT_ID)) {
-                if (firstExecution.get()) {
-                    firstExecution.set(false);
-                    throw new RuntimeException();
-                }
-                eventBus().dispatch(EVENT_2, NO_KEYS).block();
-                successfulRetry.set(true);
-            }
-        };
-
-        eventBus().initialize(listener, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
-
-        getSpeedProfile().shortWaitCondition().until(successfulRetry::get);
-    }
-
-    @Test
     default void deadLettersIsNotAppliedForKeyRegistrations() throws Exception {
         EventCollector eventCollector = eventCollector();
 
@@ -232,8 +209,10 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().register(eventCollector, KEY_1);
-        eventBus().dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
+        EventBus eventBus = eventBus().initialize();
+
+        eventBus.register(eventCollector, KEY_1);
+        eventBus.dispatch(EVENT, ImmutableSet.of(KEY_1)).block();
 
         TimeUnit.SECONDS.sleep(1);
         SoftAssertions.assertSoftly(softly -> {
@@ -252,8 +231,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, new EventBusTestFixture.GroupA());
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, new EventBusTestFixture.GroupA());
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().shortWaitCondition()
             .untilAsserted(() -> assertThat(eventCollector.getEvents()).hasSize(1));
@@ -278,8 +257,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().dispatch(EVENT, NO_KEYS).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.dispatch(EVENT, NO_KEYS).block();
 
         getSpeedProfile().longWaitCondition()
             .untilAsserted(() -> assertThat(deadLetter().failedIds(GROUP_A)
@@ -307,8 +286,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().reDeliver(GROUP_A, EVENT).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.reDeliver(GROUP_A, EVENT).block();
 
         getSpeedProfile().longWaitCondition()
             .untilAsserted(() ->
@@ -339,8 +318,8 @@ interface ErrorHandlingContract extends EventBusContract {
             .doCallRealMethod()
             .when(eventCollector).event(EVENT);
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().reDeliver(GROUP_A, EVENT).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.reDeliver(GROUP_A, EVENT).block();
 
         getSpeedProfile().longWaitCondition()
             .untilAsserted(() -> assertThat(eventCollector.getEvents()).isNotEmpty());
@@ -351,9 +330,9 @@ interface ErrorHandlingContract extends EventBusContract {
         EventCollector eventCollector = eventCollector();
         EventCollector eventCollector2 = eventCollector();
 
-        eventBus().initialize(eventCollector, GROUP_A);
-        eventBus().register(eventCollector2, KEY_1);
-        eventBus().reDeliver(GROUP_A, EVENT).block();
+        EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+        eventBus.register(eventCollector2, KEY_1);
+        eventBus.reDeliver(GROUP_A, EVENT).block();
 
         getSpeedProfile().longWaitCondition()
             .untilAsserted(() -> assertThat(eventCollector.getEvents()).hasSize(1));

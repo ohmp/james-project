@@ -23,7 +23,7 @@ import javax.inject.Inject;
 
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.SessionProvider;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
@@ -36,14 +36,14 @@ import com.google.common.collect.ImmutableList;
 
 public class MailboxInitializer {
     private final SessionProvider sessionProvider;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final MessageSearchIndex messageSearchIndex;
     private final QuotaUpdater quotaUpdater;
     private final MailboxManager mailboxManager;
     private final MailboxSessionMapperFactory mapperFactory;
 
     @Inject
-    public MailboxInitializer(SessionProvider sessionProvider, EventBus eventBus, MessageSearchIndex messageSearchIndex, QuotaUpdater quotaUpdater, MailboxManager mailboxManager, MailboxSessionMapperFactory mapperFactory) {
+    public MailboxInitializer(SessionProvider sessionProvider, EventBusSupplier eventBus, MessageSearchIndex messageSearchIndex, QuotaUpdater quotaUpdater, MailboxManager mailboxManager, MailboxSessionMapperFactory mapperFactory) {
         this.sessionProvider = sessionProvider;
         this.eventBus = eventBus;
         this.messageSearchIndex = messageSearchIndex;

@@ -23,7 +23,7 @@ import javax.inject.Inject;
 
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SessionProvider;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.jpa.JPAMailboxManager;
 import org.apache.james.mailbox.jpa.JPAMailboxSessionMapperFactory;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMessageManager.AdvancedFeature;
@@ -48,7 +48,7 @@ public class OpenJPAMailboxManager extends JPAMailboxManager {
                                  SessionProvider sessionProvider,
                                  MessageParser messageParser,
                                  MessageId.Factory messageIdFactory,
-                                 EventBus eventBus,
+                                 EventBusSupplier eventBus,
                                  StoreMailboxAnnotationManager annotationManager,
                                  StoreRightManager storeRightManager,
                                  QuotaComponents quotaComponents,
@@ -66,7 +66,7 @@ public class OpenJPAMailboxManager extends JPAMailboxManager {
     protected StoreMessageManager createMessageManager(Mailbox mailboxRow, MailboxSession session) {
         return new OpenJPAMessageManager(getMapperFactory(),
             getMessageSearchIndex(),
-            getEventBus(),
+            getEventBus().get(),
             getLocker(),
             mailboxRow,
             getAdvancedFeature(),

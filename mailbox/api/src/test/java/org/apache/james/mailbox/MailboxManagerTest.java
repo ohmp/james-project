@@ -120,9 +120,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
     protected abstract T provideMailboxManager();
 
-    protected abstract EventBus retrieveEventBus(T mailboxManager);
-
     protected abstract T provideMailboxManager(MailboxListener.GroupMailboxListener mailboxListener);
+
+    protected abstract EventBus retrieveEventBus(T mailboxManager);
 
     protected Set<PreDeletionHook> preDeletionHooks() {
         return ImmutableSet.of(preDeletionHook1, preDeletionHook2);

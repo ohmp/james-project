@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableSet;
 import reactor.core.publisher.Mono;
 import reactor.rabbitmq.Sender;
 
-public class RabbitMQEventBus implements EventBus, Startable {
+public class RabbitMQEventBus implements EventBus, UninitializedEventBus, Startable {
     private static final Set<RegistrationKey> NO_KEY = ImmutableSet.of();
     private static final String NOT_RUNNING_ERROR_MESSAGE = "Event Bus is not running";
     static final String MAILBOX_EVENT = "mailboxEvent";
@@ -130,13 +130,14 @@ public class RabbitMQEventBus implements EventBus, Startable {
     }
 
     @Override
-    public void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
+    public RabbitMQEventBus initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
         Preconditions.checkState(isRunning, NOT_RUNNING_ERROR_MESSAGE);
         if (groupsInitialized) {
             throw new GroupsAlreadyRegistered();
         }
         listeners.forEach((group, listener) -> groupRegistrationHandler.register(listener, group));
         groupsInitialized = true;
+        return this;
     }
 
     @Override

@@ -21,6 +21,7 @@ package org.apache.james.mailbox.cassandra;
 
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.mailbox.cassandra.mail.MailboxAggregateModule;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
@@ -38,7 +39,10 @@ class CassandraCombinationManagerTest extends AbstractCombinationManagerTest {
     @Override
     public CombinationManagerTestSystem createTestingData() {
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        return CassandraCombinationManagerTestSystem.createTestingData(cassandraCluster.getCassandraCluster(), new NoQuotaManager(), eventBus);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        CombinationManagerTestSystem testingData = CassandraCombinationManagerTestSystem.createTestingData(cassandraCluster.getCassandraCluster(), new NoQuotaManager(), eventBusSupplier);
+        eventBusSupplier.initialize();
+        return testingData;
     }
     
 }

@@ -26,6 +26,7 @@ import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.GenericGroup;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
@@ -42,11 +43,11 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
     private static final Logger LOGGER = LoggerFactory.getLogger(MailboxListenersLoaderImpl.class);
 
     private final MailboxListenerFactory mailboxListenerFactory;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final Set<MailboxListener.GroupMailboxListener> guiceDefinedListeners;
 
     @Inject
-    MailboxListenersLoaderImpl(MailboxListenerFactory mailboxListenerFactory, EventBus eventBus,
+    MailboxListenersLoaderImpl(MailboxListenerFactory mailboxListenerFactory, EventBusSupplier eventBus,
                                Set<MailboxListener.GroupMailboxListener> guiceDefinedListeners) {
         this.mailboxListenerFactory = mailboxListenerFactory;
         this.eventBus = eventBus;
@@ -58,7 +59,7 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
         configure(ListenersConfiguration.from(configuration));
     }
 
-    public void configure(ListenersConfiguration listenersConfiguration) {
+    public EventBus configure(ListenersConfiguration listenersConfiguration) {
         LOGGER.info("Loading user registered mailbox listeners");
 
         ImmutableMap<Group, MailboxListener.GroupMailboxListener> guiceListenersAsMap = guiceDefinedListeners.stream()
@@ -71,15 +72,15 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
                 Pair::getLeft,
                 Pair::getRight));
 
-        register(ImmutableMap.<Group, MailboxListener>builder()
+        return register(ImmutableMap.<Group, MailboxListener>builder()
             .putAll(guiceListenersAsMap)
             .putAll(registeredListenersAsMap)
             .build());
     }
 
     @Override
-    public void register(Map<Group, MailboxListener> listeners) {
-        eventBus.initialize(listeners);
+    public EventBus register(Map<Group, MailboxListener> listeners) {
+        return eventBus.initialize(listeners);
     }
 
     @Override

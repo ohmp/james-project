@@ -28,20 +28,20 @@ import org.apache.james.imap.processor.base.ImapResponseMessageProcessor;
 import org.apache.james.imap.processor.base.UnknownRequestProcessor;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.SubscriptionManager;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.metrics.api.MetricFactory;
 
 public class DefaultImapProcessorFactory {
 
-    public static ImapProcessor createDefaultProcessor(MailboxManager mailboxManager, EventBus eventBus, SubscriptionManager subscriptionManager, QuotaManager quotaManager, QuotaRootResolver quotaRootResolver,
+    public static ImapProcessor createDefaultProcessor(MailboxManager mailboxManager, EventBusSupplier eventBus, SubscriptionManager subscriptionManager, QuotaManager quotaManager, QuotaRootResolver quotaRootResolver,
             MetricFactory metricFactory) {
         return createXListSupportingProcessor(mailboxManager, eventBus, subscriptionManager, null, quotaManager, quotaRootResolver, metricFactory);
     }
 
     public static ImapProcessor createXListSupportingProcessor(MailboxManager mailboxManager,
-                                                               EventBus eventBus, SubscriptionManager subscriptionManager,
+                                                               EventBusSupplier eventBus, SubscriptionManager subscriptionManager,
                                                                MailboxTyper mailboxTyper, QuotaManager quotaManager, QuotaRootResolver quotaRootResolver, MetricFactory metricFactory) {
 
         StatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();

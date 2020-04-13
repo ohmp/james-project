@@ -110,7 +110,7 @@ class DomainUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreMailbo
 
     @Override
     protected EventBus retrieveEventBus(StoreMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 
 

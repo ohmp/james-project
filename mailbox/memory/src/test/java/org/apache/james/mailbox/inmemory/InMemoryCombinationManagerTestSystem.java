@@ -18,22 +18,20 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory;
 
-import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.model.UidValidity;
 import org.apache.james.mailbox.store.CombinationManagerTestSystem;
 
 public class InMemoryCombinationManagerTestSystem extends CombinationManagerTestSystem {
     private final InMemoryMailboxManager inMemoryMailboxManager;
 
-    public InMemoryCombinationManagerTestSystem(MailboxManager mailboxManager, MessageIdManager messageIdManager) {
+    public InMemoryCombinationManagerTestSystem(InMemoryMailboxManager mailboxManager, MessageIdManager messageIdManager) {
         super(mailboxManager, messageIdManager);
-        this.inMemoryMailboxManager = (InMemoryMailboxManager)mailboxManager;
+        this.inMemoryMailboxManager = mailboxManager;
     }
 
     @Override

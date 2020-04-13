@@ -37,7 +37,11 @@ import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
+import org.apache.james.mailbox.events.EventBusTestFixture;
+import org.apache.james.mailbox.events.InVMEventBus;
+import org.apache.james.mailbox.events.MemoryEventDeadLetters;
+import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.exception.DifferentDomainException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
@@ -53,10 +57,9 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.UidValidity;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
+import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import reactor.core.publisher.Mono;
 
 class StoreRightManagerTest {
 
@@ -76,11 +79,12 @@ class StoreRightManagerTest {
         mockedMailboxMapper = mock(MailboxMapper.class);
         mailboxAclResolver = new UnionMailboxACLResolver();
         groupMembershipResolver = new SimpleGroupMembershipResolver();
-        EventBus eventBus = mock(EventBus.class);
+        InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
         when(mockedMapperFactory.getMailboxMapper(aliceSession))
             .thenReturn(mockedMailboxMapper);
 
-        storeRightManager = new StoreRightManager(mockedMapperFactory, mailboxAclResolver, groupMembershipResolver, eventBus);
+        storeRightManager = new StoreRightManager(mockedMapperFactory, mailboxAclResolver, groupMembershipResolver,
+            new EventBusSupplier(eventBus));
     }
 
     @Test

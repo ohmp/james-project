@@ -79,6 +79,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.stubbing.Answer;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Mono;
@@ -150,12 +151,12 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
     }
 
     @Override
-    public EventBus eventBus() {
+    public UninitializedEventBus eventBus() {
         return eventBus;
     }
 
     @Override
-    public EventBus eventBus2() {
+    public UninitializedEventBus eventBus2() {
         return eventBus2;
     }
 
@@ -219,17 +220,17 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         }
 
         @Override
-        public EventBus eventBus3() {
+        public UninitializedEventBus eventBus3() {
             return eventBus3;
         }
 
         @Override
-        public EventBus eventBus2() {
+        public UninitializedEventBus eventBus2() {
             return eventBus2;
         }
 
         @Override
-        public EventBus eventBus() {
+        public UninitializedEventBus eventBus() {
             return eventBus;
         }
     }
@@ -732,11 +733,11 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void dispatchShouldNotSendToGroupListenerWhenError() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
 
             rabbitMQExtension.getRabbitMQ().pause();
 
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
 
             assertThat(eventCollector.getEvents()).isEmpty();
         }
@@ -744,11 +745,11 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void dispatchShouldPersistEventWhenDispatchingNoKeyGetError() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
 
             rabbitMQExtension.getRabbitMQ().pause();
 
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
 
             assertThat(dispatchingFailureEvents()).containsOnly(EVENT);
         }
@@ -756,12 +757,12 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void dispatchShouldPersistEventWhenDispatchingWithKeysGetError() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
-            eventBus().register(eventCollector, KEY_1);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
+            eventBus.register(eventCollector, KEY_1);
 
             rabbitMQExtension.getRabbitMQ().pause();
 
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
 
             assertThat(dispatchingFailureEvents()).containsOnly(EVENT);
         }
@@ -769,12 +770,13 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void dispatchShouldPersistOnlyOneEventWhenDispatchingMultiGroupsGetError() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
-            eventBus().register(eventCollector, GROUP_B);
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(
+                GROUP_A, eventCollector,
+                GROUP_B, eventCollector));
 
             rabbitMQExtension.getRabbitMQ().pause();
 
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
 
             assertThat(dispatchingFailureEvents()).containsOnly(EVENT);
         }
@@ -782,11 +784,11 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void dispatchShouldPersistEventsWhenDispatchingGroupsGetErrorMultipleTimes() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
 
             rabbitMQExtension.getRabbitMQ().pause();
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
-            doQuietly(() -> eventBus().dispatch(EVENT_2, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT_2, NO_KEYS).block());
 
             assertThat(dispatchingFailureEvents()).containsExactly(EVENT, EVENT_2);
         }
@@ -794,11 +796,11 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void dispatchShouldPersistEventsWhenDispatchingTheSameEventGetErrorMultipleTimes() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
 
             rabbitMQExtension.getRabbitMQ().pause();
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
 
             assertThat(dispatchingFailureEvents()).containsExactly(EVENT, EVENT);
         }
@@ -806,16 +808,16 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void reDeliverShouldDeliverToAllGroupsWhenDispatchingFailure() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
-
             EventCollector eventCollector2 = eventCollector();
-            eventBus().register(eventCollector2, GROUP_B);
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(
+                GROUP_A, eventCollector,
+                GROUP_B, eventCollector2));
 
             rabbitMQExtension.getRabbitMQ().pause();
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
             rabbitMQExtension.getRabbitMQ().unpause();
             dispatchingFailureEvents()
-                .forEach(event -> eventBus().reDeliver(DispatchingFailureGroup.INSTANCE, event).block());
+                .forEach(event -> eventBus.reDeliver(DispatchingFailureGroup.INSTANCE, event).block());
 
             getSpeedProfile().shortWaitCondition()
                 .untilAsserted(() -> assertThat(eventCollector.getEvents())
@@ -826,14 +828,14 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void reDeliverShouldAddEventInDeadLetterWhenGettingError() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
 
             rabbitMQExtension.getRabbitMQ().pause();
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
             getSpeedProfile().longWaitCondition()
                 .until(() -> deadLetter().containEvents().block());
 
-            doQuietly(() -> eventBus().reDeliver(DispatchingFailureGroup.INSTANCE, EVENT).block());
+            doQuietly(() -> eventBus.reDeliver(DispatchingFailureGroup.INSTANCE, EVENT).block());
             rabbitMQExtension.getRabbitMQ().unpause();
 
             getSpeedProfile().shortWaitCondition()
@@ -844,14 +846,14 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         @Test
         void reDeliverShouldNotStoreEventInAnotherGroupWhenGettingError() {
             EventCollector eventCollector = eventCollector();
-            eventBus().register(eventCollector, GROUP_A);
+            EventBus eventBus = eventBus().initialize(eventCollector, GROUP_A);
 
             rabbitMQExtension.getRabbitMQ().pause();
-            doQuietly(() -> eventBus().dispatch(EVENT, NO_KEYS).block());
+            doQuietly(() -> eventBus.dispatch(EVENT, NO_KEYS).block());
             getSpeedProfile().longWaitCondition()
                 .until(() -> deadLetter().containEvents().block());
 
-            doQuietly(() -> eventBus().reDeliver(DispatchingFailureGroup.INSTANCE, EVENT).block());
+            doQuietly(() -> eventBus.reDeliver(DispatchingFailureGroup.INSTANCE, EVENT).block());
             rabbitMQExtension.getRabbitMQ().unpause();
 
             getSpeedProfile().shortWaitCondition()

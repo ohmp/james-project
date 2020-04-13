@@ -26,6 +26,7 @@ import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MailboxListener;
@@ -66,18 +67,19 @@ public class JpaMailboxManagerProvider {
         Authorizator noAuthorizator = null;
 
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, groupMembershipResolver, eventBus);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        StoreRightManager storeRightManager = new StoreRightManager(mf, aclResolver, groupMembershipResolver, eventBusSupplier);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mf, storeRightManager,
             LIMIT_ANNOTATIONS, LIMIT_ANNOTATION_SIZE);
         SessionProviderImpl sessionProvider = new SessionProviderImpl(noAuthenticator, noAuthorizator);
         QuotaComponents quotaComponents = QuotaComponents.disabled(sessionProvider, mf);
         MessageSearchIndex index = new SimpleMessageSearchIndex(mf, mf, new DefaultTextExtractor());
 
-        eventBus.initialize(listeners);
+        eventBusSupplier.initialize(listeners);
 
         return new OpenJPAMailboxManager(mf, sessionProvider,
             messageParser, new DefaultMessageId.Factory(),
-            eventBus, annotationManager,
+            eventBusSupplier, annotationManager,
             storeRightManager, quotaComponents, index);
     }
 }

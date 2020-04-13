@@ -43,7 +43,7 @@ import org.apache.james.imap.message.request.IdleRequest;
 import org.apache.james.imap.message.response.ContinuationResponse;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.events.Event;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.Registration;
@@ -58,13 +58,13 @@ public class IdleProcessor extends AbstractMailboxProcessor<IdleRequest> impleme
     public static final int DEFAULT_SCHEDULED_POOL_CORE_SIZE = 5;
     private static final String DONE = "DONE";
 
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private TimeUnit heartbeatIntervalUnit;
     private long heartbeatInterval;
     private boolean enableIdle;
     private ScheduledExecutorService heartbeatExecutor;
 
-    public IdleProcessor(ImapProcessor next, MailboxManager mailboxManager, EventBus eventBus, StatusResponseFactory factory,
+    public IdleProcessor(ImapProcessor next, MailboxManager mailboxManager, EventBusSupplier eventBus, StatusResponseFactory factory,
             MetricFactory metricFactory) {
         super(IdleRequest.class, next, mailboxManager, factory, metricFactory);
         this.eventBus = eventBus;
@@ -88,7 +88,7 @@ public class IdleProcessor extends AbstractMailboxProcessor<IdleRequest> impleme
         SelectedMailbox sm = session.getSelected();
         Registration registration;
         if (sm != null) {
-            registration = eventBus.register(new IdleMailboxListener(session, responder), new MailboxIdRegistrationKey(sm.getMailboxId()));
+            registration = eventBus.get().register(new IdleMailboxListener(session, responder), new MailboxIdRegistrationKey(sm.getMailboxId()));
         } else {
             registration = null;
         }

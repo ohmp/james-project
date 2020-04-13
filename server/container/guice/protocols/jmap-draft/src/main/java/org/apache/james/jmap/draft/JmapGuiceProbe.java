@@ -33,7 +33,7 @@ import org.apache.james.jmap.api.vacation.VacationRepository;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.RegistrationKey;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -50,11 +50,12 @@ public class JmapGuiceProbe implements GuiceProbe {
     private final JMAPServer jmapServer;
     private final MessageIdManager messageIdManager;
     private final MailboxManager mailboxManager;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final MessageFastViewProjection messageFastViewProjection;
 
     @Inject
-    private JmapGuiceProbe(VacationRepository vacationRepository, JMAPServer jmapServer, MessageIdManager messageIdManager, MailboxManager mailboxManager, EventBus eventBus, MessageFastViewProjection messageFastViewProjection) {
+    private JmapGuiceProbe(VacationRepository vacationRepository, JMAPServer jmapServer, MessageIdManager messageIdManager,
+                           MailboxManager mailboxManager, EventBusSupplier eventBus, MessageFastViewProjection messageFastViewProjection) {
         this.vacationRepository = vacationRepository;
         this.jmapServer = jmapServer;
         this.messageIdManager = messageIdManager;
@@ -68,7 +69,7 @@ public class JmapGuiceProbe implements GuiceProbe {
     }
 
     public void addMailboxListener(MailboxListener listener, RegistrationKey registrationKey) {
-        eventBus.register(listener, registrationKey);
+        eventBus.get().register(listener, registrationKey);
     }
 
     public void modifyVacation(AccountId accountId, VacationPatch vacationPatch) {

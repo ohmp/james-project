@@ -87,7 +87,7 @@ public class MessageIdManagerTestSystem {
             Mailbox mailbox = mapperFactory.getMailboxMapper(mailboxSession).findMailboxById(mailboxId);
             MailboxMessage message = createMessage(mailboxId, flags, messageId, uid);
             mapperFactory.getMessageMapper(mailboxSession).add(mailbox, message);
-            mailboxManager.getEventBus().dispatch(EventFactory.added()
+            mailboxManager.getEventBus().get().dispatch(EventFactory.added()
                 .randomEventId()
                 .mailboxSession(mailboxSession)
                 .mailbox(mailbox)

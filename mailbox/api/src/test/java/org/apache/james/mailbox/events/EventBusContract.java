@@ -61,8 +61,8 @@ public interface EventBusContract {
 
     interface MultipleEventBusContract extends EventBusContract {
 
-        EventBus eventBus2();
+        UninitializedEventBus eventBus2();
     }
 
-    EventBus eventBus();
+    UninitializedEventBus eventBus();
 }

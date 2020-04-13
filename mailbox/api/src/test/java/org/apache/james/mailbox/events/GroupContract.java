@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import org.apache.james.core.Username;
@@ -70,7 +71,7 @@ public interface GroupContract {
             AtomicInteger finishedExecutions = new AtomicInteger(0);
             AtomicBoolean rateExceeded = new AtomicBoolean(false);
 
-            eventBus().initialize(new MailboxListener.GroupMailboxListener() {
+            EventBus eventBus = eventBus().initialize(new MailboxListener.GroupMailboxListener() {
                 @Override
                 public Group getDefaultGroup() {
                     return new GenericGroup("group");
@@ -94,7 +95,7 @@ public interface GroupContract {
             }, GROUP_A);
 
             IntStream.range(0, eventCount)
-                .forEach(i -> eventBus().dispatch(EVENT, NO_KEYS).block());
+                .forEach(i -> eventBus.dispatch(EVENT, NO_KEYS).block());
 
             getSpeedProfile().shortWaitCondition().atMost(org.awaitility.Duration.TEN_MINUTES)
                 .untilAsserted(() -> assertThat(finishedExecutions.get()).isEqualTo(eventCount));
@@ -106,7 +107,7 @@ public interface GroupContract {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             try {
                 ConcurrentLinkedQueue<String> threads = new ConcurrentLinkedQueue<>();
-                eventBus().initialize(new MailboxListener.GroupMailboxListener() {
+                EventBus eventBus = eventBus().initialize(new MailboxListener.GroupMailboxListener() {
                     @Override
                     public Group getDefaultGroup() {
                         return new GenericGroup("groupA");
@@ -141,7 +142,7 @@ public interface GroupContract {
                     }
                 });
 
-                eventBus().dispatch(EVENT, NO_KEYS).subscribeOn(Schedulers.elastic()).subscribe();
+                eventBus.dispatch(EVENT, NO_KEYS).subscribeOn(Schedulers.elastic()).subscribe();
 
 
                 getSpeedProfile().shortWaitCondition().atMost(org.awaitility.Duration.TEN_SECONDS)
@@ -155,54 +156,27 @@ public interface GroupContract {
         @Test
         default void listenersShouldBeAbleToDispatch() {
             AtomicBoolean successfulRetry = new AtomicBoolean(false);
+            AtomicReference<EventBus> eventBus = new AtomicReference<>();
             MailboxListener listener = event -> {
                 if (event.getEventId().equals(EVENT_ID)) {
-                    eventBus().dispatch(EVENT_2, NO_KEYS).block();
+                    eventBus.get().dispatch(EVENT_2, NO_KEYS).block();
                     successfulRetry.set(true);
                 }
             };
 
-            eventBus().initialize(listener, GROUP_A);
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus.set(eventBus().initialize(listener, GROUP_A));
+            eventBus.get().dispatch(EVENT, NO_KEYS).block();
 
             getSpeedProfile().shortWaitCondition().until(successfulRetry::get);
-        }
-
-        @Test
-        default void initializeShouldThrowWhenCalledTwice() {
-            AtomicBoolean successfulRetry = new AtomicBoolean(false);
-            MailboxListener listener = event -> {
-                if (event.getEventId().equals(EVENT_ID)) {
-                    eventBus().dispatch(EVENT_2, NO_KEYS).block();
-                    successfulRetry.set(true);
-                }
-            };
-
-            eventBus().initialize(listener, GROUP_A);
-
-            assertThatThrownBy(() -> eventBus().initialize(listener, GROUP_B))
-                .isInstanceOf(GroupsAlreadyRegistered.class);
-        }
-
-        @Test
-        default void registerShouldNotDispatchPastEventsForGroups() throws Exception {
-            MailboxListener listener = newListener();
-
-            eventBus().dispatch(EVENT, NO_KEYS).block();
-
-            eventBus().initialize(listener, GROUP_A);
-
-            verify(listener, after(FIVE_HUNDRED_MS.toMillis()).never())
-                .event(any());
         }
 
         @Test
         default void listenerGroupShouldReceiveEvents() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus.dispatch(EVENT, NO_KEYS).block();
 
             verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -211,11 +185,11 @@ public interface GroupContract {
         default void groupListenersShouldNotReceiveNoopEvents() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
             Username bob = Username.of("bob");
             MailboxListener.Added noopEvent = new MailboxListener.Added(MailboxSession.SessionId.of(18), bob, MailboxPath.forUser(bob, "mailbox"), TestId.of(58), ImmutableSortedMap.of(), Event.EventId.random());
-            eventBus().dispatch(noopEvent, NO_KEYS).block();
+            eventBus.dispatch(noopEvent, NO_KEYS).block();
 
             verify(listener, after(FIVE_HUNDRED_MS.toMillis()).never())
                 .event(any());
@@ -225,9 +199,9 @@ public interface GroupContract {
         default void groupListenersShouldReceiveOnlyHandledEvents() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            eventBus().dispatch(EVENT_UNSUPPORTED_BY_LISTENER, NO_KEYS).block();
+            eventBus.dispatch(EVENT_UNSUPPORTED_BY_LISTENER, NO_KEYS).block();
 
             verify(listener, after(FIVE_HUNDRED_MS.toMillis()).never())
                 .event(any());
@@ -238,9 +212,9 @@ public interface GroupContract {
             MailboxListener listener = newListener();
             doThrow(new RuntimeException()).when(listener).event(any());
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            assertThatCode(() -> eventBus().dispatch(EVENT, NO_KEYS).block())
+            assertThatCode(() -> eventBus.dispatch(EVENT, NO_KEYS).block())
                 .doesNotThrowAnyException();
         }
 
@@ -248,9 +222,9 @@ public interface GroupContract {
         default void eachListenerGroupShouldReceiveEvents() throws Exception {
             MailboxListener listener = newListener();
             MailboxListener listener2 = newListener();
-            eventBus().initialize(ImmutableMap.of(GROUP_A, listener, GROUP_B, listener2));
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(GROUP_A, listener, GROUP_B, listener2));
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus.dispatch(EVENT, NO_KEYS).block();
 
             verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
             verify(listener2, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
@@ -260,9 +234,9 @@ public interface GroupContract {
         default void dispatchShouldCallSynchronousListener() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus.dispatch(EVENT, NO_KEYS).block();
 
             verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -270,10 +244,10 @@ public interface GroupContract {
         @Test
         default void failingGroupListenersShouldNotAbortGroupDelivery() {
             EventBusTestFixture.MailboxListenerCountingSuccessfulExecution listener = new EventBusTestFixture.EventMatcherThrowingListener(ImmutableSet.of(EVENT));
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
-            eventBus().dispatch(EVENT_2, NO_KEYS).block();
+            eventBus.dispatch(EVENT, NO_KEYS).block();
+            eventBus.dispatch(EVENT_2, NO_KEYS).block();
 
             getSpeedProfile().shortWaitCondition()
                 .untilAsserted(() -> assertThat(listener.numberOfEventCalls()).isEqualTo(1));
@@ -287,10 +261,10 @@ public interface GroupContract {
             when(failingListener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.SYNCHRONOUS);
             doThrow(new RuntimeException()).when(failingListener).event(any());
 
-            eventBus().initialize(ImmutableMap.of(GROUP_A, failingListener,
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(GROUP_A, failingListener,
                 GROUP_B, listener));
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus.dispatch(EVENT, NO_KEYS).block();
 
             verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -300,10 +274,10 @@ public interface GroupContract {
             MailboxListener listener1 = newListener();
             MailboxListener listener2 = newListener();
 
-            eventBus().initialize(ImmutableMap.of(new GenericGroup("a"), listener1,
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(new GenericGroup("a"), listener1,
                 new GenericGroup("b"), listener2));
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus.dispatch(EVENT, NO_KEYS).block();
 
             verify(listener1, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
             verify(listener2, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
@@ -313,9 +287,9 @@ public interface GroupContract {
         default void groupListenerShouldReceiveEventWhenRedeliver() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            eventBus().reDeliver(GROUP_A, EVENT).block();
+            eventBus.reDeliver(GROUP_A, EVENT).block();
 
             verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -325,15 +299,15 @@ public interface GroupContract {
             MailboxListener listener = newListener();
             doThrow(new RuntimeException()).when(listener).event(any());
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
-            assertThatCode(() -> eventBus().reDeliver(GROUP_A, EVENT).block())
+            assertThatCode(() -> eventBus.reDeliver(GROUP_A, EVENT).block())
                 .doesNotThrowAnyException();
         }
 
         @Test
         default void redeliverShouldThrowWhenGroupNotRegistered() {
-            assertThatThrownBy(() -> eventBus().reDeliver(GROUP_A, EVENT).block())
+            assertThatThrownBy(() -> eventBus().initialize().reDeliver(GROUP_A, EVENT).block())
                 .isInstanceOf(GroupRegistrationNotFound.class);
         }
 
@@ -341,10 +315,10 @@ public interface GroupContract {
         default void redeliverShouldOnlySendEventToDefinedGroup() throws Exception {
             MailboxListener listener = newListener();
             MailboxListener listener2 = newListener();
-            eventBus().initialize(ImmutableMap.of(GROUP_A, listener,
+            EventBus eventBus = eventBus().initialize(ImmutableMap.of(GROUP_A, listener,
                 GROUP_B, listener2));
 
-            eventBus().reDeliver(GROUP_A, EVENT).block();
+            eventBus.reDeliver(GROUP_A, EVENT).block();
 
             verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
             verify(listener2, after(FIVE_HUNDRED_MS.toMillis()).never()).event(any());
@@ -354,11 +328,11 @@ public interface GroupContract {
         default void groupListenersShouldNotReceiveNoopRedeliveredEvents() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().initialize(listener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(listener, GROUP_A);
 
             Username bob = Username.of("bob");
             MailboxListener.Added noopEvent = new MailboxListener.Added(MailboxSession.SessionId.of(18), bob, MailboxPath.forUser(bob, "mailbox"), TestId.of(58), ImmutableSortedMap.of(), Event.EventId.random());
-            eventBus().reDeliver(GROUP_A, noopEvent).block();
+            eventBus.reDeliver(GROUP_A, noopEvent).block();
 
             verify(listener, after(FIVE_HUNDRED_MS.toMillis()).never()).event(any());
         }
@@ -370,9 +344,9 @@ public interface GroupContract {
         default void groupsDefinedOnlyOnSomeNodesShouldBeNotifiedWhenDispatch() throws Exception {
             MailboxListener mailboxListener = newListener();
 
-            eventBus().initialize(mailboxListener, GROUP_A);
+            EventBus eventBus = eventBus().initialize(mailboxListener, GROUP_A);
 
-            eventBus2().dispatch(EVENT, NO_KEYS).block();
+            eventBus2().initialize().dispatch(EVENT, NO_KEYS).block();
 
             verify(mailboxListener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -383,7 +357,7 @@ public interface GroupContract {
 
             eventBus().initialize(mailboxListener, GROUP_A);
 
-            assertThatThrownBy(() -> eventBus2().reDeliver(GROUP_A, EVENT).block())
+            assertThatThrownBy(() -> eventBus2().initialize().reDeliver(GROUP_A, EVENT).block())
                 .isInstanceOf(GroupRegistrationNotFound.class);
         }
 
@@ -392,9 +366,9 @@ public interface GroupContract {
             MailboxListener mailboxListener = newListener();
 
             eventBus().initialize(mailboxListener, GROUP_A);
-            eventBus2().initialize(mailboxListener, GROUP_A);
+            EventBus eventBus2 = eventBus2().initialize(mailboxListener, GROUP_A);
 
-            eventBus2().reDeliver(GROUP_A, EVENT).block();
+            eventBus2.reDeliver(GROUP_A, EVENT).block();
 
             verify(mailboxListener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -404,9 +378,9 @@ public interface GroupContract {
             MailboxListener mailboxListener = newListener();
 
             eventBus().initialize(mailboxListener, GROUP_A);
-            eventBus2().initialize(mailboxListener, GROUP_A);
+            EventBus eventBus2 = eventBus2().initialize(mailboxListener, GROUP_A);
 
-            eventBus2().dispatch(EVENT, NO_KEYS).block();
+            eventBus2.dispatch(EVENT, NO_KEYS).block();
 
             verify(mailboxListener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
@@ -415,7 +389,7 @@ public interface GroupContract {
         default void registerShouldNotDispatchPastEventsForGroupsInADistributedContext() throws Exception {
             MailboxListener listener = newListener();
 
-            eventBus().dispatch(EVENT, NO_KEYS).block();
+            eventBus().initialize().dispatch(EVENT, NO_KEYS).block();
 
             eventBus2().initialize(listener, GROUP_A);
 

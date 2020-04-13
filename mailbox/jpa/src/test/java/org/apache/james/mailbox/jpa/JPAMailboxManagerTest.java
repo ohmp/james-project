@@ -52,10 +52,7 @@ class JPAMailboxManagerTest extends MailboxManagerTest<OpenJPAMailboxManager> {
 
     @Override
     protected OpenJPAMailboxManager provideMailboxManager(MailboxListener.GroupMailboxListener mailboxListener) {
-        if (!openJPAMailboxManager.isPresent()) {
-            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, ImmutableList.of(mailboxListener)));
-        }
-        return openJPAMailboxManager.get();
+        return JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, ImmutableList.of(mailboxListener));
     }
 
     @AfterEach
@@ -72,6 +69,6 @@ class JPAMailboxManagerTest extends MailboxManagerTest<OpenJPAMailboxManager> {
 
     @Override
     protected EventBus retrieveEventBus(OpenJPAMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 }

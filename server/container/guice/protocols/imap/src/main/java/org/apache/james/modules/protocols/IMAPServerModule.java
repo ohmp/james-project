@@ -28,7 +28,7 @@ import org.apache.james.imapserver.netty.IMAPServerFactory;
 import org.apache.james.imapserver.netty.OioIMAPServerFactory;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.SubscriptionManager;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.metrics.api.MetricFactory;
@@ -57,7 +57,7 @@ public class IMAPServerModule extends AbstractModule {
     @Provides
     ImapProcessor provideImapProcessor(
             MailboxManager mailboxManager,
-            EventBus eventBus,
+            EventBusSupplier eventBus,
             SubscriptionManager subscriptionManager,
             QuotaManager quotaManager,
             QuotaRootResolver quotaRootResolver,

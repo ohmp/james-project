@@ -21,7 +21,6 @@ package org.apache.james.mailbox.store.quota;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,10 +38,13 @@ import org.apache.james.core.quota.QuotaCountUsage;
 import org.apache.james.core.quota.QuotaSizeUsage;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.ModSeq;
-import org.apache.james.mailbox.events.Event;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
+import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.Group;
+import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MailboxListener;
+import org.apache.james.mailbox.events.MemoryEventDeadLetters;
+import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.QuotaOperation;
@@ -51,12 +53,11 @@ import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
+import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.Lists;
-
-import reactor.core.publisher.Mono;
 
 class ListeningCurrentQuotaUpdaterTest {
 
@@ -75,10 +76,11 @@ class ListeningCurrentQuotaUpdaterTest {
     void setUp() {
         mockedQuotaRootResolver = mock(QuotaRootResolver.class);
         mockedCurrentQuotaManager = mock(StoreCurrentQuotaManager.class);
-        EventBus eventBus = mock(EventBus.class);
-        when(eventBus.dispatch(any(Event.class), anySet())).thenReturn(Mono.empty());
+        InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
         testee = new ListeningCurrentQuotaUpdater(mockedCurrentQuotaManager, mockedQuotaRootResolver,
-            eventBus, mock(QuotaManager.class));
+            eventBusSupplier, mock(QuotaManager.class));
+        eventBusSupplier.initialize();
     }
 
     @Test

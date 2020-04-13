@@ -62,6 +62,6 @@ class FullUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreMailboxM
 
     @Override
     protected EventBus retrieveEventBus(StoreMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 }

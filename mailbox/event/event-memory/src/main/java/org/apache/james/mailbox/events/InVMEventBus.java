@@ -39,7 +39,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class InVMEventBus implements EventBus {
+public class InVMEventBus implements EventBus, UninitializedEventBus {
 
     private final Multimap<RegistrationKey, MailboxListener> registrations;
     private final ConcurrentHashMap<Group, MailboxListener> groups;
@@ -65,13 +65,14 @@ public class InVMEventBus implements EventBus {
     }
 
     @Override
-    public void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
+    public InVMEventBus initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
         synchronized (groups) {
             if (initialized) {
                 throw new GroupsAlreadyRegistered();
             }
             groups.putAll(listeners);
             initialized = true;
+            return this;
         }
     }
 

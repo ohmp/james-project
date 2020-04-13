@@ -27,7 +27,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxPathLocker;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SessionProvider;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.MailboxManagerConfiguration;
@@ -59,7 +59,7 @@ public class CassandraMailboxManager extends StoreMailboxManager {
     @Inject
     public CassandraMailboxManager(CassandraMailboxSessionMapperFactory mapperFactory, SessionProvider sessionProvider,
                                    MailboxPathLocker locker, MessageParser messageParser,
-                                   MessageId.Factory messageIdFactory, EventBus eventBus,
+                                   MessageId.Factory messageIdFactory, EventBusSupplier eventBus,
                                    StoreMailboxAnnotationManager annotationManager, StoreRightManager storeRightManager,
                                    QuotaComponents quotaComponents, MessageSearchIndex index,
                                    MailboxManagerConfiguration configuration,
@@ -94,7 +94,7 @@ public class CassandraMailboxManager extends StoreMailboxManager {
     protected StoreMessageManager createMessageManager(Mailbox mailboxRow, MailboxSession session) {
         return new CassandraMessageManager(mapperFactory,
             getMessageSearchIndex(),
-            getEventBus(),
+            getEventBus().get(),
             this.locker,
             mailboxRow,
             getQuotaComponents().getQuotaManager(),

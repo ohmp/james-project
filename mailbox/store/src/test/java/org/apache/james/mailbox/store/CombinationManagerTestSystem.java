@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.store;
 
-import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
@@ -28,15 +27,15 @@ import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxPath;
 
 public abstract class CombinationManagerTestSystem {
-    private final MailboxManager mailboxManager;
+    private final StoreMailboxManager mailboxManager;
     private final MessageIdManager messageIdManager;
 
-    public CombinationManagerTestSystem(MailboxManager mailboxManager, MessageIdManager messageIdManager) {
+    public CombinationManagerTestSystem(StoreMailboxManager mailboxManager, MessageIdManager messageIdManager) {
         this.messageIdManager = messageIdManager;
         this.mailboxManager = mailboxManager;
     }
 
-    public MailboxManager getMailboxManager() {
+    public StoreMailboxManager getMailboxManager() {
         return mailboxManager;
     }
 

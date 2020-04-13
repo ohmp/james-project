@@ -45,7 +45,7 @@ class CassandraMailboxManagerStressTest implements MailboxManagerStressContract<
 
     @Override
     public EventBus retrieveEventBus() {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 
     @BeforeEach

@@ -20,10 +20,11 @@
 package org.apache.james.modules.mailbox;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.RetryBackoffConfiguration;
+import org.apache.james.mailbox.events.UninitializedEventBus;
 import org.apache.james.mailbox.events.delivery.EventDelivery;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.modules.EventDeadLettersProbe;
@@ -46,11 +47,12 @@ public class DefaultEventModule extends AbstractModule {
         bind(MailboxListenersLoaderImpl.class).in(Scopes.SINGLETON);
         bind(InVmEventDelivery.class).in(Scopes.SINGLETON);
         bind(InVMEventBus.class).in(Scopes.SINGLETON);
+        bind(EventBusSupplier.class).in(Scopes.SINGLETON);
 
         Multibinder.newSetBinder(binder(), GuiceProbe.class).addBinding().to(EventDeadLettersProbe.class);
         bind(MailboxListenersLoader.class).to(MailboxListenersLoaderImpl.class);
         bind(EventDelivery.class).to(InVmEventDelivery.class);
-        bind(EventBus.class).to(InVMEventBus.class);
+        bind(UninitializedEventBus.class).to(InVMEventBus.class);
 
         bind(RetryBackoffConfiguration.class).toInstance(RetryBackoffConfiguration.DEFAULT);
 

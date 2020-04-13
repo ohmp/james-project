@@ -34,6 +34,7 @@ import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
@@ -104,21 +105,22 @@ public class JPAHostSystem extends JamesImapHostSystem {
 
 
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, aclResolver, groupMembershipResolver, eventBus);
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
+        StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, aclResolver, groupMembershipResolver, eventBusSupplier);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
         SessionProviderImpl sessionProvider = new SessionProviderImpl(authenticator, authorizator);
         DefaultUserQuotaRootResolver quotaRootResolver = new DefaultUserQuotaRootResolver(sessionProvider, mapperFactory);
         JpaCurrentQuotaManager currentQuotaManager = new JpaCurrentQuotaManager(entityManagerFactory);
         maxQuotaManager = new JPAPerUserMaxQuotaManager(new JPAPerUserMaxQuotaDAO(entityManagerFactory));
         StoreQuotaManager storeQuotaManager = new StoreQuotaManager(currentQuotaManager, maxQuotaManager);
-        ListeningCurrentQuotaUpdater quotaUpdater = new ListeningCurrentQuotaUpdater(currentQuotaManager, quotaRootResolver, eventBus, storeQuotaManager);
+        ListeningCurrentQuotaUpdater quotaUpdater = new ListeningCurrentQuotaUpdater(currentQuotaManager, quotaRootResolver, eventBusSupplier, storeQuotaManager);
         QuotaComponents quotaComponents = new QuotaComponents(maxQuotaManager, storeQuotaManager, quotaRootResolver);
         MessageSearchIndex index = new SimpleMessageSearchIndex(mapperFactory, mapperFactory, new DefaultTextExtractor());
 
         mailboxManager = new OpenJPAMailboxManager(mapperFactory, sessionProvider, messageParser, new DefaultMessageId.Factory(),
-            eventBus, annotationManager, storeRightManager, quotaComponents, index);
+            eventBusSupplier, annotationManager, storeRightManager, quotaComponents, index);
 
-        eventBus.initialize(quotaUpdater,
+        eventBusSupplier.initialize(quotaUpdater,
             new MailboxAnnotationListener(mapperFactory, sessionProvider));
 
         SubscriptionManager subscriptionManager = new StoreSubscriptionManager(mapperFactory);
@@ -126,7 +128,7 @@ public class JPAHostSystem extends JamesImapHostSystem {
         ImapProcessor defaultImapProcessorFactory =
                 DefaultImapProcessorFactory.createDefaultProcessor(
                         mailboxManager,
-                        eventBus,
+                        eventBusSupplier,
                         subscriptionManager, 
                         storeQuotaManager,
                         quotaRootResolver,

@@ -31,6 +31,7 @@ import org.apache.james.mailbox.MailboxSessionUtil;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
@@ -89,9 +90,10 @@ class StoreMailboxManagerTest {
         authenticator.addUser(ADMIN, ADMIN_PASSWORD);
 
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        EventBusSupplier eventBusSupplier = new EventBusSupplier(eventBus);
 
         StoreRightManager storeRightManager = new StoreRightManager(mockedMapperFactory, new UnionMailboxACLResolver(),
-                                                                    new SimpleGroupMembershipResolver(), eventBus);
+                                                                    new SimpleGroupMembershipResolver(), eventBusSupplier);
 
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mockedMapperFactory, storeRightManager);
         SessionProviderImpl sessionProvider = new SessionProviderImpl(authenticator, FakeAuthorizator.forUserAndAdmin(ADMIN, CURRENT_USER));
@@ -100,8 +102,9 @@ class StoreMailboxManagerTest {
 
         storeMailboxManager = new StoreMailboxManager(mockedMapperFactory, sessionProvider,
                 new JVMMailboxPathLocker(), new MessageParser(), messageIdFactory,
-                annotationManager, eventBus, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT,
+                annotationManager, eventBusSupplier, storeRightManager, quotaComponents, index, MailboxManagerConfiguration.DEFAULT,
                 PreDeletionHooks.NO_PRE_DELETION_HOOK);
+        eventBusSupplier.initialize();
     }
 
     @Test

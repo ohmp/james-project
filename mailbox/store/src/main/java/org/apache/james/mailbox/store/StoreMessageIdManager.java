@@ -37,7 +37,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.MetadataWithMailboxId;
 import org.apache.james.mailbox.ModSeq;
-import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventBusSupplier;
 import org.apache.james.mailbox.events.MailboxIdRegistrationKey;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
@@ -93,7 +93,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     private final MailboxManager mailboxManager;
     private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
-    private final EventBus eventBus;
+    private final EventBusSupplier eventBus;
     private final MessageId.Factory messageIdFactory;
     private final QuotaManager quotaManager;
     private final QuotaRootResolver quotaRootResolver;
@@ -101,7 +101,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
     @Inject
     public StoreMessageIdManager(MailboxManager mailboxManager, MailboxSessionMapperFactory mailboxSessionMapperFactory,
-                                 EventBus eventBus, MessageId.Factory messageIdFactory,
+                                 EventBusSupplier eventBus, MessageId.Factory messageIdFactory,
                                  QuotaManager quotaManager, QuotaRootResolver quotaRootResolver, PreDeletionHooks preDeletionHooks) {
         this.mailboxManager = mailboxManager;
         this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
@@ -223,7 +223,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession);
         Flux.fromIterable(metadataWithMailbox)
             .flatMap(Throwing.<MetadataWithMailboxId, Mono<Void>>function(
-                metadataWithMailboxId -> eventBus.dispatch(EventFactory.expunged()
+                metadataWithMailboxId -> eventBus.get().dispatch(EventFactory.expunged()
                     .randomEventId()
                     .mailboxSession(mailboxSession)
                     .mailbox(mailboxMapper.findMailboxById(metadataWithMailboxId.getMailboxId()))
@@ -294,7 +294,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         addMessageToMailboxes(mailboxMessage, messageMoves.addedMailboxIds(), mailboxSession);
         removeMessageFromMailboxes(mailboxMessage, messageMoves.removedMailboxIds(), mailboxSession);
 
-        eventBus.dispatch(EventFactory.moved()
+        eventBus.get().dispatch(EventFactory.moved()
             .session(mailboxSession)
             .messageMoves(messageMoves)
             .messageId(mailboxMessage.getMessageId())
@@ -312,7 +312,7 @@ public class StoreMessageIdManager implements MessageIdManager {
 
         for (MailboxId mailboxId: mailboxesToRemove) {
             messageIdMapper.delete(message.getMessageId(), mailboxesToRemove);
-            eventBus.dispatch(EventFactory.expunged()
+            eventBus.get().dispatch(EventFactory.expunged()
                 .randomEventId()
                 .mailboxSession(mailboxSession)
                 .mailbox(mailboxMapper.findMailboxById(mailboxId))
@@ -327,7 +327,7 @@ public class StoreMessageIdManager implements MessageIdManager {
         if (updatedFlags.stream().anyMatch(UpdatedFlags::flagsChanged)) {
             Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).findMailboxById(mailboxId);
 
-            eventBus.dispatch(EventFactory.flagsUpdated()
+            eventBus.get().dispatch(EventFactory.flagsUpdated()
                 .randomEventId()
                 .mailboxSession(mailboxSession)
                 .mailbox(mailbox)
@@ -389,7 +389,7 @@ public class StoreMessageIdManager implements MessageIdManager {
                     .build();
             save(messageIdMapper, copy);
 
-            eventBus.dispatch(EventFactory.added()
+            eventBus.get().dispatch(EventFactory.added()
                 .randomEventId()
                 .mailboxSession(mailboxSession)
                 .mailbox(mailboxMapper.findMailboxById(mailboxId))

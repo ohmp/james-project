@@ -53,6 +53,6 @@ public class CassandraMailboxManagerTest extends MailboxManagerTest<CassandraMai
 
     @Override
     protected EventBus retrieveEventBus(CassandraMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
+        return mailboxManager.getEventBus().get();
     }
 }
