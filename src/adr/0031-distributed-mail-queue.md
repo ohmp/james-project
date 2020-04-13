@@ -103,7 +103,7 @@ periodically performed by all James servers this can lead, upon increasing throu
 parameter allows to disable mail queue size reporting as a temporary solution. Some alternatives had been presented like 
 [an eventually consistent per slice counters approach](https://github.com/linagora/james-project/pull/2565). An other 
 proposed solution is [to rely on RabbitMQ management API to retrieve mail queue size](https://github.com/linagora/james-project/pull/2325)
-however it by design cannot take into account purge/delete operations. Read 
+however by design it cannot take into account purge/delete operations. Read 
 [the corresponding JIRA](https://issues.apache.org/jira/browse/JAMES-2733).
 
 ## Consequences
