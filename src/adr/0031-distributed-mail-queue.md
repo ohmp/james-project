@@ -95,7 +95,7 @@ We rely on eventSourcing to validate the mailQueue configuration changes upon Ja
 Delays are not supported. This mail queue implementation is thus not suited for a Mail Exchange (MX) implementation.
 The [following proposal](https://issues.apache.org/jira/browse/JAMES-2896) could be a solution to support delays.
 
-**enqueuedMailsV3** and **deletedMailsV2** is never cleanup and the corresponding blobs are always referenced. This is not
+**enqueuedMailsV3** and **deletedMailsV2** is never cleaned up and the corresponding blobs are always referenced. This is not
 ideal both from a privacy and space storage costs point of view.
 
 **getSize** operation is sub-optimal and thus not efficient. Combined with metric reporting of mail queue size being 
