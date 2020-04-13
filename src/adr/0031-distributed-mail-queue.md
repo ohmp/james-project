@@ -38,7 +38,7 @@ Distributed James should ship a distributed MailQueue composing the following so
 responsibilities:
 
  - **RabbitMQ** for messaging. A rabbitMQ consumer will trigger dequeue operations.
- - A time series projection of the queue content will be maintained in Cassandra (see later). Time serie avoids the 
+ - A time series projection of the queue content will be maintained in Cassandra (see later). Time series avoid the 
 aforementioned tombstone anti-pattern, and no polling is performed on this projection.
  - **ObjectStorage** (Swift or S3) holds large byte content. This avoids overwhelming over softwares.
  
