@@ -17,39 +17,21 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.model;
+package org.apache.james.webadmin.routes;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.inject.Inject;
 
-import java.util.Optional;
+import org.apache.james.mailbox.quota.task.RecomputeCurrentQuotasService;
+import org.apache.james.mailbox.quota.task.RecomputeCurrentQuotasTask;
+import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
+import org.apache.james.webadmin.tasks.TaskRegistrationKey;
 
-import org.apache.james.core.Domain;
-import org.junit.jupiter.api.Test;
+public class RecomputeCurrentQuotasRequestToTask extends TaskFromRequestRegistry.TaskRegistration {
+    private static final TaskRegistrationKey REGISTRATION_KEY = TaskRegistrationKey.of("RecomputeCurrentQuotas");
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
-class QuotaRootTest {
-    @Test
-    void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(QuotaRoot.class).verify();
-    }
-
-    @Test
-    void asStringShouldReturnValueWhenNoDomain() {
-        String value = "#private&bob";
-        QuotaRoot quotaRoot = QuotaRoot.quotaRoot(value, Optional.empty());
-
-        assertThat(quotaRoot.asString()).isEqualTo(value);
-    }
-
-    @Test
-    void asStringShouldReturnValueWithDomainWhenHasDomain() {
-        String value = "#private&bob";
-        Domain domain = Domain.of("apache.org");
-        QuotaRoot quotaRoot = QuotaRoot.quotaRoot(value, Optional.of(domain));
-
-        String expectedValue = value + "@" + domain.asString();
-
-        assertThat(quotaRoot.asString()).isEqualTo(expectedValue);
+    @Inject
+    public RecomputeCurrentQuotasRequestToTask(RecomputeCurrentQuotasService service) {
+        super(REGISTRATION_KEY,
+            request -> new RecomputeCurrentQuotasTask(service));
     }
 }

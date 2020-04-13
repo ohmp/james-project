@@ -17,39 +17,24 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.mailbox.model;
+package org.apache.james.modules.server;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.james.webadmin.routes.UserQuotaRoutes.USER_QUOTAS_OPERATIONS_INJECTION_KEY;
 
-import java.util.Optional;
+import org.apache.james.webadmin.routes.UserQuotaRoutes;
+import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 
-import org.apache.james.core.Domain;
-import org.junit.jupiter.api.Test;
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+public class InconsistencyQuotasSolvingRoutesModule extends AbstractModule {
 
-class QuotaRootTest {
-    @Test
-    void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(QuotaRoot.class).verify();
+    @Override
+    protected void configure() {
+        Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(USER_QUOTAS_OPERATIONS_INJECTION_KEY))
+            .addBinding()
+            .to(UserQuotaRoutes.RecomputeCurrentQuotasRequestToTask.class);
     }
 
-    @Test
-    void asStringShouldReturnValueWhenNoDomain() {
-        String value = "#private&bob";
-        QuotaRoot quotaRoot = QuotaRoot.quotaRoot(value, Optional.empty());
-
-        assertThat(quotaRoot.asString()).isEqualTo(value);
-    }
-
-    @Test
-    void asStringShouldReturnValueWithDomainWhenHasDomain() {
-        String value = "#private&bob";
-        Domain domain = Domain.of("apache.org");
-        QuotaRoot quotaRoot = QuotaRoot.quotaRoot(value, Optional.of(domain));
-
-        String expectedValue = value + "@" + domain.asString();
-
-        assertThat(quotaRoot.asString()).isEqualTo(expectedValue);
-    }
 }
