@@ -109,6 +109,6 @@ however it by design cannot take into account purge/delete operations. Read
 ## Consequences
 
 Distributed mail queue allow a better spreading of Mail processing workload. It enables a centralized mailQueue
-management for all James server.
+management for all James servers.
 
 Yet some additional work is required to use it as a Mail Exchange scenario.
