@@ -28,7 +28,7 @@ Failing cleanup will lead to the content being eventually updated upon next brow
 ## Consequences
 
 MailQueue content will eventually be dropped both in Cassandra and in ObjectStorage once Deduplicated Blob Store garbage 
-collection is implemented. This will be both allow reclaiming storage space, reducing related costs, and respect privacy 
+collection is implemented. This will both allow reclaiming storage space, reducing related costs, and respect privacy 
 of James users.
 
 Updating browse start will then be two times more expensive.
