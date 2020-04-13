@@ -31,4 +31,4 @@ MailQueue content will eventually be dropped both in Cassandra and in ObjectStor
 collection is implemented. This will be both allow reclaiming storage space, reducing related costs, and respect privacy 
 of James users.
 
-Updating browse start will then be two time more expensive.
+Updating browse start will then be two times more expensive.
