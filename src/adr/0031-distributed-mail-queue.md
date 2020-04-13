@@ -73,7 +73,7 @@ the condition are marked as deleted in *enqueuedMailsV3*.
  - Upon **getSize**, we perform a browse and count the returned elements.
  
 The distributed mail queue required a fine tuned configuration, which mostly depends of the count of Cassandra servers, 
-and of the mailQueue throughtput:
+and of the mailQueue throughput:
  - **sliceWindow** is the time period of a slice. All the elements of **enqueuedMailsV3** sharing the same slice are 
 retrieved at once. The bigger, the more elements are going to be read at once, the less frequent browse start update 
 will be. Lower values might result in many almost empty slices to be read, generating higher read load. We recommend 
