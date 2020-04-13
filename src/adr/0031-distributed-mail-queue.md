@@ -21,7 +21,7 @@ allows, among others:
 A mailqueue also enable advanced administration operation like traffic review, discarding emails, resetting wait delays, 
 purging the queue, etc.
 
-Spring implementation, and non distributed implementations relies on an embedded ActiveMQ to implement the MailQueue. 
+Spring implementation and non distributed implementations rely on an embedded ActiveMQ to implement the MailQueue. 
 Emails are being stored in a local file system. An administrator wishing to administrate the mailQueue will thus need 
 to interact with all its James servers, which is not friendly in a distributed setup.
 
