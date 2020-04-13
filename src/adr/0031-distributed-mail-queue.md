@@ -84,7 +84,7 @@ lead to workload not to be spread evenly, higher values might result in uneeded 
 servers should be a good starting value. Only increasing the count of bucket is supported as a configuration update as
 decreasing the bucket count might result in some buckets to be lost.
  - **updateBrowseStartPace** governs the probability of updating browseStart upon dequeue/deletes. We recommend choosing 
-a value guarantying a reasonable probability of updating the browse strat every few slices. Too big values will lead to
+a value guarantying a reasonable probability of updating the browse start every few slices. Too big values will lead to
 uneeded update of not yet finished slices. Too low values will end up in a more expensive browseStart update and too browse
 iterating through slices with all their content deleted. This value can be changed freely.
 
