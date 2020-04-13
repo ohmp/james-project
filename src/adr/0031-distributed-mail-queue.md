@@ -19,7 +19,7 @@ allows, among others:
  - Throttling, which could be helpful for not being considered a spammer.
 
 A mailqueue also enable advanced administration operation like traffic review, discarding emails, resetting wait delays, 
-purging the queue, etc...
+purging the queue, etc.
 
 Spring implementation, and non distributed implementations relies on an embedded ActiveMQ to implement the MailQueue. 
 Emails are being stored in a local file system. An administrator wishing to administrate the mailQueue will thus need 
