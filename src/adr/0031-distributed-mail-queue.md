@@ -28,7 +28,7 @@ to interact with all its James servers, which is not friendly in a distributed s
 Distributed James relies on the following third party softwares (among other):
 
  - **RabbitMQ** for messaging. Good at holding a queue, however some advanced administrative operations can't be 
-implemented with this component alone.
+implemented with this component alone. This is the case for `browse`, `getSize` and `arbitrary mail removal`.
  - **Cassandra** is the metadata database. Due to **tombstone** being used for delete, queue is a well known anti-pattern.
  - **ObjectStorage** (Swift or S3) holds large byte content.
 
@@ -61,11 +61,13 @@ Here are the main mail operation sequences:
  - Upon **enqueue** mail content is stored in the *object storage*, an entry is added in *enqueuedMailsV3* and a message 
  is fired on *rabbitMQ*.
  - **dequeue** is trigger by a rabbitMQ message to be received. *deletedMailsV2* is queried to know if the message had
-already been updated. If not, the mail content is retrieved from the *object storage*, then an entry is added in 
+already been deleted. If not, the mail content is retrieved from the *object storage*, then an entry is added in 
 *deletedMailsV2* to notice the email had been dequeued. A dequeue has a random probability to trigger a browse start
 update. If so, from current browse start, *enqueuedMailsV3* content is iterated, and checked against *deletedMailsV2*
 until the first non deleted /dequeued email is found. This point becomes the new browse start. BrowseStart can never 
 point past the start of the current slice. A grace period upon browse start update is left to tolerate clock skew.
+Update of the browse start is done randomly as it is a simple way to avoid synchronisation in a distributed system: we
+ensure liveness while uneeded browseStart updates being triggered would simply waste a few resources.
  - Upon **browse**, *enqueuedMailsV3* content is iterated, and checked against *deletedMailsV2*, starting from the 
 current browse start.
  - Upon **delete/purge**, *enqueuedMailsV3* content is iterated, and checked against *deletedMailsV2*. Mails matching 
