@@ -357,7 +357,7 @@ public class InMemoryIntegrationResources implements IntegrationResources<StoreM
                 quotaManager,
                 quotaRootResolver,
                 manager.getPreDeletionHooks());
-            groupListenerFactory.build().forEach(c -> c.accept(manager, messageIdManager));
+            groupListenerFactory.build().forEach(groupListenerRegistrer -> groupListenerRegistrer.accept(manager, messageIdManager));
 
             eventBus.initialize(ImmutableList.<MailboxListener.GroupMailboxListener>builder()
                 .addAll(listenersToBeRegistered.build())

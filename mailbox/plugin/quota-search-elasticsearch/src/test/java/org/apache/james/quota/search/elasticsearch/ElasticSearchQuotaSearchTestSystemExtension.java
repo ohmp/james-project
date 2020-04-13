@@ -60,7 +60,7 @@ public class ElasticSearchQuotaSearchTestSystemExtension implements ParameterRes
                 elasticSearch.configuration());
 
             InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultBuilder()
-                .registerListener((m, m2) -> new ElasticSearchQuotaMailboxListener(
+                .registerListener((manager, messageIdManager) -> new ElasticSearchQuotaMailboxListener(
                     new ElasticSearchIndexer(client,
                         QuotaRatioElasticSearchConstants.DEFAULT_QUOTA_RATIO_WRITE_ALIAS),
                     new QuotaRatioToElasticSearchJson(),
