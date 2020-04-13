@@ -99,7 +99,7 @@ The [following proposal](https://issues.apache.org/jira/browse/JAMES-2896) could
 ideal both from a privacy and space storage costs point of view.
 
 **getSize** operation is sub-optimal and thus not efficient. Combined with metric reporting of mail queue size being 
-periodically performed by all james server this can lead, upon increasing throughtput to a Cassandra overload. A configuration
+periodically performed by all James servers this can lead, upon increasing throughput to a Cassandra overload. A configuration
 parameter allow to disable mail queue size reporting as a temporary solution. Some alternatives had been presented like 
 [an eventually consistent per slice counters approach](https://github.com/linagora/james-project/pull/2565). An other 
 proposed solution is [to rely on RabbitMQ management API to retrieve mail queue size](https://github.com/linagora/james-project/pull/2325)
