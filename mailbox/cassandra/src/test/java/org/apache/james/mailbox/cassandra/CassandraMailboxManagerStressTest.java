@@ -23,11 +23,15 @@ import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.mailbox.MailboxManagerStressContract;
 import org.apache.james.mailbox.cassandra.mail.MailboxAggregateModule;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.store.PreDeletionHooks;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.google.common.collect.ImmutableList;
+
 class CassandraMailboxManagerStressTest implements MailboxManagerStressContract<CassandraMailboxManager> {
+    private static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
 
     @RegisterExtension
     static CassandraClusterExtension cassandra = new CassandraClusterExtension(MailboxAggregateModule.MODULE_WITH_QUOTA);
@@ -48,6 +52,7 @@ class CassandraMailboxManagerStressTest implements MailboxManagerStressContract<
     void setUp() {
         this.mailboxManager = CassandraMailboxManagerProvider.provideMailboxManager(
             cassandra.getCassandraCluster(),
-            PreDeletionHooks.NO_PRE_DELETION_HOOK);
+            PreDeletionHooks.NO_PRE_DELETION_HOOK,
+            NO_ADDITIONAL_LISTENERS);
     }
 }

@@ -21,13 +21,17 @@ package org.apache.james.mailbox.maildir;
 import org.apache.james.junit.TemporaryFolderExtension;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.google.common.collect.ImmutableList;
+
 class DomainUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreMailboxManager> {
+    private static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
 
     @Disabled("Maildir is using DefaultMessageId which doesn't support full feature of a messageId, which is an essential" +
         " element of the Vault")
@@ -87,7 +91,18 @@ class DomainUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreMailbo
     @Override
     protected StoreMailboxManager provideMailboxManager() {
         try {
-            return MaildirMailboxManagerProvider.createMailboxManager("/%domain/%user", temporaryFolder.getTemporaryFolder().getTempDir());
+            return MaildirMailboxManagerProvider.createMailboxManager("/%domain/%user",
+                temporaryFolder.getTemporaryFolder().getTempDir(), NO_ADDITIONAL_LISTENERS);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected StoreMailboxManager provideMailboxManager(MailboxListener.GroupMailboxListener mailboxListener) {
+        try {
+            return MaildirMailboxManagerProvider.createMailboxManager("/%fulluser",
+                temporaryFolder.getTemporaryFolder().getTempDir(), ImmutableList.of(mailboxListener));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

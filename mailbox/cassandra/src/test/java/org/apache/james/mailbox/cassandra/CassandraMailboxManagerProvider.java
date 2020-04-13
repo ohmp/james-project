@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.cassandra;
 
+import java.util.List;
+
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
@@ -32,6 +34,7 @@ import org.apache.james.mailbox.cassandra.quota.CassandraPerUserMaxQuotaDao;
 import org.apache.james.mailbox.cassandra.quota.CassandraPerUserMaxQuotaManager;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.InVMEventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.model.MessageId;
@@ -56,26 +59,29 @@ import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 
 import com.datastax.driver.core.Session;
+import com.google.common.collect.ImmutableList;
 
 public class CassandraMailboxManagerProvider {
     private static final int LIMIT_ANNOTATIONS = 3;
     private static final int LIMIT_ANNOTATION_SIZE = 30;
 
     public static CassandraMailboxManager provideMailboxManager(CassandraCluster cassandra,
-                                                                PreDeletionHooks preDeletionHooks) {
+                                                                PreDeletionHooks preDeletionHooks,
+                                                                List<MailboxListener.GroupMailboxListener> additionalListeners) {
         CassandraMessageId.Factory messageIdFactory = new CassandraMessageId.Factory();
 
         CassandraMailboxSessionMapperFactory mapperFactory = TestCassandraMailboxSessionMapperFactory.forTests(
             cassandra,
             messageIdFactory);
 
-        return provideMailboxManager(cassandra.getConf(), preDeletionHooks, mapperFactory, messageIdFactory);
+        return provideMailboxManager(cassandra.getConf(), preDeletionHooks, mapperFactory, messageIdFactory, additionalListeners);
     }
 
     private static CassandraMailboxManager provideMailboxManager(Session session,
-                                                                PreDeletionHooks preDeletionHooks,
-                                                                CassandraMailboxSessionMapperFactory mapperFactory,
-                                                                MessageId.Factory messageIdFactory) {
+                                                                 PreDeletionHooks preDeletionHooks,
+                                                                 CassandraMailboxSessionMapperFactory mapperFactory,
+                                                                 MessageId.Factory messageIdFactory,
+                                                                 List<MailboxListener.GroupMailboxListener> additionalListeners) {
         MailboxACLResolver aclResolver = new UnionMailboxACLResolver();
         GroupMembershipResolver groupMembershipResolver = new SimpleGroupMembershipResolver();
         MessageParser messageParser = new MessageParser();
@@ -103,8 +109,11 @@ public class CassandraMailboxManagerProvider {
             messageParser, messageIdFactory, eventBus, annotationManager, storeRightManager,
             quotaComponents, index, MailboxManagerConfiguration.DEFAULT, preDeletionHooks);
 
-        eventBus.initialize(quotaUpdater,
-            new MailboxAnnotationListener(mapperFactory, sessionProvider));
+        eventBus.initialize(ImmutableList.<MailboxListener.GroupMailboxListener>builder()
+                .add(quotaUpdater)
+                .add(new MailboxAnnotationListener(mapperFactory, sessionProvider))
+                .addAll(additionalListeners)
+                .build());
 
         return manager;
     }

@@ -22,11 +22,16 @@ import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.mailbox.MailboxManagerTest;
 import org.apache.james.mailbox.cassandra.mail.MailboxAggregateModule;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.store.PreDeletionHooks;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.google.common.collect.ImmutableList;
+
 public class CassandraMailboxManagerTest extends MailboxManagerTest<CassandraMailboxManager> {
+    private static final ImmutableList<MailboxListener.GroupMailboxListener> NO_ADDITIONAL_LISTENERS = ImmutableList.of();
+
     @RegisterExtension
     static CassandraClusterExtension cassandra = new CassandraClusterExtension(MailboxAggregateModule.MODULE_WITH_QUOTA);
 
@@ -34,7 +39,16 @@ public class CassandraMailboxManagerTest extends MailboxManagerTest<CassandraMai
     protected CassandraMailboxManager provideMailboxManager() {
         return CassandraMailboxManagerProvider.provideMailboxManager(
             cassandra.getCassandraCluster(),
-            new PreDeletionHooks(preDeletionHooks(), new RecordingMetricFactory()));
+            new PreDeletionHooks(preDeletionHooks(), new RecordingMetricFactory()),
+            NO_ADDITIONAL_LISTENERS);
+    }
+
+    @Override
+    protected CassandraMailboxManager provideMailboxManager(MailboxListener.GroupMailboxListener listener) {
+        return CassandraMailboxManagerProvider.provideMailboxManager(
+            cassandra.getCassandraCluster(),
+            new PreDeletionHooks(preDeletionHooks(), new RecordingMetricFactory()),
+            ImmutableList.of(listener));
     }
 
     @Override

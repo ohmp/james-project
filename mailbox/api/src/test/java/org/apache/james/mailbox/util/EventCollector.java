@@ -54,4 +54,8 @@ public class EventCollector implements MailboxListener.GroupMailboxListener {
         events.add(event);
     }
 
+    public void reset() {
+        events.clear();
+    }
+
 }

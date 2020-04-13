@@ -21,6 +21,7 @@ package org.apache.james.mailbox.inmemory;
 
 import java.util.Set;
 
+import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 
@@ -38,6 +39,21 @@ public class MemoryMailboxManagerProvider {
             .scanningSearchIndex()
             .preDeletionHooks(preDeletionHooks)
             .storeQuotaManager()
+            .build()
+            .getMailboxManager();
+    }
+
+    public static InMemoryMailboxManager provideMailboxManager(Set<PreDeletionHook> preDeletionHooks, MailboxListener.GroupMailboxListener listener) {
+        return InMemoryIntegrationResources.builder()
+            .preProvisionnedFakeAuthenticator()
+            .fakeAuthorizator()
+            .inVmEventBus()
+            .annotationLimits(LIMIT_ANNOTATIONS, LIMIT_ANNOTATION_SIZE)
+            .defaultMessageParser()
+            .scanningSearchIndex()
+            .preDeletionHooks(preDeletionHooks)
+            .storeQuotaManager()
+            .registerListener((any, any2) -> listener)
             .build()
             .getMailboxManager();
     }
