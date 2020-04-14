@@ -25,6 +25,8 @@ import java.util.Optional;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.james.backends.cassandra.init.configuration.KeyspaceConfiguration;
 
+import com.google.common.base.Preconditions;
+
 public class KeyspacesConfiguration {
     public static class Builder {
         private Optional<String> keyspace;
@@ -73,9 +75,14 @@ public class KeyspacesConfiguration {
         }
 
         public KeyspacesConfiguration build() {
+            String keyspace = this.keyspace.orElse(DEFAULT_KEYSPACE);
+            String cacheKeyspace = this.cacheKeyspace.orElse(DEFAULT_CACHE_KEYSPACE);
+            Preconditions.checkState(!keyspace.equals(cacheKeyspace),
+                "'cassandra.keyspace' and 'cassandra.keyspace.cache' needs to have distinct values");
+
             return new KeyspacesConfiguration(
-                keyspace.orElse(DEFAULT_KEYSPACE),
-                cacheKeyspace.orElse(DEFAULT_CACHE_KEYSPACE),
+                keyspace,
+                cacheKeyspace,
                 replicationFactor.orElse(DEFAULT_REPLICATION_FACTOR),
                 durableWrites.orElse(true));
         }
