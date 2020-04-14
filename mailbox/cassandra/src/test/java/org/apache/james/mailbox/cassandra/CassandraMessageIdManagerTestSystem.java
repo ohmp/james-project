@@ -29,6 +29,7 @@ import org.apache.james.mailbox.quota.CurrentQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.store.MessageIdManagerTestSystem;
 import org.apache.james.mailbox.store.PreDeletionHooks;
+import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
 import org.apache.james.mailbox.store.quota.ListeningCurrentQuotaUpdater;
 import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManager;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
@@ -39,10 +40,14 @@ class CassandraMessageIdManagerTestSystem {
                                                         Set<PreDeletionHook> preDeletionHooks) {
         CassandraMailboxSessionMapperFactory mapperFactory = CassandraTestSystemFixture.createMapperFactory(cassandra);
 
+        CassandraMailboxManager mailboxManager = CassandraTestSystemFixture.createMailboxManager(mapperFactory);
+
+        mailboxManager.getEventBus().initialize(new MailboxAnnotationListener(mapperFactory, mailboxManager));
+
         return new MessageIdManagerTestSystem(CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, eventBus, new PreDeletionHooks(preDeletionHooks, new RecordingMetricFactory())),
             new CassandraMessageId.Factory(),
             mapperFactory,
-            CassandraTestSystemFixture.createMailboxManager(mapperFactory)) {
+            mailboxManager) {
         };
     }
 
@@ -53,7 +58,11 @@ class CassandraMessageIdManagerTestSystem {
         ListeningCurrentQuotaUpdater listeningCurrentQuotaUpdater = new ListeningCurrentQuotaUpdater(
             (StoreCurrentQuotaManager) currentQuotaManager,
             mailboxManager.getQuotaComponents().getQuotaRootResolver(), mailboxManager.getEventBus(), quotaManager);
-        mailboxManager.getEventBus().initialize(listeningCurrentQuotaUpdater);
+
+        mailboxManager.getEventBus().initialize(
+            listeningCurrentQuotaUpdater,
+            new MailboxAnnotationListener(mapperFactory, mailboxManager));
+
         return new MessageIdManagerTestSystem(CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, mailboxManager.getEventBus(),
             PreDeletionHooks.NO_PRE_DELETION_HOOK),
             new CassandraMessageId.Factory(),
