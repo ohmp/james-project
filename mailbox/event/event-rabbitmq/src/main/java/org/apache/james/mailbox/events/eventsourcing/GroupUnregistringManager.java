@@ -22,6 +22,7 @@ package org.apache.james.mailbox.events.eventsourcing;
 import java.time.Clock;
 
 import org.apache.james.eventsourcing.Event;
+import org.apache.james.eventsourcing.EventId;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.eventsourcing.eventstore.EventStore;
@@ -52,15 +53,15 @@ public class GroupUnregistringManager {
                 RegisteredGroupListenerChangeEvent changeEvent = (RegisteredGroupListenerChangeEvent) event;
 
                 Flux.fromIterable(changeEvent.getRemovedGroups())
-                    .concatMap(this::unregister)
+                    .concatMap(group -> unregister(group, changeEvent.eventId()))
                     .then()
                     .block();
             }
         }
 
-        private Publisher<Void> unregister(Group group) {
+        private Publisher<Void> unregister(Group group, EventId generatedForEventId) {
             return unregisterer.unregister(group)
-                .then(notifyUnbind(group));
+                .then(notifyUnbind(group, generatedForEventId));
         }
     }
 
@@ -80,8 +81,8 @@ public class GroupUnregistringManager {
         return Mono.from(eventSourcingSystem.dispatch(requireGroupsCommand));
     }
 
-    private Mono<Void> notifyUnbind(Group group) {
-        MarkUnbindAsSucceededCommand command = new MarkUnbindAsSucceededCommand(group);
+    private Mono<Void> notifyUnbind(Group group, EventId ganaratedForEventId) {
+        MarkUnbindAsSucceededCommand command = new MarkUnbindAsSucceededCommand(group, ganaratedForEventId);
 
         return Mono.from(eventSourcingSystem.dispatch(command));
     }

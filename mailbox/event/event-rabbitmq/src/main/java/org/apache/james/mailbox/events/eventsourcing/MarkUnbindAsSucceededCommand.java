@@ -20,16 +20,23 @@
 package org.apache.james.mailbox.events.eventsourcing;
 
 import org.apache.james.eventsourcing.Command;
+import org.apache.james.eventsourcing.EventId;
 import org.apache.james.mailbox.events.Group;
 
 public class MarkUnbindAsSucceededCommand implements Command {
     private final Group succeededGroup;
+    private final EventId generatedForEventId;
 
-    public MarkUnbindAsSucceededCommand(Group succeededGroup) {
+    public MarkUnbindAsSucceededCommand(Group succeededGroup, EventId generatedForEventId) {
         this.succeededGroup = succeededGroup;
+        this.generatedForEventId = generatedForEventId;
     }
 
     public Group getSucceededGroup() {
         return succeededGroup;
+    }
+
+    public EventId getGeneratedForEventId() {
+        return generatedForEventId;
     }
 }

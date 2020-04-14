@@ -58,26 +58,22 @@ public class RegisteredGroupsAggregate {
         }
 
         private State apply(RegisteredGroupListenerChangeEvent event) {
-            Preconditions.checkArgument(Sets.intersection(usedGroups(), event.getAddedGroups()).isEmpty(),
-                "Trying to add an already existing group");
-            Preconditions.checkArgument(Sets.difference(event.getRemovedGroups(), groups.keySet()).isEmpty(),
-                "Trying to remove a non existing group");
+            ImmutableMap<Group, Status> removedGroups = event.getRemovedGroups()
+                .stream()
+                .collect(Guavate.toImmutableMap(Functions.identity(), any -> Status.UNUSED_BUT_BINDED));
+            ImmutableMap<Group, Status> addedGroups = event.getAddedGroups()
+                .stream()
+                .collect(Guavate.toImmutableMap(Functions.identity(), any -> Status.USED));
+            ImmutableMap<Group, Status> unchangedGroups = notIn(Sets.union(event.getAddedGroups(), event.getRemovedGroups()));
 
             return new State(ImmutableMap.<Group, Status>builder()
-                .putAll(event.getAddedGroups()
-                    .stream()
-                    .collect(Guavate.toImmutableMap(Functions.identity(), any -> Status.USED)))
-                .putAll(notIn(Sets.union(event.getAddedGroups(), event.getRemovedGroups())))
-                .putAll(event.getRemovedGroups()
-                    .stream()
-                    .collect(Guavate.toImmutableMap(Functions.identity(), any -> Status.UNUSED_BUT_BINDED)))
+                .putAll(addedGroups)
+                .putAll(unchangedGroups)
+                .putAll(removedGroups)
                 .build());
         }
 
         private State apply(UnbindSucceededEvent event) {
-            Preconditions.checkArgument(bindedGroups().contains(event.getGroup()), "unbing a non binded group," +
-                " or a used group");
-
             return new State(ImmutableMap.<Group, Status>builder()
                 .putAll(notIn(ImmutableSet.of(event.getGroup())))
                 .build());
@@ -129,6 +125,9 @@ public class RegisteredGroupsAggregate {
     }
 
     public List<UnbindSucceededEvent> handle(MarkUnbindAsSucceededCommand command) {
+        Preconditions.checkArgument(state.bindedGroups().contains(command.getSucceededGroup()),
+            "unbing a non binded group, or a used group");
+
         UnbindSucceededEvent event = new UnbindSucceededEvent(history.getNextEventId(), command.getSucceededGroup());
         apply(event);
         return ImmutableList.of(event);
