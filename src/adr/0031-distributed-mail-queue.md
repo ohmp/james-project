@@ -30,7 +30,7 @@ Distributed James relies on the following third party softwares (among other):
  - **RabbitMQ** for messaging. Good at holding a queue, however some advanced administrative operations can't be 
 implemented with this component alone. This is the case for `browse`, `getSize` and `arbitrary mail removal`.
  - **Cassandra** is the metadata database. Due to **tombstone** being used for delete, queue is a well known anti-pattern.
- - **ObjectStorage** (Swift or S3) holds large byte content.
+ - **ObjectStorage** (Swift or S3) holds byte content.
 
 ## Decision
 
@@ -40,16 +40,17 @@ responsibilities:
  - **RabbitMQ** for messaging. A rabbitMQ consumer will trigger dequeue operations.
  - A time series projection of the queue content (order by time list of mail metadata) will be maintained in **Cassandra** (see later). Time series avoid the 
 aforementioned tombstone anti-pattern, and no polling is performed on this projection.
- - **ObjectStorage** (Swift or S3) holds large byte content. This avoids overwhelming over softwares which do not scale
+ - **ObjectStorage** (Swift or S3) holds large byte content. This avoids overwhelming other softwares which do not scale
  as well in term of Input/Output operation per seconds.
  
 Here are details of the tables composing Cassandra MailQueue View data-model:
 
  - **enqueuedMailsV3** holds the time series. The primary key holds the queue name, the (rounded) time of enqueue 
-designed as a slice, and a bucketCount. The bucketCount enables sharding and avoids all writes at a given point in 
-time to go to the same Cassandra partition. The clustering key is composed of an enqueueId - a unique identifier. The 
-content holds the metadata of the email. This table enables, from a starting date, to load all of the emails that 
-have ever been in the mailQueue. Its content is never deleted.
+designed as a slice, and a bucketCount. Slicing enables listing a large amount of items from a given point in time, in an 
+fashion that is not achievable with a classic partition approach. The bucketCount enables sharding and avoids all writes 
+at a given point in time to go to the same Cassandra partition. The clustering key is composed of an enqueueId - a 
+unique identifier. The content holds the metadata of the email. This table enables, from a starting date, to load all of
+the emails that have ever been in the mailQueue. Its content is never deleted.
  - **deletedMailsV2** tells wether a mail stored in *enqueuedMailsV3* had been deleted or not. The queueName and 
 enqueueId are used as primary key. This table is updated upon dequeue and deletes. This table is queried upon dequeue 
 to filter out deleted/purged items. 
