@@ -596,6 +596,15 @@ public class StoreMailboxManager implements MailboxManager {
             .block();
     }
 
+    @Override
+    public Flux<MailboxMetaData> searchReactive(MailboxQuery expression, MailboxSession session) {
+        try {
+            return searchMailboxesMetadata(expression, session, Right.Lookup);
+        } catch (MailboxException e) {
+            return Flux.error(e);
+        }
+    }
+
     private Flux<MailboxMetaData> searchMailboxesMetadata(MailboxQuery mailboxQuery, MailboxSession session, Right right) throws MailboxException {
         Mono<List<Mailbox>> mailboxesMono = searchMailboxes(mailboxQuery, session, right).collectList();
         MessageMapper messageMapper = mailboxSessionMapperFactory.getMessageMapper(session);
