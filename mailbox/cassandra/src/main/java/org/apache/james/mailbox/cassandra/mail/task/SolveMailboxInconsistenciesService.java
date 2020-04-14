@@ -414,7 +414,6 @@ public class SolveMailboxInconsistenciesService {
     private Mono<Inconsistency> detectInconsistency(CassandraIdAndPath pathRegistration) {
         return mailboxDAO.retrieveMailbox(pathRegistration.getCassandraId())
             .map(mailbox -> {
-                System.out.println(pathRegistration + " vs " + mailbox);
                 if (mailbox.generateAssociatedPath().equals(pathRegistration.getMailboxPath())) {
                     return NO_INCONSISTENCY;
                 }
