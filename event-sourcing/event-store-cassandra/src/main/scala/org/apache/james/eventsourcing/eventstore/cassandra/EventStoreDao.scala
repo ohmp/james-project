@@ -51,14 +51,17 @@ class EventStoreDao @Inject() (val session: Session, val jsonEventSerializer: Js
   }
 
   private[cassandra] def appendAll(events: Iterable[Event]): SMono[Boolean] = {
-    if (events.size == 1) {
-      SMono(cassandraAsyncExecutor.executeReturnApplied(insertEvent(events.head)))
-        .map(_.booleanValue())
-    } else {
+    SMono(cassandraAsyncExecutor.executeReturnApplied(appendQuery(events))
+      .map(_.booleanValue()))
+  }
+
+  private def appendQuery(events: Iterable[Event]) = {
+    if (events.size == 1)
+      insertEvent(events.head)
+    else {
       val batch: BatchStatement = new BatchStatement
       events.foreach((event: Event) => batch.add(insertEvent(event)))
-      SMono(cassandraAsyncExecutor.executeReturnApplied(batch))
-        .map(_.booleanValue())
+      batch
     }
   }
 
