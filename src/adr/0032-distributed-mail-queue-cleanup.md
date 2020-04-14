@@ -26,7 +26,7 @@ to the new `browseStart`.
 Content before `browseStart` can safely be considered deletable, and is applicatively no longer exposed. We don't need an
 additional grace period mechanism for `contentStart`.
 
-Failing cleanup will lead to the content being eventually updated upon next browseStart update.
+Failing cleanup will lead to the content being eventually updated upon next `browseStart` update.
 
 ## Consequences
 
