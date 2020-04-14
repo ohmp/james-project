@@ -58,7 +58,8 @@ class JPAMailboxManagerTest extends MailboxManagerTest<OpenJPAMailboxManager> {
         if (!openJPAMailboxManager.isPresent()) {
             openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER, ImmutableList.of(mailboxListener)));
         }
-        return openJPAMailboxManager.get();    }
+        return openJPAMailboxManager.get();
+    }
 
     @AfterEach
     void tearDownJpa() {
