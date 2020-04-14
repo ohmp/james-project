@@ -139,11 +139,9 @@ public class GetMessageListMethod implements Method {
 
         return searchQuery
             .flatMapMany(Throwing.function(query -> mailboxManager.search(query, mailboxSession, limit)))
-            .publishOn(Schedulers.elastic())
             .skip(positionValue)
             .reduce(GetMessageListResponse.builder(), GetMessageListResponse.Builder::messageId)
-            .map(GetMessageListResponse.Builder::build)
-            .subscribeOn(Schedulers.elastic());
+            .map(GetMessageListResponse.Builder::build);
     }
 
     private MultimailboxesSearchQuery convertToSearchQuery(GetMessageListRequest messageListRequest) {
