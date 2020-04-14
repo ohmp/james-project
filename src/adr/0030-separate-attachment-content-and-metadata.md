@@ -30,7 +30,7 @@ when you open a message using JMAP) despite the fact that it's not needed.
 Also, the content being loaded "at once", we allocate memory space to store the whole attachment, which is sub-optimal.
 
 To be noted that JPA and maildir mailbox implementations do not support attachment storage. To retrieve attachments of a 
-message, these implementations parses the message to extract their attachments.
+message, these implementations parse the message to extract their attachments.
 
 Cassandra mailbox prior schema version 4 stores attachment and its metadata in the same table, but from version 5 relies 
 on the blobStore to store the attachment content.
@@ -53,7 +53,7 @@ Some adjustments are needed on class working with attachment:
 
  - **AttachmentMapper** and **AttachmentManager** needs to allow from an attachmentId to retrieve the attachment content
  as an `InputStream`. This is done through a separate `AttachmentLoader` interface.
- - **AttachmentMapper** and **AttachmentManager** needs the Attachment and it's content to persist an attachment
+ - **AttachmentMapper** and **AttachmentManager** needs the Attachment and its content to persist an attachment
  - **MessageManager** then needs to return attachment metadata as a result of Append operation.
  - **InMemoryAttachmentMapper** needs to store attachment content separately.
  - **MessageStorer** will take care of storing a message on the behalf of `MessageManager`. This enables to determine if 
