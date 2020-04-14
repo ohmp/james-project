@@ -368,7 +368,7 @@ public class SolveMailboxInconsistenciesService {
 
     Mono<Result> fixMailboxInconsistencies(Context context) {
         assertValidVersion();
-        return Flux.merge(
+        return Flux.concat(
                 processMailboxDaoInconsistencies(context),
                 processMailboxPathDaoInconsistencies(context))
             .reduce(Result.COMPLETED, Task::combine);
@@ -414,6 +414,7 @@ public class SolveMailboxInconsistenciesService {
     private Mono<Inconsistency> detectInconsistency(CassandraIdAndPath pathRegistration) {
         return mailboxDAO.retrieveMailbox(pathRegistration.getCassandraId())
             .map(mailbox -> {
+                System.out.println(pathRegistration + " vs " + mailbox);
                 if (mailbox.generateAssociatedPath().equals(pathRegistration.getMailboxPath())) {
                     return NO_INCONSISTENCY;
                 }
