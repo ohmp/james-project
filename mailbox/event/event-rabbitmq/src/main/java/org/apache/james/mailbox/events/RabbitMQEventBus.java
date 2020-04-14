@@ -134,6 +134,7 @@ public class RabbitMQEventBus implements EventBus, Startable {
             throw new GroupsAlreadyRegistered();
         }
         listeners.forEach((group, listener) -> groupRegistrationHandler.register(listener, group));
+        groupsInitialized = true;
     }
 
     @Override
