@@ -10,7 +10,7 @@ Accepted (lazy consensus)
 
 Some mailbox implementations of James store already parsed attachments for faster retrieval.
 
-Here are the POJOs representing these attachments:
+Here are the POJOs related to these attachments:
 
  - **Attachment** : holds an attachmentId, the attachment content, as well as the content type
  - **MessageAttachment** : composes an attachment with it's disposition within a message (cid, inline and name)
@@ -25,9 +25,12 @@ The following classes works with the aforementioned POJOs:
  - Mailbox search exposes attachment content related criteria. These criteria are used by the JMAP protocol.
 
 This organisation causes attachment content to be loaded every time a message is fully read (which happens for instance
-when you open a message using JMAP) despite the fact that it's not needed.
+when you open a message using JMAP) despite the fact that it's not needed, as attachments are downloadable through a 
+separate JMAP endpoint, their content is not attached to the JMAP message JSON..
 
-Also, the content being loaded "at once", we allocate memory space to store the whole attachment, which is sub-optimal.
+Also, the content being loaded "at once", we allocate memory space to store the whole attachment, which is sub-optimal. We
+want to keep the consumed memory low per-message because a given server should be able to handle a high number of messages 
+at a given time.
 
 To be noted that JPA and maildir mailbox implementations do not support attachment storage. To retrieve attachments of a 
 message, these implementations parse the message to extract their attachments.
@@ -60,7 +63,10 @@ Some adjustments are needed on class working with attachment:
  attachment should be parsed or not on an implementation aware fashion, saving attachment parsing upon writes for JPA 
  and Maildir.
  
-Maildir and JPA no longer support attachment content loading.
+Maildir and JPA no longer support attachment content loading. Only the JMAP protocol requires attachment content loading,
+which is not supported on top of these technologies. Attachment loading could be supported in the future via coupling on 
+the attachment naming strategy, where the attachment id is composed of the messageId and the position of the attachment 
+within the message EML.
 
 Mailbox search attachment content criteria will be supported only on implementation supporting attachment storage.
 
