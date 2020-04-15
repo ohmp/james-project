@@ -185,18 +185,6 @@ public interface GroupContract {
         }
 
         @Test
-        default void registerShouldNotDispatchPastEventsForGroups() throws Exception {
-            MailboxListener listener = newListener();
-
-            eventBus().dispatch(EVENT, NO_KEYS).block();
-
-            eventBus().initialize(listener, GROUP_A);
-
-            verify(listener, after(FIVE_HUNDRED_MS.toMillis()).never())
-                .event(any());
-        }
-
-        @Test
         default void listenerGroupShouldReceiveEvents() throws Exception {
             MailboxListener listener = newListener();
 
@@ -333,6 +321,7 @@ public interface GroupContract {
 
         @Test
         default void redeliverShouldThrowWhenGroupNotRegistered() {
+            eventBus().initialize();
             assertThatThrownBy(() -> eventBus().reDeliver(GROUP_A, EVENT).block())
                 .isInstanceOf(GroupRegistrationNotFound.class);
         }

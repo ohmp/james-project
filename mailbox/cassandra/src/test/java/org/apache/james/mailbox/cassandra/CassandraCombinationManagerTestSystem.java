@@ -43,7 +43,7 @@ public class CassandraCombinationManagerTestSystem extends CombinationManagerTes
 
         return new CassandraCombinationManagerTestSystem(CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, eventBus, PreDeletionHooks.NO_PRE_DELETION_HOOK),
             mapperFactory,
-            CassandraTestSystemFixture.createMailboxManager(mapperFactory));
+            CassandraTestSystemFixture.createMailboxManager(mapperFactory, eventBus));
     }
 
     private CassandraCombinationManagerTestSystem(MessageIdManager messageIdManager, CassandraMailboxSessionMapperFactory mapperFactory, MailboxManager cassandraMailboxManager) {

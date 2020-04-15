@@ -66,6 +66,10 @@ class CassandraTestSystemFixture {
 
     static CassandraMailboxManager createMailboxManager(CassandraMailboxSessionMapperFactory mapperFactory) {
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        return createMailboxManager(mapperFactory, eventBus);
+    }
+
+    static CassandraMailboxManager createMailboxManager(CassandraMailboxSessionMapperFactory mapperFactory, EventBus eventBus) {
         StoreRightManager storeRightManager = new StoreRightManager(mapperFactory, new UnionMailboxACLResolver(), new SimpleGroupMembershipResolver(), eventBus);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mapperFactory, storeRightManager);
 

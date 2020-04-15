@@ -77,6 +77,7 @@ interface ErrorHandlingContract extends EventBusContract {
 
     @Test
     default void retryingIsNotAppliedForKeyRegistrations() {
+        eventBus().initialize();
         EventCollector eventCollector = eventCollector();
 
         doThrow(new RuntimeException())
@@ -217,6 +218,7 @@ interface ErrorHandlingContract extends EventBusContract {
 
     @Test
     default void deadLettersIsNotAppliedForKeyRegistrations() throws Exception {
+        eventBus().initialize();
         EventCollector eventCollector = eventCollector();
 
         //do throw  RetryBackoffConfiguration.DEFAULT.DEFAULT_MAX_RETRIES + 1 times

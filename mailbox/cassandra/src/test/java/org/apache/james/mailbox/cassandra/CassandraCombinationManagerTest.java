@@ -38,6 +38,7 @@ class CassandraCombinationManagerTest extends AbstractCombinationManagerTest {
     @Override
     public CombinationManagerTestSystem createTestingData() {
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        eventBus.initialize();
         return CassandraCombinationManagerTestSystem.createTestingData(cassandraCluster.getCassandraCluster(), new NoQuotaManager(), eventBus);
     }
     

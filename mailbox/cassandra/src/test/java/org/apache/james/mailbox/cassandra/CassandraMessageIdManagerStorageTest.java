@@ -39,6 +39,7 @@ class CassandraMessageIdManagerStorageTest extends AbstractMessageIdManagerStora
     @Override
     protected MessageIdManagerTestSystem createTestingData() {
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        eventBus.initialize();
         return CassandraMessageIdManagerTestSystem.createTestingData(cassandraCluster.getCassandraCluster(), new NoQuotaManager(), eventBus, PreDeletionHook.NO_PRE_DELETION_HOOK);
     }
 }
