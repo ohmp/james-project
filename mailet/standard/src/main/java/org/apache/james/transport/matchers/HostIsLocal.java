@@ -22,9 +22,12 @@
 package org.apache.james.transport.matchers;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 
+import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
@@ -38,14 +41,24 @@ import com.github.steveash.guavate.Guavate;
 public class HostIsLocal extends GenericMatcher {
     @Override
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
+        return recipientsByDomains(mail)
+            .flatMap(this::hasLocalDomain)
+            .collect(Guavate.toImmutableList());
+    }
+
+    private Stream<MailAddress> hasLocalDomain(Map.Entry<Domain, Collection<MailAddress>> entry) {
+        if (getMailetContext().isLocalServer(entry.getKey())) {
+            return entry.getValue().stream();
+        }
+        return Stream.empty();
+    }
+
+    private Stream<Map.Entry<Domain, Collection<MailAddress>>> recipientsByDomains(Mail mail) {
         return mail.getRecipients()
             .stream()
             .collect(Guavate.toImmutableListMultimap(MailAddress::getDomain))
             .asMap()
             .entrySet()
-            .stream()
-            .filter(entry -> getMailetContext().isLocalServer(entry.getKey()))
-            .flatMap(entry -> entry.getValue().stream())
-            .collect(Guavate.toImmutableList());
+            .stream();
     }
 }
