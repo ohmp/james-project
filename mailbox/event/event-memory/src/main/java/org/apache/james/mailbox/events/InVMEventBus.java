@@ -22,7 +22,6 @@ package org.apache.james.mailbox.events;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -32,6 +31,7 @@ import org.apache.james.mailbox.events.delivery.EventDelivery.Retryer.BackoffRet
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -42,11 +42,11 @@ import reactor.core.scheduler.Schedulers;
 public class InVMEventBus implements EventBus {
 
     private final Multimap<RegistrationKey, MailboxListener> registrations;
-    private final ConcurrentHashMap<Group, MailboxListener> groups;
     private final EventDelivery eventDelivery;
     private final RetryBackoffConfiguration retryBackoff;
     private final EventDeadLetters eventDeadLetters;
-    private boolean initialized;
+    private final Object groupInitializationLock;
+    private Optional<ImmutableMap<Group, MailboxListener>> groups;
 
     @Inject
     public InVMEventBus(EventDelivery eventDelivery, RetryBackoffConfiguration retryBackoff, EventDeadLetters eventDeadLetters) {
@@ -54,8 +54,8 @@ public class InVMEventBus implements EventBus {
         this.retryBackoff = retryBackoff;
         this.eventDeadLetters = eventDeadLetters;
         this.registrations = Multimaps.synchronizedSetMultimap(HashMultimap.create());
-        this.groups = new ConcurrentHashMap<>();
-        this.initialized = false;
+        this.groups = Optional.empty();
+        this.groupInitializationLock = new Object();
     }
 
     @Override
@@ -66,12 +66,11 @@ public class InVMEventBus implements EventBus {
 
     @Override
     public void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
-        synchronized (groups) {
-            if (initialized) {
+        synchronized (groupInitializationLock) {
+            if (groups.isPresent()) {
                 throw new GroupsAlreadyRegistered();
             }
-            groups.putAll(listeners);
-            initialized = true;
+            groups = Optional.of(ImmutableMap.copyOf(listeners));
         }
     }
 
@@ -94,7 +93,8 @@ public class InVMEventBus implements EventBus {
     }
 
     private MailboxListener retrieveListenerFromGroup(Group group) {
-        return Optional.ofNullable(groups.get(group))
+        return Optional.ofNullable(groups.orElseThrow(() -> new RuntimeException("Groups not yet initialized"))
+            .get(group))
             .orElseThrow(() -> new GroupRegistrationNotFound(group));
     }
 
@@ -105,7 +105,7 @@ public class InVMEventBus implements EventBus {
     }
 
     private Mono<Void> groupDeliveries(Event event) {
-        return Flux.fromIterable(groups.entrySet())
+        return Flux.fromIterable(groups.orElseThrow(() -> new RuntimeException("Groups not yet initialized")).entrySet())
             .flatMap(entry -> groupDelivery(event, entry.getValue(), entry.getKey()).subscribeOn(Schedulers.elastic()))
             .then();
     }
@@ -120,7 +120,8 @@ public class InVMEventBus implements EventBus {
     }
 
     public Set<Group> registeredGroups() {
-        return groups.keySet();
+        return groups.orElseThrow(() -> new RuntimeException("Groups not yet initialized"))
+            .keySet();
     }
 
     private Set<MailboxListener> registeredListenersByKeys(Set<RegistrationKey> keys) {

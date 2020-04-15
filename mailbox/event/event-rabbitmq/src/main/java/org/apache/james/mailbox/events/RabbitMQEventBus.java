@@ -130,11 +130,13 @@ public class RabbitMQEventBus implements EventBus, Startable {
     @Override
     public void initialize(Map<Group, MailboxListener> listeners) throws GroupsAlreadyRegistered {
         Preconditions.checkState(isRunning, NOT_RUNNING_ERROR_MESSAGE);
-        if (groupsInitialized) {
-            throw new GroupsAlreadyRegistered();
+        synchronized (groupRegistrationHandler) {
+            if (groupsInitialized) {
+                throw new GroupsAlreadyRegistered();
+            }
+            listeners.forEach((group, listener) -> groupRegistrationHandler.register(listener, group));
+            groupsInitialized = true;
         }
-        listeners.forEach((group, listener) -> groupRegistrationHandler.register(listener, group));
-        groupsInitialized = true;
     }
 
     @Override
