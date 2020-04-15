@@ -61,6 +61,7 @@ public class GetMailboxesMethod implements Method {
     private static final Method.Request.Name METHOD_NAME = Method.Request.name("getMailboxes");
     private static final Method.Response.Name RESPONSE_NAME = Method.Response.name("mailboxes");
     private static final Optional<List<MailboxMetaData>> NO_PRELOADED_METADATA = Optional.empty();
+    private static final String ACTION = "GET_MAILBOXES";
 
     private final MailboxManager mailboxManager;
     private final MailboxFactory mailboxFactory;
@@ -95,12 +96,12 @@ public class GetMailboxesMethod implements Method {
 
         return metricFactory.runPublishingTimerMetricLogP99(JMAP_PREFIX + METHOD_NAME.getName(),
             () -> process(methodCallId, mailboxSession, mailboxesRequest)
-            .subscriberContext(context("GET_MAILBOXES", mdc(mailboxesRequest))));
+            .subscriberContext(context(ACTION, mdc(mailboxesRequest))));
     }
 
     private MDCBuilder mdc(GetMailboxesRequest mailboxesRequest) {
         return MDCBuilder.create()
-            .addContext(MDCBuilder.ACTION, "GET_MAILBOXES")
+            .addContext(MDCBuilder.ACTION, ACTION)
             .addContext("accountId", mailboxesRequest.getAccountId())
             .addContext("mailboxIds", mailboxesRequest.getIds())
             .addContext("properties", mailboxesRequest.getProperties());
