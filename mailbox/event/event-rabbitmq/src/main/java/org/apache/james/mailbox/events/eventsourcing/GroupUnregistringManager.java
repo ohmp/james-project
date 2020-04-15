@@ -81,8 +81,8 @@ public class GroupUnregistringManager {
         return Mono.from(eventSourcingSystem.dispatch(requireGroupsCommand));
     }
 
-    private Mono<Void> notifyUnbind(Group group, EventId ganaratedForEventId) {
-        MarkUnbindAsSucceededCommand command = new MarkUnbindAsSucceededCommand(group, ganaratedForEventId);
+    private Mono<Void> notifyUnbind(Group group, EventId generatedForEventId) {
+        MarkUnbindAsSucceededCommand command = new MarkUnbindAsSucceededCommand(group, generatedForEventId);
 
         return Mono.from(eventSourcingSystem.dispatch(command));
     }

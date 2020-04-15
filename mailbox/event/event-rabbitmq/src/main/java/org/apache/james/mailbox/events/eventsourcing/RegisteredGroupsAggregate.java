@@ -126,7 +126,7 @@ public class RegisteredGroupsAggregate {
 
     public List<UnbindSucceededEvent> handle(MarkUnbindAsSucceededCommand command) {
         Preconditions.checkArgument(state.bindedGroups().contains(command.getSucceededGroup()),
-            "unbing a non binded group, or a used group");
+            "unbinding a non binded group, or a used group");
 
         UnbindSucceededEvent event = new UnbindSucceededEvent(history.getNextEventId(), command.getSucceededGroup());
         apply(event);
