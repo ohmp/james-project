@@ -21,6 +21,8 @@ package org.apache.james.mailetcontainer.impl;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.internet.ParseException;
@@ -97,16 +99,26 @@ class LocalResources {
     }
 
     Collection<MailAddress> localEmails(Collection<MailAddress> mailAddresses) {
+        return addressByDomains(mailAddresses)
+            .flatMap(this::hasLocalDomain)
+            .filter(this::belongsToALocalUser)
+            .collect(Guavate.toImmutableList());
+    }
+
+    private Stream<MailAddress> hasLocalDomain(Map.Entry<Domain, Collection<MailAddress>> entry) {
+        if (isLocalServer(entry.getKey())) {
+            return entry.getValue().stream();
+        }
+        return Stream.empty();
+    }
+
+    private Stream<Map.Entry<Domain, Collection<MailAddress>>> addressByDomains(Collection<MailAddress> mailAddresses) {
         return mailAddresses.stream()
             .collect(Guavate.toImmutableListMultimap(
                 MailAddress::getDomain))
             .asMap()
             .entrySet()
-            .stream()
-            .filter(entry -> isLocalServer(entry.getKey()))
-            .flatMap(entry -> entry.getValue().stream())
-            .filter(this::belongsToALocalUser)
-            .collect(Guavate.toImmutableList());
+            .stream();
     }
 
     private boolean isLocaluser(MailAddress mailAddress) throws UsersRepositoryException {
