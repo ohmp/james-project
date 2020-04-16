@@ -80,6 +80,7 @@ public class MaildirHostSystem extends JamesImapHostSystem {
         MessageParser messageParser = new MessageParser();
 
         InVMEventBus eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
+        eventBus.initialize();
         StoreRightManager storeRightManager = new StoreRightManager(mailboxSessionMapperFactory, aclResolver, groupMembershipResolver, eventBus);
         StoreMailboxAnnotationManager annotationManager = new StoreMailboxAnnotationManager(mailboxSessionMapperFactory, storeRightManager);
         SessionProviderImpl sessionProvider = new SessionProviderImpl(authenticator, authorizator);

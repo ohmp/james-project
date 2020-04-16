@@ -109,7 +109,6 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     @BeforeEach
     void setUp() throws Exception {
         eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        eventBus.initialize();
         eventCollector = new EventCollector();
         quotaManager = mock(QuotaManager.class);
 

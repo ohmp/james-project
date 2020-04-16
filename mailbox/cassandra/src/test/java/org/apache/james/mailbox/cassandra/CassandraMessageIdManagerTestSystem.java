@@ -40,9 +40,7 @@ class CassandraMessageIdManagerTestSystem {
                                                         Set<PreDeletionHook> preDeletionHooks) {
         CassandraMailboxSessionMapperFactory mapperFactory = CassandraTestSystemFixture.createMapperFactory(cassandra);
 
-        CassandraMailboxManager mailboxManager = CassandraTestSystemFixture.createMailboxManager(mapperFactory);
-
-        mailboxManager.getEventBus().initialize(new MailboxAnnotationListener(mapperFactory, mailboxManager));
+        CassandraMailboxManager mailboxManager = CassandraTestSystemFixture.createMailboxManager(mapperFactory, eventBus);
 
         return new MessageIdManagerTestSystem(CassandraTestSystemFixture.createMessageIdManager(mapperFactory, quotaManager, eventBus, new PreDeletionHooks(preDeletionHooks, new RecordingMetricFactory())),
             new CassandraMessageId.Factory(),
