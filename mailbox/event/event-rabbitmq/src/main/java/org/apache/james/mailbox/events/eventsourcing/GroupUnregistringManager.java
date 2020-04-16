@@ -24,23 +24,39 @@ import java.time.Clock;
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.mailbox.events.Group;
+import org.apache.james.mailbox.events.eventsourcing.UnregisterRemovedGroupsSubscriber.RegisteredGroupsProvider;
+import org.apache.james.mailbox.events.eventsourcing.UnregisterRemovedGroupsSubscriber.Unregisterer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Mono;
 
 public class GroupUnregistringManager {
     private final EventSourcingSystem eventSourcingSystem;
+    private final EventStore eventStore;
 
-    public GroupUnregistringManager(EventStore eventStore, UnregisterRemovedGroupsSubscriber.Unregisterer unregisterer, Clock clock) {
+    public GroupUnregistringManager(EventStore eventStore,
+                                    Unregisterer unregisterer,
+                                    RegisteredGroupsProvider registeredGroupsProvider,
+                                    Clock clock) {
+
+        this.eventStore = eventStore;
         this.eventSourcingSystem = EventSourcingSystem.fromJava(ImmutableSet.of(new RequireGroupsCommandHandler(eventStore, clock)),
-            ImmutableSet.of(new UnregisterRemovedGroupsSubscriber(unregisterer)),
-            eventStore);
+            ImmutableSet.of(new UnregisterRemovedGroupsSubscriber(unregisterer, registeredGroupsProvider)),
+            this.eventStore);
     }
 
     public Mono<Void> start(ImmutableSet<Group> groups) {
         RequireGroupsCommand requireGroupsCommand = new RequireGroupsCommand(groups);
 
         return Mono.from(eventSourcingSystem.dispatch(requireGroupsCommand));
+    }
+
+    @VisibleForTesting
+    Mono<ImmutableSet<Group>> requiredGroups() {
+        return Mono.from(eventStore.getEventsOfAggregate(RegisteredGroupsAggregate.AGGREGATE_ID))
+            .map(RegisteredGroupsAggregate::load)
+            .map(RegisteredGroupsAggregate::requiredGroups);
     }
 }

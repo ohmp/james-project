@@ -29,23 +29,19 @@ import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.EventId;
 import org.apache.james.mailbox.events.Group;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 public class RegisteredGroupListenerChangeEvent implements Event {
     private final EventId eventId;
     private final Hostname hostname;
     private final ZonedDateTime zonedDateTime;
-    private final ImmutableSet<Group> addedGroups;
-    private final ImmutableSet<Group> removedGroups;
+    private final ImmutableSet<Group> registeredGroups;
 
-    public RegisteredGroupListenerChangeEvent(EventId eventId, Hostname hostname, ZonedDateTime zonedDateTime, ImmutableSet<Group> addedGroups, ImmutableSet<Group> removedGroups) {
+    public RegisteredGroupListenerChangeEvent(EventId eventId, Hostname hostname, ZonedDateTime zonedDateTime, ImmutableSet<Group> registeredGroups) {
         this.hostname = hostname;
         this.zonedDateTime = zonedDateTime;
         this.eventId = eventId;
-        this.addedGroups = addedGroups;
-        this.removedGroups = removedGroups;
+        this.registeredGroups = registeredGroups;
     }
 
 
@@ -59,12 +55,8 @@ public class RegisteredGroupListenerChangeEvent implements Event {
         return AGGREGATE_ID;
     }
 
-    public ImmutableSet<Group> getAddedGroups() {
-        return addedGroups;
-    }
-
-    public ImmutableSet<Group> getRemovedGroups() {
-        return removedGroups;
+    public ImmutableSet<Group> getRegisteredGroups() {
+        return registeredGroups;
     }
 
     public EventId getEventId() {
@@ -85,14 +77,15 @@ public class RegisteredGroupListenerChangeEvent implements Event {
             RegisteredGroupListenerChangeEvent that = (RegisteredGroupListenerChangeEvent) o;
 
             return Objects.equals(this.eventId, that.eventId)
-                && Objects.equals(this.addedGroups, that.addedGroups)
-                && Objects.equals(this.removedGroups, that.removedGroups);
+                && Objects.equals(this.zonedDateTime, that.zonedDateTime)
+                && Objects.equals(this.hostname, that.hostname)
+                && Objects.equals(this.registeredGroups, that.registeredGroups);
         }
         return false;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(eventId, addedGroups, removedGroups);
+        return Objects.hash(eventId, hostname, zonedDateTime, registeredGroups);
     }
 }

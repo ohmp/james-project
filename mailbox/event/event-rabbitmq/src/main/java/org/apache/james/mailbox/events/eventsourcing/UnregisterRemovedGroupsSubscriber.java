@@ -25,6 +25,7 @@ import org.apache.james.mailbox.events.Group;
 import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class UnregisterRemovedGroupsSubscriber implements Subscriber {
     @FunctionalInterface
@@ -32,10 +33,17 @@ public class UnregisterRemovedGroupsSubscriber implements Subscriber {
         Publisher<Void> unregister(Group group);
     }
 
-    private final Unregisterer unregisterer;
+    @FunctionalInterface
+    public interface RegisteredGroupsProvider {
+        Publisher<Group> registeredGroups();
+    }
 
-    public UnregisterRemovedGroupsSubscriber(Unregisterer unregisterer) {
+    private final Unregisterer unregisterer;
+    private final RegisteredGroupsProvider registeredGroupsProvider;
+
+    UnregisterRemovedGroupsSubscriber(Unregisterer unregisterer, RegisteredGroupsProvider registeredGroupsProvider) {
         this.unregisterer = unregisterer;
+        this.registeredGroupsProvider = registeredGroupsProvider;
     }
 
     @Override
@@ -43,10 +51,15 @@ public class UnregisterRemovedGroupsSubscriber implements Subscriber {
         if (event instanceof RegisteredGroupListenerChangeEvent) {
             RegisteredGroupListenerChangeEvent changeEvent = (RegisteredGroupListenerChangeEvent) event;
 
-            Flux.fromIterable(changeEvent.getRemovedGroups())
-                .concatMap(unregisterer::unregister)
-                .then()
+            unbindUnrequiredRegisteredGroups(changeEvent)
                 .block();
         }
+    }
+
+    private Mono<Void> unbindUnrequiredRegisteredGroups(RegisteredGroupListenerChangeEvent changeEvent) {
+        return Flux.from(registeredGroupsProvider.registeredGroups())
+            .filter(registeredGroup -> !changeEvent.getRegisteredGroups().contains(registeredGroup))
+            .concatMap(unregisterer::unregister)
+            .then();
     }
 }

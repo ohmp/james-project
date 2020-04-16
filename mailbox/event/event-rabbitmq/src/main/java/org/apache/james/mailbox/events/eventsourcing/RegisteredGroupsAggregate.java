@@ -31,7 +31,6 @@ import org.apache.james.mailbox.events.Group;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 public class RegisteredGroupsAggregate {
     static AggregateId AGGREGATE_ID = () -> "RegisteredGroupListenerChangeEvent";
@@ -48,10 +47,7 @@ public class RegisteredGroupsAggregate {
         }
 
         private State apply(RegisteredGroupListenerChangeEvent event) {
-            return new State(ImmutableSet.<Group>builder()
-                .addAll(Sets.difference(groups, event.getRemovedGroups()))
-                .addAll(event.getAddedGroups())
-                .build());
+            return new State(event.getRegisteredGroups());
         }
     }
 
@@ -78,17 +74,17 @@ public class RegisteredGroupsAggregate {
         return detectedChanges;
     }
 
-    private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand requireGroupsCommand, Clock clock) {
-        ImmutableSet<Group> addedGroups = ImmutableSet.copyOf(Sets.difference(requireGroupsCommand.getRegisteredGroups(), state.groups));
-        ImmutableSet<Group> removedGroups = ImmutableSet.copyOf(Sets.difference(state.groups, requireGroupsCommand.getRegisteredGroups()));
+    public ImmutableSet<Group> requiredGroups() {
+        return state.groups;
+    }
 
-        if (!addedGroups.isEmpty() || !removedGroups.isEmpty()) {
+    private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand requireGroupsCommand, Clock clock) {
+        if (!requireGroupsCommand.getRegisteredGroups().equals(state.groups)) {
             ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());
             RegisteredGroupListenerChangeEvent event = new RegisteredGroupListenerChangeEvent(history.getNextEventId(),
                 Hostname.localHost(),
                 now,
-                addedGroups,
-                removedGroups);
+                requireGroupsCommand.getRegisteredGroups());
             return ImmutableList.of(event);
         }
         return ImmutableList.of();
