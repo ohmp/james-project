@@ -79,15 +79,12 @@ public class RegisteredGroupsAggregate {
     }
 
     private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand requireGroupsCommand, Clock clock) {
-        if (!requireGroupsCommand.getRegisteredGroups().equals(state.groups)) {
-            ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());
-            RegisteredGroupListenerChangeEvent event = new RegisteredGroupListenerChangeEvent(history.getNextEventId(),
-                Hostname.localHost(),
-                now,
-                requireGroupsCommand.getRegisteredGroups());
-            return ImmutableList.of(event);
-        }
-        return ImmutableList.of();
+        ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());
+        RegisteredGroupListenerChangeEvent event = new RegisteredGroupListenerChangeEvent(history.getNextEventId(),
+            Hostname.localHost(),
+            now,
+            requireGroupsCommand.getRegisteredGroups());
+        return ImmutableList.of(event);
     }
 
     private void apply(Event event) {

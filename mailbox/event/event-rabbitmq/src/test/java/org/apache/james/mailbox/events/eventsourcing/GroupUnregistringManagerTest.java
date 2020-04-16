@@ -149,7 +149,7 @@ class GroupUnregistringManagerTest {
         testee.start(ImmutableSet.of(GROUP_A)).block();
 
         assertThat(unregisterer.unregisteredGroups())
-            .containsExactly(GROUP_B);
+            .isEmpty();
     }
 
     @Test
