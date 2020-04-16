@@ -13,6 +13,8 @@ Read [Distributed Mail Queue](0031-distributed-mail-queue.md) for full context.
 **enqueuedMailsV3** and **deletedMailsV2** is never cleaned up and the corresponding blobs are always referenced. This is not
 ideal both from a privacy and space storage costs point of view.
 
+Note that **enqueuedMailsV3** and **deletedMailsV2** relies on timeWindowCompactionStrategy.
+
 ## Decision
 
 Add a new `contentStart` table referencing the point in time from which a given mailQueue holds data, for each mail queue.
@@ -28,13 +30,16 @@ additional grace period mechanism for `contentStart`.
 
 Failing cleanup will lead to the content being eventually updated upon next `browseStart` update.
 
+We will furthermore delete blobStore content upon dequeue, also when the mail had been delete or purged via MailQueue
+management APIs.
+
 ## Consequences
 
-MailQueue content will eventually be dropped both in Cassandra and in ObjectStorage once Blob Store garbage 
-collection is implemented. This will both allow reclaiming storage space, reducing related costs, and respect privacy 
-of James users.
+All Cassandra SSTable before `browseStart` can safely be dropped as part of the timeWindowCompactionStrategy.
 
-Updating browse start will then be two times more expensive.
+Updating browse start will then be two times more expensive as we need to unreference passed slices.
+
+Eventually this will allow reclaiming Cassandra disk space and enforce mail privacy by removing dandling metadata.
 
 ## Alternative
 
@@ -45,3 +50,4 @@ cleanup upon dequeue/delete operations. The dequeuer/deleter then directly remov
  - if the cleanup fails for any reason then it cannot be retried in the future. There will be no way of cleaning up the 
  related data.
  - this will end up tumbstoning live slices potentially harming browse/delete/browse start updates performance.
+ - this proposition don't leverage as efficiently timeWindowCompactionStrategy.
