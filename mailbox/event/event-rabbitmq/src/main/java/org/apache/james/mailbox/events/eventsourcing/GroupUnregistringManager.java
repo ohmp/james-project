@@ -19,13 +19,15 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import static org.apache.james.mailbox.events.eventsourcing.RegisteredGroupsSubscriber.Registrer;
+
 import java.time.Clock;
 
 import org.apache.james.eventsourcing.EventSourcingSystem;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.mailbox.events.Group;
-import org.apache.james.mailbox.events.eventsourcing.UnregisterRemovedGroupsSubscriber.RegisteredGroupsProvider;
-import org.apache.james.mailbox.events.eventsourcing.UnregisterRemovedGroupsSubscriber.Unregisterer;
+import org.apache.james.mailbox.events.eventsourcing.RegisteredGroupsSubscriber.RegisteredGroupsProvider;
+import org.apache.james.mailbox.events.eventsourcing.RegisteredGroupsSubscriber.Unregisterer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -38,12 +40,13 @@ public class GroupUnregistringManager {
 
     public GroupUnregistringManager(EventStore eventStore,
                                     Unregisterer unregisterer,
+                                    Registrer registrer,
                                     RegisteredGroupsProvider registeredGroupsProvider,
                                     Clock clock) {
 
         this.eventStore = eventStore;
         this.eventSourcingSystem = EventSourcingSystem.fromJava(ImmutableSet.of(new RequireGroupsCommandHandler(eventStore, clock)),
-            ImmutableSet.of(new UnregisterRemovedGroupsSubscriber(unregisterer, registeredGroupsProvider)),
+            ImmutableSet.of(new RegisteredGroupsSubscriber(unregisterer, registrer, registeredGroupsProvider)),
             this.eventStore);
     }
 

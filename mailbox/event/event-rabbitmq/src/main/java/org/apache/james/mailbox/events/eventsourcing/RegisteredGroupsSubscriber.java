@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import java.util.List;
+
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.Subscriber;
 import org.apache.james.mailbox.events.Group;
@@ -27,10 +29,15 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class UnregisterRemovedGroupsSubscriber implements Subscriber {
+public class RegisteredGroupsSubscriber implements Subscriber {
     @FunctionalInterface
     public interface Unregisterer {
         Publisher<Void> unregister(Group group);
+    }
+
+    @FunctionalInterface
+    public interface Registrer {
+        Publisher<Void> register(Group group);
     }
 
     @FunctionalInterface
@@ -39,10 +46,12 @@ public class UnregisterRemovedGroupsSubscriber implements Subscriber {
     }
 
     private final Unregisterer unregisterer;
+    private final Registrer registrer;
     private final RegisteredGroupsProvider registeredGroupsProvider;
 
-    UnregisterRemovedGroupsSubscriber(Unregisterer unregisterer, RegisteredGroupsProvider registeredGroupsProvider) {
+    RegisteredGroupsSubscriber(Unregisterer unregisterer, Registrer registrer, RegisteredGroupsProvider registeredGroupsProvider) {
         this.unregisterer = unregisterer;
+        this.registrer = registrer;
         this.registeredGroupsProvider = registeredGroupsProvider;
     }
 
@@ -51,15 +60,29 @@ public class UnregisterRemovedGroupsSubscriber implements Subscriber {
         if (event instanceof RegisteredGroupListenerChangeEvent) {
             RegisteredGroupListenerChangeEvent changeEvent = (RegisteredGroupListenerChangeEvent) event;
 
-            unbindUnrequiredRegisteredGroups(changeEvent)
+            Mono<List<Group>> registeredGroupsMono = Flux.from(registeredGroupsProvider.registeredGroups()).collectList();
+
+            registeredGroupsMono.flatMapMany(registeredGroups -> Flux.concat(
+                    unbindUnrequiredRegisteredGroups(changeEvent, registeredGroups),
+                    bindRequiredUnregisteredGroups(changeEvent, registeredGroups)))
+                .then()
                 .block();
         }
     }
 
-    private Mono<Void> unbindUnrequiredRegisteredGroups(RegisteredGroupListenerChangeEvent changeEvent) {
-        return Flux.from(registeredGroupsProvider.registeredGroups())
+    private Mono<Void> unbindUnrequiredRegisteredGroups(RegisteredGroupListenerChangeEvent changeEvent,
+                                                        List<Group> registeredGroups) {
+        return Flux.fromIterable(registeredGroups)
             .filter(registeredGroup -> !changeEvent.getRegisteredGroups().contains(registeredGroup))
             .concatMap(unregisterer::unregister)
+            .then();
+    }
+
+    private Mono<Void> bindRequiredUnregisteredGroups(RegisteredGroupListenerChangeEvent changeEvent,
+                                                        List<Group> registeredGroups) {
+        return Flux.fromIterable(changeEvent.getRegisteredGroups())
+            .filter(requiredGroup -> !registeredGroups.contains(requiredGroup))
+            .concatMap(registrer::register)
             .then();
     }
 }

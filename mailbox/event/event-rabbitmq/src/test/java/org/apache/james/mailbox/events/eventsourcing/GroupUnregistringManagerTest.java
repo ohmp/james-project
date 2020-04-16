@@ -41,8 +41,9 @@ class GroupUnregistringManagerTest {
     private static final GenericGroup GROUP_A = new GenericGroup("a");
     private static final GenericGroup GROUP_B = new GenericGroup("b");
     private TestRegisteredGroupsProvider registeredGroupsProvider;
+    private TestRegisterer registrer;
 
-    static class TestUnregisterer implements UnregisterRemovedGroupsSubscriber.Unregisterer {
+    static class TestUnregisterer implements RegisteredGroupsSubscriber.Unregisterer {
         private ImmutableList.Builder<Group> unregisteredGroups = ImmutableList.builder();
 
         @Override
@@ -55,7 +56,20 @@ class GroupUnregistringManagerTest {
         }
     }
 
-    static class TestRegisteredGroupsProvider implements UnregisterRemovedGroupsSubscriber.RegisteredGroupsProvider {
+    static class TestRegisterer implements RegisteredGroupsSubscriber.Registrer {
+        private ImmutableList.Builder<Group> registeredGroups = ImmutableList.builder();
+
+        @Override
+        public Publisher<Void> register(Group group) {
+            return Mono.fromRunnable(() -> registeredGroups.add(group));
+        }
+
+        ImmutableList<Group> registeredGroups() {
+            return registeredGroups.build();
+        }
+    }
+
+    static class TestRegisteredGroupsProvider implements RegisteredGroupsSubscriber.RegisteredGroupsProvider {
         private List<Group> groups = ImmutableList.of();
 
         void setRegisteredGroups(ImmutableList<Group> registeredGroups) {
@@ -75,7 +89,8 @@ class GroupUnregistringManagerTest {
     void setUp() {
         unregisterer = new TestUnregisterer();
         registeredGroupsProvider = new TestRegisteredGroupsProvider();
-        testee = new GroupUnregistringManager(new InMemoryEventStore(), unregisterer, registeredGroupsProvider, Clock.systemUTC());
+        registrer = new TestRegisterer();
+        testee = new GroupUnregistringManager(new InMemoryEventStore(), unregisterer, registrer, registeredGroupsProvider, Clock.systemUTC());
     }
 
     @Test
@@ -182,6 +197,59 @@ class GroupUnregistringManagerTest {
         testee.start(ImmutableSet.of(GROUP_A)).block();
 
         assertThat(unregisterer.unregisteredGroups())
+            .containsExactly(GROUP_B);
+    }
+
+    @Test
+    void startShouldNotRegisterGroupsWhenRegisteredButNotRequired() {
+        registeredGroupsProvider.setRegisteredGroups(ImmutableList.of(GROUP_A, GROUP_B));
+
+        testee.start(ImmutableSet.of(GROUP_A)).block();
+
+        assertThat(registrer.registeredGroups())
+            .isEmpty();
+    }
+
+    @Test
+    void startShouldNotRegisterGroupsWhenRegisteredAndRequired() {
+        registeredGroupsProvider.setRegisteredGroups(ImmutableList.of(GROUP_A));
+
+        testee.start(ImmutableSet.of(GROUP_A)).block();
+
+        assertThat(registrer.registeredGroups())
+            .isEmpty();
+    }
+
+    @Test
+    void startShouldRegisterGroupsWhenNotRegisteredAndRequired() {
+        registeredGroupsProvider.setRegisteredGroups(ImmutableList.of(GROUP_A));
+
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+
+        assertThat(registrer.registeredGroups())
+            .containsExactly(GROUP_B);
+    }
+
+    @Test
+    void startShouldRegisterGroupsTwiceWhenRegisteredGroupsNotUpdated() {
+        registeredGroupsProvider.setRegisteredGroups(ImmutableList.of(GROUP_A));
+
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+
+        assertThat(registrer.registeredGroups())
+            .containsExactly(GROUP_B, GROUP_B);
+    }
+
+    @Test
+    void startShouldRegisterGroupsOnceWhenRegisteredGroupsUpdated() {
+        registeredGroupsProvider.setRegisteredGroups(ImmutableList.of(GROUP_A));
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+
+        registeredGroupsProvider.setRegisteredGroups(ImmutableList.of(GROUP_A, GROUP_B));
+        testee.start(ImmutableSet.of(GROUP_A, GROUP_B)).block();
+
+        assertThat(registrer.registeredGroups())
             .containsExactly(GROUP_B);
     }
 }
