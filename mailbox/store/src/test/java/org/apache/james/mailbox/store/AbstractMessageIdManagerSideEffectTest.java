@@ -100,16 +100,15 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
     private QuotaManager quotaManager;
     private MessageIdManagerTestSystem testingData;
     private EventCollector eventCollector;
-    private EventBus eventBus;
+    private InVMEventBus eventBus;
     private PreDeletionHook preDeletionHook1;
     private PreDeletionHook preDeletionHook2;
 
-    protected abstract MessageIdManagerTestSystem createTestSystem(QuotaManager quotaManager, EventBus eventBus, Set<PreDeletionHook> preDeletionHooks) throws Exception;
+    protected abstract MessageIdManagerTestSystem createTestSystem(QuotaManager quotaManager, InVMEventBus eventBus, Set<PreDeletionHook> preDeletionHooks) throws Exception;
 
     @BeforeEach
     void setUp() throws Exception {
         eventBus = new InVMEventBus(new InVmEventDelivery(new RecordingMetricFactory()), EventBusTestFixture.RETRY_BACKOFF_CONFIGURATION, new MemoryEventDeadLetters());
-        eventBus.initialize();
         eventCollector = new EventCollector();
         quotaManager = mock(QuotaManager.class);
 
