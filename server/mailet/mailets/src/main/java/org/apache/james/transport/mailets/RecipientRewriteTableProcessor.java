@@ -182,14 +182,14 @@ public class RecipientRewriteTableProcessor {
     @VisibleForTesting
     List<MailAddress> handleMappings(Mappings mappings, Mail mail, MailAddress recipient) {
         boolean isLocal = true;
-        Map<Boolean, List<MailAddress>> mailAddressSplit = splitDistantMailAddresses(mappings);
+        Map<Boolean, List<MailAddress>> mailAddressSplit = splitRemoteMailAddresses(mappings);
 
         forwardToRemoteAddress(mail, recipient, mailAddressSplit.get(!isLocal));
 
         return mailAddressSplit.get(isLocal);
     }
 
-    private ImmutableMap<Boolean, List<MailAddress>> splitDistantMailAddresses(Mappings mappings) {
+    private ImmutableMap<Boolean, List<MailAddress>> splitRemoteMailAddresses(Mappings mappings) {
         return mailAddressesPerDomain(mappings)
             .collect(Collectors.partitioningBy(entry -> mailetContext.isLocalServer(entry.getKey())))
             .entrySet()
