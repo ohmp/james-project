@@ -30,8 +30,18 @@ Failing cleanup will lead to the content being eventually updated upon next `bro
 
 ## Consequences
 
-MailQueue content will eventually be dropped both in Cassandra and in ObjectStorage once Deduplicated Blob Store garbage 
+MailQueue content will eventually be dropped both in Cassandra and in ObjectStorage once Blob Store garbage 
 collection is implemented. This will both allow reclaiming storage space, reducing related costs, and respect privacy 
 of James users.
 
 Updating browse start will then be two times more expensive.
+
+## Alternative
+
+A [proposal](https://github.com/linagora/james-project/pull/3291#pullrequestreview-393501339) was made to piggy back 
+cleanup upon dequeue/delete operations. The dequeuer/deleter then directly removes the related metadata from 
+`enqueuedMailsV3` and `deletedMailsV2`. This simpler design however have several flows:
+
+ - if the cleanup fails for any reason then it cannot be retried in the future. There will be no way of cleaning up the 
+ related data.
+ - this will end up tumbstoning live slices potentially harming browse/delete/browse start updates performance.
