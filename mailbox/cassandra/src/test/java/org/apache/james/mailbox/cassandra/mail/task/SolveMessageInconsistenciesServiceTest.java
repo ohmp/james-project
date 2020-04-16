@@ -21,7 +21,6 @@ package org.apache.james.mailbox.cassandra.mail.task;
 
 import static org.apache.james.backends.cassandra.Scenario.Builder.fail;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 
 import java.util.Optional;
 
@@ -37,6 +36,7 @@ import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdToImapUidDAO;
+import org.apache.james.mailbox.cassandra.mail.task.SolveMessageInconsistenciesService.Context;
 import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
@@ -46,8 +46,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import reactor.core.publisher.Mono;
 
 public class SolveMessageInconsistenciesServiceTest {
 
@@ -102,7 +100,7 @@ public class SolveMessageInconsistenciesServiceTest {
 
     @Test
     void fixMessageInconsistenciesShouldReturnCompletedWhenNoData() {
-        assertThat(testee.fixMessageInconsistencies().block())
+        assertThat(testee.fixMessageInconsistencies(new Context()).block())
             .isEqualTo(Task.Result.COMPLETED);
     }
 
@@ -111,13 +109,13 @@ public class SolveMessageInconsistenciesServiceTest {
         imapUidDAO.insert(MESSAGE_1).block();
         messageIdDAO.insert(MESSAGE_1).block();
 
-        assertThat(testee.fixMessageInconsistencies().block())
+        assertThat(testee.fixMessageInconsistencies(new Context()).block())
             .isEqualTo(Task.Result.COMPLETED);
     }
 
     @Test
     void fixMailboxInconsistenciesShouldNotAlterStateWhenEmpty() {
-        testee.fixMessageInconsistencies().block();
+        testee.fixMessageInconsistencies(new Context()).block();
 
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block()).isEmpty();
@@ -130,7 +128,7 @@ public class SolveMessageInconsistenciesServiceTest {
         imapUidDAO.insert(MESSAGE_1).block();
         messageIdDAO.insert(MESSAGE_1).block();
 
-        testee.fixMessageInconsistencies().block();
+        testee.fixMessageInconsistencies(new Context()).block();
 
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
@@ -147,7 +145,7 @@ public class SolveMessageInconsistenciesServiceTest {
         void fixMessageInconsistenciesShouldReturnCompletedWhenInconsistentData() {
             imapUidDAO.insert(MESSAGE_1).block();
 
-            assertThat(testee.fixMessageInconsistencies().block())
+            assertThat(testee.fixMessageInconsistencies(new Context()).block())
                 .isEqualTo(Task.Result.COMPLETED);
         }
 
@@ -155,7 +153,7 @@ public class SolveMessageInconsistenciesServiceTest {
         void fixMessageInconsistenciesShouldResolveInconsistentData() {
             imapUidDAO.insert(MESSAGE_1).block();
 
-            testee.fixMessageInconsistencies().block();
+            testee.fixMessageInconsistencies(new Context()).block();
 
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(imapUidDAO.retrieve(MESSAGE_ID_1, Optional.of(MAILBOX_ID)).collectList().block())
@@ -170,7 +168,7 @@ public class SolveMessageInconsistenciesServiceTest {
             imapUidDAO.insert(MESSAGE_1).block();
             messageIdDAO.insert(MESSAGE_1_WITH_SEEN_FLAG).block();
 
-            assertThat(testee.fixMessageInconsistencies().block())
+            assertThat(testee.fixMessageInconsistencies(new Context()).block())
                 .isEqualTo(Task.Result.COMPLETED);
         }
 
@@ -179,7 +177,7 @@ public class SolveMessageInconsistenciesServiceTest {
             imapUidDAO.insert(MESSAGE_1).block();
             messageIdDAO.insert(MESSAGE_1_WITH_SEEN_FLAG).block();
 
-            testee.fixMessageInconsistencies().block();
+            testee.fixMessageInconsistencies(new Context()).block();
 
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(imapUidDAO.retrieve(MESSAGE_ID_1, Optional.of(MAILBOX_ID)).collectList().block())
@@ -194,7 +192,7 @@ public class SolveMessageInconsistenciesServiceTest {
             imapUidDAO.insert(MESSAGE_1).block();
             messageIdDAO.insert(MESSAGE_1_WITH_MOD_SEQ_2).block();
 
-            assertThat(testee.fixMessageInconsistencies().block())
+            assertThat(testee.fixMessageInconsistencies(new Context()).block())
                 .isEqualTo(Task.Result.COMPLETED);
         }
 
@@ -203,7 +201,7 @@ public class SolveMessageInconsistenciesServiceTest {
             imapUidDAO.insert(MESSAGE_1).block();
             messageIdDAO.insert(MESSAGE_1_WITH_MOD_SEQ_2).block();
 
-            testee.fixMessageInconsistencies().block();
+            testee.fixMessageInconsistencies(new Context()).block();
 
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(imapUidDAO.retrieve(MESSAGE_ID_1, Optional.of(MAILBOX_ID)).collectList().block())
@@ -224,7 +222,7 @@ public class SolveMessageInconsistenciesServiceTest {
                         .forever()
                         .whenQueryStartsWith("INSERT INTO messageIdTable (mailboxId,uid,modSeq,messageId,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags) VALUES (:mailboxId,:uid,:modSeq,:messageId,:flagAnswered,:flagDeleted,:flagDraft,:flagFlagged,:flagRecent,:flagSeen,:flagUser,:userFlags)"));
 
-                assertThat(testee.fixMessageInconsistencies().block())
+                assertThat(testee.fixMessageInconsistencies(new Context()).block())
                     .isEqualTo(Task.Result.PARTIAL);
             }
 
@@ -238,7 +236,7 @@ public class SolveMessageInconsistenciesServiceTest {
                         .times(1)
                         .whenQueryStartsWith("INSERT INTO messageIdTable (mailboxId,uid,modSeq,messageId,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags) VALUES (:mailboxId,:uid,:modSeq,:messageId,:flagAnswered,:flagDeleted,:flagDraft,:flagFlagged,:flagRecent,:flagSeen,:flagUser,:userFlags)"));
 
-                assertThat(testee.fixMessageInconsistencies().block())
+                assertThat(testee.fixMessageInconsistencies(new Context()).block())
                     .isEqualTo(Task.Result.PARTIAL);
             }
 
@@ -252,7 +250,7 @@ public class SolveMessageInconsistenciesServiceTest {
                         .times(1)
                         .whenQueryStartsWith("INSERT INTO messageIdTable (mailboxId,uid,modSeq,messageId,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags) VALUES (:mailboxId,:uid,:modSeq,d2bee791-7e63-11ea-883c-95b84008f979,:flagAnswered,:flagDeleted,:flagDraft,:flagFlagged,:flagRecent,:flagSeen,:flagUser,:userFlags)"));
 
-                testee.fixMessageInconsistencies().block();
+                testee.fixMessageInconsistencies(new Context()).block();
 
                 SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(imapUidDAO.retrieve(MESSAGE_ID_2, Optional.of(MAILBOX_ID)).collectList().block())
@@ -271,7 +269,7 @@ public class SolveMessageInconsistenciesServiceTest {
         void fixMessageInconsistenciesShouldReturnCompletedWhenInconsistentData() {
             messageIdDAO.insert(MESSAGE_1).block();
 
-            assertThat(testee.fixMessageInconsistencies().block())
+            assertThat(testee.fixMessageInconsistencies(new Context()).block())
                 .isEqualTo(Task.Result.COMPLETED);
         }
 
@@ -279,7 +277,7 @@ public class SolveMessageInconsistenciesServiceTest {
         void fixMessageInconsistenciesShouldResolveInconsistentData() {
             messageIdDAO.insert(MESSAGE_1).block();
 
-            testee.fixMessageInconsistencies().block();
+            testee.fixMessageInconsistencies(new Context()).block();
 
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
@@ -296,7 +294,7 @@ public class SolveMessageInconsistenciesServiceTest {
 
             imapUidDAO.insert(MESSAGE_1).block();
 
-            assertThat(testee.fixMessageInconsistencies().block())
+            assertThat(testee.fixMessageInconsistencies(new Context()).block())
                 .isEqualTo(Task.Result.COMPLETED);
         }
 
@@ -307,35 +305,7 @@ public class SolveMessageInconsistenciesServiceTest {
 
             imapUidDAO.insert(MESSAGE_1).block();
 
-            testee.fixMessageInconsistencies().block();
-
-            SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
-                    .containsExactly(MESSAGE_1);
-                softly.assertThat(messageIdDAO.retrieveAllMessages().collectList().block())
-                    .containsExactly(MESSAGE_1);
-            });
-        }
-
-        @Test
-        void fixImapUidInconsistenciesShouldCompleteWhenInconsistent() {
-            messageIdDAO.insert(MESSAGE_1_WITH_MOD_SEQ_2).block();
-
-            imapUidDAO.insert(MESSAGE_1).block();
-
-            testee.fixMessageInconsistencies().block();
-
-            assertThat(testee.fixImapUidInconsistencies().block())
-                .isEqualTo(Task.Result.COMPLETED);
-        }
-
-        @Test
-        void fixImapUidInconsistenciesShouldResolveInconsistent() {
-            messageIdDAO.insert(MESSAGE_1_WITH_MOD_SEQ_2).block();
-
-            imapUidDAO.insert(MESSAGE_1).block();
-
-            testee.fixMessageInconsistencies().block();
+            testee.fixMessageInconsistencies(new Context()).block();
 
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
@@ -356,7 +326,7 @@ public class SolveMessageInconsistenciesServiceTest {
                         .forever()
                         .whenQueryStartsWith("DELETE FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid"));
 
-                assertThat(testee.fixMessageInconsistencies().block())
+                assertThat(testee.fixMessageInconsistencies(new Context()).block())
                     .isEqualTo(Task.Result.PARTIAL);
             }
 
@@ -370,7 +340,7 @@ public class SolveMessageInconsistenciesServiceTest {
                         .times(1)
                         .whenQueryStartsWith("DELETE FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid"));
 
-                assertThat(testee.fixMessageInconsistencies().block())
+                assertThat(testee.fixMessageInconsistencies(new Context()).block())
                     .isEqualTo(Task.Result.PARTIAL);
             }
 
@@ -384,7 +354,7 @@ public class SolveMessageInconsistenciesServiceTest {
                         .times(1)
                         .whenQueryStartsWith("DELETE FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid;"));
 
-                testee.fixMessageInconsistencies().block();
+                testee.fixMessageInconsistencies(new Context()).block();
 
                 SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
@@ -394,5 +364,124 @@ public class SolveMessageInconsistenciesServiceTest {
                 });
             }
         }
+    }
+
+    @Test
+    void fixMailboxInconsistenciesShouldNotUpdateContextWhenNoData() {
+        Context context = new Context();
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot()).isEqualToComparingFieldByFieldRecursively(new Context().snapshot());
+    }
+
+    @Test
+    void fixMessageInconsistenciesShouldUpdateContextWhenConsistentData() {
+        Context context = new Context();
+
+        imapUidDAO.insert(MESSAGE_1).block();
+        messageIdDAO.insert(MESSAGE_1).block();
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot())
+            .isEqualTo(Context.builder()
+                .processedImapUidEntries(1)
+                .processedMessageIdEntries(1)
+                .build()
+                .snapshot());
+    }
+
+    @Test
+    void fixMessageInconsistenciesShouldUpdateContextWhenOrphanImapUidMessage() {
+        Context context = new Context();
+
+        imapUidDAO.insert(MESSAGE_1).block();
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot())
+            .isEqualTo(Context.builder()
+                .processedImapUidEntries(1)
+                .addedMessageIdEntries(1)
+                .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
+                .build()
+                .snapshot());
+    }
+
+    @Test
+    void fixMailboxInconsistenciesShouldUpdateContextWhenInconsistentModSeq() {
+        Context context = new Context();
+
+        imapUidDAO.insert(MESSAGE_1).block();
+        messageIdDAO.insert(MESSAGE_1_WITH_MOD_SEQ_2).block();
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot())
+            .isEqualTo(Context.builder()
+                .processedImapUidEntries(1)
+                .processedMessageIdEntries(1)
+                .updatedMessageIdEntries(1)
+                .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
+                .build()
+                .snapshot());
+    }
+
+    @Test
+    void fixMailboxInconsistenciesShouldUpdateContextWhenInconsistentFlags() {
+        Context context = new Context();
+
+        imapUidDAO.insert(MESSAGE_1).block();
+        messageIdDAO.insert(MESSAGE_1_WITH_SEEN_FLAG).block();
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot())
+            .isEqualTo(Context.builder()
+                .processedImapUidEntries(1)
+                .processedMessageIdEntries(1)
+                .updatedMessageIdEntries(1)
+                .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
+                .build()
+                .snapshot());
+    }
+
+    @Test
+    void fixMailboxInconsistenciesShouldUpdateContextWhenOrphanMessageIdMessage() {
+        Context context = new Context();
+
+        messageIdDAO.insert(MESSAGE_1).block();
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot())
+            .isEqualTo(Context.builder()
+                .processedMessageIdEntries(1)
+                .removedMessageIdEntries(1)
+                .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
+                .build()
+                .snapshot());
+    }
+
+    @Test
+    void fixMailboxInconsistenciesShouldUpdateContextWhenError(CassandraCluster cassandra) {
+        Context context = new Context();
+
+        messageIdDAO.insert(MESSAGE_1).block();
+
+        cassandra.getConf()
+            .registerScenario(fail()
+                .times(1)
+                .whenQueryStartsWith("DELETE FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid;"));
+
+        testee.fixMessageInconsistencies(context).block();
+
+        assertThat(context.snapshot())
+            .isEqualTo(Context.builder()
+                .processedMessageIdEntries(1)
+                .errors(MESSAGE_1.getComposedMessageId())
+                .build()
+                .snapshot());
     }
 }
