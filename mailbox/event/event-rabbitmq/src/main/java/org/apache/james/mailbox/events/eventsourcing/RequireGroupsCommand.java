@@ -25,13 +25,19 @@ import org.apache.james.mailbox.events.Group;
 import com.google.common.collect.ImmutableSet;
 
 public class RequireGroupsCommand implements Command {
+    private final ImmutableSet<Group> requiredGroups;
     private final ImmutableSet<Group> registeredGroups;
 
-    public RequireGroupsCommand(ImmutableSet<Group> registeredGroups) {
+    public RequireGroupsCommand(ImmutableSet<Group> requiredGroups, ImmutableSet<Group> registeredGroups) {
+        this.requiredGroups = requiredGroups;
         this.registeredGroups = registeredGroups;
     }
 
     public ImmutableSet<Group> getRegisteredGroups() {
         return registeredGroups;
+    }
+
+    public ImmutableSet<Group> getRequiredGroups() {
+        return requiredGroups;
     }
 }

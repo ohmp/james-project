@@ -37,17 +37,20 @@ public class RegisteredGroupsAggregate {
 
     private static class State {
         static State initial() {
-            return new State(ImmutableSet.of());
+            return new State(ImmutableSet.of(), ImmutableSet.of());
         }
 
-        final ImmutableSet<Group> groups;
+        final ImmutableSet<Group> registeredGroups;
+        final ImmutableSet<Group> requiredGroups;
 
-        private State(ImmutableSet<Group> groups) {
-            this.groups = groups;
+        public State(ImmutableSet<Group> registeredGroups, ImmutableSet<Group> requiredGroups) {
+            this.registeredGroups = registeredGroups;
+            this.requiredGroups = requiredGroups;
         }
 
         private State apply(RegisteredGroupListenerChangeEvent event) {
-            return new State(event.getRegisteredGroups());
+            return new State(event.getRegisteredGroups(),
+                event.getRequiredGroups());
         }
     }
 
@@ -75,15 +78,27 @@ public class RegisteredGroupsAggregate {
     }
 
     public ImmutableSet<Group> requiredGroups() {
-        return state.groups;
+        return state.requiredGroups;
     }
 
-    private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand requireGroupsCommand, Clock clock) {
+    private List<RegisteredGroupListenerChangeEvent> detectChanges(RequireGroupsCommand command, Clock clock) {
+        boolean historyChange = !state.requiredGroups.equals(command.getRequiredGroups()) ||
+            !state.registeredGroups.equals(command.getRegisteredGroups());
+        boolean registeredChangeNeeded = !command.getRegisteredGroups().equals(command.getRequiredGroups());
+
+        if (historyChange || registeredChangeNeeded) {
+            return emitEvent(command, clock);
+        }
+        return ImmutableList.of();
+    }
+
+    private List<RegisteredGroupListenerChangeEvent> emitEvent(RequireGroupsCommand command, Clock clock) {
         ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), clock.getZone());
         RegisteredGroupListenerChangeEvent event = new RegisteredGroupListenerChangeEvent(history.getNextEventId(),
             Hostname.localHost(),
             now,
-            requireGroupsCommand.getRegisteredGroups());
+            command.getRequiredGroups(),
+            command.getRegisteredGroups());
         return ImmutableList.of(event);
     }
 

@@ -35,15 +35,16 @@ public class RegisteredGroupListenerChangeEvent implements Event {
     private final EventId eventId;
     private final Hostname hostname;
     private final ZonedDateTime zonedDateTime;
+    private final ImmutableSet<Group> requiredGroups;
     private final ImmutableSet<Group> registeredGroups;
 
-    public RegisteredGroupListenerChangeEvent(EventId eventId, Hostname hostname, ZonedDateTime zonedDateTime, ImmutableSet<Group> registeredGroups) {
+    public RegisteredGroupListenerChangeEvent(EventId eventId, Hostname hostname, ZonedDateTime zonedDateTime, ImmutableSet<Group> requiredGroups, ImmutableSet<Group> registeredGroups) {
         this.hostname = hostname;
         this.zonedDateTime = zonedDateTime;
         this.eventId = eventId;
+        this.requiredGroups = requiredGroups;
         this.registeredGroups = registeredGroups;
     }
-
 
     @Override
     public EventId eventId() {
@@ -57,6 +58,10 @@ public class RegisteredGroupListenerChangeEvent implements Event {
 
     public ImmutableSet<Group> getRegisteredGroups() {
         return registeredGroups;
+    }
+
+    public ImmutableSet<Group> getRequiredGroups() {
+        return requiredGroups;
     }
 
     public EventId getEventId() {
@@ -79,13 +84,14 @@ public class RegisteredGroupListenerChangeEvent implements Event {
             return Objects.equals(this.eventId, that.eventId)
                 && Objects.equals(this.zonedDateTime, that.zonedDateTime)
                 && Objects.equals(this.hostname, that.hostname)
-                && Objects.equals(this.registeredGroups, that.registeredGroups);
+                && Objects.equals(this.registeredGroups, that.registeredGroups)
+                && Objects.equals(this.requiredGroups, that.requiredGroups);
         }
         return false;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(eventId, hostname, zonedDateTime, registeredGroups);
+        return Objects.hash(eventId, hostname, zonedDateTime, registeredGroups, requiredGroups);
     }
 }

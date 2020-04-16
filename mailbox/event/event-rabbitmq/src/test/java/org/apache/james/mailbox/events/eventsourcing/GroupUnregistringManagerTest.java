@@ -19,6 +19,7 @@
 
 package org.apache.james.mailbox.events.eventsourcing;
 
+import static org.apache.james.mailbox.events.eventsourcing.GroupUnregistringManager.RegisteredGroupsProvider;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
@@ -69,7 +70,7 @@ class GroupUnregistringManagerTest {
         }
     }
 
-    static class TestRegisteredGroupsProvider implements RegisteredGroupsSubscriber.RegisteredGroupsProvider {
+    static class TestRegisteredGroupsProvider implements RegisteredGroupsProvider {
         private List<Group> groups = ImmutableList.of();
 
         void setRegisteredGroups(ImmutableList<Group> registeredGroups) {
