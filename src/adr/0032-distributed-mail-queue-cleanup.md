@@ -30,7 +30,7 @@ additional grace period mechanism for `contentStart`.
 
 Failing cleanup will lead to the content being eventually updated upon next `browseStart` update.
 
-We will furthermore delete blobStore content upon dequeue, also when the mail had been delete or purged via MailQueue
+We will furthermore delete blobStore content upon dequeue, also when the mail had been deleted or purged via MailQueue
 management APIs.
 
 ## Consequences
@@ -45,7 +45,7 @@ Eventually this will allow reclaiming Cassandra disk space and enforce mail priv
 
 A [proposal](https://github.com/linagora/james-project/pull/3291#pullrequestreview-393501339) was made to piggy back 
 cleanup upon dequeue/delete operations. The dequeuer/deleter then directly removes the related metadata from 
-`enqueuedMailsV3` and `deletedMailsV2`. This simpler design however have several flows:
+`enqueuedMailsV3` and `deletedMailsV2`. This simpler design however have several flaws:
 
  - if the cleanup fails for any reason then it cannot be retried in the future. There will be no way of cleaning up the 
  related data.
