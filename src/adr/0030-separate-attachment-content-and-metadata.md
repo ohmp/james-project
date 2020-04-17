@@ -17,6 +17,8 @@ This attachment storage capabilities are required for two features:
  
 Only Memory and Cassandra backends can be relied upon as a JMAP backend.
 
+Other protocols relies on dynamic EML parsing to expose message subparts (IMAP)
+
 Here are the POJOs related to these attachments:
 
  - **Attachment** : holds an attachmentId, the attachment content, as well as the content type
