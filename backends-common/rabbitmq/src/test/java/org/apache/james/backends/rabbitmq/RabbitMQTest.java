@@ -429,6 +429,19 @@ class RabbitMQTest {
             }
 
             @Test
+            void listBindingsShouldAllowRetrievingDestinations() throws Exception {
+                channel1.exchangeDeclare(EXCHANGE_NAME, "direct", DURABLE);
+                channel1.queueDeclare(WORK_QUEUE, DURABLE, !EXCLUSIVE, !AUTO_DELETE, Constants.WITH_SINGLE_ACTIVE_CONSUMER);
+                channel1.queueBind(WORK_QUEUE, EXCHANGE_NAME, ROUTING_KEY);
+
+                assertThat(rabbitMQExtension.managementAPI()
+                        .listBindings("/", EXCHANGE_NAME)
+                        .stream()
+                        .map(RabbitMQManagementAPI.BindingSource::getDestination))
+                    .containsExactly(WORK_QUEUE);
+            }
+
+            @Test
             void rabbitMQShouldDeliverMessageToFallbackSingleActiveConsumer() throws Exception {
                 channel1.exchangeDeclare(EXCHANGE_NAME, "direct", DURABLE);
                 channel1.queueDeclare(WORK_QUEUE, DURABLE, !EXCLUSIVE, !AUTO_DELETE, Constants.WITH_SINGLE_ACTIVE_CONSUMER);
