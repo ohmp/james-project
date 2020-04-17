@@ -19,6 +19,14 @@ binds to the main event exchange.
 If the user unconfigures the listener, the queue and the binding are still present but not consumed. This results in 
 unbounded queue growth eventually causing RabbitMQ resource exhaustion and failure.
 
+## Vocabulary
+
+A **required group** is a group configured within James additional mailbox listener or statically binded via Guice. We 
+should have a queue for that mailbox listener binded to the main exchange.
+
+A **registered group** is a group whose queue exist in rabbitMQ and is bound to the exchange, independently of its James 
+usage. If it is required, a consumer will consume the queue. Otherwise the queue might grow unbounded.
+
 ## Decision
 
 For rabbitMQ, configuration changes of additional mailbox listeners should be tracked via event sourcing. Event sourcing is 
@@ -26,10 +34,17 @@ desirable as it allows:
  - Detecting previously removed MailboxListener upon start
  - Audit of unbind decisions
  - Enables writing more complex business rules in the future
+ 
+Event sourcing will maintain an aggregate tracking **required groups** (and their change). Audit will be enabled by 
+adding host and date information upon changes. A subscriber will perform changes (binds and unbinds) in registered 
+groups following the changes of the aggregate.
 
-We need, upon start, to sanitize bindings, and remove the ones corresponding to mailboxListeners that were removed not configured.
+Upon start the aggregate will be updated if needed and bindings will be adapted accordingly.
 
-The queue should not be deleted to prevent message loss.
+Note that upon failure, registered groups will diverge from required groups. We will add a health check to diagnose 
+such issues. Eventually, we will expose a webadmin task to reset registered groups to required groups.
+
+The queues should not be deleted to prevent message loss.
 
 Given a James topology with a non uniform configuration, the effective RabbitMQ routing will be the one of the latest 
 started James server.
@@ -38,3 +53,7 @@ started James server.
 
 We could also consider adding a webadmin endpoint to sanitize eventBus bindings, allowing more predictability than the
 above solution but it would require admin intervention.
+
+## References
+
+ - [Discussion](https://github.com/linagora/james-project/pull/3280) around the overall design proposed here.
