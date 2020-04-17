@@ -229,26 +229,29 @@ public interface RabbitMQManagementAPI {
     }
 
     class BindingSource {
-        @JsonProperty("source")
-        String source;
+        private final String source;
+        private final String vhost;
+        private final String destination;
+        private final String destinationType;
+        private final String routingKey;
+        private final Map<String, String> arguments;
+        private final String propertiesKey;
 
-        @JsonProperty("vhost")
-        String vhost;
-
-        @JsonProperty("destination")
-        String destination;
-
-        @JsonProperty("destination_type")
-        String destinationType;
-
-        @JsonProperty("routing_key")
-        String routingKey;
-
-        @JsonProperty("arguments")
-        Map<String, String> arguments;
-
-        @JsonProperty("properties_key")
-        String propertiesKey;
+        public BindingSource(@JsonProperty("source") String source,
+                             @JsonProperty("vhost") String vhost,
+                             @JsonProperty("destination") String destination,
+                             @JsonProperty("destination_type") String destinationType,
+                             @JsonProperty("routing_key") String routingKey,
+                             @JsonProperty("arguments") Map<String, String> arguments,
+                             @JsonProperty("properties_key") String propertiesKey) {
+            this.source = source;
+            this.vhost = vhost;
+            this.destination = destination;
+            this.destinationType = destinationType;
+            this.routingKey = routingKey;
+            this.arguments = arguments;
+            this.propertiesKey = propertiesKey;
+        }
 
         public String getSource() {
             return source;
