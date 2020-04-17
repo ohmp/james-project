@@ -10,6 +10,13 @@ Accepted (lazy consensus)
 
 Some mailbox implementations of James store already parsed attachments for faster retrieval.
 
+This attachment storage capabilities are required for two features:
+
+ - JMAP attachment download
+ - JMAP message search "attachment content" criteria
+ 
+Only Memory and Cassandra backends can be relied upon as a JMAP backend.
+
 Here are the POJOs related to these attachments:
 
  - **Attachment** : holds an attachmentId, the attachment content, as well as the content type
@@ -64,9 +71,7 @@ Some adjustments are needed on class working with attachment:
  and Maildir.
  
 Maildir and JPA no longer support attachment content loading. Only the JMAP protocol requires attachment content loading,
-which is not supported on top of these technologies. Attachment loading could be supported in the future via coupling on 
-the attachment naming strategy, where the attachment id is composed of the messageId and the position of the attachment 
-within the message EML.
+which is not supported on top of these technologies.
 
 Mailbox search attachment content criteria will be supported only on implementation supporting attachment storage.
 
