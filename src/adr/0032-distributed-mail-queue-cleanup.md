@@ -13,7 +13,7 @@ Read [Distributed Mail Queue](0031-distributed-mail-queue.md) for full context.
 **enqueuedMailsV3** and **deletedMailsV2** is never cleaned up and the corresponding blobs are always referenced. This is not
 ideal both from a privacy and space storage costs point of view.
 
-Note that **enqueuedMailsV3** and **deletedMailsV2** relies on timeWindowCompactionStrategy.
+Note that **enqueuedMailsV3** and **deletedMailsV2** rely on timeWindowCompactionStrategy.
 
 ## Decision
 
