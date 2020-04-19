@@ -33,6 +33,11 @@ public class Blob {
 
     @FunctionalInterface
     public interface InputStreamSupplier {
+        /**
+         * @return the content of this blob as an inputStream.
+         *
+         * The caller is responsible of closing it.
+         */
         InputStream load() throws IOException, BlobNotFoundException;
     }
 
