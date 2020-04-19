@@ -108,4 +108,13 @@ class CurrentPositionInputStreamTest {
 
         assertThat(currentPositionInputStream.getPosition()).isEqualTo(10);
     }
+
+    @Test
+    void getPositionShouldReturnPartialRead() throws Exception {
+        CurrentPositionInputStream currentPositionInputStream = new CurrentPositionInputStream(new ByteArrayInputStream(BYTES));
+
+        currentPositionInputStream.read(new byte[6]);
+
+        assertThat(currentPositionInputStream.getPosition()).isEqualTo(6);
+    }
 }
