@@ -54,7 +54,9 @@ Enforce cassandra schema version to be 5 from James release 3.5.0. This allows t
 
 We will re-organize the attachment POJOs: 
 
- - **Attachment** should hold an attachmentId, a content type, and a size. It will no longer hold the content.
+ - **Attachment** should hold an attachmentId, a content type, and a size. It will no longer hold the content. The 
+ content can be loaded from its **AttachmentId** via the **AttachmentLoader** API that the **AttachmentManager** 
+ implements.
  - **MessageAttachment** : composes an attachment with its disposition within a message (cid, inline and name)
  - **Blob** would no longer hold the content as a byte array but rather a content retriever (`Supplier<InputStream>`)
  - **ParsedAttachment** is the direct result of attachment parsing, and composes a **MessageAttachment** and the 
