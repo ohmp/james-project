@@ -264,13 +264,23 @@ class MessageParserTest {
     }
 
     @Test
+    void getAttachmentsShouldRetrieveCharset() throws Exception {
+        List<ParsedAttachment> attachments = testee.retrieveAttachments(
+            ClassLoader.getSystemResourceAsStream("eml/charset.eml"));
+
+        assertThat(attachments).hasSize(1)
+            .first()
+            .satisfies(attachment -> assertThat(attachment.getContentType()).isEqualTo("text/calendar; charset=iso-8859-1"));
+    }
+
+    @Test
     void getAttachmentsShouldConsiderICSAsAttachments() throws Exception {
         List<ParsedAttachment> attachments = testee.retrieveAttachments(
             ClassLoader.getSystemResourceAsStream("eml/calendar.eml"));
 
         assertThat(attachments)
             .hasSize(1)
-            .allMatch(messageAttachment -> messageAttachment.getContentType().equals("text/calendar"));
+            .allMatch(messageAttachment -> messageAttachment.getContentType().equals("text/calendar; charset=utf-8"));
     }
 
     @Test
@@ -306,6 +316,6 @@ class MessageParserTest {
 
         List<ParsedAttachment> result = testee.retrieveAttachments(new ByteArrayInputStream(DefaultMessageWriter.asBytes(message)));
         assertThat(result).hasSize(1)
-            .allMatch(attachment -> attachment.getContentType().equals(MDN.DISPOSITION_CONTENT_TYPE));
+            .allMatch(attachment -> attachment.getContentType().equals("message/disposition-notification; charset=UTF-8"));
     }
 }
