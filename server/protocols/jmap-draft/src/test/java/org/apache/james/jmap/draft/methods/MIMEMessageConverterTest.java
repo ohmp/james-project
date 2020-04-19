@@ -624,7 +624,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from(expectedCID))
                 .isInline(true)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
             // When
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
@@ -672,7 +673,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from(expectedCID))
                 .isInline(true)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
             // When
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
@@ -752,7 +754,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from(expectedCID))
                 .isInline(true)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
 
             // When
@@ -790,7 +793,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from("cid"))
                 .isInline(false)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                 CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment), session);
@@ -822,7 +826,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from("cid"))
                 .isInline(false)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                 CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment), session);
@@ -854,7 +859,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from("cid"))
                 .isInline(false)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                 CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment), session);
@@ -888,7 +894,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from("cid"))
                 .isInline(true)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
                     CreationMessageId.of("user|mailbox|1"), testMessage), ImmutableList.of(attachment), session);
@@ -924,7 +931,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from("cid"))
                 .isInline(true)
                 .build();
-            when(attachmentContentLoader.load(inline.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text.getBytes()));
+            when(attachmentContentLoader.load(inline.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text.getBytes()));
 
 
             String text2 = "attachment data";
@@ -938,7 +946,8 @@ class MIMEMessageConverterTest {
                 .cid(Cid.from("cid2"))
                 .isInline(false)
                 .build();
-            when(attachmentContentLoader.load(attachment.getAttachment(), session)).thenReturn(new ByteArrayInputStream(text2.getBytes()));
+            when(attachmentContentLoader.load(attachment.getAttachment(), session))
+                .thenReturn(new ByteArrayInputStream(text2.getBytes()));
 
 
             Message result = sut.convertToMime(new ValueWithId.CreationMessageEntry(
