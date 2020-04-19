@@ -46,10 +46,18 @@ import com.google.common.collect.ImmutableList;
 
 public interface MessageStorer {
     /**
-     * If applicable, this method will parse the messageContent to retrieve associated attachments and will store them.
+     * If supported by the underlying implementation, this method will parse the messageContent to retrieve associated
+     * attachments and will store them.
+     *
+     * Otherwize an empty optional will be returned on the right side of the pair.
      */
     Pair<MessageMetaData, Optional<List<MessageAttachmentMetadata>>> appendMessageToStore(Mailbox mailbox, Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, MailboxSession session) throws MailboxException;
 
+    /**
+     * MessageStorer to parsing, storing and returning AttachmentMetadata
+     *
+     * To be used with implementation that supports attachment content storage
+     */
     class WithAttachment implements MessageStorer {
         private static final Logger LOGGER = LoggerFactory.getLogger(WithAttachment.class);
         private static final int START = 0;
@@ -100,6 +108,11 @@ public interface MessageStorer {
         }
     }
 
+    /**
+     * MessageStorer that do not parses, stores, nor return Attachment metadata
+     *
+     * To be used when the underlying implementation do not support attachment storage.
+     */
     class WithoutAttachment implements MessageStorer {
         private final MailboxSessionMapperFactory mapperFactory;
         private final MessageId.Factory messageIdFactory;
