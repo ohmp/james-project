@@ -26,9 +26,7 @@ public class InputStreamConsummer {
     public static void consume(InputStream inputStream) throws IOException {
         byte[] discard = new byte[4096];
         while (inputStream.read(discard) != -1) {
-            // consume the rest of the stream so everything get copied to
-            // the file now
-            // via the TeeInputStream
+            // consume the rest of the stream
         }
     }
 }
