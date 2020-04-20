@@ -24,7 +24,7 @@ unbounded queue growth eventually causing RabbitMQ resource exhaustion and failu
 A **required group** is a group configured within James additional mailbox listener or statically binded via Guice. We 
 should have a queue for that mailbox listener binded to the main exchange.
 
-A **registered group** is a group whose queue exist in rabbitMQ and is bound to the exchange, independently of its James 
+A **registered group** is a group whose queue exists in RabbitMQ and is bound to the exchange, independently of its James 
 usage. If it is required, a consumer will consume the queue. Otherwise the queue might grow unbounded.
 
 ## Decision
