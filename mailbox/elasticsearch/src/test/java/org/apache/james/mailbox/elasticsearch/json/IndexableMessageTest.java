@@ -347,7 +347,7 @@ class IndexableMessageTest {
     }
 
     @Test
-    void hasAttachmentsShouldReturnFalseWhenPropertyIsPresentButFalse() throws IOException {
+    void hasAttachmentsShouldReturnFalseWhenEmptyAttachmentsButFalse() throws IOException {
         //Given
         MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
         TestId mailboxId = TestId.of(1);
@@ -363,7 +363,7 @@ class IndexableMessageTest {
             .thenReturn(MESSAGE_UID);
         when(mailboxMessage.getModSeq())
             .thenReturn(ModSeq.first());
-        when(mailboxMessage.getProperties())
+        when(mailboxMessage.getAttachments())
             .thenReturn(ImmutableList.of());
 
         // When
