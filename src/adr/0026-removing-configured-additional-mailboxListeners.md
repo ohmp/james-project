@@ -29,7 +29,7 @@ usage. If it is required, a consumer will consume the queue. Otherwise the queue
 
 ## Decision
 
-For rabbitMQ, configuration changes of additional mailbox listeners should be tracked via event sourcing. Event sourcing is 
+For RabbitMQ, configuration changes of additional mailbox listeners should be tracked via event sourcing. Event sourcing is 
 desirable as it allows:
  - Detecting previously removed MailboxListener upon start
  - Audit of unbind decisions
