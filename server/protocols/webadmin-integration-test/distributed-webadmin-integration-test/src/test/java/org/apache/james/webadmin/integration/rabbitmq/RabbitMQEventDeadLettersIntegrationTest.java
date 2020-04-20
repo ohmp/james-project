@@ -51,6 +51,7 @@ import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventDispatcher.DispatchingFailureGroup;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
+import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
@@ -191,6 +192,10 @@ class RabbitMQEventDeadLettersIntegrationTest {
         }
     }
 
+    //This value is duplicated from default configuration to ensure we keep the same behavior over time
+    //unless we really want to change that default value
+    private static final int MAX_RETRIES = 2;
+
     private static RabbitMQExtension RABBIT_MQ_EXTENSION = new RabbitMQExtension();
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerBuilder()
@@ -201,12 +206,14 @@ class RabbitMQEventDeadLettersIntegrationTest {
         .extension(new RetryEventsListenerExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
-            .overrideWith(new WebadminIntegrationTestModule()))
+            .overrideWith(new WebadminIntegrationTestModule())
+            .overrideWith(binder -> binder.bind(RetryBackoffConfiguration.class)
+                .toInstance(RetryBackoffConfiguration.builder()
+                    .maxRetries(MAX_RETRIES)
+                    .firstBackoff(java.time.Duration.ofMillis(100))
+                    .jitterFactor(0.5)
+                    .build())))
         .build();
-
-    //This value is duplicated from default configuration to ensure we keep the same behavior over time
-    //unless we really want to change that default value
-    private static final int MAX_RETRIES = 8;
 
     private static final String DOMAIN = "domain.tld";
     private static final String BOB = "bob@" + DOMAIN;
@@ -222,8 +229,8 @@ class RabbitMQEventDeadLettersIntegrationTest {
         .and()
         .with()
         .pollDelay(slowPacedPollInterval)
+        .atMost(30, TimeUnit.SECONDS)
         .await();
-    private ConditionFactory awaitAtMostTenSeconds = calmlyAwait.atMost(10, TimeUnit.SECONDS);
     private MailboxProbeImpl mailboxProbe;
 
     @BeforeEach
@@ -433,7 +440,7 @@ class RabbitMQEventDeadLettersIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 1);
+        calmlyAwait.until(() -> retryEventsListener.getSuccessfulEvents().size() == 1);
     }
 
     private void waitForCalls(RetryEventsListener retryEventsListener, int count) {
@@ -509,7 +516,7 @@ class RabbitMQEventDeadLettersIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
+        calmlyAwait.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
     }
 
     @Test
@@ -580,7 +587,7 @@ class RabbitMQEventDeadLettersIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
+        calmlyAwait.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
     }
 
     @Disabled("retry rest API delivers only once, see JAMES-2907. We need same retry cound for this test to work")
@@ -626,7 +633,7 @@ class RabbitMQEventDeadLettersIntegrationTest {
         waitForFailedDispatching();
         waitForReDeliver(DISPATCHING_FAILURE_GROUP_ID);
 
-        awaitAtMostTenSeconds.untilAsserted(() ->
+        calmlyAwait.untilAsserted(() ->
             assertThat(listener1.getSuccessfulEvents())
                 .hasSameSizeAs(listener2.getSuccessfulEvents())
                 .hasSize(1));
