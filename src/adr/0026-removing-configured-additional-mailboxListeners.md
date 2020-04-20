@@ -29,16 +29,15 @@ usage. If it is required, a consumer will consume the queue. Otherwise the queue
 
 ## Decision
 
-For RabbitMQ, configuration changes of additional mailbox listeners should be tracked via event sourcing. Event sourcing is 
-desirable as it allows:
+We need a clear consensus and auditability across the James cluster about **required groups** (and their changes). Thus 
+Event sourcing will maintain an aggregate tracking **required groups** (and their changes). Audit will be enabled by 
+adding host and date information upon changes. A subscriber will perform changes (binds and unbinds) in registered groups 
+following the changes of the aggregate.
+
+Event sourcing is desirable as it allows:
  - Detecting previously removed MailboxListener upon start
  - Audit of unbind decisions
  - Enables writing more complex business rules in the future
-
-We need a clear consensus and auditability across the James cluster about (and their changes). Thus Event sourcing will 
-maintain an aggregate tracking **required groups** (and their changes). Audit will be enabled by adding host and date 
-information upon changes. A subscriber will perform changes (binds and unbinds) in registered groups following the 
-changes of the aggregate.
 
 Upon start the aggregate will be updated if needed and bindings will be adapted accordingly.
 
