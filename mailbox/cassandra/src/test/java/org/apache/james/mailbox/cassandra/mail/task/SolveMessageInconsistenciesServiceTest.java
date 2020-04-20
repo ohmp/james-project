@@ -259,6 +259,48 @@ public class SolveMessageInconsistenciesServiceTest {
                         .isEqualTo(MESSAGE_2);
                 });
             }
+
+            @Test
+            void fixMailboxInconsistenciesShouldUpdateContextWhenFailedToRetrieveImapUidRecord(CassandraCluster cassandra) {
+                Context context = new Context();
+
+                imapUidDAO.insert(MESSAGE_1).block();
+
+                cassandra.getConf()
+                    .registerScenario(fail()
+                        .times(1)
+                        .whenQueryStartsWith("SELECT messageId,mailboxId,uid,modSeq,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags FROM imapUidTable WHERE messageId=:messageId AND mailboxId=:mailboxId"));
+
+                testee.fixMessageInconsistencies(context).block();
+
+                assertThat(context.snapshot())
+                    .isEqualTo(Context.builder()
+                        .processedImapUidEntries(1)
+                        .errors(MESSAGE_1.getComposedMessageId())
+                        .build()
+                        .snapshot());
+            }
+
+            @Test
+            void fixMailboxInconsistenciesShouldUpdateContextWhenFailedToRetrieveMessageIdRecord(CassandraCluster cassandra) {
+                Context context = new Context();
+
+                imapUidDAO.insert(MESSAGE_1).block();
+
+                cassandra.getConf()
+                    .registerScenario(fail()
+                        .times(1)
+                        .whenQueryStartsWith("SELECT messageId,mailboxId,uid,modSeq,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid"));
+
+                testee.fixMessageInconsistencies(context).block();
+
+                assertThat(context.snapshot())
+                    .isEqualTo(Context.builder()
+                        .processedImapUidEntries(1)
+                        .errors(MESSAGE_1.getComposedMessageId())
+                        .build()
+                        .snapshot());
+            }
         }
     }
 
@@ -363,6 +405,48 @@ public class SolveMessageInconsistenciesServiceTest {
                         .containsExactly(MESSAGE_1);
                 });
             }
+
+            @Test
+            void fixMailboxInconsistenciesShouldUpdateContextWhenFailedToRetrieveMessageIdRecord(CassandraCluster cassandra) {
+                Context context = new Context();
+
+                messageIdDAO.insert(MESSAGE_1).block();
+
+                cassandra.getConf()
+                    .registerScenario(fail()
+                        .times(1)
+                        .whenQueryStartsWith("SELECT messageId,mailboxId,uid,modSeq,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid"));
+
+                testee.fixMessageInconsistencies(context).block();
+
+                assertThat(context.snapshot())
+                    .isEqualTo(Context.builder()
+                        .processedMessageIdEntries(1)
+                        .errors(MESSAGE_1.getComposedMessageId())
+                        .build()
+                        .snapshot());
+            }
+
+            @Test
+            void fixMailboxInconsistenciesShouldUpdateContextWhenFailedToRetrieveImapUidRecord(CassandraCluster cassandra) {
+                Context context = new Context();
+
+                messageIdDAO.insert(MESSAGE_1).block();
+
+                cassandra.getConf()
+                    .registerScenario(fail()
+                        .times(1)
+                        .whenQueryStartsWith("SELECT messageId,mailboxId,uid,modSeq,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags FROM imapUidTable WHERE messageId=:messageId AND mailboxId=:mailboxId"));
+
+                testee.fixMessageInconsistencies(context).block();
+
+                assertThat(context.snapshot())
+                    .isEqualTo(Context.builder()
+                        .processedMessageIdEntries(1)
+                        .errors(MESSAGE_1.getComposedMessageId())
+                        .build()
+                        .snapshot());
+            }
         }
     }
 
@@ -465,7 +549,7 @@ public class SolveMessageInconsistenciesServiceTest {
     }
 
     @Test
-    void fixMailboxInconsistenciesShouldUpdateContextWhenError(CassandraCluster cassandra) {
+    void fixMailboxInconsistenciesShouldUpdateContextWhenDeleteError(CassandraCluster cassandra) {
         Context context = new Context();
 
         messageIdDAO.insert(MESSAGE_1).block();

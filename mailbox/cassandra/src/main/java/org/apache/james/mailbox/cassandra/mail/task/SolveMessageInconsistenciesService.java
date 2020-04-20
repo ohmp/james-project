@@ -52,6 +52,21 @@ public class SolveMessageInconsistenciesService {
 
     private static Inconsistency NO_INCONSISTENCY = (context, imapUidDAO, messageIdDAO) -> Mono.just(Task.Result.COMPLETED);
 
+    private static class FailedToRetrieveRecord implements Inconsistency {
+        private final ComposedMessageIdWithMetaData message;
+
+        private FailedToRetrieveRecord(ComposedMessageIdWithMetaData message) {
+            this.message = message;
+        }
+
+        @Override
+        public Mono<Task.Result> fix(Context context, CassandraMessageIdToImapUidDAO imapUidDAO, CassandraMessageIdDAO messageIdDAO) {
+            context.addErrors(message.getComposedMessageId());
+            LOGGER.error("Failed to retrieve record: {}", message.getComposedMessageId());
+            return Mono.just(Task.Result.PARTIAL);
+        }
+    }
+
     private static class OrphanImapUidEntry implements Inconsistency {
         private final ComposedMessageIdWithMetaData message;
 
@@ -403,21 +418,21 @@ public class SolveMessageInconsistenciesService {
 
     private Mono<Inconsistency> detectInconsistencyInImapUid(ComposedMessageIdWithMetaData message) {
         return messageIdToImapUidDAO.retrieve((CassandraMessageId) message.getComposedMessageId().getMessageId(), Optional.of((CassandraId) message.getComposedMessageId().getMailboxId()))
-            .single()
-            .flatMap(upToDateMessageFromImapUid -> detectInconsistencyInImapUid(message, upToDateMessageFromImapUid));
+            .next()
+            .flatMap(this::compareWithMessageIdRecord)
+            .onErrorResume(error -> Mono.just(new FailedToRetrieveRecord(message)));
     }
 
-    private Mono<Inconsistency> detectInconsistencyInImapUid(ComposedMessageIdWithMetaData message, ComposedMessageIdWithMetaData upToDateMessageFromImapUid) {
+    private Mono<Inconsistency> compareWithMessageIdRecord(ComposedMessageIdWithMetaData upToDateMessageFromImapUid) {
         return messageIdDAO.retrieve((CassandraId) upToDateMessageFromImapUid.getComposedMessageId().getMailboxId(), upToDateMessageFromImapUid.getComposedMessageId().getUid())
-            .filter(Optional::isPresent)
-            .map(optional -> {
-                if (optional.get().equals(upToDateMessageFromImapUid)) {
+            .flatMap(Mono::justOrEmpty)
+            .map(messageIdRecord -> {
+                if (messageIdRecord.equals(upToDateMessageFromImapUid)) {
                     return NO_INCONSISTENCY;
                 }
-
-                return new OutdatedMessageIdEntry(optional.get(), upToDateMessageFromImapUid);
+                return new OutdatedMessageIdEntry(messageIdRecord, upToDateMessageFromImapUid);
             })
-            .switchIfEmpty(Mono.just(new OrphanImapUidEntry(message)));
+            .switchIfEmpty(Mono.just(new OrphanImapUidEntry(upToDateMessageFromImapUid)));
     }
 
     private Flux<Task.Result> fixInconsistenciesInMessageId(Context context) {
@@ -433,6 +448,7 @@ public class SolveMessageInconsistenciesService {
             .flatMap(upToDateMessage -> messageIdToImapUidDAO.retrieve((CassandraMessageId) message.getComposedMessageId().getMessageId(), Optional.of((CassandraId) message.getComposedMessageId().getMailboxId()))
                 .map(uidRecord -> NO_INCONSISTENCY)
                 .switchIfEmpty(Mono.just(new OrphanMessageIdEntry(message)))
-                .single());
+                .next())
+            .onErrorResume(error -> Mono.just(new FailedToRetrieveRecord(message)));
     }
 }
