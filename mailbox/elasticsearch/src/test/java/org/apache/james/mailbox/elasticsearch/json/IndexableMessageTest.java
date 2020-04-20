@@ -347,7 +347,7 @@ class IndexableMessageTest {
     }
 
     @Test
-    void hasAttachmentsShouldReturnFalseWhenEmptyAttachmentsButFalse() throws IOException {
+    void hasAttachmentsShouldReturnFalseWhenEmptyAttachments() throws IOException {
         //Given
         MailboxMessage  mailboxMessage = mock(MailboxMessage.class);
         TestId mailboxId = TestId.of(1);
