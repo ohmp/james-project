@@ -54,7 +54,7 @@ public interface MessageStorer {
     Pair<MessageMetaData, Optional<List<MessageAttachmentMetadata>>> appendMessageToStore(Mailbox mailbox, Date internalDate, int size, int bodyStartOctet, SharedInputStream content, Flags flags, PropertyBuilder propertyBuilder, MailboxSession session) throws MailboxException;
 
     /**
-     * MessageStorer to parsing, storing and returning AttachmentMetadata
+     * MessageStorer parsing, storing and returning AttachmentMetadata
      *
      * To be used with implementation that supports attachment content storage
      */
@@ -109,9 +109,9 @@ public interface MessageStorer {
     }
 
     /**
-     * MessageStorer that do not parses, stores, nor return Attachment metadata
+     * MessageStorer that does not parse, store, nor return Attachment metadata
      *
-     * To be used when the underlying implementation do not support attachment storage.
+     * To be used when the underlying implementation does not support attachment storage.
      */
     class WithoutAttachment implements MessageStorer {
         private final MailboxSessionMapperFactory mapperFactory;
