@@ -152,7 +152,7 @@ class MessageFastViewFactoryTest {
 
     @Test
     void fromMessageIdsShouldReturnAMessageWithComputedFastProperties() throws Exception {
-        MessageFastView actual = messageFastViewFactory.fromMessageIds(ImmutableList.of(previewComputedMessage1.getMessageId()), session).get(0);
+        MessageFastView actual = messageFastViewFactory.fromMessageIds(ImmutableList.of(previewComputedMessage1.getMessageId()), session).collectList().block().get(0);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(actual.getId()).isEqualTo(previewComputedMessage1.getMessageId());
             softly.assertThat(actual.getMailboxIds()).containsExactly(bobInbox.getId());
@@ -177,7 +177,7 @@ class MessageFastViewFactoryTest {
 
     @Test
     void fromMessageIdsShouldReturnAMessageWithPropertiesComputedFromFullMessageWhenNotPreComputed() throws Exception {
-        MessageFastView actual = messageFastViewFactory.fromMessageIds(ImmutableList.of(missingPreviewComputedMessage1.getMessageId()), session).get(0);
+        MessageFastView actual = messageFastViewFactory.fromMessageIds(ImmutableList.of(missingPreviewComputedMessage1.getMessageId()), session).collectList().block().get(0);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(actual.getId()).isEqualTo(missingPreviewComputedMessage1.getMessageId());
             softly.assertThat(actual.getMailboxIds()).containsExactly(bobInbox.getId());
@@ -208,7 +208,7 @@ class MessageFastViewFactoryTest {
                     previewComputedMessage3.getMessageId(),
                     missingPreviewComputedMessage1.getMessageId(),
                     previewComputedMessage1.getMessageId()),
-                session);
+                session).collectList().block();
 
         assertThat(actual)
             .hasSize(4)
@@ -230,7 +230,9 @@ class MessageFastViewFactoryTest {
             .fromMessageIds(ImmutableList.of(
                     missingPreviewComputedMessage1.getMessageId(),
                     previewComputedMessage1.getMessageId()),
-                session);
+                session)
+            .collectList().block();
+
 
         assertThat(actual)
             .hasSize(1)
