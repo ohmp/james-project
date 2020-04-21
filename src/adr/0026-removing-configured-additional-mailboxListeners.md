@@ -39,6 +39,15 @@ Event sourcing is desirable as it allows:
  - Audit of unbind decisions
  - Enables writing more complex business rules in the future
 
+The event sourcing system will have the following command:
+
+ - **RequireGroups** the groups that the **EventBus** is starting with.
+
+And the following events:
+
+ - **RequiredGroupAdded** a group is added to the required groups.
+ - **RequiredGroupRemoved** a group is removed from the required groups.
+
 Upon start the aggregate will be updated if needed and bindings will be adapted accordingly.
 
 Note that upon failure, registered groups will diverge from required groups. We will add a health check to diagnose 
