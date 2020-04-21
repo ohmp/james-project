@@ -274,11 +274,10 @@ public class SolveMessageInconsistenciesServiceTest {
                 testee.fixMessageInconsistencies(context).block();
 
                 assertThat(context.snapshot())
-                    .isEqualTo(Context.builder()
+                    .isEqualTo(Context.Snapshot.builder()
                         .processedImapUidEntries(1)
                         .errors(MESSAGE_1.getComposedMessageId())
-                        .build()
-                        .snapshot());
+                        .build());
             }
 
             @Test
@@ -295,11 +294,10 @@ public class SolveMessageInconsistenciesServiceTest {
                 testee.fixMessageInconsistencies(context).block();
 
                 assertThat(context.snapshot())
-                    .isEqualTo(Context.builder()
+                    .isEqualTo(Context.Snapshot.builder()
                         .processedImapUidEntries(1)
                         .errors(MESSAGE_1.getComposedMessageId())
-                        .build()
-                        .snapshot());
+                        .build());
             }
         }
     }
@@ -420,11 +418,10 @@ public class SolveMessageInconsistenciesServiceTest {
                 testee.fixMessageInconsistencies(context).block();
 
                 assertThat(context.snapshot())
-                    .isEqualTo(Context.builder()
+                    .isEqualTo(Context.Snapshot.builder()
                         .processedMessageIdEntries(1)
                         .errors(MESSAGE_1.getComposedMessageId())
-                        .build()
-                        .snapshot());
+                        .build());
             }
 
             @Test
@@ -441,11 +438,10 @@ public class SolveMessageInconsistenciesServiceTest {
                 testee.fixMessageInconsistencies(context).block();
 
                 assertThat(context.snapshot())
-                    .isEqualTo(Context.builder()
+                    .isEqualTo(Context.Snapshot.builder()
                         .processedMessageIdEntries(1)
                         .errors(MESSAGE_1.getComposedMessageId())
-                        .build()
-                        .snapshot());
+                        .build());
             }
         }
     }
@@ -469,11 +465,10 @@ public class SolveMessageInconsistenciesServiceTest {
         testee.fixMessageInconsistencies(context).block();
 
         assertThat(context.snapshot())
-            .isEqualTo(Context.builder()
+            .isEqualTo(Context.Snapshot.builder()
                 .processedImapUidEntries(1)
                 .processedMessageIdEntries(1)
-                .build()
-                .snapshot());
+                .build());
     }
 
     @Test
@@ -485,12 +480,11 @@ public class SolveMessageInconsistenciesServiceTest {
         testee.fixMessageInconsistencies(context).block();
 
         assertThat(context.snapshot())
-            .isEqualTo(Context.builder()
+            .isEqualTo(Context.Snapshot.builder()
                 .processedImapUidEntries(1)
                 .addedMessageIdEntries(1)
                 .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
-                .build()
-                .snapshot());
+                .build());
     }
 
     @Test
@@ -503,13 +497,12 @@ public class SolveMessageInconsistenciesServiceTest {
         testee.fixMessageInconsistencies(context).block();
 
         assertThat(context.snapshot())
-            .isEqualTo(Context.builder()
+            .isEqualTo(Context.Snapshot.builder()
                 .processedImapUidEntries(1)
                 .processedMessageIdEntries(1)
                 .updatedMessageIdEntries(1)
                 .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
-                .build()
-                .snapshot());
+                .build());
     }
 
     @Test
@@ -522,13 +515,12 @@ public class SolveMessageInconsistenciesServiceTest {
         testee.fixMessageInconsistencies(context).block();
 
         assertThat(context.snapshot())
-            .isEqualTo(Context.builder()
+            .isEqualTo(Context.Snapshot.builder()
                 .processedImapUidEntries(1)
                 .processedMessageIdEntries(1)
                 .updatedMessageIdEntries(1)
                 .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
-                .build()
-                .snapshot());
+                .build());
     }
 
     @Test
@@ -540,12 +532,11 @@ public class SolveMessageInconsistenciesServiceTest {
         testee.fixMessageInconsistencies(context).block();
 
         assertThat(context.snapshot())
-            .isEqualTo(Context.builder()
+            .isEqualTo(Context.Snapshot.builder()
                 .processedMessageIdEntries(1)
                 .removedMessageIdEntries(1)
                 .addFixedInconsistencies(MESSAGE_1.getComposedMessageId())
-                .build()
-                .snapshot());
+                .build());
     }
 
     @Test
@@ -562,10 +553,9 @@ public class SolveMessageInconsistenciesServiceTest {
         testee.fixMessageInconsistencies(context).block();
 
         assertThat(context.snapshot())
-            .isEqualTo(Context.builder()
+            .isEqualTo(Context.Snapshot.builder()
                 .processedMessageIdEntries(1)
                 .errors(MESSAGE_1.getComposedMessageId())
-                .build()
-                .snapshot());
+                .build());
     }
 }

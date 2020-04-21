@@ -160,77 +160,77 @@ public class SolveMessageInconsistenciesService {
     }
 
     static class Context {
-        static class Builder {
-            private Optional<Long> processedImapUidEntries;
-            private Optional<Long> processedMessageIdEntries;
-            private Optional<Long> addedMessageIdEntries;
-            private Optional<Long> updatedMessageIdEntries;
-            private Optional<Long> removedMessageIdEntries;
-            private ImmutableList.Builder<ComposedMessageId> fixedInconsistencies;
-            private ImmutableList.Builder<ComposedMessageId> errors;
-
-            Builder() {
-                processedImapUidEntries = Optional.empty();
-                processedMessageIdEntries = Optional.empty();
-                addedMessageIdEntries = Optional.empty();
-                updatedMessageIdEntries = Optional.empty();
-                removedMessageIdEntries = Optional.empty();
-                fixedInconsistencies = ImmutableList.builder();
-                errors = ImmutableList.builder();
-            }
-
-            public SolveMessageInconsistenciesService.Context.Builder processedImapUidEntries(long count) {
-                processedImapUidEntries = Optional.of(count);
-                return this;
-            }
-
-            public Builder processedMessageIdEntries(long count) {
-                processedMessageIdEntries = Optional.of(count);
-                return this;
-            }
-
-            public Builder addedMessageIdEntries(long count) {
-                addedMessageIdEntries = Optional.of(count);
-                return this;
-            }
-
-            public Builder updatedMessageIdEntries(long count) {
-                updatedMessageIdEntries = Optional.of(count);
-                return this;
-            }
-
-            public Builder removedMessageIdEntries(long count) {
-                removedMessageIdEntries = Optional.of(count);
-                return this;
-            }
-
-            public Builder addFixedInconsistencies(ComposedMessageId composedMessageId) {
-                fixedInconsistencies.add(composedMessageId);
-                return this;
-            }
-
-            public Builder errors(ComposedMessageId composedMessageId) {
-                errors.add(composedMessageId);
-                return this;
-            }
-
-            public SolveMessageInconsistenciesService.Context build() {
-                return new SolveMessageInconsistenciesService.Context(
-                    processedImapUidEntries.orElse(0L),
-                    processedMessageIdEntries.orElse(0L),
-                    addedMessageIdEntries.orElse(0L),
-                    updatedMessageIdEntries.orElse(0L),
-                    removedMessageIdEntries.orElse(0L),
-                    fixedInconsistencies.build(),
-                    errors.build());
-            }
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
         static class Snapshot {
+            public static Builder builder() {
+                return new Builder();
+            }
+
+            static class Builder {
+                private Optional<Long> processedImapUidEntries;
+                private Optional<Long> processedMessageIdEntries;
+                private Optional<Long> addedMessageIdEntries;
+                private Optional<Long> updatedMessageIdEntries;
+                private Optional<Long> removedMessageIdEntries;
+                private ImmutableList.Builder<ComposedMessageId> fixedInconsistencies;
+                private ImmutableList.Builder<ComposedMessageId> errors;
+
+                Builder() {
+                    processedImapUidEntries = Optional.empty();
+                    processedMessageIdEntries = Optional.empty();
+                    addedMessageIdEntries = Optional.empty();
+                    updatedMessageIdEntries = Optional.empty();
+                    removedMessageIdEntries = Optional.empty();
+                    fixedInconsistencies = ImmutableList.builder();
+                    errors = ImmutableList.builder();
+                }
+
+                public Builder processedImapUidEntries(long count) {
+                    processedImapUidEntries = Optional.of(count);
+                    return this;
+                }
+
+                public Builder processedMessageIdEntries(long count) {
+                    processedMessageIdEntries = Optional.of(count);
+                    return this;
+                }
+
+                public Builder addedMessageIdEntries(long count) {
+                    addedMessageIdEntries = Optional.of(count);
+                    return this;
+                }
+
+                public Builder updatedMessageIdEntries(long count) {
+                    updatedMessageIdEntries = Optional.of(count);
+                    return this;
+                }
+
+                public Builder removedMessageIdEntries(long count) {
+                    removedMessageIdEntries = Optional.of(count);
+                    return this;
+                }
+
+                public Builder addFixedInconsistencies(ComposedMessageId composedMessageId) {
+                    fixedInconsistencies.add(composedMessageId);
+                    return this;
+                }
+
+                public Builder errors(ComposedMessageId composedMessageId) {
+                    errors.add(composedMessageId);
+                    return this;
+                }
+
+                public SolveMessageInconsistenciesService.Context.Snapshot build() {
+                    return new SolveMessageInconsistenciesService.Context.Snapshot(
+                        processedImapUidEntries.orElse(0L),
+                        processedMessageIdEntries.orElse(0L),
+                        addedMessageIdEntries.orElse(0L),
+                        updatedMessageIdEntries.orElse(0L),
+                        removedMessageIdEntries.orElse(0L),
+                        fixedInconsistencies.build(),
+                        errors.build());
+                }
+            }
+
             private final long processedImapUidEntries;
             private final long processedMessageIdEntries;
             private final long addedMessageIdEntries;
@@ -326,17 +326,6 @@ public class SolveMessageInconsistenciesService {
 
         Context() {
             this(new AtomicLong(), new AtomicLong(), new AtomicLong(), new AtomicLong(), new AtomicLong(), ImmutableList.of(), ImmutableList.of());
-        }
-
-        Context(long processedImapUidEntries, long processedMessageIdEntries, long addedMessageIdEntries, long updatedMessageIdEntries,
-                long removedMessageIdEntries, Collection<ComposedMessageId> fixedInconsistencies, Collection<ComposedMessageId> errors) {
-            this(new AtomicLong(processedImapUidEntries),
-                new AtomicLong(processedMessageIdEntries),
-                new AtomicLong(addedMessageIdEntries),
-                new AtomicLong(updatedMessageIdEntries),
-                new AtomicLong(removedMessageIdEntries),
-                fixedInconsistencies,
-                errors);
         }
 
         private Context(AtomicLong processedImapUidEntries, AtomicLong processedMessageIdEntries, AtomicLong addedMessageIdEntries,
