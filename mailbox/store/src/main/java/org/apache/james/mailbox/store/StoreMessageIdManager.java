@@ -442,7 +442,7 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     private Function<MailboxId, Mono<Boolean>> hasRightsOnMailboxReactive(MailboxSession session, Right... rights) {
-        return mailboxId -> rightManager.myRightsReactive(mailboxId, session)
+        return mailboxId -> Mono.from(rightManager.myRightsReactive(mailboxId, session))
             .map(myRights -> myRights.contains(rights))
             .onErrorResume(any -> Mono.just(false));
     }

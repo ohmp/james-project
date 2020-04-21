@@ -25,6 +25,7 @@ import org.apache.james.mailbox.model.MailboxACL.Rfc4314Rights;
 import org.apache.james.mailbox.model.MailboxACL.Right;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Mono;
 
@@ -110,7 +111,7 @@ public interface RightManager {
      */
     Rfc4314Rights myRights(MailboxId mailboxId, MailboxSession session) throws MailboxException;
 
-    Mono<Rfc4314Rights> myRightsReactive(MailboxId mailboxId, MailboxSession session);
+    Publisher<Rfc4314Rights> myRightsReactive(MailboxId mailboxId, MailboxSession session);
 
     /**
      * Update the Mailbox ACL of the designated mailbox. We can either ADD REPLACE or REMOVE entries.
