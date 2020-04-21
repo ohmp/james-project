@@ -27,8 +27,6 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.Mono;
-
 public interface RightManager {
     /**
      * Tells whether the given {@link MailboxSession}'s user has the given
