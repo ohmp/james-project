@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.JamesServerMain;
+import org.apache.james.modules.blobstore.BlobStoreChoosingModule.CacheDisabledModule;
+import org.apache.james.modules.blobstore.BlobStoreChoosingModule.CacheEnabledModule;
 import org.apache.james.modules.mailbox.CassandraCacheSessionModule;
 import org.apache.james.utils.PropertiesProvider;
 
@@ -36,8 +38,8 @@ public class BlobStoreCacheConfiguredModulesSupplier implements JamesServerMain.
         BlobStoreChoosingConfiguration blobStoreChoosingConfiguration = readBlobStoreChoosingConfiguration(propertiesProvider);
 
         if (blobStoreChoosingConfiguration.isCacheEnabled()) {
-            return Stream.of(new CassandraCacheSessionModule());
+            return Stream.of(new CassandraCacheSessionModule(), new CacheEnabledModule());
         }
-        return Stream.of();
+        return Stream.of(new CacheDisabledModule());
     }
 }

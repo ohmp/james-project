@@ -28,10 +28,16 @@ import javax.inject.Singleton;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.init.configuration.InjectionNames;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.MetricableBlobStore;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
+import org.apache.james.blob.cassandra.cache.BlobStoreCache;
+import org.apache.james.blob.cassandra.cache.CachedBlobStore;
+import org.apache.james.blob.cassandra.cache.CassandraBlobCacheModule;
+import org.apache.james.blob.cassandra.cache.CassandraBlobStoreCache;
+import org.apache.james.blob.cassandra.cache.CassandraCacheConfiguration;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
 import org.apache.james.blob.union.HybridBlobStore;
 import org.apache.james.modules.mailbox.ConfigurationComponent;
@@ -43,10 +49,46 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
 public class BlobStoreChoosingModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreChoosingModule.class);
+
+    public static class CacheDisabledModule extends AbstractModule  {
+        @Provides
+        @Named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION)
+        @Singleton
+        BlobStore provideBlobStore(@Named(CachedBlobStore.BACKEND) BlobStore blobStore) {
+            return blobStore;
+        }
+    }
+
+    public static class CacheEnabledModule extends AbstractModule  {
+        @Override
+        protected void configure() {
+            bind(CassandraBlobStoreCache.class).in(Scopes.SINGLETON);
+            bind(BlobStoreCache.class).to(CassandraBlobStoreCache.class);
+
+            Multibinder.newSetBinder(binder(), CassandraModule.class, Names.named(InjectionNames.CACHE))
+                .addBinding()
+                .toInstance(CassandraBlobCacheModule.MODULE);
+        }
+
+        @Provides
+        @Named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION)
+        @Singleton
+        BlobStore provideBlobStore(CachedBlobStore cachedBlobStore) {
+            return cachedBlobStore;
+        }
+
+        @Provides
+        @Singleton
+        CassandraCacheConfiguration providesCacheConfiguration(PropertiesProvider propertiesProvider) {
+            return CassandraCacheConfiguration.DEFAULT;
+        }
+    }
 
     @Override
     protected void configure() {
@@ -75,7 +117,7 @@ public class BlobStoreChoosingModule extends AbstractModule {
 
     @VisibleForTesting
     @Provides
-    @Named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION)
+    @Named(CachedBlobStore.BACKEND)
     @Singleton
     BlobStore provideBlobStore(BlobStoreChoosingConfiguration choosingConfiguration,
                                Provider<CassandraBlobStore> cassandraBlobStoreProvider,
