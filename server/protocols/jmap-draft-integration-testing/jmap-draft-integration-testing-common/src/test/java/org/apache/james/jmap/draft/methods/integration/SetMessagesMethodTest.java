@@ -4030,7 +4030,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessagesShouldPreserveCharset() throws Exception {
+    public void setMessagesShouldPreserveCharsetOfAttachment() throws Exception {
         String bytes1 = "attachment";
         String bytes2 = "attachment2";
         AttachmentMetadata uploadedAttachment1 = uploadAttachment(OCTET_CONTENT_TYPE_UTF8, bytes1.getBytes(StandardCharsets.UTF_8));
