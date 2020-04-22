@@ -274,6 +274,16 @@ class MessageParserTest {
     }
 
     @Test
+    void getAttachmentsShouldRetrieveAllPartsCharset() throws Exception {
+        List<ParsedAttachment> attachments = testee.retrieveAttachments(
+            ClassLoader.getSystemResourceAsStream("eml/charset.eml"));
+
+        assertThat(attachments).hasSize(1)
+            .extracting(ParsedAttachment::getContentType)
+            .containsOnly("text/calendar; charset=iso-8859-1", "text/calendar; charset=iso-4444-5");
+    }
+
+    @Test
     void getAttachmentsShouldConsiderICSAsAttachments() throws Exception {
         List<ParsedAttachment> attachments = testee.retrieveAttachments(
             ClassLoader.getSystemResourceAsStream("eml/calendar.eml"));
