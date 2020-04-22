@@ -646,7 +646,7 @@ class MIMEMessageConverterTest {
         }
 
         @Test
-        void test() throws Exception {
+        void convertToMimeShouldPreservePartCharset() throws Exception {
             // Given
             MIMEMessageConverter sut = new MIMEMessageConverter(attachmentContentLoader);
 
