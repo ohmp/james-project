@@ -23,11 +23,13 @@ import static org.apache.james.CassandraJamesServerMain.REQUIRE_TASK_MANAGER_MOD
 
 import org.apache.james.modules.DistributedTaskManagerModule;
 import org.apache.james.modules.TaskSerializationModule;
+import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
 import org.apache.james.modules.blobstore.BlobStoreChoosingModule;
 import org.apache.james.modules.event.RabbitMQEventBusModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -38,6 +40,8 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
             .with(new RabbitMQModule(), new BlobStoreChoosingModule(), new RabbitMQEventBusModule(), new TaskSerializationModule());
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(MODULES, new JMXServerModule());
+        JamesServerMain.main(
+            ImmutableList.of(MODULES, new JMXServerModule()),
+            ImmutableList.of(new BlobStoreCacheConfiguredModulesSupplier()));
     }
 }

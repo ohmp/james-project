@@ -17,24 +17,27 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james;
+package org.apache.james.modules.blobstore;
 
-import org.apache.james.data.LdapUsersRepositoryModule;
-import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
-import org.apache.james.modules.server.JMXServerModule;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingModule.readBlobStoreChoosingConfiguration;
 
-import com.google.common.collect.ImmutableList;
+import java.util.stream.Stream;
+
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.james.JamesServerMain;
+import org.apache.james.modules.mailbox.CassandraCacheSessionModule;
+import org.apache.james.utils.PropertiesProvider;
+
 import com.google.inject.Module;
-import com.google.inject.util.Modules;
 
-public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
-    public static final Module MODULES = Modules
-        .override(CassandraRabbitMQJamesServerMain.MODULES)
-        .with(new LdapUsersRepositoryModule());
+public class BlobStoreCacheConfiguredModulesSupplier implements JamesServerMain.ConfiguredModulesSupplier {
+    @Override
+    public Stream<Module> configuredModules(PropertiesProvider propertiesProvider) throws ConfigurationException {
+        BlobStoreChoosingConfiguration blobStoreChoosingConfiguration = readBlobStoreChoosingConfiguration(propertiesProvider);
 
-    public static void main(String[] args) throws Exception {
-        JamesServerMain.main(
-            ImmutableList.of(MODULES, new JMXServerModule()),
-            ImmutableList.of(new BlobStoreCacheConfiguredModulesSupplier()));
+        if (blobStoreChoosingConfiguration.isCacheEnabled()) {
+            return Stream.of(new CassandraCacheSessionModule());
+        }
+        return Stream.of();
     }
 }

@@ -60,6 +60,10 @@ public class BlobStoreChoosingModule extends AbstractModule {
     @Provides
     @Singleton
     BlobStoreChoosingConfiguration provideChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
+        return readBlobStoreChoosingConfiguration(propertiesProvider);
+    }
+
+    public static BlobStoreChoosingConfiguration readBlobStoreChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
             Configuration configuration = propertiesProvider.getConfigurations(ConfigurationComponent.NAMES);
             return BlobStoreChoosingConfiguration.from(configuration);
