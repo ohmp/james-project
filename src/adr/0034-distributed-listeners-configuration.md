@@ -92,7 +92,7 @@ incident.
 
 A broadcast can be attempted to propagate eventBus topology changes:
 
- - Each James server registers an exclusive queue to a "eventBus topology change" exchange.
+ - Each James server registers an exclusive queue to an "eventBus topology change" exchange.
  - Upon modification of the actual topology a "add" or "remove" event is emitted.
  - Each running James react to these event by instantiating the corresponding listener and starting consuming the 
  associated queue, or stops consuming the associated queue.
