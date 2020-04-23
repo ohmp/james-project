@@ -101,4 +101,4 @@ If a listener is added but is not in the classpath, an ERROR log is emitted. Thi
 which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James)
 servers however a local James upgrade will be required to effectively be able to start processing these events. 
 
-Propagating changes will thus no longer server reboot.
+Propagating changes will thus no longer need server reboot.
