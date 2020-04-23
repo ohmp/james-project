@@ -66,7 +66,7 @@ A WebAdmin endpoint will allow:
     - Will fail if the listener is required by Guice bindings on the current server (distributed check will not be 
     implemented) or if the listener is not configured.
     - Upon success, the listener is removed from to the **configured mailbox listener aggregate**, and the listener is 
-    unregistered locally. No broadcast is attempted, meaning that other James server will need a reboot to actually stop 
+    unregistered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually stop 
     consuming the queue. However, new events will stop arriving in the queue as its binding will be removed.
 
 Integration tests of the distributed James product will require to be ported to perform additional mailbox listener
