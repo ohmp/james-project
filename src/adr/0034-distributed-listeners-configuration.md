@@ -83,7 +83,7 @@ a WebAdmin to add/remove bindings/queue in a similar fashion of what had been pr
 
 All products other than "Distributed James" are unchanged.
 
-All the currently configured additional listeners will need to be registered .
+All the currently configured additional listeners will need to be registered.
 
 The definition of mailbox listeners is thus centralized and we are not exposed to an heterogeneous configuration 
 incident.
