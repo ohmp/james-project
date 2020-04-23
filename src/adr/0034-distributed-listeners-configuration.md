@@ -87,3 +87,18 @@ All the currently configured additional listeners will need to be registered .
 
 The definition of mailbox listeners is thus centralized and we are not exposed to an heterogeneous configuration 
 incident.
+
+## Possible evolutions
+
+A broadcast can be attempted to propagate eventBus topology changes:
+
+ - Each James server registers an exclusive queue to a "eventBus topology change" exchange.
+ - Upon modification of the actual topology a "add" or "remove" event is emitted.
+ - Each running James react to these event by instantiating the corresponding listener and starting consuming the 
+ associated queue, or stops consuming the associated queue.
+ 
+If a listener is added but is not in the classpath, an ERROR log is emitted. This can happen during a rolling upgrade,
+which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James)
+servers however a local James upgrade will be required to effectively be able to start processing these events. 
+
+Propagating changes will thus no longer server reboot.
