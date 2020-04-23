@@ -38,7 +38,7 @@ It will have the following events:
  - **ListenerAdded**: A mailbox listener is added
  - **ListenerRemoved**: A mailbox listener is removed
 
-A subscriber will react to these event to modify the RabbitMQ resource accordingly by adding queues, adding or removing
+A subscriber will react to these events to modify the RabbitMQ resource accordingly by adding queues, adding or removing
 binding.
 
 This event sourcing system differs from the one defined in
