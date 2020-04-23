@@ -15,7 +15,7 @@ James enables a user to register additional mailbox listeners.
 The distributed James server is handling mailbox event processing (mailboxListener execution) using a RabbitMQ work-queue
 per listener.
 
-Currently, mailbox listeners are determined by the guice bindings of the server and additional mailbox listener defined
+Currently, mailbox listeners are determined by the guice bindings of the server and additional mailbox listeners defined
 via configuration files.
 
 While the configuration might be specific for each James server, what actually is defined in RabbitMQ is common. 
