@@ -75,7 +75,7 @@ registry with this WebAdmin endpoint.
 We will also expose a endpoint listing the groups currently in use, and for each group the associated configuration, if 
 any. This will query the **configured mailbox listener aggregate**.
 
-We will introduce a health-check to actually ensure that RabbitMQ resources matches the configured listeners, and propose
+We will introduce a health check to actually ensure that RabbitMQ resources matches the configured listeners, and propose
 a WebAdmin to add/remove bindings/queue in a similar fashion of what had been proposed in 
 [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md).
 
