@@ -19,14 +19,11 @@
 
 package org.apache.james.mailbox.store.mail.model.impl;
 
-import static org.apache.james.mime4j.dom.field.ContentTypeField.PARAM_CHARSET;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -41,7 +38,6 @@ import org.apache.james.mime4j.dom.field.ContentDispositionField;
 import org.apache.james.mime4j.dom.field.ContentIdField;
 import org.apache.james.mime4j.dom.field.ContentTypeField;
 import org.apache.james.mime4j.dom.field.ParsedField;
-import org.apache.james.mime4j.field.Fields;
 import org.apache.james.mime4j.message.DefaultMessageBuilder;
 import org.apache.james.mime4j.message.DefaultMessageWriter;
 import org.apache.james.mime4j.stream.Field;
