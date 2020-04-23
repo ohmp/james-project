@@ -94,7 +94,7 @@ A broadcast can be attempted to propagate eventBus topology changes:
 
  - Each James server registers an exclusive queue to an "eventBus topology change" exchange.
  - Upon modification of the actual topology an "add" or "remove" event is emitted.
- - Each running James react to these event by instantiating the corresponding listener and starting consuming the 
+ - Each running James react to these events by instantiating the corresponding listener and starting consuming the 
  associated queue, or stops consuming the associated queue.
  
 If a listener is added but is not in the classpath, an ERROR log is emitted. This can happen during a rolling upgrade,
