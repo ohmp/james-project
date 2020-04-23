@@ -60,7 +60,7 @@ A WebAdmin endpoint will allow:
  - **to add a listener** to the one configured. Such a call:
     - Will fail if the listener is unknown to James, or if the 
     - Upon success the listener is added to the **configured mailbox listener aggregate**, and the listener is 
-    registered locally. No broadcast is attempted, meaning that other James server will need a reboot to actually start 
+    registered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually start 
     consuming the queue.
  - **to remove a listener**. Such a call:
     - Will fail if the listener is required by Guice bindings on the current server (distributed check will not be 
