@@ -49,8 +49,10 @@ Upon start, James will ensure the **configured mailbox listener event sourcing s
 listeners, and add them if missing (handling the RabbitMQ bindings by this mean), then starts the eventBus which will
 consume the given queues.
 
-If a listener is configured with a class unknown to James, the start-up fails. This can happen if a custom jar, containing
-user implemented mailbox listeners is partially deployed.
+If a listener is configured with a class unknown to James, the start-up do not fail but an ERROR log is emitted. This 
+can happen if a custom jar, containing user implemented mailbox listeners is partially deployed. This way an admin can 
+easily unconfigure that given listener using standard webadmin APIs. Read notes regarding 
+[impact and alternatives](#error-a-listener-cant-be-registered).
 
 This differs from [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md)
 by the fact we no longer need to register all listeners at once.
@@ -125,3 +127,26 @@ Since listener A is registered, James server version 1 can not be rebooted prior
 Upgrading to James version 2 means  that listener A is still registered as an additional listener, that needs to be 
 manually unconfigured once the rolling upgrade finished. Whish is acceptable in upgrade instruction. We need to make 
 sure the listeners could still be instanciated (even with empty code) for a transition period.
+
+## Error: a listener can't be registered
+
+If a mailbox listener can't be register, eg if it's class is not on the classpath, JAMES startup, according to this
+proposal won't be aborted.
+
+This results of an effort to allow an admin can easily unconfigure that given listener using standard webadmin APIs.
+
+However, this will result in a James server not consuming that given group (remote server possessing the JAR will still 
+correctly process all events). This needs a careful log review to get the admin reacting upon the incident.
+
+This result in an incorrect state locally, but the james cluster as a whole still behaves well, as James servers which
+can still run the listener.
+
+We explored the following alternatives:
+
+ - **Failing** upon James startup, but providing a CLI utility to unconfigure a falty group if needed.
+ - **Failing** upon James startup, but running James in a downgraded state allowing to unconfigure the falty listener.
+ 
+The fact that James is failing forces an admin to react, however 'downgraded' status might lead to automated tools to 
+believe James is fully operational, while it is not the case.
+
+We did not chose these options as they imply more development for limited safety gains.
