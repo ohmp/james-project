@@ -74,6 +74,9 @@ A WebAdmin endpoint will allow:
     - Upon success, the listener is removed from the **configured mailbox listener aggregate**, and the listener is 
     unregistered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually stop 
     consuming the queue. However, new events will stop arriving in the queue as its binding will be removed.
+    
+[Broadcast of topology changes](#broadcast-of-topology-changes) is an enhancement of the following proposal removing 
+some of the aforementioned limitations.
 
 Integration tests relying on additional mailbox listeners of the distributed James product will require to be ported to 
 perform additional mailbox listener registry with this WebAdmin endpoint. JMAP SpamAssassin, quota mailing tests are 
@@ -100,7 +103,9 @@ Mailbox listeners no longer required by guice will still need to be instanciable
 be considered as additional listener thus requiring explicit admin unconfiguration, which will be mentioned in the 
 related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolling-upgrade-scenari).
 
-## Possible evolutions
+## Notes
+
+## Broadcast of topology changes
 
 A broadcast can be attempted to propagate eventBus topology changes:
 
@@ -116,7 +121,7 @@ binding will not need to be redefined.
 
 Propagating changes will thus no longer need server reboot.
 
-## Notes
+This won't be contributed is the short run as it requires significant development effort.
 
 ### Rolling upgrade scenari
 
