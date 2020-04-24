@@ -23,10 +23,8 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.james.core.Username;
 import org.apache.james.jmap.draft.model.mailbox.Mailbox;
 import org.apache.james.jmap.draft.model.mailbox.MailboxNamespace;
-import org.apache.james.jmap.draft.model.mailbox.Quotas;
 import org.apache.james.jmap.draft.model.mailbox.Rights;
 import org.apache.james.jmap.draft.model.mailbox.SortOrder;
 import org.apache.james.jmap.draft.utils.quotas.DefaultQuotaLoader;
@@ -100,16 +98,16 @@ public class MailboxFactory {
             Preconditions.checkNotNull(session);
 
             try {
-                MailboxId mailboxId = computeMailboxId();
-                Mono<MessageManager> mailbox = mailbox(mailboxId).cache();
+                var mailboxId = computeMailboxId();
+                var mailbox = mailbox(mailboxId).cache();
 
-                MailboxACL mailboxACL = mailboxMetaData.map(MailboxMetaData::getResolvedAcls)
+                var mailboxACL = mailboxMetaData.map(MailboxMetaData::getResolvedAcls)
                     .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getResolvedAcl(session)).sneakyThrow());
 
-                MailboxPath mailboxPath = mailboxMetaData.map(MailboxMetaData::getPath)
+                var mailboxPath = mailboxMetaData.map(MailboxMetaData::getPath)
                     .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxPath()).sneakyThrow());
 
-                MailboxCounters.Sanitized mailboxCounters = mailboxMetaData.map(MailboxMetaData::getCounters)
+                var mailboxCounters = mailboxMetaData.map(MailboxMetaData::getCounters)
                     .orElseGet(Throwing.supplier(() -> retrieveCachedMailbox(mailboxId, mailbox).getMailboxCounters(session)).sneakyThrow())
                     .sanitize();
 
@@ -129,7 +127,7 @@ public class MailboxFactory {
         }
 
         private MailboxId computeMailboxId() {
-            int idCount = Booleans.countTrue(id.isPresent(), mailboxMetaData.isPresent());
+            var idCount = Booleans.countTrue(id.isPresent(), mailboxMetaData.isPresent());
             Preconditions.checkState(idCount == 1, "You need exactly one 'id' 'mailboxMetaData'");
             return id.or(
                 () -> mailboxMetaData.map(MailboxMetaData::getId))
@@ -167,14 +165,14 @@ public class MailboxFactory {
                          Optional<List<MailboxMetaData>> userMailboxesMetadata,
                          QuotaLoader quotaLoader,
                          MailboxSession mailboxSession) throws MailboxException {
-        boolean isOwner = mailboxPath.belongsTo(mailboxSession);
-        Optional<Role> role = Role.from(mailboxPath.getName());
+        var isOwner = mailboxPath.belongsTo(mailboxSession);
+        var role = Role.from(mailboxPath.getName());
 
-        Rights rights = Rights.fromACL(resolvedAcl)
+        var rights = Rights.fromACL(resolvedAcl)
             .removeEntriesFor(mailboxPath.getUser());
-        Username username = mailboxSession.getUser();
+        var username = mailboxSession.getUser();
 
-        Quotas quotas = quotaLoader.getQuotas(mailboxPath);
+        var quotas = quotaLoader.getQuotas(mailboxPath);
 
         return Mailbox.builder()
             .id(mailboxId)
@@ -205,7 +203,7 @@ public class MailboxFactory {
 
     @VisibleForTesting
     String getName(MailboxPath mailboxPath, MailboxSession mailboxSession) {
-        String name = mailboxPath.getName();
+        var name = mailboxPath.getName();
         if (name.contains(String.valueOf(mailboxSession.getPathDelimiter()))) {
             List<String> levels = Splitter.on(mailboxSession.getPathDelimiter()).splitToList(name);
             return levels.get(levels.size() - 1);
@@ -216,11 +214,11 @@ public class MailboxFactory {
     @VisibleForTesting
     Optional<MailboxId> getParentIdFromMailboxPath(MailboxPath mailboxPath, Optional<List<MailboxMetaData>> userMailboxesMetadata,
                                                    MailboxSession mailboxSession) throws MailboxException {
-        List<MailboxPath> levels = mailboxPath.getHierarchyLevels(mailboxSession.getPathDelimiter());
+        var levels = mailboxPath.getHierarchyLevels(mailboxSession.getPathDelimiter());
         if (levels.size() <= 1) {
             return Optional.empty();
         }
-        MailboxPath parent = levels.get(levels.size() - 2);
+        var parent = levels.get(levels.size() - 2);
         return userMailboxesMetadata.map(list -> retrieveParentFromMetadata(parent, list))
             .orElseGet(Throwing.supplier(() -> retrieveParentFromBackend(mailboxSession, parent)).sneakyThrow());
     }
