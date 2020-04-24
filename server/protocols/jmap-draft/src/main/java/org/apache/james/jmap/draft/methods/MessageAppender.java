@@ -38,12 +38,10 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
-import org.apache.james.mailbox.MessageManager.AppendResult;
 import org.apache.james.mailbox.exception.AttachmentNotFoundException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.Cid;
-import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachmentMetadata;
 import org.apache.james.mime4j.dom.Message;
@@ -77,20 +75,20 @@ public class MessageAppender {
                                                         List<MailboxId> targetMailboxes,
                                                         MailboxSession session) throws MailboxException {
         Preconditions.checkArgument(!targetMailboxes.isEmpty());
-        ImmutableList<MessageAttachmentMetadata> messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
-        byte[] messageContent = mimeMessageConverter.convert(createdEntry, messageAttachments, session);
-        SharedByteArrayInputStream content = new SharedByteArrayInputStream(messageContent);
-        Date internalDate = Date.from(createdEntry.getValue().getDate().toInstant());
+        var messageAttachments = getMessageAttachments(session, createdEntry.getValue().getAttachments());
+        var messageContent = mimeMessageConverter.convert(createdEntry, messageAttachments, session);
+        var content = new SharedByteArrayInputStream(messageContent);
+        var internalDate = Date.from(createdEntry.getValue().getDate().toInstant());
 
-        MessageManager mailbox = mailboxManager.getMailbox(targetMailboxes.get(0), session);
-        AppendResult appendResult = mailbox.appendMessage(
+        var mailbox = mailboxManager.getMailbox(targetMailboxes.get(0), session);
+        var appendResult = mailbox.appendMessage(
             MessageManager.AppendCommand.builder()
                 .withInternalDate(internalDate)
                 .withFlags(getFlags(createdEntry.getValue()))
                 .notRecent()
                 .build(content),
             session);
-        ComposedMessageId ids = appendResult.getId();
+        var ids = appendResult.getId();
         if (targetMailboxes.size() > 1) {
             messageIdManager.setInMailboxes(ids.getMessageId(), targetMailboxes, session);
         }
@@ -113,14 +111,14 @@ public class MessageAppender {
                                                       MailboxSession session) throws MailboxException {
 
 
-        byte[] messageContent = asBytes(message);
-        SharedByteArrayInputStream content = new SharedByteArrayInputStream(messageContent);
-        Date internalDate = new Date();
+        var messageContent = asBytes(message);
+        var content = new SharedByteArrayInputStream(messageContent);
+        var internalDate = new Date();
 
-        AppendResult appendResult = messageManager.appendMessage(MessageManager.AppendCommand.builder()
+        var appendResult = messageManager.appendMessage(MessageManager.AppendCommand.builder()
             .withFlags(flags)
             .build(content), session);
-        ComposedMessageId ids = appendResult.getId();
+        var ids = appendResult.getId();
 
         return MetaDataWithContent.builder()
             .uid(ids.getUid())
