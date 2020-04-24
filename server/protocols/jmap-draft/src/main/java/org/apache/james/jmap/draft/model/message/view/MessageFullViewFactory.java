@@ -92,11 +92,11 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
     }
 
     public MessageFullView fromMetaDataWithContent(MetaDataWithContent message) throws IOException {
-        Message mimeMessage = Helpers.parse(message.getContent());
-        MessageContent messageContent = messageContentExtractor.extract(mimeMessage);
-        Optional<String> htmlBody = messageContent.getHtmlBody();
-        Optional<String> mainTextContent = messageContent.extractMainTextContent(htmlTextExtractor);
-        Optional<String> textBody = computeTextBodyIfNeeded(messageContent, mainTextContent);
+        var mimeMessage = Helpers.parse(message.getContent());
+        var messageContent = messageContentExtractor.extract(mimeMessage);
+        var htmlBody = messageContent.getHtmlBody();
+        var mainTextContent = messageContent.extractMainTextContent(htmlTextExtractor);
+        var textBody = computeTextBodyIfNeeded(messageContent, mainTextContent);
 
         MessageFastViewPrecomputedProperties messageProjection = retrieveProjection(
             messageContent,
@@ -175,9 +175,9 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
     private MetaDataWithContent toMetaDataWithContent(Collection<MessageResult> messageResults) throws MailboxException {
         Helpers.assertOneMessageId(messageResults);
 
-        MessageResult firstMessageResult = messageResults.iterator().next();
-        List<MailboxId> mailboxIds = Helpers.getMailboxIds(messageResults);
-        Keywords keywords = Helpers.getKeywords(messageResults);
+        var firstMessageResult = messageResults.iterator().next();
+        var mailboxIds = Helpers.getMailboxIds(messageResults);
+        var keywords = Helpers.getKeywords(messageResults);
 
         return MetaDataWithContent.builderFromMessageResult(firstMessageResult)
             .messageId(firstMessageResult.getMessageId())

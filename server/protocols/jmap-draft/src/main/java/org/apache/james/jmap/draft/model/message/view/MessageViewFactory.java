@@ -94,7 +94,7 @@ public interface MessageViewFactory<T extends MessageView> {
         }
 
         static String getHeaderValue(org.apache.james.mime4j.dom.Message message, String header) {
-            Field field = message.getHeader().getField(header);
+            var field = message.getHeader().getField(header);
             if (field == null) {
                 return null;
             }

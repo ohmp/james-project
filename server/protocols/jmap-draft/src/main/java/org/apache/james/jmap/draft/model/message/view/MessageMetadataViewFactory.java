@@ -30,7 +30,6 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroup;
-import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
 
@@ -50,7 +49,7 @@ public class MessageMetadataViewFactory implements MessageViewFactory<MessageMet
 
     @Override
     public List<MessageMetadataView> fromMessageIds(List<MessageId> messageIds, MailboxSession session) throws MailboxException {
-        List<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.MINIMAL, session);
+        var messages = messageIdManager.getMessages(messageIds, FetchGroup.MINIMAL, session);
         return Helpers.toMessageViews(messages, this::fromMessageResults);
     }
 
@@ -58,8 +57,8 @@ public class MessageMetadataViewFactory implements MessageViewFactory<MessageMet
     public MessageMetadataView fromMessageResults(Collection<MessageResult> messageResults) {
         Helpers.assertOneMessageId(messageResults);
 
-        MessageResult firstMessageResult = messageResults.iterator().next();
-        List<MailboxId> mailboxIds = Helpers.getMailboxIds(messageResults);
+        var firstMessageResult = messageResults.iterator().next();
+        var mailboxIds = Helpers.getMailboxIds(messageResults);
 
         return MessageMetadataView.messageMetadataBuilder()
             .id(firstMessageResult.getMessageId())

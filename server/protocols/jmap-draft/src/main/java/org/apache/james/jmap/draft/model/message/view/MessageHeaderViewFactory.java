@@ -32,10 +32,8 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroup;
-import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
-import org.apache.james.mime4j.dom.Message;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -53,17 +51,17 @@ public class MessageHeaderViewFactory implements MessageViewFactory<MessageHeade
 
     @Override
     public List<MessageHeaderView> fromMessageIds(List<MessageId> messageIds, MailboxSession mailboxSession) throws MailboxException {
-        List<MessageResult> messages = messageIdManager.getMessages(messageIds, FetchGroup.HEADERS, mailboxSession);
+        var messages = messageIdManager.getMessages(messageIds, FetchGroup.HEADERS, mailboxSession);
         return Helpers.toMessageViews(messages, this::fromMessageResults);
     }
 
     private MessageHeaderView fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException, IOException {
         Helpers.assertOneMessageId(messageResults);
 
-        MessageResult firstMessageResult = messageResults.iterator().next();
-        List<MailboxId> mailboxIds = Helpers.getMailboxIds(messageResults);
+        var firstMessageResult = messageResults.iterator().next();
+        var mailboxIds = Helpers.getMailboxIds(messageResults);
 
-        Message mimeMessage = Helpers.parse(firstMessageResult.getFullContent().getInputStream());
+        var mimeMessage = Helpers.parse(firstMessageResult.getFullContent().getInputStream());
 
         return MessageHeaderView.messageHeaderBuilder()
             .id(firstMessageResult.getMessageId())
