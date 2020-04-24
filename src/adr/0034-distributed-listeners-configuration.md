@@ -60,7 +60,8 @@ by the fact we no longer need to register all listeners at once.
 A WebAdmin endpoint will allow:
 
  - **to add a listener** to the one configured. Such a call:
-    - Will fail if the listener is unknown to James, or if the corresponding group is unknown.
+    - Will fail if the listener class is not on the local classpath, or if the corresponding group is not part of the
+     configured listeners aggregate.
     - Upon success the listener is added to the **configured mailbox listener aggregate**, and the listener is 
     registered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually start 
     consuming the queue.
