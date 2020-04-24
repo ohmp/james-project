@@ -1,4 +1,4 @@
-# 34. Removing a configured additional MailboxListener
+# 34. Distributed Mailbox Listeners Configuration
 
 Date: 2020-04-23
 
@@ -39,7 +39,7 @@ It will have the following events:
  - **ListenerRemoved**: A mailbox listener is removed
 
 A subscriber will react to these events to modify the RabbitMQ resource accordingly by adding queues, adding or removing
-binding.
+bindings.
 
 This event sourcing system differs from the one defined in
 [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md) by the
@@ -58,25 +58,26 @@ by the fact we no longer need to register all listeners at once.
 A WebAdmin endpoint will allow:
 
  - **to add a listener** to the one configured. Such a call:
-    - Will fail if the listener is unknown to James, or if the 
+    - Will fail if the listener is unknown to James, or if the corresponding group is unknown.
     - Upon success the listener is added to the **configured mailbox listener aggregate**, and the listener is 
     registered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually start 
     consuming the queue.
  - **to remove a listener**. Such a call:
     - Will fail if the listener is required by Guice bindings on the current server (distributed check will not be 
     implemented) or if the listener is not configured.
-    - Upon success, the listener is removed from to the **configured mailbox listener aggregate**, and the listener is 
+    - Upon success, the listener is removed from the **configured mailbox listener aggregate**, and the listener is 
     unregistered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually stop 
     consuming the queue. However, new events will stop arriving in the queue as its binding will be removed.
 
-Integration tests of the distributed James product will require to be ported to perform additional mailbox listener
-registry with this WebAdmin endpoint.
+Integration tests relying on additional mailbox listeners of the distributed James product will require to be ported to 
+perform additional mailbox listener registry with this WebAdmin endpoint. JMAP SpamAssassin, quota mailing tests are 
+concerned.
 
-We will also expose a endpoint listing the groups currently in use, and for each group the associated configuration, if 
+We will also expose an endpoint listing the groups currently in use, and for each group the associated configuration, if 
 any. This will query the **configured mailbox listener aggregate**.
 
-We will introduce a health check to actually ensure that RabbitMQ resources matches the configured listeners, and propose
-a WebAdmin to add/remove bindings/queue in a similar fashion of what had been proposed in 
+We will introduce a health check to actually ensure that RabbitMQ resources match the configured listeners, and propose
+a WebAdmin endpoint to add/remove bindings/queue in a similar fashion of what had been proposed in 
 [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md).
 
 ## Consequences
@@ -94,11 +95,12 @@ A broadcast can be attempted to propagate eventBus topology changes:
 
  - Each James server registers an exclusive queue to an "eventBus topology change" exchange.
  - Upon modification of the actual topology an "add" or "remove" event is emitted.
- - Each running James react to these events by instantiating the corresponding listener and starting consuming the 
+ - Each running James reacts to these events by instantiating the corresponding listener and starting consuming the 
  associated queue, or stops consuming the associated queue.
  
 If a listener is added but is not in the classpath, an ERROR log is emitted. This can happen during a rolling upgrade,
-which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James)
-servers however a local James upgrade will be required to effectively be able to start processing these events. 
+which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James
+servers) however a local James upgrade will be required to effectively be able to start processing these events. The 
+binding will not need to be redefined.
 
 Propagating changes will thus no longer need server reboot.
