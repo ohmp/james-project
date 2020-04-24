@@ -44,7 +44,7 @@ class RabbitMQAuthorizedEndpointsTest extends AuthorizedEndpointsTest {
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
             .overrideWith(new UnauthorizedModule())
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();

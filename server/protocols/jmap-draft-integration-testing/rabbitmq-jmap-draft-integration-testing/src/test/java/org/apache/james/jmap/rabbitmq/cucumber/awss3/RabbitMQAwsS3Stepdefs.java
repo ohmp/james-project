@@ -83,7 +83,7 @@ public class RabbitMQAwsS3Stepdefs {
                 .build();
 
         mainStepdefs.jmapServer = GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
+                .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(new TestDockerESMetricReporterModule(elasticSearch.getDockerEs().getHttpHost()))
                 .overrideWith(new TestRabbitMQModule(rabbitMQServer.dockerRabbitMQ()))

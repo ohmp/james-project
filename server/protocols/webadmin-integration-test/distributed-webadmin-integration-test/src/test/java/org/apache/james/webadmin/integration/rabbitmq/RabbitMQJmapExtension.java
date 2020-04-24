@@ -153,7 +153,7 @@ public class RabbitMQJmapExtension implements BeforeAllCallback, AfterAllCallbac
                 .build();
 
         return GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
+                .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
                 .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
                 .overrideWith(new TestDockerESMetricReporterModule(elasticSearchRule.getDockerEs().getHttpHost()))
                 .overrideWith(cassandra.getModule())

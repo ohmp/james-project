@@ -20,10 +20,10 @@
 package org.apache.james;
 
 import org.apache.james.jmap.draft.JmapJamesServerContract;
-import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.apache.james.modules.blobstore.BlobStoreChoosingModule;
+import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.mailbox.CassandraCacheSessionModule;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -48,9 +48,9 @@ public class WithCacheExtension implements BeforeAllCallback, AfterAllCallback, 
                 .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-                .overrideWith(new BlobStoreChoosingModule.CacheEnabledModule())
+                .overrideWith(new BlobStoreCacheConfiguredModulesSupplier.CacheEnabledModule())
+                .overrideWith(new ChoosingBlobStoreConfiguredModulesSupplier.CassandraDeclarationModule())
                 .overrideWith(new CassandraCacheSessionModule()))
-            .extension(new AwsS3BlobStoreExtension())
             .build();
     }
 

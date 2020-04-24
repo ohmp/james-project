@@ -26,9 +26,9 @@ import org.apache.james.backends.cassandra.DockerCassandra;
 import org.apache.james.backends.cassandra.init.configuration.ClusterConfiguration;
 import org.apache.james.backends.rabbitmq.DockerRabbitMQSingleton;
 import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.modules.TestAwsS3BlobStoreModule;
 import org.apache.james.modules.TestRabbitMQModule;
-import org.apache.james.modules.blobstore.BlobStoreChoosingModule;
+import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.mailbox.KeyspacesConfiguration;
 import org.apache.james.modules.objectstorage.aws.s3.DockerAwsS3TestRule;
 import org.apache.james.modules.protocols.SmtpGuiceProbe.SmtpServerConnectedType;
@@ -61,10 +61,11 @@ public final class CassandraRabbitMQAwsS3SmtpTestRuleFactory {
                     .toInstance(BaseHierarchicalConfiguration::new))
             .overrideWith(
                 new RabbitMQModule(),
-                new BlobStoreChoosingModule())
+                new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule(),
+                new ChoosingBlobStoreConfiguredModulesSupplier.ObjectStorageDeclarationModule())
             .overrideWith(
                 new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON),
-                new TestAwsS3BlobStoreModule(awsS3TestRule),
+                awsS3TestRule.getModule(),
                 binder -> binder.bind(KeyspacesConfiguration.class)
                     .toInstance(KeyspacesConfiguration.builder()
                         .keyspace(DockerCassandra.KEYSPACE)

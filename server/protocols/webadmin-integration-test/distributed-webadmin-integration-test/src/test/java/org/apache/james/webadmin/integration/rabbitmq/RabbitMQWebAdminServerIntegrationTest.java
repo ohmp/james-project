@@ -64,7 +64,7 @@ class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegrationTes
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();
 

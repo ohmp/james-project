@@ -49,7 +49,7 @@ class RabbitMQLinshareBlobExportMechanismIntegrationTest extends LinshareBlobExp
         .extension(new AwsS3BlobStoreExtension())
         .extension(new LinshareGuiceExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(TestJMAPServerModule.maximumMessages(LIMIT_TO_20_MESSAGES))
             .overrideWith(new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON))

@@ -19,17 +19,24 @@
 
 package org.apache.james.modules.blobstore;
 
+import java.io.FileNotFoundException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.james.modules.mailbox.ConfigurationComponent;
+import org.apache.james.utils.PropertiesProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.MoreObjects;
 
 public class BlobStoreChoosingConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreChoosingConfiguration.class);
 
     public static final boolean CACHE_ENABLED = true;
 
@@ -65,6 +72,17 @@ public class BlobStoreChoosingConfiguration {
 
     static final String BLOBSTORE_IMPLEMENTATION_PROPERTY = "implementation";
     static final String CACHE_ENABLE_PROPERTY = "cache.enable";
+
+
+    static BlobStoreChoosingConfiguration readBlobStoreChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
+        try {
+            Configuration configuration = propertiesProvider.getConfigurations(ConfigurationComponent.NAMES);
+            return BlobStoreChoosingConfiguration.from(configuration);
+        } catch (FileNotFoundException e) {
+            LOGGER.warn("Could not find " + ConfigurationComponent.NAME + " configuration file, using cassandra blobstore as the default");
+            return BlobStoreChoosingConfiguration.cassandra();
+        }
+    }
 
     static BlobStoreChoosingConfiguration from(Configuration configuration) {
         BlobStoreImplName blobStoreImplName = Optional.ofNullable(configuration.getString(BLOBSTORE_IMPLEMENTATION_PROPERTY))

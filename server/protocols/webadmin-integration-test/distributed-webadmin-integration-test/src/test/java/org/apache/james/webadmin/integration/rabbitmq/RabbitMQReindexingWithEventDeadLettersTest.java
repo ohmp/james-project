@@ -81,7 +81,7 @@ class RabbitMQReindexingWithEventDeadLettersTest {
 
     private static final JamesServerBuilder.ServerProvider CONFIGURATION_BUILDER = configuration -> GuiceJamesServer
         .forConfiguration(configuration)
-        .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
+        .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
         .overrideWith(TestJMAPServerModule.limitToTenMessages())
         .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
         .overrideWith(new WebadminIntegrationTestModule());

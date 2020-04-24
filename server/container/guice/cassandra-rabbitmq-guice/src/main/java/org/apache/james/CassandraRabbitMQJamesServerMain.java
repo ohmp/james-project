@@ -24,7 +24,7 @@ import static org.apache.james.CassandraJamesServerMain.REQUIRE_TASK_MANAGER_MOD
 import org.apache.james.modules.DistributedTaskManagerModule;
 import org.apache.james.modules.TaskSerializationModule;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
-import org.apache.james.modules.blobstore.BlobStoreChoosingModule;
+import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.event.RabbitMQEventBusModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
@@ -37,11 +37,16 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
     public static final Module MODULES =
         Modules
             .override(Modules.combine(REQUIRE_TASK_MANAGER_MODULE, new DistributedTaskManagerModule()))
-            .with(new RabbitMQModule(), new BlobStoreChoosingModule(), new RabbitMQEventBusModule(), new TaskSerializationModule());
+            .with(new RabbitMQModule(), new RabbitMQEventBusModule(), new TaskSerializationModule());
+    public static final Module DEFAULT_TESTING_MODULES =
+        Modules
+            .combine(MODULES,
+                new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule(),
+                new ChoosingBlobStoreConfiguredModulesSupplier.ObjectStorageDeclarationModule());
 
     public static void main(String[] args) throws Exception {
         JamesServerMain.main(
             ImmutableList.of(MODULES, new JMXServerModule()),
-            ImmutableList.of(new BlobStoreCacheConfiguredModulesSupplier()));
+            ImmutableList.of(new BlobStoreCacheConfiguredModulesSupplier(), new ChoosingBlobStoreConfiguredModulesSupplier()));
     }
 }

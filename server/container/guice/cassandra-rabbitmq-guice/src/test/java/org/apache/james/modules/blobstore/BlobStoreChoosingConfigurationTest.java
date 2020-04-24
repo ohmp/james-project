@@ -19,10 +19,13 @@
 
 package org.apache.james.modules.blobstore;
 
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.readBlobStoreChoosingConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.james.FakePropertiesProvider;
+import org.apache.james.modules.mailbox.ConfigurationComponent;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -38,6 +41,89 @@ class BlobStoreChoosingConfigurationTest {
         EqualsVerifier.forClass(BlobStoreChoosingConfiguration.class)
             .verify();
     }
+
+    @Test
+    void provideChoosingConfigurationShouldThrowWhenMissingPropertyField() {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("implementation", "");
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register(ConfigurationComponent.NAME, configuration)
+            .build();
+
+        assertThatThrownBy(() -> readBlobStoreChoosingConfiguration(propertyProvider))
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void provideChoosingConfigurationShouldThrowWhenEmptyPropertyField() {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("implementation", "");
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register(ConfigurationComponent.NAME, configuration)
+            .build();
+
+        assertThatThrownBy(() -> readBlobStoreChoosingConfiguration(propertyProvider))
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void provideChoosingConfigurationShouldThrowWhenPropertyFieldIsNotInSupportedList() {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("implementation", "gabouzomeuh");
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register(ConfigurationComponent.NAME, configuration)
+            .build();
+
+        assertThatThrownBy(() -> readBlobStoreChoosingConfiguration(propertyProvider))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void provideChoosingConfigurationShouldReturnCassandraWhenNoFile() throws Exception {
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register("other_configuration_file", new PropertiesConfiguration())
+            .build();
+
+        assertThat(readBlobStoreChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.cassandra());
+    }
+
+    @Test
+    void provideChoosingConfigurationShouldReturnObjectStorageFactoryWhenConfigurationImplIsObjectStorage() throws Exception {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("implementation", BlobStoreChoosingConfiguration.BlobStoreImplName.OBJECTSTORAGE.getName());
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register(ConfigurationComponent.NAME, configuration)
+            .build();
+
+        assertThat(readBlobStoreChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.objectStorage());
+    }
+
+    @Test
+    void provideChoosingConfigurationShouldReturnHybridConfigurationWhenConfigurationImplIsHybrid() throws Exception {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("implementation", BlobStoreChoosingConfiguration.BlobStoreImplName.HYBRID.getName());
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register(ConfigurationComponent.NAME, configuration)
+            .build();
+
+        assertThat(readBlobStoreChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.hybrid());
+    }
+
+    @Test
+    void provideChoosingConfigurationShouldReturnCassandraFactoryWhenConfigurationImplIsCassandra() throws Exception {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        configuration.addProperty("implementation", BlobStoreChoosingConfiguration.BlobStoreImplName.CASSANDRA.getName());
+        FakePropertiesProvider propertyProvider = FakePropertiesProvider.builder()
+            .register(ConfigurationComponent.NAME, configuration)
+            .build();
+
+        assertThat(readBlobStoreChoosingConfiguration(propertyProvider))
+            .isEqualTo(BlobStoreChoosingConfiguration.cassandra());
+    }
+
 
     @Test
     void fromShouldThrowWhenBlobStoreImplIsMissing() {
