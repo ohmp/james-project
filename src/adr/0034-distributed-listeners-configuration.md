@@ -89,6 +89,10 @@ All the currently configured additional listeners will need to be registered.
 The definition of mailbox listeners is thus centralized and we are not exposed to an heterogeneous configuration 
 incident.
 
+Mailbox listeners no longer required by guice will still need to be instanciable (even with empty content). They will 
+be considered as additional listener thus requiring explicit admin unconfiguration, which will be mentioned in the 
+related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolling-upgrade-scenari).
+
 ## Possible evolutions
 
 A broadcast can be attempted to propagate eventBus topology changes:
@@ -104,3 +108,20 @@ servers) however a local James upgrade will be required to effectively be able t
 binding will not need to be redefined.
 
 Propagating changes will thus no longer need server reboot.
+
+## Notes
+
+### Rolling upgrade scenari
+
+During a rolling upgrade, the james version is heterogeneous across the cluster, and so might be the mailbox listeners
+required at the Guice level.
+
+**case 1**: James Server version 1 do not require listener A, James server version 2 requires listener A.
+
+Since listener A is registered, James server version 1 can not be rebooted prior being upgraded. (As listener A cannot be instanciated)
+
+**case 2**: James Server version 1 require listener A, James server version 2 do not requires listener A.
+
+Upgrading to James version 2 means  that listener A is still registered as an additional listener, that needs to be 
+manually unconfigured once the rolling upgrade finished. Whish is acceptable in upgrade instruction. We need to make 
+sure the listeners could still be instanciated (even with empty code) for a transition period.
