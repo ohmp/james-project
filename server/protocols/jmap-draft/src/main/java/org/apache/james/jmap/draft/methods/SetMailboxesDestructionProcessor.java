@@ -44,7 +44,6 @@ import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
@@ -93,7 +92,7 @@ public class SetMailboxesDestructionProcessor implements SetMailboxesProcessor {
     }
 
     private ImmutableMap<MailboxId, Mailbox> mapDestroyRequests(SetMailboxesRequest request, MailboxSession mailboxSession) {
-        ImmutableMap.Builder<MailboxId, Mailbox> idToMailboxBuilder = ImmutableMap.builder(); 
+        ImmutableMap.Builder<MailboxId, Mailbox> idToMailboxBuilder = ImmutableMap.builder();
         request.getDestroy().stream()
             .map(id -> mailboxFactory.builder()
                     .id(id)
@@ -113,10 +112,10 @@ public class SetMailboxesDestructionProcessor implements SetMailboxesProcessor {
 
     private void destroyMailbox(Entry<MailboxId, Mailbox> entry, MailboxSession mailboxSession, SetMailboxesResponse.Builder builder) {
         try {
-            Mailbox mailbox = entry.getValue();
+            var mailbox = entry.getValue();
             preconditions(mailbox, mailboxSession);
 
-            MailboxPath deletedMailbox = mailboxManager.deleteMailbox(mailbox.getId(), mailboxSession).generateAssociatedPath();
+            var deletedMailbox = mailboxManager.deleteMailbox(mailbox.getId(), mailboxSession).generateAssociatedPath();
             subscriptionManager.unsubscribe(mailboxSession, deletedMailbox.getName());
             builder.destroyed(entry.getKey());
         } catch (MailboxHasChildException e) {

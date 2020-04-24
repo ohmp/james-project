@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.draft.methods;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -32,8 +31,6 @@ import org.apache.james.jmap.draft.model.GetMessagesResponse;
 import org.apache.james.jmap.draft.model.MessageProperties;
 import org.apache.james.jmap.draft.model.MessageProperties.HeaderProperty;
 import org.apache.james.jmap.draft.model.MethodCallId;
-import org.apache.james.jmap.draft.model.message.view.MessageView;
-import org.apache.james.jmap.draft.model.message.view.MessageViewFactory;
 import org.apache.james.jmap.draft.model.message.view.MetaMessageViewFactory;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
@@ -121,9 +118,9 @@ public class GetMessagesMethod implements Method {
         getMessagesRequest.getAccountId().ifPresent((input) -> notImplemented("accountId"));
 
         try {
-            MessageProperties.ReadProfile readProfile = getMessagesRequest.getProperties().computeReadLevel();
-            MessageViewFactory<? extends MessageView> factory = messageViewFactory.getFactory(readProfile);
-            List<? extends MessageView> messageViews = factory.fromMessageIds(getMessagesRequest.getIds(), mailboxSession);
+            var readProfile = getMessagesRequest.getProperties().computeReadLevel();
+            var factory = messageViewFactory.getFactory(readProfile);
+            var messageViews = factory.fromMessageIds(getMessagesRequest.getIds(), mailboxSession);
 
             return GetMessagesResponse.builder()
                 .messages(messageViews)

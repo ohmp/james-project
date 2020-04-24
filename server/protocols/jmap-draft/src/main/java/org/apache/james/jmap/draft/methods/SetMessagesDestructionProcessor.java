@@ -72,9 +72,9 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
             }
             DeleteResult deleteResult = messageIdManager.delete(toBeDestroyed, mailboxSession);
 
-            Stream<SetMessagesResponse> destroyed = deleteResult.getDestroyed().stream()
+            var destroyed = deleteResult.getDestroyed().stream()
                 .map(messageId -> SetMessagesResponse.builder().destroyed(messageId).build());
-            Stream<SetMessagesResponse> notFound = deleteResult.getNotFound().stream()
+            var notFound = deleteResult.getNotFound().stream()
                 .map(messageId -> SetMessagesResponse.builder().notDestroyed(messageId,
                     SetError.builder()
                         .type(SetError.Type.NOT_FOUND)

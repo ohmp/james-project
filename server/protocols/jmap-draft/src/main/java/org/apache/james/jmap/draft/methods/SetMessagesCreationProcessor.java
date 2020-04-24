@@ -48,9 +48,7 @@ import org.apache.james.jmap.draft.model.SetMessagesError;
 import org.apache.james.jmap.draft.model.SetMessagesRequest;
 import org.apache.james.jmap.draft.model.SetMessagesResponse;
 import org.apache.james.jmap.draft.model.SetMessagesResponse.Builder;
-import org.apache.james.jmap.draft.model.message.view.MessageFullView;
 import org.apache.james.jmap.draft.model.message.view.MessageFullViewFactory;
-import org.apache.james.jmap.draft.model.message.view.MessageFullViewFactory.MetaDataWithContent;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
@@ -63,7 +61,6 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 import org.apache.james.rrt.api.CanSendFrom;
-import org.apache.james.server.core.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +124,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private void handleCreate(CreationMessageEntry create, Builder responseBuilder, MailboxSession mailboxSession) {
         try {
-            List<MailboxId> mailboxIds = toMailboxIds(create);
+            var mailboxIds = toMailboxIds(create);
             assertAtLeastOneMailbox(mailboxIds);
             assertIsUserOwnerOfMailboxes(mailboxIds, mailboxSession);
             performCreate(create, responseBuilder, mailboxSession);
@@ -250,7 +247,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
         throws AttachmentsNotFoundException, MailboxException, MessagingException, IOException {
 
         validateArguments(entry, session);
-        MessageWithId created = handleOutboxMessages(entry, session);
+        var created = handleOutboxMessages(entry, session);
         responseBuilder.created(created.getCreationId(), created.getValue());
     }
 
@@ -258,12 +255,12 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
         throws AttachmentsNotFoundException, MailboxException, MessagingException, IOException {
 
         attachmentChecker.assertAttachmentsExist(entry, session);
-        MessageWithId created = handleDraftMessages(entry, session);
+        var created = handleDraftMessages(entry, session);
         responseBuilder.created(created.getCreationId(), created.getValue());
     }
 
     private void validateArguments(CreationMessageEntry entry, MailboxSession session) throws MailboxInvalidMessageCreationException, AttachmentsNotFoundException, MailboxException {
-        CreationMessage message = entry.getValue();
+        var message = entry.getValue();
         if (!message.isValid()) {
             throw new MailboxInvalidMessageCreationException();
         }
@@ -286,9 +283,11 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
 
     private MessageWithId handleOutboxMessages(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException, IOException {
         assertUserCanSendFrom(session.getUser(), entry.getValue().getFrom());
-        MetaDataWithContent newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
-        MessageFullView jmapMessage = messageFullViewFactory.fromMetaDataWithContent(newMessage);
-        Envelope envelope = EnvelopeUtils.fromMessage(jmapMessage);
+
+        var newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
+        var jmapMessage = messageFullViewFactory.fromMetaDataWithContent(newMessage);
+        var envelope = EnvelopeUtils.fromMessage(jmapMessage);
+
         messageSender.sendMessage(newMessage, envelope, session);
         referenceUpdater.updateReferences(entry.getValue().getHeaders(), session);
         return new ValueWithId.MessageWithId(entry.getCreationId(), jmapMessage);
@@ -305,8 +304,8 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
     }
 
     private MessageWithId handleDraftMessages(CreationMessageEntry entry, MailboxSession session) throws MailboxException, MessagingException, IOException {
-        MetaDataWithContent newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
-        MessageFullView jmapMessage = messageFullViewFactory.fromMetaDataWithContent(newMessage);
+        var newMessage = messageAppender.appendMessageInMailboxes(entry, toMailboxIds(entry), session);
+        var jmapMessage = messageFullViewFactory.fromMetaDataWithContent(newMessage);
         return new ValueWithId.MessageWithId(entry.getCreationId(), jmapMessage);
     }
 
@@ -341,7 +340,7 @@ public class SetMessagesCreationProcessor implements SetMessagesProcessor {
     }
 
     private Set<MessageProperties.MessageProperty> collectMessageProperties(List<ValidationResult> validationErrors) {
-        Splitter propertiesSplitter = Splitter.on(',').trimResults().omitEmptyStrings();
+        var propertiesSplitter = Splitter.on(',').trimResults().omitEmptyStrings();
         return validationErrors.stream()
                 .flatMap(err -> propertiesSplitter.splitToList(err.getProperty()).stream())
                 .flatMap(MessageProperty::find)

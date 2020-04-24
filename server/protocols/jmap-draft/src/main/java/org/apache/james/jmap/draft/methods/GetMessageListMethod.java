@@ -132,10 +132,10 @@ public class GetMessageListMethod implements Method {
     }
 
     private Mono<GetMessageListResponse> getMessageListResponse(GetMessageListRequest messageListRequest, MailboxSession mailboxSession) {
-        Mono<MultimailboxesSearchQuery> searchQuery = Mono.fromCallable(() -> convertToSearchQuery(messageListRequest))
+        var searchQuery = Mono.fromCallable(() -> convertToSearchQuery(messageListRequest))
             .subscribeOn(Schedulers.parallel());
-        Long positionValue = messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION);
-        long limit = positionValue + messageListRequest.getLimit().map(Number::asLong).orElse(maximumLimit);
+        var positionValue = messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION);
+        var limit = positionValue + messageListRequest.getLimit().map(Number::asLong).orElse(maximumLimit);
 
         return searchQuery
             .flatMapMany(Throwing.function(query -> mailboxManager.search(query, mailboxSession, limit)))
@@ -145,12 +145,12 @@ public class GetMessageListMethod implements Method {
     }
 
     private MultimailboxesSearchQuery convertToSearchQuery(GetMessageListRequest messageListRequest) {
-        SearchQuery searchQuery = messageListRequest.getFilter()
+        var searchQuery = messageListRequest.getFilter()
                 .map(filter -> new FilterToSearchQuery().convert(filter))
                 .orElse(new SearchQuery());
-        Set<MailboxId> inMailboxes = buildFilterMailboxesSet(messageListRequest.getFilter(), FilterCondition::getInMailboxes);
-        Set<MailboxId> notInMailboxes = buildFilterMailboxesSet(messageListRequest.getFilter(), FilterCondition::getNotInMailboxes);
-        List<SearchQuery.Sort> sorts = SortConverter.convertToSorts(messageListRequest.getSort());
+        var inMailboxes = buildFilterMailboxesSet(messageListRequest.getFilter(), FilterCondition::getInMailboxes);
+        var notInMailboxes = buildFilterMailboxesSet(messageListRequest.getFilter(), FilterCondition::getNotInMailboxes);
+        var sorts = SortConverter.convertToSorts(messageListRequest.getSort());
         if (!sorts.isEmpty()) {
             searchQuery.setSorts(sorts);
         }
@@ -181,7 +181,7 @@ public class GetMessageListMethod implements Method {
     
     private Flux<JmapResponse> processGetMessages(GetMessageListRequest messageListRequest, GetMessageListResponse messageListResponse, MethodCallId methodCallId, MailboxSession mailboxSession) {
         if (shouldChainToGetMessages(messageListRequest)) {
-            GetMessagesRequest getMessagesRequest = GetMessagesRequest.builder()
+            var getMessagesRequest = GetMessagesRequest.builder()
                     .ids(messageListResponse.getMessageIds())
                     .properties(messageListRequest.getFetchMessageProperties())
                     .build();

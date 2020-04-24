@@ -34,7 +34,6 @@ import org.apache.james.jmap.draft.model.MailboxFactory;
 import org.apache.james.jmap.draft.model.SetError;
 import org.apache.james.jmap.draft.model.SetMailboxesRequest;
 import org.apache.james.jmap.draft.model.SetMailboxesResponse;
-import org.apache.james.jmap.draft.model.mailbox.Mailbox;
 import org.apache.james.jmap.draft.model.mailbox.MailboxCreateRequest;
 import org.apache.james.jmap.draft.utils.DependencyGraph.CycleDetectedException;
 import org.apache.james.jmap.draft.utils.SortingHierarchicalCollections;
@@ -116,9 +115,9 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
             Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId, SetMailboxesResponse.Builder builder) {
         try {
             ensureValidMailboxName(mailboxRequest, mailboxSession);
-            MailboxPath mailboxPath = computeMailboxPath(mailboxRequest, creationIdsToCreatedMailboxId, mailboxSession);
-            Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailboxPath, mailboxSession);
-            Optional<Mailbox> mailbox = mailboxId.flatMap(id -> mailboxFactory.builder()
+            var mailboxPath = computeMailboxPath(mailboxRequest, creationIdsToCreatedMailboxId, mailboxSession);
+            var mailboxId = mailboxManager.createMailbox(mailboxPath, mailboxSession);
+            var mailbox = mailboxId.flatMap(id -> mailboxFactory.builder()
                     .id(id)
                     .session(mailboxSession)
                     .build());
@@ -171,8 +170,8 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
     }
 
     private void ensureValidMailboxName(MailboxCreateRequest mailboxRequest, MailboxSession mailboxSession) throws MailboxNameException {
-        String name = mailboxRequest.getName();
-        char pathDelimiter = mailboxSession.getPathDelimiter();
+        var name = mailboxRequest.getName();
+        var pathDelimiter = mailboxSession.getPathDelimiter();
         if (name.contains(String.valueOf(pathDelimiter))) {
             throw new MailboxNameException(String.format("The mailbox '%s' contains an illegal character: '%c'", name, pathDelimiter));
         }
@@ -180,8 +179,8 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
 
     private MailboxPath computeMailboxPath(MailboxCreateRequest mailboxRequest, Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId, MailboxSession mailboxSession) throws MailboxException {
         if (mailboxRequest.getParentId().isPresent()) {
-            MailboxCreationId parentId = mailboxRequest.getParentId().get();
-            MailboxPath parentPath = getMailboxPath(creationIdsToCreatedMailboxId, mailboxSession, parentId);
+            var parentId = mailboxRequest.getParentId().get();
+            var parentPath = getMailboxPath(creationIdsToCreatedMailboxId, mailboxSession, parentId);
 
             assertBelongsToUser(parentPath, mailboxSession);
 
@@ -198,7 +197,7 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
     }
 
     private MailboxPath getMailboxPath(Map<MailboxCreationId, MailboxId> creationIdsToCreatedMailboxId, MailboxSession mailboxSession, MailboxCreationId parentId) throws MailboxException {
-        Optional<MailboxId> mailboxId = readCreationIdAsMailboxId(parentId)
+        var mailboxId = readCreationIdAsMailboxId(parentId)
             .or(() -> Optional.ofNullable(creationIdsToCreatedMailboxId.get(parentId)));
 
         return getMailboxPathFromId(mailboxId, mailboxSession)

@@ -148,8 +148,8 @@ public class GetMailboxesMethod implements Method {
     }
 
     private Flux<Mailbox> retrieveAllMailboxes(MailboxSession mailboxSession) {
-        Mono<List<MailboxMetaData>> userMailboxesMono = getAllMailboxesMetaData(mailboxSession).collectList();
-        Mono<QuotaLoaderWithDefaultPreloaded> quotaLoaderMono = Mono.fromCallable(() ->
+        var userMailboxesMono = getAllMailboxesMetaData(mailboxSession).collectList();
+        var quotaLoaderMono = Mono.fromCallable(() ->
             new QuotaLoaderWithDefaultPreloaded(quotaRootResolver, quotaManager, mailboxSession))
             .subscribeOn(Schedulers.elastic());
 

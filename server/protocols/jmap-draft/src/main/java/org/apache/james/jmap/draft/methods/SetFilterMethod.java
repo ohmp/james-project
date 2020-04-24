@@ -142,7 +142,7 @@ public class SetFilterMethod implements Method {
     }
 
     private Mono<JmapResponse> updateFilter(MethodCallId methodCallId, SetFilterRequest request, Username username) throws DuplicatedRuleException, MultipleMailboxIdException {
-        ImmutableList<Rule> rules = request.getSingleton().stream()
+        var rules = request.getSingleton().stream()
             .map(JmapRuleDTO::toRule)
             .collect(Guavate.toImmutableList());
 
@@ -158,7 +158,7 @@ public class SetFilterMethod implements Method {
     }
 
     private void ensureNoMultipleMailboxesRules(ImmutableList<Rule> rules) throws MultipleMailboxIdException {
-        ImmutableList<Rule.Id> idWithMultipleMailboxes = rules.stream()
+        var idWithMultipleMailboxes = rules.stream()
             .filter(rule -> rule.getAction().getAppendInMailboxes().getMailboxIds().size() > 1)
             .map(Rule::getId)
             .collect(Guavate.toImmutableList());
@@ -169,7 +169,7 @@ public class SetFilterMethod implements Method {
     }
 
     private void ensureNoDuplicatedRules(List<Rule> rules) throws DuplicatedRuleException {
-        ImmutableList<Rule.Id> duplicatedIds = rules.stream()
+        var duplicatedIds = rules.stream()
             .collect(ImmutableListMultimap.toImmutableListMultimap(
                 Rule::getId,
                 Function.identity()))

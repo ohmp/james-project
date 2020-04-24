@@ -96,7 +96,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     private void handleUpdate(MailboxId mailboxId, MailboxUpdateRequest updateRequest, Builder responseBuilder, MailboxSession mailboxSession) {
         try {
             validateMailboxName(updateRequest, mailboxSession);
-            Mailbox mailbox = getMailbox(mailboxId, mailboxSession);
+            var mailbox = getMailbox(mailboxId, mailboxSession);
             assertNotSharedOutboxOrDraftMailbox(mailbox, updateRequest);
             assertSystemMailboxesAreNotUpdated(mailbox, updateRequest);
             validateParent(mailbox, updateRequest, mailboxSession);
@@ -190,7 +190,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     }
 
     private void validateMailboxName(MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxNameException {
-        char pathDelimiter = mailboxSession.getPathDelimiter();
+        var pathDelimiter = mailboxSession.getPathDelimiter();
 
         if (nameContainsPathDelimiter(updateRequest, pathDelimiter)) {
             throw new MailboxNameException(String.format("The mailbox '%s' contains an illegal character: '%c'", updateRequest.getName().get(), pathDelimiter));
@@ -215,8 +215,8 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
     private void validateParent(Mailbox mailbox, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException, MailboxHasChildException {
         if (isParentIdInRequest(updateRequest)) {
-            MailboxId newParentId = updateRequest.getParentId().get();
-            MessageManager parent = retrieveParent(mailboxSession, newParentId);
+            var newParentId = updateRequest.getParentId().get();
+            var parent = retrieveParent(mailboxSession, newParentId);
             if (mustChangeParent(mailbox.getParentId(), newParentId)) {
                 assertNoChildren(mailbox, mailboxSession);
                 assertOwned(mailboxSession, parent);
@@ -256,8 +256,8 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     }
 
     private void updateMailbox(Mailbox mailbox, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException {
-        MailboxPath originMailboxPath = mailboxManager.getMailbox(mailbox.getId(), mailboxSession).getMailboxPath();
-        MailboxPath destinationMailboxPath = computeNewMailboxPath(mailbox, originMailboxPath, updateRequest, mailboxSession);
+        var originMailboxPath = mailboxManager.getMailbox(mailbox.getId(), mailboxSession).getMailboxPath();
+        var destinationMailboxPath = computeNewMailboxPath(mailbox, originMailboxPath, updateRequest, mailboxSession);
         if (updateRequest.getSharedWith().isPresent()) {
             mailboxManager.setRights(mailbox.getId(),
                 updateRequest.getSharedWith()
@@ -275,14 +275,14 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     }
 
     private MailboxPath computeNewMailboxPath(Mailbox mailbox, MailboxPath originMailboxPath, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException {
-        Optional<MailboxId> parentId = updateRequest.getParentId();
+        var parentId = updateRequest.getParentId();
         if (parentId == null) {
             return MailboxPath.forUser(
                 mailboxSession.getUser(),
                 updateRequest.getName().orElse(mailbox.getName()));
         }
 
-        MailboxPath modifiedMailboxPath = updateRequest.getName()
+        var modifiedMailboxPath = updateRequest.getName()
                 .map(newName -> computeMailboxPathWithNewName(originMailboxPath, newName))
                 .orElse(originMailboxPath);
         ThrowingFunction<MailboxId, MailboxPath> computeNewMailboxPath = parentMailboxId -> computeMailboxPathWithNewParentId(modifiedMailboxPath, parentMailboxId, mailboxSession);
@@ -296,8 +296,8 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     }
 
     private MailboxPath computeMailboxPathWithNewParentId(MailboxPath originMailboxPath, MailboxId parentMailboxId, MailboxSession mailboxSession) throws MailboxException {
-        MailboxPath newParentMailboxPath = mailboxManager.getMailbox(parentMailboxId, mailboxSession).getMailboxPath();
-        String lastName = getCurrentMailboxName(originMailboxPath, mailboxSession);
+        var newParentMailboxPath = mailboxManager.getMailbox(parentMailboxId, mailboxSession).getMailboxPath();
+        var lastName = getCurrentMailboxName(originMailboxPath, mailboxSession);
         return new MailboxPath(originMailboxPath, newParentMailboxPath.getName() + mailboxSession.getPathDelimiter() + lastName);
     }
 

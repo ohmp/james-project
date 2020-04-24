@@ -129,14 +129,14 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     private void update(MessageId messageId, UpdateMessagePatch updateMessagePatch, MailboxSession mailboxSession,
                         SetMessagesResponse.Builder builder) {
         try {
-            List<MessageResult> messages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, mailboxSession);
+            var messages = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, mailboxSession);
             assertValidUpdate(messages, updateMessagePatch, mailboxSession);
 
             if (messages.isEmpty()) {
                 addMessageIdNotFoundToResponse(messageId, builder);
             } else {
                 setInMailboxes(messageId, updateMessagePatch, mailboxSession);
-                Optional<MailboxException> updateError = messages.stream()
+                var updateError = messages.stream()
                     .flatMap(message -> updateFlags(messageId, updateMessagePatch, mailboxSession, message))
                     .findAny();
                 if (updateError.isPresent()) {
@@ -175,14 +175,14 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
 
     private void sendMessageWhenOutboxInTargetMailboxIds(MessageId messageId, UpdateMessagePatch updateMessagePatch, MailboxSession mailboxSession, SetMessagesResponse.Builder builder) throws MailboxException, MessagingException, IOException {
         if (isTargetingOutbox(mailboxSession, listTargetMailboxIds(updateMessagePatch))) {
-            Optional<MessageResult> maybeMessageToSend =
+            var maybeMessageToSend =
                 messageIdManager.getMessage(messageId, FetchGroup.FULL_CONTENT, mailboxSession)
                     .stream()
                     .findFirst();
             if (maybeMessageToSend.isPresent()) {
-                MessageResult messageToSend = maybeMessageToSend.get();
-                MailImpl mail = buildMailFromMessage(messageToSend);
-                Optional<Username> fromUser = mail.getMaybeSender()
+                var messageToSend = maybeMessageToSend.get();
+                var mail = buildMailFromMessage(messageToSend);
+                var fromUser = mail.getMaybeSender()
                     .asOptional()
                     .map(Username::fromMailAddress);
                 assertUserCanSendFrom(mailboxSession.getUser(), fromUser);
@@ -198,33 +198,33 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     void assertUserCanSendFrom(Username connectedUser, Optional<Username> fromUser) throws MailboxSendingNotAllowedException {
         if (!fromUser.filter(from -> canSendFrom.userCanSendFrom(connectedUser, from))
             .isPresent()) {
-            String allowedSender = connectedUser.asString();
+            var allowedSender = connectedUser.asString();
             throw new MailboxSendingNotAllowedException(allowedSender);
         }
     }
 
     private void assertValidUpdate(List<MessageResult> messagesToBeUpdated, UpdateMessagePatch updateMessagePatch, MailboxSession session) throws MailboxException {
-        List<MailboxId> outboxMailboxes = mailboxIdFor(Role.OUTBOX, session);
+        var outboxMailboxes = mailboxIdFor(Role.OUTBOX, session);
 
-        ImmutableList<MailboxId> previousMailboxes = messagesToBeUpdated.stream()
+        var previousMailboxes = messagesToBeUpdated.stream()
             .map(MessageResult::getMailboxId)
             .collect(Guavate.toImmutableList());
-        List<MailboxId> targetMailboxes = getTargetedMailboxes(previousMailboxes, updateMessagePatch);
+        var targetMailboxes = getTargetedMailboxes(previousMailboxes, updateMessagePatch);
 
-        boolean isDraft = messagesToBeUpdated.stream()
+        var isDraft = messagesToBeUpdated.stream()
             .map(MessageResult::getFlags)
             .map(Keywords.lenientFactory()::fromFlags)
             .reduce(new KeywordsCombiner())
             .orElse(Keywords.DEFAULT_VALUE)
             .contains(Keyword.DRAFT);
 
-        MessageMoves messageMoves = MessageMoves.builder()
+        var messageMoves = MessageMoves.builder()
             .previousMailboxIds(previousMailboxes)
             .targetMailboxIds(targetMailboxes)
             .build();
 
-        boolean targetContainsOutbox = messageMoves.addedMailboxIds().stream().anyMatch(outboxMailboxes::contains);
-        boolean targetIsOnlyOutbox = targetMailboxes.stream().allMatch(outboxMailboxes::contains);
+        var targetContainsOutbox = messageMoves.addedMailboxIds().stream().anyMatch(outboxMailboxes::contains);
+        var targetIsOnlyOutbox = targetMailboxes.stream().allMatch(outboxMailboxes::contains);
 
         assertOutboxMoveTargetsOnlyOutBox(targetContainsOutbox, targetIsOnlyOutbox);
         assertOutboxMoveOriginallyHasDraftKeywordSet(targetContainsOutbox, isDraft);
@@ -270,7 +270,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     }
 
     private boolean isTargetingOutbox(MailboxSession mailboxSession, Set<MailboxId> targetMailboxIds) throws MailboxException {
-        Set<MailboxId> outboxes = listMailboxIdsForRole(mailboxSession, Role.OUTBOX);
+        var outboxes = listMailboxIdsForRole(mailboxSession, Role.OUTBOX);
         if (outboxes.isEmpty()) {
             throw new MailboxNotFoundException("At least one outbox should be accessible");
         }
@@ -297,9 +297,9 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     }
 
     private void setInMailboxes(MessageId messageId, UpdateMessagePatch updateMessagePatch, MailboxSession mailboxSession) throws MailboxException {
-        Optional<List<String>> serializedMailboxIds = updateMessagePatch.getMailboxIds();
+        var serializedMailboxIds = updateMessagePatch.getMailboxIds();
         if (serializedMailboxIds.isPresent()) {
-            List<MailboxId> mailboxIds = serializedMailboxIds.get()
+            var mailboxIds = serializedMailboxIds.get()
                 .stream()
                 .map(mailboxIdFactory::fromString)
                 .collect(Guavate.toImmutableList());
@@ -341,11 +341,11 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
                                       ImmutableList<ValidationResult> validationErrors, UpdateMessagePatch patch) {
         LOGGER.warn("Invalid update request with patch {} for message #{}: {}", patch, messageId, validationErrors);
 
-        String formattedValidationErrorMessage = validationErrors.stream()
+        var formattedValidationErrorMessage = validationErrors.stream()
                 .map(err -> err.getProperty() + ": " + err.getErrorMessage())
                 .collect(Collectors.joining(", "));
 
-        Set<MessageProperties.MessageProperty> properties = validationErrors.stream()
+        var properties = validationErrors.stream()
                 .flatMap(err -> MessageProperties.MessageProperty.find(err.getProperty()))
                 .collect(Collectors.toSet());
 
