@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.draft.methods;
 
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -35,7 +34,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroup;
 import org.apache.james.mailbox.model.Header;
 import org.apache.james.mailbox.model.Headers;
-import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
@@ -67,14 +65,14 @@ public class ReferenceUpdater {
     }
 
     public void updateReferences(Headers headers, MailboxSession session) throws MailboxException {
-        Map<String, String> headersAsMap = Iterators.toStream(headers.headers())
+        var headersAsMap = Iterators.toStream(headers.headers())
             .collect(Guavate.toImmutableMap(Header::getName, Header::getValue));
         updateReferences(headersAsMap, session);
     }
 
     public void updateReferences(Map<String, String> headers, MailboxSession session) throws MailboxException {
-        Optional<String> inReplyToId = Optional.ofNullable(headers.get(RFC2822Headers.IN_REPLY_TO));
-        Optional<String> forwardedId = Optional.ofNullable(headers.get(X_FORWARDED_ID_HEADER));
+        var inReplyToId = Optional.ofNullable(headers.get(RFC2822Headers.IN_REPLY_TO));
+        var forwardedId = Optional.ofNullable(headers.get(X_FORWARDED_ID_HEADER));
         inReplyToId.ifPresent(Throwing.consumer((String id) -> updateAnswered(id, session)).sneakyThrow());
         forwardedId.ifPresent(Throwing.consumer((String id) -> updateForwarded(id, session)).sneakyThrow());
     }
@@ -89,14 +87,14 @@ public class ReferenceUpdater {
 
     private void updateFlag(String messageId, MailboxSession session, Flags flag) throws MailboxException {
         int limit = 2;
-        MultimailboxesSearchQuery searchByRFC822MessageId = MultimailboxesSearchQuery
+        var searchByRFC822MessageId = MultimailboxesSearchQuery
             .from(new SearchQuery(SearchQuery.mimeMessageID(messageId)))
             .build();
-        List<MessageId> references = Flux.from(mailboxManager.search(searchByRFC822MessageId, session, limit))
+        var references = Flux.from(mailboxManager.search(searchByRFC822MessageId, session, limit))
             .collectList().block();
         try {
             MessageId reference = Iterables.getOnlyElement(references);
-            List<MailboxId> mailboxIds = messageIdManager.getMessage(reference, FetchGroup.MINIMAL, session).stream()
+            var mailboxIds = messageIdManager.getMessage(reference, FetchGroup.MINIMAL, session).stream()
                 .map(MessageResult::getMailboxId)
                 .collect(Guavate.toImmutableList());
             messageIdManager.setFlags(flag, FlagsUpdateMode.ADD, reference, mailboxIds, session);

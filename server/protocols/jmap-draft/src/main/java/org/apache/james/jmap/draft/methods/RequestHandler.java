@@ -57,7 +57,7 @@ public class RequestHandler {
     }
 
     public Flux<InvocationResponse> handle(AuthenticatedRequest request) {
-        Optional<MailboxSession> mailboxSession = Optional.ofNullable(request.getMailboxSession());
+        var mailboxSession = Optional.ofNullable(request.getMailboxSession());
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.USER, mailboxSession.map(MailboxSession::getUser).map(Username::asString))
@@ -74,7 +74,7 @@ public class RequestHandler {
     }
     
     private Function<Method, Flux<JmapResponse>> extractAndProcess(AuthenticatedRequest request) {
-        MailboxSession mailboxSession = request.getMailboxSession();
+        var mailboxSession = request.getMailboxSession();
         return (Method method) -> {
                     try {
                         JmapRequest jmapRequest = jmapRequestParser.extractJmapRequest(request, method.requestType());

@@ -29,7 +29,6 @@ import org.apache.james.jmap.draft.model.InvocationResponse;
 import org.apache.james.jmap.draft.model.Property;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.PropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -60,9 +59,9 @@ public class JmapResponseWriterImpl implements JmapResponseWriter {
     }
     
     private ObjectMapper newConfiguredObjectMapper(JmapResponse jmapResponse) {
-        ObjectMapper objectMapper = objectMapperFactory.forWriting();
+        var objectMapper = objectMapperFactory.forWriting();
         
-        FilterProvider filterProvider = jmapResponse
+        var filterProvider = jmapResponse
                 .getFilterProvider()
                 .orElseGet(SimpleFilterProvider::new)
                 .setDefaultFilter(SimpleBeanPropertyFilter.serializeAll())

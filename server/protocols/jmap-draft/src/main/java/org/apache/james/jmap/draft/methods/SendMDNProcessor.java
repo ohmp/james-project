@@ -34,7 +34,6 @@ import org.apache.james.jmap.draft.model.JmapMDN;
 import org.apache.james.jmap.draft.model.SetError;
 import org.apache.james.jmap.draft.model.SetMessagesRequest;
 import org.apache.james.jmap.draft.model.SetMessagesResponse;
-import org.apache.james.jmap.draft.model.message.view.MessageFullViewFactory.MetaDataWithContent;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
@@ -91,7 +90,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
 
     private SetMessagesResponse.Builder handleMDNCreation(ValueWithId.MDNCreationEntry MDNCreationEntry, MailboxSession mailboxSession) {
         try {
-            MessageId messageId = sendMdn(MDNCreationEntry, mailboxSession);
+            var messageId = sendMdn(MDNCreationEntry, mailboxSession);
             return SetMessagesResponse.builder()
                 .mdnSent(MDNCreationEntry.getCreationId(), messageId);
         } catch (InvalidOriginMessageForMDNException e) {
@@ -136,13 +135,13 @@ public class SendMDNProcessor implements SetMessagesProcessor {
     private MessageId sendMdn(ValueWithId.MDNCreationEntry MDNCreationEntry, MailboxSession mailboxSession)
             throws MailboxException, IOException, MessagingException, ParseException, MessageNotFoundException, InvalidOriginMessageForMDNException {
 
-        JmapMDN mdn = MDNCreationEntry.getValue();
-        Message originalMessage = retrieveOriginalMessage(mdn, mailboxSession);
+        var mdn = MDNCreationEntry.getValue();
+        var originalMessage = retrieveOriginalMessage(mdn, mailboxSession);
 
-        Message mdnAnswer = mdn.generateMDNMessage(originalMessage, mailboxSession);
+        var mdnAnswer = mdn.generateMDNMessage(originalMessage, mailboxSession);
 
-        Flags seen = new Flags(Flags.Flag.SEEN);
-        MetaDataWithContent metaDataWithContent = messageAppender.appendMessageInMailbox(mdnAnswer,
+        var seen = new Flags(Flags.Flag.SEEN);
+        var metaDataWithContent = messageAppender.appendMessageInMailbox(mdnAnswer,
             getOutbox(mailboxSession), seen, mailboxSession);
 
         messageSender.sendMessage(metaDataWithContent,
@@ -158,7 +157,7 @@ public class SendMDNProcessor implements SetMessagesProcessor {
             throw new MessageNotFoundException();
         }
 
-        DefaultMessageBuilder messageBuilder = new DefaultMessageBuilder();
+        var messageBuilder = new DefaultMessageBuilder();
         messageBuilder.setMimeEntityConfig(MimeConfig.PERMISSIVE);
         messageBuilder.setDecodeMonitor(DecodeMonitor.SILENT);
         return messageBuilder.parseMessage(messages.get(0).getHeaders().getInputStream());

@@ -42,7 +42,6 @@ import org.apache.james.mailbox.model.MessageAttachmentMetadata;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.codec.EncoderUtil.Usage;
-import org.apache.james.mime4j.dom.FieldParser;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.dom.Multipart;
 import org.apache.james.mime4j.dom.TextBody;
@@ -50,7 +49,6 @@ import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.field.ContentDispositionField;
 import org.apache.james.mime4j.dom.field.ContentTypeField;
 import org.apache.james.mime4j.dom.field.FieldName;
-import org.apache.james.mime4j.dom.field.UnstructuredField;
 import org.apache.james.mime4j.field.Fields;
 import org.apache.james.mime4j.field.UnstructuredFieldImpl;
 import org.apache.james.mime4j.message.BasicBodyFactory;
@@ -130,7 +128,7 @@ public class MIMEMessageConverter {
             throw new IllegalArgumentException("creationMessageEntry is either null or has null message");
         }
 
-        Message.Builder messageBuilder = Message.Builder.of();
+        var messageBuilder = Message.Builder.of();
         if (isMultipart(creationMessageEntry.getValue(), messageAttachments)) {
             messageBuilder.setBody(createMultipart(creationMessageEntry.getValue(), messageAttachments, session));
         } else {
@@ -142,7 +140,7 @@ public class MIMEMessageConverter {
     }
 
     private void buildMimeHeaders(Message.Builder messageBuilder, CreationMessage newMessage, ImmutableList<MessageAttachmentMetadata> messageAttachments) {
-        Optional<Mailbox> fromAddress = newMessage.getFrom().filter(DraftEmailer::hasValidEmail).map(this::convertEmailToMimeHeader);
+        var fromAddress = newMessage.getFrom().filter(DraftEmailer::hasValidEmail).map(this::convertEmailToMimeHeader);
         fromAddress.ifPresent(messageBuilder::setFrom);
         fromAddress.ifPresent(messageBuilder::setSender);
 
@@ -190,7 +188,7 @@ public class MIMEMessageConverter {
     }
 
     private void addHeader(Message.Builder messageBuilder, String fieldName, String value) {
-        FieldParser<UnstructuredField> parser = UnstructuredFieldImpl.PARSER;
+        var parser = UnstructuredFieldImpl.PARSER;
         RawField rawField = new RawField(fieldName, value);
         messageBuilder.addField(parser.parse(rawField, DecodeMonitor.SILENT));
     }
@@ -226,10 +224,10 @@ public class MIMEMessageConverter {
 
     private Multipart createMultipartWithAttachments(CreationMessage newMessage, ImmutableList<MessageAttachmentMetadata> messageAttachments, MailboxSession session) throws IOException {
         MultipartBuilder mixedMultipartBuilder = MultipartBuilder.create(MIXED_SUB_TYPE);
-        List<MessageAttachmentMetadata> inlineAttachments = messageAttachments.stream()
+        var inlineAttachments = messageAttachments.stream()
             .filter(MessageAttachmentMetadata::isInline)
             .collect(Guavate.toImmutableList());
-        List<MessageAttachmentMetadata> besideAttachments = messageAttachments.stream()
+        var besideAttachments = messageAttachments.stream()
             .filter(attachment -> !attachment.isInline())
             .collect(Guavate.toImmutableList());
 
@@ -245,7 +243,7 @@ public class MIMEMessageConverter {
     }
 
     private Message relatedInnerMessage(CreationMessage newMessage, List<MessageAttachmentMetadata> inlines, MailboxSession session) throws IOException {
-        MultipartBuilder relatedMultipart = MultipartBuilder.create(RELATED_SUB_TYPE);
+        var relatedMultipart = MultipartBuilder.create(RELATED_SUB_TYPE);
         addBody(newMessage, relatedMultipart);
 
         return Message.Builder.of()
@@ -272,7 +270,7 @@ public class MIMEMessageConverter {
     }
 
     private Multipart createMultipartAlternativeBody(CreationMessage newMessage) throws IOException {
-        MultipartBuilder bodyBuilder = MultipartBuilder.create(ALTERNATIVE_SUB_TYPE);
+        var bodyBuilder = MultipartBuilder.create(ALTERNATIVE_SUB_TYPE);
         addText(bodyBuilder, newMessage.getTextBody());
         addHtml(bodyBuilder, newMessage.getHtmlBody());
         return bodyBuilder.build();
@@ -311,7 +309,7 @@ public class MIMEMessageConverter {
 
     private BodyPart attachmentBodyPart(MessageAttachmentMetadata att, MailboxSession session) throws IOException, AttachmentNotFoundException {
         try (InputStream attachmentStream = attachmentContentLoader.load(att.getAttachment(), session)) {
-            BodyPartBuilder builder = BodyPartBuilder.create()
+            var builder = BodyPartBuilder.create()
                 .use(bodyFactory)
                 .setBody(new BasicBodyFactory().binaryBody(ByteStreams.toByteArray(attachmentStream)))
                 .setField(contentTypeField(att))
