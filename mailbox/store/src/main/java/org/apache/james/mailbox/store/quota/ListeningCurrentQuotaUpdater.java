@@ -19,7 +19,6 @@
 package org.apache.james.mailbox.store.quota;
 
 import java.time.Instant;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -37,13 +36,14 @@ import org.apache.james.mailbox.quota.CurrentQuotaManager;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.event.EventFactory;
+import org.reactivestreams.Publisher;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Mono;
 
-public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailboxListener, QuotaUpdater {
+public class ListeningCurrentQuotaUpdater implements MailboxListener.ReactiveGroupMailboxListener, QuotaUpdater {
     public static class ListeningCurrentQuotaUpdaterGroup extends Group {
 
     }
@@ -75,63 +75,66 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     }
 
     @Override
-    public void event(Event event) throws MailboxException {
+    public Publisher<Void> reactiveEvent(Event event) {
+        try {
             if (event instanceof Added) {
                 Added addedEvent = (Added) event;
                 QuotaRoot quotaRoot = quotaRootResolver.getQuotaRoot(addedEvent.getMailboxId());
-                handleAddedEvent(addedEvent, quotaRoot);
+                return handleAddedEvent(addedEvent, quotaRoot);
             } else if (event instanceof Expunged) {
                 Expunged expungedEvent = (Expunged) event;
                 QuotaRoot quotaRoot = quotaRootResolver.getQuotaRoot(expungedEvent.getMailboxId());
-                handleExpungedEvent(expungedEvent, quotaRoot);
+                return handleExpungedEvent(expungedEvent, quotaRoot);
             } else if (event instanceof MailboxDeletion) {
                 MailboxDeletion mailboxDeletionEvent = (MailboxDeletion) event;
-                handleMailboxDeletionEvent(mailboxDeletionEvent);
+                return handleMailboxDeletionEvent(mailboxDeletionEvent);
             }
+            return Mono.empty();
+        } catch (MailboxException e) {
+            return Mono.error(e);
+        }
     }
 
-    private void handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) {
-        computeQuotaOperation(expunged, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
-            Mono.from(currentQuotaManager.decrease(quotaOperation))
-                .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
-                    EventFactory.quotaUpdated()
-                        .randomEventId()
-                        .user(expunged.getUsername())
-                        .quotaRoot(quotaRoot)
-                        .quotaCount(quotaManager.getMessageQuota(quotaRoot))
-                        .quotaSize(quotaManager.getStorageQuota(quotaRoot))
-                        .instant(Instant.now())
-                        .build(),
-                    NO_REGISTRATION_KEYS)).sneakyThrow()))
-                .block();
-        }).sneakyThrow());
+    private Mono<Void> handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) {
+        return computeQuotaOperation(expunged, quotaRoot)
+            .flatMap(Throwing.<QuotaOperation, Mono<Void>>function(quotaOperation ->
+                Mono.from(currentQuotaManager.decrease(quotaOperation))
+                    .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
+                        EventFactory.quotaUpdated()
+                            .randomEventId()
+                            .user(expunged.getUsername())
+                            .quotaRoot(quotaRoot)
+                            .quotaCount(quotaManager.getMessageQuota(quotaRoot))
+                            .quotaSize(quotaManager.getStorageQuota(quotaRoot))
+                            .instant(Instant.now())
+                            .build(),
+                        NO_REGISTRATION_KEYS)).sneakyThrow()))).sneakyThrow());
     }
 
-    private void handleAddedEvent(Added added, QuotaRoot quotaRoot) {
-        computeQuotaOperation(added, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
-            Mono.from(currentQuotaManager.increase(quotaOperation))
-                .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
-                    EventFactory.quotaUpdated()
-                        .randomEventId()
-                        .user(added.getUsername())
-                        .quotaRoot(quotaRoot)
-                        .quotaCount(quotaManager.getMessageQuota(quotaRoot))
-                        .quotaSize(quotaManager.getStorageQuota(quotaRoot))
-                        .instant(Instant.now())
-                        .build(),
-                    NO_REGISTRATION_KEYS)).sneakyThrow()))
-                .block();
-        }).sneakyThrow());
+    private Mono<Void> handleAddedEvent(Added added, QuotaRoot quotaRoot) {
+        return computeQuotaOperation(added, quotaRoot)
+            .flatMap(Throwing.<QuotaOperation, Mono<Void>>function(quotaOperation ->
+                Mono.from(currentQuotaManager.increase(quotaOperation))
+                    .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
+                        EventFactory.quotaUpdated()
+                            .randomEventId()
+                            .user(added.getUsername())
+                            .quotaRoot(quotaRoot)
+                            .quotaCount(quotaManager.getMessageQuota(quotaRoot))
+                            .quotaSize(quotaManager.getStorageQuota(quotaRoot))
+                            .instant(Instant.now())
+                            .build(),
+                        NO_REGISTRATION_KEYS)).sneakyThrow()))).sneakyThrow());
     }
 
-    private Optional<QuotaOperation> computeQuotaOperation(MetaDataHoldingEvent metaDataHoldingEvent, QuotaRoot quotaRoot) {
+    private Mono<QuotaOperation> computeQuotaOperation(MetaDataHoldingEvent metaDataHoldingEvent, QuotaRoot quotaRoot) {
         long size = totalSize(metaDataHoldingEvent);
         long count = Integer.toUnsignedLong(metaDataHoldingEvent.getUids().size());
 
         if (count != 0 && size != 0) {
-            return Optional.of(new QuotaOperation(quotaRoot, QuotaCountUsage.count(count), QuotaSizeUsage.size(size)));
+            return Mono.just(new QuotaOperation(quotaRoot, QuotaCountUsage.count(count), QuotaSizeUsage.size(size)));
         }
-        return Optional.empty();
+        return Mono.empty();
     }
 
     private long totalSize(MetaDataHoldingEvent metaDataHoldingEvent) {
@@ -141,14 +144,14 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
             .sum();
     }
 
-    private void handleMailboxDeletionEvent(MailboxDeletion mailboxDeletionEvent) throws MailboxException {
+    private Mono<Void> handleMailboxDeletionEvent(MailboxDeletion mailboxDeletionEvent) throws MailboxException {
         boolean mailboxContainedMessages = mailboxDeletionEvent.getDeletedMessageCount().asLong() > 0;
         if (mailboxContainedMessages) {
-            Mono.from(currentQuotaManager.decrease(new QuotaOperation(mailboxDeletionEvent.getQuotaRoot(),
+            return Mono.from(currentQuotaManager.decrease(new QuotaOperation(mailboxDeletionEvent.getQuotaRoot(),
                     mailboxDeletionEvent.getDeletedMessageCount(),
-                    mailboxDeletionEvent.getTotalDeletedSize())))
-                .block();
+                    mailboxDeletionEvent.getTotalDeletedSize())));
         }
+        return Mono.empty();
     }
 
 }
