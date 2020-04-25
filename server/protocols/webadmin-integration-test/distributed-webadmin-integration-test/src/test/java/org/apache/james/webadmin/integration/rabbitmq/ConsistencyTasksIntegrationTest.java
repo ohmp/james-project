@@ -21,8 +21,10 @@ package org.apache.james.webadmin.integration.rabbitmq;
 
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
+import static org.apache.james.backends.cassandra.Scenario.Builder.awaitOn;
 import static org.apache.james.backends.cassandra.Scenario.Builder.fail;
 import static org.apache.james.jmap.JMAPTestingConstants.BOB;
+import static org.apache.james.jmap.JMAPTestingConstants.BOB_PASSWORD;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -30,6 +32,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
 
@@ -41,9 +44,12 @@ import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
+import org.apache.james.backends.cassandra.Scenario;
+import org.apache.james.backends.cassandra.Scenario.Barrier;
 import org.apache.james.backends.cassandra.TestingSession;
 import org.apache.james.backends.cassandra.init.SessionWithInitializedTablesFactory;
 import org.apache.james.junit.categories.BasicFeature;
+import org.apache.james.mailbox.events.RetryBackoffConfiguration;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.QuotaRoot;
@@ -62,6 +68,7 @@ import org.apache.james.webadmin.routes.CassandraMappingsRoutes;
 import org.apache.james.webadmin.routes.TasksRoutes;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -118,6 +125,13 @@ class ConsistencyTasksIntegrationTest {
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
             .overrideWith(new WebadminIntegrationTestModule())
+            // Enforce a single eventBus retry. Required as Current Quotas are handled by the eventBus.
+            .overrideWith(binder -> binder.bind(RetryBackoffConfiguration.class)
+                .toInstance(RetryBackoffConfiguration.builder()
+                    .maxRetries(1)
+                    .firstBackoff(Duration.ofMillis(2))
+                    .jitterFactor(0.5)
+                    .build()))
             .overrideWith(new TestingSessionModule()))
         .build();
 
@@ -128,6 +142,7 @@ class ConsistencyTasksIntegrationTest {
     private static final String USERNAME = "username@" + DOMAIN;
     private static final String ALIAS_1 = "alias1@" + DOMAIN;
     private static final String ALIAS_2 = "alias2@" + DOMAIN;
+    private static final boolean IS_RECENT = true;
 
     private DataProbe dataProbe;
 
@@ -245,21 +260,38 @@ class ConsistencyTasksIntegrationTest {
     }
 
     @Test
-    void shouldRecomputeQuotas(GuiceJamesServer server) throws MailboxException {
+    void shouldRecomputeQuotas(GuiceJamesServer server) throws Exception {
+        dataProbe.fluent()
+            .addDomain(BOB.getDomainPart().get().asString())
+            .addUser(BOB.asString(), BOB_PASSWORD);
         MailboxProbeImpl probe = server.getProbe(MailboxProbeImpl.class);
         MailboxPath inbox = MailboxPath.inbox(BOB);
         probe.createMailbox(inbox);
 
+        Barrier barrier1 = new Barrier();
+        Barrier barrier2 = new Barrier();
+        String updatedQuotaQueryString = "UPDATE currentQuota SET messageCount=messageCount+?,storage=storage+? WHERE quotaRoot=?;";
         server.getProbe(TestingSessionProbe.class)
-            .getTestingSession().registerScenario(fail()
-            .times(1)
-            .whenQueryStartsWith("UPDATE currentQuota SET messageCount=messageCount+?,storage=storage+? WHERE quotaRoot=?;"));
+            .getTestingSession().registerScenario(Scenario.combine(
+                awaitOn(barrier1) // Event bus first execution
+                    .thenFail()
+                    .times(1)
+                    .whenQueryStartsWith(updatedQuotaQueryString),
+                awaitOn(barrier2) // scenari for event bus retry
+                    .thenFail()
+                    .times(1)
+                    .whenQueryStartsWith(updatedQuotaQueryString)));
 
         probe.appendMessage(BOB.asString(), inbox,
-                new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.SEEN));
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(),
+            !IS_RECENT, new Flags(Flags.Flag.SEEN));
 
-        QuotaProbesImpl quotaProbe = server.getProbe(QuotaProbesImpl.class);
-        quotaProbe.getMessageCountQuota(QuotaRoot.quotaRoot("#private&" + BOB.asString(), Optional.empty()));
+        // Await first execution
+        barrier1.awaitCaller();
+        barrier1.releaseCaller();
+        // Await event bus retry
+        barrier2.awaitCaller();
+        barrier2.releaseCaller();
 
         String taskId = with()
             .basePath("/quota/users")
@@ -272,6 +304,7 @@ class ConsistencyTasksIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
+        QuotaProbesImpl quotaProbe = server.getProbe(QuotaProbesImpl.class);
         assertThat(
             quotaProbe.getMessageCountQuota(QuotaRoot.quotaRoot("#private&" + BOB.asString(), Optional.empty()))
                 .getUsed()
