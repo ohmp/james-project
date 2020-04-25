@@ -32,8 +32,11 @@ import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.quota.search.elasticsearch.QuotaRatioElasticSearchConstants;
 import org.apache.james.quota.search.elasticsearch.json.QuotaRatioToElasticSearchJson;
+import org.reactivestreams.Publisher;
 
-public class ElasticSearchQuotaMailboxListener implements MailboxListener.GroupMailboxListener {
+import reactor.core.publisher.Mono;
+
+public class ElasticSearchQuotaMailboxListener implements MailboxListener.ReactiveGroupMailboxListener {
     public static class ElasticSearchQuotaMailboxListenerGroup extends Group {
 
     }
@@ -64,17 +67,21 @@ public class ElasticSearchQuotaMailboxListener implements MailboxListener.GroupM
     }
 
     @Override
-    public void event(Event event) throws IOException {
-        handleEvent((QuotaUsageUpdatedEvent) event);
+    public Publisher<Void> reactiveEvent(Event event) {
+        try {
+            return handleEvent((QuotaUsageUpdatedEvent) event);
+        } catch (IOException e) {
+            return Mono.error(e);
+        }
     }
 
-    private void handleEvent(QuotaUsageUpdatedEvent event) throws IOException {
+    private Mono<Void> handleEvent(QuotaUsageUpdatedEvent event) throws IOException {
         Username user = event.getUsername();
-        indexer
+        return indexer
             .index(toDocumentId(user),
                 quotaRatioToElasticSearchJson.convertToJson(event),
                 routingKeyFactory.from(user))
-            .block();
+            .then();
     }
 
     private DocumentId toDocumentId(Username user) {
