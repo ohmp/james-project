@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.james.mailbox.model.Cid;
+import org.apache.james.mailbox.model.ContentType;
 import org.apache.james.mailbox.model.ParsedAttachment;
 import org.apache.james.mdn.MDN;
 import org.apache.james.mdn.MDNReport;
@@ -280,8 +281,8 @@ class MessageParserTest {
 
         assertThat(attachments).hasSize(2)
             .extracting(ParsedAttachment::getContentType)
-            .containsOnly("text/calendar; charset=\"iso-8859-1\"; method=COUNTER",
-                "text/calendar; charset=\"iso-4444-5\"; method=COUNTER");
+            .containsOnly(ContentType.of("text/calendar; charset=\"iso-8859-1\"; method=COUNTER"),
+                ContentType.of("text/calendar; charset=\"iso-4444-5\"; method=COUNTER"));
     }
 
     @Test
@@ -292,7 +293,7 @@ class MessageParserTest {
         assertThat(attachments)
             .hasSize(1)
             .extracting(ParsedAttachment::getContentType)
-            .containsExactly("text/calendar; charset=\"utf-8\"; method=COUNTER");
+            .containsExactly(ContentType.of("text/calendar; charset=\"utf-8\"; method=COUNTER"));
     }
 
     @Test
