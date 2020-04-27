@@ -170,7 +170,7 @@ class ConsistencyTasksIntegrationTest {
 
         String taskId = with()
             .queryParam("action", "SolveInconsistencies")
-        .post(CassandraMappingsRoutes.ROOT_PATH)
+            .post(CassandraMappingsRoutes.ROOT_PATH)
             .jsonPath()
             .get("taskId");
 
@@ -214,7 +214,7 @@ class ConsistencyTasksIntegrationTest {
         taskId = with()
             .header("I-KNOW-WHAT-I-M-DOING", "ALL-SERVICES-ARE-OFFLINE")
             .queryParam("task", "SolveInconsistencies")
-        .post("/mailboxes")
+            .post("/mailboxes")
             .jsonPath()
             .get("taskId");
 
