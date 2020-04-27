@@ -53,7 +53,7 @@ Upon start, James will ensure the **configured mailbox listener event sourcing s
 listeners, and add them if missing (handling the RabbitMQ bindings by this mean), then starts the eventBus which will
 consume the given queues.
 
-If a listener is configured with a class unknown to James, the start-up do not fail but an ERROR log is emitted. This 
+If a listener is configured with a class unknown to James, the start-up does not fail but an ERROR log is emitted. This 
 can happen if a custom jar, containing user implemented mailbox listeners is partially deployed. This way an admin can 
 easily unconfigure that given listener using standard webadmin APIs. Read notes regarding 
 [impact and alternatives](#error-a-listener-cant-be-registered).
@@ -121,18 +121,18 @@ binding will not need to be redefined.
 
 Propagating changes will thus no longer need server reboot.
 
-This won't be contributed is the short run as it requires significant development effort.
+This won't be contributed in the short run as it requires significant development effort.
 
 ### Rolling upgrade scenari
 
 During a rolling upgrade, the james version is heterogeneous across the cluster, and so might be the mailbox listeners
 required at the Guice level.
 
-**case 1**: James Server version 1 do not require listener A, James server version 2 requires listener A.
+**case 1**: James Server version 1 does not require listener A, James server version 2 requires listener A.
 
 Since listener A is registered, James server version 1 can not be rebooted prior being upgraded. (As listener A cannot be instanciated)
 
-**case 2**: James Server version 1 require listener A, James server version 2 do not requires listener A.
+**case 2**: James Server version 1 requires listener A, James server version 2 does not requires listener A.
 
 Upgrading to James version 2 means  that listener A is still registered as an additional listener, that needs to be 
 manually unconfigured once the rolling upgrade finished. Whish is acceptable in upgrade instruction. We need to make 
@@ -140,7 +140,7 @@ sure the listeners could still be instanciated (even with empty code) for a tran
 
 ## Error: a listener can't be registered
 
-If a mailbox listener can't be register, eg if it's class is not on the classpath, JAMES startup, according to this
+If a mailbox listener can't be register, eg if its class is not on the classpath, JAMES startup, according to this
 proposal won't be aborted.
 
 This results of an effort to allow an admin can easily unconfigure that given listener using standard webadmin APIs.
