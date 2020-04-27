@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.InputStream;
 
 import org.apache.james.mailbox.extractor.TextExtractor;
+import org.apache.james.mailbox.model.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,7 @@ class DefaultTextExtractorTest {
     void textTest() throws Exception {
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/Text.txt");
         assertThat(inputStream).isNotNull();
-        assertThat(textExtractor.extractContent(inputStream, "text/plain")
+        assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/plain"))
             .getTextualContent())
             .contains("This is some awesome text text.\n\n");
     }
@@ -50,7 +51,7 @@ class DefaultTextExtractorTest {
         assertThat(inputStream).isNotNull();
         assertThat(textExtractor.extractContent(
             inputStream,
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            ContentType.of("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
             .getTextualContent())
             .isEmpty();
     }

@@ -21,8 +21,10 @@ package org.apache.james.mailbox.extractor;
 
 import java.io.InputStream;
 
+import org.apache.james.mailbox.model.ContentType;
+
 public interface TextExtractor {
 
-    ParsedContent extractContent(InputStream inputStream, String contentType) throws Exception;
+    ParsedContent extractContent(InputStream inputStream, ContentType contentType) throws Exception;
 
 }
