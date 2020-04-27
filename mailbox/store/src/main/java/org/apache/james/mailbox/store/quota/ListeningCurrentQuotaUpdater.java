@@ -22,7 +22,10 @@ import java.time.Instant;
 
 import javax.inject.Inject;
 
+import org.apache.james.core.Username;
+import org.apache.james.core.quota.QuotaCountLimit;
 import org.apache.james.core.quota.QuotaCountUsage;
+import org.apache.james.core.quota.QuotaSizeLimit;
 import org.apache.james.core.quota.QuotaSizeUsage;
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventBus;
@@ -30,6 +33,7 @@ import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.RegistrationKey;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.Quota;
 import org.apache.james.mailbox.model.QuotaOperation;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.quota.CurrentQuotaManager;
@@ -38,10 +42,11 @@ import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.reactivestreams.Publisher;
 
-import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
 
 public class ListeningCurrentQuotaUpdater implements MailboxListener.ReactiveGroupMailboxListener, QuotaUpdater {
     public static class ListeningCurrentQuotaUpdaterGroup extends Group {
@@ -97,34 +102,37 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.ReactiveGro
 
     private Mono<Void> handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) {
         return computeQuotaOperation(expunged, quotaRoot)
-            .flatMap(Throwing.<QuotaOperation, Mono<Void>>function(quotaOperation ->
+            .flatMap(quotaOperation ->
                 Mono.from(currentQuotaManager.decrease(quotaOperation))
-                    .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
-                        EventFactory.quotaUpdated()
-                            .randomEventId()
-                            .user(expunged.getUsername())
-                            .quotaRoot(quotaRoot)
-                            .quotaCount(quotaManager.getMessageQuota(quotaRoot))
-                            .quotaSize(quotaManager.getStorageQuota(quotaRoot))
-                            .instant(Instant.now())
-                            .build(),
-                        NO_REGISTRATION_KEYS)).sneakyThrow()))).sneakyThrow());
+                    .then(dispatchNewQuota(quotaRoot, expunged.getUsername())));
     }
 
     private Mono<Void> handleAddedEvent(Added added, QuotaRoot quotaRoot) {
         return computeQuotaOperation(added, quotaRoot)
-            .flatMap(Throwing.<QuotaOperation, Mono<Void>>function(quotaOperation ->
+            .flatMap(quotaOperation ->
                 Mono.from(currentQuotaManager.increase(quotaOperation))
-                    .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
-                        EventFactory.quotaUpdated()
-                            .randomEventId()
-                            .user(added.getUsername())
-                            .quotaRoot(quotaRoot)
-                            .quotaCount(quotaManager.getMessageQuota(quotaRoot))
-                            .quotaSize(quotaManager.getStorageQuota(quotaRoot))
-                            .instant(Instant.now())
-                            .build(),
-                        NO_REGISTRATION_KEYS)).sneakyThrow()))).sneakyThrow());
+                    .then(dispatchNewQuota(quotaRoot, added.getUsername())));
+    }
+
+    private Mono<Void> dispatchNewQuota(QuotaRoot quotaRoot, Username username) {
+        Mono<Quota<QuotaCountLimit, QuotaCountUsage>> messageQuota = Mono.fromCallable(() -> quotaManager.getMessageQuota(quotaRoot));
+        Mono<Quota<QuotaSizeLimit, QuotaSizeUsage>> storageQuota = Mono.fromCallable(() -> quotaManager.getStorageQuota(quotaRoot));
+
+        Mono<Tuple2<Quota<QuotaCountLimit, QuotaCountUsage>, Quota<QuotaSizeLimit, QuotaSizeUsage>>> quotasMono =
+            messageQuota.zipWith(storageQuota)
+                .subscribeOn(Schedulers.elastic());
+
+        return quotasMono
+            .flatMap(quotas -> eventBus.dispatch(
+                EventFactory.quotaUpdated()
+                    .randomEventId()
+                    .user(username)
+                    .quotaRoot(quotaRoot)
+                    .quotaCount(quotas.getT1())
+                    .quotaSize(quotas.getT2())
+                    .instant(Instant.now())
+                    .build(),
+                NO_REGISTRATION_KEYS));
     }
 
     private Mono<QuotaOperation> computeQuotaOperation(MetaDataHoldingEvent metaDataHoldingEvent, QuotaRoot quotaRoot) {
