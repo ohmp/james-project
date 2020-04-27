@@ -27,7 +27,7 @@ import static org.apache.james.jmap.draft.model.message.view.MessageViewFixture.
 import static org.apache.james.jmap.draft.model.message.view.MessageViewFixture.JACOB_EMAIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import java.util.List;
@@ -64,6 +64,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 class MessageFastViewFactoryTest {
@@ -221,10 +222,10 @@ class MessageFastViewFactoryTest {
     }
 
     @Test
-    void fromMessageIdsShouldKeepProcessingEvenWhenFetchingFail() throws Exception {
-        doThrow(new MailboxException("mock exception"))
+    void fromMessageIdsShouldKeepProcessingEvenWhenFetchingFail() {
+        doReturn(Flux.error(new MailboxException("mock exception")))
             .doCallRealMethod()
-            .when(messageIdManager).getMessages(any(), any(), any());
+            .when(messageIdManager).getMessagesReactive(any(), any(), any());
 
         List<MessageFastView> actual = messageFastViewFactory
             .fromMessageIds(ImmutableList.of(
