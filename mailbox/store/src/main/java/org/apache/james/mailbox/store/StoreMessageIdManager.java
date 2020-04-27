@@ -137,18 +137,10 @@ public class StoreMessageIdManager implements MessageIdManager {
     }
 
     @Override
-    public List<MessageResult> getMessages(Collection<MessageId> messageIds, FetchGroup fetchGroup, MailboxSession mailboxSession) throws MailboxException {
-        MessageIdMapper messageIdMapper = mailboxSessionMapperFactory.getMessageIdMapper(mailboxSession);
-
-        MessageMapper.FetchType fetchType = FetchGroupConverter.getFetchType(fetchGroup);
-        List<MailboxMessage> messageList = messageIdMapper.find(messageIds, fetchType);
-
-        ImmutableSet<MailboxId> allowedMailboxIds = getAllowedMailboxIds(mailboxSession, messageList, Right.Read);
-
-        return messageList.stream()
-            .filter(inMailboxes(allowedMailboxIds))
-            .map(Throwing.function(messageResultConverter(fetchGroup)).sneakyThrow())
-            .collect(Guavate.toImmutableList());
+    public List<MessageResult> getMessages(Collection<MessageId> messageIds, FetchGroup fetchGroup, MailboxSession mailboxSession) {
+        return getMessagesReactive(messageIds, fetchGroup, mailboxSession)
+            .collectList()
+            .block();
     }
 
     @Override
