@@ -1181,10 +1181,10 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     public Mono<Void> add(MailboxSession session, Mailbox mailbox, MailboxMessage membership) {
         return Mono.fromRunnable(Throwing.runnable(() -> {
             Document doc = createMessageDocument(session, membership);
-                Document flagsDoc = createFlagsDocument(membership);
+            Document flagsDoc = createFlagsDocument(membership);
 
-                writer.addDocument(doc);
-                writer.addDocument(flagsDoc);
+            writer.addDocument(doc);
+            writer.addDocument(flagsDoc);
         }));
     }
 
