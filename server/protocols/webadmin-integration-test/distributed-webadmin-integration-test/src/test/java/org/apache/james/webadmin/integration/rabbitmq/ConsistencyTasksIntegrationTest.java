@@ -312,7 +312,7 @@ class ConsistencyTasksIntegrationTest {
     }
 
     @Test
-    void solveCassandraMappingInconsistencyShouldSolveNotingWhenNoInconsistencies() {
+    void solveCassandraMappingInconsistencyShouldSolveNothingWhenNoInconsistencies() {
         with()
             .put(AliasRoutes.ROOT_PATH + SEPARATOR + USERNAME + "/sources/" + ALIAS_1);
         with()
@@ -332,12 +332,12 @@ class ConsistencyTasksIntegrationTest {
             .get(AliasRoutes.ROOT_PATH + SEPARATOR + USERNAME)
         .then()
             .contentType(ContentType.JSON)
-        .statusCode(HttpStatus.OK_200)
+            .statusCode(HttpStatus.OK_200)
             .body("source", hasItems(ALIAS_1, ALIAS_2));
     }
 
     @Test
-    void solveMailboxesInconsistencyShouldSolveNotingWhenNoInconsistencies(GuiceJamesServer server) {
+    void solveMailboxesInconsistencyShouldSolveNothingWhenNoInconsistencies(GuiceJamesServer server) {
         MailboxProbeImpl probe = server.getProbe(MailboxProbeImpl.class);
 
         try {
@@ -367,13 +367,12 @@ class ConsistencyTasksIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        // The mailbox is removed as it is not in the mailboxDAO source of truth.
         assertThat(probe.listUserMailboxes(BOB.asString()))
             .containsOnly(MailboxConstants.INBOX);
     }
 
     @Test
-    void recomputeMailboxCountersShouldSolveNotingWhenNoInconsistencies(GuiceJamesServer server) throws MailboxException {
+    void recomputeMailboxCountersShouldSolveNothingWhenNoInconsistencies(GuiceJamesServer server) throws MailboxException {
         MailboxProbeImpl probe = server.getProbe(MailboxProbeImpl.class);
         MailboxPath inbox = MailboxPath.inbox(BOB);
         probe.createMailbox(inbox);
@@ -400,7 +399,7 @@ class ConsistencyTasksIntegrationTest {
     }
 
     @Test
-    void recomputeQuotasShouldSolveNotingWhenNoInconsistencies(GuiceJamesServer server) throws Exception {
+    void recomputeQuotasShouldSolveNothingWhenNoInconsistencies(GuiceJamesServer server) throws Exception {
         dataProbe.fluent()
             .addDomain(BOB.getDomainPart().get().asString())
             .addUser(BOB.asString(), BOB_PASSWORD);
