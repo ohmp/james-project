@@ -121,8 +121,12 @@ public class MimePartParser {
     private void extractMimePartBodyDescription(MimeTokenStream stream) {
         MaximalBodyDescriptor descriptor = (MaximalBodyDescriptor) stream.getBodyDescriptor();
 
-        Optional.ofNullable(descriptor.getMediaType()).map(MediaType::of).ifPresent(currentlyBuildMimePart::addMediaType);
-        Optional.ofNullable(descriptor.getSubType()).map(SubType::of).ifPresent(currentlyBuildMimePart::addSubType);
+        Optional.ofNullable(descriptor.getMediaType())
+            .map(MediaType::of)
+            .ifPresent(currentlyBuildMimePart::addMediaType);
+        Optional.ofNullable(descriptor.getSubType())
+            .map(SubType::of)
+            .ifPresent(currentlyBuildMimePart::addSubType);
         currentlyBuildMimePart.addContentDisposition(descriptor.getContentDispositionType())
             .addFileName(descriptor.getContentDispositionFilename());
         extractCharset(descriptor);
