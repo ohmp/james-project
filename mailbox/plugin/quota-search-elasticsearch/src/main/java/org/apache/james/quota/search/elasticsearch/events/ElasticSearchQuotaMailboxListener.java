@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.james.quota.search.elasticsearch.events;
 
-import java.io.IOException;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
