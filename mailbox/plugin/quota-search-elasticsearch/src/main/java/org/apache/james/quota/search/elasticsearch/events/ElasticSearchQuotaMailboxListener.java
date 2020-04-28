@@ -68,19 +68,16 @@ public class ElasticSearchQuotaMailboxListener implements MailboxListener.Reacti
 
     @Override
     public Publisher<Void> reactiveEvent(Event event) {
-        try {
-            return handleEvent((QuotaUsageUpdatedEvent) event);
-        } catch (IOException e) {
-            return Mono.error(e);
-        }
+        return handleEvent((QuotaUsageUpdatedEvent) event);
     }
 
-    private Mono<Void> handleEvent(QuotaUsageUpdatedEvent event) throws IOException {
+    private Mono<Void> handleEvent(QuotaUsageUpdatedEvent event) {
         Username user = event.getUsername();
-        return indexer
-            .index(toDocumentId(user),
-                quotaRatioToElasticSearchJson.convertToJson(event),
-                routingKeyFactory.from(user))
+        DocumentId id = toDocumentId(user);
+        RoutingKey routingKey = routingKeyFactory.from(user);
+
+        return Mono.fromCallable(() -> quotaRatioToElasticSearchJson.convertToJson(event))
+            .flatMap(json -> indexer.index(id, json, routingKey))
             .then();
     }
 
