@@ -37,6 +37,7 @@ import org.apache.mailet.base.test.FakeMail;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 public class AutomaticallySentMailDetectorImplTest {
 
@@ -322,6 +323,25 @@ public class AutomaticallySentMailDetectorImplTest {
             .setMultipartWithBodyParts(MimeMessageBuilder.bodyPartBuilder()
                 .addHeaders(Collections.nCopies(headerCount, new MimeMessageBuilder.Header("name", "value")))
                 .data("The body part have 1010 headers, which overpass MIME4J default limits"));
+
+        FakeMail fakeMail = FakeMail.builder()
+            .name("mail")
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .mimeMessage(message)
+            .build();
+
+        assertThat(new AutomaticallySentMailDetectorImpl().isMdnSentAutomatically(fakeMail)).isFalse();
+    }
+
+    @Test
+    public void isMdnSentAutomaticallyShouldNotThrowWhenBiggerThan1MB() throws Exception {
+        MimeMessageBuilder message = MimeMessageBuilder.mimeMessageBuilder()
+            .addHeaders()
+            .setMultipartWithBodyParts(
+                MimeMessageBuilder.bodyPartBuilder()
+                    .data(Strings.repeat("12345678\r\n", 150 * 1024)),
+                MimeMessageBuilder.bodyPartBuilder()
+                    .data("12345678\r\n"));
 
         FakeMail fakeMail = FakeMail.builder()
             .name("mail")
