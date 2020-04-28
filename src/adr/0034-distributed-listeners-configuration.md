@@ -53,9 +53,10 @@ Upon start, James will ensure the **configured mailbox listener event sourcing s
 listeners, and add them if missing (handling the RabbitMQ bindings by this mean), then starts the eventBus which will
 consume the given queues.
 
-If a listener is configured with a class unknown to James, the start-up does not fail but an ERROR log is emitted. This 
-can happen if a custom jar, containing user implemented mailbox listeners is partially deployed. This way an admin can 
-easily unconfigure that given listener using standard webadmin APIs. Read notes regarding 
+If a listener is configured with a class unknown to James, the start-up does not fail but an ERROR log is emitted. A 
+healthcheck will furthermore report some listeners could not be instanciated. This can happen if a custom jar, 
+containing user implemented mailbox listeners is partially deployed. This way an admin can easily unconfigure that given
+listener using standard webadmin APIs. Read notes regarding 
 [impact and alternatives](#error-a-listener-cant-be-registered).
 
 This differs from [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md)
