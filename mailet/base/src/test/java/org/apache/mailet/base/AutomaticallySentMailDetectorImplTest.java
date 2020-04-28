@@ -37,7 +37,6 @@ import org.apache.mailet.base.test.FakeMail;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 
 public class AutomaticallySentMailDetectorImplTest {
 
@@ -339,7 +338,7 @@ public class AutomaticallySentMailDetectorImplTest {
             .addHeaders()
             .setMultipartWithBodyParts(
                 MimeMessageBuilder.bodyPartBuilder()
-                    .data(Strings.repeat("12345678\r\n", 150 * 1024)),
+                    .data("12345678\r\n".repeat(150 * 1024)),
                 MimeMessageBuilder.bodyPartBuilder()
                     .data("12345678\r\n"));
 
