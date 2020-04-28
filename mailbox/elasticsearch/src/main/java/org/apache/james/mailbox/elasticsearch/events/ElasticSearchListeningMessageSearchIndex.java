@@ -185,14 +185,14 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
 
     @Override
     public Mono<Void> update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) {
-        ImmutableList<UpdatedRepresentation> updates = updatedFlagsList.stream()
+        RoutingKey routingKey = routingKeyFactory.from(mailbox.getMailboxId());
+
+        return Flux.fromIterable(updatedFlagsList)
             .map(Throwing.<UpdatedFlags, UpdatedRepresentation>function(
                 updatedFlags -> createUpdatedDocumentPartFromUpdatedFlags(mailbox, updatedFlags))
                 .sneakyThrow())
-            .collect(Guavate.toImmutableList());
-
-        return elasticSearchIndexer
-            .update(updates, routingKeyFactory.from(mailbox.getMailboxId()))
+            .collect(Guavate.toImmutableList())
+            .flatMap(updates -> elasticSearchIndexer.update(updates, routingKey))
             .then();
     }
 
