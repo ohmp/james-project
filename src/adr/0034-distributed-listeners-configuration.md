@@ -174,5 +174,5 @@ To be deploying it, an admin needs to follow these steps:
  - As `extension-jars` is read at instanciation time, no reboot is required to instanciate the new listener.
  - Then the WebAdmin endpoint can be called to configure the given custom listener. The bindings for the new listener 
  will be created, and a listener will be consuming its queue on the James server that had been treating the request.
- - For other James servers to be starting processing the queu, a reboot is needed unless 
+ - For other James servers to be starting processing the queue, a reboot is needed unless 
  [Broadcast of topology changes](#broadcast-of-topology-changes) is implemented.
