@@ -168,11 +168,12 @@ We did not chose these options as they imply more development for limited safety
 
 Given a new custom listener, not yet deployed in Distributed James cluster,
 
-To be deploying it, an admin needs to follow these steps:
+To deploy it, an admin needs to follow these steps:
 
- - Add the jar in extension-jars folder for each James server
- - As `extension-jars` is read at instanciation time, no reboot is required to instanciate the new listener.
- - Then the WebAdmin endpoint can be called to configure the given custom listener. The bindings for the new listener 
- will be created, and a listener will be consuming its queue on the James server that had been treating the request.
+ - Add the jar in `extension-jars` folder for each James server
+     - As `extension-jars` is read at instanciation time, no reboot is required to instanciate the new listener.
+ - Call the webadmin endpoint along side with listener specific configuration to configure the given custom listener. 
+The bindings for the new listener  will be created, and a listener will be consuming its queue on the James server that 
+had been treating the request.
  - For other James servers to be starting processing the queue, a reboot is needed unless 
  [Broadcast of topology changes](#broadcast-of-topology-changes) is implemented.
