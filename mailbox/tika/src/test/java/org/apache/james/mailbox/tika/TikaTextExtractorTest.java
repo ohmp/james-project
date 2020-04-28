@@ -159,11 +159,11 @@ class TikaTextExtractorTest {
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/calc.xlsx");
         assertThat(inputStream).isNotNull();
         assertThat(textExtractor.extractContent(inputStream, ContentType.of("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-            .getTextualContent())
-                .isPresent()
-                .asString()
-                .contains("Feuille1")
-                .contains("This is an aesome LibreOffice document !");
+                .getTextualContent())
+            .isPresent()
+            .asString()
+            .contains("Feuille1")
+            .contains("This is an aesome LibreOffice document !");
     }
 
     @Test
