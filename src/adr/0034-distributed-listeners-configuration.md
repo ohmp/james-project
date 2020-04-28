@@ -89,7 +89,7 @@ any. This will query the **configured mailbox listener aggregate**.
 We will introduce a health check to actually ensure that RabbitMQ resources match the configured listeners, and propose
 a WebAdmin endpoint to add/remove bindings/queue in a similar fashion of what had been proposed in 
 [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md). This 
-can happen if the James server performing the listener registration fails to create the group/queue.
+can happen if the James server performing the listener registration fails to create the group/queue. 
 
 ## Consequences
 
@@ -103,6 +103,8 @@ incident.
 Mailbox listeners no longer required by guice will still need to be instanciable (even with empty content). They will 
 be considered as additional listener thus requiring explicit admin unconfiguration, which will be mentioned in the 
 related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolling-upgrade-scenari).
+
+[Deploying a new custom listener](#deploying-a-new-custom-listener) also describes how to deploy new custom listeners.
 
 ## Notes
 
@@ -161,3 +163,16 @@ The fact that James is failing forces an admin to react, however 'downgraded' st
 believe James is fully operational, while it is not the case.
 
 We did not chose these options as they imply more development for limited safety gains.
+
+## Deploying a new custom listener
+
+Given a new custom listener, not yet deployed in Distributed James cluster,
+
+To be deploying it, an admin needs to follow these steps:
+
+ - Add the jar in extension-jars folder for each James server
+ - As `extension-jars` is read at instanciation time, no reboot is required to instanciate the new listener.
+ - Then the WebAdmin endpoint can be called to configure the given custom listener. The bindings for the new listener 
+ will be created, and a listener will be consuming its queue on the James server that had been treating the request.
+ - For other James servers to be starting processing the queu, a reboot is needed unless 
+ [Broadcast of topology changes](#broadcast-of-topology-changes) is implemented.
