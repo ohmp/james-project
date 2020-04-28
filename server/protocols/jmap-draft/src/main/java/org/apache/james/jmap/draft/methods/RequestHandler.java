@@ -76,18 +76,20 @@ public class RequestHandler {
     private Function<Method, Flux<JmapResponse>> extractAndProcess(AuthenticatedRequest request) {
         MailboxSession mailboxSession = request.getMailboxSession();
         return (Method method) -> {
-                    try {
-                        JmapRequest jmapRequest = jmapRequestParser.extractJmapRequest(request, method.requestType());
-                        return method.process(jmapRequest, request.getMethodCallId(), mailboxSession)
-                            .onErrorResume(JmapFieldNotSupportedException.class, e -> errorNotImplemented(e, request));
-                    } catch (IOException e) {
-                        LOGGER.error("Error occured while parsing the request.", e);
-                        if (e.getCause() instanceof JmapFieldNotSupportedException) {
-                            return errorNotImplemented((JmapFieldNotSupportedException) e.getCause(), request);
-                        }
-                        return error(request, generateInvalidArgumentError(e.getMessage()));
-                    }
-                };
+            try {
+                JmapRequest jmapRequest = jmapRequestParser.extractJmapRequest(request, method.requestType());
+                return method.process(jmapRequest, request.getMethodCallId(), mailboxSession)
+                    .onErrorResume(JmapFieldNotSupportedException.class, e -> errorNotImplemented(e, request));
+            } catch (IOException e) {
+                LOGGER.error("Error occured while parsing the request.", e);
+                if (e.getCause() instanceof JmapFieldNotSupportedException) {
+                    return errorNotImplemented((JmapFieldNotSupportedException) e.getCause(), request);
+                }
+                return error(request, generateInvalidArgumentError(e.getMessage()));
+            } catch (JmapFieldNotSupportedException e) {
+                return errorNotImplemented(e, request);
+            }
+        };
     }
 
     public ErrorResponse generateInvalidArgumentError(String description) {
