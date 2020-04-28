@@ -79,20 +79,26 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
         MailboxId mailboxId = mailboxEvent.getMailboxId();
 
         if (event instanceof Added) {
-            Mailbox mailbox = factory.getMailboxMapper(session).findMailboxById(mailboxId);
-            return handleAdded(session, mailbox, (Added) event);
+            return factory.getMailboxMapper(session)
+                .findMailboxByIdReactive(mailboxId)
+                .flatMap(mailbox -> handleAdded(session, mailbox, (Added) event));
         } else if (event instanceof Expunged) {
-            Mailbox mailbox = factory.getMailboxMapper(session).findMailboxById(mailboxId);
             Expunged expunged = (Expunged) event;
-            return delete(session, mailbox, expunged.getUids());
+
+            return factory.getMailboxMapper(session)
+                .findMailboxByIdReactive(mailboxId)
+                .flatMap(mailbox -> delete(session, mailbox, expunged.getUids()));
         } else if (event instanceof FlagsUpdated) {
-            Mailbox mailbox = factory.getMailboxMapper(session).findMailboxById(mailboxId);
             FlagsUpdated flagsUpdated = (FlagsUpdated) event;
-            return update(session, mailbox, flagsUpdated.getUpdatedFlags());
+
+            return factory.getMailboxMapper(session)
+                .findMailboxByIdReactive(mailboxId)
+                .flatMap(mailbox -> update(session, mailbox, flagsUpdated.getUpdatedFlags()));
         } else if (event instanceof MailboxDeletion) {
             return deleteAll(session, mailboxId);
+        } else {
+            return Mono.empty();
         }
-        return Mono.empty();
     }
 
     private Mono<Void> handleAdded(MailboxSession session, Mailbox mailbox, Added added) {
