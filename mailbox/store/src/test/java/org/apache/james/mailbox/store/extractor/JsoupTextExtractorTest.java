@@ -102,6 +102,24 @@ class JsoupTextExtractorTest {
                 .contains(HTML_TEXT_CONTENT));
     }
 
+    @Test
+    void extractContentShouldPreserveCharsetWhenPlainText() throws Exception {
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/simple-text-iso-8859-1.txt");
+        assertThat(inputStream).isNotNull();
+        assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/plain; charset=ISO-8859-1"))
+            .getTextualContent())
+            .contains("\"é\" This text is not UTF-8 \"à\"");
+    }
+
+    @Test
+    void extractContentShouldPreserveCharsetWhenHTML() throws Exception {
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/html-iso-8859-1.txt");
+        assertThat(inputStream).isNotNull();
+        assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/html; charset=ISO-8859-1"))
+            .getTextualContent())
+            .contains("\"é\" this is a simple HTML text \"à\"");
+    }
+
     private InputStream textContentWithManyNullCharacters() {
         return new ByteArrayInputStream(FULL_CONTENT.getBytes(StandardCharsets.UTF_8));
     }
