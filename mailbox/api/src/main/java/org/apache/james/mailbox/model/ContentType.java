@@ -167,7 +167,7 @@ public class ContentType {
     }
 
     public static ContentType of(String value) {
-        Preconditions.checkState(!Strings.isNullOrEmpty(value), "'content type' is mandatory");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(value), "'content type' is mandatory");
         return new ContentType(value);
     }
 

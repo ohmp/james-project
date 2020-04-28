@@ -61,6 +61,18 @@ class ContentTypeTest {
     }
 
     @Test
+    void mimeTypeOfShouldThrowWhenEmpty() {
+        assertThatThrownBy(() -> ContentType.of(""))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void mimeTypeOfShouldThrowWhenNull() {
+        assertThatThrownBy(() -> ContentType.of((String) null))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void mimeTypeOfShouldReturnExpectedValue() {
         assertThat(ContentType.MimeType.of("text/html"))
             .isEqualTo(ContentType.MimeType.of(
