@@ -103,7 +103,7 @@ class JsoupTextExtractorTest {
     }
 
     @Test
-    void extractContentShouldPreserveCharsetWhenPlainText() throws Exception {
+    void extractContentShouldTakeIntoAccountCharsetWhenPlainText() throws Exception {
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/simple-text-iso-8859-1.txt");
         assertThat(inputStream).isNotNull();
         assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/plain; charset=ISO-8859-1"))
@@ -112,7 +112,7 @@ class JsoupTextExtractorTest {
     }
 
     @Test
-    void extractContentShouldPreserveCharsetWhenHTML() throws Exception {
+    void extractContentTakeIntoAccountCharsetWhenHTML() throws Exception {
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/html-iso-8859-1.txt");
         assertThat(inputStream).isNotNull();
         assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/html; charset=ISO-8859-1"))
