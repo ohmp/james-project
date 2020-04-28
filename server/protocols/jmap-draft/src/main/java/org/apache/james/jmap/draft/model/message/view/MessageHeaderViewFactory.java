@@ -64,7 +64,7 @@ public class MessageHeaderViewFactory implements MessageViewFactory<MessageHeade
 
 
         return Mono.fromCallable(() -> messageResults.iterator().next())
-            .flatMap(Throwing.function(firstMessageResult-> {
+            .flatMap(Throwing.function(firstMessageResult -> {
                 List<MailboxId> mailboxIds = Helpers.getMailboxIds(messageResults);
                 Message mimeMessage = Helpers.parse(firstMessageResult.getFullContent().getInputStream());
                 return instanciateHeaderView(messageResults, firstMessageResult, mailboxIds, mimeMessage);
