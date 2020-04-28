@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.Optional;
 
 import org.apache.james.mailbox.extractor.TextExtractor;
-import org.apache.james.mailbox.model.ContentType;
 import org.apache.james.mailbox.model.ContentType.MediaType;
 import org.apache.james.mailbox.model.ContentType.SubType;
 import org.apache.james.mailbox.store.mail.model.Message;
