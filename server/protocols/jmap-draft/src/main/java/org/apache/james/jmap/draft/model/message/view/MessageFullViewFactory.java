@@ -56,6 +56,7 @@ import org.apache.james.util.mime.MessageContentExtractor.MessageContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -92,8 +93,12 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
         return Helpers.toMessageViews(messages, this::fromMessageResults);
     }
 
-    public Mono<MessageFullView> fromMetaDataWithContent(MetaDataWithContent message) throws IOException {
-        Message mimeMessage = Helpers.parse(message.getContent());
+    public Mono<MessageFullView> fromMetaDataWithContent(MetaDataWithContent message) {
+        return Mono.fromCallable(() -> Helpers.parse(message.getContent()))
+            .flatMap(Throwing.function(mimeMessage -> fromMetaDataWithContent(message, mimeMessage)));
+    }
+
+    private Mono<MessageFullView> fromMetaDataWithContent(MetaDataWithContent message, Message mimeMessage) throws IOException {
         MessageContent messageContent = messageContentExtractor.extract(mimeMessage);
         Optional<String> htmlBody = messageContent.getHtmlBody();
         Optional<String> mainTextContent = messageContent.extractMainTextContent(htmlTextExtractor);
@@ -171,7 +176,7 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
     Mono<MessageFullView> fromMessageResults(Collection<MessageResult> messageResults) {
         try {
             return fromMetaDataWithContent(toMetaDataWithContent(messageResults));
-        } catch (IOException | MailboxException e) {
+        } catch (MailboxException e) {
             return Mono.error(e);
         }
     }
