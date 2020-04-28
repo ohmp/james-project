@@ -98,16 +98,14 @@ public class MimePart {
         }
 
         @Override
-        public Builder addMediaType(String mediaType) {
-            this.mediaType = Optional.ofNullable(mediaType)
-                .map(MediaType::of);
+        public Builder addMediaType(MediaType mediaType) {
+            this.mediaType = Optional.ofNullable(mediaType);
             return this;
         }
 
         @Override
-        public Builder addSubType(String subType) {
-            this.subType = Optional.ofNullable(subType)
-                .map(SubType::of);
+        public Builder addSubType(SubType subType) {
+            this.subType = Optional.of(subType);
             return this;
         }
 
