@@ -46,7 +46,7 @@ class DefaultTextExtractorTest {
     }
 
     @Test
-    void extractContentShouldPreserveCharset() throws Exception {
+    void extractContentShouldTakeIntoAccountCharset() throws Exception {
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/simple-text-iso-8859-1.txt");
         assertThat(inputStream).isNotNull();
         assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/plain; charset=ISO-8859-1"))
