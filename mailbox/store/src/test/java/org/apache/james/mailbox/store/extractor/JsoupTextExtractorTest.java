@@ -113,7 +113,7 @@ class JsoupTextExtractorTest {
 
     @Test
     void extractContentTakeIntoAccountCharsetWhenHTML() throws Exception {
-        InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/html-iso-8859-1.txt");
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream("documents/html-iso-8859-1.html");
         assertThat(inputStream).isNotNull();
         assertThat(textExtractor.extractContent(inputStream, ContentType.of("text/html; charset=ISO-8859-1"))
             .getTextualContent())
