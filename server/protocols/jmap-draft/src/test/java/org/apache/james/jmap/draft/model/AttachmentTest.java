@@ -47,7 +47,7 @@ public class AttachmentTest {
         Attachment.builder().blobId(BlobId.of("blobId")).type("type").name("name").build();
     }
     
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void buildShouldThrowWhenTypeIsEmpty() {
         Attachment.builder().blobId(BlobId.of("blobId")).type("").name("name").size(123).build();
     }
