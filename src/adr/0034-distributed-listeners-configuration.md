@@ -68,16 +68,20 @@ A WebAdmin endpoint will allow:
     - Will fail if the listener class is not on the local classpath, or if the corresponding group is not part of the
      configured listeners aggregate.
     - Upon success the listener is added to the **configured mailbox listener aggregate**, and the listener is 
-    registered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually start 
-    consuming the queue.
+    registered locally.
  - **to remove a listener**. Such a call:
     - Will fail if the listener is required by Guice bindings on the current server or if the listener is not configured.
     - Upon success, the listener is removed from the **configured mailbox listener aggregate**, and the listener is 
-    unregistered locally. No broadcast is attempted, meaning that other James servers will need a reboot to actually stop 
-    consuming the queue. However, new events will stop arriving in the queue as its binding will be removed.
+    unregistered locally.
     
-[Broadcast of topology changes](#broadcast-of-topology-changes) is an enhancement of the following proposal removing 
-some of the aforementioned limitations.
+A broadcast on the event bus will be attempted to propagate topology changes, by the mean of a common registerationKey 
+to all nodes, a "TopologyChanged" event, and a mailbox listener starting the MailboxListeners on local node upon
+topology changes.
+ 
+If a listener is added but is not in the classpath, an ERROR log is emitted. This can happen during a rolling upgrade,
+which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James
+servers) however a local James upgrade will be required to effectively be able to start processing these events. The 
+binding will not need to be redefined.
 
 Integration tests relying on additional mailbox listeners of the distributed James product will require to be ported to 
 perform additional mailbox listener registry with this WebAdmin endpoint. JMAP SpamAssassin, quota mailing tests are 
@@ -109,22 +113,6 @@ related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolli
 ## Notes
 
 ## Broadcast of topology changes
-
-A broadcast can be attempted to propagate eventBus topology changes:
-
- - Each James server registers an exclusive queue to an "eventBus topology change" exchange.
- - Upon modification of the actual topology an "add" or "remove" event is emitted.
- - Each running James reacts to these events by instantiating the corresponding listener and starting consuming the 
- associated queue, or stops consuming the associated queue.
- 
-If a listener is added but is not in the classpath, an ERROR log is emitted. This can happen during a rolling upgrade,
-which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James
-servers) however a local James upgrade will be required to effectively be able to start processing these events. The 
-binding will not need to be redefined.
-
-Propagating changes will thus no longer need server reboot.
-
-This won't be contributed in the short run as it requires significant development effort.
 
 ### Rolling upgrade scenari
 
@@ -175,5 +163,5 @@ To deploy it, an admin needs to follow these steps:
  - Call the webadmin endpoint along side with listener specific configuration to configure the given custom listener. 
 The bindings for the new listener  will be created, and a listener will be consuming its queue on the James server that 
 had been treating the request.
- - For other James servers to be starting processing the queue, a reboot is needed unless 
- [Broadcast of topology changes](#broadcast-of-topology-changes) is implemented.
+ - Broadcast of topology changes will ensure the new custom additional mailbox listener will then be instantiated 
+everywhere without a reboot.
