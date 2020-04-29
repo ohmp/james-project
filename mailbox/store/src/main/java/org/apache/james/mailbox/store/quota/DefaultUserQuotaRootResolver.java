@@ -101,15 +101,12 @@ public class DefaultUserQuotaRootResolver implements UserQuotaRootResolver {
     @Override
     public Mono<QuotaRoot> getQuotaRootReactive(MailboxId mailboxId) {
         MailboxSession session = sessionProvider.createSystemSession(Username.of("DefaultUserQuotaRootResolver"));
-        try {
-            return factory.getMailboxMapper(session)
-                .findMailboxByIdReactive(mailboxId)
-                .map(Mailbox::generateAssociatedPath)
-                .map(MailboxPath::getUser)
-                .map(this::forUser);
-        } catch (MailboxException e) {
-            return Mono.error(e);
-        }
+
+        return factory.getMailboxMapper(session)
+            .findMailboxByIdReactive(mailboxId)
+            .map(Mailbox::generateAssociatedPath)
+            .map(MailboxPath::getUser)
+            .map(this::forUser);
     }
 
     @Override
