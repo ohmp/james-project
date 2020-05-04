@@ -6,7 +6,7 @@ Date: 2020-04-03
 
 Accepted (lazy consensus)
 
-Superceded by [34. Distributed Mailbox Listener Configuration](0034-distributed-listeners-configuration.md)
+Superceded by [34. Distributed Mailbox Listener Configuration](0035-distributed-listeners-configuration.md)
 
 ## Context
 
