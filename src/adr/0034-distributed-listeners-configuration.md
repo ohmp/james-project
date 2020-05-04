@@ -53,8 +53,8 @@ Upon start, James will ensure the **configured mailbox listener event sourcing s
 listeners, and add them if missing (handling the RabbitMQ bindings by this mean), then starts the eventBus which will
 consume the given queues.
 
-If a listener is configured with a class unknown to James, the start-up fails and James starts in a downgraded state 
-allowing to unconfigure the falty listener. This downgraded state will be descibed in a separate ADR and the link will
+If a listener is configured with a class unknown to James, the start-up fails and James starts in a degraded state 
+allowing to unconfigure the faulty listener. This downgraded state will be described in a separate ADR and the link will
 be updated here.
 
 This differs from [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md)
@@ -72,7 +72,7 @@ A WebAdmin endpoint will allow:
     - Upon success, the listener is removed from the **configured mailbox listener aggregate**, and the listener is 
     unregistered locally.
     
-A broadcast on the event bus will be attempted to propagate topology changes, by the mean of a common registerationKey 
+A broadcast on the event bus will be attempted to propagate topology changes, by the mean of a common registrationKey 
 to all nodes, a "TopologyChanged" event, and a mailbox listener starting the MailboxListeners on local node upon
 topology changes.
  
@@ -104,7 +104,7 @@ All the currently configured additional listeners will need to be registered.
 The definition of mailbox listeners is thus centralized and we are not exposed to an heterogeneous configuration 
 incident.
 
-Mailbox listeners no longer required by guice will still need to be instanciable (even with empty content). They will 
+Mailbox listeners no longer required by guice will still need to be instantiable (even with empty content). They will 
 be considered as additional listener thus requiring explicit admin unconfiguration, which will be mentioned in the 
 related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolling-upgrade-scenari).
 
@@ -114,20 +114,21 @@ related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolli
 
 ## Broadcast of topology changes
 
-### Rolling upgrade scenari
+### Rolling upgrade scenarii
 
 During a rolling upgrade, the james version is heterogeneous across the cluster, and so might be the mailbox listeners
 required at the Guice level.
 
 **case 1**: James Server version 1 does not require listener A, James server version 2 requires listener A.
 
-Since listener A is registered, James server version 1 can not be rebooted prior being upgraded. (As listener A cannot be instanciated)
+Since listener A is registered, James server version 1 cannot be rebooted without being upgraded first. (As listener A 
+cannot be instantiated)
 
-**case 2**: James Server version 1 requires listener A, James server version 2 does not requires listener A.
+**case 2**: James Server version 1 requires listener A, James server version 2 does not require listener A.
 
-Upgrading to James version 2 means  that listener A is still registered as an additional listener, that needs to be 
-manually unconfigured once the rolling upgrade finished. Whish is acceptable in upgrade instruction. We need to make 
-sure the listeners could still be instanciated (even with empty code) for a transition period.
+Upgrading to James version 2 means that listener A is still registered as an additional listener, it needs to be 
+manually unconfigured once the rolling upgrade finished. Which is acceptable in upgrade instruction. We need to make 
+sure the listeners could still be instantiated (even with empty code) for a transition period.
 
 ## Deploying a new custom listener
 
@@ -136,9 +137,9 @@ Given a new custom listener, not yet deployed in Distributed James cluster,
 To deploy it, an admin needs to follow these steps:
 
  - Add the jar in `extension-jars` folder for each James server
-     - As `extension-jars` is read at instanciation time, no reboot is required to instanciate the new listener.
- - Call the webadmin endpoint along side with listener specific configuration to configure the given custom listener. 
-The bindings for the new listener  will be created, and a listener will be consuming its queue on the James server that 
+     - As `extension-jars` is read at instantiation time, no reboot is required to instantiate the new listener.
+ - Call the webadmin endpoint alongside with listener specific configuration to enable the given custom listener. 
+The bindings for the new listener will be created and a listener will be consuming its queue on the James server that 
 had been treating the request.
  - Broadcast of topology changes will ensure the new custom additional mailbox listener will then be instantiated 
 everywhere without a reboot.
