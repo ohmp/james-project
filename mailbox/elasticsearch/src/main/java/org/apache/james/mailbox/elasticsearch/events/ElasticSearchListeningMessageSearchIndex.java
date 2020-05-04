@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.mailbox.elasticsearch.events;
 
+import static org.apache.james.util.ReactorUtils.unboxOptional;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 import java.util.Collection;
@@ -62,7 +63,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSearchIndex {
     public static class ElasticSearchListeningMessageSearchIndexGroup extends Group {
@@ -128,7 +128,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
         return searcher.search(mailboxIds, searchQuery, Optional.empty())
             .doOnNext(this::logIfNoMessageId)
             .map(SearchResult::getMessageId)
-            .flatMap(Mono::justOrEmpty)
+            .handle(unboxOptional())
             .distinct()
             .take(limit);
     }
