@@ -91,7 +91,9 @@ any. This will query the **configured mailbox listener aggregate**.
 We will introduce a health check to actually ensure that RabbitMQ resources match the configured listeners, and propose
 a WebAdmin endpoint to add/remove bindings/queue in a similar fashion of what had been proposed in 
 [26. Removing a configured additional MailboxListener](0026-removing-configured-additional-mailboxListeners.md). This 
-can happen if the James server performing the listener registration fails to create the group/queue. 
+can happen if the James server performing the listener registration fails to create the group/queue. This health check 
+will also report if this James server do not succeed to run a given listener, for instance if its class is not on the 
+classpath.
 
 ## Consequences
 
