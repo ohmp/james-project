@@ -36,6 +36,8 @@ It will have the following commands:
 
  - **AddListener**: Add a given listener. This should be rejected if the group is already used.
  - **RemoveListener**: Remove a given listener.
+ 
+Configuration changes are not supported. The administrator is expected to remove the given listener, then add it again.
 
 It will have the following events:
 
@@ -63,8 +65,8 @@ by the fact we no longer need to register all listeners at once.
 A WebAdmin endpoint will allow:
 
  - **to add a listener** to the one configured. Such a call:
-    - Will fail if the listener class is not on the local classpath, or if the corresponding group is not part of the
-     configured listeners aggregate.
+    - Will fail if the listener class is not on the local classpath, or if the corresponding group already used within 
+    the **configured mailbox listener aggregate**.
     - Upon success the listener is added to the **configured mailbox listener aggregate**, and the listener is 
     registered locally.
  - **to remove a listener**. Such a call:
@@ -80,10 +82,6 @@ If a listener is added but is not in the classpath, an ERROR log is emitted. Thi
 which defines a new guice binding for a new mailbox listener. Events will still be emitted (and consumed by other James
 servers) however a local James upgrade will be required to effectively be able to start processing these events. The 
 binding will not need to be redefined.
-
-Integration tests relying on additional mailbox listeners of the distributed James product will require to be ported to 
-perform additional mailbox listener registry with this WebAdmin endpoint. JMAP SpamAssassin, quota mailing tests are 
-concerned.
 
 We will also expose an endpoint listing the groups currently in use, and for each group the associated configuration, if 
 any. This will query the **configured mailbox listener aggregate**.
@@ -109,6 +107,10 @@ be considered as additional listener thus requiring explicit admin unconfigurati
 related upgrade instructions. Read notes about [rolling upgrade scenarii](#rolling-upgrade-scenari).
 
 [Deploying a new custom listener](#deploying-a-new-custom-listener) also describes how to deploy new custom listeners.
+
+Integration tests relying on additional mailbox listeners of the distributed James product will require to be ported to 
+perform additional mailbox listener registry with this WebAdmin endpoint. JMAP SpamAssassin, quota mailing tests are 
+concerned.
 
 ## Notes
 
