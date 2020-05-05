@@ -32,6 +32,8 @@ import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
 
+import reactor.core.publisher.Mono;
+
 public class UserReindexingTask implements Task {
 
     public static final TaskType USER_RE_INDEXING = TaskType.of("user-reindexing");
@@ -79,7 +81,9 @@ public class UserReindexingTask implements Task {
     @Override
     public Result run() {
         try {
-            return reIndexerPerformer.reIndex(username, reprocessingContext);
+            return reIndexerPerformer.reIndex(username, reprocessingContext)
+                .onErrorResume(e -> Mono.just(Result.PARTIAL))
+                .block();
         } catch (MailboxException e) {
             return Result.PARTIAL;
         }
