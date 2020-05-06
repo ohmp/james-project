@@ -10,7 +10,7 @@ Accepted (lazy consensus)
 
 James mailbox uses an event driven architecture. 
 It means every meaningful action on mailboxes or messages triggers an event for any component to react to that event.
-MailboxListeners allow executing actions upon mailbox events. They could be used for a wide variety of purposes, like 
+`MailboxListener` allows executing actions upon mailbox events. They could be used for a wide variety of purposes, like 
 enriching mailbox managers features or enabling user notifications upon concurrent mailboxes operations.
 
 Interactions happen via the managers (RightManager, MailboxManager, MessageManager, MessageIdManager) which emits an
