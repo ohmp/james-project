@@ -14,7 +14,7 @@ It means every meaningful action on mailboxes or messages triggers an event for 
 enriching mailbox managers features or enabling user notifications upon concurrent mailboxes operations.
 
 Interactions happen via the managers (RightManager, MailboxManager, MessageManager, MessageIdManager) which emits an
-event on the EventBus, which will ensure the relevant MailboxListeners will be executed.
+event on the EventBus, which will ensure the relevant MailboxListeners will be executed at least once.
 
 MailboxListener can be registered in a work queue fashion on the eventBus. Each work queue correspond to a given 
 MailboxListener class with the same configuration, identified by their group. Each event is executed at least once
