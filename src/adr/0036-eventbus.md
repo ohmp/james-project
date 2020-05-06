@@ -1,6 +1,6 @@
-# 35. Distributed Mailbox Listeners Configuration
+# 35. Event bus
 
-Date: 2020-04-23
+Date: 2020-05-05
 
 ## Status
 
@@ -10,10 +10,10 @@ Accepted (lazy consensus)
 
 James mailbox provides an event driven architecture. 
 
-MailboxListeners allows executing actions upon mailbox events. They could be used for a wide variety of purposes, like 
+MailboxListeners allow executing actions upon mailbox events. They could be used for a wide variety of purposes, like 
 enriching mailbox managers features or enabling user notifications upon concurrent mailboxes operations.
 
-Interactions happens via the managers (RightManager, MailboxManager, MessageManager, MessageIdManager) which emits an
+Interactions happen via the managers (RightManager, MailboxManager, MessageManager, MessageIdManager) which emits an
 event on the EventBus, which will ensure the relevant MailboxListeners will be executed.
 
 MailboxListener can be registered in a work queue fashion on the eventBus. Each work queue correspond to a given 
@@ -21,7 +21,7 @@ MailboxListener class with the same configuration, identified by their group. Ea
 within a James cluster, errors are retried with an exponential back-off delay. If the execution keeps failing, the event
  is stored in `DeadLetter` for later reprocessing, triggered via WebAdmin.
 
-Guice products enables the registration of additional mailbox listeners. A user can furthermore define its own 
+Guice products enable the registration of additional mailbox listeners. A user can furthermore define its own 
 mailboxListeners via the use of `extension-jars`.
 
 MailboxListener can also be registered on a notification fashion on the eventBus. A mailbox listener can be registered 
@@ -31,7 +31,7 @@ key it is registered to.
 
 ## Features
 
-The following feature are leveraged through the use of Group mailbox listeners:
+The following features are leveraged through the use of Group mailbox listeners:
 
  - Email indexing in Lucene or ElasticSearch
  - Deletion of mailbox annotations
@@ -47,12 +47,12 @@ Provide an InVM version of the EventBus. This implementation is not distributed.
 
 Provide a distributed implementation of the EventBus leveraging RabbitMQ.
 
-Event will be emitted to a single Exchange.
+Events will be emitted to a single Exchange.
 
 Each group will have a corresponding queue, bound to the main exchange, with a default routing key. Each eventBus
 will consume this queue and execute the relevant listener, ensuring at least once execution at the cluster level.
 
-Retries are managed via a dedicated exchange for each group: as we need to count retries, the message headers needs to 
+Retries are managed via a dedicated exchange for each group: as we need to count retries, the message headers need to 
 be altered and we cannot rely on rabbitMQ build in retries. Each time the execution fails locally, a new event is emitted 
 via the dedicated exchange, and the original event is acknowledged.
 
