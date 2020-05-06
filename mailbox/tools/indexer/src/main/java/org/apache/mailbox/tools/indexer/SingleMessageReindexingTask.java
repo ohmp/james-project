@@ -98,7 +98,7 @@ public class SingleMessageReindexingTask implements Task {
     public Result run() {
         return reIndexerPerformer.handleMessageReIndexing(mailboxId, uid, new ReprocessingContext())
             .onErrorResume(e -> {
-                LOGGER.warn("Error encounteres while reindexing {} : {}", mailboxId, uid, e);
+                LOGGER.warn("Error encountered while reindexing {} : {}", mailboxId, uid, e);
                 return Mono.just(Result.PARTIAL);
             })
             .block();

@@ -77,7 +77,7 @@ public class ReIndexerPerformer {
     }
 
     private Mono<Result> reIndex(ReprocessingContext reprocessingContext, MailboxSession mailboxSession, Mailbox mailbox) {
-        LOGGER.info("Intend to reindex mailbox with mailboxId {}", mailbox.getMailboxId().serialize());
+        LOGGER.info("Attempt to reindex mailbox with mailboxId {}", mailbox.getMailboxId().serialize());
         return messageSearchIndex.deleteAll(mailboxSession, mailbox.getMailboxId())
             .then(mailboxSessionMapperFactory.getMessageMapper(mailboxSession)
                 .listAllMessageUids(mailbox)
