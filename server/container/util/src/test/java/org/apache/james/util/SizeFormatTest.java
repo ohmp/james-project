@@ -111,7 +111,7 @@ class SizeFormatTest {
     }
 
     @Test
-    void parseAsByteCountShoulfThrowOnMissingAmount() {
+    void parseAsByteCountShouldThrowOnMissingAmount() {
         assertThatThrownBy(() -> SizeFormat.parseAsByteCount("KiB"))
             .isInstanceOf(NumberFormatException.class);
     }
@@ -123,7 +123,7 @@ class SizeFormatTest {
     }
 
     @Test
-    void parseAsByteCountShouldThrowWhenUnitDoNotMatchCase() {
+    void parseAsByteCountShouldThrowWhenUnitDoesNotMatchCase() {
         assertThatThrownBy(() -> SizeFormat.parseAsByteCount("12 KIB"))
             .isInstanceOf(IllegalArgumentException.class);
     }
