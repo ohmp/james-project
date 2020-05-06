@@ -13,7 +13,7 @@ It means every meaningful action on mailboxes or messages triggers an event for 
 `MailboxListener` allows executing actions upon mailbox events. They could be used for a wide variety of purposes, like 
 enriching mailbox managers features or enabling user notifications upon concurrent mailboxes operations.
 
-Interactions happen via the managers (RightManager, MailboxManager, MessageManager, MessageIdManager) which emits an
+Interactions happen via the managers (`RightManager`, `MailboxManager`, `MessageManager`, `MessageIdManager`) which emit an
 event on the EventBus, which will ensure the relevant MailboxListeners will be executed at least once.
 
 MailboxListener can be registered in a work queue fashion on the eventBus. Each work queue correspond to a given 
