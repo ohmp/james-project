@@ -172,7 +172,7 @@ class SerialTaskManagerWorkerTest {
 
     @Disabled("JAMES-3172 We cannot cancel computation started by Reactor")
     @Test
-    void reactiveTasksShouldBeCancellable() throws InterruptedException {
+    void taskCallingReactorShouldDisposeReactorResourcesUponCancel() throws InterruptedException {
         // Provide a task ticking every 100ms in a separate reactor thread
         AtomicInteger tickCount = new AtomicInteger();
         int tikIntervalInMs = 100;
