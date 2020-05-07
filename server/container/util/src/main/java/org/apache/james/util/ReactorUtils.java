@@ -46,7 +46,7 @@ public class ReactorUtils {
         return (element, sink) -> element.ifPresent(sink::next);
     }
 
-    public static <T, U> BiConsumer<U, SynchronousSink<T>> transformNullable(Function<U, T> mapper) {
+    public static <T, U> BiConsumer<U, SynchronousSink<T>> transformAndPublishIfNotNull(Function<U, T> mapper) {
         return (element, sink) -> Optional.ofNullable(mapper.apply(element)).ifPresent(sink::next);
     }
 
