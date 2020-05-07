@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -39,11 +38,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 class SerialTaskManagerWorkerTest {
     private  static final Duration UPDATE_INFORMATION_POLLING_DURATION = Duration.ofSeconds(1);
@@ -69,7 +68,7 @@ class SerialTaskManagerWorkerTest {
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         worker.close();
     }
 
@@ -93,7 +92,7 @@ class SerialTaskManagerWorkerTest {
                 .then(Mono.just(Task.Result.COMPLETED))
                 .block()));
 
-        worker.executeTask(taskWithId).subscribe();
+        worker.executeTask(taskWithId).subscribeOn(Schedulers.elastic()).subscribe();
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -101,7 +100,7 @@ class SerialTaskManagerWorkerTest {
     }
 
     @Test
-    void aRunningTaskShouldHaveAFiniteNumberOfInformation() throws InterruptedException {
+    void aRunningTaskShouldHaveAFiniteNumberOfInformation() {
         TaskWithId taskWithId = new TaskWithId(TaskId.generateTaskId(), new MemoryReferenceWithCounterTask((counter) ->
             Mono.fromCallable(counter::incrementAndGet)
                 .delayElement(Duration.ofSeconds(1))
@@ -162,7 +161,7 @@ class SerialTaskManagerWorkerTest {
 
         TaskWithId taskWithId = new TaskWithId(id, inProgressTask);
 
-        worker.executeTask(taskWithId).subscribe();
+        worker.executeTask(taskWithId).subscribeOn(Schedulers.elastic()).subscribe();
 
         await(taskLaunched);
         verify(listener, atLeastOnce()).started(id);
@@ -170,7 +169,6 @@ class SerialTaskManagerWorkerTest {
         latch.countDown();
     }
 
-    @Disabled("JAMES-3172 We cannot cancel computation started by Reactor")
     @Test
     void taskCallingReactorShouldDisposeReactorResourcesUponCancel() throws InterruptedException {
         // Provide a task ticking every 100ms in a separate reactor thread
