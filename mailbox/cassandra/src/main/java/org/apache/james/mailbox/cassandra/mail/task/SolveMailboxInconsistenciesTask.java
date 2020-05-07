@@ -27,6 +27,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
-public class SolveMailboxInconsistenciesTask implements Task {
+public class SolveMailboxInconsistenciesTask implements Task.ReactiveTask {
     static final TaskType SOLVE_MAILBOX_INCONSISTENCIES = TaskType.of("solve-mailbox-inconsistencies");
     public static final Logger LOGGER = LoggerFactory.getLogger(SolveMailboxInconsistenciesTask.class);
     private SolveMailboxInconsistenciesService.Context context;
@@ -96,9 +97,8 @@ public class SolveMailboxInconsistenciesTask implements Task {
     }
 
     @Override
-    public Result run() {
-        return service.fixMailboxInconsistencies(context)
-            .block();
+    public Publisher<Result> runReactive() {
+        return service.fixMailboxInconsistencies(context);
     }
 
     @Override

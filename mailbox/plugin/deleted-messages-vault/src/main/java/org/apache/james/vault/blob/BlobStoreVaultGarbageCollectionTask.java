@@ -33,6 +33,7 @@ import org.apache.james.blob.api.BucketName;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableSet;
@@ -40,7 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-public class BlobStoreVaultGarbageCollectionTask implements Task {
+public class BlobStoreVaultGarbageCollectionTask implements Task.ReactiveTask {
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
         private final ZonedDateTime beginningOfRetentionPeriod;
@@ -95,14 +96,12 @@ public class BlobStoreVaultGarbageCollectionTask implements Task {
     }
 
     @Override
-    public Result run() {
-        retentionOperation
+    public Publisher<Result> runReactive() {
+        return retentionOperation
             .doOnNext(deletedBuckets::add)
             .subscribeOn(Schedulers.elastic())
             .then()
-            .block();
-
-        return Result.COMPLETED;
+            .thenReturn(Result.COMPLETED);
     }
 
     @Override

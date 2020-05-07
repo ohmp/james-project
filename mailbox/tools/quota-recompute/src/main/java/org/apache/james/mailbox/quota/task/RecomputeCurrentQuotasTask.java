@@ -29,6 +29,7 @@ import org.apache.james.mailbox.quota.task.RecomputeCurrentQuotasService.Context
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.steveash.guavate.Guavate;
@@ -36,7 +37,7 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.scheduler.Schedulers;
 
-public class RecomputeCurrentQuotasTask implements Task {
+public class RecomputeCurrentQuotasTask implements Task.ReactiveTask {
     static final TaskType RECOMPUTE_CURRENT_QUOTAS = TaskType.of("recompute-current-quotas");
 
     public static class Details implements TaskExecutionDetails.AdditionalInformation {
@@ -76,10 +77,9 @@ public class RecomputeCurrentQuotasTask implements Task {
     }
 
     @Override
-    public Task.Result run() {
+    public Publisher<Result> runReactive() {
         return service.recomputeCurrentQuotas(context)
-            .subscribeOn(Schedulers.elastic())
-            .block();
+            .subscribeOn(Schedulers.elastic());
     }
 
     @Override

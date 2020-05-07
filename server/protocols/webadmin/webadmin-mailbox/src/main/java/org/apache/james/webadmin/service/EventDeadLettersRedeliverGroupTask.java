@@ -28,8 +28,9 @@ import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
 import org.apache.james.webadmin.service.EventDeadLettersRedeliveryTaskAdditionalInformationDTO.EventDeadLettersRedeliveryTaskAdditionalInformationForGroup;
+import org.reactivestreams.Publisher;
 
-public class EventDeadLettersRedeliverGroupTask implements Task {
+public class EventDeadLettersRedeliverGroupTask implements Task.ReactiveTask {
     public static final TaskType TYPE = TaskType.of("event-dead-letters-redeliver-group");
 
     private final EventDeadLettersRedeliverService service;
@@ -47,11 +48,10 @@ public class EventDeadLettersRedeliverGroupTask implements Task {
     }
 
     @Override
-    public Result run() {
+    public Publisher<Result> runReactive() {
         return service.redeliverEvents(eventRetriever)
             .map(this::updateCounters)
-            .reduce(Result.COMPLETED, Task::combine)
-            .block();
+            .reduce(Result.COMPLETED, Task::combine);
     }
 
     private Result updateCounters(Result result) {

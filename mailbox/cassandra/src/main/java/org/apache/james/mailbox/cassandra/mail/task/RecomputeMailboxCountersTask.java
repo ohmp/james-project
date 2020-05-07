@@ -29,6 +29,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.scheduler.Schedulers;
 
-public class RecomputeMailboxCountersTask implements Task {
+public class RecomputeMailboxCountersTask implements Task.ReactiveTask {
     public static final Logger LOGGER = LoggerFactory.getLogger(RecomputeMailboxCountersTask.class);
     static final TaskType RECOMPUTE_MAILBOX_COUNTERS = TaskType.of("recompute-mailbox-counters");
 
@@ -80,10 +81,9 @@ public class RecomputeMailboxCountersTask implements Task {
     }
 
     @Override
-    public Result run() {
+    public Publisher<Result> runReactive() {
         return service.recomputeMailboxCounters(context, options)
-            .subscribeOn(Schedulers.elastic())
-            .block();
+            .subscribeOn(Schedulers.elastic());
     }
 
     @Override

@@ -29,12 +29,13 @@ import org.apache.james.server.task.json.dto.TaskDTOModule;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import reactor.core.scheduler.Schedulers;
 
-public class RecomputeAllFastViewProjectionItemsTask implements Task {
+public class RecomputeAllFastViewProjectionItemsTask implements Task.ReactiveTask {
     static final TaskType TASK_TYPE = TaskType.of("RecomputeAllFastViewProjectionItemsTask");
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
@@ -115,15 +116,15 @@ public class RecomputeAllFastViewProjectionItemsTask implements Task {
     }
 
     @Override
-    public Result run() {
-        corrector.correctAllProjectionItems(progress)
+    public Publisher<Result> runReactive() {
+        return corrector.correctAllProjectionItems(progress)
             .subscribeOn(Schedulers.elastic())
-            .block();
-
-        if (progress.failed()) {
-            return Result.PARTIAL;
-        }
-        return Result.COMPLETED;
+            .map(any -> {
+                if (progress.failed()) {
+                    return Result.PARTIAL;
+                }
+                return Result.COMPLETED;
+            });
     }
 
     @Override

@@ -29,12 +29,13 @@ import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
-public class SolveMessageInconsistenciesTask implements Task {
+public class SolveMessageInconsistenciesTask implements Task.ReactiveTask {
 
     static final TaskType SOLVE_MESSAGE_INCONSISTENCIES = TaskType.of("solve-message-inconsistencies");
 
@@ -111,9 +112,8 @@ public class SolveMessageInconsistenciesTask implements Task {
     }
 
     @Override
-    public Result run() {
-        return service.fixMessageInconsistencies(context)
-            .block();
+    public Publisher<Result> runReactive() {
+        return service.fixMessageInconsistencies(context);
     }
 
     @Override

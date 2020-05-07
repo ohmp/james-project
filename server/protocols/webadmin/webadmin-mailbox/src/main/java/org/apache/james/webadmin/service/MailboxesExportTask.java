@@ -30,12 +30,13 @@ import org.apache.james.server.task.json.dto.TaskDTOModule;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.reactivestreams.Publisher;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import reactor.core.scheduler.Schedulers;
 
-public class MailboxesExportTask implements Task {
+public class MailboxesExportTask implements Task.ReactiveTask {
     static final TaskType TASK_TYPE = TaskType.of("MailboxesExportTask");
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
@@ -108,10 +109,9 @@ public class MailboxesExportTask implements Task {
     }
 
     @Override
-    public Result run() {
+    public Publisher<Result> runReactive() {
         return service.export(progress, username)
-            .subscribeOn(Schedulers.elastic())
-            .block();
+            .subscribeOn(Schedulers.elastic());
     }
 
     @Override

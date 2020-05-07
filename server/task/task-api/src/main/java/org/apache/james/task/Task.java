@@ -23,10 +23,58 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import reactor.core.publisher.Mono;
+
 public interface Task {
+    interface ReactiveTask extends Task {
+        Publisher<Result> runReactive();
+
+        @Override
+        default Result run() throws InterruptedException {
+            return Mono.from(runReactive())
+                .block();
+        }
+    }
+
+    class ReactiveWrapper implements ReactiveTask {
+        private final Task task;
+
+        public ReactiveWrapper(Task task) {
+            this.task = task;
+        }
+
+        @Override
+        public Publisher<Result> runReactive() {
+            return Mono.fromCallable(task::run);
+        }
+
+        @Override
+        public Result run() throws InterruptedException {
+            return task.run();
+        }
+
+        @Override
+        public TaskType type() {
+            return task.type();
+        }
+
+        @Override
+        public Optional<TaskExecutionDetails.AdditionalInformation> details() {
+            return task.details();
+        }
+    }
+
+    static ReactiveTask toReactiveTask(Task task) {
+        if (task instanceof ReactiveTask) {
+            return (ReactiveTask) task;
+        }
+        return new ReactiveWrapper(task);
+    }
+
     Logger LOGGER = LoggerFactory.getLogger(Task.class);
 
     interface Operation {
