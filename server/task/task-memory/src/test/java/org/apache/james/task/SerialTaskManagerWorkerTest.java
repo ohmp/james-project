@@ -170,7 +170,7 @@ class SerialTaskManagerWorkerTest {
     }
 
     @Test
-    void reactiveTasksShouldBeCancellable() throws InterruptedException {
+    void tasksCallingReactorShouldBeCancellable() throws InterruptedException {
         // Provide a task ticking every 100ms in a separate reactor thread
         AtomicInteger tickCount = new AtomicInteger();
         int tikIntervalInMs = 100;
@@ -182,6 +182,36 @@ class SerialTaskManagerWorkerTest {
             .reduce(Task::combine)
             .thenReturn(Task.Result.COMPLETED)
             .block());
+
+        // Execute the task
+        TaskId id = TaskId.generateTaskId();
+        TaskWithId taskWithId = new TaskWithId(id, tickTask);
+        Mono<Task.Result> resultMono = worker.executeTask(taskWithId).cache();
+        resultMono.subscribe();
+        Awaitility.waitAtMost(org.awaitility.Duration.TEN_SECONDS)
+            .untilAsserted(() -> verify(listener, atLeastOnce()).started(id));
+
+        worker.cancelTask(id);
+
+        int tikCountSnapshot1 = tickCount.get();
+        Thread.sleep(2 * tikIntervalInMs);
+        int tikCountSnapshot2 = tickCount.get();
+        // If the task had effectively been canceled tikCount should no longer be incremented
+        assertThat(tikCountSnapshot1).isEqualTo(tikCountSnapshot2);
+    }
+
+    @Test
+    void reactiveTasksShouldBeCancellable() throws InterruptedException {
+        // Provide a task ticking every 100ms in a separate reactor thread
+        AtomicInteger tickCount = new AtomicInteger();
+        int tikIntervalInMs = 100;
+        MemoryReferenceTask.Reactive tickTask = new MemoryReferenceTask.Reactive(Flux.interval(Duration.ofMillis(tikIntervalInMs))
+            .flatMap(any -> Mono.fromCallable(() -> {
+                tickCount.incrementAndGet();
+                return Task.Result.COMPLETED;
+            }))
+            .reduce(Task::combine)
+            .thenReturn(Task.Result.COMPLETED));
 
         // Execute the task
         TaskId id = TaskId.generateTaskId();

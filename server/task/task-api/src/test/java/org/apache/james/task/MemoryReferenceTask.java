@@ -21,6 +21,9 @@ package org.apache.james.task;
 import java.util.Optional;
 
 import org.junit.jupiter.api.function.ThrowingSupplier;
+import org.reactivestreams.Publisher;
+
+import reactor.core.publisher.Mono;
 
 /**
  * This class is used for unit testing.
@@ -29,6 +32,24 @@ import org.junit.jupiter.api.function.ThrowingSupplier;
  * On deserialization, we can then ask the store to retrieve the Task object and pretend we deserialized it.
  */
 public class MemoryReferenceTask implements Task {
+    static class Reactive implements Task.ReactiveTask {
+        private final Mono<Result> task;
+
+        Reactive(Mono<Result> task) {
+            this.task = task;
+        }
+
+        @Override
+        public Publisher<Result> runReactive() {
+            return task;
+        }
+
+        @Override
+        public TaskType type() {
+            return TYPE;
+        }
+    }
+
     public static final TaskType TYPE = TaskType.of("memory-reference-task");
     private final ThrowingSupplier<Result> task;
 
