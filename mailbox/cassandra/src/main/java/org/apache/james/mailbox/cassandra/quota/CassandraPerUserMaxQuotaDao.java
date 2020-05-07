@@ -24,8 +24,8 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static org.apache.james.util.ReactorUtils.transformAndPublishIfNotNull;
 import static org.apache.james.util.ReactorUtils.publishIfPresent;
+import static org.apache.james.util.ReactorUtils.transformAndPublishIfNotNull;
 
 import javax.inject.Inject;
 
