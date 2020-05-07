@@ -20,7 +20,7 @@
 
 package org.apache.james.task.eventsourcing.distributed;
 
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
@@ -94,7 +94,7 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
             .consumeAutoAck(queueName)
             .subscribeOn(Schedulers.elastic())
             .map(this::toEvent)
-            .handle(unboxOptional())
+            .handle(publishIfPresent())
             .subscribe(listener::onNext);
     }
 

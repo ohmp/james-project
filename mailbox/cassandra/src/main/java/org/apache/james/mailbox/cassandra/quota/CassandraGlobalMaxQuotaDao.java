@@ -25,7 +25,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static org.apache.james.util.ReactorUtils.transformNullable;
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import javax.inject.Inject;
 
@@ -96,7 +96,7 @@ public class CassandraGlobalMaxQuotaDao {
                 .setString(CassandraGlobalMaxQuota.TYPE, CassandraGlobalMaxQuota.STORAGE))
             .handle(transformNullable(row -> row.get(CassandraGlobalMaxQuota.VALUE, Long.class)))
             .map(QuotaCodec::longToQuotaSize)
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     Mono<QuotaCountLimit> getGlobalMaxMessage() {
@@ -104,7 +104,7 @@ public class CassandraGlobalMaxQuotaDao {
             .setString(CassandraGlobalMaxQuota.TYPE, CassandraGlobalMaxQuota.MESSAGE))
             .handle(transformNullable(row -> row.get(CassandraGlobalMaxQuota.VALUE, Long.class)))
             .map(QuotaCodec::longToQuotaCount)
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     Mono<Void> removeGlobaltMaxStorage() {

@@ -19,7 +19,7 @@
 
 package org.apache.james.backends.cassandra.utils;
 
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.util.Optional;
 
@@ -68,7 +68,7 @@ public class CassandraAsyncExecutor {
 
     public Mono<Row> executeSingleRow(Statement statement) {
         return executeSingleRowOptional(statement)
-                .handle(unboxOptional());
+                .handle(publishIfPresent());
     }
 
     public Flux<Row> executeRows(Statement statement) {

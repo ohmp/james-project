@@ -28,7 +28,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.MAILBOX_ID;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.NEXT_MODSEQ;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.TABLE_NAME;
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -159,7 +159,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(NEXT_MODSEQ, nextModSeq.asLong()))
             .map(success -> successToModSeq(nextModSeq, success))
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     private Mono<ModSeq> tryUpdateModSeq(CassandraId mailboxId, ModSeq modSeq) {
@@ -170,7 +170,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
                 .setLong(NEXT_MODSEQ, nextModSeq.asLong())
                 .setLong(MOD_SEQ_CONDITION, modSeq.asLong()))
             .map(success -> successToModSeq(nextModSeq, success))
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     private Optional<ModSeq> successToModSeq(ModSeq modSeq, Boolean success) {

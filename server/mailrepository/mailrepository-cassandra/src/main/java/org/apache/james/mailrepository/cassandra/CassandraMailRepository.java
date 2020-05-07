@@ -19,7 +19,7 @@
 
 package org.apache.james.mailrepository.cassandra;
 
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -95,7 +95,7 @@ public class CassandraMailRepository implements MailRepository {
     @Override
     public Mail retrieve(MailKey key) {
         return mailDAO.read(url, key)
-            .handle(unboxOptional())
+            .handle(publishIfPresent())
             .flatMap(this::toMail)
             .blockOptional()
             .orElse(null);

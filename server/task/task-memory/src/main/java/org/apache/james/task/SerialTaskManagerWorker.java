@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james.task;
 
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -93,7 +93,7 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
         return Mono.fromCallable(() -> taskWithId.getTask().details())
             .delayElement(pollingInterval, Schedulers.elastic())
             .repeat()
-            .handle(unboxOptional())
+            .handle(publishIfPresent())
             .flatMap(information -> Mono.from(listener.updated(taskWithId.getId(), information)).thenReturn(information));
     }
 

@@ -19,7 +19,7 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.time.Duration;
 import java.util.Comparator;
@@ -314,7 +314,7 @@ public class CassandraMessageMapper implements MessageMapper {
         if (!failed.isEmpty()) {
             Flux<ComposedMessageIdWithMetaData> toUpdate = Flux.fromIterable(failed)
                 .flatMap(uid -> messageIdDAO.retrieve(mailboxId, uid))
-                .handle(unboxOptional());
+                .handle(publishIfPresent());
             return runUpdateStage(mailboxId, toUpdate, flagsUpdateCalculator);
         } else {
             return Mono.empty();

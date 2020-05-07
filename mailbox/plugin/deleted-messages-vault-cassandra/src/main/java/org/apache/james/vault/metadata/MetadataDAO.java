@@ -24,7 +24,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 import static org.apache.james.vault.metadata.DeletedMessageMetadataModule.DeletedMessageMetadataTable.BUCKET_NAME;
 import static org.apache.james.vault.metadata.DeletedMessageMetadataModule.DeletedMessageMetadataTable.MESSAGE_ID;
 import static org.apache.james.vault.metadata.DeletedMessageMetadataModule.DeletedMessageMetadataTable.OWNER;
@@ -111,7 +111,7 @@ public class MetadataDAO {
                 .setString(OWNER, username.asString()))
             .map(row -> row.getString(PAYLOAD))
             .map(metadataSerializer::deserialize)
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     Flux<MessageId> retrieveMessageIds(BucketName bucketName, Username username) {

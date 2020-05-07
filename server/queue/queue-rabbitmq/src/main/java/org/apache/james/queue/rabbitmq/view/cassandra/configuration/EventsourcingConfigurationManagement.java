@@ -19,7 +19,7 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import javax.inject.Inject;
 
@@ -58,7 +58,7 @@ public class EventsourcingConfigurationManagement {
             .map(history -> ConfigurationAggregate
                 .load(CONFIGURATION_AGGREGATE_ID, history)
                 .getCurrentConfiguration())
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     public void registerConfiguration(CassandraMailQueueViewConfiguration newConfiguration) {

@@ -42,7 +42,7 @@ public class ReactorUtils {
         return Mono.fromRunnable(runnable).then(Mono.empty());
     }
 
-    public static <T> BiConsumer<Optional<T>, SynchronousSink<T>> unboxOptional() {
+    public static <T> BiConsumer<Optional<T>, SynchronousSink<T>> publishIfPresent() {
         return (element, sink) -> element.ifPresent(sink::next);
     }
 

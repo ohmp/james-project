@@ -28,7 +28,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageUidTable.MAILBOX_ID;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageUidTable.NEXT_UID;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageUidTable.TABLE_NAME;
-import static org.apache.james.util.ReactorUtils.unboxOptional;
+import static org.apache.james.util.ReactorUtils.publishIfPresent;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -137,7 +137,7 @@ public class CassandraUidProvider implements UidProvider {
                         .setLong(CONDITION, uid.asLong())
                         .setLong(NEXT_UID, nextUid.asLong()))
                 .map(success -> successToUid(nextUid, success))
-                .handle(unboxOptional());
+                .handle(publishIfPresent());
     }
 
     private Mono<MessageUid> tryInsert(CassandraId mailboxId) {
@@ -145,7 +145,7 @@ public class CassandraUidProvider implements UidProvider {
             insertStatement.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid()))
             .map(success -> successToUid(MessageUid.MIN_VALUE, success))
-            .handle(unboxOptional());
+            .handle(publishIfPresent());
     }
 
     private Optional<MessageUid> successToUid(MessageUid uid, Boolean success) {
