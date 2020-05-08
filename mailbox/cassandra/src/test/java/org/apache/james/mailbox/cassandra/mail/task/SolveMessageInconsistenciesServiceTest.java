@@ -155,7 +155,7 @@ public class SolveMessageInconsistenciesServiceTest {
         }
 
         @Test
-        void outdatedImapUidDAOEntryShouldBeConfirmed(CassandraCluster cassandra) throws Exception {
+        void shouldNotConciderPendingMessageUpdatesAsInconsistency(CassandraCluster cassandra) throws Exception {
             imapUidDAO.insert(MESSAGE_1_WITH_SEEN_FLAG).block();
             messageIdDAO.insert(MESSAGE_1).block();
 
@@ -185,7 +185,7 @@ public class SolveMessageInconsistenciesServiceTest {
         }
 
         @Test
-        void orphanImapUidDAOEntryShouldBeConfirmed(CassandraCluster cassandra) throws Exception {
+        void shouldNotConciderPendingMessageInsertsAsInconsistency(CassandraCluster cassandra) throws Exception {
             imapUidDAO.insert(MESSAGE_1).block();
 
             Scenario.Barrier barrier = new Scenario.Barrier(1);
@@ -378,7 +378,7 @@ public class SolveMessageInconsistenciesServiceTest {
         }
 
         @Test
-        void orphanMessageIdDAOEntryShouldBeConfirmed(CassandraCluster cassandra) throws Exception {
+        void shouldNotConciderPendingMessageDeleteAsInconsistency(CassandraCluster cassandra) throws Exception {
             messageIdDAO.insert(MESSAGE_1).block();
 
             Scenario.Barrier barrier = new Scenario.Barrier(1);
