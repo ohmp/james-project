@@ -155,7 +155,7 @@ public class SolveMessageInconsistenciesServiceTest {
         }
 
         @Test
-        void shouldNotConciderPendingMessageUpdatesAsInconsistency(CassandraCluster cassandra) throws Exception {
+        void shouldNotConsiderPendingMessageUpdatesAsInconsistency(CassandraCluster cassandra) throws Exception {
             imapUidDAO.insert(MESSAGE_1_WITH_SEEN_FLAG).block();
             messageIdDAO.insert(MESSAGE_1).block();
 
@@ -185,7 +185,7 @@ public class SolveMessageInconsistenciesServiceTest {
         }
 
         @Test
-        void shouldNotConciderPendingMessageInsertsAsInconsistency(CassandraCluster cassandra) throws Exception {
+        void shouldNotConsiderPendingMessageInsertsAsInconsistency(CassandraCluster cassandra) throws Exception {
             imapUidDAO.insert(MESSAGE_1).block();
 
             Scenario.Barrier barrier = new Scenario.Barrier(1);
@@ -378,7 +378,7 @@ public class SolveMessageInconsistenciesServiceTest {
         }
 
         @Test
-        void shouldNotConciderPendingMessageDeleteAsInconsistency(CassandraCluster cassandra) throws Exception {
+        void shouldNotConsiderPendingMessageDeleteAsInconsistency(CassandraCluster cassandra) throws Exception {
             messageIdDAO.insert(MESSAGE_1).block();
 
             Scenario.Barrier barrier = new Scenario.Barrier(1);
