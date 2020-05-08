@@ -28,6 +28,7 @@ import static io.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.backends.rabbitmq.RabbitMQFixture.calmlyAwait;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.LocalHostURIBuilder.baseUri;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -114,7 +115,7 @@ class FixingGhostMailboxTest {
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();

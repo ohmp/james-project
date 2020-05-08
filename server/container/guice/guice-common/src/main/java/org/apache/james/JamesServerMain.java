@@ -24,11 +24,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.server.core.configuration.Configuration;
-import org.apache.james.server.core.filesystem.FileSystemImpl;
 import org.apache.james.utils.PropertiesProvider;
 
-import com.github.fge.lambdas.Throwing;
-import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
@@ -44,27 +41,12 @@ public interface JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(modules);
-        server.start();
-        
-        Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+        main(configuration, ImmutableList.copyOf(modules));
     }
 
-    static void main(List<Module> baseModules, List<ConfiguredModulesSupplier> configuredModulesSuppliers) throws Exception {
-        Configuration configuration = Configuration.builder()
-            .useWorkingDirectoryEnvProperty()
-            .build();
-
-        PropertiesProvider propertiesProvider = new PropertiesProvider(new FileSystemImpl(configuration.directories()), configuration);
-        ImmutableList<Module> configuredModules = configuredModulesSuppliers.stream()
-            .flatMap(Throwing.<ConfiguredModulesSupplier, Stream<Module>>function(
-                configuredModulesSupplier -> configuredModulesSupplier.configuredModules(propertiesProvider)).sneakyThrow())
-            .collect(Guavate.toImmutableList());
-
+    static void main(Configuration configuration, List<Module> baseModules) throws Exception {
         GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(Modules.combine(baseModules))
-            .combineWith(Modules.combine(configuredModules));
+            .combineWith(Modules.combine(baseModules));
         server.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(server::stop));

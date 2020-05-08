@@ -19,6 +19,8 @@
 
 package org.apache.james.webadmin.integration.rabbitmq;
 
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
@@ -41,7 +43,7 @@ class RabbitMQForwardIntegrationTest extends ForwardIntegrationTest {
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();

@@ -19,9 +19,14 @@
 
 package org.apache.james;
 
+import static org.apache.james.CassandraRabbitMQJamesServerMain.parseBlobStoreChoosingConfiguration;
+
 import org.apache.james.data.LdapUsersRepositoryModule;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
+import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.server.JMXServerModule;
+import org.apache.james.server.core.configuration.Configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
@@ -33,8 +38,22 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
         .with(new LdapUsersRepositoryModule());
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(
-            ImmutableList.of(MODULES, new JMXServerModule()),
-            ImmutableList.of(new BlobStoreCacheConfiguredModulesSupplier()));
+        Configuration configuration = Configuration.builder()
+            .useWorkingDirectoryEnvProperty()
+            .build();
+
+        BlobStoreChoosingConfiguration blobStoreChoosingConfiguration = parseBlobStoreChoosingConfiguration(configuration);
+
+        Module baseModule = baseModule(blobStoreChoosingConfiguration);
+        JamesServerMain.main(configuration,
+            ImmutableList.of(baseModule, new JMXServerModule()));
+    }
+
+    public static Module baseModule(BlobStoreChoosingConfiguration blobStoreChoosingConfiguration) {
+        return Modules.combine(ImmutableList.<Module>builder()
+            .add(MODULES)
+            .addAll(new BlobStoreCacheConfiguredModulesSupplier().configuredModules(blobStoreChoosingConfiguration))
+            .addAll(new ChoosingBlobStoreConfiguredModulesSupplier().configuredModules(blobStoreChoosingConfiguration))
+            .build());
     }
 }

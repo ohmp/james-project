@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.rabbitmq.cucumber.awss3;
 
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+
 import java.util.Arrays;
 
 import javax.inject.Inject;
@@ -83,7 +85,7 @@ public class RabbitMQAwsS3Stepdefs {
                 .build();
 
         mainStepdefs.jmapServer = GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(new TestDockerESMetricReporterModule(elasticSearch.getDockerEs().getHttpHost()))
                 .overrideWith(new TestRabbitMQModule(rabbitMQServer.dockerRabbitMQ()))

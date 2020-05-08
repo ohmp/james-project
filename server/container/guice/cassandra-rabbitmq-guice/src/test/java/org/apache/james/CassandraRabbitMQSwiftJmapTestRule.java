@@ -19,6 +19,8 @@
 
 package org.apache.james;
 
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+
 import java.io.IOException;
 
 import org.apache.james.backends.rabbitmq.DockerRabbitMQSingleton;
@@ -66,7 +68,7 @@ public class CassandraRabbitMQSwiftJmapTestRule implements TestRule {
             .build();
 
         return GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON))
             .overrideWith(new DockerSwiftTestRule().getModule())

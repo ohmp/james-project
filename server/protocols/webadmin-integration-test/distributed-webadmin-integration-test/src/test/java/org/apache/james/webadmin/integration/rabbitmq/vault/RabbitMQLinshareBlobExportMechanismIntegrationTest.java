@@ -20,6 +20,7 @@
 package org.apache.james.webadmin.integration.rabbitmq.vault;
 
 import static org.apache.james.modules.TestJMAPServerModule.LIMIT_TO_20_MESSAGES;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
 
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
@@ -49,7 +50,7 @@ class RabbitMQLinshareBlobExportMechanismIntegrationTest extends LinshareBlobExp
         .extension(new AwsS3BlobStoreExtension())
         .extension(new LinshareGuiceExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(TestJMAPServerModule.maximumMessages(LIMIT_TO_20_MESSAGES))
             .overrideWith(new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON))

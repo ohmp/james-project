@@ -27,6 +27,7 @@ import static org.apache.james.jmap.JMAPTestingConstants.DOMAIN;
 import static org.apache.james.jmap.JMAPTestingConstants.jmapRequestSpecBuilder;
 import static org.apache.james.jmap.JmapCommonRequests.getDraftId;
 import static org.apache.james.jmap.JmapCommonRequests.listMessageIdsForAccount;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 
@@ -81,7 +82,7 @@ class RabbitMQReindexingWithEventDeadLettersTest {
 
     private static final JamesServerBuilder.ServerProvider CONFIGURATION_BUILDER = configuration -> GuiceJamesServer
         .forConfiguration(configuration)
-        .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+        .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
         .overrideWith(TestJMAPServerModule.limitToTenMessages())
         .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
         .overrideWith(new WebadminIntegrationTestModule());

@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.webadmin.integration.rabbitmq;
 
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -153,7 +155,7 @@ public class RabbitMQJmapExtension implements BeforeAllCallback, AfterAllCallbac
                 .build();
 
         return GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
                 .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
                 .overrideWith(new TestDockerESMetricReporterModule(elasticSearchRule.getDockerEs().getHttpHost()))
                 .overrideWith(cassandra.getModule())

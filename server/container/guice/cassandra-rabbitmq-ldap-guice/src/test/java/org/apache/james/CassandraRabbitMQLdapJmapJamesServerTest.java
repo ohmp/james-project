@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.jmap.draft.JmapJamesServerContract.JAMES_SERVER_HOST;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
 import static org.apache.james.user.ldap.DockerLdapSingleton.JAMES_USER;
 import static org.apache.james.user.ldap.DockerLdapSingleton.PASSWORD;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +33,6 @@ import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.SwiftBlobStoreExtension;
 import org.apache.james.modules.TestJMAPServerModule;
-import com.google.inject.Module;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
 import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
@@ -40,6 +40,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.google.inject.Module;
 
 class CassandraRabbitMQLdapJmapJamesServerTest {
     interface UserFromLdapShouldLogin {
@@ -88,7 +90,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
             .extension(new RabbitMQExtension())
             .extension(new LdapTestExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQLdapJamesServerMain.MODULES)
+                .combineWith(CassandraRabbitMQLdapJamesServerMain.baseModule(objectStorage()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
                 .overrideWith(new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule())

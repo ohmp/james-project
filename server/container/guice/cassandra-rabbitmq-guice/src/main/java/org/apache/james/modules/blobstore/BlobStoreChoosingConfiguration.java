@@ -73,8 +73,7 @@ public class BlobStoreChoosingConfiguration {
     static final String BLOBSTORE_IMPLEMENTATION_PROPERTY = "implementation";
     static final String CACHE_ENABLE_PROPERTY = "cache.enable";
 
-
-    static BlobStoreChoosingConfiguration readBlobStoreChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
+    public static BlobStoreChoosingConfiguration readBlobStoreChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
             Configuration configuration = propertiesProvider.getConfigurations(ConfigurationComponent.NAMES);
             return BlobStoreChoosingConfiguration.from(configuration);
@@ -103,6 +102,10 @@ public class BlobStoreChoosingConfiguration {
 
     public static BlobStoreChoosingConfiguration objectStorage() {
         return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECTSTORAGE, !CACHE_ENABLED);
+    }
+
+    public static BlobStoreChoosingConfiguration cachingEnabled() {
+        return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECTSTORAGE, CACHE_ENABLED);
     }
 
     public static BlobStoreChoosingConfiguration hybrid() {

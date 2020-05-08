@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static io.restassured.config.ParamConfig.UpdateStrategy.REPLACE;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.jmap.draft.JmapJamesServerContract;
@@ -57,7 +58,7 @@ class RabbitMQJamesServerReprocessingTest {
         .extension(new AwsS3BlobStoreExtension())
         .server(configuration -> GuiceJamesServer
             .forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.DEFAULT_TESTING_MODULES)
+            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
             .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION))
             .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))

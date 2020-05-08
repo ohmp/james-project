@@ -19,17 +19,14 @@
 
 package org.apache.james.modules.blobstore;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.readBlobStoreChoosingConfiguration;
-
 import java.io.FileNotFoundException;
-import java.util.stream.Stream;
+import java.util.List;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.james.JamesServerMain;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.init.configuration.InjectionNames;
 import org.apache.james.blob.api.BlobStore;
@@ -45,6 +42,7 @@ import org.apache.james.utils.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
@@ -52,7 +50,7 @@ import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
-public class BlobStoreCacheConfiguredModulesSupplier implements JamesServerMain.ConfiguredModulesSupplier {
+public class BlobStoreCacheConfiguredModulesSupplier {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreCacheConfiguredModulesSupplier.class);
 
     public static class CacheDisabledModule extends AbstractModule {
@@ -95,13 +93,10 @@ public class BlobStoreCacheConfiguredModulesSupplier implements JamesServerMain.
         }
     }
 
-    @Override
-    public Stream<Module> configuredModules(PropertiesProvider propertiesProvider) throws ConfigurationException {
-        BlobStoreChoosingConfiguration blobStoreChoosingConfiguration = readBlobStoreChoosingConfiguration(propertiesProvider);
-
+    public List<Module> configuredModules(BlobStoreChoosingConfiguration blobStoreChoosingConfiguration) {
         if (blobStoreChoosingConfiguration.isCacheEnabled()) {
-            return Stream.of(new CassandraCacheSessionModule(), new CacheEnabledModule());
+            return ImmutableList.of(new CassandraCacheSessionModule(), new CacheEnabledModule());
         }
-        return Stream.of(new CacheDisabledModule());
+        return ImmutableList.of(new CacheDisabledModule());
     }
 }

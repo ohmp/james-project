@@ -20,14 +20,20 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.REQUIRE_TASK_MANAGER_MODULE;
+import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.readBlobStoreChoosingConfiguration;
 
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.modules.DistributedTaskManagerModule;
 import org.apache.james.modules.TaskSerializationModule;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
 import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.event.RabbitMQEventBusModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
+import org.apache.james.server.core.configuration.Configuration;
+import org.apache.james.server.core.filesystem.FileSystemImpl;
+import org.apache.james.utils.PropertiesProvider;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
@@ -38,15 +44,30 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
         Modules
             .override(Modules.combine(REQUIRE_TASK_MANAGER_MODULE, new DistributedTaskManagerModule()))
             .with(new RabbitMQModule(), new RabbitMQEventBusModule(), new TaskSerializationModule());
-    public static final Module DEFAULT_TESTING_MODULES =
-        Modules
-            .combine(MODULES,
-                new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule(),
-                new ChoosingBlobStoreConfiguredModulesSupplier.ObjectStorageDeclarationModule());
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(
-            ImmutableList.of(MODULES, new JMXServerModule()),
-            ImmutableList.of(new BlobStoreCacheConfiguredModulesSupplier(), new ChoosingBlobStoreConfiguredModulesSupplier()));
+        Configuration configuration = Configuration.builder()
+            .useWorkingDirectoryEnvProperty()
+            .build();
+
+        BlobStoreChoosingConfiguration blobStoreChoosingConfiguration = parseBlobStoreChoosingConfiguration(configuration);
+
+        Module baseModule = baseModule(blobStoreChoosingConfiguration);
+
+        JamesServerMain.main(configuration,
+            ImmutableList.of(baseModule, new JMXServerModule()));
+    }
+
+    static BlobStoreChoosingConfiguration parseBlobStoreChoosingConfiguration(Configuration configuration) throws ConfigurationException {
+        PropertiesProvider propertiesProvider = new PropertiesProvider(new FileSystemImpl(configuration.directories()), configuration);
+        return readBlobStoreChoosingConfiguration(propertiesProvider);
+    }
+
+    public static Module baseModule(BlobStoreChoosingConfiguration blobStoreChoosingConfiguration) {
+        return Modules.combine(ImmutableList.<Module>builder()
+                .add(MODULES)
+                .addAll(new BlobStoreCacheConfiguredModulesSupplier().configuredModules(blobStoreChoosingConfiguration))
+                .addAll(new ChoosingBlobStoreConfiguredModulesSupplier().configuredModules(blobStoreChoosingConfiguration))
+                .build());
     }
 }

@@ -19,17 +19,14 @@
 
 package org.apache.james.modules.blobstore;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.readBlobStoreChoosingConfiguration;
-
 import java.io.FileNotFoundException;
-import java.util.stream.Stream;
+import java.util.List;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.james.JamesServerMain;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
 import org.apache.james.blob.cassandra.cache.CachedBlobStore;
@@ -41,12 +38,13 @@ import org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule;
 import org.apache.james.utils.PropertiesProvider;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
-public class ChoosingBlobStoreConfiguredModulesSupplier implements JamesServerMain.ConfiguredModulesSupplier {
+public class ChoosingBlobStoreConfiguredModulesSupplier {
     public static class CassandraDeclarationModule extends AbstractModule {
         @Override
         protected void configure() {
@@ -100,21 +98,15 @@ public class ChoosingBlobStoreConfiguredModulesSupplier implements JamesServerMa
         }
     }
 
-    @Override
-    public Stream<Module> configuredModules(PropertiesProvider propertiesProvider) throws ConfigurationException {
-        BlobStoreChoosingConfiguration choosingConfiguration = readBlobStoreChoosingConfiguration(propertiesProvider);
-        return configuredModules(choosingConfiguration);
-    }
-
     @VisibleForTesting
-    Stream<Module> configuredModules(BlobStoreChoosingConfiguration choosingConfiguration) {
+    public List<Module> configuredModules(BlobStoreChoosingConfiguration choosingConfiguration) {
         switch (choosingConfiguration.getImplementation()) {
             case CASSANDRA:
-                return Stream.of(new CassandraDeclarationModule());
+                return ImmutableList.of(new CassandraDeclarationModule());
             case OBJECTSTORAGE:
-                return Stream.of(new ObjectStorageDeclarationModule());
+                return ImmutableList.of(new ObjectStorageDeclarationModule());
             case HYBRID:
-                return Stream.of(new HybridDeclarationModule());
+                return ImmutableList.of(new HybridDeclarationModule());
             default:
                 throw new RuntimeException("Unsuported blobStore implementation " + choosingConfiguration.getImplementation());
         }
