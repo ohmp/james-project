@@ -42,7 +42,6 @@ import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 class SerialTaskManagerWorkerTest {
     private  static final Duration UPDATE_INFORMATION_POLLING_DURATION = Duration.ofSeconds(1);
@@ -92,7 +91,7 @@ class SerialTaskManagerWorkerTest {
                 .then(Mono.just(Task.Result.COMPLETED))
                 .block()));
 
-        worker.executeTask(taskWithId).subscribeOn(Schedulers.elastic()).subscribe();
+        worker.executeTask(taskWithId).subscribe();
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -161,7 +160,7 @@ class SerialTaskManagerWorkerTest {
 
         TaskWithId taskWithId = new TaskWithId(id, inProgressTask);
 
-        worker.executeTask(taskWithId).subscribeOn(Schedulers.elastic()).subscribe();
+        worker.executeTask(taskWithId).subscribe();
 
         await(taskLaunched);
         verify(listener, atLeastOnce()).started(id);
