@@ -195,6 +195,8 @@ class SerialTaskManagerWorkerTest {
 
         worker.cancelTask(id);
 
+        Thread.sleep(tikIntervalInMs);
+
         int tikCountSnapshot1 = tickCount.get();
         Thread.sleep(2 * tikIntervalInMs);
         int tikCountSnapshot2 = tickCount.get();
