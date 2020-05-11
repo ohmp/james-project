@@ -40,7 +40,7 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
-    public static final Module MODULES =
+    protected static final Module MODULES =
         Modules
             .override(Modules.combine(REQUIRE_TASK_MANAGER_MODULE, new DistributedTaskManagerModule()))
             .with(new RabbitMQModule(), new RabbitMQEventBusModule(), new TaskSerializationModule());
