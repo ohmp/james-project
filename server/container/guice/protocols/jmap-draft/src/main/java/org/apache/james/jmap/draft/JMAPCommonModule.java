@@ -46,13 +46,13 @@ import org.apache.james.jmap.http.JWTAuthenticationStrategy;
 import org.apache.james.jmap.http.QueryParameterAccessTokenAuthenticationStrategy;
 import org.apache.james.lifecycle.api.StartUpCheck;
 import org.apache.james.mailbox.events.MailboxListener;
+import org.apache.james.server.core.AutomaticallySentMailDetectorImpl;
 import org.apache.james.util.date.DefaultZonedDateTimeProvider;
 import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.apache.james.util.mime.MessageContentExtractor;
 import org.apache.james.utils.InitializationOperation;
 import org.apache.james.utils.InitilizationOperationBuilder;
 import org.apache.mailet.base.AutomaticallySentMailDetector;
-import org.apache.mailet.base.AutomaticallySentMailDetectorImpl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
