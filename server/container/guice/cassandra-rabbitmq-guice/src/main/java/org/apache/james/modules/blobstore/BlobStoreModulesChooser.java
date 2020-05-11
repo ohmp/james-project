@@ -45,7 +45,7 @@ import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
 public class BlobStoreModulesChooser {
-    public static class CassandraDeclarationModule extends AbstractModule {
+    static class CassandraDeclarationModule extends AbstractModule {
         @Override
         protected void configure() {
             install(new CassandraBlobStoreDependenciesModule());
@@ -55,7 +55,7 @@ public class BlobStoreModulesChooser {
         }
     }
 
-    public static class ObjectStorageDeclarationModule extends AbstractModule {
+    static class ObjectStorageDeclarationModule extends AbstractModule {
         @Override
         protected void configure() {
             install(new ObjectStorageDependenciesModule());
@@ -65,7 +65,7 @@ public class BlobStoreModulesChooser {
         }
     }
 
-    public static class HybridDeclarationModule extends AbstractModule {
+    static class HybridDeclarationModule extends AbstractModule {
         @Override
         protected void configure() {
             install(new ObjectStorageDependenciesModule());

@@ -53,7 +53,7 @@ import com.google.inject.name.Names;
 public class BlobStoreCacheModulesChooser {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreCacheModulesChooser.class);
 
-    public static class CacheDisabledModule extends AbstractModule {
+    private static class CacheDisabledModule extends AbstractModule {
         @Provides
         @Named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION)
         @Singleton
