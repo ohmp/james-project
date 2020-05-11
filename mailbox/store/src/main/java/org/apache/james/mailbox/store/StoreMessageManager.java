@@ -487,11 +487,11 @@ public class StoreMessageManager implements MessageManager {
     }
 
     @Override
-    public MailboxMetaData getMetaData(boolean resetRecent, MailboxSession mailboxSession, MailboxMetaData.FetchGroup fetchGroup) throws MailboxException {
+    public MailboxContentMetaData getMetaData(boolean resetRecent, MailboxSession mailboxSession, MailboxContentMetaData.FetchGroup fetchGroup) throws MailboxException {
         MailboxACL resolvedAcl = getResolvedAcl(mailboxSession);
         boolean hasReadRight = storeRightManager.hasRight(mailbox, MailboxACL.Right.Read, mailboxSession);
         if (!hasReadRight) {
-            return MailboxMetaData.sensibleInformationFree(resolvedAcl, getMailboxEntity().getUidValidity(), isWriteable(mailboxSession), isModSeqPermanent(mailboxSession));
+            return MailboxContentMetaData.sensibleInformationFree(resolvedAcl, getMailboxEntity().getUidValidity(), isWriteable(mailboxSession), isModSeqPermanent(mailboxSession));
         }
         List<MessageUid> recent;
         Flags permanentFlags = getPermanentFlags(mailboxSession);
@@ -537,7 +537,7 @@ public class StoreMessageManager implements MessageManager {
             recent = new ArrayList<>();
             break;
         }
-        return new MailboxMetaData(recent, permanentFlags, uidValidity, uidNext, highestModSeq, messageCount, unseenCount, firstUnseen, isWriteable(mailboxSession), isModSeqPermanent(mailboxSession), resolvedAcl);
+        return new MailboxContentMetaData(recent, permanentFlags, uidValidity, uidNext, highestModSeq, messageCount, unseenCount, firstUnseen, isWriteable(mailboxSession), isModSeqPermanent(mailboxSession), resolvedAcl);
     }
 
     @Override
