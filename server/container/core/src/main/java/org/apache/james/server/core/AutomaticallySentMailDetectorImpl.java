@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.mailet.base;
+package org.apache.james.server.core;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +34,7 @@ import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.BodyDescriptor;
 import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.mailet.Mail;
+import org.apache.mailet.base.AutomaticallySentMailDetector;
 
 public class AutomaticallySentMailDetectorImpl implements AutomaticallySentMailDetector {
 
@@ -100,7 +101,7 @@ public class AutomaticallySentMailDetectorImpl implements AutomaticallySentMailD
             .build());
         parser.setContentHandler(createMdnContentHandler(resultCollector));
         try {
-            parser.parse(mail.getMessage().getInputStream());
+            parser.parse(new MimeMessageInputStream(mail.getMessage()));
         } catch (MimeException e) {
             throw new MessagingException("Can not parse Mime", e);
         } catch (IOException e) {
