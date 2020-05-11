@@ -36,7 +36,6 @@ import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.util.MimeMessageUtil;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
@@ -45,7 +44,7 @@ public class AutomaticallySentMailDetectorImplTest {
 
     @Test
     public void nullSenderMailsShouldBeConsideredAsAutomaticMails() throws Exception {
-        Assertions.assertThat(
+        assertThat(
             new AutomaticallySentMailDetectorImpl()
                 .isAutomaticallySent(FakeMail.builder()
                     .name("mail")
