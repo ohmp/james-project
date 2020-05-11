@@ -424,13 +424,13 @@ public class SolveMessageInconsistenciesService {
                 if (messageIdRecord.equals(messageFromImapUid)) {
                     return Mono.just(NO_INCONSISTENCY);
                 }
-                return confirmOutdatedMessageIdEntry(mailboxId, messageId, messageIdRecord);
+                return detectOutdatedMessageIdEntry(mailboxId, messageId, messageIdRecord);
             })
             .switchIfEmpty(
-                confirmOrphanImapUidEntry(messageFromImapUid, mailboxId, messageId));
+                detectOrphanImapUidEntry(messageFromImapUid, mailboxId, messageId));
     }
 
-    private Mono<Inconsistency> confirmOutdatedMessageIdEntry(CassandraId mailboxId, CassandraMessageId messageId, ComposedMessageIdWithMetaData messageIdRecord) {
+    private Mono<Inconsistency> detectOutdatedMessageIdEntry(CassandraId mailboxId, CassandraMessageId messageId, ComposedMessageIdWithMetaData messageIdRecord) {
         return messageIdToImapUidDAO.retrieve(messageId, Optional.of(mailboxId))
             .filter(upToDateMessageFromImapUid -> !upToDateMessageFromImapUid.equals(messageIdRecord))
             .<Inconsistency>map(upToDateMessageFromImapUid -> new OutdatedMessageIdEntry(messageIdRecord, upToDateMessageFromImapUid))
@@ -438,7 +438,7 @@ public class SolveMessageInconsistenciesService {
             .switchIfEmpty(Mono.just(NO_INCONSISTENCY));
     }
 
-    private Mono<Inconsistency> confirmOrphanImapUidEntry(ComposedMessageIdWithMetaData messageFromImapUid, CassandraId mailboxId, CassandraMessageId messageId) {
+    private Mono<Inconsistency> detectOrphanImapUidEntry(ComposedMessageIdWithMetaData messageFromImapUid, CassandraId mailboxId, CassandraMessageId messageId) {
         return messageIdToImapUidDAO.retrieve(messageId, Optional.of(mailboxId))
             .next()
             .<Inconsistency>map(OrphanImapUidEntry::new)
@@ -456,11 +456,11 @@ public class SolveMessageInconsistenciesService {
         return messageIdToImapUidDAO.retrieve((CassandraMessageId) message.getComposedMessageId().getMessageId(), Optional.of((CassandraId) message.getComposedMessageId().getMailboxId()))
             .map(uidRecord -> NO_INCONSISTENCY)
             .next()
-            .switchIfEmpty(confirmOrphanMessageIdEntry(message))
+            .switchIfEmpty(detectOrphanMessageIdEntry(message))
             .onErrorResume(error -> Mono.just(new FailedToRetrieveRecord(message)));
     }
 
-    private Mono<Inconsistency> confirmOrphanMessageIdEntry(ComposedMessageIdWithMetaData message) {
+    private Mono<Inconsistency> detectOrphanMessageIdEntry(ComposedMessageIdWithMetaData message) {
         return messageIdDAO.retrieve((CassandraId) message.getComposedMessageId().getMailboxId(), message.getComposedMessageId().getUid())
             .handle(publishIfPresent())
             .<Inconsistency>map(OrphanMessageIdEntry::new)
