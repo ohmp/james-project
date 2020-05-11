@@ -50,8 +50,8 @@ import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
-public class BlobStoreCacheConfiguredModulesSupplier {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreCacheConfiguredModulesSupplier.class);
+public class BlobStoreCacheModulesChooser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreCacheModulesChooser.class);
 
     public static class CacheDisabledModule extends AbstractModule {
         @Provides
@@ -62,7 +62,7 @@ public class BlobStoreCacheConfiguredModulesSupplier {
         }
     }
 
-    public static class CacheEnabledModule extends AbstractModule  {
+    private static class CacheEnabledModule extends AbstractModule  {
         @Override
         protected void configure() {
             bind(CassandraBlobStoreCache.class).in(Scopes.SINGLETON);

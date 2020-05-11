@@ -23,9 +23,9 @@ import static org.apache.james.CassandraJamesServerMain.REQUIRE_TASK_MANAGER_MOD
 
 import org.apache.james.modules.DistributedTaskManagerModule;
 import org.apache.james.modules.TaskSerializationModule;
-import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreCacheModulesChooser;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
-import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreModulesChooser;
 import org.apache.james.modules.event.RabbitMQEventBusModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
@@ -58,8 +58,8 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
     public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
         return Modules.combine(ImmutableList.<Module>builder()
                 .add(MODULES)
-                .addAll(new BlobStoreCacheConfiguredModulesSupplier().configuredModules(blobStoreConfiguration))
-                .addAll(new ChoosingBlobStoreConfiguredModulesSupplier().configuredModules(blobStoreConfiguration))
+                .addAll(new BlobStoreCacheModulesChooser().configuredModules(blobStoreConfiguration))
+                .addAll(new BlobStoreModulesChooser().configuredModules(blobStoreConfiguration))
                 .build());
     }
 }

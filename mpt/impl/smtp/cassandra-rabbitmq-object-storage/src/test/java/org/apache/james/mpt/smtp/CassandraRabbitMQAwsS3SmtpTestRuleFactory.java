@@ -27,8 +27,8 @@ import org.apache.james.backends.cassandra.init.configuration.ClusterConfigurati
 import org.apache.james.backends.rabbitmq.DockerRabbitMQSingleton;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.modules.TestRabbitMQModule;
-import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
-import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreCacheModulesChooser;
+import org.apache.james.modules.blobstore.BlobStoreModulesChooser;
 import org.apache.james.modules.mailbox.KeyspacesConfiguration;
 import org.apache.james.modules.objectstorage.aws.s3.DockerAwsS3TestRule;
 import org.apache.james.modules.protocols.SmtpGuiceProbe.SmtpServerConnectedType;
@@ -61,8 +61,8 @@ public final class CassandraRabbitMQAwsS3SmtpTestRuleFactory {
                     .toInstance(BaseHierarchicalConfiguration::new))
             .overrideWith(
                 new RabbitMQModule(),
-                new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule(),
-                new ChoosingBlobStoreConfiguredModulesSupplier.ObjectStorageDeclarationModule())
+                new BlobStoreCacheModulesChooser.CacheDisabledModule(),
+                new BlobStoreModulesChooser.ObjectStorageDeclarationModule())
             .overrideWith(
                 new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON),
                 awsS3TestRule.getModule(),

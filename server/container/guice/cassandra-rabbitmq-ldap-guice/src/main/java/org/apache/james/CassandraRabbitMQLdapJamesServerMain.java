@@ -20,9 +20,9 @@
 package org.apache.james;
 
 import org.apache.james.data.LdapUsersRepositoryModule;
-import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreCacheModulesChooser;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
-import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreModulesChooser;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.server.core.configuration.Configuration;
 
@@ -50,8 +50,8 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
     public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
         return Modules.combine(ImmutableList.<Module>builder()
             .add(MODULES)
-            .addAll(new BlobStoreCacheConfiguredModulesSupplier().configuredModules(blobStoreConfiguration))
-            .addAll(new ChoosingBlobStoreConfiguredModulesSupplier().configuredModules(blobStoreConfiguration))
+            .addAll(new BlobStoreCacheModulesChooser().configuredModules(blobStoreConfiguration))
+            .addAll(new BlobStoreModulesChooser().configuredModules(blobStoreConfiguration))
             .build());
     }
 }

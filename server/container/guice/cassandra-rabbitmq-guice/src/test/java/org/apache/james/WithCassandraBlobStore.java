@@ -24,8 +24,6 @@ import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cassandr
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
-import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;

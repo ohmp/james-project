@@ -44,7 +44,7 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
-public class ChoosingBlobStoreConfiguredModulesSupplier {
+public class BlobStoreModulesChooser {
     public static class CassandraDeclarationModule extends AbstractModule {
         @Override
         protected void configure() {
