@@ -54,6 +54,8 @@ public class ReIndexerPerformer {
     private static final int MESSAGE_CONCURRENCY = 50;
     private static final String RE_INDEXING = "re-indexing";
     private static final Username RE_INDEXER_PERFORMER_USER = Username.of(RE_INDEXING);
+    public static final int NO_CONCURRENCY = 1;
+    public static final int NO_PREFETCH = 1;
 
     private final MailboxManager mailboxManager;
     private final ListeningMessageSearchIndex messageSearchIndex;
@@ -110,7 +112,7 @@ public class ReIndexerPerformer {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(RE_INDEXER_PERFORMER_USER);
         LOGGER.info("Starting a full reindex");
         return mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).list()
-            .concatMap(mailbox -> reIndex(reprocessingContext, mailboxSession, mailbox))
+            .flatMap(mailbox -> reIndex(reprocessingContext, mailboxSession, mailbox), NO_CONCURRENCY, NO_PREFETCH)
             .reduce(Task::combine)
             .switchIfEmpty(Mono.just(Result.COMPLETED))
             .doFinally(any -> LOGGER.info("Full reindex finished"));
@@ -124,7 +126,7 @@ public class ReIndexerPerformer {
 
         return mailboxManager.searchReactive(mailboxQuery, mailboxSession)
             .map(MailboxMetaData::getId)
-            .concatMap(id -> reIndex(id, reprocessingContext))
+            .flatMap(id -> reIndex(id, reprocessingContext), NO_CONCURRENCY, NO_PREFETCH)
             .reduce(Task::combine)
             .switchIfEmpty(Mono.just(Result.COMPLETED))
             .doFinally(any -> LOGGER.info("User {} reindex finished", username.asString()));
