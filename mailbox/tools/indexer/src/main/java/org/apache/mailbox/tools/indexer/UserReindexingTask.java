@@ -80,13 +80,9 @@ public class UserReindexingTask implements Task {
 
     @Override
     public Result run() {
-        try {
-            return reIndexerPerformer.reIndex(username, reprocessingContext)
-                .onErrorResume(e -> Mono.just(Result.PARTIAL))
-                .block();
-        } catch (MailboxException e) {
-            return Result.PARTIAL;
-        }
+        return reIndexerPerformer.reIndex(username, reprocessingContext)
+            .onErrorResume(e -> Mono.just(Result.PARTIAL))
+            .block();
     }
 
     public Username getUsername() {

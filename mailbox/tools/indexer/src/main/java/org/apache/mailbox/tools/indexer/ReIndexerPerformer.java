@@ -118,7 +118,7 @@ public class ReIndexerPerformer {
             .doFinally(any -> LOGGER.info("Full reindex finished"));
     }
 
-    Mono<Result> reIndex(Username username, ReprocessingContext reprocessingContext) throws MailboxException {
+    Mono<Result> reIndex(Username username, ReprocessingContext reprocessingContext) {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(username);
         LOGGER.info("Starting a reindex for user {}", username.asString());
 
