@@ -25,6 +25,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import org.apache.james.util.MDCBuilder;
 import org.apache.james.util.concurrent.NamedThreadFactory;
@@ -120,9 +121,8 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
         if (e instanceof InterruptedException) {
             return true;
         }
-        return Optional.ofNullable(e.getCause())
-            .map(this::isCausedByInterruptedException)
-            .orElse(false);
+        return Stream.iterate(e, t -> t.getCause() != null, Throwable::getCause)
+            .anyMatch(t -> t instanceof InterruptedException);
     }
 
     private Mono<Task.Result> cancelled(TaskWithId taskWithId, Listener listener) {
