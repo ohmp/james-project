@@ -19,7 +19,7 @@
 
 package org.apache.james;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.cachingEnabled;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cachingEnabled;
 
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.AwsS3BlobStoreExtension;

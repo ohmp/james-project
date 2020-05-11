@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james.webadmin.integration.rabbitmq;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 
 import java.io.IOException;
 import java.util.Optional;

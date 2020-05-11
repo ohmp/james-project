@@ -25,7 +25,7 @@ import static org.apache.james.backends.cassandra.Scenario.Builder.awaitOn;
 import static org.apache.james.backends.cassandra.Scenario.Builder.fail;
 import static org.apache.james.jmap.JMAPTestingConstants.BOB;
 import static org.apache.james.jmap.JMAPTestingConstants.BOB_PASSWORD;
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.hasItems;

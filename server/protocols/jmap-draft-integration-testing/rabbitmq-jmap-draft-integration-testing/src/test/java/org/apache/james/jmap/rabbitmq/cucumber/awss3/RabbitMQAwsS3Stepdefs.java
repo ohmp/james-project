@@ -19,7 +19,7 @@
 
 package org.apache.james.jmap.rabbitmq.cucumber.awss3;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 
 import java.util.Arrays;
 

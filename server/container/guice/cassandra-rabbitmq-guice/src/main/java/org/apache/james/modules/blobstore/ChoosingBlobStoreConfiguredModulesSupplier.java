@@ -99,7 +99,7 @@ public class ChoosingBlobStoreConfiguredModulesSupplier {
     }
 
     @VisibleForTesting
-    public List<Module> configuredModules(BlobStoreChoosingConfiguration choosingConfiguration) {
+    public List<Module> configuredModules(BlobStoreConfiguration choosingConfiguration) {
         switch (choosingConfiguration.getImplementation()) {
             case CASSANDRA:
                 return ImmutableList.of(new CassandraDeclarationModule());

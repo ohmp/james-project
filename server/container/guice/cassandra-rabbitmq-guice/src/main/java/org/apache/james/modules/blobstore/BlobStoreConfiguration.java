@@ -29,14 +29,15 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.modules.mailbox.ConfigurationComponent;
+import org.apache.james.server.core.filesystem.FileSystemImpl;
 import org.apache.james.utils.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.MoreObjects;
 
-public class BlobStoreChoosingConfiguration {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreChoosingConfiguration.class);
+public class BlobStoreConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlobStoreConfiguration.class);
 
     public static final boolean CACHE_ENABLED = true;
 
@@ -73,17 +74,23 @@ public class BlobStoreChoosingConfiguration {
     static final String BLOBSTORE_IMPLEMENTATION_PROPERTY = "implementation";
     static final String CACHE_ENABLE_PROPERTY = "cache.enable";
 
-    public static BlobStoreChoosingConfiguration readBlobStoreChoosingConfiguration(PropertiesProvider propertiesProvider) throws ConfigurationException {
+    public static BlobStoreConfiguration parse(org.apache.james.server.core.configuration.Configuration configuration) throws ConfigurationException {
+        PropertiesProvider propertiesProvider = new PropertiesProvider(new FileSystemImpl(configuration.directories()), configuration);
+
+        return parse(propertiesProvider);
+    }
+
+    public static BlobStoreConfiguration parse(PropertiesProvider propertiesProvider) throws ConfigurationException {
         try {
             Configuration configuration = propertiesProvider.getConfigurations(ConfigurationComponent.NAMES);
-            return BlobStoreChoosingConfiguration.from(configuration);
+            return BlobStoreConfiguration.from(configuration);
         } catch (FileNotFoundException e) {
             LOGGER.warn("Could not find " + ConfigurationComponent.NAME + " configuration file, using cassandra blobstore as the default");
-            return BlobStoreChoosingConfiguration.cassandra();
+            return BlobStoreConfiguration.cassandra();
         }
     }
 
-    static BlobStoreChoosingConfiguration from(Configuration configuration) {
+    static BlobStoreConfiguration from(Configuration configuration) {
         BlobStoreImplName blobStoreImplName = Optional.ofNullable(configuration.getString(BLOBSTORE_IMPLEMENTATION_PROPERTY))
             .filter(StringUtils::isNotBlank)
             .map(StringUtils::trim)
@@ -93,29 +100,29 @@ public class BlobStoreChoosingConfiguration {
 
         boolean cacheEnabled = configuration.getBoolean(CACHE_ENABLE_PROPERTY, false);
 
-        return new BlobStoreChoosingConfiguration(blobStoreImplName, cacheEnabled);
+        return new BlobStoreConfiguration(blobStoreImplName, cacheEnabled);
     }
 
-    public static BlobStoreChoosingConfiguration cassandra() {
-        return new BlobStoreChoosingConfiguration(BlobStoreImplName.CASSANDRA, !CACHE_ENABLED);
+    public static BlobStoreConfiguration cassandra() {
+        return new BlobStoreConfiguration(BlobStoreImplName.CASSANDRA, !CACHE_ENABLED);
     }
 
-    public static BlobStoreChoosingConfiguration objectStorage() {
-        return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECTSTORAGE, !CACHE_ENABLED);
+    public static BlobStoreConfiguration objectStorage() {
+        return new BlobStoreConfiguration(BlobStoreImplName.OBJECTSTORAGE, !CACHE_ENABLED);
     }
 
-    public static BlobStoreChoosingConfiguration cachingEnabled() {
-        return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECTSTORAGE, CACHE_ENABLED);
+    public static BlobStoreConfiguration cachingEnabled() {
+        return new BlobStoreConfiguration(BlobStoreImplName.OBJECTSTORAGE, CACHE_ENABLED);
     }
 
-    public static BlobStoreChoosingConfiguration hybrid() {
-        return new BlobStoreChoosingConfiguration(BlobStoreImplName.HYBRID, !CACHE_ENABLED);
+    public static BlobStoreConfiguration hybrid() {
+        return new BlobStoreConfiguration(BlobStoreImplName.HYBRID, !CACHE_ENABLED);
     }
 
     private final BlobStoreImplName implementation;
     private final boolean cacheEnabled;
 
-    BlobStoreChoosingConfiguration(BlobStoreImplName implementation, boolean cacheEnabled) {
+    BlobStoreConfiguration(BlobStoreImplName implementation, boolean cacheEnabled) {
         this.implementation = implementation;
         this.cacheEnabled = cacheEnabled;
     }
@@ -130,8 +137,8 @@ public class BlobStoreChoosingConfiguration {
 
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof BlobStoreChoosingConfiguration) {
-            BlobStoreChoosingConfiguration that = (BlobStoreChoosingConfiguration) o;
+        if (o instanceof BlobStoreConfiguration) {
+            BlobStoreConfiguration that = (BlobStoreConfiguration) o;
 
             return Objects.equals(this.implementation, that.implementation)
                 && Objects.equals(this.cacheEnabled, that.cacheEnabled);

@@ -28,7 +28,7 @@ import static io.restassured.config.RestAssuredConfig.newConfig;
 import static org.apache.james.backends.rabbitmq.RabbitMQFixture.calmlyAwait;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.LocalHostURIBuilder.baseUri;
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;

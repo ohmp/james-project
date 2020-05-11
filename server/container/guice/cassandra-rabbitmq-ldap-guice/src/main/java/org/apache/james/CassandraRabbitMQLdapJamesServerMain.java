@@ -19,11 +19,11 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraRabbitMQJamesServerMain.parseBlobStoreChoosingConfiguration;
+import static org.apache.james.CassandraRabbitMQJamesServerMain.parseBlobStoreConfiguration;
 
 import org.apache.james.data.LdapUsersRepositoryModule;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
-import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
+import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.server.core.configuration.Configuration;
@@ -42,18 +42,18 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        BlobStoreChoosingConfiguration blobStoreChoosingConfiguration = parseBlobStoreChoosingConfiguration(configuration);
+        BlobStoreConfiguration blobStoreConfiguration = parseBlobStoreConfiguration(configuration);
 
-        Module baseModule = baseModule(blobStoreChoosingConfiguration);
+        Module baseModule = baseModule(blobStoreConfiguration);
         JamesServerMain.main(configuration,
             ImmutableList.of(baseModule, new JMXServerModule()));
     }
 
-    public static Module baseModule(BlobStoreChoosingConfiguration blobStoreChoosingConfiguration) {
+    public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
         return Modules.combine(ImmutableList.<Module>builder()
             .add(MODULES)
-            .addAll(new BlobStoreCacheConfiguredModulesSupplier().configuredModules(blobStoreChoosingConfiguration))
-            .addAll(new ChoosingBlobStoreConfiguredModulesSupplier().configuredModules(blobStoreChoosingConfiguration))
+            .addAll(new BlobStoreCacheConfiguredModulesSupplier().configuredModules(blobStoreConfiguration))
+            .addAll(new ChoosingBlobStoreConfiguredModulesSupplier().configuredModules(blobStoreConfiguration))
             .build());
     }
 }

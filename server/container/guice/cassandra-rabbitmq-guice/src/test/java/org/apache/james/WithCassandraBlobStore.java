@@ -19,7 +19,7 @@
 
 package org.apache.james;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.cassandra;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cassandra;
 
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.RabbitMQExtension;

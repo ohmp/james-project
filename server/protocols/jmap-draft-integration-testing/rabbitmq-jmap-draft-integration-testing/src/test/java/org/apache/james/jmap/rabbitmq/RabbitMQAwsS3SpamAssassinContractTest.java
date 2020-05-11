@@ -19,7 +19,7 @@
 package org.apache.james.jmap.rabbitmq;
 
 import static org.apache.james.modules.TestJMAPServerModule.LIMIT_TO_20_MESSAGES;
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesServerMain;

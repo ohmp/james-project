@@ -19,7 +19,7 @@
 
 package org.apache.james;
 
-import static org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration.objectStorage;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 
 import java.io.IOException;
 
