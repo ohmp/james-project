@@ -48,9 +48,7 @@ public class WithCassandraBlobStore implements BeforeAllCallback, AfterAllCallba
                 .forConfiguration(configuration)
                 .combineWith(CassandraRabbitMQJamesServerMain.baseModule(cassandra()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
-                .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-                .overrideWith(new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule())
-                .overrideWith(new ChoosingBlobStoreConfiguredModulesSupplier.CassandraDeclarationModule()))
+                .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))
             .build();
     }
 
