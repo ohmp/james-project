@@ -159,12 +159,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
     @Override
     public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) {
-        CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        return Limit.from(max).applyOnFlux(
-            messageIdDAO.retrieveMessages(mailboxId, messageRange)
-                .flatMap(id -> retrieveMessage(id, ftype), cassandraConfiguration.getMessageReadChunkSize()))
-            .map(MailboxMessage.class::cast)
-            .sort(Comparator.comparing(MailboxMessage::getUid))
+        return findInMailboxReactive(mailbox, messageRange, ftype, max)
             .toIterable()
             .iterator();
     }
