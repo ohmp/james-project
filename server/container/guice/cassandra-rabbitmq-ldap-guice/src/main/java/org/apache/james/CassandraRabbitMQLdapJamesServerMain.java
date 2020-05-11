@@ -19,8 +19,6 @@
 
 package org.apache.james;
 
-import static org.apache.james.CassandraRabbitMQJamesServerMain.parseBlobStoreConfiguration;
-
 import org.apache.james.data.LdapUsersRepositoryModule;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
@@ -42,7 +40,7 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        BlobStoreConfiguration blobStoreConfiguration = parseBlobStoreConfiguration(configuration);
+        BlobStoreConfiguration blobStoreConfiguration = BlobStoreConfiguration.parse(configuration);
 
         Module baseModule = baseModule(blobStoreConfiguration);
         JamesServerMain.main(configuration,

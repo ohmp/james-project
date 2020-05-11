@@ -20,9 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.REQUIRE_TASK_MANAGER_MODULE;
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.parse;
 
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.modules.DistributedTaskManagerModule;
 import org.apache.james.modules.TaskSerializationModule;
 import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
@@ -32,8 +30,6 @@ import org.apache.james.modules.event.RabbitMQEventBusModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.server.core.configuration.Configuration;
-import org.apache.james.server.core.filesystem.FileSystemImpl;
-import org.apache.james.utils.PropertiesProvider;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
@@ -50,7 +46,7 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        BlobStoreConfiguration blobStoreConfiguration = parseBlobStoreConfiguration(configuration);
+        BlobStoreConfiguration blobStoreConfiguration = BlobStoreConfiguration.parse(configuration);
 
         Module baseModule = baseModule(blobStoreConfiguration);
 
@@ -58,10 +54,6 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
             ImmutableList.of(baseModule, new JMXServerModule()));
     }
 
-    static BlobStoreConfiguration parseBlobStoreConfiguration(Configuration configuration) throws ConfigurationException {
-        PropertiesProvider propertiesProvider = new PropertiesProvider(new FileSystemImpl(configuration.directories()), configuration);
-        return parse(propertiesProvider);
-    }
 
     public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
         return Modules.combine(ImmutableList.<Module>builder()
