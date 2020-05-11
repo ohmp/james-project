@@ -67,6 +67,7 @@ import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
 import org.apache.james.mailbox.model.MailboxCounters;
 import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
@@ -998,7 +999,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             session = mailboxManager.createSystemSession(USER_1);
             mailboxManager.createMailbox(new MailboxPath("other_namespace", USER_1, "Other"), session);
             mailboxManager.createMailbox(MailboxPath.inbox(session), session);
-            List<org.apache.james.mailbox.model.MailboxMetaData> metaDatas = mailboxManager.search(
+            List<MailboxMetaData> metaDatas = mailboxManager.search(
                 MailboxQuery.privateMailboxesBuilder(session)
                     .matchesAllMailboxNames()
                     .build(),
@@ -1020,7 +1021,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .asAddition());
             mailboxManager.setRights(inboxId.get(), acl, session);
 
-            List<org.apache.james.mailbox.model.MailboxMetaData> metaDatas = mailboxManager.search(
+            List<MailboxMetaData> metaDatas = mailboxManager.search(
                 MailboxQuery.privateMailboxesBuilder(session)
                     .matchesAllMailboxNames()
                     .build(),
@@ -1028,7 +1029,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             assertThat(metaDatas)
                 .hasSize(1)
                 .first()
-                .extracting(org.apache.james.mailbox.model.MailboxMetaData::getResolvedAcls)
+                .extracting(MailboxMetaData::getResolvedAcls)
                 .isEqualTo(acl.apply(MailboxACL.command()
                     .forOwner()
                     .rights(MailboxACL.Rfc4314Rights.allExcept())
@@ -1041,7 +1042,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxSession session2 = mailboxManager.createSystemSession(USER_2);
             mailboxManager.createMailbox(MailboxPath.forUser(USER_2, "Other"), session2);
             mailboxManager.createMailbox(MailboxPath.inbox(session), session);
-            List<org.apache.james.mailbox.model.MailboxMetaData> metaDatas = mailboxManager.search(
+            List<MailboxMetaData> metaDatas = mailboxManager.search(
                 MailboxQuery.privateMailboxesBuilder(session)
                     .matchesAllMailboxNames()
                     .build(),
@@ -1068,7 +1069,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .build();
 
             assertThat(mailboxManager.search(mailboxQuery, session1))
-                .extracting(org.apache.james.mailbox.model.MailboxMetaData::getPath)
+                .extracting(MailboxMetaData::getPath)
                 .hasSize(1)
                 .containsOnly(inbox1);
         }
@@ -1092,7 +1093,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .build();
 
             assertThat(mailboxManager.search(mailboxQuery, session2))
-                .extracting(org.apache.james.mailbox.model.MailboxMetaData::getPath)
+                .extracting(MailboxMetaData::getPath)
                 .containsOnly(inbox1);
         }
 
@@ -1117,7 +1118,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .build();
 
             assertThat(mailboxManager.search(mailboxQuery, session2))
-                .extracting(org.apache.james.mailbox.model.MailboxMetaData::getPath)
+                .extracting(MailboxMetaData::getPath)
                 .containsOnly(inbox1, inbox2);
         }
 
@@ -1143,7 +1144,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .build();
 
             assertThat(mailboxManager.search(mailboxQuery, session2))
-                .extracting(org.apache.james.mailbox.model.MailboxMetaData::getPath)
+                .extracting(MailboxMetaData::getPath)
                 .containsOnly(inbox1);
         }
 
@@ -1176,7 +1177,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .build();
 
             assertThat(mailboxManager.search(mailboxQuery, session2))
-                .extracting(org.apache.james.mailbox.model.MailboxMetaData::getPath)
+                .extracting(MailboxMetaData::getPath)
                 .containsOnly(mailboxPath1);
         }
 
