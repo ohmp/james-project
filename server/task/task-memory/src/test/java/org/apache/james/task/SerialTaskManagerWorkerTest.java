@@ -169,7 +169,7 @@ class SerialTaskManagerWorkerTest {
     }
 
     @Test
-    void taskCallingReactorShouldDisposeReactorResourcesUponCancel() throws InterruptedException {
+    void taskExecutingReactivelyShouldStopExecutionUponCancel() throws InterruptedException {
         // Provide a task ticking every 100ms in a separate reactor thread
         AtomicInteger tickCount = new AtomicInteger();
         int tikIntervalInMs = 100;
