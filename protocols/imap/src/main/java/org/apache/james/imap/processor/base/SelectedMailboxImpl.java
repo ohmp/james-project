@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import javax.mail.Flags;
@@ -72,7 +73,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
     private boolean isDeletedByOtherSession = false;
     private boolean sizeChanged = false;
     private boolean silentFlagChanges = false;
-    private final Flags applicableFlags;
+    private final AtomicReference<Flags> applicableFlags;
     private boolean applicableFlagsChanged;
 
     public SelectedMailboxImpl(MailboxManager mailboxManager, EventBus eventBus, ImapSession session, MessageManager messageManager) throws MailboxException {
@@ -89,12 +90,19 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
 
         mailboxId = messageManager.getId();
 
+        applicableFlags = new AtomicReference<>();
+
         registration = eventBus.register(this, new MailboxIdRegistrationKey(mailboxId));
 
-        applicableFlags = messageManager.getApplicableFlags(mailboxSession);
+        applicableFlags.accumulateAndGet(messageManager.getApplicableFlags(mailboxSession), this::mergeFlags);
         try (Stream<MessageUid> stream = messageManager.search(new SearchQuery(SearchQuery.all()), mailboxSession)) {
             uidMsnConverter.addAll(stream.collect(Guavate.toImmutableList()));
         }
+    }
+
+    private Flags mergeFlags(Flags a, Flags b) {
+        a.add(b);
+        return a;
     }
 
     @Override
@@ -285,7 +293,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
 
     @Override
     public synchronized Flags getApplicableFlags() {
-        return new Flags(applicableFlags);
+        return new Flags(applicableFlags.get());
     }
 
     
@@ -373,22 +381,25 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
     }
 
     private void updateApplicableFlags(FlagsUpdated messageEvent) {
-        int size = applicableFlags.getUserFlags().length;
-        FlagsUpdated updatedF = messageEvent;
-        List<UpdatedFlags> flags = updatedF.getUpdatedFlags();
+        Flags accumulator = Optional.ofNullable(applicableFlags.get())
+            .map(Flags::new)
+            .orElse(new Flags());
+        int initialSize = accumulator.getUserFlags().length;
+        List<UpdatedFlags> updatedFlags = messageEvent.getUpdatedFlags();
 
-        for (UpdatedFlags flag : flags) {
-            applicableFlags.add(flag.getNewFlags());
-
+        for (UpdatedFlags flag : updatedFlags) {
+            accumulator.add(flag.getNewFlags());
         }
 
         // \RECENT is not a applicable flag in imap so remove it
         // from the list
-        applicableFlags.remove(Flag.RECENT);
+        accumulator.remove(Flag.RECENT);
 
-        if (size < applicableFlags.getUserFlags().length) {
+        if (initialSize < accumulator.getUserFlags().length) {
             applicableFlagsChanged = true;
         }
+
+        applicableFlags.accumulateAndGet(accumulator, this::mergeFlags);
     }
 
     @Override
