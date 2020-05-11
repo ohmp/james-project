@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.jmap.draft.JmapJamesServerContract.JAMES_SERVER_HOST;
+import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cassandra;
 import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 import static org.apache.james.user.ldap.DockerLdapSingleton.JAMES_USER;
 import static org.apache.james.user.ldap.DockerLdapSingleton.PASSWORD;
@@ -33,15 +34,12 @@ import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.SwiftBlobStoreExtension;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.apache.james.modules.blobstore.BlobStoreCacheConfiguredModulesSupplier;
-import org.apache.james.modules.blobstore.ChoosingBlobStoreConfiguredModulesSupplier;
+import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import com.google.inject.Module;
 
 class CassandraRabbitMQLdapJmapJamesServerTest {
     interface UserFromLdapShouldLogin {
@@ -61,7 +59,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithSwift implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(new ChoosingBlobStoreConfiguredModulesSupplier.ObjectStorageDeclarationModule())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(objectStorage())
             .extension(new SwiftBlobStoreExtension())
             .build();
     }
@@ -70,7 +68,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithAwsS3 implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(new ChoosingBlobStoreConfiguredModulesSupplier.ObjectStorageDeclarationModule())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(objectStorage())
             .extension(new AwsS3BlobStoreExtension())
             .build();
     }
@@ -79,21 +77,19 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithoutSwiftOrAwsS3 implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(new ChoosingBlobStoreConfiguredModulesSupplier.CassandraDeclarationModule())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(cassandra())
             .build();
     }
 
-    JamesServerBuilder baseJamesServerExtensionBuilder(Module module) {
+    JamesServerBuilder baseJamesServerExtensionBuilder(BlobStoreConfiguration blobStoreConfiguration) {
         return new JamesServerBuilder()
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .extension(new RabbitMQExtension())
             .extension(new LdapTestExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQLdapJamesServerMain.baseModule(objectStorage()))
+                .combineWith(CassandraRabbitMQLdapJamesServerMain.baseModule(blobStoreConfiguration))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
-                .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-                .overrideWith(new BlobStoreCacheConfiguredModulesSupplier.CacheDisabledModule())
-                .overrideWith(module));
+                .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE));
     }
 }
