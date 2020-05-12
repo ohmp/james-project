@@ -25,7 +25,6 @@ import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
-import org.apache.james.modules.mailbox.CassandraCacheSessionModule;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -49,8 +48,7 @@ public class WithCacheExtension implements BeforeAllCallback, AfterAllCallback, 
                 .forConfiguration(configuration)
                 .combineWith(CassandraRabbitMQJamesServerMain.baseModule(cachingEnabled()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
-                .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-                .overrideWith(new CassandraCacheSessionModule()))
+                .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))
             .build();
     }
 
