@@ -34,7 +34,6 @@ import org.reactivestreams.Publisher;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class EventSourcingFilteringManagement implements FilteringManagement {
