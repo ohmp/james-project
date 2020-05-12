@@ -101,6 +101,12 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener {
     }
 
     private Flags mergeFlags(Flags a, Flags b) {
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
         a.add(b);
         return a;
     }
