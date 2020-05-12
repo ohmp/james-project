@@ -65,6 +65,6 @@ public class EventSourcingFilteringManagement implements FilteringManagement {
         FilteringAggregateId aggregateId = new FilteringAggregateId(username);
 
         return Mono.from(eventStore.getEventsOfAggregate(aggregateId))
-            .flatMapMany(history -> Flux.fromIterable(FilteringAggregate.load(aggregateId, history).listRules()));
+            .flatMapIterable(history -> FilteringAggregate.load(aggregateId, history).listRules());
     }
 }

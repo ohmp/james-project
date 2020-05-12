@@ -84,7 +84,7 @@ public class EventSourcingDLPConfigurationStore implements DLPConfigurationStore
     @Override
     public Optional<DLPConfigurationItem> fetch(Domain domain, Id ruleId) {
         return Mono.from(list(domain))
-                .flatMapMany(rules -> Flux.fromIterable(rules.getItems()))
+                .flatMapIterable(DLPRules::getItems)
                 .toStream()
                 .filter((DLPConfigurationItem item) -> item.getId().equals(ruleId))
                 .findFirst();
