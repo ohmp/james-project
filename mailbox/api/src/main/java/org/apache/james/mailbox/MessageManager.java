@@ -83,7 +83,7 @@ public interface MessageManager {
     /**
      * Return if the Mailbox is writable
      * @deprecated use
-     *             {@link #getMetaData(boolean, MailboxSession, MailboxContentMetaData.FetchGroup)}
+     *             {@link #getMetaData(boolean, MailboxSession, MailboxMetaData.FetchGroup)}
      */
     @Deprecated
     boolean isWriteable(MailboxSession session) throws MailboxException;
@@ -93,7 +93,7 @@ public interface MessageManager {
      * way.
      *
      * @deprecated use
-     *             {@link #getMetaData(boolean, MailboxSession, MailboxContentMetaData.FetchGroup)}
+     *             {@link #getMetaData(boolean, MailboxSession, MailboxMetaData.FetchGroup)}
      */
     boolean isModSeqPermanent(MailboxSession session);
 
@@ -354,16 +354,16 @@ public interface MessageManager {
      *            describes which optional data should be returned
      * @return metadata view filtered for the session's user, not null
      */
-    MailboxContentMetaData getMetaData(boolean resetRecent, MailboxSession mailboxSession, MailboxContentMetaData.FetchGroup fetchGroup) throws MailboxException;
+    MailboxMetaData getMetaData(boolean resetRecent, MailboxSession mailboxSession, MailboxMetaData.FetchGroup fetchGroup) throws MailboxException;
 
     /**
      * Meta data about the current state of the mailbox.
      */
-    class MailboxContentMetaData {
+    class MailboxMetaData {
 
         /**
          * Describes the optional data types which will get set in the
-         * {@link MailboxContentMetaData}.
+         * {@link MailboxMetaData}.
          * 
          * These are always set: - HIGHESTMODSEQ - PERMANENTFLAGS - UIDNEXT -
          * UIDVALIDITY - MODSEQPERMANET - WRITABLE
@@ -396,14 +396,14 @@ public interface MessageManager {
          *
          * @return MailboxContentMetaData with default values for all fields
          */
-        public static MailboxContentMetaData sensibleInformationFree(MailboxACL resolvedAcl, UidValidity uidValidity, boolean writeable, boolean modSeqPermanent) throws MailboxException {
+        public static MailboxMetaData sensibleInformationFree(MailboxACL resolvedAcl, UidValidity uidValidity, boolean writeable, boolean modSeqPermanent) throws MailboxException {
             ImmutableList<MessageUid> recents = ImmutableList.of();
             MessageUid uidNext = MessageUid.MIN_VALUE;
             ModSeq highestModSeq = ModSeq.first();
             long messageCount = 0L;
             long unseenCount = 0L;
             MessageUid firstUnseen = null;
-            return new MailboxContentMetaData(
+            return new MailboxMetaData(
                 recents,
                 new Flags(),
                 uidValidity,
@@ -430,7 +430,7 @@ public interface MessageManager {
         private final boolean modSeqPermanent;
         private final MailboxACL acl;
 
-        public MailboxContentMetaData(List<MessageUid> recent, Flags permanentFlags, UidValidity uidValidity, MessageUid uidNext, ModSeq highestModSeq, long messageCount, long unseenCount, MessageUid firstUnseen, boolean writeable, boolean modSeqPermanent, MailboxACL acl) {
+        public MailboxMetaData(List<MessageUid> recent, Flags permanentFlags, UidValidity uidValidity, MessageUid uidNext, ModSeq highestModSeq, long messageCount, long unseenCount, MessageUid firstUnseen, boolean writeable, boolean modSeqPermanent, MailboxACL acl) {
             this.recent = Optional.ofNullable(recent).map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
             this.highestModSeq = highestModSeq;
             this.recentCount = this.recent.size();
