@@ -26,7 +26,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import org.apache.james.core.Username;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.indexer.ReIndexingExecutionFailures;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
