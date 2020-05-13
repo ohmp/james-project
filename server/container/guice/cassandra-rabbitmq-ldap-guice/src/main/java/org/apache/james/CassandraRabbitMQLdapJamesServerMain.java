@@ -50,8 +50,8 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
     public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
         return Modules.combine(ImmutableList.<Module>builder()
             .add(MODULES)
-            .addAll(new BlobStoreCacheModulesChooser().configuredModules(blobStoreConfiguration))
-            .addAll(new BlobStoreModulesChooser().configuredModules(blobStoreConfiguration))
+            .addAll(BlobStoreCacheModulesChooser.chooseModules(blobStoreConfiguration))
+            .addAll(BlobStoreModulesChooser.chooseModules(blobStoreConfiguration))
             .build());
     }
 }

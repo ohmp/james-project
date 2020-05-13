@@ -93,7 +93,7 @@ public class BlobStoreCacheModulesChooser {
         }
     }
 
-    public List<Module> configuredModules(BlobStoreConfiguration blobStoreConfiguration) {
+    public static List<Module> chooseModules(BlobStoreConfiguration blobStoreConfiguration) {
         if (blobStoreConfiguration.isCacheEnabled()) {
             return ImmutableList.of(new CassandraCacheSessionModule(), new CacheEnabledModule());
         }
