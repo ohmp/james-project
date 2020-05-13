@@ -27,7 +27,6 @@ import static org.apache.james.jmap.JMAPTestingConstants.DOMAIN;
 import static org.apache.james.jmap.JMAPTestingConstants.jmapRequestSpecBuilder;
 import static org.apache.james.jmap.JmapCommonRequests.getDraftId;
 import static org.apache.james.jmap.JmapCommonRequests.listMessageIdsForAccount;
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 
@@ -47,6 +46,7 @@ import org.apache.james.junit.categories.BasicFeature;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.apache.james.modules.objectstorage.PayloadCodecFactory;
 import org.apache.james.util.Port;
 import org.apache.james.utils.DataProbeImpl;
@@ -82,7 +82,7 @@ class RabbitMQReindexingWithEventDeadLettersTest {
 
     private static final JamesServerBuilder.ServerProvider CONFIGURATION_BUILDER = configuration -> GuiceJamesServer
         .forConfiguration(configuration)
-        .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
+        .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
         .overrideWith(TestJMAPServerModule.limitToTenMessages())
         .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
         .overrideWith(new WebadminIntegrationTestModule());

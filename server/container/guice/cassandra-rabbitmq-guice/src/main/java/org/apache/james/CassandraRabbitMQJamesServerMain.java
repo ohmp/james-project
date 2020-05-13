@@ -48,14 +48,14 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
 
         BlobStoreConfiguration blobStoreConfiguration = BlobStoreConfiguration.parse(configuration);
 
-        Module baseModule = baseModule(blobStoreConfiguration);
+        Module baseModule = modules(blobStoreConfiguration);
 
         JamesServerMain.main(configuration,
             ImmutableList.of(baseModule, new JMXServerModule()));
     }
 
 
-    public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
+    public static Module modules(BlobStoreConfiguration blobStoreConfiguration) {
         return Modules.combine(ImmutableList.<Module>builder()
                 .add(MODULES)
                 .addAll(BlobStoreCacheModulesChooser.chooseModules(blobStoreConfiguration))

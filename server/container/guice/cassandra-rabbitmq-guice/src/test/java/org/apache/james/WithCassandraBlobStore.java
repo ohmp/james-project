@@ -19,11 +19,10 @@
 
 package org.apache.james;
 
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cassandra;
-
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -44,7 +43,7 @@ public class WithCassandraBlobStore implements BeforeAllCallback, AfterAllCallba
             .extension(new RabbitMQExtension())
             .server(configuration -> GuiceJamesServer
                 .forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.baseModule(cassandra()))
+                .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.cassandra()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))
             .build();

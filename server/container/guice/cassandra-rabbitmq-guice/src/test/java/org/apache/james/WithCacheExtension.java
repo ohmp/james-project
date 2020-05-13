@@ -46,7 +46,7 @@ public class WithCacheExtension implements BeforeAllCallback, AfterAllCallback, 
             .extension(new AwsS3BlobStoreExtension())
             .server(configuration -> GuiceJamesServer
                 .forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.baseModule(cachingEnabled()))
+                .combineWith(CassandraRabbitMQJamesServerMain.modules(cachingEnabled()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))
             .build();

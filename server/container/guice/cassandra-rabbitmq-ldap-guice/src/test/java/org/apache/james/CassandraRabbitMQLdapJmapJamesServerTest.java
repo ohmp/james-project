@@ -20,8 +20,6 @@
 package org.apache.james;
 
 import static org.apache.james.jmap.draft.JmapJamesServerContract.JAMES_SERVER_HOST;
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cassandra;
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
 import static org.apache.james.user.ldap.DockerLdapSingleton.JAMES_USER;
 import static org.apache.james.user.ldap.DockerLdapSingleton.PASSWORD;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +57,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithSwift implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(objectStorage())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.objectStorage())
             .extension(new SwiftBlobStoreExtension())
             .build();
     }
@@ -68,7 +66,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithAwsS3 implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(objectStorage())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.objectStorage())
             .extension(new AwsS3BlobStoreExtension())
             .build();
     }
@@ -77,7 +75,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithoutSwiftOrAwsS3 implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(cassandra())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.cassandra())
             .build();
     }
 

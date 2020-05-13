@@ -19,8 +19,6 @@
 
 package org.apache.james;
 
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.objectStorage;
-
 import java.io.IOException;
 
 import org.apache.james.backends.rabbitmq.DockerRabbitMQSingleton;
@@ -29,6 +27,7 @@ import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.modules.TestDockerESMetricReporterModule;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.TestRabbitMQModule;
+import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.apache.james.modules.objectstorage.aws.s3.DockerAwsS3TestRule;
 import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.webadmin.WebAdminConfiguration;
@@ -69,7 +68,7 @@ public class CassandraRabbitMQAwsS3JmapTestRule implements TestRule {
             .build();
 
         return GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.baseModule(objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON))
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
