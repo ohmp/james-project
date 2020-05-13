@@ -49,7 +49,9 @@ import org.apache.james.modules.server.SwaggerRoutesModule;
 import org.apache.james.modules.server.TaskManagerModule;
 import org.apache.james.modules.server.WebAdminServerModule;
 import org.apache.james.modules.spamassassin.SpamAssassinListenerModule;
+import org.apache.james.server.core.configuration.Configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -94,7 +96,11 @@ public class JPAJamesServerMain implements JamesServerMain {
     public static final Module JPA_MODULE_AGGREGATE = Modules.combine(JPA_SERVER_MODULE, PROTOCOLS);
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(JPA_MODULE_AGGREGATE, new JMXServerModule());
+        Configuration configuration = Configuration.builder()
+            .useWorkingDirectoryEnvProperty()
+            .build();
+
+        JamesServerMain.main(configuration, ImmutableList.of(JPA_MODULE_AGGREGATE, new JMXServerModule()));
     }
 
 }

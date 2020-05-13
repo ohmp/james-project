@@ -36,17 +36,9 @@ public interface JamesServerMain {
         Stream<Module> configuredModules(PropertiesProvider propertiesProvider) throws ConfigurationException;
     }
 
-    static void main(Module... modules) throws Exception {
-        Configuration configuration = Configuration.builder()
-            .useWorkingDirectoryEnvProperty()
-            .build();
-
-        main(configuration, ImmutableList.copyOf(modules));
-    }
-
-    static void main(Configuration configuration, List<Module> baseModules) throws Exception {
+    static void main(Configuration configuration, List<Module> modules) throws Exception {
         GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(Modules.combine(baseModules));
+            .combineWith(Modules.combine(modules));
         server.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(server::stop));

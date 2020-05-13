@@ -73,7 +73,9 @@ import org.apache.james.modules.spamassassin.SpamAssassinListenerModule;
 import org.apache.james.modules.vault.DeletedMessageVaultRoutesModule;
 import org.apache.james.modules.webadmin.CassandraRoutesModule;
 import org.apache.james.modules.webadmin.InconsistencySolvingRoutesModule;
+import org.apache.james.server.core.configuration.Configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
@@ -162,7 +164,11 @@ public class CassandraJamesServerMain implements JamesServerMain {
     );
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(ALL_BUT_JMX_CASSANDRA_MODULE, new JMXServerModule());
+        Configuration configuration = Configuration.builder()
+            .useWorkingDirectoryEnvProperty()
+            .build();
+
+        JamesServerMain.main(configuration, ImmutableList.of(ALL_BUT_JMX_CASSANDRA_MODULE, new JMXServerModule()));
     }
 
 }

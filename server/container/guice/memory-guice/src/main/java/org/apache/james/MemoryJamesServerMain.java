@@ -56,10 +56,12 @@ import org.apache.james.modules.server.WebAdminServerModule;
 import org.apache.james.modules.spamassassin.SpamAssassinListenerModule;
 import org.apache.james.modules.vault.DeletedMessageVaultModule;
 import org.apache.james.modules.vault.DeletedMessageVaultRoutesModule;
+import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.webadmin.WebAdminConfiguration;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -133,7 +135,15 @@ public class MemoryJamesServerMain implements JamesServerMain {
         new DKIMMailetModule());
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(IN_MEMORY_SERVER_AGGREGATE_MODULE, new FakeSearchMailboxModule(), new JMXServerModule());
+        Configuration configuration = Configuration.builder()
+            .useWorkingDirectoryEnvProperty()
+            .build();
+
+        JamesServerMain.main(configuration,
+            ImmutableList.of(
+                IN_MEMORY_SERVER_AGGREGATE_MODULE,
+                new FakeSearchMailboxModule(),
+                new JMXServerModule()));
     }
 
 }

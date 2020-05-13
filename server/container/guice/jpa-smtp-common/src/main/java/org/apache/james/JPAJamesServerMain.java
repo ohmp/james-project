@@ -34,7 +34,9 @@ import org.apache.james.modules.server.NoJwtModule;
 import org.apache.james.modules.server.RawPostDequeueDecoratorModule;
 import org.apache.james.modules.server.TaskManagerModule;
 import org.apache.james.modules.server.WebAdminServerModule;
+import org.apache.james.server.core.configuration.Configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -59,7 +61,11 @@ public class JPAJamesServerMain implements JamesServerMain {
         new ElasticSearchMetricReporterModule());
 
     public static void main(String[] args) throws Exception {
-        JamesServerMain.main(JPA_SERVER_MODULE,  PROTOCOLS, new DKIMMailetModule());
+        Configuration configuration = Configuration.builder()
+            .useWorkingDirectoryEnvProperty()
+            .build();
+
+        JamesServerMain.main(configuration, ImmutableList.of(JPA_SERVER_MODULE,  PROTOCOLS, new DKIMMailetModule()));
     }
 
 }
