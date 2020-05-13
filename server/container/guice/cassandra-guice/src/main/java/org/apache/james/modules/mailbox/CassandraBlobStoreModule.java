@@ -26,7 +26,7 @@ import org.apache.james.blob.cassandra.CassandraBlobStore;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 
-public class CassandraBlobStoreDeclarationModule extends AbstractModule {
+public class CassandraBlobStoreModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(BlobStore.class)

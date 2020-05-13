@@ -35,8 +35,8 @@ import org.apache.james.modules.data.CassandraSieveRepositoryModule;
 import org.apache.james.modules.data.CassandraUsersRepositoryModule;
 import org.apache.james.modules.eventstore.CassandraEventStoreModule;
 import org.apache.james.modules.mailbox.BlobStoreAPIModule;
-import org.apache.james.modules.mailbox.CassandraBlobStoreDeclarationModule;
 import org.apache.james.modules.mailbox.CassandraBlobStoreDependenciesModule;
+import org.apache.james.modules.mailbox.CassandraBlobStoreModule;
 import org.apache.james.modules.mailbox.CassandraDeletedMessageVaultModule;
 import org.apache.james.modules.mailbox.CassandraMailboxModule;
 import org.apache.james.modules.mailbox.CassandraQuotaMailingModule;
@@ -155,7 +155,7 @@ public class CassandraJamesServerMain implements JamesServerMain {
         new DKIMMailetModule());
 
     public static Module ALL_BUT_JMX_CASSANDRA_MODULE = Modules.combine(
-        new CassandraBlobStoreDeclarationModule(),
+        new CassandraBlobStoreModule(),
         REQUIRE_TASK_MANAGER_MODULE,
         new TaskManagerModule(),
         CASSANDRA_EVENT_STORE_JSON_SERIALIZATION_DEFAULT_MODULE
