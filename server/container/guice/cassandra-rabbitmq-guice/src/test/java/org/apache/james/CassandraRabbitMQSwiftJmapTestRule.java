@@ -67,7 +67,7 @@ public class CassandraRabbitMQSwiftJmapTestRule implements TestRule {
             .build();
 
         return GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON))
             .overrideWith(new DockerSwiftTestRule().getModule())

@@ -20,13 +20,9 @@
 package org.apache.james;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.server.core.configuration.Configuration;
-import org.apache.james.utils.PropertiesProvider;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 

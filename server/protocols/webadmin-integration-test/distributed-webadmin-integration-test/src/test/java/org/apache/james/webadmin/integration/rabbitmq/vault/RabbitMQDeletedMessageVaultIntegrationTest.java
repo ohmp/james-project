@@ -46,7 +46,7 @@ class RabbitMQDeletedMessageVaultIntegrationTest extends DeletedMessageVaultInte
         .extension(new RabbitMQExtension())
         .extension(new ClockExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
             .overrideWith(new TestDeleteMessageVaultPreDeletionHookModule())
             .overrideWith(new WebadminIntegrationTestModule()))

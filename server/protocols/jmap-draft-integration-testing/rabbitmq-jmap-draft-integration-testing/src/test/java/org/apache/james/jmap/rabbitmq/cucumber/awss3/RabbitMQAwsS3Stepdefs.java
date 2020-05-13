@@ -84,7 +84,7 @@ public class RabbitMQAwsS3Stepdefs {
                 .build();
 
         mainStepdefs.jmapServer = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(new TestDockerESMetricReporterModule(elasticSearch.getDockerEs().getHttpHost()))
                 .overrideWith(new TestRabbitMQModule(rabbitMQServer.dockerRabbitMQ()))

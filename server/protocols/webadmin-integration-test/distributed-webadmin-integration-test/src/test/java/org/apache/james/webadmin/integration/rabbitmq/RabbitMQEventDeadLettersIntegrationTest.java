@@ -206,7 +206,7 @@ class RabbitMQEventDeadLettersIntegrationTest {
         .extension(RABBIT_MQ_EXTENSION)
         .extension(new RetryEventsListenerExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(new WebadminIntegrationTestModule())
             .overrideWith(binder -> binder.bind(RetryBackoffConfiguration.class)
                 .toInstance(RetryBackoffConfiguration.builder()

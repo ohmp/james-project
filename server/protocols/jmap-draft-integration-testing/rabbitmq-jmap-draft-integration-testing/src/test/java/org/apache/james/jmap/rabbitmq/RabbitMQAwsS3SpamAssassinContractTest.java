@@ -47,7 +47,7 @@ class RabbitMQAwsS3SpamAssassinContractTest implements SpamAssassinContract {
         .extension(new AwsS3BlobStoreExtension())
         .extension(spamAssassinExtension)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(TestJMAPServerModule.maximumMessages(LIMIT_TO_20_MESSAGES)))
         .build();

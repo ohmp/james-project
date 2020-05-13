@@ -44,7 +44,7 @@ class RabbitMQJwtFilterIntegrationTest extends JwtFilterIntegrationTest {
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(binder -> binder.bind(AuthenticationFilter.class).to(JwtFilter.class))
             .overrideWith(binder -> binder.bind(JwtConfiguration.class).toInstance(jwtConfiguration()))
             .overrideWith(new WebadminIntegrationTestModule()))

@@ -45,7 +45,7 @@ public class RabbitMQAwsS3SendMDNMethodTest extends SendMDNMethodTest {
             .extension(new AwsS3BlobStoreExtension())
             .extension(new RabbitMQExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+                .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
                 .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages()))
             .build();

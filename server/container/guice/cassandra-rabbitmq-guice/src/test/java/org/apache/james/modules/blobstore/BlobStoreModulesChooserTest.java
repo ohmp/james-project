@@ -84,7 +84,7 @@ class BlobStoreModulesChooserTest {
 
     @Test
     void provideBlobStoreShouldReturnCassandraBlobStoreWhenCassandraConfigured() {
-        assertThat(BlobStoreModulesChooser.chooseModules(BlobStoreConfiguration.objectStorage()))
+        assertThat(BlobStoreModulesChooser.chooseModules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .first()
             .isInstanceOf(BlobStoreModulesChooser.ObjectStorageDeclarationModule.class);
     }

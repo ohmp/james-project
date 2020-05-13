@@ -57,7 +57,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithSwift implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.objectStorage())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.objectStorage().cacheDisabled())
             .extension(new SwiftBlobStoreExtension())
             .build();
     }
@@ -66,7 +66,7 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WithAwsS3 implements ContractSuite {
         @RegisterExtension
-        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.objectStorage())
+        JamesServerExtension testExtension = baseJamesServerExtensionBuilder(BlobStoreConfiguration.objectStorage().cacheDisabled())
             .extension(new AwsS3BlobStoreExtension())
             .build();
     }

@@ -58,7 +58,7 @@ class RabbitMQJamesServerReprocessingTest {
         .extension(new AwsS3BlobStoreExtension())
         .server(configuration -> GuiceJamesServer
             .forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
             .overrideWith(binder -> binder.bind(WebAdminConfiguration.class).toInstance(WebAdminConfiguration.TEST_CONFIGURATION))
             .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))

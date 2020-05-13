@@ -123,7 +123,7 @@ class ConsistencyTasksIntegrationTest {
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage()))
+            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
             .overrideWith(new WebadminIntegrationTestModule())
             // Enforce a single eventBus retry. Required as Current Quotas are handled by the eventBus.
             .overrideWith(binder -> binder.bind(RetryBackoffConfiguration.class)

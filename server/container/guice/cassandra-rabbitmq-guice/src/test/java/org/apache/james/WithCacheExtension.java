@@ -19,12 +19,11 @@
 
 package org.apache.james;
 
-import static org.apache.james.modules.blobstore.BlobStoreConfiguration.cachingEnabled;
-
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
+import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -46,7 +45,7 @@ public class WithCacheExtension implements BeforeAllCallback, AfterAllCallback, 
             .extension(new AwsS3BlobStoreExtension())
             .server(configuration -> GuiceJamesServer
                 .forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.modules(cachingEnabled()))
+                .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheEnabled()))
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))
             .build();

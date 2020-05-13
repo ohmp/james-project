@@ -41,6 +41,22 @@ public class BlobStoreConfiguration {
 
     public static final boolean CACHE_ENABLED = true;
 
+    public static class CacheChoice {
+        private final BlobStoreImplName implementation;
+
+        public CacheChoice(BlobStoreImplName implementation) {
+            this.implementation = implementation;
+        }
+
+        public BlobStoreConfiguration cacheEnabled() {
+            return new BlobStoreConfiguration(implementation, CACHE_ENABLED);
+        }
+
+        public BlobStoreConfiguration cacheDisabled() {
+            return new BlobStoreConfiguration(implementation, !CACHE_ENABLED);
+        }
+    }
+
     public enum BlobStoreImplName {
         CASSANDRA("cassandra"),
         OBJECTSTORAGE("objectstorage"),
@@ -107,12 +123,8 @@ public class BlobStoreConfiguration {
         return new BlobStoreConfiguration(BlobStoreImplName.CASSANDRA, !CACHE_ENABLED);
     }
 
-    public static BlobStoreConfiguration objectStorage() {
-        return new BlobStoreConfiguration(BlobStoreImplName.OBJECTSTORAGE, !CACHE_ENABLED);
-    }
-
-    public static BlobStoreConfiguration cachingEnabled() {
-        return new BlobStoreConfiguration(BlobStoreImplName.OBJECTSTORAGE, CACHE_ENABLED);
+    public static CacheChoice objectStorage() {
+        return new BlobStoreConfiguration.CacheChoice(BlobStoreImplName.OBJECTSTORAGE);
     }
 
     public static BlobStoreConfiguration hybrid() {

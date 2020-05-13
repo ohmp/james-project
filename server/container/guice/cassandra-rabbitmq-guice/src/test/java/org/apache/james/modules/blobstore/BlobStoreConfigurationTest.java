@@ -97,7 +97,7 @@ class BlobStoreConfigurationTest {
             .build();
 
         assertThat(parse(propertyProvider))
-            .isEqualTo(BlobStoreConfiguration.objectStorage());
+            .isEqualTo(BlobStoreConfiguration.objectStorage().cacheDisabled());
     }
 
     @Test
