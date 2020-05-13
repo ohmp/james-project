@@ -31,11 +31,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public interface JamesServerMain {
-    @FunctionalInterface
-    interface ConfiguredModulesSupplier {
-        Stream<Module> configuredModules(PropertiesProvider propertiesProvider) throws ConfigurationException;
-    }
-
     static void main(Configuration configuration, List<Module> modules) throws Exception {
         GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
             .combineWith(Modules.combine(modules));
