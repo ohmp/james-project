@@ -18,9 +18,6 @@
  ****************************************************************/
 package org.apache.james.mpt.smtp;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.james.CassandraJamesServerMain;
 import org.apache.james.CleanupTasksPerformer;
@@ -47,8 +44,8 @@ import org.apache.james.util.Host;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
 public final class CassandraRabbitMQAwsS3SmtpTestRuleFactory {
@@ -65,13 +62,9 @@ public final class CassandraRabbitMQAwsS3SmtpTestRuleFactory {
             bind(BlobStore.class)
                 .annotatedWith(Names.named(CachedBlobStore.BACKEND))
                 .to(ObjectStorageBlobStore.class);
-        }
-
-        @Provides
-        @Named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION)
-        @Singleton
-        BlobStore provideBlobStore(@Named(CachedBlobStore.BACKEND) BlobStore blobStore) {
-            return blobStore;
+            bind(BlobStore.class)
+                .annotatedWith(Names.named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION))
+                .to(Key.get(BlobStore.class, Names.named(CachedBlobStore.BACKEND)));
         }
     };
 
