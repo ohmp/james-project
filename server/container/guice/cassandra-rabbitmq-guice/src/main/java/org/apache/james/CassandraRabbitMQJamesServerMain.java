@@ -30,7 +30,6 @@ import org.apache.james.modules.event.RabbitMQEventBusModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -45,7 +44,8 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        GuiceJamesServer server = createServer(configuration);
+        GuiceJamesServer server = createServer(configuration)
+            .combineWith(new JMXServerModule());
 
         JamesServerMain.main(server);
     }
@@ -53,18 +53,9 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
     public static GuiceJamesServer createServer(CassandraRabbitMQJamesConfiguration configuration) {
         BlobStoreConfiguration blobStoreConfiguration = configuration.blobstoreconfiguration();
 
-        Module baseModule = modules(blobStoreConfiguration);
-
         return GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(Modules.combine(ImmutableList.of(baseModule, new JMXServerModule())));
-    }
-
-
-    public static Module modules(BlobStoreConfiguration blobStoreConfiguration) {
-        return Modules.combine(ImmutableList.<Module>builder()
-                .add(MODULES)
-                .addAll(BlobStoreCacheModulesChooser.chooseModules(blobStoreConfiguration))
-                .addAll(BlobStoreModulesChooser.chooseModules(blobStoreConfiguration))
-                .build());
+            .combineWith(MODULES)
+            .combineWith(BlobStoreCacheModulesChooser.chooseModules(blobStoreConfiguration))
+            .combineWith(BlobStoreModulesChooser.chooseModules(blobStoreConfiguration));
     }
 }

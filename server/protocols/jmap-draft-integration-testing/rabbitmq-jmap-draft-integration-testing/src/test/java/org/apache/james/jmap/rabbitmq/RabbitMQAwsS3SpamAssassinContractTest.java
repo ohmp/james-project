@@ -18,13 +18,12 @@
  ****************************************************************/
 package org.apache.james.jmap.rabbitmq;
 
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.modules.TestJMAPServerModule.LIMIT_TO_20_MESSAGES;
 
 import org.apache.james.CassandraExtension;
+import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
-import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.draft.methods.integration.SpamAssassinContract;
@@ -41,14 +40,18 @@ class RabbitMQAwsS3SpamAssassinContractTest implements SpamAssassinContract {
 
     private static final SpamAssassinModuleExtension spamAssassinExtension = new SpamAssassinModuleExtension();
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+    static JamesServerExtension testExtension = new JamesServerBuilder<>(tmpDir ->
+        CassandraRabbitMQJamesConfiguration.builder()
+            .workingDirectory(tmpDir)
+            .configurationFromClasspath()
+            .blobStore(BlobStoreConfiguration.objectStorage().cacheDisabled())
+            .build())
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())
         .extension(new AwsS3BlobStoreExtension())
         .extension(spamAssassinExtension)
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
+        .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(TestJMAPServerModule.maximumMessages(LIMIT_TO_20_MESSAGES)))
         .build();

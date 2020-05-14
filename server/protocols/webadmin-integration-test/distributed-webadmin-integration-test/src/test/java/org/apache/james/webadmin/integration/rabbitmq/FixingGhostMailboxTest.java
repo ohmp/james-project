@@ -25,7 +25,6 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.backends.rabbitmq.RabbitMQFixture.calmlyAwait;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.LocalHostURIBuilder.baseUri;
@@ -44,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.CassandraExtension;
+import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
@@ -110,13 +110,17 @@ class FixingGhostMailboxTest {
     private static final Duration THIRTY_SECONDS = new Duration(30, TimeUnit.SECONDS);
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+    static JamesServerExtension testExtension = new JamesServerBuilder<>(tmpDir ->
+        CassandraRabbitMQJamesConfiguration.builder()
+            .workingDirectory(tmpDir)
+            .configurationFromClasspath()
+            .blobStore(BlobStoreConfiguration.objectStorage().cacheDisabled())
+            .build())
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
+        .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
             .overrideWith(TestJMAPServerModule.limitToTenMessages())
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();

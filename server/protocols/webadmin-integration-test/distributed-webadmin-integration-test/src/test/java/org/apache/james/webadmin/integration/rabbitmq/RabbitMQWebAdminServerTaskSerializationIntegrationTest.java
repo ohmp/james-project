@@ -22,7 +22,6 @@ package org.apache.james.webadmin.integration.rabbitmq;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes.MESSAGE_PATH_PARAM;
 import static org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes.USERS;
@@ -39,6 +38,7 @@ import java.util.stream.Stream;
 import javax.mail.Flags;
 
 import org.apache.james.CassandraExtension;
+import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
@@ -98,13 +98,17 @@ import io.restassured.http.ContentType;
 class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+    static JamesServerExtension testExtension = new JamesServerBuilder<>(tmpDir ->
+        CassandraRabbitMQJamesConfiguration.builder()
+            .workingDirectory(tmpDir)
+            .configurationFromClasspath()
+            .blobStore(BlobStoreConfiguration.objectStorage().cacheDisabled())
+            .build())
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
+        .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();
 

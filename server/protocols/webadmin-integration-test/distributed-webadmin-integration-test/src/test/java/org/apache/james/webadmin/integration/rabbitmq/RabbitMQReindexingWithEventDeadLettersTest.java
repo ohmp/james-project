@@ -20,7 +20,6 @@
 package org.apache.james.webadmin.integration.rabbitmq;
 
 import static io.restassured.RestAssured.with;
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.JMAPTestingConstants.ALICE;
 import static org.apache.james.jmap.JMAPTestingConstants.ALICE_PASSWORD;
@@ -34,6 +33,7 @@ import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 import java.util.List;
 
 import org.apache.james.CassandraExtension;
+import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
@@ -81,15 +81,19 @@ class RabbitMQReindexingWithEventDeadLettersTest {
     private static final DockerElasticSearchExtension dockerElasticSearch =
         new DockerElasticSearchExtension().withRequestTimeout(java.time.Duration.ofSeconds(5));
 
-    private static final JamesServerBuilder.ServerProvider CONFIGURATION_BUILDER = configuration -> GuiceJamesServer
-        .forConfiguration(configuration)
-        .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
-        .overrideWith(TestJMAPServerModule.limitToTenMessages())
-        .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-        .overrideWith(new WebadminIntegrationTestModule());
+    private static final JamesServerBuilder.ServerProvider<CassandraRabbitMQJamesConfiguration> CONFIGURATION_BUILDER = configuration ->
+        CassandraRabbitMQJamesServerMain.createServer(configuration)
+            .overrideWith(TestJMAPServerModule.limitToTenMessages())
+            .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
+            .overrideWith(new WebadminIntegrationTestModule());
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+    static JamesServerExtension testExtension = new JamesServerBuilder<>(tmpDir ->
+        CassandraRabbitMQJamesConfiguration.builder()
+            .workingDirectory(tmpDir)
+            .configurationFromClasspath()
+            .blobStore(BlobStoreConfiguration.objectStorage().cacheDisabled())
+            .build())
         .extension(dockerElasticSearch)
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())

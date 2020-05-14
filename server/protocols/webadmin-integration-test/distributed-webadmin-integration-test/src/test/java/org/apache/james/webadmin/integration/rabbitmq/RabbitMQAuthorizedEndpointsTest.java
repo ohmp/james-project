@@ -19,12 +19,10 @@
 
 package org.apache.james.webadmin.integration.rabbitmq;
 
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
-
 import org.apache.james.CassandraExtension;
+import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
-import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.junit.categories.BasicFeature;
@@ -41,13 +39,17 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class RabbitMQAuthorizedEndpointsTest extends AuthorizedEndpointsTest {
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+    static JamesServerExtension testExtension = new JamesServerBuilder<>(tmpDir ->
+        CassandraRabbitMQJamesConfiguration.builder()
+            .workingDirectory(tmpDir)
+            .configurationFromClasspath()
+            .blobStore(BlobStoreConfiguration.objectStorage().cacheDisabled())
+            .build())
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(new AwsS3BlobStoreExtension())
         .extension(new RabbitMQExtension())
-        .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheDisabled()))
+        .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
             .overrideWith(new UnauthorizedModule())
             .overrideWith(new WebadminIntegrationTestModule()))
         .build();

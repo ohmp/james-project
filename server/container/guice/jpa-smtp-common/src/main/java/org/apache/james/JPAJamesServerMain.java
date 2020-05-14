@@ -66,7 +66,7 @@ public class JPAJamesServerMain implements JamesServerMain {
             .build();
 
         GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(Modules.combine(ImmutableList.of(JPA_SERVER_MODULE,  PROTOCOLS, new DKIMMailetModule()));
+            .combineWith(Modules.combine(ImmutableList.of(JPA_SERVER_MODULE,  PROTOCOLS, new DKIMMailetModule())));
 
         JamesServerMain.main(server);
     }

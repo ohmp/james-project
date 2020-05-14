@@ -19,8 +19,6 @@
 
 package org.apache.james;
 
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
-
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
@@ -40,14 +38,17 @@ public class WithCacheExtension implements BeforeAllCallback, AfterAllCallback, 
     private final JamesServerExtension jamesServerExtension;
 
     WithCacheExtension() {
-        jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+        jamesServerExtension = new JamesServerBuilder<>(tmpDir ->
+            CassandraRabbitMQJamesConfiguration.builder()
+                .workingDirectory(tmpDir)
+                .configurationFromClasspath()
+                .blobStore(BlobStoreConfiguration.objectStorage().cacheEnabled())
+                .build())
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .extension(new RabbitMQExtension())
             .extension(new AwsS3BlobStoreExtension())
-            .server(configuration -> GuiceJamesServer
-                .forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQJamesServerMain.modules(BlobStoreConfiguration.objectStorage().cacheEnabled()))
+            .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE))
             .build();

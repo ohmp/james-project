@@ -20,7 +20,6 @@
 package org.apache.james;
 
 import java.io.File;
-import java.io.UncheckedIOException;
 import java.util.Optional;
 
 import org.apache.james.server.core.configuration.Configuration;
@@ -64,26 +63,26 @@ public class JamesServerBuilder<T extends Configuration> {
         overrideModules = ImmutableList.builder();
     }
 
-    public JamesServerBuilder extensions(GuiceModuleTestExtension... extensions) {
+    public JamesServerBuilder<T> extensions(GuiceModuleTestExtension... extensions) {
         this.extensions.add(extensions);
         return this;
     }
 
-    public JamesServerBuilder extension(GuiceModuleTestExtension extension) {
+    public JamesServerBuilder<T> extension(GuiceModuleTestExtension extension) {
         return this.extensions(extension);
     }
 
-    public JamesServerBuilder server(ServerProvider server) {
+    public JamesServerBuilder<T> server(ServerProvider<T> server) {
         this.server = server;
         return this;
     }
 
-    public JamesServerBuilder overrideServerModule(Module module) {
+    public JamesServerBuilder<T> overrideServerModule(Module module) {
         this.overrideModules.add(module);
         return this;
     }
 
-    public JamesServerBuilder disableAutoStart() {
+    public JamesServerBuilder<T> disableAutoStart() {
         this.autoStart = Optional.of(false);
         return this;
     }
