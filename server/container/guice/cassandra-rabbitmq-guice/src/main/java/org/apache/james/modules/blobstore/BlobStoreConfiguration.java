@@ -91,7 +91,8 @@ public class BlobStoreConfiguration {
     static final String CACHE_ENABLE_PROPERTY = "cache.enable";
 
     public static BlobStoreConfiguration parse(org.apache.james.server.core.configuration.Configuration configuration) throws ConfigurationException {
-        PropertiesProvider propertiesProvider = new PropertiesProvider(new FileSystemImpl(configuration.directories()), configuration);
+        PropertiesProvider propertiesProvider = new PropertiesProvider(new FileSystemImpl(configuration.directories()),
+            configuration.configurationPath());
 
         return parse(propertiesProvider);
     }
