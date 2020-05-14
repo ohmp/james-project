@@ -100,7 +100,10 @@ public class JPAJamesServerMain implements JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        JamesServerMain.main(configuration, ImmutableList.of(JPA_MODULE_AGGREGATE, new JMXServerModule()));
+        GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(Modules.combine(ImmutableList.of(JPA_MODULE_AGGREGATE, new JMXServerModule())));
+
+        JamesServerMain.main(server);
     }
 
 }

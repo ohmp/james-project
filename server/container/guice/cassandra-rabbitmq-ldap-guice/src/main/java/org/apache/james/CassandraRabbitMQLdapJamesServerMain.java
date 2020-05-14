@@ -43,8 +43,10 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
         BlobStoreConfiguration blobStoreConfiguration = BlobStoreConfiguration.parse(configuration);
 
         Module baseModule = baseModule(blobStoreConfiguration);
-        JamesServerMain.main(configuration,
-            ImmutableList.of(baseModule, new JMXServerModule()));
+        GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(Modules.combine(ImmutableList.of(baseModule, new JMXServerModule())));
+
+        JamesServerMain.main(server);
     }
 
     public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
