@@ -24,9 +24,7 @@ import org.apache.james.modules.blobstore.BlobStoreCacheModulesChooser;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.apache.james.modules.blobstore.BlobStoreModulesChooser;
 import org.apache.james.modules.server.JMXServerModule;
-import org.apache.james.server.core.configuration.Configuration;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -36,24 +34,22 @@ public class CassandraRabbitMQLdapJamesServerMain implements JamesServerMain {
         .with(new LdapUsersRepositoryModule());
 
     public static void main(String[] args) throws Exception {
-        Configuration configuration = Configuration.builder()
+        CassandraRabbitMQJamesConfiguration configuration = CassandraRabbitMQJamesConfiguration.builder()
             .useWorkingDirectoryEnvProperty()
             .build();
 
-        BlobStoreConfiguration blobStoreConfiguration = BlobStoreConfiguration.parse(configuration);
-
-        Module baseModule = baseModule(blobStoreConfiguration);
-        GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(Modules.combine(ImmutableList.of(baseModule, new JMXServerModule())));
+        GuiceJamesServer server = createServer(configuration)
+            .combineWith(new JMXServerModule());
 
         JamesServerMain.main(server);
     }
 
-    public static Module baseModule(BlobStoreConfiguration blobStoreConfiguration) {
-        return Modules.combine(ImmutableList.<Module>builder()
-            .add(MODULES)
-            .addAll(BlobStoreCacheModulesChooser.chooseModules(blobStoreConfiguration))
-            .addAll(BlobStoreModulesChooser.chooseModules(blobStoreConfiguration))
-            .build());
+    public static GuiceJamesServer createServer(CassandraRabbitMQJamesConfiguration configuration) {
+        BlobStoreConfiguration blobStoreConfiguration = configuration.blobstoreconfiguration();
+
+        return GuiceJamesServer.forConfiguration(configuration)
+            .combineWith(MODULES)
+            .combineWith(BlobStoreCacheModulesChooser.chooseModules(blobStoreConfiguration))
+            .combineWith(BlobStoreModulesChooser.chooseModules(blobStoreConfiguration));
     }
 }

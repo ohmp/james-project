@@ -19,7 +19,6 @@
 
 package org.apache.james;
 
-import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.jmap.draft.JmapJamesServerContract.JAMES_SERVER_HOST;
 import static org.apache.james.user.ldap.DockerLdapSingleton.JAMES_USER;
 import static org.apache.james.user.ldap.DockerLdapSingleton.PASSWORD;
@@ -81,13 +80,17 @@ class CassandraRabbitMQLdapJmapJamesServerTest {
     }
 
     JamesServerBuilder baseJamesServerExtensionBuilder(BlobStoreConfiguration blobStoreConfiguration) {
-        return new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
+        return new JamesServerBuilder<>(tmpDir ->
+            CassandraRabbitMQJamesConfiguration.builder()
+                .workingDirectory(tmpDir)
+                .configurationFromClasspath()
+                .blobStore(blobStoreConfiguration)
+                .build())
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .extension(new RabbitMQExtension())
             .extension(new LdapTestExtension())
-            .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
-                .combineWith(CassandraRabbitMQLdapJamesServerMain.baseModule(blobStoreConfiguration))
+            .server(configuration -> CassandraRabbitMQLdapJamesServerMain.createServer(configuration)
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())
                 .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE));
     }
