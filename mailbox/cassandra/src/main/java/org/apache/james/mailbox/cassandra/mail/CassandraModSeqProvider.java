@@ -183,7 +183,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
         return findHighestModSeq(mailboxId)
             .flatMap(maybeHighestModSeq -> maybeHighestModSeq
                         .map(highestModSeq -> tryUpdateModSeq(mailboxId, highestModSeq))
-                        .orElseGet(() -> tryInsertModSeq(mailboxId, ModSeq.first())))
+                        .orElse(tryInsertModSeq(mailboxId, ModSeq.first())))
             .single()
             .retryWhen(Retry.backoff(maxModSeqRetries, firstBackoff).scheduler(Schedulers.elastic()));
     }
