@@ -19,6 +19,8 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
+
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.modules.TestJMAPServerModule;
@@ -26,7 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class MemoryJamesServerTest implements JamesServerContract {
     @RegisterExtension
-    static JamesServerExtension jamesServerExtension = new JamesServerBuilder()
+    static JamesServerExtension jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
             .overrideWith(TestJMAPServerModule.limitToTenMessages())

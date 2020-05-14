@@ -19,6 +19,7 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.modules.LinshareGuiceExtension;
@@ -29,7 +30,7 @@ class LinshareBlobExportMechanismProvidingTest {
     private static final LinshareGuiceExtension linshareGuiceExtension = new LinshareGuiceExtension();
 
     @RegisterExtension
-    static JamesServerExtension jamesServerExtension = new JamesServerBuilder()
+    static JamesServerExtension jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(linshareGuiceExtension)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE))

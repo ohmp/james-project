@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.jmap.rabbitmq;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.modules.TestJMAPServerModule.LIMIT_TO_20_MESSAGES;
 
 import org.apache.james.CassandraExtension;
@@ -40,7 +41,7 @@ class RabbitMQAwsS3SpamAssassinContractTest implements SpamAssassinContract {
 
     private static final SpamAssassinModuleExtension spamAssassinExtension = new SpamAssassinModuleExtension();
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())

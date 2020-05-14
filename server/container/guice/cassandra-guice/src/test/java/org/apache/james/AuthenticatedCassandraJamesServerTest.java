@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.JamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -44,7 +45,7 @@ class AuthenticatedCassandraJamesServerTest {
     @Nested
     class AuthenticationTest implements JamesServerContract {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(cassandraExtension)
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
@@ -63,7 +64,7 @@ class AuthenticatedCassandraJamesServerTest {
     @Nested
     class SslTest {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(cassandraExtension)
             .disableAutoStart()
@@ -91,7 +92,7 @@ class AuthenticatedCassandraJamesServerTest {
     @Nested
     class AuthenticationFailureTest {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(cassandraExtension)
             .disableAutoStart()

@@ -45,14 +45,18 @@ public class CassandraRabbitMQJamesServerMain implements JamesServerMain {
             .useWorkingDirectoryEnvProperty()
             .build();
 
+        GuiceJamesServer server = createServer(configuration);
+
+        JamesServerMain.main(server);
+    }
+
+    public static GuiceJamesServer createServer(CassandraRabbitMQJamesConfiguration configuration) {
         BlobStoreConfiguration blobStoreConfiguration = configuration.blobstoreconfiguration();
 
         Module baseModule = modules(blobStoreConfiguration);
 
-        GuiceJamesServer server = GuiceJamesServer.forConfiguration(configuration)
+        return GuiceJamesServer.forConfiguration(configuration)
             .combineWith(Modules.combine(ImmutableList.of(baseModule, new JMXServerModule())));
-
-        JamesServerMain.main(server);
     }
 
 

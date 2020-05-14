@@ -19,6 +19,7 @@
 package org.apache.james.jmap.cassandra;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.modules.TestJMAPServerModule.LIMIT_TO_20_MESSAGES;
 
 import org.apache.james.CassandraExtension;
@@ -38,7 +39,7 @@ class CassandraSpamAssassinContractTest implements SpamAssassinContract {
     private static final SpamAssassinModuleExtension spamAssassinExtension = new SpamAssassinModuleExtension();
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(spamAssassinExtension)

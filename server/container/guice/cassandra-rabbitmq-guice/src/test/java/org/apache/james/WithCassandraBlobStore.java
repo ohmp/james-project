@@ -19,6 +19,8 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
+
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
@@ -37,7 +39,7 @@ public class WithCassandraBlobStore implements BeforeAllCallback, AfterAllCallba
     private final JamesServerExtension jamesServerExtension;
 
     WithCassandraBlobStore() {
-        jamesServerExtension = new JamesServerBuilder()
+        jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .extension(new RabbitMQExtension())

@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.jmap.memory;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.modules.TestJMAPServerModule.LIMIT_TO_20_MESSAGES;
 
 import org.apache.james.GuiceJamesServer;
@@ -36,7 +37,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class MemorySpamAssassinContractTest implements SpamAssassinContract {
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(new SpamAssassinModuleExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)

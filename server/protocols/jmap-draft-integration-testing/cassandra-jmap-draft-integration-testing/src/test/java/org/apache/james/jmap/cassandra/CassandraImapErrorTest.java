@@ -20,6 +20,7 @@
 package org.apache.james.jmap.cassandra;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.jmap.JMAPTestingConstants.DOMAIN;
 import static org.apache.james.jmap.JMAPTestingConstants.LOCALHOST_IP;
 import static org.apache.james.jmap.JMAPTestingConstants.jmapRequestSpecBuilder;
@@ -49,7 +50,7 @@ class CassandraImapErrorTest {
     private final CassandraExtension cassandraExtension = new CassandraExtension();
 
     @RegisterExtension
-    JamesServerExtension serverExtension = new JamesServerBuilder()
+    JamesServerExtension serverExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(new DockerElasticSearchExtension())
         .extension(cassandraExtension)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)

@@ -20,6 +20,7 @@
 package org.apache.james.webadmin.integration.rabbitmq;
 
 import static io.restassured.RestAssured.with;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.JMAPTestingConstants.ALICE;
 import static org.apache.james.jmap.JMAPTestingConstants.ALICE_PASSWORD;
@@ -88,7 +89,7 @@ class RabbitMQReindexingWithEventDeadLettersTest {
         .overrideWith(new WebadminIntegrationTestModule());
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(dockerElasticSearch)
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())

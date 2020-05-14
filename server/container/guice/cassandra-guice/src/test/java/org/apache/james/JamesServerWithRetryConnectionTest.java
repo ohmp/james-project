@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ class JamesServerWithRetryConnectionTest {
     private static final CassandraExtension dockerCassandra = new CassandraExtension();
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(dockerElasticSearch)
         .extension(dockerCassandra)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)

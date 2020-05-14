@@ -21,6 +21,7 @@ package org.apache.james;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
@@ -74,7 +75,7 @@ class CacheSessionTest {
     }
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)

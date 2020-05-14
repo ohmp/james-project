@@ -21,6 +21,7 @@ package org.apache.james.webadmin.integration.rabbitmq;
 
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.backends.cassandra.Scenario.Builder.awaitOn;
 import static org.apache.james.backends.cassandra.Scenario.Builder.fail;
 import static org.apache.james.jmap.JMAPTestingConstants.BOB;
@@ -117,7 +118,7 @@ class ConsistencyTasksIntegrationTest {
     }
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(new DockerElasticSearchExtension())
         .extension(new CassandraExtension())
         .extension(new AwsS3BlobStoreExtension())

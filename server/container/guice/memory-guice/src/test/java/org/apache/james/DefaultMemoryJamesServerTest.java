@@ -19,6 +19,7 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
@@ -33,7 +34,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class DefaultMemoryJamesServerTest {
     @RegisterExtension
-    static JamesServerExtension jamesServerExtension = new JamesServerBuilder()
+    static JamesServerExtension jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
             .overrideWith(TestJMAPServerModule.limitToTenMessages())

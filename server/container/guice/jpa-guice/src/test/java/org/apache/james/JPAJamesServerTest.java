@@ -19,6 +19,7 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.core.quota.QuotaSizeLimit;
@@ -40,7 +41,7 @@ import com.google.common.base.Strings;
 class JPAJamesServerTest implements JamesServerContract {
 
     @RegisterExtension
-    static JamesServerExtension jamesServerExtension = new JamesServerBuilder()
+    static JamesServerExtension jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(JPAJamesServerMain.JPA_MODULE_AGGREGATE)
             .overrideWith(new TestJPAConfigurationModule(), DOMAIN_LIST_CONFIGURATION_MODULE))

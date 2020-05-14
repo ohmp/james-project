@@ -1,5 +1,6 @@
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -18,7 +19,7 @@ class GuiceJamesServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(GuiceJamesServerTest.class);
 
     private static JamesServerBuilder extensionBuilder() {
-        return new JamesServerBuilder()
+        return new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
                 .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
                 .overrideWith(TestJMAPServerModule.limitToTenMessages()))

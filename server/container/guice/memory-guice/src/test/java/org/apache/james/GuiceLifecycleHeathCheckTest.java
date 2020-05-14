@@ -22,6 +22,7 @@ package org.apache.james;
 import static io.restassured.RestAssured.when;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
@@ -47,7 +48,7 @@ import reactor.core.scheduler.Schedulers;
 
 class GuiceLifecycleHeathCheckTest {
     private static JamesServerBuilder extensionBuilder() {
-        return new JamesServerBuilder()
+        return new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
                 .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
                 .overrideWith(TestJMAPServerModule.limitToTenMessages())

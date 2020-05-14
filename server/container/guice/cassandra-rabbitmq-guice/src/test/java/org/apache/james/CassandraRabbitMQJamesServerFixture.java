@@ -19,6 +19,8 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
+
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
@@ -38,7 +40,7 @@ public class CassandraRabbitMQJamesServerFixture {
     }
 
     public static JamesServerBuilder baseExtensionBuilder(RabbitMQExtension rabbitMQExtension) {
-        return new JamesServerBuilder()
+        return new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .extension(rabbitMQExtension)

@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 
 import org.apache.james.modules.TestJMAPServerModule;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -27,7 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class CassandraWithTikaTest implements JamesServerContract {
     @RegisterExtension
     static JamesServerExtension testExtension =
-        new JamesServerBuilder()
+        new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new CassandraExtension())
             .extension(new  TikaExtension())
             .extension(new DockerElasticSearchExtension())

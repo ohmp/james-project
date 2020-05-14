@@ -19,6 +19,8 @@
 
 package org.apache.james.webadmin.integration.rabbitmq.vault;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
+
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
@@ -39,7 +41,7 @@ class RabbitMQDeletedMessageVaultIntegrationTest extends DeletedMessageVaultInte
     private static final DockerElasticSearchExtension ES_EXTENSION = new DockerElasticSearchExtension();
 
     @RegisterExtension
-    static JamesServerExtension testExtension = new JamesServerBuilder()
+    static JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .extension(ES_EXTENSION)
         .extension(new CassandraExtension())
         .extension(new AwsS3BlobStoreExtension())

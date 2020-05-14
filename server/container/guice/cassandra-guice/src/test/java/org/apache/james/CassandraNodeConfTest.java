@@ -19,6 +19,7 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ import org.testcontainers.DockerClientFactory;
 class CassandraNodeConfTest {
     private static final int CASSANDRA_PORT = 9042;
     private static JamesServerBuilder extensionBuilder() {
-        return new JamesServerBuilder()
+        return new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)

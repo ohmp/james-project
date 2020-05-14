@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -35,7 +36,7 @@ class KeyspaceCreationTest {
     @Nested
     class CreateWhenKeyspaceExists {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
@@ -58,7 +59,7 @@ class KeyspaceCreationTest {
     @Nested
     class CreateWhenDoesNotExistAndHasRights {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
@@ -87,7 +88,7 @@ class KeyspaceCreationTest {
     @Nested
     class CreateWhenDoesNotExistAndDoNotHaveRights {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
@@ -116,7 +117,7 @@ class KeyspaceCreationTest {
     @Nested
     class StartWhenKeyspaceDoesNotExist {
         @RegisterExtension
-        JamesServerExtension testExtension = new JamesServerBuilder()
+        JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .server(configuration -> GuiceJamesServer.forConfiguration(configuration)

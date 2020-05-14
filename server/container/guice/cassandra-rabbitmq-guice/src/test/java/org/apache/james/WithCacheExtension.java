@@ -19,6 +19,8 @@
 
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
+
 import org.apache.james.jmap.draft.JmapJamesServerContract;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
@@ -38,7 +40,7 @@ public class WithCacheExtension implements BeforeAllCallback, AfterAllCallback, 
     private final JamesServerExtension jamesServerExtension;
 
     WithCacheExtension() {
-        jamesServerExtension = new JamesServerBuilder()
+        jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
             .extension(new DockerElasticSearchExtension())
             .extension(new CassandraExtension())
             .extension(new RabbitMQExtension())

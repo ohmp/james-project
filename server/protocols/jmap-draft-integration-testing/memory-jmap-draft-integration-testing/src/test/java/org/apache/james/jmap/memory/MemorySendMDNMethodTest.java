@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.memory;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.james.GuiceJamesServer;
@@ -38,7 +40,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MemorySendMDNMethodTest extends SendMDNMethodTest {
 
     @RegisterExtension
-    JamesServerExtension testExtension = new JamesServerBuilder()
+    JamesServerExtension testExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
             .overrideWith(TestJMAPServerModule.limitToTenMessages())

@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james;
 
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,7 +41,7 @@ class JamesCapabilitiesServerTest {
     }
 
     @RegisterExtension
-    static JamesServerExtension jamesServerExtension = new JamesServerBuilder()
+    static JamesServerExtension jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(JPAJamesServerMain.JPA_MODULE_AGGREGATE)
             .overrideWith(new TestJPAConfigurationModule())

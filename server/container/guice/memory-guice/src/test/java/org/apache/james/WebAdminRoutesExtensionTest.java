@@ -20,6 +20,7 @@
 package org.apache.james;
 
 import static io.restassured.RestAssured.when;
+import static org.apache.james.JamesServerBuilder.DEFAULT_CONFIGURATION_PROVIDER;
 import static org.apache.james.MyRoute.SHABANG;
 import static org.hamcrest.CoreMatchers.is;
 
@@ -35,7 +36,7 @@ import io.restassured.RestAssured;
 
 class WebAdminRoutesExtensionTest {
     @RegisterExtension
-    static JamesServerExtension jamesServerExtension = new JamesServerBuilder()
+    static JamesServerExtension jamesServerExtension = new JamesServerBuilder(DEFAULT_CONFIGURATION_PROVIDER)
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
             .overrideWith(TestJMAPServerModule.limitToTenMessages())

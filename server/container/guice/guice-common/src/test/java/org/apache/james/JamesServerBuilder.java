@@ -30,28 +30,34 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 
-public class JamesServerBuilder {
+public class JamesServerBuilder<T extends Configuration> {
     private static final boolean DEFAULT_AUTO_START = true;
 
+    public static ConfigurationProvider<Configuration.Basic> DEFAULT_CONFIGURATION_PROVIDER = tmpDir ->
+        Configuration.builder()
+            .workingDirectory(tmpDir)
+            .configurationFromClasspath()
+            .build();
+
     @FunctionalInterface
-    public interface ConfigurationProvider {
-        Configuration buildConfiguration(File tempDirectory);
+    public interface ConfigurationProvider<T extends Configuration> {
+        T buildConfiguration(File tempDirectory);
     }
 
     @FunctionalInterface
-    public interface ServerProvider {
-        GuiceJamesServer buildServer(Configuration configuration);
+    public interface ServerProvider<T extends Configuration> {
+        GuiceJamesServer buildServer(T configuration);
     }
 
     private final ImmutableList.Builder<GuiceModuleTestExtension> extensions;
     private final TemporaryFolderRegistrableExtension folderRegistrableExtension;
     private final ImmutableList.Builder<Module> overrideModules;
-    private ServerProvider server;
-    private Optional<ConfigurationProvider> configuration;
+    private ServerProvider<T> server;
+    private ConfigurationProvider<T> configuration;
     private Optional<Boolean> autoStart;
 
-    public JamesServerBuilder() {
-        configuration = Optional.empty();
+    public JamesServerBuilder(ConfigurationProvider<T> configurationProvider) {
+        configuration = configurationProvider;
         extensions = ImmutableList.builder();
         folderRegistrableExtension = new TemporaryFolderRegistrableExtension();
         autoStart = Optional.empty();
@@ -65,11 +71,6 @@ public class JamesServerBuilder {
 
     public JamesServerBuilder extension(GuiceModuleTestExtension extension) {
         return this.extensions(extension);
-    }
-
-    public JamesServerBuilder configuration(ConfigurationProvider configuration) throws UncheckedIOException {
-        this.configuration = Optional.of(configuration);
-        return this;
     }
 
     public JamesServerBuilder server(ServerProvider server) {
@@ -89,19 +90,10 @@ public class JamesServerBuilder {
 
     public JamesServerExtension build() {
         Preconditions.checkNotNull(server);
-        ConfigurationProvider configuration = this.configuration.orElse(defaultConfigurationProvider());
         JamesServerExtension.AwaitCondition awaitCondition = () -> extensions.build().forEach(GuiceModuleTestExtension::await);
 
         return new JamesServerExtension(buildAggregateJunitExtension(), file -> overrideServerWithExtensionsModules(file, configuration),
             awaitCondition, autoStart.orElse(DEFAULT_AUTO_START));
-    }
-
-    private ConfigurationProvider defaultConfigurationProvider() {
-        return tmpDir ->
-            Configuration.builder()
-                .workingDirectory(tmpDir)
-                .configurationFromClasspath()
-                .build();
     }
 
     private AggregateJunitExtension buildAggregateJunitExtension() {
@@ -113,14 +105,15 @@ public class JamesServerBuilder {
                 .build());
     }
 
-    private GuiceJamesServer overrideServerWithExtensionsModules(File file, ConfigurationProvider configurationProvider) {
+    private GuiceJamesServer overrideServerWithExtensionsModules(File file, ConfigurationProvider<T> configurationProvider) {
         ImmutableList<Module> modules = extensions.build()
             .stream()
             .map(GuiceModuleTestExtension::getModule)
             .collect(Guavate.toImmutableList());
 
+        T configuration = configurationProvider.buildConfiguration(file);
         return server
-            .buildServer(configurationProvider.buildConfiguration(file))
+            .buildServer(configuration)
             .overrideWith(modules)
             .overrideWith((binder -> binder.bind(CleanupTasksPerformer.class).asEagerSingleton()))
             .overrideWith(overrideModules.build());
