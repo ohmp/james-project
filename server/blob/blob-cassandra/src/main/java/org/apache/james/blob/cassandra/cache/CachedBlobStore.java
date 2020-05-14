@@ -37,6 +37,8 @@ import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.ObjectNotFoundException;
 import org.apache.james.blob.api.ObjectStoreIOException;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -99,6 +101,8 @@ public class CachedBlobStore implements BlobStore {
 
     }
 
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedBlobStore.class);
     public static final String BACKEND = "blobStoreBackend";
 
     private final BlobStoreCache cache;
@@ -119,7 +123,7 @@ public class CachedBlobStore implements BlobStore {
         return Mono.just(bucketName)
             .filter(getDefaultBucketName()::equals)
             .flatMap(ignored -> readFromCache(blobId)
-                .flatMap(this::toInputStream))
+                .<InputStream>map(ByteArrayInputStream::new))
             .switchIfEmpty(readFromBackend(bucketName, blobId)
                 .flatMap(inputStream ->
                     Mono.fromCallable(() -> ReadAheadInputStream.eager().of(inputStream).length(sizeThresholdInBytes))
@@ -133,11 +137,10 @@ public class CachedBlobStore implements BlobStore {
     public Mono<byte[]> readBytes(BucketName bucketName, BlobId blobId) {
         return Mono.just(bucketName)
             .filter(getDefaultBucketName()::equals)
-            .flatMap(ignored -> readFromCache(blobId)
-                .switchIfEmpty(readBytesFromBackend(bucketName, blobId)
-                    .filter(this::isAbleToCache)
-                    .flatMap(bytes -> saveInCache(blobId, bytes).then(Mono.just(bytes)))))
-            .switchIfEmpty(readBytesFromBackend(bucketName, blobId));
+            .flatMap(ignored -> readFromCache(blobId))
+            .switchIfEmpty(readBytesFromBackend(bucketName, blobId)
+                .filter(this::isAbleToCache)
+                .flatMap(bytes -> saveInCache(blobId, bytes).then(Mono.just(bytes))));
     }
 
     @Override
@@ -228,16 +231,16 @@ public class CachedBlobStore implements BlobStore {
         return bytes.length <= sizeThresholdInBytes;
     }
 
-    private Mono<InputStream> toInputStream(byte[] bytes) {
-        return Mono.fromCallable(() -> new ByteArrayInputStream(bytes));
-    }
-
     private Mono<InputStream> readFromBackend(BucketName bucketName, BlobId blobId) {
         return Mono.fromCallable(() -> backend.read(bucketName, blobId));
     }
 
     private Mono<byte[]> readFromCache(BlobId blobId) {
-        return Mono.from(cache.read(blobId));
+        return Mono.from(cache.read(blobId))
+            .onErrorResume(e -> {
+                LOGGER.warn("Error while reading cache for {}, defaulting to blobStore backend", blobId.asString(), e);
+                return Mono.empty();
+            });
     }
 
     private Mono<byte[]> readBytesFromBackend(BucketName bucketName, BlobId blobId) {

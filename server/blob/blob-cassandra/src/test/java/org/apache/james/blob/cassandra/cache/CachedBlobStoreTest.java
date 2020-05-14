@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.blob.cassandra.cache;
 
+import static org.apache.james.backends.cassandra.Scenario.Builder.fail;
 import static org.apache.james.blob.api.BlobStore.StoragePolicy.HIGH_PERFORMANCE;
 import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
 import static org.apache.james.blob.api.BlobStore.StoragePolicy.SIZE_BASED;
@@ -199,6 +200,19 @@ public class CachedBlobStoreTest implements BlobStoreContract {
             assertThatThrownBy(() -> Mono.from(backend.readBytes(DEFAULT_BUCKETNAME, blobId)).block())
                 .isInstanceOf(ObjectNotFoundException.class);
         });
+    }
+
+    @Test
+    void readShouldNotPropagateErrors(CassandraCluster cassandra) {
+        BlobId blobId = Mono.from(testee().save(DEFAULT_BUCKETNAME, APPROXIMATELY_FIVE_KILOBYTES, SIZE_BASED)).block();
+        cassandra.getConf().registerScenario(fail()
+            .forever()
+            .whenQueryStartsWith("SELECT * FROM blob_cache WHERE id=:id;"));
+
+        byte[] value = Mono.from(testee.readBytes(DEFAULT_BUCKETNAME, blobId)).block();
+
+        assertThat(new ByteArrayInputStream(value))
+            .hasSameContentAs(new ByteArrayInputStream(APPROXIMATELY_FIVE_KILOBYTES));
     }
 
     @Test
