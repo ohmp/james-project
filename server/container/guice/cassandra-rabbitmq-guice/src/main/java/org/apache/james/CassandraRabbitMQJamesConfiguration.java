@@ -57,7 +57,7 @@ public class CassandraRabbitMQJamesConfiguration implements Configuration {
         }
     }
 
-    static CassandraRabbitMQJamesConfiguration.Builder builder() {
+    public static CassandraRabbitMQJamesConfiguration.Builder builder() {
         return new Builder();
     }
 
