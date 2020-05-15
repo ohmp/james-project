@@ -83,14 +83,14 @@ class BlobStoreModulesChooserTest {
     }
 
     @Test
-    void provideBlobStoreShouldReturnCassandraBlobStoreWhenCassandraConfigured() {
+    void provideBlobStoreShouldReturnObjectStoreBlobStoreWhenObjectStoreConfigured() {
         assertThat(BlobStoreModulesChooser.chooseModules(BlobStoreConfiguration.objectStorage()))
             .first()
             .isInstanceOf(BlobStoreModulesChooser.ObjectStorageDeclarationModule.class);
     }
 
     @Test
-    void provideBlobStoreShouldReturnObjectStoreBlobStoreWhenObjectStoreConfigured() {
+    void provideBlobStoreShouldReturnCassandraBlobStoreWhenCassandraConfigured() {
         assertThat(BlobStoreModulesChooser.chooseModules(BlobStoreConfiguration.cassandra()))
             .first()
             .isInstanceOf(BlobStoreModulesChooser.CassandraDeclarationModule.class);
