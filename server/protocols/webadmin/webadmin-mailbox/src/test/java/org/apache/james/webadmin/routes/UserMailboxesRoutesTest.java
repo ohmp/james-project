@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.james.core.Username;
+import org.apache.james.json.DTOConverter;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSessionUtil;
@@ -71,6 +72,7 @@ import org.apache.james.webadmin.utils.JsonTransformer;
 import org.apache.mailbox.tools.indexer.ReIndexerImpl;
 import org.apache.mailbox.tools.indexer.ReIndexerPerformer;
 import org.apache.mailbox.tools.indexer.UserReindexingTask;
+import org.apache.mailbox.tools.indexer.UserReindexingTaskAdditionalInformationDTO;
 import org.eclipse.jetty.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -97,7 +99,7 @@ class UserMailboxesRoutesTest {
     private ListeningMessageSearchIndex searchIndex;
     private MemoryTaskManager taskManager;
 
-    private void createServer(MailboxManager mailboxManager, MailboxSessionMapperFactory mapperFactory) throws Exception {
+    private void createServer(MailboxManager mailboxManager, MailboxSessionMapperFactory mapperFactory, MailboxId.Factory mailboxIdFactory) throws Exception {
         usersRepository = mock(UsersRepository.class);
         when(usersRepository.contains(USERNAME)).thenReturn(true);
 
@@ -119,7 +121,8 @@ class UserMailboxesRoutesTest {
                 new UserMailboxesRoutes(new UserMailboxesService(mailboxManager, usersRepository), new JsonTransformer(),
                     taskManager,
                     ImmutableSet.of(new UserMailboxesRoutes.UserReIndexingTaskRegistration(reIndexer))),
-                new TasksRoutes(taskManager, new JsonTransformer()))
+                new TasksRoutes(taskManager, new JsonTransformer(),
+                    DTOConverter.of(UserReindexingTaskAdditionalInformationDTO.serializationModule(mailboxIdFactory))))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
@@ -139,7 +142,7 @@ class UserMailboxesRoutesTest {
         @BeforeEach
         void setUp() throws Exception {
             InMemoryMailboxManager mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
-            createServer(mailboxManager, mailboxManager.getMapperFactory());
+            createServer(mailboxManager, mailboxManager.getMapperFactory(), new InMemoryId.Factory());
         }
 
         @Test
@@ -787,7 +790,7 @@ class UserMailboxesRoutesTest {
             mailboxManager = mock(MailboxManager.class);
             when(mailboxManager.createSystemSession(any())).thenReturn(MailboxSessionUtil.create(USERNAME));
 
-            createServer(mailboxManager, mock(MailboxSessionMapperFactory.class));
+            createServer(mailboxManager, mock(MailboxSessionMapperFactory.class), mock(MailboxId.Factory.class));
         }
 
         @Test
@@ -1045,7 +1048,7 @@ class UserMailboxesRoutesTest {
         @BeforeEach
         void setUp() throws Exception {
             mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
-            createServer(mailboxManager, mailboxManager.getMapperFactory());
+            createServer(mailboxManager, mailboxManager.getMapperFactory(), new InMemoryId.Factory());
         }
 
         @Nested
@@ -1109,13 +1112,13 @@ class UserMailboxesRoutesTest {
 
                 given()
                     .basePath(TasksRoutes.BASE)
-                    .when()
+                .when()
                     .get(taskId + "/await")
-                    .then()
+                .then()
                     .body("status", Matchers.is("completed"))
                     .body("taskId", Matchers.is(notNullValue()))
                     .body("type", Matchers.is(UserReindexingTask.USER_RE_INDEXING.asString()))
-                    .body("additionalInformation.username", Matchers.is("username"))
+                    .body("additionalInformation.user", Matchers.is("username"))
                     .body("additionalInformation.successfullyReprocessedMailCount", Matchers.is(0))
                     .body("additionalInformation.failedReprocessedMailCount", Matchers.is(0))
                     .body("startedDate", Matchers.is(notNullValue()))
@@ -1147,7 +1150,7 @@ class UserMailboxesRoutesTest {
                     .body("status", Matchers.is("completed"))
                     .body("taskId", Matchers.is(notNullValue()))
                     .body("type", Matchers.is(UserReindexingTask.USER_RE_INDEXING.asString()))
-                    .body("additionalInformation.username", Matchers.is("username"))
+                    .body("additionalInformation.user", Matchers.is("username"))
                     .body("additionalInformation.successfullyReprocessedMailCount", Matchers.is(1))
                     .body("additionalInformation.failedReprocessedMailCount", Matchers.is(0))
                     .body("startedDate", Matchers.is(notNullValue()))
@@ -1185,7 +1188,8 @@ class UserMailboxesRoutesTest {
                     .body("type", Matchers.is(UserReindexingTask.USER_RE_INDEXING.asString()))
                     .body("additionalInformation.successfullyReprocessedMailCount", Matchers.is(0))
                     .body("additionalInformation.failedReprocessedMailCount", Matchers.is(1))
-                    .body("additionalInformation.failures.\"" + mailboxId.serialize() + "\"[0].uid", Matchers.is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].uids[0]", Matchers.is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].mailboxId", Matchers.is(mailboxId.serialize()))
                     .body("startedDate", Matchers.is(notNullValue()))
                     .body("submitDate", Matchers.is(notNullValue()));
             }

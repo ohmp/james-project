@@ -49,6 +49,7 @@ import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.core.builder.MimeMessageBuilder.BodyPartBuilder;
+import org.apache.james.json.DTOConverter;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
@@ -71,9 +72,12 @@ import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.service.ClearMailRepositoryTask;
+import org.apache.james.webadmin.service.ClearMailRepositoryTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.MailRepositoryStoreService;
 import org.apache.james.webadmin.service.ReprocessingAllMailsTask;
+import org.apache.james.webadmin.service.ReprocessingAllMailsTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.ReprocessingOneMailTask;
+import org.apache.james.webadmin.service.ReprocessingOneMailTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.ReprocessingService;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -125,7 +129,10 @@ public class MailRepositoriesRoutesTest {
         webAdminServer = WebAdminUtils.createWebAdminServer(
                 new MailRepositoriesRoutes(repositoryStoreService,
                     jsonTransformer, reprocessingService, taskManager),
-            new TasksRoutes(taskManager, jsonTransformer))
+            new TasksRoutes(taskManager, jsonTransformer,
+                DTOConverter.of(ReprocessingOneMailTaskAdditionalInformationDTO.SERIALIZATION_MODULE,
+                    ReprocessingAllMailsTaskAdditionalInformationDTO.SERIALIZATION_MODULE,
+                    ClearMailRepositoryTaskAdditionalInformationDTO.SERIALIZATION_MODULE)))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
@@ -995,7 +1002,7 @@ public class MailRepositoriesRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(ClearMailRepositoryTask.TYPE.asString()))
-            .body("additionalInformation.repositoryPath", is(PATH_MY_REPO.asString()))
+            .body("additionalInformation.mailRepositoryPath", is(PATH_MY_REPO.asString()))
             .body("additionalInformation.initialCount", is(2))
             .body("additionalInformation.remainingCount", is(0))
             .body("startedDate", is(notNullValue()))

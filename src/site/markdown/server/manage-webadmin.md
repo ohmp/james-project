@@ -585,10 +585,11 @@ The scheduled task will have the following type `full-reindexing` and the follow
 {
   "successfullyReprocessedMailCount":18,
   "failedReprocessedMailCount": 3,
-  "failures": {
-    "mbx1": [{"uid": 35}, {"uid": 45}],
-    "mbx2": [{"uid": 38}]
-  }
+  "failures": [
+   {
+     "mailboxId": "1",
+      "uids": [1, 36]
+   }]
 }
 ```
 
@@ -606,10 +607,10 @@ The scheduled task will have the following type `error-recovery-indexation` and 
 {
   "successfullyReprocessedMailCount":18,
   "failedReprocessedMailCount": 3,
-  "failures": {
-    "mbx1": [{"uid": 35}, {"uid": 45}],
-    "mbx2": [{"uid": 38}]
-  }
+  "failures": [{
+     "mailboxId": "1",
+      "uids": [1, 36]
+   }]
 }
 ```
 
@@ -642,10 +643,11 @@ The scheduled task will have the following type `mailbox-reindexing` and the fol
   "mailboxId":"{mailboxId}",
   "successfullyReprocessedMailCount":18,
   "failedReprocessedMailCount": 3,
-  "failures": {
-    "mbx1": [{"uid": 35}, {"uid": 45}],
-    "mbx2": [{"uid": 38}]
-  }
+  "failures": [
+   {
+     "mailboxId": "1",
+      "uids": [1, 36]
+   }]
 }
 ```
 
@@ -936,10 +938,11 @@ The scheduled task will have the following type `user-reindexing` and the follow
   "user":"user@domain.com",
   "successfullyReprocessedMailCount":18,
   "failedReprocessedMailCount": 3,
-  "failures": {
-    "mbx1": [{"uid": 35}, {"uid": 45}],
-    "mbx2": [{"uid": 38}]
-  }
+  "failures": [
+   {
+     "mailboxId": "1",
+      "uids": [1, 36]
+   }]
 }
 ```
 
@@ -1727,7 +1730,7 @@ If the server restarts during the migration, the migration is silently aborted.
 The scheduled task will have the following type `cassandra-migration` and the following `additionalInformation`:
 
 ```
-{"toVersion":3}
+{"targetVersion":3}
 ```
 
 ### Upgrading to the latest version
@@ -2613,7 +2616,7 @@ The scheduled task will have the following type `clear-mail-repository` and the 
 
 ```
 {
-  "repositoryPath":"var/mail/error/",
+  "mailRepositoryPath":"var/mail/error/",
   "initialCount": 243,
   "remainingCount": 17
 }
@@ -2662,7 +2665,7 @@ The scheduled task will have the following type `reprocessing-all` and the follo
 
 ```
 {
-  "repositoryPath":"var/mail/error/",
+  "mailRepositoryPath":"var/mail/error/",
   "targetQueue":"spool",
   "targetProcessor":"transport",
   "initialCount": 243,
@@ -2713,7 +2716,7 @@ The scheduled task will have the following type `reprocessing-one` and the follo
 
 ```
 {
-  "repositoryPath":"var/mail/error/",
+  "mailRepositoryPath":"var/mail/error/",
   "targetQueue":"spool",
   "targetProcessor":"transport",
   "mailKey":"name1"
@@ -2820,7 +2823,7 @@ The scheduled task will have the following type `delete-mails-from-mail-queue` a
 
 ```
 {
-  "mailQueueName":"outgoing",
+  "queue":"outgoing",
   "initialCount":10,
   "remainingCount": 5,
   "sender": "sender@james.org",
@@ -2849,7 +2852,7 @@ The scheduled task will have the following type `clear-mail-queue` and the follo
 
 ```
 {
-  "mailQueueName":"outgoing",
+  "queue":"outgoing",
   "initialCount":10,
   "remainingCount": 0
 }
@@ -3503,8 +3506,8 @@ The scheduled task will have the following type `deleted-messages-delete` and th
  
 ```
  {
-   "user": "user@domain.ext",
-   "deleteMessageId": "3294a976-ce63-491e-bd52-1b6f465ed7a2"
+   "userName": "user@domain.ext",
+   "messageId": "3294a976-ce63-491e-bd52-1b6f465ed7a2"
  }
 ```
  

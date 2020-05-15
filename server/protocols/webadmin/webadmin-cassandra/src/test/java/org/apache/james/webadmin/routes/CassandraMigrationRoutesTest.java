@@ -41,9 +41,11 @@ import org.apache.james.backends.cassandra.migration.CassandraMigrationService;
 import org.apache.james.backends.cassandra.migration.CassandraSchemaTransitions;
 import org.apache.james.backends.cassandra.migration.Migration;
 import org.apache.james.backends.cassandra.migration.MigrationTask;
+import org.apache.james.backends.cassandra.migration.MigrationTaskAdditionalInformationDTO;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.SchemaTransition;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
+import org.apache.james.json.DTOConverter;
 import org.apache.james.task.Hostname;
 import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.webadmin.WebAdminServer;
@@ -87,7 +89,8 @@ public class CassandraMigrationRoutesTest {
         webAdminServer = WebAdminUtils.createWebAdminServer(
                 new CassandraMigrationRoutes(new CassandraMigrationService(schemaVersionDAO, transitions, version -> new MigrationTask(schemaVersionDAO, transitions, version), LATEST_VERSION),
                     taskManager, jsonTransformer),
-                new TasksRoutes(taskManager, jsonTransformer))
+                new TasksRoutes(taskManager, jsonTransformer,
+                    DTOConverter.of(MigrationTaskAdditionalInformationDTO.serializationModule())))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
@@ -291,7 +294,7 @@ public class CassandraMigrationRoutesTest {
             .body("status", is("completed"))
             .body("taskId", is(notNullValue()))
             .body("type", is(MigrationTask.CASSANDRA_MIGRATION.asString()))
-            .body("additionalInformation.toVersion", is(LATEST_VERSION.getValue()))
+            .body("additionalInformation.targetVersion", is(LATEST_VERSION.getValue()))
             .body("startedDate", is(notNullValue()))
             .body("submitDate", is(notNullValue()))
             .body("completedDate", is(notNullValue()));

@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.apache.james.core.Username;
+import org.apache.james.json.DTOConverter;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.indexer.ReIndexer;
@@ -56,9 +57,14 @@ import org.apache.james.webadmin.utils.JsonTransformer;
 import org.apache.mailbox.tools.indexer.FullReindexingTask;
 import org.apache.mailbox.tools.indexer.ReIndexerImpl;
 import org.apache.mailbox.tools.indexer.ReIndexerPerformer;
+import org.apache.mailbox.tools.indexer.ReprocessingContextInformationDTO.ReprocessingContextInformationForErrorRecoveryIndexationTask;
+import org.apache.mailbox.tools.indexer.ReprocessingContextInformationDTO.ReprocessingContextInformationForFullReindexingTask;
 import org.apache.mailbox.tools.indexer.SingleMailboxReindexingTask;
+import org.apache.mailbox.tools.indexer.SingleMailboxReindexingTaskAdditionalInformationDTO;
 import org.apache.mailbox.tools.indexer.SingleMessageReindexingTask;
+import org.apache.mailbox.tools.indexer.SingleMessageReindexingTaskAdditionalInformationDTO;
 import org.eclipse.jetty.http.HttpStatus;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -98,7 +104,12 @@ class MailboxesRoutesTest {
         JsonTransformer jsonTransformer = new JsonTransformer();
 
         webAdminServer = WebAdminUtils.createWebAdminServer(
-                new TasksRoutes(taskManager, jsonTransformer),
+                new TasksRoutes(taskManager, jsonTransformer,
+                    DTOConverter.of(
+                        ReprocessingContextInformationForErrorRecoveryIndexationTask.serializationModule(mailboxIdFactory),
+                        ReprocessingContextInformationForFullReindexingTask.serializationModule(mailboxIdFactory),
+                        SingleMailboxReindexingTaskAdditionalInformationDTO.serializationModule(mailboxIdFactory),
+                        SingleMessageReindexingTaskAdditionalInformationDTO.serializationModule(mailboxIdFactory))),
                 new MailboxesRoutes(taskManager,
                     jsonTransformer,
                     ImmutableSet.of(
@@ -233,7 +244,8 @@ class MailboxesRoutesTest {
                     .body("type", is(FullReindexingTask.FULL_RE_INDEXING.asString()))
                     .body("additionalInformation.successfullyReprocessedMailCount", is(0))
                     .body("additionalInformation.failedReprocessedMailCount", is(1))
-                    .body("additionalInformation.failures.\"" + mailboxId.serialize() + "\"[0].uid", is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].uids[0]", Matchers.is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].mailboxId", Matchers.is(mailboxId.serialize()))
                     .body("startedDate", is(notNullValue()))
                     .body("submitDate", is(notNullValue()));
             }
@@ -422,7 +434,8 @@ class MailboxesRoutesTest {
                     .body("type", is(SingleMailboxReindexingTask.MAILBOX_RE_INDEXING.asString()))
                     .body("additionalInformation.successfullyReprocessedMailCount", is(0))
                     .body("additionalInformation.failedReprocessedMailCount", is(1))
-                    .body("additionalInformation.failures.\"" + mailboxId.serialize() + "\"[0].uid", is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].uids[0]", Matchers.is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].mailboxId", Matchers.is(mailboxId.serialize()))
                     .body("startedDate", is(notNullValue()))
                     .body("submitDate", is(notNullValue()));
             }
@@ -817,8 +830,9 @@ class MailboxesRoutesTest {
                     .body("taskId", is(notNullValue()))
                     .body("type", is("error-recovery-indexation"))
                     .body("additionalInformation.successfullyReprocessedMailCount", is(0))
+                    .body("additionalInformation.failures[0].uids[0]", Matchers.is(Long.valueOf(uidAsLong).intValue()))
+                    .body("additionalInformation.failures[0].mailboxId", Matchers.is(mailboxId.serialize()))
                     .body("additionalInformation.failedReprocessedMailCount", is(1))
-                    .body("additionalInformation.failures.\"" + mailboxId.serialize() + "\"[0].uid", is(Long.valueOf(uidAsLong).intValue()))
                     .body("startedDate", is(notNullValue()))
                     .body("submitDate", is(notNullValue()));
             }

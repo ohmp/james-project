@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.json.DTOConverter;
 import org.apache.james.queue.api.MailQueueName;
 import org.apache.james.queue.api.Mails;
 import org.apache.james.queue.api.ManageableMailQueue;
@@ -49,7 +50,9 @@ import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.service.ClearMailQueueTask;
+import org.apache.james.webadmin.service.ClearMailQueueTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.service.DeleteMailsFromMailQueueTask;
+import org.apache.james.webadmin.service.DeleteMailsFromMailQueueTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
@@ -91,7 +94,9 @@ class MailQueueRoutesTest {
 
         return WebAdminUtils.createWebAdminServer(
                 new MailQueueRoutes(mailQueueFactory, jsonTransformer, taskManager),
-                new TasksRoutes(taskManager, jsonTransformer))
+                new TasksRoutes(taskManager, jsonTransformer,
+                    DTOConverter.of(DeleteMailsFromMailQueueTaskAdditionalInformationDTO.MODULE,
+                        ClearMailQueueTaskAdditionalInformationDTO.SERIALIZATION_MODULE)))
             .start();
     }
 
@@ -687,7 +692,7 @@ class MailQueueRoutesTest {
                     .body("status", is("completed"))
                     .body("taskId", is(notNullValue()))
                     .body("type", is(DeleteMailsFromMailQueueTask.TYPE.asString()))
-                    .body("additionalInformation.mailQueueName", is(FIRST_QUEUE.asString()))
+                    .body("additionalInformation.queue", is(FIRST_QUEUE.asString()))
                     .body("additionalInformation.initialCount", is(2))
                     .body("additionalInformation.remainingCount", is(1))
                     .body("additionalInformation.sender", is(SENDER_1_JAMES_ORG))
@@ -722,7 +727,7 @@ class MailQueueRoutesTest {
                     .body("status", is("completed"))
                     .body("taskId", is(notNullValue()))
                     .body("type", is(DeleteMailsFromMailQueueTask.TYPE.asString()))
-                    .body("additionalInformation.mailQueueName", is(FIRST_QUEUE.asString()))
+                    .body("additionalInformation.queue", is(FIRST_QUEUE.asString()))
                     .body("additionalInformation.initialCount", is(2))
                     .body("additionalInformation.remainingCount", is(1))
                     .body("additionalInformation.name", is(FAKE_MAIL_NAME_1))
@@ -764,7 +769,7 @@ class MailQueueRoutesTest {
                     .body("status", is("completed"))
                     .body("taskId", is(notNullValue()))
                     .body("type", is(DeleteMailsFromMailQueueTask.TYPE.asString()))
-                    .body("additionalInformation.mailQueueName", is(FIRST_QUEUE.asString()))
+                    .body("additionalInformation.queue", is(FIRST_QUEUE.asString()))
                     .body("additionalInformation.initialCount", is(3))
                     .body("additionalInformation.remainingCount", is(1))
                     .body("additionalInformation.recipient", is(RECIPIENT_JAMES_ORG))
