@@ -16,43 +16,41 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-
 package org.apache.james.modules.server;
 
-import java.util.Set;
-
-import org.apache.james.json.DTOConverter;
 import org.apache.james.server.task.json.dto.AdditionalInformationDTO;
 import org.apache.james.server.task.json.dto.AdditionalInformationDTOModule;
 import org.apache.james.server.task.json.dto.TaskDTO;
 import org.apache.james.server.task.json.dto.TaskDTOModule;
-import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
-import org.apache.james.task.TaskManager;
+import org.apache.james.webadmin.data.jmap.MessageFastViewProjectionCorrector;
+import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewProjectionItemsTask;
+import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewTaskAdditionalInformationDTO;
+import org.apache.james.webadmin.data.jmap.RecomputeUserFastViewProjectionItemsTask;
+import org.apache.james.webadmin.data.jmap.RecomputeUserFastViewTaskAdditionalInformationDTO;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Scopes;
-import com.google.inject.Singleton;
+import com.google.inject.multibindings.ProvidesIntoSet;
 
-public class TaskManagerModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        install(new HostnameModule());
-        bind(MemoryTaskManager.class).in(Scopes.SINGLETON);
-        bind(TaskManager.class).to(MemoryTaskManager.class);
+public class JmapTaskSerializationModule extends AbstractModule {
+    @ProvidesIntoSet
+    public TaskDTOModule<? extends Task, ? extends TaskDTO> recomputeAllJmapPreviewsTask(MessageFastViewProjectionCorrector corrector) {
+        return RecomputeAllFastViewProjectionItemsTask.module(corrector);
     }
 
-    @Provides
-    @Singleton
-    public DTOConverter<TaskExecutionDetails.AdditionalInformation, AdditionalInformationDTO> additionalInformationDTOConverter(Set<AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends AdditionalInformationDTO>> modules) {
-        return new DTOConverter<>(modules);
+    @ProvidesIntoSet
+    public TaskDTOModule<? extends Task, ? extends TaskDTO> recomputeUserJmapPreviewsTask(MessageFastViewProjectionCorrector corrector) {
+        return RecomputeUserFastViewProjectionItemsTask.module(corrector);
     }
 
-    @Provides
-    @Singleton
-    public DTOConverter<Task, TaskDTO> taskDTOConverter(Set<TaskDTOModule<? extends Task, ? extends TaskDTO>> taskDTOModules) {
-        return new DTOConverter<>(taskDTOModules);
+    @ProvidesIntoSet
+    public AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends  AdditionalInformationDTO> recomputeAllJmapPreviewsAdditionalInformation() {
+        return RecomputeAllFastViewTaskAdditionalInformationDTO.SERIALIZATION_MODULE;
+    }
+
+    @ProvidesIntoSet
+    public AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends  AdditionalInformationDTO> recomputeUserJmapPreviewsAdditionalInformation() {
+        return RecomputeUserFastViewTaskAdditionalInformationDTO.SERIALIZATION_MODULE;
     }
 }
