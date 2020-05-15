@@ -117,5 +117,5 @@ The following conditional statements in guice modules needs to be removed :
  - Follow up work needs to be plan concerning `BlobExportMechanismModule` and `TikaMailboxModule::provideTextExtractor`.
  
 We furthermore need to enable a module choice for LDAP on top of other existing products. We should remove LDAP variations
-for LDAP products. Corresponding docker image will be based on their non LDAP version, overriding the `usersrepository.xml`
+for LDAP products. Corresponding docker images will be based on their non LDAP version, overriding the `usersrepository.xml`
 configuration file, be marked as deprecated and eventually removed.
