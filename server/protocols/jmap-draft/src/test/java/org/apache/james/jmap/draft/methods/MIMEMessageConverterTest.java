@@ -997,7 +997,7 @@ class MIMEMessageConverterTest {
         }
 
         @Test
-        void attachmentNameShouldBePreservedWhenNotSpecified() throws Exception {
+        void attachmentNameShouldBePreservedWhenNameNotSpecified() throws Exception {
             MIMEMessageConverter sut = new MIMEMessageConverter(attachmentContentLoader);
 
             String text = "123456";
