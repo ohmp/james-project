@@ -30,7 +30,6 @@ import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
@@ -55,12 +54,10 @@ public class RecomputeCurrentQuotasTask implements Task {
             return instant;
         }
 
-        @JsonProperty("processedQuotaRoots")
         long getProcessedQuotaRoots() {
             return processedQuotaRoots;
         }
 
-        @JsonProperty("failedQuotaRoots")
         ImmutableList<String> getFailedQuotaRoots() {
             return failedQuotaRoots;
         }

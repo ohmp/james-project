@@ -30,7 +30,6 @@ import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
@@ -66,37 +65,30 @@ public class SolveMessageInconsistenciesTask implements Task {
             return instant;
         }
 
-        @JsonProperty("processedImapUidEntries")
         public long getProcessedImapUidEntries() {
             return processedImapUidEntries;
         }
 
-        @JsonProperty("processedMessageIdEntries")
         public long getProcessedMessageIdEntries() {
             return processedMessageIdEntries;
         }
 
-        @JsonProperty("addedMessageIdEntries")
         public long getAddedMessageIdEntries() {
             return addedMessageIdEntries;
         }
 
-        @JsonProperty("updatedMessageIdEntries")
         public long getUpdatedMessageIdEntries() {
             return updatedMessageIdEntries;
         }
 
-        @JsonProperty("removedMessageIdEntries")
         public long getRemovedMessageIdEntries() {
             return removedMessageIdEntries;
         }
 
-        @JsonProperty("fixedInconsistencies")
         public ImmutableList<MessageInconsistenciesEntry> getFixedInconsistencies() {
             return fixedInconsistencies;
         }
 
-        @JsonProperty("errors")
         public ImmutableList<MessageInconsistenciesEntry> getErrors() {
             return errors;
         }
