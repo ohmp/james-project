@@ -56,8 +56,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 public class MessageFastViewProjectionCorrector {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageFastViewProjectionCorrector.class);
+    
+    private static final Duration DELAY = Duration.ZERO;
+    private static final Duration PERIOD = Duration.ofSeconds(1);
 
     public static class RunningOptions {
         public static RunningOptions withMessageRatePerSecond(int messageRatePerSecond) {
@@ -222,7 +224,7 @@ public class MessageFastViewProjectionCorrector {
 
     private Flux<ProjectionEntry> throttleWithRate(Flux<ProjectionEntry> entries, RunningOptions runningOptions) {
         return entries.windowTimeout(runningOptions.getMessageRatePerSecond(), Duration.ofSeconds(1))
-            .zipWith(Flux.interval(Duration.ofSeconds(1)))
+            .zipWith(Flux.interval(DELAY, PERIOD))
             .flatMap(Tuple2::getT1);
     }
 
