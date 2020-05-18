@@ -57,7 +57,7 @@ class SerialTaskManagerWorkerTest {
     void beforeEach() {
         listener = mock(TaskManagerWorker.Listener.class);
         when(listener.started(any())).thenReturn(Mono.empty());
-        when(listener.cancelled(any(), any())).thenReturn(Mono.empty());
+        when(listener.cancelled(any(), any())).thenReturn(Mono.fromRunnable(() -> new Exception("cancel").printStackTrace()));
         when(listener.completed(any(), any(), any())).thenReturn(Mono.empty());
         when(listener.updated(any(), any())).thenReturn(Mono.empty());
         when(listener.failed(any(), any())).thenReturn(Mono.empty());
@@ -224,6 +224,10 @@ class SerialTaskManagerWorkerTest {
         worker.cancelTask(id);
 
         resultMono.block(Duration.ofSeconds(10));
+
+        // Due to the use of signals, cancellation cannot be instantaneous
+        // Let a grace period for the cancellation to complete to increase test stability
+        Thread.sleep(50);
 
         verify(listener, atLeastOnce()).cancelled(id, Optional.empty());
         verifyNoMoreInteractions(listener);
