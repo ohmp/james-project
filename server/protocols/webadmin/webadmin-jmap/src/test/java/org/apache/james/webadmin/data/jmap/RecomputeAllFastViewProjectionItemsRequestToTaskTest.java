@@ -200,7 +200,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
             .body("message", is("Invalid arguments supplied in the user request"))
-            .body("details", is("'messageParallelism' must be strictly positive"));
+            .body("details", is("'messagesPerSecond' must be strictly positive"));
     }
 
     @Test
@@ -214,7 +214,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
             .body("message", is("Invalid arguments supplied in the user request"))
-            .body("details", is("'messageParallelism' must be strictly positive"));
+            .body("details", is("'messagesPerSecond' must be strictly positive"));
     }
 
     @Test
