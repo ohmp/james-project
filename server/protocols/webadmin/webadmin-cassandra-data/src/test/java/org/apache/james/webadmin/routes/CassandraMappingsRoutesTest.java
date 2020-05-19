@@ -35,6 +35,7 @@ import org.apache.james.rrt.cassandra.CassandraMappingsSourcesDAO;
 import org.apache.james.rrt.cassandra.CassandraRRTModule;
 import org.apache.james.rrt.cassandra.CassandraRecipientRewriteTableDAO;
 import org.apache.james.rrt.cassandra.migration.MappingsSourcesMigration;
+import org.apache.james.rrt.cassandra.migration.MappingsSourcesMigrationTaskAdditionalInformationDTO;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.task.Hostname;
@@ -81,7 +82,8 @@ class CassandraMappingsRoutesTest {
         taskManager = new MemoryTaskManager(new Hostname("foo"));
         webAdminServer = WebAdminUtils.createWebAdminServer(
                 new CassandraMappingsRoutes(cassandraMappingsService, taskManager, jsonTransformer),
-                new TasksRoutes(taskManager, jsonTransformer, DTOConverter.of()))
+                new TasksRoutes(taskManager, jsonTransformer,
+                    DTOConverter.of(MappingsSourcesMigrationTaskAdditionalInformationDTO.serializationModule(CassandraMappingsSolveInconsistenciesTask.TYPE))))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
