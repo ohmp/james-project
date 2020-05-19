@@ -35,64 +35,54 @@ public interface Configuration {
         return new Basic.Builder();
     }
 
-    class Builder<T extends Builder> {
-        protected Optional<String> rootDirectory;
-        protected Optional<String> configurationPath;
-
-        protected Builder() {
-            rootDirectory = Optional.empty();
-            configurationPath = Optional.empty();
-        }
-
-        public T workingDirectory(String path) {
-            rootDirectory = Optional.of(path);
-            return (T) this;
-        }
-
-        public T workingDirectory(File file) {
-            rootDirectory = Optional.of(file.getAbsolutePath());
-            return (T) this;
-        }
-
-        public T useWorkingDirectoryEnvProperty() {
-            rootDirectory = Optional
-                .ofNullable(System.getProperty(WORKING_DIRECTORY));
-            if (!rootDirectory.isPresent()) {
-                throw new MissingArgumentException("Server needs a working.directory env entry");
-            }
-            return (T) this;
-        }
-
-        public T configurationPath(String path) {
-            configurationPath = Optional.of(path);
-            return (T) this;
-        }
-
-        public T configurationFromClasspath() {
-            configurationPath = Optional.of(FileSystem.CLASSPATH_PROTOCOL);
-            return (T) this;
-        }
-
-        protected JamesServerResourceLoader directories() {
-            return new JamesServerResourceLoader(rootDirectory
-                .orElseThrow(() -> new MissingArgumentException("Server needs a working.directory env entry")));
-        }
-
-        protected String configurationPath() {
-            return configurationPath.orElse(FileSystem.FILE_PROTOCOL_AND_CONF);
-        }
-    }
-
     class Basic implements Configuration {
-        public static class Builder extends Configuration.Builder<Basic.Builder> {
-            public Builder() {
-                super();
+        public static class Builder {
+            private Optional<String> rootDirectory;
+            private Optional<String> configurationPath;
+
+            private Builder() {
+                rootDirectory = Optional.empty();
+                configurationPath = Optional.empty();
+            }
+
+            public Builder workingDirectory(String path) {
+                rootDirectory = Optional.of(path);
+                return this;
+            }
+
+            public Builder workingDirectory(File file) {
+                rootDirectory = Optional.of(file.getAbsolutePath());
+                return this;
+            }
+
+            public Builder useWorkingDirectoryEnvProperty() {
+                rootDirectory = Optional
+                    .ofNullable(System.getProperty(WORKING_DIRECTORY));
+                if (!rootDirectory.isPresent()) {
+                    throw new MissingArgumentException("Server needs a working.directory env entry");
+                }
+                return this;
+            }
+
+            public Builder configurationPath(String path) {
+                configurationPath = Optional.of(path);
+                return this;
+            }
+
+            public Builder configurationFromClasspath() {
+                configurationPath = Optional.of(FileSystem.CLASSPATH_PROTOCOL);
+                return this;
             }
 
             public Configuration.Basic build() {
-                return new Configuration.Basic(
-                    configurationPath(),
-                    directories());
+
+                String configurationPath = this.configurationPath.orElse(FileSystem.FILE_PROTOCOL_AND_CONF);
+                JamesServerResourceLoader directories = new JamesServerResourceLoader(rootDirectory
+                    .orElseThrow(() -> new MissingArgumentException("Server needs a working.directory env entry")));
+
+                return new Basic(
+                    configurationPath,
+                    directories);
             }
         }
 
