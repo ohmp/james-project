@@ -19,11 +19,14 @@
 
 package org.apache.james;
 
+import java.io.File;
 import java.util.Optional;
 
+import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.filesystem.api.JamesDirectoriesProvider;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.apache.james.server.core.JamesServerResourceLoader;
+import org.apache.james.server.core.MissingArgumentException;
 import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.server.core.filesystem.FileSystemImpl;
 import org.apache.james.utils.PropertiesProvider;
@@ -31,12 +34,43 @@ import org.apache.james.utils.PropertiesProvider;
 import com.github.fge.lambdas.Throwing;
 
 public class CassandraRabbitMQJamesConfiguration implements Configuration {
-    public static class Builder extends Configuration.Builder<Builder> {
+    public static class Builder {
         private Optional<BlobStoreConfiguration> blobStoreConfiguration;
+        private Optional<String> rootDirectory;
+        private Optional<String> configurationPath;
 
-        public Builder() {
-            super();
-            this.blobStoreConfiguration = Optional.empty();
+        private Builder() {
+            rootDirectory = Optional.empty();
+            configurationPath = Optional.empty();
+        }
+
+        public Builder workingDirectory(String path) {
+            rootDirectory = Optional.of(path);
+            return this;
+        }
+
+        public Builder workingDirectory(File file) {
+            rootDirectory = Optional.of(file.getAbsolutePath());
+            return this;
+        }
+
+        public Builder useWorkingDirectoryEnvProperty() {
+            rootDirectory = Optional
+                .ofNullable(System.getProperty(WORKING_DIRECTORY));
+            if (!rootDirectory.isPresent()) {
+                throw new MissingArgumentException("Server needs a working.directory env entry");
+            }
+            return this;
+        }
+
+        public Builder configurationPath(String path) {
+            configurationPath = Optional.of(path);
+            return this;
+        }
+
+        public Builder configurationFromClasspath() {
+            configurationPath = Optional.of(FileSystem.CLASSPATH_PROTOCOL);
+            return this;
         }
 
         public Builder blobStore(BlobStoreConfiguration blobStoreConfiguration) {
@@ -45,8 +79,9 @@ public class CassandraRabbitMQJamesConfiguration implements Configuration {
         }
 
         public CassandraRabbitMQJamesConfiguration build() {
-            String configurationPath = configurationPath();
-            JamesServerResourceLoader directories = directories();
+            String configurationPath = this.configurationPath.orElse(FileSystem.FILE_PROTOCOL_AND_CONF);
+            JamesServerResourceLoader directories = new JamesServerResourceLoader(rootDirectory
+                .orElseThrow(() -> new MissingArgumentException("Server needs a working.directory env entry")));
 
             return new CassandraRabbitMQJamesConfiguration(
                 configurationPath,
