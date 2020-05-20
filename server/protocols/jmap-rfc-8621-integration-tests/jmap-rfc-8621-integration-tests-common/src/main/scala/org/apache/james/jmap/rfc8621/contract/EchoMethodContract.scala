@@ -89,7 +89,7 @@ trait EchoMethodContract {
       .addUser(BOB.asString(), BOB_PASSWORD)
 
     requestSpecification = baseRequestSpecBuilder(server)
-        .setAuth(authScheme(List(UserCredential(BOB, BOB_PASSWORD))))
+        .setAuth(authScheme(UserCredential(BOB, BOB_PASSWORD)))
       .build
   }
 
