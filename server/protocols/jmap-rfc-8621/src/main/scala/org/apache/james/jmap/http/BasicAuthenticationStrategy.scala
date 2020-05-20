@@ -76,7 +76,7 @@ object UserCredential {
       Some(UserCredential(Username.of(usernameString), passwordString))
     } catch {
       case throwable: IllegalArgumentException => {
-        logger.info("Username are not valid", throwable)
+        logger.info("Username is not valid", throwable)
         None
       }
       case unexpectedException => {
