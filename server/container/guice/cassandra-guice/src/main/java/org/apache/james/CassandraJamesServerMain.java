@@ -127,7 +127,6 @@ public class CassandraJamesServerMain implements JamesServerMain {
     public static final Module CASSANDRA_SERVER_CORE_MODULE = Modules.combine(
         new ActiveMQQueueModule(),
         new CassandraBlobStoreDependenciesModule(),
-        new CassandraConsistencyTaskSerializationModule(),
         new CassandraDomainListModule(),
         new CassandraDLPConfigurationStoreModule(),
         new CassandraEventStoreModule(),
@@ -141,6 +140,7 @@ public class CassandraJamesServerMain implements JamesServerMain {
         CASSANDRA_EVENT_STORE_JSON_SERIALIZATION_DEFAULT_MODULE);
 
     public static final Module CASSANDRA_MAILBOX_MODULE = Modules.combine(
+        new CassandraConsistencyTaskSerializationModule(),
         new CassandraMailboxModule(),
         new CassandraDeletedMessageVaultModule(),
         new ElasticSearchClientModule(),
