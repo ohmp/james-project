@@ -19,40 +19,26 @@
 package org.apache.james.jmap.rfc8621.contract
 
 import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
-import io.restassured.RestAssured
-import io.restassured.builder.RequestSpecBuilder
-import io.restassured.config.EncoderConfig.encoderConfig
-import io.restassured.config.RestAssuredConfig.newConfig
-import io.restassured.http.ContentType
+import io.restassured.RestAssured._
+import io.restassured.authentication.PreemptiveBasicAuthScheme
+import io.restassured.http.{ContentType, Header, Headers}
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.apache.http.HttpStatus
 import org.apache.james.GuiceJamesServer
-import org.apache.james.jmap.JMAPUrls.JMAP
-import org.apache.james.jmap.draft.JmapGuiceProbe
 import org.apache.james.jmap.rfc8621.contract.EchoMethodContract._
+import org.apache.james.jmap.rfc8621.contract.Fixture._
 import org.apache.james.jmap.rfc8621.contract.tags.CategoryTags
+import org.apache.james.utils.DataProbeImpl
 import org.junit.jupiter.api.{BeforeEach, Tag, Test}
 
 object EchoMethodContract {
+  private val authScheme: PreemptiveBasicAuthScheme = new PreemptiveBasicAuthScheme
+    authScheme.setUserName(BOB.asString())
+    authScheme.setPassword(BOB_PASSWORD)
 
-  private val REQUEST_OBJECT: String =
-    """{
-      |  "using": [
-      |    "urn:ietf:params:jmap:core"
-      |  ],
-      |  "methodCalls": [
-      |    [
-      |      "Core/echo",
-      |      {
-      |        "arg1": "arg1data",
-      |        "arg2": "arg2data"
-      |      },
-      |      "c1"
-      |    ]
-      |  ]
-      |}""".stripMargin
   private val REQUEST_OBJECT_WITH_UNSUPPORTED_METHOD: String =
     """{
       |  "using": [
@@ -77,20 +63,6 @@ object EchoMethodContract {
       |  ]
       |}""".stripMargin
 
-  private val RESPONSE_OBJECT: String =
-    """{
-      |  "sessionState": "75128aab4b1b",
-      |  "methodResponses": [
-      |    [
-      |      "Core/echo",
-      |      {
-      |        "arg1": "arg1data",
-      |        "arg2": "arg2data"
-      |      },
-      |      "c1"
-      |    ]
-      |  ]
-      |}""".stripMargin
   private val RESPONSE_OBJECT_WITH_UNSUPPORTED_METHOD: String =
     """{
       |  "sessionState": "75128aab4b1b",
@@ -112,32 +84,30 @@ object EchoMethodContract {
       |    ]
       |  ]
       |}""".stripMargin
-
-  private val ACCEPT_RFC8621_VERSION_HEADER: String = """application/json; jmapVersion=rfc-8621"""
 }
 
 trait EchoMethodContract {
 
   @BeforeEach
   def setUp(server: GuiceJamesServer): Unit = {
-    RestAssured.requestSpecification = new RequestSpecBuilder()
-      .setContentType(ContentType.JSON)
-      .setAccept(ContentType.JSON)
-      .setConfig(newConfig.encoderConfig(encoderConfig.defaultContentCharset(StandardCharsets.UTF_8)))
-      .setPort(server.getProbe(classOf[JmapGuiceProbe])
-        .getJmapPort
-        .getValue)
-      .setBasePath(JMAP)
+    server.getProbe(classOf[DataProbeImpl])
+      .fluent()
+      .addDomain(DOMAIN.asString())
+      .addUser(BOB.asString(), BOB_PASSWORD)
+
+    requestSpecification = baseRequestSpecBuilder(server)
       .build
   }
 
   @Test
   @Tag(CategoryTags.BASIC_FEATURE)
   def echoMethodShouldRespondOKWithRFC8621VersionAndSupportedMethod(): Unit = {
-    val response: String = RestAssured
-      .`given`()
-        .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-        .body(REQUEST_OBJECT)
+    val authorizationValue: String =
+      s"Basic ${toBase64("bob@domain.tld:bobpassword")}"
+
+    val response: String = `given`()
+        .headers(getHeadersWith(new Header("Authorization", authorizationValue)))
+        .body(Fixture.ECHO_REQUEST_OBJECT)
       .when()
         .post()
       .then
@@ -147,14 +117,31 @@ trait EchoMethodContract {
         .body()
         .asString()
 
-    assertThatJson(response).isEqualTo(RESPONSE_OBJECT)
+    assertThatJson(response).isEqualTo(Fixture.ECHO_RESPONSE_OBJECT)
+  }
+
+  @Test
+  @Tag(CategoryTags.BASIC_FEATURE)
+  def echoMethodShouldRespond401WithRFC8621VersionWhenWrongAuthentication(): Unit = {
+    val authorizationValue: String =
+      s"Basic ${toBase64("alice@@domain.tld:bobpassword")}"
+
+    `given`()
+        .headers(getHeadersWith(new Header("Authorization", authorizationValue)))
+        .body(Fixture.ECHO_REQUEST_OBJECT)
+      .when()
+        .post()
+      .then
+        .statusCode(HttpStatus.SC_UNAUTHORIZED)
   }
 
   @Test
   def echoMethodShouldRespondWithRFC8621VersionAndUnsupportedMethod(): Unit = {
-    val response: String = RestAssured
-      .`given`()
-        .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+    val authorizationValue: String =
+      s"Basic ${toBase64("bob@domain.tld:bobpassword")}"
+
+    val response: String = `given`()
+        .headers(getHeadersWith(new Header("Authorization", authorizationValue)))
         .body(REQUEST_OBJECT_WITH_UNSUPPORTED_METHOD)
       .when()
         .post()
@@ -166,5 +153,16 @@ trait EchoMethodContract {
         .asString()
 
     assertThatJson(response).isEqualTo(RESPONSE_OBJECT_WITH_UNSUPPORTED_METHOD)
+  }
+
+  private def getHeadersWith(authHeader: Header): Headers = {
+    new Headers(
+      new Header(ACCEPT.toString, Fixture.ACCEPT_RFC8621_VERSION_HEADER),
+      authHeader
+    )
+  }
+
+  private def toBase64(stringValue: String): String = {
+    Base64.getEncoder.encodeToString(stringValue.getBytes(StandardCharsets.UTF_8))
   }
 }
