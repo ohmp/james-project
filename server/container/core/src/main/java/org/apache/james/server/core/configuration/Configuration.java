@@ -89,8 +89,7 @@ public interface Configuration {
             }
 
             public Builder useWorkingDirectoryEnvProperty() {
-                rootDirectory = Optional
-                    .ofNullable(System.getProperty(WORKING_DIRECTORY));
+                rootDirectory = Optional.ofNullable(System.getProperty(WORKING_DIRECTORY));
                 if (!rootDirectory.isPresent()) {
                     throw new MissingArgumentException("Server needs a working.directory env entry");
                 }
