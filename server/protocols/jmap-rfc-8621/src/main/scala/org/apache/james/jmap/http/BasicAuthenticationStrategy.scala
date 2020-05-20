@@ -76,35 +76,35 @@ object UserCredential {
       Some(UserCredential(Username.of(usernameString), passwordString))
     } catch {
       case throwable: IllegalArgumentException => {
-        logger.info(s"Username are not valid as: ${throwable.getMessage}", throwable)
+        logger.info("Username are not valid", throwable)
         None
       }
-      case unexpectedException =>
-        logger.error(s"UnexpectedException as: ${unexpectedException.getMessage}", unexpectedException)
+      case unexpectedException => {
+        logger.error("Unexpected Exception", unexpectedException)
         None
+      }
     }
   }
-}
 
-case class UserCredential(username: Username, password: String)
+  case class UserCredential(username: Username, password: String)
 
-class BasicAuthenticationStrategy @Inject()(val usersRepository: UsersRepository,
-                                            val mailboxManager: MailboxManager) extends AuthenticationStrategy {
+  class BasicAuthenticationStrategy @Inject()(val usersRepository: UsersRepository,
+                                              val mailboxManager: MailboxManager) extends AuthenticationStrategy {
 
-  override def createMailboxSession(httpRequest: HttpServerRequest): Mono[MailboxSession] = {
-    SFlux.fromStream(() => authHeaders(httpRequest).toScala[Stream])
-      .map(parseUserCredentials)
-      .handle(publishNext)
-      .filter(isValid)
-      .map(userCredential => userCredential.username)
-      .map(mailboxManager.createSystemSession)
-      .singleOrEmpty()
-      .asJava()
+    override def createMailboxSession(httpRequest: HttpServerRequest): Mono[MailboxSession] = {
+      SFlux.fromStream(() => authHeaders(httpRequest).toScala[Stream])
+        .map(parseUserCredentials)
+        .handle(publishNext)
+        .filter(isValid)
+        .map(userCredential => userCredential.username)
+        .map(mailboxManager.createSystemSession)
+        .singleOrEmpty()
+        .asJava()
+    }
+
+    private def publishNext[T]: (Option[T], reactor.core.publisher.SynchronousSink[T]) => scala.Unit =
+      (maybeCredentials, sink) => maybeCredentials.foreach(credentials => sink.next(credentials))
+
+    private def isValid(userCredential: UserCredential): Boolean =
+      usersRepository.test(userCredential.username, userCredential.password)
   }
-
-  private def publishNext[T]: (Option[T], reactor.core.publisher.SynchronousSink[T]) => scala.Unit =
-    (maybeCredentials, sink) => maybeCredentials.foreach(credentials => sink.next(credentials))
-
-  private def isValid(userCredential: UserCredential): Boolean =
-    usersRepository.test(userCredential.username, userCredential.password)
-}
