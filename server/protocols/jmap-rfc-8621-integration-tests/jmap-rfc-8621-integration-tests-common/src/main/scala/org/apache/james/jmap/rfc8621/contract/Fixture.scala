@@ -21,6 +21,7 @@ package org.apache.james.jmap.rfc8621.contract
 
 import java.nio.charset.StandardCharsets
 
+import io.restassured.authentication.PreemptiveBasicAuthScheme
 import io.restassured.builder.RequestSpecBuilder
 import io.restassured.config.EncoderConfig.encoderConfig
 import io.restassured.config.RestAssuredConfig.newConfig
@@ -29,6 +30,7 @@ import org.apache.james.GuiceJamesServer
 import org.apache.james.core.{Domain, Username}
 import org.apache.james.jmap.JMAPUrls.JMAP
 import org.apache.james.jmap.draft.JmapGuiceProbe
+import org.apache.james.jmap.http.UserCredential
 
 object Fixture {
   def baseRequestSpecBuilder(server: GuiceJamesServer) = new RequestSpecBuilder()
@@ -40,12 +42,23 @@ object Fixture {
         .getValue)
       .setBasePath(JMAP)
 
+  def authScheme(userCredentials: List[UserCredential]): PreemptiveBasicAuthScheme = {
+    val authScheme: PreemptiveBasicAuthScheme = new PreemptiveBasicAuthScheme
+    userCredentials.foreach(userCredential => {
+      authScheme.setUserName(userCredential.username.asString())
+      authScheme.setPassword(userCredential.password)
+    })
+
+    authScheme
+  }
+
   val DOMAIN: Domain = Domain.of("domain.tld")
   val DOMAIN_WITH_SPACE: Domain = Domain.of("dom ain.tld")
   val _2_DOT_DOMAIN: Domain = Domain.of("do.main.tld")
   val BOB: Username = Username.fromLocalPartWithDomain("bob", DOMAIN)
   val ALICE: Username = Username.fromLocalPartWithDomain("alice", _2_DOT_DOMAIN)
   val BOB_PASSWORD: String = "bobpassword"
+  val ALICE_PASSWORD: String = "alicepassword"
 
   val ECHO_REQUEST_OBJECT: String =
     """{

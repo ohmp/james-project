@@ -23,8 +23,6 @@ import java.util.Base64
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
-import eu.timepit.refined.boolean.Or
-import eu.timepit.refined.collection.NonEmpty
 import eu.timepit.refined.refineV
 import eu.timepit.refined.string.MatchesRegex
 import javax.inject.Inject
@@ -39,11 +37,9 @@ import reactor.netty.http.server.HttpServerRequest
 
 import scala.compat.java8.StreamConverters._
 
-
 object UserCredential {
   type BasicAuthenticationHeaderValue = String Refined MatchesRegex["Basic [\\d\\w=]++"]
   type CredentialsAsString = String Refined MatchesRegex[".*:.*"]
-
 
   private val logger = LoggerFactory.getLogger(classOf[UserCredential])
   private val BASIC_AUTHENTICATION_PREFIX: String = "Basic "
@@ -80,10 +76,12 @@ object UserCredential {
       Some(UserCredential(Username.of(usernameString), passwordString))
     } catch {
       case throwable: IllegalArgumentException => {
-        logger.info(throwable.getMessage)
+        logger.info(s"Username are not valid as: ${throwable.getMessage}", throwable)
         None
       }
-      case _ => None
+      case unexpectedException =>
+        logger.error(s"UnexpectedException as: ${unexpectedException.getMessage}", unexpectedException)
+        None
     }
   }
 }
@@ -95,14 +93,18 @@ class BasicAuthenticationStrategy @Inject()(val usersRepository: UsersRepository
 
   override def createMailboxSession(httpRequest: HttpServerRequest): Mono[MailboxSession] = {
     SFlux.fromStream(() => authHeaders(httpRequest).toScala[Stream])
-      .handle[UserCredential]((token, sink) => parseUserCredentials(token).foreach(credentials => sink.next(credentials)))
-      .filter(userCredential => isValid(userCredential))
-      .map[MailboxSession](userCredential => mailboxManager.createSystemSession(userCredential.username))
+      .map(parseUserCredentials)
+      .handle(publishNext)
+      .filter(isValid)
+      .map(userCredential => userCredential.username)
+      .map(mailboxManager.createSystemSession)
       .singleOrEmpty()
       .asJava()
   }
 
-  private def isValid(userCredential: UserCredential): Boolean = {
+  private def publishNext[T]: (Option[T], reactor.core.publisher.SynchronousSink[T]) => scala.Unit =
+    (maybeCredentials, sink) => maybeCredentials.foreach(credentials => sink.next(credentials))
+
+  private def isValid(userCredential: UserCredential): Boolean =
     usersRepository.test(userCredential.username, userCredential.password)
-  }
 }

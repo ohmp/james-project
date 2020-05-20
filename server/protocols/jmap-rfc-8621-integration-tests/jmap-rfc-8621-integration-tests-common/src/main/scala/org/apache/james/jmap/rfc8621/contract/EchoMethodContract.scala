@@ -18,16 +18,13 @@
  ****************************************************************/
 package org.apache.james.jmap.rfc8621.contract
 
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
 import io.restassured.RestAssured._
-import io.restassured.authentication.PreemptiveBasicAuthScheme
-import io.restassured.http.{ContentType, Header, Headers}
+import io.restassured.http.ContentType.JSON
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
-import org.apache.http.HttpStatus
+import org.apache.http.HttpStatus.SC_OK
 import org.apache.james.GuiceJamesServer
+import org.apache.james.jmap.http.UserCredential
 import org.apache.james.jmap.rfc8621.contract.EchoMethodContract._
 import org.apache.james.jmap.rfc8621.contract.Fixture._
 import org.apache.james.jmap.rfc8621.contract.tags.CategoryTags
@@ -35,10 +32,6 @@ import org.apache.james.utils.DataProbeImpl
 import org.junit.jupiter.api.{BeforeEach, Tag, Test}
 
 object EchoMethodContract {
-  private val authScheme: PreemptiveBasicAuthScheme = new PreemptiveBasicAuthScheme
-    authScheme.setUserName(BOB.asString())
-    authScheme.setPassword(BOB_PASSWORD)
-
   private val REQUEST_OBJECT_WITH_UNSUPPORTED_METHOD: String =
     """{
       |  "using": [
@@ -96,7 +89,7 @@ trait EchoMethodContract {
       .addUser(BOB.asString(), BOB_PASSWORD)
 
     requestSpecification = baseRequestSpecBuilder(server)
-        .setAuth(authScheme)
+        .setAuth(authScheme(List(UserCredential(BOB, BOB_PASSWORD))))
       .build
   }
 
@@ -105,30 +98,30 @@ trait EchoMethodContract {
   def echoMethodShouldRespondOKWithRFC8621VersionAndSupportedMethod(): Unit = {
 
     val response: String = `given`()
-        .header(ACCEPT.toString, Fixture.ACCEPT_RFC8621_VERSION_HEADER)
-        .body(Fixture.ECHO_REQUEST_OBJECT)
+        .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+        .body(ECHO_REQUEST_OBJECT)
       .when()
         .post()
       .then
-        .statusCode(HttpStatus.SC_OK)
-        .contentType(ContentType.JSON)
+        .statusCode(SC_OK)
+        .contentType(JSON)
       .extract()
         .body()
         .asString()
 
-    assertThatJson(response).isEqualTo(Fixture.ECHO_RESPONSE_OBJECT)
+    assertThatJson(response).isEqualTo(ECHO_RESPONSE_OBJECT)
   }
 
   @Test
   def echoMethodShouldRespondWithRFC8621VersionAndUnsupportedMethod(): Unit = {
     val response: String = `given`()
-        .header(ACCEPT.toString, Fixture.ACCEPT_RFC8621_VERSION_HEADER)
+        .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
         .body(REQUEST_OBJECT_WITH_UNSUPPORTED_METHOD)
       .when()
         .post()
       .then
-        .statusCode(HttpStatus.SC_OK)
-        .contentType(ContentType.JSON)
+        .statusCode(SC_OK)
+        .contentType(JSON)
       .extract()
         .body()
         .asString()
