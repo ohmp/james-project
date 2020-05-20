@@ -30,13 +30,13 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 class BasicConfigurationTest {
     @Test
-    void ConfigurationPathShouldMatchBeanContract() {
+    void configurationPathShouldMatchBeanContract() {
         EqualsVerifier.forClass(Configuration.ConfigurationPath.class)
             .verify();
     }
 
     @Test
-    void buildShouldThrowWhenWorkingDirectoryMissing() {
+    void buildShouldThrowWhenWorkingDirectoryIsMissing() {
         assertThatThrownBy(() -> Configuration.builder().build())
             .isInstanceOf(MissingArgumentException.class)
             .hasMessage("Server needs a working.directory env entry");
