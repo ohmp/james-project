@@ -19,19 +19,30 @@
 
 package org.apache.james.modules.server;
 
-import org.apache.james.task.MemoryTaskManager;
-import org.apache.james.task.TaskManager;
+import java.util.Set;
+
+import org.apache.james.json.DTOConverter;
+import org.apache.james.server.task.json.dto.AdditionalInformationDTO;
+import org.apache.james.server.task.json.dto.AdditionalInformationDTOModule;
+import org.apache.james.server.task.json.dto.TaskDTO;
+import org.apache.james.server.task.json.dto.TaskDTOModule;
+import org.apache.james.task.Task;
+import org.apache.james.task.TaskExecutionDetails;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
-public class TaskManagerModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        install(new HostnameModule());
-        install(new TaskSerializationModule());
+public class TaskSerializationModule extends AbstractModule {
+    @Provides
+    @Singleton
+    public DTOConverter<TaskExecutionDetails.AdditionalInformation, AdditionalInformationDTO> additionalInformationDTOConverter(Set<AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends AdditionalInformationDTO>> modules) {
+        return new DTOConverter<>(modules);
+    }
 
-        bind(MemoryTaskManager.class).in(Scopes.SINGLETON);
-        bind(TaskManager.class).to(MemoryTaskManager.class);
+    @Provides
+    @Singleton
+    public DTOConverter<Task, TaskDTO> taskDTOConverter(Set<TaskDTOModule<? extends Task, ? extends TaskDTO>> taskDTOModules) {
+        return new DTOConverter<>(taskDTOModules);
     }
 }
