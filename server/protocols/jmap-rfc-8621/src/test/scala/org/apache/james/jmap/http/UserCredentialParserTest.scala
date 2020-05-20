@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import eu.timepit.refined.auto._
+import org.apache.james.core.Username
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -32,7 +33,15 @@ class UserCredentialParserTest {
     val token: String = "Basic " + toBase64("user1:password")
 
     assertThat(UserCredential.parseUserCredentials(token))
-      .isEqualTo(Some(UserCredential("user1", "password")))
+      .isEqualTo(Some(UserCredential(Username.of("user1"), "password")))
+  }
+
+  @Test
+  def shouldAcceptPartSeparatorAsPartOfPassword(): Unit = {
+    val token: String = "Basic " + toBase64("user1:pass:word")
+
+    assertThat(UserCredential.parseUserCredentials(token))
+      .isEqualTo(Some(UserCredential(Username.of("user1"), "pass:word")))
   }
 
   @Test
@@ -40,7 +49,7 @@ class UserCredentialParserTest {
     val token: String = "Basic " + toBase64("fd2*#jk:password")
 
     assertThat(UserCredential.parseUserCredentials(token))
-      .isEqualTo(Some(UserCredential("fd2*#jk", "password")))
+      .isEqualTo(Some(UserCredential(Username.of("fd2*#jk"), "password")))
   }
 
   @Test
@@ -48,7 +57,7 @@ class UserCredentialParserTest {
     val token: String = "Basic " + toBase64("fd2*#jk:password@fd23*&^$%")
 
     assertThat(UserCredential.parseUserCredentials(token))
-      .isEqualTo(Some(UserCredential("fd2*#jk", "password@fd23*&^$%")))
+      .isEqualTo(Some(UserCredential(Username.of("fd2*#jk"), "password@fd23*&^$%")))
   }
 
   @Test
@@ -56,7 +65,15 @@ class UserCredentialParserTest {
     val token: String = "Basic " + toBase64("user1@domain.tld:password")
 
     assertThat(UserCredential.parseUserCredentials(token))
-      .isEqualTo(Some(UserCredential("user1@domain.tld", "password")))
+      .isEqualTo(Some(UserCredential(Username.of("user1@domain.tld"), "password")))
+  }
+
+  @Test
+  def shouldReturnCredentialsWhenUsernameDomainNoPasswordToken(): Unit = {
+    val token: String = "Basic " + toBase64("user1@domain.tld:")
+
+    assertThat(UserCredential.parseUserCredentials(token))
+      .isEqualTo(Some(UserCredential(Username.of("user1@domain.tld"), "")))
   }
 
   @Test
@@ -110,7 +127,7 @@ class UserCredentialParserTest {
     val token: String = "Basic " + toBase64("user1:")
 
     assertThat(UserCredential.parseUserCredentials(token))
-      .isEqualTo(None)
+      .isEqualTo(Some(UserCredential(Username.of("user1"), "")))
   }
 
   @Test

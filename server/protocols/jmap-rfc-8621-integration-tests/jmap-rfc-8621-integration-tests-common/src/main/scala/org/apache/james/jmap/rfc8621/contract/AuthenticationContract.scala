@@ -28,9 +28,10 @@ import io.restassured.http.{Header, Headers}
 import org.apache.http.HttpStatus
 import org.apache.james.GuiceJamesServer
 import org.apache.james.jmap.rfc8621.contract.AuthenticationContract._
-import org.apache.james.jmap.rfc8621.contract.Fixture.{BOB, BOB_PASSWORD, DOMAIN, baseRequestSpecBuilder}
+import org.apache.james.jmap.rfc8621.contract.Fixture.{ALICE, BOB, BOB_PASSWORD, DOMAIN, DOMAIN_WITH_SPACE, _2_DOT_DOMAIN, baseRequestSpecBuilder}
+import org.apache.james.jmap.rfc8621.contract.tags.CategoryTags
 import org.apache.james.utils.DataProbeImpl
-import org.junit.jupiter.api.{BeforeEach, Test}
+import org.junit.jupiter.api.{BeforeEach, Tag, Test}
 
 object AuthenticationContract {
   private val AUTHORIZATION_HEADER: String = "Authorization"
@@ -43,6 +44,8 @@ trait AuthenticationContract {
       .fluent()
       .addDomain(DOMAIN.asString())
       .addUser(BOB.asString(), BOB_PASSWORD)
+      .addDomain(_2_DOT_DOMAIN.asString())
+      .addUser(ALICE.asString(), BOB_PASSWORD)
 
     requestSpecification = baseRequestSpecBuilder(server).build
   }
@@ -59,6 +62,7 @@ trait AuthenticationContract {
   }
 
   @Test
+  @Tag(CategoryTags.BASIC_FEATURE)
   def postShouldRespond200WhenHadCredentials(): Unit = {
     val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64("bob@domain.tld:bobpassword")}")
     `given`()
@@ -72,7 +76,7 @@ trait AuthenticationContract {
 
   @Test
   def postShouldRespond401WhenCredentialsWithWrongDomain(): Unit = {
-    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64("bob@@domain.tld:bobpassword")}")
+    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64(s"${BOB.getLocalPart}@@${DOMAIN}:${BOB_PASSWORD}")}")
     `given`()
       .headers(getHeadersWith(authHeader))
       .body(Fixture.ECHO_REQUEST_OBJECT)
@@ -83,20 +87,45 @@ trait AuthenticationContract {
   }
 
   @Test
-  def postShouldRespond401WhenCredentialsWith2DotDomain(): Unit = {
-    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64("bob@do.main.tld:bobpassword")}")
+  def postShouldRespondOKWhenCredentialsWith2DotDomain(): Unit = {
+    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64(s"${ALICE.asString()}:${BOB_PASSWORD}")}")
     `given`()
       .headers(getHeadersWith(authHeader))
       .body(Fixture.ECHO_REQUEST_OBJECT)
     .when()
       .post()
     .then
-      .statusCode(HttpStatus.SC_UNAUTHORIZED)
+      .statusCode(HttpStatus.SC_OK)
   }
 
   @Test
   def postShouldRespond401WhenCredentialsWithSpaceDomain(): Unit = {
-    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64("bob@do main.tld:bobpassword")}")
+    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64(s"${BOB.getLocalPart}@${DOMAIN_WITH_SPACE}:${BOB_PASSWORD}")}")
+    `given`()
+      .headers(getHeadersWith(authHeader))
+      .body(Fixture.ECHO_REQUEST_OBJECT)
+    .when()
+      .post()
+    .then
+      .statusCode(HttpStatus.SC_UNAUTHORIZED)
+  }
+
+  @Test
+  def postShouldRespond401WhenUserNotFound(): Unit = {
+    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64(s"usernotfound@${DOMAIN}:${BOB_PASSWORD}")}")
+    `given`()
+      .headers(getHeadersWith(authHeader))
+      .body(Fixture.ECHO_REQUEST_OBJECT)
+    .when()
+      .post()
+    .then
+      .statusCode(HttpStatus.SC_UNAUTHORIZED)
+  }
+
+  @Test
+  @Tag(CategoryTags.BASIC_FEATURE)
+  def postShouldRespond401WhenWrongPassword(): Unit = {
+    val authHeader: Header = new Header(AUTHORIZATION_HEADER, s"Basic ${toBase64(s"${BOB.asString()}:BOB_PASSWORD")}")
     `given`()
       .headers(getHeadersWith(authHeader))
       .body(Fixture.ECHO_REQUEST_OBJECT)

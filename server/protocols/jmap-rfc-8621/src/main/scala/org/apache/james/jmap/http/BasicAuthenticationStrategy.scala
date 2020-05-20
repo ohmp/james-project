@@ -41,14 +41,8 @@ import scala.compat.java8.StreamConverters._
 
 
 object UserCredential {
-  type StringNonNull = String Refined NonEmpty
   type BasicAuthenticationHeaderValue = String Refined MatchesRegex["Basic [\\d\\w=]++"]
-  type CredentialsAsString = String Refined Or[
-  //  Support username with domain, include special characters in username and password
-    MatchesRegex["([\\w\\d\\.!#$%&*+/=?^_`{|}~-]+)@([\\w]+)([\\.]{1}[\\w]+)+:[\\w\\d\\.!#$%&*+/=?^_`{|}~-].*"],
-  //  Support username without domain, include special characters in username and password
-    MatchesRegex["[\\d\\w\\s\\S\\W].*:[\\d\\w].*"]
-  ]
+  type CredentialsAsString = String Refined MatchesRegex[".*:.*"]
 
 
   private val logger = LoggerFactory.getLogger(classOf[UserCredential])
@@ -73,31 +67,42 @@ object UserCredential {
       case Left(errorMessage: String) =>
         logger.info(s"Supplied basic authentication credentials do not match expected format. $errorMessage")
         None
-      case Right(value) => Some(toCredential(value))
+      case Right(value) => toCredential(value)
     }
   }
 
-  private def toCredential(token: CredentialsAsString): UserCredential = {
-    val array = token.split(":")
-    UserCredential(Refined.unsafeApply(array(0)), Refined.unsafeApply(array(1)))
+  private def toCredential(token: CredentialsAsString): Option[UserCredential] = {
+    val partSeparatorIndex: Int = token.indexOf(':')
+    val usernameString: String = token.substring(0, partSeparatorIndex)
+    val passwordString: String = token.substring(partSeparatorIndex + 1)
+
+    try {
+      Some(UserCredential(Username.of(usernameString), passwordString))
+    } catch {
+      case throwable: IllegalArgumentException => {
+        logger.info(throwable.getMessage)
+        None
+      }
+      case _ => None
+    }
   }
 }
 
-case class UserCredential(username: StringNonNull, password: StringNonNull)
+case class UserCredential(username: Username, password: String)
 
 class BasicAuthenticationStrategy @Inject()(val usersRepository: UsersRepository,
                                             val mailboxManager: MailboxManager) extends AuthenticationStrategy {
 
   override def createMailboxSession(httpRequest: HttpServerRequest): Mono[MailboxSession] = {
     SFlux.fromStream(() => authHeaders(httpRequest).toScala[Stream])
-      .handle[UserCredential]((value, sink) => parseUserCredentials(value).foreach(credentials => sink.next(credentials)))
+      .handle[UserCredential]((token, sink) => parseUserCredentials(token).foreach(credentials => sink.next(credentials)))
       .filter(userCredential => isValid(userCredential))
-      .map[MailboxSession](userCredential => mailboxManager.createSystemSession(Username.of(userCredential.username)))
+      .map[MailboxSession](userCredential => mailboxManager.createSystemSession(userCredential.username))
       .singleOrEmpty()
       .asJava()
   }
 
   private def isValid(userCredential: UserCredential): Boolean = {
-    usersRepository.test(Username.of(userCredential.username), userCredential.password)
+    usersRepository.test(userCredential.username, userCredential.password)
   }
 }

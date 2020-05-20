@@ -41,7 +41,10 @@ object Fixture {
       .setBasePath(JMAP)
 
   val DOMAIN: Domain = Domain.of("domain.tld")
+  val DOMAIN_WITH_SPACE: Domain = Domain.of("dom ain.tld")
+  val _2_DOT_DOMAIN: Domain = Domain.of("do.main.tld")
   val BOB: Username = Username.fromLocalPartWithDomain("bob", DOMAIN)
+  val ALICE: Username = Username.fromLocalPartWithDomain("alice", _2_DOT_DOMAIN)
   val BOB_PASSWORD: String = "bobpassword"
 
   val ECHO_REQUEST_OBJECT: String =

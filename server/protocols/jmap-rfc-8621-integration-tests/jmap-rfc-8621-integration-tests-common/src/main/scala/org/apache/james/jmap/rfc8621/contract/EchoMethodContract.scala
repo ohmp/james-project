@@ -96,17 +96,16 @@ trait EchoMethodContract {
       .addUser(BOB.asString(), BOB_PASSWORD)
 
     requestSpecification = baseRequestSpecBuilder(server)
+        .setAuth(authScheme)
       .build
   }
 
   @Test
   @Tag(CategoryTags.BASIC_FEATURE)
   def echoMethodShouldRespondOKWithRFC8621VersionAndSupportedMethod(): Unit = {
-    val authorizationValue: String =
-      s"Basic ${toBase64("bob@domain.tld:bobpassword")}"
 
     val response: String = `given`()
-        .headers(getHeadersWith(new Header("Authorization", authorizationValue)))
+        .header(ACCEPT.toString, Fixture.ACCEPT_RFC8621_VERSION_HEADER)
         .body(Fixture.ECHO_REQUEST_OBJECT)
       .when()
         .post()
@@ -121,27 +120,9 @@ trait EchoMethodContract {
   }
 
   @Test
-  @Tag(CategoryTags.BASIC_FEATURE)
-  def echoMethodShouldRespond401WithRFC8621VersionWhenWrongAuthentication(): Unit = {
-    val authorizationValue: String =
-      s"Basic ${toBase64("alice@@domain.tld:bobpassword")}"
-
-    `given`()
-        .headers(getHeadersWith(new Header("Authorization", authorizationValue)))
-        .body(Fixture.ECHO_REQUEST_OBJECT)
-      .when()
-        .post()
-      .then
-        .statusCode(HttpStatus.SC_UNAUTHORIZED)
-  }
-
-  @Test
   def echoMethodShouldRespondWithRFC8621VersionAndUnsupportedMethod(): Unit = {
-    val authorizationValue: String =
-      s"Basic ${toBase64("bob@domain.tld:bobpassword")}"
-
     val response: String = `given`()
-        .headers(getHeadersWith(new Header("Authorization", authorizationValue)))
+        .header(ACCEPT.toString, Fixture.ACCEPT_RFC8621_VERSION_HEADER)
         .body(REQUEST_OBJECT_WITH_UNSUPPORTED_METHOD)
       .when()
         .post()
@@ -153,16 +134,5 @@ trait EchoMethodContract {
         .asString()
 
     assertThatJson(response).isEqualTo(RESPONSE_OBJECT_WITH_UNSUPPORTED_METHOD)
-  }
-
-  private def getHeadersWith(authHeader: Header): Headers = {
-    new Headers(
-      new Header(ACCEPT.toString, Fixture.ACCEPT_RFC8621_VERSION_HEADER),
-      authHeader
-    )
-  }
-
-  private def toBase64(stringValue: String): String = {
-    Base64.getEncoder.encodeToString(stringValue.getBytes(StandardCharsets.UTF_8))
   }
 }
