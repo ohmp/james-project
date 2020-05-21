@@ -51,7 +51,7 @@
 
 
             <subsection name="Cassandra BlobStore Cache">
-                <p>A cassandra cache can be enabled to reduce latency when reading small blobs frequently.
+                <p>A Cassandra cache can be enabled to reduce latency when reading small blobs frequently.
                     A dedicated keyspace with a replication factor of one is then used.
                     Cached eviction policy is TTL based.
                     Only blobs below a given threshold will be stored.
@@ -223,4 +223,3 @@
     </body>
 
 </document>
-
