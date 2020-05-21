@@ -32,19 +32,11 @@ import org.apache.james.webadmin.service.EventDeadLettersRedeliverGroupTaskDTO;
 import org.apache.james.webadmin.service.EventDeadLettersRedeliverOneTaskDTO;
 import org.apache.james.webadmin.service.EventDeadLettersRedeliverService;
 import org.apache.james.webadmin.service.EventDeadLettersRedeliveryTaskAdditionalInformationDTO;
-import org.apache.james.webadmin.service.ExportService;
-import org.apache.james.webadmin.service.MailboxesExportTask;
-import org.apache.james.webadmin.service.MailboxesExportTaskAdditionalInformationDTO;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.ProvidesIntoSet;
 
 public class WebadminMailboxTaskSerializationModule extends AbstractModule {
-    @ProvidesIntoSet
-    public TaskDTOModule<? extends Task, ? extends TaskDTO> mailboxesExportTask(ExportService exportService) {
-        return MailboxesExportTask.module(exportService);
-    }
-
     @ProvidesIntoSet
     public TaskDTOModule<? extends Task, ? extends TaskDTO> eventDeadLettersRedeliverAllTask(EventDeadLettersRedeliverService service) {
         return EventDeadLettersRedeliverAllTaskDTO.module(service);
@@ -83,10 +75,5 @@ public class WebadminMailboxTaskSerializationModule extends AbstractModule {
     @ProvidesIntoSet
     public AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends  AdditionalInformationDTO> recomputeCurrentQuotasAdditionalInformation() {
         return RecomputeCurrentQuotasTaskAdditionalInformationDTO.MODULE;
-    }
-
-    @ProvidesIntoSet
-    public AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends  AdditionalInformationDTO> mailboxesExportAdditionalInformation() {
-        return MailboxesExportTaskAdditionalInformationDTO.SERIALIZATION_MODULE;
     }
 }
