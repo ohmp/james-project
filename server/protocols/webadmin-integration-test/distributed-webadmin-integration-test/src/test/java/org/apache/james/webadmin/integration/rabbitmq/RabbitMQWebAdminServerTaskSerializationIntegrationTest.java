@@ -27,6 +27,7 @@ import static org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes.
 import static org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes.USERS;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsMapWithSize.anEmptyMap;
@@ -148,7 +149,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("type", is("full-reindexing"))
             .body("additionalInformation.successfullyReprocessedMailCount", is(0))
             .body("additionalInformation.failedReprocessedMailCount", is(0))
-            .body("additionalInformation.failures", is(anEmptyMap()));
+            .body("additionalInformation.failures", hasSize(0));
     }
 
     @Test
@@ -179,7 +180,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
                 .body("status", is("completed"))
                 .body("taskId", is(notNullValue()))
                 .body("type", is("delete-mails-from-mail-queue"))
-                .body("additionalInformation.mailQueueName", is(notNullValue()))
+                .body("additionalInformation.queue", is(notNullValue()))
                 .body("additionalInformation.remainingCount", is(0))
                 .body("additionalInformation.initialCount", is(0))
                 .body("additionalInformation.sender", is(USERNAME))
@@ -337,8 +338,8 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("type", is("user-reindexing"))
             .body("additionalInformation.successfullyReprocessedMailCount", is(0))
             .body("additionalInformation.failedReprocessedMailCount", is(0))
-            .body("additionalInformation.username", is(USERNAME))
-            .body("additionalInformation.failures", is(anEmptyMap()));
+            .body("additionalInformation.user", is(USERNAME))
+            .body("additionalInformation.failures", hasSize(0));
     }
 
     @Test
@@ -368,7 +369,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("status", is("completed"))
             .body("taskId", is(Matchers.notNullValue()))
             .body("type", is("deleted-messages-restore"))
-            .body("additionalInformation.username", is(USERNAME))
+            .body("additionalInformation.user", is(USERNAME))
             .body("additionalInformation.successfulRestoreCount", is(0))
             .body("additionalInformation.errorRestoreCount", is(0));
     }
@@ -438,7 +439,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("type", is("error-recovery-indexation"))
             .body("additionalInformation.successfullyReprocessedMailCount", is(0))
             .body("additionalInformation.failedReprocessedMailCount", is(0))
-            .body("additionalInformation.failures", is(anEmptyMap()));
+            .body("additionalInformation.failures", hasSize(0));
     }
 
     @Test
@@ -615,7 +616,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("status", is("completed"))
             .body("taskId", is(taskId))
             .body("type", is("clear-mail-repository"))
-            .body("additionalInformation.repositoryPath", is(notNullValue()))
+            .body("additionalInformation.mailRepositoryPath", is(notNullValue()))
             .body("additionalInformation.initialCount", is(0))
             .body("additionalInformation.remainingCount", is(0));
     }
@@ -669,7 +670,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("additionalInformation.successfullyReprocessedMailCount", is(0))
             .body("additionalInformation.failedReprocessedMailCount", is(0))
             .body("additionalInformation.mailboxId", is(mailboxId.serialize()))
-            .body("additionalInformation.failures", is(anEmptyMap()));
+            .body("additionalInformation.failures", hasSize(0));
     }
 
     @Test
@@ -699,8 +700,8 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("status", is("completed"))
             .body("taskId", is(taskId))
             .body("type", is("deleted-messages-delete"))
-            .body("additionalInformation.username", is(USERNAME))
-            .body("additionalInformation.deleteMessageId", is(composedMessageId.getMessageId().serialize()));
+            .body("additionalInformation.userName", is(USERNAME))
+            .body("additionalInformation.messageId", is(composedMessageId.getMessageId().serialize()));
     }
 
     @Test
@@ -720,7 +721,7 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("status", is("completed"))
             .body("taskId", is(taskId))
             .body("type", is("cassandra-migration"))
-            .body("additionalInformation.toVersion", is(toVersion.getValue()));
+            .body("additionalInformation.targetVersion", is(toVersion.getValue()));
     }
 
     @Test
