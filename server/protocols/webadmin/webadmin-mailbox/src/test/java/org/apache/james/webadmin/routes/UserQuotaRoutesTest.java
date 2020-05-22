@@ -1356,7 +1356,7 @@ class UserQuotaRoutesTest {
         }
 
         @Test
-        void postShouldCreateANewTaskWhenConcurrencyParametersSpecified() {
+        void postShouldCreateANewTaskWhenConcurrencyParametersAreSpecified() {
             given()
                 .queryParam("task", "RecomputeCurrentQuotas")
                 .queryParam("usersPerSecond", "1")
